@@ -56,6 +56,29 @@ func (q *Queries) CreateGPXUpload(ctx context.Context, arg CreateGPXUploadParams
 	return id, err
 }
 
+const createSession = `-- name: CreateSession :exec
+INSERT INTO sessions (id, user_id, created_at, expires_at)
+VALUES (?, ?, ?, ?)
+`
+
+type CreateSessionParams struct {
+	ID        string    `json:"id"`
+	UserID    string    `json:"user_id"`
+	CreatedAt time.Time `json:"created_at"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+// Session queries
+func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) error {
+	_, err := q.db.ExecContext(ctx, createSession,
+		arg.ID,
+		arg.UserID,
+		arg.CreatedAt,
+		arg.ExpiresAt,
+	)
+	return err
+}
+
 const createTrackPoint = `-- name: CreateTrackPoint :exec
 INSERT INTO track_points (upload_id, lat, lon, elevation, timestamp, grid_cell_id)
 VALUES (?, ?, ?, ?, ?, ?)
@@ -107,6 +130,33 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 		arg.Role,
 		arg.CreatedAt,
 	)
+	return err
+}
+
+const deleteExpiredSessions = `-- name: DeleteExpiredSessions :exec
+DELETE FROM sessions WHERE expires_at <= CURRENT_TIMESTAMP
+`
+
+func (q *Queries) DeleteExpiredSessions(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteExpiredSessions)
+	return err
+}
+
+const deleteSession = `-- name: DeleteSession :exec
+DELETE FROM sessions WHERE id = ?
+`
+
+func (q *Queries) DeleteSession(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, deleteSession, id)
+	return err
+}
+
+const deleteUserSessions = `-- name: DeleteUserSessions :exec
+DELETE FROM sessions WHERE user_id = ?
+`
+
+func (q *Queries) DeleteUserSessions(ctx context.Context, userID string) error {
+	_, err := q.db.ExecContext(ctx, deleteUserSessions, userID)
 	return err
 }
 
@@ -435,6 +485,38 @@ func (q *Queries) GetOrCreateGridCell(ctx context.Context, arg GetOrCreateGridCe
 	return i, err
 }
 
+const getSession = `-- name: GetSession :one
+SELECT s.id, s.user_id, s.created_at, s.expires_at, u.email, u.name, u.role 
+FROM sessions s
+JOIN users u ON s.user_id = u.id
+WHERE s.id = ? AND s.expires_at > CURRENT_TIMESTAMP
+`
+
+type GetSessionRow struct {
+	ID        string    `json:"id"`
+	UserID    string    `json:"user_id"`
+	CreatedAt time.Time `json:"created_at"`
+	ExpiresAt time.Time `json:"expires_at"`
+	Email     string    `json:"email"`
+	Name      string    `json:"name"`
+	Role      string    `json:"role"`
+}
+
+func (q *Queries) GetSession(ctx context.Context, id string) (GetSessionRow, error) {
+	row := q.db.QueryRowContext(ctx, getSession, id)
+	var i GetSessionRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.ExpiresAt,
+		&i.Email,
+		&i.Name,
+		&i.Role,
+	)
+	return i, err
+}
+
 const getTotalDistanceByYear = `-- name: GetTotalDistanceByYear :one
 SELECT COALESCE(SUM(total_distance_km), 0) as total FROM effort_data WHERE year = ? AND movement_type = 'all' AND day IS NULL
 `
@@ -482,7 +564,7 @@ func (q *Queries) GetTrackPointsByUpload(ctx context.Context, uploadID int64) ([
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, name, organization, organization_type, role, created_at, approved_at, approved_by FROM users WHERE id = ?
+SELECT id, email, name, organization, organization_type, role, created_at, approved_at, approved_by, password_hash FROM users WHERE id = ?
 `
 
 func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
@@ -498,12 +580,13 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 		&i.CreatedAt,
 		&i.ApprovedAt,
 		&i.ApprovedBy,
+		&i.PasswordHash,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, name, organization, organization_type, role, created_at, approved_at, approved_by FROM users WHERE email = ?
+SELECT id, email, name, organization, organization_type, role, created_at, approved_at, approved_by, password_hash FROM users WHERE email = ?
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -519,6 +602,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.CreatedAt,
 		&i.ApprovedAt,
 		&i.ApprovedBy,
+		&i.PasswordHash,
 	)
 	return i, err
 }
@@ -567,7 +651,7 @@ func (q *Queries) ListAllGPXUploads(ctx context.Context, arg ListAllGPXUploadsPa
 }
 
 const listAllUsers = `-- name: ListAllUsers :many
-SELECT id, email, name, organization, organization_type, role, created_at, approved_at, approved_by FROM users ORDER BY created_at DESC
+SELECT id, email, name, organization, organization_type, role, created_at, approved_at, approved_by, password_hash FROM users ORDER BY created_at DESC
 `
 
 func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
@@ -589,6 +673,7 @@ func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
 			&i.CreatedAt,
 			&i.ApprovedAt,
 			&i.ApprovedBy,
+			&i.PasswordHash,
 		); err != nil {
 			return nil, err
 		}
@@ -604,7 +689,7 @@ func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
 }
 
 const listApprovedUsers = `-- name: ListApprovedUsers :many
-SELECT id, email, name, organization, organization_type, role, created_at, approved_at, approved_by FROM users WHERE role IN ('approved', 'admin') ORDER BY created_at DESC
+SELECT id, email, name, organization, organization_type, role, created_at, approved_at, approved_by, password_hash FROM users WHERE role IN ('approved', 'admin') ORDER BY created_at DESC
 `
 
 func (q *Queries) ListApprovedUsers(ctx context.Context) ([]User, error) {
@@ -626,6 +711,7 @@ func (q *Queries) ListApprovedUsers(ctx context.Context) ([]User, error) {
 			&i.CreatedAt,
 			&i.ApprovedAt,
 			&i.ApprovedBy,
+			&i.PasswordHash,
 		); err != nil {
 			return nil, err
 		}
@@ -679,7 +765,7 @@ func (q *Queries) ListGPXUploadsByUser(ctx context.Context, userID string) ([]Gp
 }
 
 const listPendingUsers = `-- name: ListPendingUsers :many
-SELECT id, email, name, organization, organization_type, role, created_at, approved_at, approved_by FROM users WHERE role = 'pending' ORDER BY created_at DESC
+SELECT id, email, name, organization, organization_type, role, created_at, approved_at, approved_by, password_hash FROM users WHERE role = 'pending' ORDER BY created_at DESC
 `
 
 func (q *Queries) ListPendingUsers(ctx context.Context) ([]User, error) {
@@ -701,6 +787,7 @@ func (q *Queries) ListPendingUsers(ctx context.Context) ([]User, error) {
 			&i.CreatedAt,
 			&i.ApprovedAt,
 			&i.ApprovedBy,
+			&i.PasswordHash,
 		); err != nil {
 			return nil, err
 		}
@@ -713,6 +800,20 @@ func (q *Queries) ListPendingUsers(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateUserPassword = `-- name: UpdateUserPassword :exec
+UPDATE users SET password_hash = ? WHERE id = ?
+`
+
+type UpdateUserPasswordParams struct {
+	PasswordHash string `json:"password_hash"`
+	ID           string `json:"id"`
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.PasswordHash, arg.ID)
+	return err
 }
 
 const updateUserRole = `-- name: UpdateUserRole :exec
