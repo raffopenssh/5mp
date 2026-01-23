@@ -1,16 +1,28 @@
 [
   {
-    "id": "serengeti",
-    "name": "Serengeti National Park",
-    "lat_min": -3.0,
-    "lat_max": -1.5,
-    "lon_min": 34.0,
-    "lon_max": 35.5,
+    "id": "serengeti-mara",
+    "name": "Serengeti-Mara Ecosystem",
+    "country": "Tanzania/Kenya",
+    "lat_min": -3.5,
+    "lat_max": -1.0,
+    "lon_min": 33.5,
+    "lon_max": 36.5,
+    "buffer_km": 5.0
+  },
+  {
+    "id": "okavango-delta",
+    "name": "Okavango Delta",
+    "country": "Botswana",
+    "lat_min": -20.5,
+    "lat_max": -18.5,
+    "lon_min": 22.0,
+    "lon_max": 24.0,
     "buffer_km": 5.0
   },
   {
     "id": "kruger",
     "name": "Kruger National Park",
+    "country": "South Africa",
     "lat_min": -25.5,
     "lat_max": -22.3,
     "lon_min": 30.9,
@@ -18,12 +30,73 @@
     "buffer_km": 5.0
   },
   {
+    "id": "selous-niassa",
+    "name": "Selous-Niassa Ecosystem",
+    "country": "Tanzania/Mozambique",
+    "lat_min": -11.5,
+    "lat_max": -7.5,
+    "lon_min": 36.5,
+    "lon_max": 39.5,
+    "buffer_km": 5.0
+  },
+  {
     "id": "virunga",
     "name": "Virunga National Park",
+    "country": "DRC",
     "lat_min": -1.6,
     "lat_max": 0.9,
     "lon_min": 29.0,
     "lon_max": 29.8,
-    "buffer_km": 3.0
+    "buffer_km": 5.0
+  },
+  {
+    "id": "greater-limpopo",
+    "name": "Greater Limpopo Transfrontier Park",
+    "country": "Mozambique/Zimbabwe/South Africa",
+    "lat_min": -24.5,
+    "lat_max": -21.5,
+    "lon_min": 30.5,
+    "lon_max": 33.5,
+    "buffer_km": 5.0
+  },
+  {
+    "id": "kavango-zambezi",
+    "name": "Kavango-Zambezi TFCA",
+    "country": "Angola/Botswana/Namibia/Zambia/Zimbabwe",
+    "lat_min": -20.0,
+    "lat_max": -14.5,
+    "lon_min": 22.0,
+    "lon_max": 28.0,
+    "buffer_km": 5.0
+  },
+  {
+    "id": "w-arly-pendjari",
+    "name": "W-Arly-Pendjari Complex",
+    "country": "Benin/Burkina Faso/Niger",
+    "lat_min": 10.5,
+    "lat_max": 13.0,
+    "lon_min": 0.5,
+    "lon_max": 3.5,
+    "buffer_km": 5.0
+  },
+  {
+    "id": "niokolo-koba",
+    "name": "Niokolo-Koba National Park",
+    "country": "Senegal",
+    "lat_min": 12.0,
+    "lat_max": 13.5,
+    "lon_min": -13.5,
+    "lon_max": -12.0,
+    "buffer_km": 5.0
+  },
+  {
+    "id": "garamba",
+    "name": "Garamba National Park",
+    "country": "DRC",
+    "lat_min": 3.5,
+    "lat_max": 4.5,
+    "lon_min": 28.5,
+    "lon_max": 30.0,
+    "buffer_km": 5.0
   }
 ]

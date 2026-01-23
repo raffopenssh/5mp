@@ -52,7 +52,7 @@ func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := s.renderTemplate(w, "welcome.html", data); err != nil {
+	if err := s.renderTemplate(w, "globe.html", data); err != nil {
 		slog.Warn("render template", "url", r.URL.Path, "error", err)
 	}
 }
@@ -105,6 +105,16 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /admin/approve", s.RequireAdmin(s.HandleApproveUser))
 	mux.HandleFunc("POST /admin/reject", s.RequireAdmin(s.HandleRejectUser))
 	
+	// API routes
+	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)
+	mux.HandleFunc("GET /api/areas", s.HandleAPIAreas)
+	
+	// API auth endpoints
+	mux.HandleFunc("POST /api/login", s.HandleAPILogin)
+	mux.HandleFunc("POST /api/register", s.HandleAPIRegister)
+	mux.HandleFunc("POST /api/logout", s.HandleAPILogout)
+	mux.HandleFunc("POST /api/upload", s.HandleAPIUpload)
+
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
 	
