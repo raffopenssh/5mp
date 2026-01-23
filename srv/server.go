@@ -100,6 +100,11 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /upload", s.RequireAuth(s.HandleUploadPage))
 	mux.HandleFunc("POST /upload", s.RequireAuth(s.HandleUpload))
 	
+	// Admin routes (require admin role)
+	mux.HandleFunc("GET /admin", s.RequireAdmin(s.HandleAdminPage))
+	mux.HandleFunc("POST /admin/approve", s.RequireAdmin(s.HandleApproveUser))
+	mux.HandleFunc("POST /admin/reject", s.RequireAdmin(s.HandleRejectUser))
+	
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
 	
