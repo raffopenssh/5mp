@@ -291,6 +291,30 @@ func (s *Server) HandleAPILogout(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
+// HandleAPIStats returns global statistics.
+func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+	year := int64(time.Now().Year())
+
+	stats, err := q.GetGlobalStats(ctx, year)
+	if err != nil {
+		slog.Error("failed to get global stats", "error", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "database error"})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "public, max-age=30")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"active_pixels":     stats.ActivePixels,
+		"total_distance_km": stats.TotalDistanceKm,
+		"total_patrols":     stats.TotalUploads,
+	})
+}
+
 // HandleAPIUpload handles file uploads via API.
 func (s *Server) HandleAPIUpload(w http.ResponseWriter, r *http.Request) {
 	user := s.Auth.GetUserFromRequest(r)

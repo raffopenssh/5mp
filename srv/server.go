@@ -114,6 +114,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/register", s.HandleAPIRegister)
 	mux.HandleFunc("POST /api/logout", s.HandleAPILogout)
 	mux.HandleFunc("POST /api/upload", s.HandleAPIUpload)
+	mux.HandleFunc("GET /api/stats", s.HandleAPIStats)
 
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))

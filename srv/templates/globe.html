@@ -55,6 +55,13 @@
         .fab.visible { display: flex; }
 
         .maplibregl-ctrl-attrib { background: rgba(18,18,18,0.8) !important; }
+
+        .stats-panel { position: fixed; top: 66px; right: 10px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 16px; z-index: 100; font-size: 12px; min-width: 140px; }
+        .stats-panel h3 { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .stats-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .stats-item:last-child { margin-bottom: 0; }
+        .stats-label { color: #888; }
+        .stats-value { color: #22c55e; font-weight: 600; font-variant-numeric: tabular-nums; }
         .maplibregl-ctrl-attrib a { color: #666 !important; }
     </style>
 </head>
@@ -76,6 +83,22 @@
     </header>
 
     <div id="map"></div>
+
+    <div class="stats-panel">
+        <h3>Global Stats</h3>
+        <div class="stats-item">
+            <span class="stats-label">Active Pixels</span>
+            <span class="stats-value" id="stats-pixels">--</span>
+        </div>
+        <div class="stats-item">
+            <span class="stats-label">Total Distance</span>
+            <span class="stats-value" id="stats-distance">-- km</span>
+        </div>
+        <div class="stats-item">
+            <span class="stats-label">Total Patrols</span>
+            <span class="stats-value" id="stats-patrols">--</span>
+        </div>
+    </div>
 
     <button class="fab {{if .User}}visible{{end}}" onclick="showModal('upload')" title="Upload Data">+</button>
 
@@ -256,14 +279,15 @@
 
             // Popup for grid cells
             map.on('click', 'grid-cells', function(e) {
+                e.originalEvent.stopPropagation();
                 if (e.features.length > 0) {
                     const props = e.features[0].properties;
                     const intensity = props.intensity !== undefined ? (props.intensity * 100).toFixed(0) + '%' : 'N/A';
-                    const effort = props.effort_hours ? props.effort_hours + ' hours' : '';
-                    const date = props.date || '';
+                    const distance = props.total_distance_km ? props.total_distance_km.toFixed(1) + ' km' : '';
+                    const uploads = props.unique_uploads || 0;
                     new maplibregl.Popup()
                         .setLngLat(e.lngLat)
-                        .setHTML(`<strong>Patrol Effort</strong><br>Intensity: ${intensity}${effort ? '<br>Effort: ' + effort : ''}${date ? '<br>Date: ' + date : ''}`)
+                        .setHTML(`<strong>Patrol Effort</strong><br>Intensity: ${intensity}${distance ? '<br>Distance: ' + distance : ''}<br>Patrols: ${uploads}`)
                         .addTo(map);
                 }
             });
@@ -375,8 +399,9 @@
                     throw new Error(text || 'Upload failed');
                 }
                 closeModal('upload');
-                // Refresh the grid data
+                // Refresh the grid data and stats
                 map.getSource('grid')?.setData('/api/grid?t=' + Date.now());
+                loadStats();
                 alert('Upload successful! ' + fileInput.files.length + ' file(s) processed.');
             } catch (err) { showError('upload', err.message); }
         }
@@ -384,6 +409,22 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
         });
+
+        // Load global stats
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/stats');
+                if (res.ok) {
+                    const stats = await res.json();
+                    document.getElementById('stats-pixels').textContent = (stats.active_pixels || 0).toLocaleString();
+                    document.getElementById('stats-distance').textContent = (stats.total_distance_km || 0).toLocaleString(undefined, {maximumFractionDigits: 1}) + ' km';
+                    document.getElementById('stats-patrols').textContent = (stats.total_patrols || 0).toLocaleString();
+                }
+            } catch (err) {
+                console.error('Failed to load stats:', err);
+            }
+        }
+        loadStats();
     </script>
 </body>
 </html>
