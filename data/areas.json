@@ -1,0 +1,29 @@
+[
+  {
+    "id": "serengeti",
+    "name": "Serengeti National Park",
+    "lat_min": -3.0,
+    "lat_max": -1.5,
+    "lon_min": 34.0,
+    "lon_max": 35.5,
+    "buffer_km": 5.0
+  },
+  {
+    "id": "kruger",
+    "name": "Kruger National Park",
+    "lat_min": -25.5,
+    "lat_max": -22.3,
+    "lon_min": 30.9,
+    "lon_max": 32.0,
+    "buffer_km": 5.0
+  },
+  {
+    "id": "virunga",
+    "name": "Virunga National Park",
+    "lat_min": -1.6,
+    "lat_max": 0.9,
+    "lon_min": 29.0,
+    "lon_max": 29.8,
+    "buffer_km": 3.0
+  }
+]
