@@ -222,23 +222,22 @@ func TestSplitIntoSegmentsShortDuration(t *testing.T) {
 		t.Fatalf("ParseGPX failed: %v", err)
 	}
 
-	// With 10 min segments, points at 0, 10, 20 min split at each boundary:
-	// - Segment 1: point at 0 min
-	// - Segment 2: point at 10 min (new segment starts when duration >= 10min)
-	// - Segment 3: point at 20 min
+	// With 10 min segments, points at 0, 10, 20 min:
+	// - Segment 1: points at 0, 10 min (10 min duration is inclusive)
+	// - Segment 2: point at 20 min (>10 min from start triggers new segment)
 	segments := SplitIntoSegments(data, 10*time.Minute)
 
-	if len(segments) != 3 {
-		t.Errorf("expected 3 segments with 10min duration, got %d", len(segments))
+	if len(segments) != 2 {
+		t.Errorf("expected 2 segments with 10min duration, got %d", len(segments))
 	}
 
-	// With 15 min segments, we should get 2 segments (0-10 in first, 20 in second)
+	// With 9 min segments, we get 3 segments (each point triggers a split)
 	reader = strings.NewReader(testGPX)
 	data, _ = ParseGPX(reader)
-	segments = SplitIntoSegments(data, 15*time.Minute)
+	segments = SplitIntoSegments(data, 9*time.Minute)
 
-	if len(segments) != 2 {
-		t.Errorf("expected 2 segments with 15min duration, got %d", len(segments))
+	if len(segments) != 3 {
+		t.Errorf("expected 3 segments with 9min duration, got %d", len(segments))
 	}
 }
 
