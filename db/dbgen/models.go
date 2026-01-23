@@ -50,6 +50,13 @@ type Migration struct {
 	ExecutedAt      time.Time `json:"executed_at"`
 }
 
+type Session struct {
+	ID        string    `json:"id"`
+	UserID    string    `json:"user_id"`
+	CreatedAt time.Time `json:"created_at"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
 type TrackPoint struct {
 	ID         int64      `json:"id"`
 	UploadID   int64      `json:"upload_id"`
@@ -70,6 +77,7 @@ type User struct {
 	CreatedAt        time.Time  `json:"created_at"`
 	ApprovedAt       *time.Time `json:"approved_at"`
 	ApprovedBy       *string    `json:"approved_by"`
+	PasswordHash     string     `json:"password_hash"`
 }
 
 type Visitor struct {

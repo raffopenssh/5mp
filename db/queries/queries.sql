@@ -94,3 +94,26 @@ SELECT COUNT(DISTINCT grid_cell_id) as count FROM effort_data WHERE year = ?;
 
 -- name: GetTotalDistanceByYear :one
 SELECT COALESCE(SUM(total_distance_km), 0) as total FROM effort_data WHERE year = ? AND movement_type = 'all' AND day IS NULL;
+
+-- Session queries
+-- name: CreateSession :exec
+INSERT INTO sessions (id, user_id, created_at, expires_at)
+VALUES (?, ?, ?, ?);
+
+-- name: GetSession :one
+SELECT s.*, u.email, u.name, u.role 
+FROM sessions s
+JOIN users u ON s.user_id = u.id
+WHERE s.id = ? AND s.expires_at > CURRENT_TIMESTAMP;
+
+-- name: DeleteSession :exec
+DELETE FROM sessions WHERE id = ?;
+
+-- name: DeleteExpiredSessions :exec
+DELETE FROM sessions WHERE expires_at <= CURRENT_TIMESTAMP;
+
+-- name: DeleteUserSessions :exec
+DELETE FROM sessions WHERE user_id = ?;
+
+-- name: UpdateUserPassword :exec
+UPDATE users SET password_hash = ? WHERE id = ?;

@@ -40,12 +40,11 @@ type uploadPageData struct {
 }
 
 // HandleUpload handles POST requests for GPX file uploads.
-// It requires authentication via X-ExeDev-UserID header.
+// Requires authentication via session cookie.
 func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
-	// Check authentication
-	userID := strings.TrimSpace(r.Header.Get("X-ExeDev-UserID"))
-	userEmail := strings.TrimSpace(r.Header.Get("X-ExeDev-Email"))
-	if userID == "" {
+	// Get user from session (middleware already verified auth)
+	user := s.Auth.GetUserFromRequest(r)
+	if user == nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(UploadResponse{
@@ -53,6 +52,8 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	userID := user.ID
+	userEmail := user.Email
 
 	// Limit request body size
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
@@ -160,7 +161,11 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 
 // HandleUploadPage renders the upload form page.
 func (s *Server) HandleUploadPage(w http.ResponseWriter, r *http.Request) {
-	userEmail := strings.TrimSpace(r.Header.Get("X-ExeDev-Email"))
+	user := s.Auth.GetUserFromRequest(r)
+	userEmail := ""
+	if user != nil {
+		userEmail = user.Email
+	}
 
 	data := uploadPageData{
 		Hostname:  s.Hostname,
