@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5 Million Paws - Conservation Globe</title>
+    <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; overflow: hidden; }
+        
+        .header { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: rgba(18,18,18,0.95); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; backdrop-filter: blur(10px); }
+        .logo { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; color: #fff; }
+        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .auth-buttons { display: flex; gap: 12px; align-items: center; }
+        .user-info { color: #22c55e; font-size: 14px; }
+
+        .btn { padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; text-decoration: none; }
+        .btn-secondary { background: rgba(255,255,255,0.08); color: #e0e0e0; border: 1px solid rgba(255,255,255,0.12); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.12); }
+        .btn-primary { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; }
+        .btn-primary:hover { background: linear-gradient(135deg, #16a34a, #15803d); }
+
+        #map { position: absolute; top: 56px; left: 0; right: 0; bottom: 0; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal { background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 100%; max-width: 420px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .modal-title { font-size: 20px; font-weight: 600; color: #fff; }
+        .modal-close { background: none; border: none; color: #666; font-size: 24px; cursor: pointer; padding: 4px; line-height: 1; }
+        .modal-close:hover { color: #fff; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 14px; font-weight: 500; color: #a0a0a0; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 12px 14px; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 14px; transition: border-color 0.2s; }
+        .form-input:focus { outline: none; border-color: #22c55e; }
+        .form-input::placeholder { color: #555; }
+        .form-error { color: #ef4444; font-size: 13px; margin-top: 8px; display: none; }
+        .form-footer { margin-top: 24px; }
+        .form-footer .btn { width: 100%; padding: 12px; }
+        .form-switch { text-align: center; margin-top: 16px; font-size: 14px; color: #666; }
+        .form-switch a { color: #22c55e; text-decoration: none; }
+        .form-switch a:hover { text-decoration: underline; }
+
+        .upload-area { border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 20px; }
+        .upload-area:hover, .upload-area.dragover { border-color: #22c55e; background: rgba(34,197,94,0.05); }
+        .upload-icon { font-size: 48px; margin-bottom: 12px; }
+        .upload-text { color: #a0a0a0; font-size: 14px; }
+        .upload-text strong { color: #22c55e; }
+
+        .fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; color: #fff; font-size: 24px; cursor: pointer; box-shadow: 0 4px 14px rgba(34,197,94,0.4); transition: all 0.2s; z-index: 500; display: none; align-items: center; justify-content: center; }
+        .fab:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(34,197,94,0.5); }
+        .fab.visible { display: flex; }
+
+        .maplibregl-ctrl-attrib { background: rgba(18,18,18,0.8) !important; }
+        .maplibregl-ctrl-attrib a { color: #666 !important; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">🐾</div>
+            <span>5 Million Paws</span>
+        </div>
+        <div class="auth-buttons">
+            {{if .User}}
+            <span class="user-info">{{.User.Email}}</span>
+            <button class="btn btn-secondary" onclick="logout()">Logout</button>
+            {{else}}
+            <button class="btn btn-secondary" onclick="showModal('login')">Login</button>
+            <button class="btn btn-primary" onclick="showModal('register')">Register</button>
+            {{end}}
+        </div>
+    </header>
+
+    <div id="map"></div>
+
+    <button class="fab {{if .User}}visible{{end}}" onclick="showModal('upload')" title="Upload Data">+</button>
+
+    <!-- Login Modal -->
+    <div id="modal-login" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Welcome Back</h2>
+                <button class="modal-close" onclick="closeModal('login')">&times;</button>
+            </div>
+            <form id="form-login" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+                </div>
+                <div class="form-error" id="login-error"></div>
+                <div class="form-footer">
+                    <button type="submit" class="btn btn-primary">Sign In</button>
+                </div>
+                <p class="form-switch">Don't have an account? <a href="#" onclick="switchModal('login', 'register')">Register</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="modal-register" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Create Account</h2>
+                <button class="modal-close" onclick="closeModal('register')">&times;</button>
+            </div>
+            <form id="form-register" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-input" placeholder="••••••••" minlength="8" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" name="confirm" class="form-input" placeholder="••••••••" required>
+                </div>
+                <div class="form-error" id="register-error"></div>
+                <div class="form-footer">
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </div>
+                <p class="form-switch">Already have an account? <a href="#" onclick="switchModal('register', 'login')">Sign in</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="modal-upload" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Upload Conservation Data</h2>
+                <button class="modal-close" onclick="closeModal('upload')">&times;</button>
+            </div>
+            <form id="form-upload" onsubmit="handleUpload(event)">
+                <div class="upload-area" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                    <div class="upload-icon">📍</div>
+                    <p class="upload-text">Drag & drop GPX files here, or <strong>browse</strong></p>
+                    <p class="upload-text" style="margin-top: 8px; font-size: 12px;">GPS patrol track files (.gpx)</p>
+                </div>
+                <input type="file" id="file-input" name="files" accept=".gpx" multiple style="display: none;" onchange="updateFileName(this)">
+                <div id="selected-file" style="margin-bottom: 16px; color: #22c55e; font-size: 14px;"></div>
+                <div class="form-error" id="upload-error"></div>
+                <div class="form-footer">
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const MAPTILER_KEY = 'dea58ea0389007e386776c4f583f4425';
+        const API_HOST = '{{.Hostname}}';
+
+        // Use a dark basemap style
+        const darkStyle = {
+            version: 8,
+            name: 'Dark',
+            sources: {
+                'osm': {
+                    type: 'raster',
+                    tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'],
+                    tileSize: 256,
+                    attribution: '© OpenStreetMap contributors, © CARTO'
+                }
+            },
+            layers: [{
+                id: 'osm',
+                type: 'raster',
+                source: 'osm'
+            }]
+        };
+
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: darkStyle,
+            center: [20, 0],
+            zoom: 3
+        });
+        map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+        // Add map layers on load
+        map.on('load', function() {
+            // Add protected areas source
+            map.addSource('areas', {
+                type: 'geojson',
+                data: '/api/areas'
+            });
+
+            // Add grid source
+            map.addSource('grid', {
+                type: 'geojson',
+                data: '/api/grid'
+            });
+
+            // Protected areas fill layer
+            map.addLayer({
+                id: 'areas-fill',
+                type: 'fill',
+                source: 'areas',
+                paint: {
+                    'fill-color': '#22c55e',
+                    'fill-opacity': 0.2
+                }
+            });
+
+            // Protected areas outline layer
+            map.addLayer({
+                id: 'areas-outline',
+                type: 'line',
+                source: 'areas',
+                paint: {
+                    'line-color': '#22c55e',
+                    'line-width': 2
+                }
+            });
+
+            // Grid cells layer with intensity-based opacity
+            map.addLayer({
+                id: 'grid-cells',
+                type: 'fill',
+                source: 'grid',
+                paint: {
+                    'fill-color': '#f59e0b',
+                    'fill-opacity': [
+                        'interpolate',
+                        ['linear'],
+                        ['coalesce', ['get', 'intensity'], 0.5],
+                        0, 0.1,
+                        1, 0.8
+                    ]
+                }
+            });
+
+            // Popup for protected areas
+            map.on('click', 'areas-fill', function(e) {
+                if (e.features.length > 0) {
+                    const props = e.features[0].properties;
+                    const name = props.name || 'Protected Area';
+                    const description = props.description || '';
+                    const area = props.area_km2 ? `<br>Area: ${props.area_km2} km²` : '';
+                    new maplibregl.Popup()
+                        .setLngLat(e.lngLat)
+                        .setHTML(`<strong>${name}</strong>${description ? '<br>' + description : ''}${area}`)
+                        .addTo(map);
+                }
+            });
+
+            // Popup for grid cells
+            map.on('click', 'grid-cells', function(e) {
+                if (e.features.length > 0) {
+                    const props = e.features[0].properties;
+                    const intensity = props.intensity !== undefined ? (props.intensity * 100).toFixed(0) + '%' : 'N/A';
+                    const effort = props.effort_hours ? props.effort_hours + ' hours' : '';
+                    const date = props.date || '';
+                    new maplibregl.Popup()
+                        .setLngLat(e.lngLat)
+                        .setHTML(`<strong>Patrol Effort</strong><br>Intensity: ${intensity}${effort ? '<br>Effort: ' + effort : ''}${date ? '<br>Date: ' + date : ''}`)
+                        .addTo(map);
+                }
+            });
+
+            // Change cursor on hover
+            map.on('mouseenter', 'areas-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
+            map.on('mouseleave', 'areas-fill', function() { map.getCanvas().style.cursor = ''; });
+            map.on('mouseenter', 'grid-cells', function() { map.getCanvas().style.cursor = 'pointer'; });
+            map.on('mouseleave', 'grid-cells', function() { map.getCanvas().style.cursor = ''; });
+
+            // Create legend
+            const legend = document.createElement('div');
+            legend.id = 'map-legend';
+            legend.style.cssText = 'position: absolute; bottom: 30px; left: 10px; background: rgba(18,18,18,0.9); padding: 12px 16px; border-radius: 8px; font-size: 12px; z-index: 100; border: 1px solid rgba(255,255,255,0.1);';
+            legend.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 10px; color: #fff;">Legend</div>
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <div style="width: 20px; height: 14px; background: rgba(34,197,94,0.4); border: 2px solid #22c55e; margin-right: 8px; border-radius: 2px;"></div>
+                    <span style="color: #a0a0a0;">Protected Areas</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <div style="width: 20px; height: 14px; background: linear-gradient(to right, rgba(245,158,11,0.1), rgba(245,158,11,0.8)); margin-right: 8px; border-radius: 2px;"></div>
+                    <span style="color: #a0a0a0;">Patrol Effort</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-left: 28px; margin-top: 2px; font-size: 10px; color: #666; width: 70px;">
+                    <span>Low</span><span>High</span>
+                </div>
+            `;
+            document.getElementById('map').appendChild(legend);
+        });
+
+        function showModal(name) { document.getElementById(`modal-${name}`).classList.add('active'); }
+        function closeModal(name) {
+            document.getElementById(`modal-${name}`).classList.remove('active');
+            const form = document.getElementById(`form-${name}`);
+            if (form) form.reset();
+            const error = document.getElementById(`${name}-error`);
+            if (error) error.style.display = 'none';
+        }
+        function closeModalOnOverlay(e) { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); }
+        function switchModal(from, to) { closeModal(from); showModal(to); }
+        function showError(name, msg) { const el = document.getElementById(`${name}-error`); el.textContent = msg; el.style.display = 'block'; }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const data = new FormData(e.target);
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: data.get('email'), password: data.get('password') })
+                });
+                if (!res.ok) throw new Error((await res.json()).error || 'Login failed');
+                window.location.reload();
+            } catch (err) { showError('login', err.message); }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const data = new FormData(e.target);
+            if (data.get('password') !== data.get('confirm')) { showError('register', 'Passwords do not match'); return; }
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: data.get('email'), password: data.get('password') })
+                });
+                if (!res.ok) throw new Error((await res.json()).error || 'Registration failed');
+                window.location.reload();
+            } catch (err) { showError('register', err.message); }
+        }
+
+        async function logout() { await fetch('/api/logout', { method: 'POST' }); window.location.reload(); }
+
+        function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('dragover'); }
+        function handleDragLeave(e) { e.currentTarget.classList.remove('dragover'); }
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                document.getElementById('file-input').files = e.dataTransfer.files;
+                updateFileName(document.getElementById('file-input'));
+            }
+        }
+        function updateFileName(input) {
+            if (input.files.length === 0) {
+                document.getElementById('selected-file').textContent = '';
+            } else if (input.files.length === 1) {
+                document.getElementById('selected-file').textContent = `Selected: ${input.files[0].name}`;
+            } else {
+                document.getElementById('selected-file').textContent = `Selected: ${input.files.length} files`;
+            }
+        }
+
+        async function handleUpload(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('file-input');
+            if (!fileInput.files.length) { showError('upload', 'Please select at least one GPX file'); return; }
+            
+            const formData = new FormData();
+            for (let file of fileInput.files) {
+                formData.append('files', file);
+            }
+            
+            try {
+                const res = await fetch('/upload', { method: 'POST', body: formData });
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(text || 'Upload failed');
+                }
+                closeModal('upload');
+                // Refresh the grid data
+                map.getSource('grid')?.setData('/api/grid?t=' + Date.now());
+                alert('Upload successful! ' + fileInput.files.length + ' file(s) processed.');
+            } catch (err) { showError('upload', err.message); }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+        });
+    </script>
+</body>
+</html>
