@@ -139,31 +139,20 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 }
 
 // buildGridFeature creates a GeoJSON feature for a grid cell.
+// Returns a Point at the center of the cell for circle visualization.
 func buildGridFeature(gridCellID string, latCenter, lonCenter, totalDistanceKm float64, totalPoints, uniqueUploads int64, movementType string, maxDistance float64) GeoJSONFeature {
-	// Grid cell size is 0.1 degrees
-	const halfCell = 0.05
-
 	// Calculate intensity (normalized 0-1)
 	var intensity float64
 	if maxDistance > 0 {
 		intensity = totalDistanceKm / maxDistance
 	}
 
-	// Build polygon coordinates (GeoJSON uses [lon, lat] order)
-	// Ring: SW -> SE -> NE -> NW -> SW (closed)
-	coordinates := [][][]float64{{
-		{lonCenter - halfCell, latCenter - halfCell}, // SW
-		{lonCenter + halfCell, latCenter - halfCell}, // SE
-		{lonCenter + halfCell, latCenter + halfCell}, // NE
-		{lonCenter - halfCell, latCenter + halfCell}, // NW
-		{lonCenter - halfCell, latCenter - halfCell}, // SW (close ring)
-	}}
-
+	// Return Point at center of cell (GeoJSON uses [lon, lat] order)
 	return GeoJSONFeature{
 		Type: "Feature",
 		Geometry: GeoJSONGeometry{
-			Type:        "Polygon",
-			Coordinates: coordinates,
+			Type:        "Point",
+			Coordinates: []float64{lonCenter, latCenter},
 		},
 		Properties: map[string]interface{}{
 			"id":                gridCellID,
@@ -188,25 +177,17 @@ func (s *Server) HandleAPIAreas(w http.ResponseWriter, r *http.Request) {
 	features := make([]GeoJSONFeature, 0, len(s.AreaStore.Areas))
 
 	for _, area := range s.AreaStore.Areas {
-		// Build polygon coordinates for the bounding box (GeoJSON uses [lon, lat] order)
-		// Ring: SW -> SE -> NE -> NW -> SW (closed)
-		coordinates := [][][]float64{{
-			{area.LonMin, area.LatMin}, // SW
-			{area.LonMax, area.LatMin}, // SE
-			{area.LonMax, area.LatMax}, // NE
-			{area.LonMin, area.LatMax}, // NW
-			{area.LonMin, area.LatMin}, // SW (close ring)
-		}}
-
+		// Use the polygon geometry directly from the area data
 		feature := GeoJSONFeature{
 			Type: "Feature",
 			Geometry: GeoJSONGeometry{
-				Type:        "Polygon",
-				Coordinates: coordinates,
+				Type:        area.Geometry.Type,
+				Coordinates: area.Geometry.Coordinates,
 			},
 			Properties: map[string]interface{}{
 				"id":        area.ID,
 				"name":      area.Name,
+				"country":   area.Country,
 				"buffer_km": area.BufferKm,
 			},
 		}
