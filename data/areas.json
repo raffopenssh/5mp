@@ -3,100 +3,231 @@
     "id": "serengeti-mara",
     "name": "Serengeti-Mara Ecosystem",
     "country": "Tanzania/Kenya",
-    "lat_min": -3.5,
-    "lat_max": -1.0,
-    "lon_min": 33.5,
-    "lon_max": 36.5,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[
+        [34.50, -1.15],
+        [35.00, -1.00],
+        [35.50, -1.15],
+        [35.85, -1.60],
+        [35.80, -2.30],
+        [35.50, -3.00],
+        [35.00, -3.40],
+        [34.30, -3.30],
+        [33.80, -2.80],
+        [33.70, -2.20],
+        [34.00, -1.50],
+        [34.50, -1.15]
+      ]]
+    },
     "buffer_km": 5.0
   },
   {
     "id": "okavango-delta",
     "name": "Okavango Delta",
     "country": "Botswana",
-    "lat_min": -20.5,
-    "lat_max": -18.5,
-    "lon_min": 22.0,
-    "lon_max": 24.0,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[
+        [22.20, -18.70],
+        [22.80, -18.50],
+        [23.50, -18.80],
+        [24.00, -19.30],
+        [24.10, -20.00],
+        [23.70, -20.40],
+        [23.00, -20.50],
+        [22.30, -20.30],
+        [22.00, -19.70],
+        [22.00, -19.10],
+        [22.20, -18.70]
+      ]]
+    },
     "buffer_km": 5.0
   },
   {
     "id": "kruger",
     "name": "Kruger National Park",
     "country": "South Africa",
-    "lat_min": -25.5,
-    "lat_max": -22.3,
-    "lon_min": 30.9,
-    "lon_max": 32.0,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[
+        [31.20, -22.35],
+        [31.50, -22.45],
+        [31.75, -22.80],
+        [31.95, -23.50],
+        [31.98, -24.20],
+        [31.92, -24.80],
+        [31.70, -25.32],
+        [31.30, -25.50],
+        [31.00, -25.40],
+        [30.95, -24.90],
+        [31.00, -24.20],
+        [31.05, -23.50],
+        [31.00, -22.80],
+        [31.05, -22.50],
+        [31.20, -22.35]
+      ]]
+    },
     "buffer_km": 5.0
   },
   {
     "id": "selous-niassa",
     "name": "Selous-Niassa Ecosystem",
     "country": "Tanzania/Mozambique",
-    "lat_min": -11.5,
-    "lat_max": -7.5,
-    "lon_min": 36.5,
-    "lon_max": 39.5,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[
+        [36.80, -7.70],
+        [37.50, -7.60],
+        [38.50, -8.00],
+        [39.30, -8.80],
+        [39.50, -9.70],
+        [39.20, -10.50],
+        [38.50, -11.20],
+        [37.50, -11.40],
+        [36.80, -11.00],
+        [36.50, -10.20],
+        [36.50, -9.20],
+        [36.60, -8.30],
+        [36.80, -7.70]
+      ]]
+    },
     "buffer_km": 5.0
   },
   {
     "id": "virunga",
     "name": "Virunga National Park",
     "country": "DRC",
-    "lat_min": -1.6,
-    "lat_max": 0.9,
-    "lon_min": 29.0,
-    "lon_max": 29.8,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[
+        [29.15, 0.80],
+        [29.50, 0.90],
+        [29.75, 0.60],
+        [29.80, 0.00],
+        [29.65, -0.50],
+        [29.55, -1.00],
+        [29.40, -1.50],
+        [29.20, -1.55],
+        [29.05, -1.20],
+        [29.00, -0.50],
+        [29.05, 0.20],
+        [29.15, 0.80]
+      ]]
+    },
     "buffer_km": 5.0
   },
   {
     "id": "greater-limpopo",
     "name": "Greater Limpopo Transfrontier Park",
     "country": "Mozambique/Zimbabwe/South Africa",
-    "lat_min": -24.5,
-    "lat_max": -21.5,
-    "lon_min": 30.5,
-    "lon_max": 33.5,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[
+        [30.80, -21.80],
+        [31.50, -21.60],
+        [32.50, -21.90],
+        [33.20, -22.50],
+        [33.30, -23.30],
+        [33.00, -24.20],
+        [32.30, -24.50],
+        [31.50, -24.30],
+        [30.80, -23.80],
+        [30.60, -23.00],
+        [30.60, -22.30],
+        [30.80, -21.80]
+      ]]
+    },
     "buffer_km": 5.0
   },
   {
     "id": "kavango-zambezi",
     "name": "Kavango-Zambezi TFCA",
     "country": "Angola/Botswana/Namibia/Zambia/Zimbabwe",
-    "lat_min": -20.0,
-    "lat_max": -14.5,
-    "lon_min": 22.0,
-    "lon_max": 28.0,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[
+        [22.50, -14.80],
+        [24.00, -14.50],
+        [25.50, -14.80],
+        [27.00, -15.50],
+        [27.80, -16.50],
+        [27.50, -17.80],
+        [26.50, -18.80],
+        [25.00, -19.50],
+        [23.50, -19.80],
+        [22.30, -19.50],
+        [22.00, -18.50],
+        [22.00, -17.00],
+        [22.20, -15.80],
+        [22.50, -14.80]
+      ]]
+    },
     "buffer_km": 5.0
   },
   {
     "id": "w-arly-pendjari",
     "name": "W-Arly-Pendjari Complex",
     "country": "Benin/Burkina Faso/Niger",
-    "lat_min": 10.5,
-    "lat_max": 13.0,
-    "lon_min": 0.5,
-    "lon_max": 3.5,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[
+        [0.80, 12.80],
+        [1.50, 12.90],
+        [2.30, 12.60],
+        [3.20, 12.20],
+        [3.40, 11.50],
+        [3.20, 10.80],
+        [2.50, 10.60],
+        [1.80, 10.80],
+        [1.20, 11.20],
+        [0.70, 11.80],
+        [0.60, 12.40],
+        [0.80, 12.80]
+      ]]
+    },
     "buffer_km": 5.0
   },
   {
     "id": "niokolo-koba",
     "name": "Niokolo-Koba National Park",
     "country": "Senegal",
-    "lat_min": 12.0,
-    "lat_max": 13.5,
-    "lon_min": -13.5,
-    "lon_max": -12.0,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[
+        [-13.30, 13.30],
+        [-12.80, 13.40],
+        [-12.30, 13.20],
+        [-12.10, 12.80],
+        [-12.20, 12.30],
+        [-12.60, 12.10],
+        [-13.10, 12.20],
+        [-13.40, 12.60],
+        [-13.50, 13.00],
+        [-13.30, 13.30]
+      ]]
+    },
     "buffer_km": 5.0
   },
   {
     "id": "garamba",
     "name": "Garamba National Park",
     "country": "DRC",
-    "lat_min": 3.5,
-    "lat_max": 4.5,
-    "lon_min": 28.5,
-    "lon_max": 30.0,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[
+        [28.80, 4.40],
+        [29.30, 4.50],
+        [29.80, 4.30],
+        [29.90, 3.90],
+        [29.70, 3.55],
+        [29.20, 3.50],
+        [28.70, 3.60],
+        [28.50, 3.90],
+        [28.55, 4.20],
+        [28.80, 4.40]
+      ]]
+    },
     "buffer_km": 5.0
   }
 ]

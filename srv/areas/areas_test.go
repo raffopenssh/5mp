@@ -6,16 +6,28 @@ import (
 	"testing"
 )
 
-func TestPointInArea(t *testing.T) {
+// Helper to create a simple rectangular polygon geometry
+func makeRectPolygon(latMin, latMax, lonMin, lonMax float64) GeoJSONGeometry {
+	return GeoJSONGeometry{
+		Type: "Polygon",
+		Coordinates: [][][]float64{{
+			{lonMin, latMin}, // SW
+			{lonMax, latMin}, // SE
+			{lonMax, latMax}, // NE
+			{lonMin, latMax}, // NW
+			{lonMin, latMin}, // SW (close ring)
+		}},
+	}
+}
+
+func TestPointInPolygon(t *testing.T) {
 	serengeti := ProtectedArea{
 		ID:       "serengeti",
 		Name:     "Serengeti National Park",
-		LatMin:   -3.0,
-		LatMax:   -1.5,
-		LonMin:   34.0,
-		LonMax:   35.5,
+		Geometry: makeRectPolygon(-3.0, -1.5, 34.0, 35.5),
 		BufferKm: 5.0,
 	}
+	serengeti.computeBoundingBox()
 
 	tests := []struct {
 		name     string
@@ -31,22 +43,62 @@ func TestPointInArea(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := PointInArea(tt.lat, tt.lon, serengeti)
+			got := serengeti.ContainsPoint(tt.lat, tt.lon)
 			if got != tt.want {
-				t.Errorf("PointInArea(%v, %v) = %v, want %v", tt.lat, tt.lon, got, tt.want)
+				t.Errorf("ContainsPoint(%v, %v) = %v, want %v", tt.lat, tt.lon, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPointInIrregularPolygon(t *testing.T) {
+	// Test with a triangle-shaped polygon
+	triangle := ProtectedArea{
+		ID:   "triangle",
+		Name: "Triangle Area",
+		Geometry: GeoJSONGeometry{
+			Type: "Polygon",
+			Coordinates: [][][]float64{{
+				{0.0, 0.0},   // bottom left
+				{2.0, 0.0},   // bottom right
+				{1.0, 2.0},   // top center
+				{0.0, 0.0},   // close
+			}},
+		},
+		BufferKm: 0.0,
+	}
+	triangle.computeBoundingBox()
+
+	tests := []struct {
+		name     string
+		lat, lon float64
+		want     bool
+	}{
+		{"center", 0.5, 1.0, true},
+		{"inside near bottom", 0.1, 1.0, true},
+		{"outside left", 1.0, -0.5, false},
+		{"outside right", 1.0, 2.5, false},
+		{"outside top", 2.5, 1.0, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := triangle.ContainsPoint(tt.lat, tt.lon)
+			if got != tt.want {
+				t.Errorf("ContainsPoint(%v, %v) = %v, want %v", tt.lat, tt.lon, got, tt.want)
 			}
 		})
 	}
 }
 
 func TestLoadAreas(t *testing.T) {
-	// Create temp file with test data
+	// Create temp file with test data using polygon geometry
 	tmpDir := t.TempDir()
 	tmpFile := filepath.Join(tmpDir, "areas.json")
 
 	testData := `[
-		{"id": "test1", "name": "Test Area 1", "lat_min": -2.0, "lat_max": -1.0, "lon_min": 34.0, "lon_max": 35.0, "buffer_km": 2.0},
-		{"id": "test2", "name": "Test Area 2", "lat_min": -5.0, "lat_max": -4.0, "lon_min": 36.0, "lon_max": 37.0, "buffer_km": 1.0}
+		{"id": "test1", "name": "Test Area 1", "country": "Test", "geometry": {"type": "Polygon", "coordinates": [[[34.0, -2.0], [35.0, -2.0], [35.0, -1.0], [34.0, -1.0], [34.0, -2.0]]]}, "buffer_km": 2.0},
+		{"id": "test2", "name": "Test Area 2", "country": "Test", "geometry": {"type": "Polygon", "coordinates": [[[36.0, -5.0], [37.0, -5.0], [37.0, -4.0], [36.0, -4.0], [36.0, -5.0]]]}, "buffer_km": 1.0}
 	]`
 
 	if err := os.WriteFile(tmpFile, []byte(testData), 0644); err != nil {
@@ -65,6 +117,11 @@ func TestLoadAreas(t *testing.T) {
 	if store.Areas[0].ID != "test1" {
 		t.Errorf("expected first area ID 'test1', got '%s'", store.Areas[0].ID)
 	}
+
+	// Verify bounding boxes were computed
+	if store.Areas[0].bbox == nil {
+		t.Error("expected bounding box to be computed for area 1")
+	}
 }
 
 func TestFindArea(t *testing.T) {
@@ -72,8 +129,8 @@ func TestFindArea(t *testing.T) {
 	tmpFile := filepath.Join(tmpDir, "areas.json")
 
 	testData := `[
-		{"id": "area1", "name": "Area 1", "lat_min": -2.0, "lat_max": -1.0, "lon_min": 34.0, "lon_max": 35.0, "buffer_km": 0.0},
-		{"id": "area2", "name": "Area 2", "lat_min": -5.0, "lat_max": -4.0, "lon_min": 36.0, "lon_max": 37.0, "buffer_km": 0.0}
+		{"id": "area1", "name": "Area 1", "country": "Test", "geometry": {"type": "Polygon", "coordinates": [[[34.0, -2.0], [35.0, -2.0], [35.0, -1.0], [34.0, -1.0], [34.0, -2.0]]]}, "buffer_km": 0.0},
+		{"id": "area2", "name": "Area 2", "country": "Test", "geometry": {"type": "Polygon", "coordinates": [[[36.0, -5.0], [37.0, -5.0], [37.0, -4.0], [36.0, -4.0], [36.0, -5.0]]]}, "buffer_km": 0.0}
 	]`
 
 	if err := os.WriteFile(tmpFile, []byte(testData), 0644); err != nil {
@@ -118,8 +175,8 @@ func TestAssignPointsToAreas(t *testing.T) {
 	tmpFile := filepath.Join(tmpDir, "areas.json")
 
 	testData := `[
-		{"id": "park1", "name": "Park 1", "lat_min": -2.0, "lat_max": -1.0, "lon_min": 34.0, "lon_max": 35.0, "buffer_km": 0.0},
-		{"id": "park2", "name": "Park 2", "lat_min": -5.0, "lat_max": -4.0, "lon_min": 36.0, "lon_max": 37.0, "buffer_km": 0.0}
+		{"id": "park1", "name": "Park 1", "country": "Test", "geometry": {"type": "Polygon", "coordinates": [[[34.0, -2.0], [35.0, -2.0], [35.0, -1.0], [34.0, -1.0], [34.0, -2.0]]]}, "buffer_km": 0.0},
+		{"id": "park2", "name": "Park 2", "country": "Test", "geometry": {"type": "Polygon", "coordinates": [[[36.0, -5.0], [37.0, -5.0], [37.0, -4.0], [36.0, -4.0], [36.0, -5.0]]]}, "buffer_km": 0.0}
 	]`
 
 	if err := os.WriteFile(tmpFile, []byte(testData), 0644); err != nil {
@@ -149,5 +206,31 @@ func TestAssignPointsToAreas(t *testing.T) {
 	}
 	if len(result["outside"]) != 2 {
 		t.Errorf("expected 2 points outside, got %d", len(result["outside"]))
+	}
+}
+
+func TestLoadRealAreasFile(t *testing.T) {
+	// Test loading the actual areas.json file
+	store, err := LoadAreas("../../data/areas.json")
+	if err != nil {
+		t.Fatalf("LoadAreas failed: %v", err)
+	}
+
+	if len(store.Areas) != 10 {
+		t.Errorf("expected 10 areas, got %d", len(store.Areas))
+	}
+
+	// Test that Serengeti contains a known point inside it
+	area := store.FindArea(-2.5, 35.0) // Should be inside Serengeti-Mara
+	if area == nil {
+		t.Error("expected to find Serengeti-Mara at -2.5, 35.0")
+	} else if area.ID != "serengeti-mara" {
+		t.Errorf("expected serengeti-mara, got %s", area.ID)
+	}
+
+	// Test that a point far outside returns nil
+	area = store.FindArea(50.0, 0.0) // London area - should be outside
+	if area != nil {
+		t.Errorf("expected nil for London coordinates, got %s", area.ID)
 	}
 }
