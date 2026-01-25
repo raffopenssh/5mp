@@ -81,7 +81,7 @@
         @keyframes stats-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         .stats-item.pulsing { animation: stats-pulse 0.6s ease-in-out; }
         .maplibregl-ctrl-attrib a { color: #666 !important; }
-        .page-views { position: fixed; bottom: 8px; right: 8px; background: rgba(18,18,18,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 4px 8px; font-size: 10px; color: #555; z-index: 90; }
+        .page-views { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10px; color: #555; text-align: center; }
 
         /* Latest Activity Banner */
         .latest-activity-banner { position: fixed; top: 66px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 10px 16px 10px 14px; z-index: 150; backdrop-filter: blur(10px); display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.3s ease; max-width: calc(100vw - 180px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
@@ -137,7 +137,7 @@
         /* Adjust map and legend for slider */
         #map { bottom: 70px !important; }
         #map-legend { bottom: 10px !important; }
-        .page-views { bottom: 78px; }
+ 
 
         @media (max-width: 768px) {
             .time-slider-container { height: 60px; padding: 6px 12px 10px; }
@@ -371,6 +371,7 @@
             <span class="stats-label">Total Patrols</span>
             <span class="stats-value" id="stats-patrols">80</span>
         </div>
+        <div class="page-views" id="page-views"></div>
     </div>
 
     
@@ -2270,7 +2271,7 @@
     })();
     </script>
 
-    <div class="page-views" id="page-views"></div>
+ 
     <script>
     (function() {
         var key = '5mp_views';
