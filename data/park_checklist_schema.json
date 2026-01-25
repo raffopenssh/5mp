@@ -1,0 +1,85 @@
+{
+  "categories": [
+    {
+      "id": "legal",
+      "name": "Legal Texts",
+      "items": [
+        {"id": "employment_law", "name": "Employment Law"},
+        {"id": "mining_law", "name": "Mining Law"},
+        {"id": "aviation_law", "name": "Aviation Law"},
+        {"id": "forestry_law", "name": "Forestry Law"},
+        {"id": "fishery_law", "name": "Fishery Law"},
+        {"id": "agriculture_law", "name": "Agriculture/Livestock Law (grazing rights, transhumance)"},
+        {"id": "criminal_law", "name": "Code Penal - Criminal Law"},
+        {"id": "international_treaties", "name": "International Treaties"},
+        {"id": "ngo_law", "name": "NGO Law (customs exemptions, visa exemptions)"}
+      ]
+    },
+    {
+      "id": "accessibility",
+      "name": "Accessibility & Tourism",
+      "items": [
+        {"id": "entry_rules", "name": "International Entry Rules (closest entry/departure points)"},
+        {"id": "tourist_numbers", "name": "Tourist Numbers (5 year history, local vs international)"},
+        {"id": "tourism_competition", "name": "Wildlife Tourism Competition"},
+        {"id": "travel_warnings", "name": "Travel Warning Details & Factors"}
+      ]
+    },
+    {
+      "id": "communes",
+      "name": "Communes & Community",
+      "items": [
+        {"id": "commune_meetings", "name": "Adjacent Commune Consultations"},
+        {"id": "community_contacts", "name": "Community Member Phone Numbers"},
+        {"id": "sms_system", "name": "Mass SMS Communication System"},
+        {"id": "population_demographics", "name": "Population Numbers & Demographics"},
+        {"id": "local_authorities", "name": "Local/Regional/National Authority Contacts"},
+        {"id": "traditional_authorities", "name": "Traditional Authority Contacts"},
+        {"id": "connectivity_status", "name": "Local Connectivity (roads, telephone, internet)"},
+        {"id": "resource_prices", "name": "Local Resource Prices (wood, bush meat, cattle)"}
+      ]
+    },
+    {
+      "id": "park_details",
+      "name": "Park Details",
+      "items": [
+        {"id": "budget_10yr", "name": "Past 10 Year Budget (OPEX, CAPEX, headcount)"},
+        {"id": "boundaries_doc", "name": "Boundaries Document"},
+        {"id": "court_cases", "name": "Court Cases (past 10 years)"},
+        {"id": "poacher_convictions", "name": "Poacher Convictions (past 10 years)"},
+        {"id": "infrastructure", "name": "Infrastructure/Equipment Review"},
+        {"id": "contracts", "name": "Company Contracts (>50k USD/annum)"},
+        {"id": "wildlife_census", "name": "Last Park Wildlife Census"},
+        {"id": "park_reports", "name": "Park Reports & Studies"},
+        {"id": "regional_wildlife", "name": "Regional Wildlife Numbers"},
+        {"id": "supply_prices", "name": "Local Supply Prices (fuel, food, cement)"}
+      ]
+    },
+    {
+      "id": "organisation",
+      "name": "Organisation",
+      "items": [
+        {"id": "workplan_budget", "name": "Existing Workplan, Budget & Donors"},
+        {"id": "comparable_budgets", "name": "Comparable PA Budgets & Donors"},
+        {"id": "existing_agreements", "name": "Existing Agreements"},
+        {"id": "nps_salary", "name": "National Park Service Salary Grille"},
+        {"id": "comparable_salary", "name": "Comparable PA Salary Grille"},
+        {"id": "military_salary", "name": "Military Service Salary Grille"},
+        {"id": "nps_conduct", "name": "NPS Code of Conduct/Disciplinary Rules"},
+        {"id": "military_conduct", "name": "Military Code of Conduct"},
+        {"id": "allowance_rules", "name": "Government Personnel Allowance Rules"}
+      ]
+    },
+    {
+      "id": "geodata",
+      "name": "Geodata",
+      "items": [
+        {"id": "viirs_fire", "name": "VIIRS Fire Data (past 2 years)"},
+        {"id": "locus_setup", "name": "Locus Default Setup (roads, rivers, airstrips)"},
+        {"id": "deforestation", "name": "Deforestation/Forest Integrity Data"},
+        {"id": "boundary_map", "name": "Park Boundary Map (coded)"},
+        {"id": "internal_features", "name": "Internal Features Map (fields, villages, roads, trails)"}
+      ]
+    }
+  ]
+}

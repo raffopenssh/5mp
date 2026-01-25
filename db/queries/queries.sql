@@ -129,3 +129,33 @@ LEFT JOIN track_points t ON u.id = t.upload_id
 GROUP BY u.id
 ORDER BY u.upload_date DESC
 LIMIT ? OFFSET ?;
+
+-- Park checklist queries
+
+-- name: GetParkChecklistItems :many
+SELECT * FROM park_checklist WHERE pa_id = ? ORDER BY item_id;
+
+-- name: UpsertChecklistItem :exec
+INSERT INTO park_checklist (pa_id, item_id, status, notes, document_url, updated_by, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+ON CONFLICT(pa_id, item_id) DO UPDATE SET
+    status = excluded.status,
+    notes = excluded.notes,
+    document_url = excluded.document_url,
+    updated_by = excluded.updated_by,
+    updated_at = CURRENT_TIMESTAMP;
+
+-- name: GetChecklistStats :one
+SELECT 
+    COUNT(*) as total,
+    SUM(CASE WHEN status = 'complete' THEN 1 ELSE 0 END) as complete,
+    SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
+    SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending
+FROM park_checklist WHERE pa_id = ?;
+
+-- name: GetParkDocuments :many
+SELECT * FROM park_documents WHERE pa_id = ? ORDER BY uploaded_at DESC;
+
+-- name: InsertParkDocument :exec
+INSERT INTO park_documents (pa_id, category, item_id, title, description, file_url, file_type, uploaded_by)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
