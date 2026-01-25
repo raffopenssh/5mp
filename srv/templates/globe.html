@@ -501,28 +501,56 @@
                 }
             });
 
-            // Grid cells layer - radiating green dots with glow effect
+            // Grid cells layer - heatmap style with continuous gradient
             map.addLayer({
                 id: 'grid-cells',
-                type: 'circle',
+                type: 'heatmap',
                 source: 'grid',
                 paint: {
-                    'circle-color': '#22c55e',
-                    'circle-opacity': [
+                    // Weight based on intensity
+                    'heatmap-weight': [
                         'interpolate',
                         ['linear'],
-                        ['coalesce', ['get', 'intensity'], 0.5],
-                        0, 0.4,
-                        1, 0.9
+                        ['coalesce', ['get', 'intensity'], 0],
+                        0, 0,
+                        1, 1
                     ],
-                    'circle-radius': [
+                    // Intensity increases with zoom
+                    'heatmap-intensity': [
                         'interpolate',
                         ['linear'],
-                        ['coalesce', ['get', 'intensity'], 0.5],
-                        0, 6,
-                        1, 12
+                        ['zoom'],
+                        0, 0.5,
+                        9, 2
                     ],
-                    'circle-blur': 0.5
+                    // Green color gradient
+                    'heatmap-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['heatmap-density'],
+                        0, 'rgba(34, 197, 94, 0)',
+                        0.2, 'rgba(34, 197, 94, 0.3)',
+                        0.4, 'rgba(34, 197, 94, 0.5)',
+                        0.6, 'rgba(74, 222, 128, 0.7)',
+                        0.8, 'rgba(134, 239, 172, 0.85)',
+                        1, 'rgba(187, 247, 208, 1)'
+                    ],
+                    // Radius increases with zoom
+                    'heatmap-radius': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        0, 15,
+                        9, 30
+                    ],
+                    // Opacity decreases at high zoom
+                    'heatmap-opacity': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        7, 1,
+                        9, 0.8
+                    ]
                 }
             });
 
@@ -572,23 +600,14 @@
             legend.id = 'map-legend';
             legend.style.cssText = 'position: absolute; bottom: 30px; left: 10px; background: rgba(18,18,18,0.9); padding: 12px 16px; border-radius: 8px; font-size: 12px; z-index: 100; border: 1px solid rgba(255,255,255,0.1);';
             legend.innerHTML = `
-                <div style="font-weight: 600; margin-bottom: 10px; color: #fff;">Legend</div>
-                <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                    <div style="width: 20px; height: 14px; background: rgba(34,197,94,0.4); border: 2px solid #22c55e; margin-right: 8px; border-radius: 2px;"></div>
-                    <span style="color: #a0a0a0;">Protected Areas</span>
+                <div style="font-weight: 600; margin-bottom: 10px; color: #fff;">Patrol Intensity</div>
+                <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                    <div style="width: 100px; height: 12px; background: linear-gradient(to right, rgba(34,197,94,0), rgba(34,197,94,0.3), rgba(74,222,128,0.6), rgba(134,239,172,0.85), rgba(187,247,208,1)); border-radius: 3px; margin-right: 8px;"></div>
                 </div>
-                <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; width: 48px; margin-right: 8px;">
-                        <div style="width: 8px; height: 8px; background: rgba(34,197,94,0.4); border-radius: 50%; box-shadow: 0 0 4px rgba(34,197,94,0.5);"></div>
-                        <div style="width: 10px; height: 10px; background: rgba(34,197,94,0.6); border-radius: 50%; box-shadow: 0 0 6px rgba(34,197,94,0.6);"></div>
-                        <div style="width: 14px; height: 14px; background: rgba(34,197,94,0.9); border-radius: 50%; box-shadow: 0 0 8px rgba(34,197,94,0.8);"></div>
-                    </div>
-                    <span style="color: #a0a0a0;">Patrol Effort</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-left: 4px; font-size: 10px; color: #666; width: 44px;">
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666; width: 100px;">
                     <span>Low</span><span>High</span>
                 </div>
-                <div style="margin-top: 6px; font-size: 10px; color: #555;">100 km² per pixel</div>
+                <div style="margin-top: 8px; font-size: 10px; color: #555;">100 km² per pixel</div>
             `;
             document.getElementById('map').appendChild(legend);
         });
