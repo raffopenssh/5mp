@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"srv.exe.dev/db/dbgen"
@@ -294,6 +295,93 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 		"total_distance_km": stats.TotalDistanceKm,
 		"total_patrols":     stats.TotalUploads,
 	})
+}
+
+// HandleAPIAreasSearch searches protected areas by name.
+// Query params:
+//   - q: search query (required)
+// Returns matching PAs with center coordinates for map navigation.
+func (s *Server) HandleAPIAreasSearch(w http.ResponseWriter, r *http.Request) {
+	if s.AreaStore == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusServiceUnavailable)
+		json.NewEncoder(w).Encode(map[string]string{"error": "area store not configured"})
+		return
+	}
+
+	query := r.URL.Query().Get("q")
+	if query == "" {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode([]interface{}{})
+		return
+	}
+
+	// Case-insensitive search
+	queryLower := strings.ToLower(query)
+	results := make([]map[string]interface{}, 0, 10)
+
+	for _, area := range s.AreaStore.Areas {
+		if strings.Contains(strings.ToLower(area.Name), queryLower) {
+			// Calculate center from bounding box
+			latMin, latMax, lonMin, lonMax := area.GetBoundingBox()
+			centerLat := (latMin + latMax) / 2
+			centerLon := (lonMin + lonMax) / 2
+
+			results = append(results, map[string]interface{}{
+				"id":        area.ID,
+				"name":      area.Name,
+				"country":   area.Country,
+				"wdpa_id":   area.WDPAID,
+				"area_km2":  area.AreaKm2,
+				"center":    []float64{centerLon, centerLat},
+				"bbox":      []float64{lonMin, latMin, lonMax, latMax},
+			})
+
+			if len(results) >= 10 {
+				break
+			}
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "public, max-age=60")
+	json.NewEncoder(w).Encode(results)
+}
+
+// HandleAPIActivity returns recent upload activity.
+func (s *Server) HandleAPIActivity(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	// Get recent uploads
+	uploads, err := q.ListAllGPXUploads(ctx, dbgen.ListAllGPXUploadsParams{
+		Limit:  10,
+		Offset: 0,
+	})
+	if err != nil {
+		slog.Error("failed to get activity", "error", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "database error"})
+		return
+	}
+
+	activities := make([]map[string]interface{}, 0, len(uploads))
+	for _, u := range uploads {
+		location := "Unknown"
+		if u.ProtectedAreaID != nil {
+			location = *u.ProtectedAreaID
+		}
+		activities = append(activities, map[string]interface{}{
+			"date":     u.UploadDate.Format("Jan 02"),
+			"location": location,
+			"distance": u.TotalDistanceKm,
+			"type":     u.MovementType,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(activities)
 }
 
 // HandleAPIUpload handles file uploads via API.

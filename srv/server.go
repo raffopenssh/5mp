@@ -108,6 +108,7 @@ func (s *Server) Serve(addr string) error {
 	// API routes
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)
 	mux.HandleFunc("GET /api/areas", s.HandleAPIAreas)
+	mux.HandleFunc("GET /api/areas/search", s.HandleAPIAreasSearch)
 	
 	// API auth endpoints
 	mux.HandleFunc("POST /api/login", s.HandleAPILogin)
@@ -115,6 +116,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/logout", s.HandleAPILogout)
 	mux.HandleFunc("POST /api/upload", s.HandleAPIUpload)
 	mux.HandleFunc("GET /api/stats", s.HandleAPIStats)
+	mux.HandleFunc("GET /api/activity", s.HandleAPIActivity)
 
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))

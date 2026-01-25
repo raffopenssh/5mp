@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
 
 	"srv.exe.dev/srv"
 	"srv.exe.dev/srv/areas"
 )
 
 var flagListenAddr = flag.String("listen", ":8000", "address to listen on")
-var flagAreasFile = flag.String("areas", "data/areas.json", "path to areas JSON file")
+var flagDataDir = flag.String("data", "data", "path to data directory")
 
 func main() {
 	if err := run(); err != nil {
@@ -31,20 +30,13 @@ func run() error {
 		return fmt.Errorf("create server: %w", err)
 	}
 
-	// Load protected areas if file exists
-	areasPath := *flagAreasFile
-	if !filepath.IsAbs(areasPath) {
-		// Try relative to working directory
-		if _, err := os.Stat(areasPath); err == nil {
-			if store, err := areas.LoadAreas(areasPath); err == nil {
-				server.AreaStore = store
-				slog.Info("loaded protected areas", "count", len(store.Areas), "path", areasPath)
-			} else {
-				slog.Warn("failed to load areas", "error", err)
-			}
-		} else {
-			slog.Info("no areas file found, skipping", "path", areasPath)
-		}
+	// Load protected areas from keystones
+	dataDir := *flagDataDir
+	if store, err := areas.LoadKeystones(dataDir); err == nil {
+		server.AreaStore = store
+		slog.Info("loaded protected areas", "count", len(store.Areas))
+	} else {
+		slog.Warn("failed to load areas", "error", err)
 	}
 
 	return server.Serve(*flagListenAddr)
