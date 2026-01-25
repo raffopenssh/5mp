@@ -1,0 +1,201 @@
+{
+  "countries": {
+    "TZA": {
+      "name": "Tanzania",
+      "legislation": [
+        {"name": "Wildlife Conservation Act", "year": 2009, "url": "https://www.parliament.go.tz/polis/uploads/bills/1452062577-ActNo-5-2009-Book-11-20.pdf"},
+        {"name": "National Parks Act", "year": 1959, "url": "https://www.tanzaniaparks.go.tz/"},
+        {"name": "Ngorongoro Conservation Area Act", "year": 1959, "url": "https://www.ncaa.go.tz/"},
+        {"name": "Forest Act", "year": 2002, "url": "https://www.tfs.go.tz/"}
+      ]
+    },
+    "KEN": {
+      "name": "Kenya",
+      "legislation": [
+        {"name": "Wildlife Conservation and Management Act", "year": 2013, "url": "http://kenyalaw.org/kl/fileadmin/pdfdownloads/Acts/WildlifeConservationandManagementAct_No47of2013.pdf"},
+        {"name": "Kenya Wildlife Service Act", "year": 2013, "url": "http://www.kws.go.ke/"},
+        {"name": "Forest Conservation and Management Act", "year": 2016, "url": "http://www.kenyaforestservice.org/"},
+        {"name": "Environmental Management and Coordination Act", "year": 1999, "url": "https://www.nema.go.ke/"}
+      ]
+    },
+    "ZAF": {
+      "name": "South Africa",
+      "legislation": [
+        {"name": "National Environmental Management: Protected Areas Act", "year": 2003, "url": "https://www.sanparks.org/"},
+        {"name": "National Environmental Management: Biodiversity Act", "year": 2004, "url": "https://www.environment.gov.za/"},
+        {"name": "National Forests Act", "year": 1998, "url": "https://www.daff.gov.za/"},
+        {"name": "Marine Living Resources Act", "year": 1998, "url": "https://www.environment.gov.za/"}
+      ]
+    },
+    "BWA": {
+      "name": "Botswana",
+      "legislation": [
+        {"name": "Wildlife Conservation and National Parks Act", "year": 1992, "url": "https://www.gov.bw/"},
+        {"name": "Forest Act", "year": 1968, "url": "https://www.gov.bw/"},
+        {"name": "Environmental Assessment Act", "year": 2011, "url": "https://www.gov.bw/"}
+      ]
+    },
+    "NAM": {
+      "name": "Namibia",
+      "legislation": [
+        {"name": "Nature Conservation Ordinance", "year": 1975, "url": "https://www.met.gov.na/"},
+        {"name": "Parks and Wildlife Management Bill", "year": 2010, "url": "https://www.met.gov.na/"},
+        {"name": "Environmental Management Act", "year": 2007, "url": "https://www.met.gov.na/"}
+      ]
+    },
+    "ZMB": {
+      "name": "Zambia",
+      "legislation": [
+        {"name": "Zambia Wildlife Act", "year": 2015, "url": "https://www.dnpw.gov.zm/"},
+        {"name": "National Parks and Wildlife Act", "year": 2015, "url": "https://www.dnpw.gov.zm/"},
+        {"name": "Forest Act", "year": 2015, "url": "https://www.zfd.gov.zm/"}
+      ]
+    },
+    "ZWE": {
+      "name": "Zimbabwe",
+      "legislation": [
+        {"name": "Parks and Wild Life Act", "year": 1975, "url": "https://www.zimparks.org/"},
+        {"name": "Environmental Management Act", "year": 2002, "url": "https://www.ema.co.zw/"},
+        {"name": "Forest Act", "year": 1949, "url": "https://www.forestry.co.zw/"}
+      ]
+    },
+    "MOZ": {
+      "name": "Mozambique",
+      "legislation": [
+        {"name": "Conservation Areas Law", "year": 2014, "url": "https://www.anac.gov.mz/"},
+        {"name": "Forest and Wildlife Law", "year": 1999, "url": "https://www.anac.gov.mz/"},
+        {"name": "Environmental Law", "year": 1997, "url": "https://www.anac.gov.mz/"}
+      ]
+    },
+    "UGA": {
+      "name": "Uganda",
+      "legislation": [
+        {"name": "Uganda Wildlife Act", "year": 2019, "url": "https://www.ugandawildlife.org/"},
+        {"name": "National Forestry and Tree Planting Act", "year": 2003, "url": "https://www.nfa.go.ug/"},
+        {"name": "National Environment Act", "year": 2019, "url": "https://www.nema.go.ug/"}
+      ]
+    },
+    "RWA": {
+      "name": "Rwanda",
+      "legislation": [
+        {"name": "Law on Biodiversity", "year": 2013, "url": "https://www.rdb.rw/"},
+        {"name": "Law on Environment", "year": 2018, "url": "https://www.rema.gov.rw/"},
+        {"name": "Law on Forestry", "year": 2013, "url": "https://www.rdb.rw/"}
+      ]
+    }
+  },
+  "pa_specific": {
+    "TZA_Serengeti": {
+      "name": "Serengeti National Park",
+      "legal_designation": "National Park",
+      "establishment_year": 1951,
+      "governing_body": "TANAPA",
+      "specific_regulations": [
+        "No hunting permitted",
+        "Vehicle access restricted to designated roads",
+        "Night driving prohibited",
+        "Off-road driving prohibited except for research"
+      ],
+      "international_designations": ["UNESCO World Heritage Site", "Biosphere Reserve"]
+    },
+    "TZA_Ngorongoro": {
+      "name": "Ngorongoro Conservation Area",
+      "legal_designation": "Conservation Area",
+      "establishment_year": 1959,
+      "governing_body": "NCAA",
+      "specific_regulations": [
+        "Multiple land use area - pastoralism allowed",
+        "No permanent agriculture",
+        "Crater descent limited to registered vehicles",
+        "Time limits in crater"
+      ],
+      "international_designations": ["UNESCO World Heritage Site"]
+    },
+    "KEN_Masai_Mara": {
+      "name": "Masai Mara National Reserve",
+      "legal_designation": "National Reserve",
+      "establishment_year": 1961,
+      "governing_body": "Narok County Government",
+      "specific_regulations": [
+        "Community-managed conservation area",
+        "Hot air balloon safaris regulated",
+        "No off-road driving during wet season"
+      ],
+      "international_designations": []
+    },
+    "ZAF_Kruger": {
+      "name": "Kruger National Park",
+      "legal_designation": "National Park",
+      "establishment_year": 1898,
+      "governing_body": "SANParks",
+      "specific_regulations": [
+        "Speed limits strictly enforced",
+        "Gate times must be observed",
+        "No exiting vehicles except at designated areas",
+        "Wild card membership available"
+      ],
+      "international_designations": ["UNESCO Biosphere Reserve"]
+    },
+    "BWA_Chobe": {
+      "name": "Chobe National Park",
+      "legal_designation": "National Park",
+      "establishment_year": 1968,
+      "governing_body": "DWNP",
+      "specific_regulations": [
+        "Boat safaris on Chobe River",
+        "Self-drive allowed with 4x4",
+        "No night driving"
+      ],
+      "international_designations": ["Part of KAZA TFCA"]
+    },
+    "BWA_Moremi": {
+      "name": "Moremi Game Reserve",
+      "legal_designation": "Game Reserve",
+      "establishment_year": 1963,
+      "governing_body": "DWNP",
+      "specific_regulations": [
+        "4x4 required",
+        "Advance booking required",
+        "Limited entry permits per day"
+      ],
+      "international_designations": ["Ramsar Wetland"]
+    },
+    "ZMB_South_Luangwa": {
+      "name": "South Luangwa National Park",
+      "legal_designation": "National Park",
+      "establishment_year": 1972,
+      "governing_body": "DNPW",
+      "specific_regulations": [
+        "Walking safaris originated here",
+        "Night drives permitted with licensed guides",
+        "No self-drive"
+      ],
+      "international_designations": []
+    },
+    "UGA_Bwindi": {
+      "name": "Bwindi Impenetrable National Park",
+      "legal_designation": "National Park",
+      "establishment_year": 1991,
+      "governing_body": "UWA",
+      "specific_regulations": [
+        "Gorilla tracking permits required",
+        "Maximum 1 hour with gorillas",
+        "Minimum age 15 for gorilla tracking",
+        "Maximum 8 visitors per gorilla group per day"
+      ],
+      "international_designations": ["UNESCO World Heritage Site"]
+    },
+    "RWA_Volcanoes": {
+      "name": "Volcanoes National Park",
+      "legal_designation": "National Park",
+      "establishment_year": 1925,
+      "governing_body": "RDB",
+      "specific_regulations": [
+        "Gorilla permits required",
+        "Golden monkey tracking available",
+        "Part of Virunga Massif transboundary conservation"
+      ],
+      "international_designations": ["UNESCO World Heritage Site (Virunga)"]
+    }
+  }
+}

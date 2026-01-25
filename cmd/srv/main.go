@@ -39,5 +39,14 @@ func run() error {
 		slog.Warn("failed to load areas", "error", err)
 	}
 
+	// Load legal frameworks
+	legalPath := dataDir + "/legal_frameworks.json"
+	if legalStore, err := srv.LoadLegalFrameworks(legalPath); err == nil {
+		server.LegalStore = legalStore
+		slog.Info("loaded legal frameworks", "countries", len(legalStore.Frameworks.Countries), "pa_specific", len(legalStore.Frameworks.PASpecific))
+	} else {
+		slog.Warn("failed to load legal frameworks", "error", err)
+	}
+
 	return server.Serve(*flagListenAddr)
 }
