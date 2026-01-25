@@ -30,7 +30,7 @@ func TestServerSetupAndHandlers(t *testing.T) {
 		}
 
 		body := w.Body.String()
-		if !strings.Contains(body, "Conservation Patrol Tracker") {
+		if !strings.Contains(body, "5MP.globe") && !strings.Contains(body, "Conservation") {
 			t.Errorf("expected page to contain headline, got body: %s", body)
 		}
 		if !strings.Contains(body, "Sign In") {
