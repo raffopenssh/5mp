@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -56,6 +57,10 @@ func run() error {
 	} else {
 		slog.Warn("failed to load legal frameworks", "error", err)
 	}
+
+	// Start research publication worker in background
+	ctx := context.Background()
+	go server.StartResearchWorker(ctx)
 
 	return server.Serve(*flagListenAddr)
 }
