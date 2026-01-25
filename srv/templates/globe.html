@@ -83,32 +83,34 @@
         .maplibregl-ctrl-attrib a { color: #666 !important; }
         .page-views { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10px; color: #555; text-align: center; }
 
-        /* Movement type toggles */
-        .movement-toggles { display: flex; gap: 6px; margin: 10px 0; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); }
-        .movement-toggle { flex: 1; padding: 6px 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #888; font-size: 14px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        /* Movement type toggles (in filter panel) */
+        .movement-toggles { display: flex; gap: 6px; }
+        .movement-toggle { flex: 1; padding: 8px 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #888; font-size: 14px; cursor: pointer; transition: all 0.2s; text-align: center; }
         .movement-toggle:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
         .movement-toggle.active { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #22c55e; }
         .movement-toggle-label { font-size: 9px; display: block; margin-top: 2px; color: inherit; opacity: 0.8; }
 
-        /* Latest Activity Banner */
-        .latest-activity-banner { position: fixed; top: 66px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 10px 16px 10px 14px; z-index: 150; backdrop-filter: blur(10px); display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.3s ease; max-width: calc(100vw - 180px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .latest-activity-banner:hover { background: rgba(24,24,24,0.98); border-color: #22c55e; transform: translateX(-50%) scale(1.02); }
-        .latest-activity-banner.hidden { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(-20px); }
-        .latest-activity-icon { width: 32px; height: 32px; background: rgba(34,197,94,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .latest-activity-icon svg { width: 16px; height: 16px; color: #22c55e; }
-        .latest-activity-content { flex: 1; min-width: 0; }
-        .latest-activity-title { font-size: 10px; font-weight: 600; color: #22c55e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-        .latest-activity-message { font-size: 13px; color: #e0e0e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .latest-activity-message .location { color: #fff; font-weight: 500; }
-        .latest-activity-message .stats { color: #888; }
-        .latest-activity-close { width: 24px; height: 24px; background: none; border: none; color: #666; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s; flex-shrink: 0; }
-        .latest-activity-close:hover { color: #fff; background: rgba(255,255,255,0.1); }
-        .latest-activity-dots { display: flex; gap: 4px; margin-left: 8px; }
-        .latest-activity-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all 0.2s; cursor: pointer; }
-        .latest-activity-dot:hover { background: rgba(255,255,255,0.4); }
-        .latest-activity-dot.active { background: #22c55e; }
-        @keyframes activity-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 8px rgba(34,197,94,0); } }
-        .latest-activity-banner.pulse { animation: activity-pulse 2s ease-out; }
+        /* Notification Button and Dropdown */
+        .notification-btn { position: relative; }
+        .notification-badge { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: badge-pulse 2s ease-out infinite; }
+        .notification-badge.hidden { display: none; }
+        @keyframes badge-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 4px rgba(34,197,94,0); } }
+        .notification-dropdown { position: absolute; top: 100%; left: 0; margin-top: 8px; width: 300px; background: rgba(18,18,18,0.98); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 200; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); display: none; overflow: hidden; }
+        .notification-dropdown.open { display: block; }
+        .notification-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .notification-title { font-size: 12px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 6px; }
+        .notification-title svg { width: 14px; height: 14px; color: #22c55e; }
+        .notification-close { background: none; border: none; color: #666; cursor: pointer; font-size: 18px; padding: 2px 6px; line-height: 1; }
+        .notification-close:hover { color: #fff; }
+        .notification-list { max-height: 280px; overflow-y: auto; }
+        .notification-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: background 0.2s; }
+        .notification-item:hover { background: rgba(255,255,255,0.05); }
+        .notification-item:last-child { border-bottom: none; }
+        .notification-icon { width: 28px; height: 28px; background: rgba(34,197,94,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; }
+        .notification-content { flex: 1; min-width: 0; }
+        .notification-location { font-size: 13px; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .notification-details { font-size: 11px; color: #888; margin-top: 2px; }
+        .notification-empty { padding: 24px; text-align: center; color: #666; font-size: 13px; }
 
         /* Activity highlight marker on map */
         .activity-marker { width: 24px; height: 24px; background: rgba(34,197,94,0.3); border: 2px solid #22c55e; border-radius: 50%; position: relative; }
@@ -118,10 +120,7 @@
         @keyframes toastFadeOut { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(20px); } }
 
         @media (max-width: 768px) {
-            .latest-activity-banner { top: 62px; left: 10px; right: 10px; transform: none; max-width: none; }
-            .latest-activity-banner:hover { transform: none; }
-            .latest-activity-banner.hidden { transform: translateY(-20px); }
-            .latest-activity-dots { display: none; }
+            .notification-dropdown { left: auto; right: -10px; width: calc(100vw - 40px); max-width: 300px; }
         }
 
         /* Time Slider - Google Timelapse Style */
@@ -337,28 +336,7 @@
         </div>
     </header>
 
-    <!-- Latest Activity Banner -->
-    <div class="latest-activity-banner hidden" id="latest-activity-banner" onclick="handleActivityBannerClick()">
-        <div class="latest-activity-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-        </div>
-        <div class="latest-activity-content">
-            <div class="latest-activity-title">Latest Activity</div>
-            <div class="latest-activity-message" id="latest-activity-message">
-                <span class="location">Loading...</span>
-            </div>
-        </div>
-        <div class="latest-activity-dots" id="latest-activity-dots"></div>
-        <button class="latest-activity-close" onclick="dismissActivityBanner(event)" title="Dismiss">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-        </button>
-    </div>
+
 
     <div id="map" class="maplibregl-map"><div class="maplibregl-canvas-container maplibregl-interactive maplibregl-touch-drag-pan maplibregl-touch-zoom-rotate"><canvas class="maplibregl-canvas" tabindex="0" aria-label="Map" role="region" width="375" height="756" style="width: 375px; height: 756px;"></canvas></div><div class="maplibregl-control-container"><div class="maplibregl-ctrl-top-left "></div><div class="maplibregl-ctrl-top-right "><div class="maplibregl-ctrl maplibregl-ctrl-group"><button class="maplibregl-ctrl-zoom-in" type="button" title="Zoom in" aria-label="Zoom in" aria-disabled="false"><span class="maplibregl-ctrl-icon" aria-hidden="true"></span></button><button class="maplibregl-ctrl-zoom-out" type="button" title="Zoom out" aria-label="Zoom out" aria-disabled="false"><span class="maplibregl-ctrl-icon" aria-hidden="true"></span></button><button class="maplibregl-ctrl-compass" type="button" title="Reset bearing to north" aria-label="Reset bearing to north"><span class="maplibregl-ctrl-icon" aria-hidden="true" style="transform: rotate(0deg);"></span></button></div></div><div class="maplibregl-ctrl-bottom-left "></div><div class="maplibregl-ctrl-bottom-right "><details class="maplibregl-ctrl maplibregl-ctrl-attrib maplibregl-compact maplibregl-compact-show" open=""><summary class="maplibregl-ctrl-attrib-button" title="Toggle attribution" aria-label="Toggle attribution"></summary><div class="maplibregl-ctrl-attrib-inner">© OpenStreetMap contributors, © CARTO | <a href="https://maplibre.org/" target="_blank">MapLibre</a></div></details></div></div><div id="map-legend" style="position: absolute; bottom: 30px; left: 10px; background: rgba(18, 18, 18, 0.9); padding: 12px 16px; border-radius: 8px; font-size: 12px; z-index: 100; border: 1px solid rgba(255, 255, 255, 0.1);">
                 <div style="font-weight: 600; margin-bottom: 10px; color: #fff;">Patrol Intensity</div>
@@ -377,24 +355,13 @@
             <span class="stats-label">Active Pixels</span>
             <span class="stats-value" id="stats-pixels">15</span>
         </div>
-        <div class="stats-item" id="stat-distance" onclick="handleStatClick('distance')" title="Click to show patrol intensity heatmap">
+        <div class="stats-item" id="stat-distance" onclick="handleStatClick('distance')" title="Click to show patrol intensity">
             <span class="stats-label">Total Distance</span>
             <span class="stats-value" id="stats-distance">1,980.8 km</span>
         </div>
         <div class="stats-item" id="stat-patrols" onclick="handleStatClick('patrols')" title="Click to zoom to patrol coverage">
             <span class="stats-label">Total Patrols</span>
             <span class="stats-value" id="stats-patrols">80</span>
-        </div>
-        <div class="movement-toggles">
-            <button class="movement-toggle active" id="toggle-foot" onclick="toggleMovementType('foot')" title="Foot patrols">
-                🚶<span class="movement-toggle-label">Foot</span>
-            </button>
-            <button class="movement-toggle active" id="toggle-vehicle" onclick="toggleMovementType('vehicle')" title="Vehicle patrols">
-                🚗<span class="movement-toggle-label">Vehicle</span>
-            </button>
-            <button class="movement-toggle active" id="toggle-aerial" onclick="toggleMovementType('aerial')" title="Aerial patrols">
-                ✈️<span class="movement-toggle-label">Aerial</span>
-            </button>
         </div>
         <div class="page-views" id="page-views"></div>
     </div>
@@ -431,6 +398,31 @@
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
             </svg>
+        </button>
+        
+        <button class="toolbar-btn notification-btn" id="notification-toggle" onclick="toggleNotificationDropdown()" title="Recent Activity">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="notification-badge hidden" id="notification-badge"></span>
+            
+            <!-- Notification Dropdown -->
+            <div class="notification-dropdown" id="notification-dropdown">
+                <div class="notification-header">
+                    <div class="notification-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Recent Activity
+                    </div>
+                    <button class="notification-close" onclick="closeNotificationDropdown(event)">&times;</button>
+                </div>
+                <div class="notification-list" id="notification-list">
+                    <div class="notification-empty">Loading...</div>
+                </div>
+            </div>
         </button>
     </div>
 
@@ -478,6 +470,22 @@
                         </div>
                     </div>
                     <button class="filter-item-clear" onclick="clearBbox()" title="Clear">×</button>
+                </div>
+            </div>
+            
+            <!-- Movement Type Toggles -->
+            <div class="filter-section">
+                <div class="filter-section-label">Movement Type</div>
+                <div class="movement-toggles">
+                    <button class="movement-toggle active" id="toggle-foot" onclick="toggleMovementType('foot')" title="Foot patrols">
+                        🚶<span class="movement-toggle-label">Foot</span>
+                    </button>
+                    <button class="movement-toggle active" id="toggle-vehicle" onclick="toggleMovementType('vehicle')" title="Vehicle patrols">
+                        🚗<span class="movement-toggle-label">Vehicle</span>
+                    </button>
+                    <button class="movement-toggle active" id="toggle-aerial" onclick="toggleMovementType('aerial')" title="Aerial patrols">
+                        ✈️<span class="movement-toggle-label">Aerial</span>
+                    </button>
                 </div>
             </div>
             
@@ -689,7 +697,15 @@
             
             map.addSource('grid', {
                 type: 'geojson',
-                data: '/api/grid'
+                data: '/api/grid',
+                cluster: true,
+                clusterRadius: 50,
+                clusterMaxZoom: 10,
+                clusterProperties: {
+                    'sum_intensity': ['+', ['get', 'intensity']],
+                    'sum_distance': ['+', ['coalesce', ['get', 'total_distance_km'], 0]],
+                    'sum_visits': ['+', ['coalesce', ['get', 'unique_uploads'], 0]]
+                }
             });
 
             
@@ -715,54 +731,81 @@
             });
 
             
+            // Clustered circles layer (for zoomed out view)
+            map.addLayer({
+                id: 'grid-clusters',
+                type: 'circle',
+                source: 'grid',
+                filter: ['has', 'point_count'],
+                paint: {
+                    'circle-color': '#22c55e',
+                    'circle-radius': [
+                        'interpolate', ['linear'],
+                        ['get', 'point_count'],
+                        2, 12,
+                        10, 18,
+                        50, 25,
+                        100, 35
+                    ],
+                    'circle-stroke-color': '#4ade80',
+                    'circle-stroke-width': 2,
+                    'circle-blur': 0.4,
+                    'circle-opacity': [
+                        'interpolate', ['linear'],
+                        ['get', 'point_count'],
+                        2, 0.6,
+                        50, 0.85,
+                        100, 1
+                    ]
+                }
+            });
+
+            // Cluster count labels
+            map.addLayer({
+                id: 'grid-cluster-count',
+                type: 'symbol',
+                source: 'grid',
+                filter: ['has', 'point_count'],
+                layout: {
+                    'text-field': '{point_count_abbreviated}',
+                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                    'text-size': 12
+                },
+                paint: {
+                    'text-color': '#ffffff'
+                }
+            });
+
+            // Individual unclustered circles (grid-cells for compatibility)
             map.addLayer({
                 id: 'grid-cells',
-                type: 'heatmap',
+                type: 'circle',
                 source: 'grid',
+                filter: ['!', ['has', 'point_count']],
                 paint: {
-                    
-                    'heatmap-weight': [
-                        'interpolate',
-                        ['linear'],
-                        ['coalesce', ['get', 'intensity'], 0],
-                        0, 0,
-                        1, 1
+                    'circle-color': [
+                        'interpolate', ['linear'],
+                        ['coalesce', ['get', 'intensity'], 0.5],
+                        0, 'rgba(34, 197, 94, 0.3)',
+                        0.5, 'rgba(34, 197, 94, 0.6)',
+                        1, '#22c55e'
                     ],
-                    
-                    'heatmap-intensity': [
-                        'interpolate',
-                        ['linear'],
-                        ['zoom'],
+                    'circle-radius': 10,
+                    'circle-stroke-color': '#4ade80',
+                    'circle-stroke-width': 2,
+                    'circle-blur': [
+                        'interpolate', ['linear'],
+                        ['coalesce', ['get', 'intensity'], 0.5],
+                        0, 0.6,
+                        0.5, 0.4,
+                        1, 0.2
+                    ],
+                    'circle-opacity': [
+                        'interpolate', ['linear'],
+                        ['coalesce', ['get', 'intensity'], 0.5],
                         0, 0.5,
-                        9, 2
-                    ],
-                    
-                    'heatmap-color': [
-                        'interpolate',
-                        ['linear'],
-                        ['heatmap-density'],
-                        0, 'rgba(34, 197, 94, 0)',
-                        0.2, 'rgba(34, 197, 94, 0.3)',
-                        0.4, 'rgba(34, 197, 94, 0.5)',
-                        0.6, 'rgba(74, 222, 128, 0.7)',
-                        0.8, 'rgba(134, 239, 172, 0.85)',
-                        1, 'rgba(187, 247, 208, 1)'
-                    ],
-                    
-                    'heatmap-radius': [
-                        'interpolate',
-                        ['linear'],
-                        ['zoom'],
-                        0, 15,
-                        9, 30
-                    ],
-                    
-                    'heatmap-opacity': [
-                        'interpolate',
-                        ['linear'],
-                        ['zoom'],
-                        7, 1,
-                        9, 0.8
+                        0.5, 0.75,
+                        1, 1
                     ]
                 }
             });
@@ -803,10 +846,29 @@
             });
 
             
+            // Click handler for clusters - zoom in to expand
+            map.on('click', 'grid-clusters', function(e) {
+                e.originalEvent.stopPropagation();
+                const features = map.queryRenderedFeatures(e.point, { layers: ['grid-clusters'] });
+                if (features.length > 0) {
+                    const clusterId = features[0].properties.cluster_id;
+                    const source = map.getSource('grid');
+                    source.getClusterExpansionZoom(clusterId, function(err, zoom) {
+                        if (err) return;
+                        map.easeTo({
+                            center: features[0].geometry.coordinates,
+                            zoom: zoom
+                        });
+                    });
+                }
+            });
+
             map.on('mouseenter', 'areas-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', 'areas-fill', function() { map.getCanvas().style.cursor = ''; });
             map.on('mouseenter', 'grid-cells', function() { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', 'grid-cells', function() { map.getCanvas().style.cursor = ''; });
+            map.on('mouseenter', 'grid-clusters', function() { map.getCanvas().style.cursor = 'pointer'; });
+            map.on('mouseleave', 'grid-clusters', function() { map.getCanvas().style.cursor = ''; });
 
             
             const legend = document.createElement('div');
@@ -814,13 +876,19 @@
             legend.style.cssText = 'position: absolute; bottom: 30px; left: 10px; background: rgba(18,18,18,0.9); padding: 12px 16px; border-radius: 8px; font-size: 12px; z-index: 100; border: 1px solid rgba(255,255,255,0.1);';
             legend.innerHTML = `
                 <div style="font-weight: 600; margin-bottom: 10px; color: #fff;">Patrol Intensity</div>
-                <div style="display: flex; align-items: center; margin-bottom: 6px;">
-                    <div style="width: 100px; height: 12px; background: linear-gradient(to right, rgba(34,197,94,0), rgba(34,197,94,0.3), rgba(74,222,128,0.6), rgba(134,239,172,0.85), rgba(187,247,208,1)); border-radius: 3px; margin-right: 8px;"></div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <div style="width: 16px; height: 16px; background: rgba(34, 197, 94, 0.3); border: 2px solid #4ade80; border-radius: 50%; filter: blur(1px);"></div>
+                    <span style="color: #888; font-size: 11px;">Low</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666; width: 100px;">
-                    <span>Low</span><span>High</span>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <div style="width: 16px; height: 16px; background: rgba(34, 197, 94, 0.6); border: 2px solid #4ade80; border-radius: 50%; box-shadow: 0 0 6px #22c55e;"></div>
+                    <span style="color: #888; font-size: 11px;">Medium</span>
                 </div>
-                <div style="margin-top: 8px; font-size: 10px; color: #555;">100 km² per pixel</div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <div style="width: 16px; height: 16px; background: #22c55e; border: 2px solid #4ade80; border-radius: 50%; box-shadow: 0 0 12px #22c55e;"></div>
+                    <span style="color: #888; font-size: 11px;">High</span>
+                </div>
+                <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 10px; color: #555;">100 km² per pixel<br>Click clusters to zoom</div>
             `;
             document.getElementById('map').appendChild(legend);
         });
@@ -1414,12 +1482,11 @@
             }
         }
 
-        // Latest Activity Banner functionality
+        // Notification Dropdown functionality
         let latestActivities = [];
-        let currentActivityIndex = 0;
-        let activityRotationInterval = null;
         let activityMarker = null;
-        let bannerDismissed = false;
+        let notificationDropdownOpen = false;
+        let hasNewNotifications = true;
 
         // Sample/demo data for when no real activity exists
         const sampleActivities = [
@@ -1430,9 +1497,7 @@
             { location: 'Great Barrier Reef', distance: 5.3, date: 'Jan 26', type: 'vehicle', lat: -18.2871, lon: 147.6992 }
         ];
 
-        async function loadLatestActivityBanner() {
-            if (bannerDismissed) return;
-            
+        async function loadNotifications() {
             try {
                 const res = await fetch('/api/activity');
                 if (!res.ok) throw new Error('Failed to load');
@@ -1445,105 +1510,88 @@
                     latestActivities = sampleActivities;
                 }
                 
-                if (latestActivities.length > 0) {
-                    updateActivityBannerDisplay();
-                    showActivityBanner();
-                    startActivityRotation();
-                }
+                updateNotificationList();
+                showNotificationBadge();
             } catch (err) {
-                console.error('Latest activity load error:', err);
+                console.error('Notifications load error:', err);
                 // Fall back to sample data on error
                 latestActivities = sampleActivities;
-                if (latestActivities.length > 0) {
-                    updateActivityBannerDisplay();
-                    showActivityBanner();
-                    startActivityRotation();
-                }
+                updateNotificationList();
+                showNotificationBadge();
             }
         }
 
-        function updateActivityBannerDisplay() {
-            if (latestActivities.length === 0) return;
+        function updateNotificationList() {
+            const listEl = document.getElementById('notification-list');
             
-            const activity = latestActivities[currentActivityIndex];
-            const messageEl = document.getElementById('latest-activity-message');
-            const dotsEl = document.getElementById('latest-activity-dots');
+            if (latestActivities.length === 0) {
+                listEl.innerHTML = '<div class="notification-empty">No recent activity</div>';
+                return;
+            }
             
-            // Format the message
-            const location = activity.location || 'Unknown location';
-            const distance = activity.distance ? activity.distance.toFixed(1) + ' km' : '';
-            const date = activity.date || '';
-            const typeIcon = {'foot': '🚶', 'vehicle': '🚗', 'aircraft': '✈️'}[activity.type] || '';
+            listEl.innerHTML = latestActivities.slice(0, 10).map((activity, index) => {
+                const location = activity.location || 'Unknown location';
+                const distance = activity.distance ? activity.distance.toFixed(1) + ' km' : '';
+                const date = activity.date || '';
+                const typeIcon = {'foot': '🚶', 'vehicle': '🚗', 'aircraft': '✈️'}[activity.type] || '📍';
+                
+                let details = '';
+                if (distance && date) details = `${distance} • ${date}`;
+                else if (distance) details = distance;
+                else if (date) details = date;
+                
+                return `
+                    <div class="notification-item" onclick="handleNotificationClick(${index})">
+                        <div class="notification-icon">${typeIcon}</div>
+                        <div class="notification-content">
+                            <div class="notification-location">${escapeHtml(location)}</div>
+                            <div class="notification-details">${details}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showNotificationBadge() {
+            if (hasNewNotifications && latestActivities.length > 0) {
+                document.getElementById('notification-badge').classList.remove('hidden');
+            }
+        }
+
+        function hideNotificationBadge() {
+            hasNewNotifications = false;
+            document.getElementById('notification-badge').classList.add('hidden');
+        }
+
+        function toggleNotificationDropdown() {
+            notificationDropdownOpen = !notificationDropdownOpen;
+            const dropdown = document.getElementById('notification-dropdown');
+            const btn = document.getElementById('notification-toggle');
             
-            let statsText = '';
-            if (distance && date) statsText = ` • ${distance} • ${date}`;
-            else if (distance) statsText = ` • ${distance}`;
-            else if (date) statsText = ` • ${date}`;
-            
-            messageEl.innerHTML = `${typeIcon} New patrol in <span class="location">${escapeHtml(location)}</span><span class="stats">${statsText}</span>`;
-            
-            // Update dots
-            if (latestActivities.length > 1) {
-                dotsEl.innerHTML = latestActivities.slice(0, 5).map((_, i) => 
-                    `<div class="latest-activity-dot ${i === currentActivityIndex ? 'active' : ''}" onclick="selectActivity(${i}, event)"></div>`
-                ).join('');
+            if (notificationDropdownOpen) {
+                dropdown.classList.add('open');
+                btn.classList.add('active');
+                hideNotificationBadge();
             } else {
-                dotsEl.innerHTML = '';
+                dropdown.classList.remove('open');
+                btn.classList.remove('active');
             }
         }
 
-        function showActivityBanner() {
-            const banner = document.getElementById('latest-activity-banner');
-            banner.classList.remove('hidden');
-            // Add pulse effect when showing
-            banner.classList.add('pulse');
-            setTimeout(() => banner.classList.remove('pulse'), 2000);
-        }
-
-        function hideActivityBanner() {
-            const banner = document.getElementById('latest-activity-banner');
-            banner.classList.add('hidden');
-            removeActivityMarker();
-        }
-
-        function dismissActivityBanner(event) {
-            event.stopPropagation();
-            bannerDismissed = true;
-            hideActivityBanner();
-            stopActivityRotation();
-        }
-
-        function startActivityRotation() {
-            stopActivityRotation();
-            if (latestActivities.length > 1) {
-                activityRotationInterval = setInterval(() => {
-                    currentActivityIndex = (currentActivityIndex + 1) % Math.min(latestActivities.length, 5);
-                    updateActivityBannerDisplay();
-                }, 10000); // Rotate every 10 seconds
-            }
-        }
-
-        function stopActivityRotation() {
-            if (activityRotationInterval) {
-                clearInterval(activityRotationInterval);
-                activityRotationInterval = null;
-            }
-        }
-
-        function selectActivity(index, event) {
+        function closeNotificationDropdown(event) {
             if (event) event.stopPropagation();
-            currentActivityIndex = index;
-            updateActivityBannerDisplay();
-            // Reset rotation timer
-            startActivityRotation();
+            notificationDropdownOpen = false;
+            document.getElementById('notification-dropdown').classList.remove('open');
+            document.getElementById('notification-toggle').classList.remove('active');
         }
 
-        function handleActivityBannerClick() {
-            if (latestActivities.length === 0) return;
-            
-            const activity = latestActivities[currentActivityIndex];
-            if (activity.lat && activity.lon) {
-                zoomToActivity(activity);
+        function handleNotificationClick(index) {
+            if (index >= 0 && index < latestActivities.length) {
+                const activity = latestActivities[index];
+                if (activity.lat && activity.lon) {
+                    zoomToActivity(activity);
+                    closeNotificationDropdown();
+                }
             }
         }
 
@@ -1590,10 +1638,19 @@
             }
         }
 
-        // Load banner after map is ready
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('notification-dropdown');
+            const btn = document.getElementById('notification-toggle');
+            if (notificationDropdownOpen && !btn.contains(event.target)) {
+                closeNotificationDropdown();
+            }
+        });
+
+        // Load notifications after map is ready
         map.on('load', function() {
             // Small delay to let other things initialize
-            setTimeout(loadLatestActivityBanner, 1000);
+            setTimeout(loadNotifications, 1000);
         });
 
         
@@ -2055,7 +2112,7 @@
 
         // Stats panel interactivity
         let activeStatMode = null;
-        let originalHeatmapPaint = null;
+        let originalCirclePaint = null;
 
         function handleStatClick(statType) {
             const statItems = document.querySelectorAll('.stats-item');
@@ -2099,7 +2156,7 @@
             activeStatMode = null;
             document.querySelectorAll('.stats-item').forEach(item => item.classList.remove('active'));
             
-            // Reset heatmap to original style
+            // Reset circles to original style
             resetHeatmapStyle();
             
             // Remove any highlight layers
@@ -2111,40 +2168,23 @@
             if (!map.getLayer('grid-cells')) return;
             
             // Store original paint if not already stored
-            if (!originalHeatmapPaint) {
-                originalHeatmapPaint = {
-                    'heatmap-opacity': map.getPaintProperty('grid-cells', 'heatmap-opacity'),
-                    'heatmap-intensity': map.getPaintProperty('grid-cells', 'heatmap-intensity')
+            if (!originalCirclePaint) {
+                originalCirclePaint = {
+                    'circle-opacity': map.getPaintProperty('grid-cells', 'circle-opacity'),
+                    'circle-stroke-width': map.getPaintProperty('grid-cells', 'circle-stroke-width'),
+                    'circle-stroke-color': map.getPaintProperty('grid-cells', 'circle-stroke-color'),
+                    'circle-color': map.getPaintProperty('grid-cells', 'circle-color')
                 };
             }
             
-            // Enhance visibility with higher opacity and add circle layer for individual points
-            map.setPaintProperty('grid-cells', 'heatmap-opacity', 1);
-            map.setPaintProperty('grid-cells', 'heatmap-intensity', [
-                'interpolate', ['linear'], ['zoom'],
-                0, 1,
-                9, 3
-            ]);
+            // Enhance visibility with white stroke for better contrast
+            map.setPaintProperty('grid-cells', 'circle-stroke-color', '#ffffff');
+            map.setPaintProperty('grid-cells', 'circle-stroke-width', 3);
             
-            // Add a circle layer to show individual pixel centers
-            if (!map.getLayer('grid-points-highlight')) {
-                map.addLayer({
-                    id: 'grid-points-highlight',
-                    type: 'circle',
-                    source: 'grid',
-                    paint: {
-                        'circle-radius': [
-                            'interpolate', ['linear'], ['zoom'],
-                            0, 4,
-                            6, 8,
-                            12, 16
-                        ],
-                        'circle-color': '#22c55e',
-                        'circle-stroke-color': '#fff',
-                        'circle-stroke-width': 2,
-                        'circle-opacity': 0.9
-                    }
-                });
+            // Also enhance clusters
+            if (map.getLayer('grid-clusters')) {
+                map.setPaintProperty('grid-clusters', 'circle-stroke-color', '#ffffff');
+                map.setPaintProperty('grid-clusters', 'circle-stroke-width', 3);
             }
             
             // Animate the circles with a pulsing effect
@@ -2159,7 +2199,7 @@
             let direction = -1;
             
             function pulse() {
-                if (activeStatMode !== 'pixels' || !map.getLayer('grid-points-highlight')) {
+                if (activeStatMode !== 'pixels' || !map.getLayer('grid-cells')) {
                     return;
                 }
                 
@@ -2167,50 +2207,51 @@
                 if (opacity <= 0.5) direction = 1;
                 if (opacity >= 0.9) direction = -1;
                 
-                map.setPaintProperty('grid-points-highlight', 'circle-opacity', opacity);
+                map.setPaintProperty('grid-cells', 'circle-opacity', opacity);
+                if (map.getLayer('grid-clusters')) {
+                    map.setPaintProperty('grid-clusters', 'circle-opacity', opacity);
+                }
                 pixelAnimationFrame = requestAnimationFrame(pulse);
             }
             pulse();
         }
 
         function showDistanceHeatmap() {
-            // Enhance the heatmap to show patrol intensity more dramatically
+            // Enhance circles to show patrol intensity with warmer colors
             if (!map.getLayer('grid-cells')) return;
             
             // Store original paint if not already stored
-            if (!originalHeatmapPaint) {
-                originalHeatmapPaint = {
-                    'heatmap-opacity': map.getPaintProperty('grid-cells', 'heatmap-opacity'),
-                    'heatmap-intensity': map.getPaintProperty('grid-cells', 'heatmap-intensity'),
-                    'heatmap-radius': map.getPaintProperty('grid-cells', 'heatmap-radius'),
-                    'heatmap-color': map.getPaintProperty('grid-cells', 'heatmap-color')
+            if (!originalCirclePaint) {
+                originalCirclePaint = {
+                    'circle-opacity': map.getPaintProperty('grid-cells', 'circle-opacity'),
+                    'circle-stroke-width': map.getPaintProperty('grid-cells', 'circle-stroke-width'),
+                    'circle-stroke-color': map.getPaintProperty('grid-cells', 'circle-stroke-color'),
+                    'circle-color': map.getPaintProperty('grid-cells', 'circle-color')
                 };
             }
             
-            // Use a warmer color scheme to emphasize distance/intensity
-            map.setPaintProperty('grid-cells', 'heatmap-color', [
-                'interpolate', ['linear'], ['heatmap-density'],
-                0, 'rgba(34, 197, 94, 0)',
-                0.1, 'rgba(34, 197, 94, 0.4)',
-                0.3, 'rgba(74, 222, 128, 0.6)',
-                0.5, 'rgba(250, 204, 21, 0.7)',
-                0.7, 'rgba(249, 115, 22, 0.85)',
-                0.9, 'rgba(239, 68, 68, 0.95)',
-                1, 'rgba(255, 255, 255, 1)'
+            // Use a warmer color scheme (green -> yellow -> orange -> red) for intensity
+            map.setPaintProperty('grid-cells', 'circle-color', [
+                'interpolate', ['linear'],
+                ['coalesce', ['get', 'intensity'], 0.5],
+                0, 'rgba(34, 197, 94, 0.5)',
+                0.3, 'rgba(74, 222, 128, 0.7)',
+                0.5, 'rgba(250, 204, 21, 0.8)',
+                0.7, 'rgba(249, 115, 22, 0.9)',
+                1, 'rgba(239, 68, 68, 1)'
             ]);
             
-            // Increase radius and intensity
-            map.setPaintProperty('grid-cells', 'heatmap-radius', [
-                'interpolate', ['linear'], ['zoom'],
-                0, 20,
-                9, 45
-            ]);
-            map.setPaintProperty('grid-cells', 'heatmap-intensity', [
-                'interpolate', ['linear'], ['zoom'],
-                0, 0.8,
-                9, 2.5
-            ]);
-            map.setPaintProperty('grid-cells', 'heatmap-opacity', 1);
+            // Enhance glow effect
+            map.setPaintProperty('grid-cells', 'circle-blur', 0.3);
+            map.setPaintProperty('grid-cells', 'circle-opacity', 1);
+            map.setPaintProperty('grid-cells', 'circle-stroke-color', '#ffffff');
+            map.setPaintProperty('grid-cells', 'circle-stroke-width', 2);
+            
+            // Also update clusters
+            if (map.getLayer('grid-clusters')) {
+                map.setPaintProperty('grid-clusters', 'circle-color', '#f97316');
+                map.setPaintProperty('grid-clusters', 'circle-stroke-color', '#ffffff');
+            }
         }
 
         async function zoomToPatrolCoverage() {
@@ -2266,14 +2307,21 @@
         }
 
         function resetHeatmapStyle() {
-            if (!map.getLayer('grid-cells') || !originalHeatmapPaint) return;
+            if (!map.getLayer('grid-cells') || !originalCirclePaint) return;
             
-            // Restore original heatmap properties
-            Object.keys(originalHeatmapPaint).forEach(prop => {
-                if (originalHeatmapPaint[prop] !== undefined) {
-                    map.setPaintProperty('grid-cells', prop, originalHeatmapPaint[prop]);
+            // Restore original circle properties
+            Object.keys(originalCirclePaint).forEach(prop => {
+                if (originalCirclePaint[prop] !== undefined) {
+                    map.setPaintProperty('grid-cells', prop, originalCirclePaint[prop]);
                 }
             });
+            
+            // Also reset clusters to original style
+            if (map.getLayer('grid-clusters')) {
+                map.setPaintProperty('grid-clusters', 'circle-color', '#22c55e');
+                map.setPaintProperty('grid-clusters', 'circle-stroke-color', '#4ade80');
+                map.setPaintProperty('grid-clusters', 'circle-stroke-width', 2);
+            }
         }
 
         function removeHighlightLayers() {
@@ -2295,7 +2343,7 @@
         map.on('click', function(e) {
             // Don't reset if clicking on a feature
             const features = map.queryRenderedFeatures(e.point, {
-                layers: ['areas-fill', 'grid-cells']
+                layers: ['areas-fill', 'grid-cells', 'grid-clusters']
             });
             if (features.length === 0 && activeStatMode) {
                 // Small delay to let other click handlers run first
