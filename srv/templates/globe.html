@@ -634,7 +634,17 @@
         const MAPTILER_KEY = 'dea58ea0389007e386776c4f583f4425';
         const API_HOST = 'five-mp-conservation-effort';
 
-        
+        // Format numbers - only use commas for numbers >= 1000
+        function formatNumber(n, decimals) {
+            if (n === null || n === undefined) return '0';
+            const num = Number(n);
+            if (decimals !== undefined) {
+                const fixed = num.toFixed(decimals);
+                return Math.abs(num) >= 1000 ? Number(fixed).toLocaleString() : fixed;
+            }
+            return Math.abs(num) >= 1000 ? num.toLocaleString() : String(num);
+        }
+
         const darkStyle = {
             version: 8,
             name: 'Dark',
@@ -918,9 +928,9 @@
                 const res = await fetch(url);
                 if (res.ok) {
                     const stats = await res.json();
-                    document.getElementById('stats-pixels').textContent = (stats.active_pixels || 0).toLocaleString();
-                    document.getElementById('stats-distance').textContent = (stats.total_distance_km || 0).toLocaleString(undefined, {maximumFractionDigits: 1}) + ' km';
-                    document.getElementById('stats-patrols').textContent = (stats.total_patrols || 0).toLocaleString();
+                    document.getElementById('stats-pixels').textContent = formatNumber(stats.active_pixels || 0);
+                    document.getElementById('stats-distance').textContent = formatNumber(stats.total_distance_km || 0, 1) + ' km';
+                    document.getElementById('stats-patrols').textContent = formatNumber(stats.total_patrols || 0);
                 }
                 // Update stats title to reflect current filter
                 updateStatsTitle();
@@ -1169,7 +1179,7 @@
                 var latDiff = Math.abs(maxLat - minLat);
                 var lngDiff = Math.abs(maxLng - minLng);
                 var approxKm = Math.round(latDiff * 111 * lngDiff * 111 * Math.cos((minLat + maxLat) / 2 * Math.PI / 180));
-                filterAreaValue.textContent = approxKm.toLocaleString() + ' km² region';
+                filterAreaValue.textContent = formatNumber(approxKm) + ' km² region';
             }
             
             drawBboxOnMap();
@@ -1738,7 +1748,7 @@
             const wdpaId = props.wdpa_id || props.wdpaid;
             const isSelected = selectedParks.some(p => p.id === (wdpaId || name));
             
-            const areaDisplay = areaKm2 ? Number(areaKm2).toLocaleString() + ' km²' : '--';
+            const areaDisplay = areaKm2 ? formatNumber(areaKm2) + ' km²' : '--';
             
             const popupContent = `
                 <div class="pa-popup">
@@ -2329,7 +2339,7 @@
         var key = '5mp_views';
         var views = parseInt(localStorage.getItem(key) || '0', 10) + 1;
         localStorage.setItem(key, views);
-        document.getElementById('page-views').textContent = views.toLocaleString() + ' views';
+        document.getElementById('page-views').textContent = (views >= 1000 ? views.toLocaleString() : views) + ' views';
     })();
     </script>
 </body></html>
