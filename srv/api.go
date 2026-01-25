@@ -353,8 +353,8 @@ func (s *Server) HandleAPIActivity(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
-	// Get recent uploads
-	uploads, err := q.ListAllGPXUploads(ctx, dbgen.ListAllGPXUploadsParams{
+	// Get recent uploads with coordinates
+	uploads, err := q.ListGPXUploadsWithCoords(ctx, dbgen.ListGPXUploadsWithCoordsParams{
 		Limit:  10,
 		Offset: 0,
 	})
@@ -372,12 +372,18 @@ func (s *Server) HandleAPIActivity(w http.ResponseWriter, r *http.Request) {
 		if u.ProtectedAreaID != nil {
 			location = *u.ProtectedAreaID
 		}
-		activities = append(activities, map[string]interface{}{
+		activity := map[string]interface{}{
 			"date":     u.UploadDate.Format("Jan 02"),
 			"location": location,
 			"distance": u.TotalDistanceKm,
 			"type":     u.MovementType,
-		})
+		}
+		// Include coordinates if available
+		if u.CentroidLat != nil && u.CentroidLon != nil {
+			activity["lat"] = *u.CentroidLat
+			activity["lon"] = *u.CentroidLon
+		}
+		activities = append(activities, activity)
 	}
 
 	w.Header().Set("Content-Type", "application/json")

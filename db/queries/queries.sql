@@ -117,3 +117,15 @@ DELETE FROM sessions WHERE user_id = ?;
 
 -- name: UpdateUserPassword :exec
 UPDATE users SET password_hash = ? WHERE id = ?;
+
+-- name: ListGPXUploadsWithCoords :many
+SELECT 
+    u.id, u.user_id, u.filename, u.movement_type, u.protected_area_id,
+    u.upload_date, u.start_time, u.end_time, u.total_distance_km, u.total_points,
+    AVG(t.lat) as centroid_lat,
+    AVG(t.lon) as centroid_lon
+FROM gpx_uploads u
+LEFT JOIN track_points t ON u.id = t.upload_id
+GROUP BY u.id
+ORDER BY u.upload_date DESC
+LIMIT ? OFFSET ?;
