@@ -39,6 +39,15 @@ func run() error {
 		slog.Warn("failed to load areas", "error", err)
 	}
 
+	// Load WDPA index for searching all African PAs
+	wdpaPath := dataDir + "/wdpa_index.json"
+	if wdpaIndex, err := areas.LoadWDPAIndex(wdpaPath); err == nil {
+		server.WDPAIndex = wdpaIndex
+		slog.Info("loaded WDPA index", "count", len(wdpaIndex.Entries))
+	} else {
+		slog.Warn("failed to load WDPA index", "error", err)
+	}
+
 	// Load legal frameworks
 	legalPath := dataDir + "/legal_frameworks.json"
 	if legalStore, err := srv.LoadLegalFrameworks(legalPath); err == nil {
