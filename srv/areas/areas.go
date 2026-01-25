@@ -171,7 +171,7 @@ func loadKeystonesWithBoundaries(path string) (*AreaStore, error) {
 				CountryCode: ks.CountryCode,
 				WDPAID:      ks.WDPAID,
 				Geometry:    *ks.Geometry,
-				BufferKm:    2.0,
+				BufferKm:    5.0, // 5km buffer for matching
 			}
 			if ks.AreaKm2 != nil {
 				area.AreaKm2 = float64(*ks.AreaKm2)
