@@ -65,10 +65,21 @@
         .stats-panel { position: fixed; top: 66px; right: 10px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 16px; z-index: 100; font-size: 12px; min-width: 140px; }
         .stats-panel h3 { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
         .stats-period { font-weight: 400; color: #555; font-size: 10px; }
-        .stats-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .stats-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding: 6px 8px; margin: 0 -8px 6px -8px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; position: relative; }
         .stats-item:last-child { margin-bottom: 0; }
-        .stats-label { color: #888; }
-        .stats-value { color: #22c55e; font-weight: 600; font-variant-numeric: tabular-nums; }
+        .stats-item:hover { background: rgba(34,197,94,0.1); }
+        .stats-item:hover .stats-label { color: #a0a0a0; }
+        .stats-item:hover .stats-value { color: #4ade80; }
+        .stats-item:active { transform: scale(0.98); }
+        .stats-item.active { background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.3); }
+        .stats-item.active .stats-label { color: #22c55e; }
+        .stats-item::after { content: ''; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 4px; height: 4px; border-radius: 50%; background: transparent; transition: all 0.2s; }
+        .stats-item:hover::after { background: rgba(34,197,94,0.5); }
+        .stats-item.active::after { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.6); }
+        .stats-label { color: #888; transition: color 0.2s; }
+        .stats-value { color: #22c55e; font-weight: 600; font-variant-numeric: tabular-nums; transition: color 0.2s; }
+        @keyframes stats-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .stats-item.pulsing { animation: stats-pulse 0.6s ease-in-out; }
         .maplibregl-ctrl-attrib a { color: #666 !important; }
         .page-views { position: fixed; bottom: 8px; right: 8px; background: rgba(18,18,18,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 4px 8px; font-size: 10px; color: #555; z-index: 90; }
 
@@ -300,15 +311,15 @@
 
     <div class="stats-panel">
         <h3 id="stats-title">Stats <span class="stats-period">(12 mo)</span></h3>
-        <div class="stats-item">
+        <div class="stats-item" id="stat-pixels" onclick="handleStatClick('pixels')" title="Click to highlight active grid cells">
             <span class="stats-label">Active Pixels</span>
             <span class="stats-value" id="stats-pixels">15</span>
         </div>
-        <div class="stats-item">
+        <div class="stats-item" id="stat-distance" onclick="handleStatClick('distance')" title="Click to show patrol intensity heatmap">
             <span class="stats-label">Total Distance</span>
             <span class="stats-value" id="stats-distance">1,980.8 km</span>
         </div>
-        <div class="stats-item">
+        <div class="stats-item" id="stat-patrols" onclick="handleStatClick('patrols')" title="Click to zoom to patrol coverage">
             <span class="stats-label">Total Patrols</span>
             <span class="stats-value" id="stats-patrols">80</span>
         </div>
@@ -1504,6 +1515,258 @@
                     showPAStatsModal(props);
                 }
             });
+        });
+
+        // Stats panel interactivity
+        let activeStatMode = null;
+        let originalHeatmapPaint = null;
+
+        function handleStatClick(statType) {
+            const statItems = document.querySelectorAll('.stats-item');
+            const clickedItem = document.getElementById('stat-' + statType);
+            
+            // Add pulse animation
+            clickedItem.classList.add('pulsing');
+            setTimeout(() => clickedItem.classList.remove('pulsing'), 600);
+            
+            // Toggle mode - if clicking the same stat, deactivate
+            if (activeStatMode === statType) {
+                deactivateStatMode();
+                return;
+            }
+            
+            // Deactivate previous mode first
+            if (activeStatMode) {
+                deactivateStatMode(false);
+            }
+            
+            // Activate new mode
+            activeStatMode = statType;
+            statItems.forEach(item => item.classList.remove('active'));
+            clickedItem.classList.add('active');
+            
+            // Execute stat-specific action
+            switch(statType) {
+                case 'pixels':
+                    highlightActivePixels();
+                    break;
+                case 'distance':
+                    showDistanceHeatmap();
+                    break;
+                case 'patrols':
+                    zoomToPatrolCoverage();
+                    break;
+            }
+        }
+
+        function deactivateStatMode(resetView = true) {
+            activeStatMode = null;
+            document.querySelectorAll('.stats-item').forEach(item => item.classList.remove('active'));
+            
+            // Reset heatmap to original style
+            resetHeatmapStyle();
+            
+            // Remove any highlight layers
+            removeHighlightLayers();
+        }
+
+        function highlightActivePixels() {
+            // Make grid cells more visible with a pulsing effect
+            if (!map.getLayer('grid-cells')) return;
+            
+            // Store original paint if not already stored
+            if (!originalHeatmapPaint) {
+                originalHeatmapPaint = {
+                    'heatmap-opacity': map.getPaintProperty('grid-cells', 'heatmap-opacity'),
+                    'heatmap-intensity': map.getPaintProperty('grid-cells', 'heatmap-intensity')
+                };
+            }
+            
+            // Enhance visibility with higher opacity and add circle layer for individual points
+            map.setPaintProperty('grid-cells', 'heatmap-opacity', 1);
+            map.setPaintProperty('grid-cells', 'heatmap-intensity', [
+                'interpolate', ['linear'], ['zoom'],
+                0, 1,
+                9, 3
+            ]);
+            
+            // Add a circle layer to show individual pixel centers
+            if (!map.getLayer('grid-points-highlight')) {
+                map.addLayer({
+                    id: 'grid-points-highlight',
+                    type: 'circle',
+                    source: 'grid',
+                    paint: {
+                        'circle-radius': [
+                            'interpolate', ['linear'], ['zoom'],
+                            0, 4,
+                            6, 8,
+                            12, 16
+                        ],
+                        'circle-color': '#22c55e',
+                        'circle-stroke-color': '#fff',
+                        'circle-stroke-width': 2,
+                        'circle-opacity': 0.9
+                    }
+                });
+            }
+            
+            // Animate the circles with a pulsing effect
+            animatePixelHighlight();
+        }
+
+        let pixelAnimationFrame = null;
+        function animatePixelHighlight() {
+            if (activeStatMode !== 'pixels') return;
+            
+            let opacity = 0.9;
+            let direction = -1;
+            
+            function pulse() {
+                if (activeStatMode !== 'pixels' || !map.getLayer('grid-points-highlight')) {
+                    return;
+                }
+                
+                opacity += direction * 0.02;
+                if (opacity <= 0.5) direction = 1;
+                if (opacity >= 0.9) direction = -1;
+                
+                map.setPaintProperty('grid-points-highlight', 'circle-opacity', opacity);
+                pixelAnimationFrame = requestAnimationFrame(pulse);
+            }
+            pulse();
+        }
+
+        function showDistanceHeatmap() {
+            // Enhance the heatmap to show patrol intensity more dramatically
+            if (!map.getLayer('grid-cells')) return;
+            
+            // Store original paint if not already stored
+            if (!originalHeatmapPaint) {
+                originalHeatmapPaint = {
+                    'heatmap-opacity': map.getPaintProperty('grid-cells', 'heatmap-opacity'),
+                    'heatmap-intensity': map.getPaintProperty('grid-cells', 'heatmap-intensity'),
+                    'heatmap-radius': map.getPaintProperty('grid-cells', 'heatmap-radius'),
+                    'heatmap-color': map.getPaintProperty('grid-cells', 'heatmap-color')
+                };
+            }
+            
+            // Use a warmer color scheme to emphasize distance/intensity
+            map.setPaintProperty('grid-cells', 'heatmap-color', [
+                'interpolate', ['linear'], ['heatmap-density'],
+                0, 'rgba(34, 197, 94, 0)',
+                0.1, 'rgba(34, 197, 94, 0.4)',
+                0.3, 'rgba(74, 222, 128, 0.6)',
+                0.5, 'rgba(250, 204, 21, 0.7)',
+                0.7, 'rgba(249, 115, 22, 0.85)',
+                0.9, 'rgba(239, 68, 68, 0.95)',
+                1, 'rgba(255, 255, 255, 1)'
+            ]);
+            
+            // Increase radius and intensity
+            map.setPaintProperty('grid-cells', 'heatmap-radius', [
+                'interpolate', ['linear'], ['zoom'],
+                0, 20,
+                9, 45
+            ]);
+            map.setPaintProperty('grid-cells', 'heatmap-intensity', [
+                'interpolate', ['linear'], ['zoom'],
+                0, 0.8,
+                9, 2.5
+            ]);
+            map.setPaintProperty('grid-cells', 'heatmap-opacity', 1);
+        }
+
+        async function zoomToPatrolCoverage() {
+            // Zoom map to fit all patrol data
+            try {
+                const source = map.getSource('grid');
+                if (!source) return;
+                
+                // Build URL with current filters
+                let url = '/api/grid';
+                const params = [];
+                if (dateFrom) params.push('from=' + dateFrom);
+                if (dateTo) params.push('to=' + dateTo);
+                if (currentBbox) params.push('bbox=' + currentBbox.join(','));
+                if (params.length > 0) url += '?' + params.join('&');
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.features && data.features.length > 0) {
+                    // Calculate bounds from all features
+                    let minLng = Infinity, minLat = Infinity;
+                    let maxLng = -Infinity, maxLat = -Infinity;
+                    
+                    data.features.forEach(feature => {
+                        const coords = feature.geometry.coordinates;
+                        if (coords) {
+                            minLng = Math.min(minLng, coords[0]);
+                            maxLng = Math.max(maxLng, coords[0]);
+                            minLat = Math.min(minLat, coords[1]);
+                            maxLat = Math.max(maxLat, coords[1]);
+                        }
+                    });
+                    
+                    if (minLng !== Infinity) {
+                        // Add some padding
+                        const lngPad = (maxLng - minLng) * 0.1 || 1;
+                        const latPad = (maxLat - minLat) * 0.1 || 1;
+                        
+                        map.fitBounds([
+                            [minLng - lngPad, minLat - latPad],
+                            [maxLng + lngPad, maxLat + latPad]
+                        ], {
+                            padding: 50,
+                            duration: 1500,
+                            essential: true
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to zoom to patrol coverage:', err);
+            }
+        }
+
+        function resetHeatmapStyle() {
+            if (!map.getLayer('grid-cells') || !originalHeatmapPaint) return;
+            
+            // Restore original heatmap properties
+            Object.keys(originalHeatmapPaint).forEach(prop => {
+                if (originalHeatmapPaint[prop] !== undefined) {
+                    map.setPaintProperty('grid-cells', prop, originalHeatmapPaint[prop]);
+                }
+            });
+        }
+
+        function removeHighlightLayers() {
+            // Stop animation
+            if (pixelAnimationFrame) {
+                cancelAnimationFrame(pixelAnimationFrame);
+                pixelAnimationFrame = null;
+            }
+            
+            // Remove highlight layer
+            try {
+                if (map.getLayer('grid-points-highlight')) {
+                    map.removeLayer('grid-points-highlight');
+                }
+            } catch (e) {}
+        }
+
+        // Reset stat mode when clicking on the map (outside stats panel)
+        map.on('click', function(e) {
+            // Don't reset if clicking on a feature
+            const features = map.queryRenderedFeatures(e.point, {
+                layers: ['areas-fill', 'grid-cells']
+            });
+            if (features.length === 0 && activeStatMode) {
+                // Small delay to let other click handlers run first
+                setTimeout(() => {
+                    if (activeStatMode) deactivateStatMode();
+                }, 100);
+            }
         });
     </script>
 
