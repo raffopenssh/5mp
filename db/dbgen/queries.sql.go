@@ -160,6 +160,34 @@ func (q *Queries) DeleteUserSessions(ctx context.Context, userID string) error {
 	return err
 }
 
+const getChecklistStats = `-- name: GetChecklistStats :one
+SELECT 
+    COUNT(*) as total,
+    SUM(CASE WHEN status = 'complete' THEN 1 ELSE 0 END) as complete,
+    SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
+    SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending
+FROM park_checklist WHERE pa_id = ?
+`
+
+type GetChecklistStatsRow struct {
+	Total      int64    `json:"total"`
+	Complete   *float64 `json:"complete"`
+	InProgress *float64 `json:"in_progress"`
+	Pending    *float64 `json:"pending"`
+}
+
+func (q *Queries) GetChecklistStats(ctx context.Context, paID string) (GetChecklistStatsRow, error) {
+	row := q.db.QueryRowContext(ctx, getChecklistStats, paID)
+	var i GetChecklistStatsRow
+	err := row.Scan(
+		&i.Total,
+		&i.Complete,
+		&i.InProgress,
+		&i.Pending,
+	)
+	return i, err
+}
+
 const getEffortDataByBounds = `-- name: GetEffortDataByBounds :many
 SELECT e.id, e.grid_cell_id, e.year, e.month, e.day, e.movement_type, e.total_distance_km, e.total_points, e.unique_uploads, e.protected_area_ids, g.lat_center, g.lon_center, g.lat_min, g.lat_max, g.lon_min, g.lon_max
 FROM effort_data e
@@ -485,6 +513,82 @@ func (q *Queries) GetOrCreateGridCell(ctx context.Context, arg GetOrCreateGridCe
 	return i, err
 }
 
+const getParkChecklistItems = `-- name: GetParkChecklistItems :many
+
+SELECT id, pa_id, item_id, status, notes, document_url, updated_by, updated_at FROM park_checklist WHERE pa_id = ? ORDER BY item_id
+`
+
+// Park checklist queries
+func (q *Queries) GetParkChecklistItems(ctx context.Context, paID string) ([]ParkChecklist, error) {
+	rows, err := q.db.QueryContext(ctx, getParkChecklistItems, paID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ParkChecklist{}
+	for rows.Next() {
+		var i ParkChecklist
+		if err := rows.Scan(
+			&i.ID,
+			&i.PaID,
+			&i.ItemID,
+			&i.Status,
+			&i.Notes,
+			&i.DocumentUrl,
+			&i.UpdatedBy,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getParkDocuments = `-- name: GetParkDocuments :many
+SELECT id, pa_id, category, item_id, title, description, file_url, file_type, uploaded_by, uploaded_at FROM park_documents WHERE pa_id = ? ORDER BY uploaded_at DESC
+`
+
+func (q *Queries) GetParkDocuments(ctx context.Context, paID string) ([]ParkDocument, error) {
+	rows, err := q.db.QueryContext(ctx, getParkDocuments, paID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ParkDocument{}
+	for rows.Next() {
+		var i ParkDocument
+		if err := rows.Scan(
+			&i.ID,
+			&i.PaID,
+			&i.Category,
+			&i.ItemID,
+			&i.Title,
+			&i.Description,
+			&i.FileUrl,
+			&i.FileType,
+			&i.UploadedBy,
+			&i.UploadedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSession = `-- name: GetSession :one
 SELECT s.id, s.user_id, s.created_at, s.expires_at, u.email, u.name, u.role 
 FROM sessions s
@@ -605,6 +709,36 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.PasswordHash,
 	)
 	return i, err
+}
+
+const insertParkDocument = `-- name: InsertParkDocument :exec
+INSERT INTO park_documents (pa_id, category, item_id, title, description, file_url, file_type, uploaded_by)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+`
+
+type InsertParkDocumentParams struct {
+	PaID        string  `json:"pa_id"`
+	Category    string  `json:"category"`
+	ItemID      *string `json:"item_id"`
+	Title       string  `json:"title"`
+	Description *string `json:"description"`
+	FileUrl     *string `json:"file_url"`
+	FileType    *string `json:"file_type"`
+	UploadedBy  *string `json:"uploaded_by"`
+}
+
+func (q *Queries) InsertParkDocument(ctx context.Context, arg InsertParkDocumentParams) error {
+	_, err := q.db.ExecContext(ctx, insertParkDocument,
+		arg.PaID,
+		arg.Category,
+		arg.ItemID,
+		arg.Title,
+		arg.Description,
+		arg.FileUrl,
+		arg.FileType,
+		arg.UploadedBy,
+	)
+	return err
 }
 
 const listAllGPXUploads = `-- name: ListAllGPXUploads :many
@@ -902,6 +1036,38 @@ func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) 
 		arg.ApprovedAt,
 		arg.ApprovedBy,
 		arg.ID,
+	)
+	return err
+}
+
+const upsertChecklistItem = `-- name: UpsertChecklistItem :exec
+INSERT INTO park_checklist (pa_id, item_id, status, notes, document_url, updated_by, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+ON CONFLICT(pa_id, item_id) DO UPDATE SET
+    status = excluded.status,
+    notes = excluded.notes,
+    document_url = excluded.document_url,
+    updated_by = excluded.updated_by,
+    updated_at = CURRENT_TIMESTAMP
+`
+
+type UpsertChecklistItemParams struct {
+	PaID        string  `json:"pa_id"`
+	ItemID      string  `json:"item_id"`
+	Status      string  `json:"status"`
+	Notes       *string `json:"notes"`
+	DocumentUrl *string `json:"document_url"`
+	UpdatedBy   *string `json:"updated_by"`
+}
+
+func (q *Queries) UpsertChecklistItem(ctx context.Context, arg UpsertChecklistItemParams) error {
+	_, err := q.db.ExecContext(ctx, upsertChecklistItem,
+		arg.PaID,
+		arg.ItemID,
+		arg.Status,
+		arg.Notes,
+		arg.DocumentUrl,
+		arg.UpdatedBy,
 	)
 	return err
 }
