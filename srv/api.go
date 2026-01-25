@@ -369,8 +369,13 @@ func (s *Server) HandleAPIActivity(w http.ResponseWriter, r *http.Request) {
 	activities := make([]map[string]interface{}, 0, len(uploads))
 	for _, u := range uploads {
 		location := "Unknown"
-		if u.ProtectedAreaID != nil {
+		if u.ProtectedAreaID != nil && *u.ProtectedAreaID != "" {
 			location = *u.ProtectedAreaID
+		} else if u.CentroidLat != nil && u.CentroidLon != nil && s.AreaStore != nil {
+			// Try to find which PA the coordinates fall within
+			if area := s.AreaStore.FindArea(*u.CentroidLat, *u.CentroidLon); area != nil {
+				location = area.Name
+			}
 		}
 		activity := map[string]interface{}{
 			"date":     u.UploadDate.Format("Jan 02"),
