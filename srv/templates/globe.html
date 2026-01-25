@@ -50,7 +50,7 @@
         .upload-text { color: #a0a0a0; font-size: 14px; }
         .upload-text strong { color: #22c55e; }
 
-        .fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; color: #fff; font-size: 24px; cursor: pointer; box-shadow: 0 4px 14px rgba(34,197,94,0.4); transition: all 0.2s; z-index: 500; display: none; align-items: center; justify-content: center; }
+        .fab { position: fixed; bottom: 94px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; color: #fff; font-size: 24px; cursor: pointer; box-shadow: 0 4px 14px rgba(34,197,94,0.4); transition: all 0.2s; z-index: 500; display: none; align-items: center; justify-content: center; }
         .fab:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(34,197,94,0.5); }
         .fab.visible { display: flex; }
 
@@ -71,6 +71,46 @@
         .stats-value { color: #22c55e; font-weight: 600; font-variant-numeric: tabular-nums; }
         .maplibregl-ctrl-attrib a { color: #666 !important; }
         .page-views { position: fixed; bottom: 8px; right: 8px; background: rgba(18,18,18,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 4px 8px; font-size: 10px; color: #555; z-index: 90; }
+
+        /* Time Slider - Google Timelapse Style */
+        .time-slider-container { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.9) 70%, transparent 100%); z-index: 400; padding: 8px 20px 12px; display: flex; flex-direction: column; }
+        .time-slider-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+        .time-slider-controls { display: flex; align-items: center; gap: 12px; }
+        .time-slider-play { width: 32px; height: 32px; border-radius: 50%; background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.4); color: #22c55e; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .time-slider-play:hover { background: rgba(34,197,94,0.3); border-color: #22c55e; }
+        .time-slider-play.playing { background: rgba(34,197,94,0.4); }
+        .time-slider-play svg { width: 14px; height: 14px; fill: currentColor; }
+        .time-slider-date { font-size: 14px; font-weight: 600; color: #22c55e; min-width: 180px; }
+        .time-slider-speed { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #666; }
+        .time-slider-speed select { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: #a0a0a0; padding: 4px 8px; font-size: 11px; cursor: pointer; }
+        .time-slider-speed select:focus { outline: none; border-color: #22c55e; }
+        .time-slider-track-wrapper { position: relative; flex: 1; padding: 0 8px; }
+        .time-slider-track { position: relative; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer; }
+        .time-slider-range { position: absolute; height: 100%; background: linear-gradient(90deg, rgba(34,197,94,0.6), #22c55e); border-radius: 3px; pointer-events: none; }
+        .time-slider-handle { position: absolute; top: 50%; width: 16px; height: 16px; background: #22c55e; border: 2px solid #fff; border-radius: 50%; transform: translate(-50%, -50%); cursor: grab; z-index: 2; transition: transform 0.1s, box-shadow 0.1s; }
+        .time-slider-handle:hover { transform: translate(-50%, -50%) scale(1.2); box-shadow: 0 0 10px rgba(34,197,94,0.5); }
+        .time-slider-handle:active { cursor: grabbing; }
+        .time-slider-handle.start { }
+        .time-slider-handle.end { }
+        .time-slider-ticks { position: relative; height: 20px; margin-top: 4px; }
+        .time-slider-tick { position: absolute; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
+        .time-slider-tick-line { width: 1px; height: 6px; background: rgba(255,255,255,0.2); }
+        .time-slider-tick-label { font-size: 9px; color: #555; margin-top: 2px; white-space: nowrap; }
+        .time-slider-tick.major .time-slider-tick-line { height: 8px; background: rgba(255,255,255,0.4); }
+        .time-slider-tick.major .time-slider-tick-label { font-size: 10px; color: #888; }
+
+        /* Adjust map and legend for slider */
+        #map { bottom: 70px !important; }
+        #map-legend { bottom: 10px !important; }
+        .page-views { bottom: 78px; }
+
+        @media (max-width: 768px) {
+            .time-slider-container { height: 60px; padding: 6px 12px 10px; }
+            .time-slider-date { font-size: 12px; min-width: 140px; }
+            .time-slider-play { width: 28px; height: 28px; }
+            .time-slider-speed { display: none; }
+            #map { bottom: 60px !important; }
+        }
 
          
          
@@ -212,7 +252,7 @@
             .search-panel { top: auto; bottom: 80px; left: 10px; width: calc(100vw - 20px); max-width: 320px; -webkit-transform: translateY(400px); transform: translateY(400px); max-height: 60vh; }
             .search-panel.open { -webkit-transform: translateY(0); transform: translateY(0); }
             .stats-panel { top: auto; bottom: 80px; right: 10px; left: auto; }
-            .fab { bottom: 90px; }
+            .fab { bottom: 140px; }
             .auth-buttons .btn { padding: 6px 12px; font-size: 13px; }
         }
         @media (max-width: 480px) {
@@ -328,27 +368,11 @@
             
             <div class="filter-section">
                 <div class="filter-section-label">Date Range</div>
-                <div class="date-range-display" id="date-range-display">Last 12 Months</div>
-                <div class="date-presets" id="date-presets">
-                    <button class="date-preset-btn" onclick="setDatePreset('30d')">30 Days</button>
-                    <button class="date-preset-btn" onclick="setDatePreset('90d')">90 Days</button>
-                    <button class="date-preset-btn" onclick="setDatePreset('6m')">6 Months</button>
-                    <button class="date-preset-btn active" onclick="setDatePreset('12m')">12 Months</button>
-                    <button class="date-preset-btn" onclick="setDatePreset('all')">All Time</button>
-                </div>
-                <div class="date-custom-toggle">
-                    <button class="date-custom-btn" onclick="toggleCustomDates()" id="custom-date-toggle">Custom Range</button>
-                </div>
-                <div class="date-input-row" id="date-custom-inputs" style="display: none;">
-                    <div class="date-input-group">
-                        <label>From</label>
-                        <input type="date" class="date-input" id="date-from" onchange="updateDateRange(true)">
-                    </div>
-                    <div class="date-input-group">
-                        <label>To</label>
-                        <input type="date" class="date-input" id="date-to" onchange="updateDateRange(true)">
-                    </div>
-                </div>
+                <div class="date-range-display" id="date-range-display">Use time slider below ↓</div>
+                <div style="font-size: 11px; color: #666; text-align: center;">Drag the slider at the bottom to filter by date</div>
+                <!-- Hidden inputs for compatibility -->
+                <input type="hidden" id="date-from">
+                <input type="hidden" id="date-to">
             </div>
 
             
@@ -419,6 +443,35 @@
     </div>
 
     <button class="fab " onclick="showModal('upload')" title="Upload Data">+</button>
+
+    <!-- Time Slider -->
+    <div class="time-slider-container" id="time-slider-container">
+        <div class="time-slider-header">
+            <div class="time-slider-controls">
+                <button class="time-slider-play" id="time-slider-play" onclick="toggleTimeAnimation()" title="Play/Pause">
+                    <svg id="play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+                    <svg id="pause-icon" viewBox="0 0 24 24" style="display:none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                </button>
+                <div class="time-slider-date" id="time-slider-date">Jan 2020 - Dec 2024</div>
+            </div>
+            <div class="time-slider-speed">
+                <span>Speed:</span>
+                <select id="time-slider-speed" onchange="updateAnimationSpeed()">
+                    <option value="2000">Slow</option>
+                    <option value="1000" selected>Normal</option>
+                    <option value="500">Fast</option>
+                </select>
+            </div>
+        </div>
+        <div class="time-slider-track-wrapper">
+            <div class="time-slider-track" id="time-slider-track">
+                <div class="time-slider-range" id="time-slider-range"></div>
+                <div class="time-slider-handle start" id="time-slider-start" data-handle="start"></div>
+                <div class="time-slider-handle end" id="time-slider-end" data-handle="end"></div>
+            </div>
+            <div class="time-slider-ticks" id="time-slider-ticks"></div>
+        </div>
+    </div>
 
     
     <div id="modal-login" class="modal-overlay" onclick="closeModalOnOverlay(event)">
@@ -904,7 +957,8 @@
         }
 
         function initDateRange() {
-            setDatePreset('12m');
+            // Date range is now controlled by the time slider at the bottom
+            // Don't call setDatePreset - slider will set dates on init
         }
         
         function setDatePreset(preset) {
@@ -1453,6 +1507,252 @@
         });
     </script>
 
+    <!-- Time Slider JavaScript -->
+    <script>
+    (function() {
+        // Time slider configuration
+        const SLIDER_START_DATE = new Date('2020-01-01');
+        const SLIDER_END_DATE = new Date(); // Today
+        const TOTAL_MONTHS = monthsBetween(SLIDER_START_DATE, SLIDER_END_DATE);
+        
+        let sliderStartValue = TOTAL_MONTHS - 12; // Default: last 12 months
+        let sliderEndValue = TOTAL_MONTHS;
+        let isPlaying = false;
+        let animationInterval = null;
+        let animationSpeed = 1000;
+        
+        function monthsBetween(d1, d2) {
+            return (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+        }
+        
+        function addMonths(date, months) {
+            const result = new Date(date);
+            result.setMonth(result.getMonth() + months);
+            return result;
+        }
+        
+        function formatMonthYear(date) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return months[date.getMonth()] + ' ' + date.getFullYear();
+        }
+        
+        function formatDateISO(date) {
+            return date.toISOString().split('T')[0];
+        }
+        
+        function valueToDate(value) {
+            return addMonths(SLIDER_START_DATE, value);
+        }
+        
+        function updateSliderDisplay() {
+            const startDate = valueToDate(sliderStartValue);
+            const endDate = valueToDate(sliderEndValue);
+            
+            // Update date label
+            document.getElementById('time-slider-date').textContent = 
+                formatMonthYear(startDate) + ' - ' + formatMonthYear(endDate);
+            
+            // Update handle positions
+            const track = document.getElementById('time-slider-track');
+            const trackWidth = track.offsetWidth;
+            const startPercent = (sliderStartValue / TOTAL_MONTHS) * 100;
+            const endPercent = (sliderEndValue / TOTAL_MONTHS) * 100;
+            
+            document.getElementById('time-slider-start').style.left = startPercent + '%';
+            document.getElementById('time-slider-end').style.left = endPercent + '%';
+            document.getElementById('time-slider-range').style.left = startPercent + '%';
+            document.getElementById('time-slider-range').style.width = (endPercent - startPercent) + '%';
+        }
+        
+        function updateDateFilter() {
+            const startDate = valueToDate(sliderStartValue);
+            const endDate = valueToDate(sliderEndValue);
+            
+            // Update global date variables (used by existing code)
+            dateFrom = formatDateISO(startDate);
+            dateTo = formatDateISO(endDate);
+            currentPreset = 'custom';
+            
+            // Reload data
+            reloadGridData();
+        }
+        
+        function initTicks() {
+            const ticksContainer = document.getElementById('time-slider-ticks');
+            ticksContainer.innerHTML = '';
+            
+            // Add tick for each year
+            let currentDate = new Date(SLIDER_START_DATE);
+            while (currentDate <= SLIDER_END_DATE) {
+                const monthsFromStart = monthsBetween(SLIDER_START_DATE, currentDate);
+                const percent = (monthsFromStart / TOTAL_MONTHS) * 100;
+                const isJanuary = currentDate.getMonth() === 0;
+                
+                if (isJanuary || monthsFromStart === 0) {
+                    // Year tick
+                    const tick = document.createElement('div');
+                    tick.className = 'time-slider-tick major';
+                    tick.style.left = percent + '%';
+                    tick.innerHTML = `<div class="time-slider-tick-line"></div><div class="time-slider-tick-label">${currentDate.getFullYear()}</div>`;
+                    ticksContainer.appendChild(tick);
+                } else if (currentDate.getMonth() === 6) {
+                    // Mid-year tick (July)
+                    const tick = document.createElement('div');
+                    tick.className = 'time-slider-tick';
+                    tick.style.left = percent + '%';
+                    tick.innerHTML = `<div class="time-slider-tick-line"></div>`;
+                    ticksContainer.appendChild(tick);
+                }
+                
+                currentDate.setMonth(currentDate.getMonth() + 1);
+            }
+        }
+        
+        function initSliderDrag() {
+            const track = document.getElementById('time-slider-track');
+            const startHandle = document.getElementById('time-slider-start');
+            const endHandle = document.getElementById('time-slider-end');
+            
+            let activeHandle = null;
+            
+            function getValueFromEvent(e) {
+                const rect = track.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+                return Math.round(percent * TOTAL_MONTHS);
+            }
+            
+            function onStart(e, handle) {
+                e.preventDefault();
+                activeHandle = handle;
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onEnd);
+                document.addEventListener('touchmove', onMove);
+                document.addEventListener('touchend', onEnd);
+            }
+            
+            function onMove(e) {
+                if (!activeHandle) return;
+                e.preventDefault();
+                
+                const value = getValueFromEvent(e);
+                
+                if (activeHandle === 'start') {
+                    sliderStartValue = Math.min(value, sliderEndValue - 1);
+                } else {
+                    sliderEndValue = Math.max(value, sliderStartValue + 1);
+                }
+                
+                updateSliderDisplay();
+            }
+            
+            function onEnd() {
+                if (activeHandle) {
+                    updateDateFilter();
+                }
+                activeHandle = null;
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onEnd);
+                document.removeEventListener('touchmove', onMove);
+                document.removeEventListener('touchend', onEnd);
+            }
+            
+            startHandle.addEventListener('mousedown', (e) => onStart(e, 'start'));
+            startHandle.addEventListener('touchstart', (e) => onStart(e, 'start'));
+            endHandle.addEventListener('mousedown', (e) => onStart(e, 'end'));
+            endHandle.addEventListener('touchstart', (e) => onStart(e, 'end'));
+            
+            // Click on track to move nearest handle
+            track.addEventListener('click', (e) => {
+                if (e.target.classList.contains('time-slider-handle')) return;
+                
+                const value = getValueFromEvent(e);
+                const startDist = Math.abs(value - sliderStartValue);
+                const endDist = Math.abs(value - sliderEndValue);
+                
+                if (startDist < endDist) {
+                    sliderStartValue = Math.min(value, sliderEndValue - 1);
+                } else {
+                    sliderEndValue = Math.max(value, sliderStartValue + 1);
+                }
+                
+                updateSliderDisplay();
+                updateDateFilter();
+            });
+        }
+        
+        // Animation controls
+        window.toggleTimeAnimation = function() {
+            isPlaying = !isPlaying;
+            const playIcon = document.getElementById('play-icon');
+            const pauseIcon = document.getElementById('pause-icon');
+            const playBtn = document.getElementById('time-slider-play');
+            
+            if (isPlaying) {
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+                playBtn.classList.add('playing');
+                startAnimation();
+            } else {
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+                playBtn.classList.remove('playing');
+                stopAnimation();
+            }
+        };
+        
+        window.updateAnimationSpeed = function() {
+            animationSpeed = parseInt(document.getElementById('time-slider-speed').value);
+            if (isPlaying) {
+                stopAnimation();
+                startAnimation();
+            }
+        };
+        
+        function startAnimation() {
+            // Keep a 12-month window and slide it forward
+            const windowSize = 12;
+            
+            animationInterval = setInterval(() => {
+                if (sliderEndValue >= TOTAL_MONTHS) {
+                    // Reset to beginning
+                    sliderStartValue = 0;
+                    sliderEndValue = windowSize;
+                } else {
+                    sliderStartValue++;
+                    sliderEndValue++;
+                }
+                
+                updateSliderDisplay();
+                updateDateFilter();
+            }, animationSpeed);
+        }
+        
+        function stopAnimation() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+            }
+        }
+        
+        // Initialize slider
+        function initTimeSlider() {
+            initTicks();
+            initSliderDrag();
+            updateSliderDisplay();
+            // Set initial date filter to match slider
+            updateDateFilter();
+        }
+        
+        // Wait for DOM and map to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initTimeSlider);
+        } else {
+            // Small delay to ensure map is loaded
+            setTimeout(initTimeSlider, 100);
+        }
+    })();
+    </script>
 
     <div class="page-views" id="page-views"></div>
     <script>
