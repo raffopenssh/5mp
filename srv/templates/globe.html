@@ -477,15 +477,9 @@
             <div class="filter-section">
                 <div class="filter-section-label">Movement Type</div>
                 <div class="movement-toggles">
-                    <button class="movement-toggle active" id="toggle-foot" onclick="toggleMovementType('foot')" title="Foot patrols">
-                        🚶<span class="movement-toggle-label">Foot</span>
-                    </button>
-                    <button class="movement-toggle active" id="toggle-vehicle" onclick="toggleMovementType('vehicle')" title="Vehicle patrols">
-                        🚗<span class="movement-toggle-label">Vehicle</span>
-                    </button>
-                    <button class="movement-toggle active" id="toggle-aerial" onclick="toggleMovementType('aerial')" title="Aerial patrols">
-                        ✈️<span class="movement-toggle-label">Aerial</span>
-                    </button>
+                    <button class="movement-toggle active" id="toggle-foot" onclick="toggleMovementType('foot')" title="Foot patrols">Foot</button>
+                    <button class="movement-toggle active" id="toggle-vehicle" onclick="toggleMovementType('vehicle')" title="Vehicle patrols">Vehicle</button>
+                    <button class="movement-toggle active" id="toggle-aerial" onclick="toggleMovementType('aerial')" title="Aerial patrols">Aerial</button>
                 </div>
             </div>
             
@@ -699,8 +693,8 @@
                 type: 'geojson',
                 data: '/api/grid',
                 cluster: true,
-                clusterRadius: 50,
-                clusterMaxZoom: 10,
+                clusterRadius: 30,
+                clusterMaxZoom: 6,
                 clusterProperties: {
                     'sum_intensity': ['+', ['get', 'intensity']],
                     'sum_distance': ['+', ['coalesce', ['get', 'total_distance_km'], 0]],
