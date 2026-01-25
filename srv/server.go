@@ -21,6 +21,7 @@ type Server struct {
 	StaticDir    string
 	AreaStore    *areas.AreaStore
 	Auth         *auth.Manager
+	LegalStore   *LegalStore
 }
 
 type pageData struct {
@@ -117,6 +118,10 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/upload", s.HandleAPIUpload)
 	mux.HandleFunc("GET /api/stats", s.HandleAPIStats)
 	mux.HandleFunc("GET /api/activity", s.HandleAPIActivity)
+
+	// Legal framework endpoints
+	mux.HandleFunc("GET /api/legal/pa/", s.HandleAPILegalByPA)
+	mux.HandleFunc("GET /api/legal/", s.HandleAPILegalByCountry)
 
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
