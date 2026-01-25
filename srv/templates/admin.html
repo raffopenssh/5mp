@@ -4,164 +4,185 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard - 5MP Globe</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; min-height: 100vh; }
+      
+      .header { background: rgba(18,18,18,0.95); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+      .header h1 { font-size: 20px; font-weight: 600; color: #fff; }
+      .back-link { color: #22c55e; text-decoration: none; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+      .back-link:hover { color: #16a34a; }
+      
+      .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+      
+      .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
+      .alert-success { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; }
+      .alert-error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
+      
+      .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+      .stat-card { background: rgba(18,18,18,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; }
+      .stat-label { font-size: 12px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+      .stat-value { font-size: 32px; font-weight: 700; color: #fff; }
+      .stat-value.accent { color: #22c55e; }
+      .stat-value.warning { color: #eab308; }
+      
+      .section { background: rgba(18,18,18,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
+      .section-header { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+      .section-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+      .section-subtitle { font-size: 13px; color: #666; }
+      .section-content { padding: 0; }
+      
+      table { width: 100%; border-collapse: collapse; }
+      th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.03); }
+      td { padding: 14px 16px; font-size: 14px; color: #a0a0a0; border-top: 1px solid rgba(255,255,255,0.05); }
+      tr:hover td { background: rgba(255,255,255,0.02); }
+      td.name { color: #fff; font-weight: 500; }
+      
+      .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+      .badge-blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
+      .badge-green { background: rgba(34,197,94,0.15); color: #22c55e; }
+      .badge-purple { background: rgba(168,85,247,0.15); color: #c084fc; }
+      
+      .btn { padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; }
+      .btn-approve { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+      .btn-approve:hover { background: rgba(34,197,94,0.25); }
+      .btn-reject { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+      .btn-reject:hover { background: rgba(239,68,68,0.25); }
+      .actions { display: flex; gap: 8px; }
+      
+      .empty { text-align: center; padding: 40px 20px; color: #555; font-size: 14px; }
+      
+      @media (max-width: 768px) {
+        .container { padding: 16px; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        table { display: block; overflow-x: auto; }
+        .actions { flex-direction: column; }
+      }
+    </style>
   </head>
-  <body class="bg-gray-100 min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow">
-      <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <a href="/" class="text-green-600 hover:text-green-700 font-medium">← Back to Home</a>
-      </div>
+  <body>
+    <header class="header">
+      <h1>Admin Dashboard</h1>
+      <a href="/" class="back-link">← Back to Globe</a>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-      <!-- Success/Error Messages -->
+    <div class="container">
       {{if .Success}}
-      <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-6">
-        {{.Success}}
-      </div>
+      <div class="alert alert-success">{{.Success}}</div>
       {{end}}
       {{if .Error}}
-      <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
-        {{.Error}}
-      </div>
+      <div class="alert alert-error">{{.Error}}</div>
       {{end}}
 
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-sm font-medium text-gray-500">Total Users</div>
-          <div class="text-3xl font-bold text-gray-900">{{.Stats.TotalUsers}}</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value">{{.Stats.TotalUsers}}</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-sm font-medium text-gray-500">Pending Approval</div>
-          <div class="text-3xl font-bold text-yellow-600">{{.Stats.PendingCount}}</div>
+        <div class="stat-card">
+          <div class="stat-label">Pending Approval</div>
+          <div class="stat-value warning">{{.Stats.PendingCount}}</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-sm font-medium text-gray-500">Total Uploads (This Year)</div>
-          <div class="text-3xl font-bold text-gray-900">{{.Stats.TotalUploads}}</div>
+        <div class="stat-card">
+          <div class="stat-label">Total Uploads</div>
+          <div class="stat-value">{{.Stats.TotalUploads}}</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-sm font-medium text-gray-500">Total Distance (km)</div>
-          <div class="text-3xl font-bold text-green-600">{{printf "%.1f" .Stats.TotalDistanceKm}}</div>
+        <div class="stat-card">
+          <div class="stat-label">Total Distance</div>
+          <div class="stat-value accent">{{printf "%.1f" .Stats.TotalDistanceKm}} km</div>
         </div>
       </div>
 
-      <!-- Pending Users Section -->
-      <div class="bg-white rounded-lg shadow mb-8">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-900">Pending Users</h2>
-          <p class="text-sm text-gray-500">Users awaiting approval</p>
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Pending Users</div>
+          <div class="section-subtitle">Users awaiting approval</div>
         </div>
-        <div class="p-6">
+        <div class="section-content">
           {{if .PendingUsers}}
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Organization</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                {{range .PendingUsers}}
-                <tr>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{.Name}}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{.Email}}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{.Organization}}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {{.OrganizationType}}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{.CreatedAt.Format "Jan 02, 2006"}}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    <form method="POST" action="/admin/approve" class="inline">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Organization</th>
+                <th>Type</th>
+                <th>Registered</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .PendingUsers}}
+              <tr>
+                <td class="name">{{.Name}}</td>
+                <td>{{.Email}}</td>
+                <td>{{.Organization}}</td>
+                <td><span class="badge badge-blue">{{.OrganizationType}}</span></td>
+                <td>{{.CreatedAt.Format "Jan 02, 2006"}}</td>
+                <td>
+                  <div class="actions">
+                    <form method="POST" action="/admin/approve" style="margin:0;">
                       <input type="hidden" name="user_id" value="{{.ID}}" />
-                      <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors">
-                        Approve
-                      </button>
+                      <button type="submit" class="btn btn-approve">Approve</button>
                     </form>
-                    <form method="POST" action="/admin/reject" class="inline" onsubmit="return confirm('Are you sure you want to reject and delete this user?');">
+                    <form method="POST" action="/admin/reject" style="margin:0;" onsubmit="return confirm('Reject and delete this user?');">
                       <input type="hidden" name="user_id" value="{{.ID}}" />
-                      <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors">
-                        Reject
-                      </button>
+                      <button type="submit" class="btn btn-reject">Reject</button>
                     </form>
-                  </td>
-                </tr>
-                {{end}}
-              </tbody>
-            </table>
-          </div>
+                  </div>
+                </td>
+              </tr>
+              {{end}}
+            </tbody>
+          </table>
           {{else}}
-          <div class="text-center py-8 text-gray-500">
-            <p>No pending users</p>
-          </div>
+          <div class="empty">No pending users</div>
           {{end}}
         </div>
       </div>
 
-      <!-- Approved Users Section -->
-      <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-900">Approved Users</h2>
-          <p class="text-sm text-gray-500">Active users with upload access</p>
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Approved Users</div>
+          <div class="section-subtitle">Active users with upload access</div>
         </div>
-        <div class="p-6">
+        <div class="section-content">
           {{if .ApprovedUsers}}
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Organization</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                {{range .ApprovedUsers}}
-                <tr>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{.Name}}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{.Email}}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{.Organization}}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {{.OrganizationType}}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{if eq .Role "admin"}}
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                      Admin
-                    </span>
-                    {{else}}
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Approved
-                    </span>
-                    {{end}}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{.CreatedAt.Format "Jan 02, 2006"}}</td>
-                </tr>
-                {{end}}
-              </tbody>
-            </table>
-          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Organization</th>
+                <th>Type</th>
+                <th>Role</th>
+                <th>Registered</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .ApprovedUsers}}
+              <tr>
+                <td class="name">{{.Name}}</td>
+                <td>{{.Email}}</td>
+                <td>{{.Organization}}</td>
+                <td><span class="badge badge-blue">{{.OrganizationType}}</span></td>
+                <td>
+                  {{if eq .Role "admin"}}
+                  <span class="badge badge-purple">Admin</span>
+                  {{else}}
+                  <span class="badge badge-green">Approved</span>
+                  {{end}}
+                </td>
+                <td>{{.CreatedAt.Format "Jan 02, 2006"}}</td>
+              </tr>
+              {{end}}
+            </tbody>
+          </table>
           {{else}}
-          <div class="text-center py-8 text-gray-500">
-            <p>No approved users yet</p>
-          </div>
+          <div class="empty">No approved users yet</div>
           {{end}}
         </div>
       </div>
-    </main>
+    </div>
   </body>
 </html>
