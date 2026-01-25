@@ -114,6 +114,8 @@
         .activity-marker { width: 24px; height: 24px; background: rgba(34,197,94,0.3); border: 2px solid #22c55e; border-radius: 50%; position: relative; }
         .activity-marker::after { content: ''; position: absolute; inset: -8px; border: 2px solid rgba(34,197,94,0.5); border-radius: 50%; animation: marker-pulse 1.5s ease-out infinite; }
         @keyframes marker-pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+        @keyframes toastFadeIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes toastFadeOut { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(20px); } }
 
         @media (max-width: 768px) {
             .latest-activity-banner { top: 62px; left: 10px; right: 10px; transform: none; max-width: none; }
@@ -233,7 +235,12 @@
         .search-result-item { padding: 12px 14px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.06); -webkit-transition: background 0.15s; transition: background 0.15s; min-height: 44px; }
         .search-result-item:last-child { border-bottom: none; }
         .search-result-item:hover { background: rgba(34,197,94,0.1); }
-        .search-result-name { font-size: 14px; color: #fff; margin-bottom: 2px; }
+        .search-result-item.unloaded { opacity: 0.7; }
+        .search-result-item.unloaded:hover { background: rgba(128,128,128,0.15); }
+        .search-result-name { font-size: 14px; color: #fff; margin-bottom: 2px; display: flex; align-items: center; gap: 8px; }
+        .search-result-name .loaded-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 500; }
+        .search-result-name .loaded-badge.loaded { background: rgba(34,197,94,0.2); color: #22c55e; }
+        .search-result-name .loaded-badge.unloaded { background: rgba(128,128,128,0.2); color: #888; }
         .search-result-country { font-size: 12px; color: #888; }
         .search-no-results { padding: 16px 14px; text-align: center; color: #666; font-size: 13px; }
         .search-loading { padding: 16px 14px; text-align: center; color: #888; font-size: 13px; }
@@ -1645,11 +1652,21 @@
             results.classList.add('open');
             
             try {
-                const res = await fetch(`/api/areas/search?q=${encodeURIComponent(query)}`);
-                if (!res.ok) throw new Error('Search failed');
+                // Search both loaded keystones and WDPA index
+                const [keystonesRes, wdpaRes] = await Promise.all([
+                    fetch(`/api/areas/search?q=${encodeURIComponent(query)}`),
+                    fetch(`/api/wdpa/search?q=${encodeURIComponent(query)}`)
+                ]);
                 
-                const areas = await res.json();
-                displaySearchResults(areas);
+                const keystones = keystonesRes.ok ? await keystonesRes.json() : [];
+                const wdpaAreas = wdpaRes.ok ? await wdpaRes.json() : [];
+                
+                // Merge results: keystones first (loaded), then WDPA unloaded
+                const loadedIds = new Set(keystones.map(k => k.name.toLowerCase()));
+                const unloaded = wdpaAreas.filter(w => !loadedIds.has(w.name.toLowerCase()) && !w.loaded);
+                const merged = [...keystones.map(k => ({...k, loaded: true})), ...unloaded];
+                
+                displaySearchResults(merged);
             } catch (err) {
                 console.error('Search error:', err);
                 results.innerHTML = '<div class="search-no-results">Search failed</div>';
@@ -1664,19 +1681,30 @@
                 return;
             }
             
-            results.innerHTML = areas.map(area => `
-                <div class="search-result-item" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
-                    <div class="search-result-name">${escapeHtml(area.name)}</div>
-                    <div class="search-result-country">${escapeHtml(area.country || 'Unknown')}</div>
+            results.innerHTML = areas.map(area => {
+                const isLoaded = area.loaded !== false;
+                const itemClass = isLoaded ? 'search-result-item' : 'search-result-item unloaded';
+                const badgeClass = isLoaded ? 'loaded-badge loaded' : 'loaded-badge unloaded';
+                const badgeText = isLoaded ? 'loaded' : 'not loaded';
+                return `
+                <div class="${itemClass}" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
+                    <div class="search-result-name">
+                        <span>${escapeHtml(area.name)}</span>
+                        <span class="${badgeClass}">${badgeText}</span>
+                    </div>
+                    <div class="search-result-country">${escapeHtml(area.country || 'Unknown')}${area.designation ? ' • ' + escapeHtml(area.designation) : ''}</div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function selectSearchResult(area) {
             hideSearchResults();
             document.getElementById('search-input').value = area.name;
             
-            // Fly to the area
+            const isLoaded = area.loaded !== false;
+            
+            // Fly to the area (if we have coordinates)
             let targetCenter = null;
             if (area.bbox && area.bbox.length === 4) {
                 map.fitBounds([
@@ -1693,9 +1721,47 @@
                 targetCenter = area.center;
             }
             
-            // Show popup after flying
-            if (targetCenter) {
+            // Show popup after flying (or immediately for unloaded PAs without coords)
+            if (isLoaded && targetCenter) {
                 setTimeout(() => showPAPopup(area, { lng: targetCenter[0], lat: targetCenter[1] }), 800);
+            } else if (!isLoaded) {
+                // Show "not loaded" popup for unloaded PAs
+                showUnloadedPAPopup(area, targetCenter);
+            }
+        }
+        
+        function showUnloadedPAPopup(area, coords) {
+            // Close existing popup
+            if (currentPAPopup) {
+                currentPAPopup.remove();
+                currentPAPopup = null;
+            }
+            
+            const popupContent = `
+                <div style="padding: 12px; min-width: 200px;">
+                    <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #888;">${escapeHtml(area.name)}</div>
+                    <div style="font-size: 13px; color: #666; margin-bottom: 12px;">
+                        ${escapeHtml(area.country || 'Unknown')}
+                        ${area.designation ? '<br>' + escapeHtml(area.designation) : ''}
+                        ${area.area_km2 ? '<br>' + area.area_km2.toLocaleString() + ' km²' : ''}
+                    </div>
+                    <div style="background: rgba(128,128,128,0.15); border-radius: 6px; padding: 10px; text-align: center;">
+                        <div style="font-size: 12px; color: #888; margin-bottom: 4px;">⚠️ PA not yet in system</div>
+                        <div style="font-size: 11px; color: #666;">Coordinates unavailable</div>
+                    </div>
+                    ${area.wdpa_id ? '<div style="margin-top: 10px; font-size: 11px; color: #555;">WDPA ID: ' + area.wdpa_id + '</div>' : ''}
+                </div>
+            `;
+            
+            // If we have coordinates, show popup at that location
+            if (coords) {
+                currentPAPopup = new mapboxgl.Popup({ closeOnClick: true, maxWidth: '300px' })
+                    .setLngLat(coords)
+                    .setHTML(popupContent)
+                    .addTo(map);
+            } else {
+                // Show a toast notification instead
+                showToast(`"${area.name}" is not yet loaded in the system. Coordinates unavailable.`, 'info');
             }
         }
 
@@ -1721,6 +1787,31 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+        
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'info' ? 'rgba(59, 130, 246, 0.95)' : 'rgba(34, 197, 94, 0.95)'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 9999;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                animation: toastFadeIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'toastFadeOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
         }
 
         

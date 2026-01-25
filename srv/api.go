@@ -2,6 +2,7 @@ package srv
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -301,14 +302,8 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 // Query params:
 //   - q: search query (required)
 // Returns matching PAs with center coordinates for map navigation.
+// Results include both loaded (keystone) PAs and unloaded WDPA PAs.
 func (s *Server) HandleAPIAreasSearch(w http.ResponseWriter, r *http.Request) {
-	if s.AreaStore == nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusServiceUnavailable)
-		json.NewEncoder(w).Encode(map[string]string{"error": "area store not configured"})
-		return
-	}
-
 	query := r.URL.Query().Get("q")
 	if query == "" {
 		w.Header().Set("Content-Type", "application/json")
@@ -318,26 +313,60 @@ func (s *Server) HandleAPIAreasSearch(w http.ResponseWriter, r *http.Request) {
 
 	// Case-insensitive search
 	queryLower := strings.ToLower(query)
-	results := make([]map[string]interface{}, 0, 10)
+	results := make([]map[string]interface{}, 0, 20)
 
-	for _, area := range s.AreaStore.Areas {
-		if strings.Contains(strings.ToLower(area.Name), queryLower) {
-			// Calculate center from bounding box
-			latMin, latMax, lonMin, lonMax := area.GetBoundingBox()
-			centerLat := (latMin + latMax) / 2
-			centerLon := (lonMin + lonMax) / 2
+	// Track WDPA IDs we've already added from loaded areas
+	loadedWDPAIDs := make(map[string]bool)
+
+	// First, search loaded areas (keystones) - these show in green
+	if s.AreaStore != nil {
+		for _, area := range s.AreaStore.Areas {
+			if strings.Contains(strings.ToLower(area.Name), queryLower) {
+				// Calculate center from bounding box
+				latMin, latMax, lonMin, lonMax := area.GetBoundingBox()
+				centerLat := (latMin + latMax) / 2
+				centerLon := (lonMin + lonMax) / 2
+
+				results = append(results, map[string]interface{}{
+					"id":        area.ID,
+					"name":      area.Name,
+					"country":   area.Country,
+					"wdpa_id":   area.WDPAID,
+					"area_km2":  area.AreaKm2,
+					"center":    []float64{centerLon, centerLat},
+					"bbox":      []float64{lonMin, latMin, lonMax, latMax},
+					"loaded":    true, // This PA is loaded in the system
+				})
+
+				loadedWDPAIDs[area.WDPAID] = true
+
+				if len(results) >= 10 {
+					break
+				}
+			}
+		}
+	}
+
+	// Then, search WDPA index for additional unloaded areas - these show in grey
+	if s.WDPAIndex != nil && len(results) < 20 {
+		wdpaResults := s.WDPAIndex.Search(query, 20-len(results))
+		for _, entry := range wdpaResults {
+			// Skip if already added from loaded areas
+			wdpaIDStr := strconv.Itoa(entry.WDPAID)
+			if loadedWDPAIDs[wdpaIDStr] {
+				continue
+			}
 
 			results = append(results, map[string]interface{}{
-				"id":        area.ID,
-				"name":      area.Name,
-				"country":   area.Country,
-				"wdpa_id":   area.WDPAID,
-				"area_km2":  area.AreaKm2,
-				"center":    []float64{centerLon, centerLat},
-				"bbox":      []float64{lonMin, latMin, lonMax, latMax},
+				"name":        entry.Name,
+				"country":     entry.Country,
+				"wdpa_id":     wdpaIDStr,
+				"area_km2":    entry.AreaKm2,
+				"designation": entry.Designation,
+				"loaded":      false, // This PA is NOT loaded in the system
 			})
 
-			if len(results) >= 10 {
+			if len(results) >= 20 {
 				break
 			}
 		}
@@ -431,4 +460,52 @@ func (s *Server) HandleAPIUpload(w http.ResponseWriter, r *http.Request) {
 		"filename": header.Filename,
 		"size":     header.Size,
 	})
+}
+
+
+// HandleAPIWDPASearch searches the WDPA index for protected areas.
+func (s *Server) HandleAPIWDPASearch(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	if query == "" {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode([]interface{}{})
+		return
+	}
+
+	if s.WDPAIndex == nil {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode([]interface{}{})
+		return
+	}
+
+	// Search WDPA index
+	entries := s.WDPAIndex.Search(query, 50)
+
+	// Build set of loaded keystone WDPA IDs
+	keystoneIDs := make(map[string]bool)
+	if s.AreaStore != nil {
+		for _, a := range s.AreaStore.Areas {
+			if a.WDPAID != "" {
+				keystoneIDs[a.WDPAID] = true
+			}
+		}
+	}
+
+	// Build response with loaded status
+	results := make([]map[string]interface{}, 0, len(entries))
+	for _, e := range entries {
+		wdpaIDStr := fmt.Sprintf("%d", e.WDPAID)
+		results = append(results, map[string]interface{}{
+			"wdpa_id":      e.WDPAID,
+			"name":         e.Name,
+			"country":      e.Country,
+			"country_code": e.CountryCode,
+			"designation":  e.Designation,
+			"area_km2":     e.AreaKm2,
+			"loaded":       keystoneIDs[wdpaIDStr],
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
 }

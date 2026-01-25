@@ -20,6 +20,7 @@ type Server struct {
 	TemplatesDir string
 	StaticDir    string
 	AreaStore    *areas.AreaStore
+	WDPAIndex    *areas.WDPAIndex
 	Auth         *auth.Manager
 	LegalStore   *LegalStore
 }
@@ -110,6 +111,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)
 	mux.HandleFunc("GET /api/areas", s.HandleAPIAreas)
 	mux.HandleFunc("GET /api/areas/search", s.HandleAPIAreasSearch)
+	mux.HandleFunc("GET /api/wdpa/search", s.HandleAPIWDPASearch)
 	
 	// API auth endpoints
 	mux.HandleFunc("POST /api/login", s.HandleAPILogin)
