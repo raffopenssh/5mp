@@ -3,6 +3,7 @@ package areas
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"os"
 )
@@ -17,18 +18,26 @@ type Point struct {
 }
 
 // GeoJSONGeometry represents a GeoJSON geometry object.
+// Supports both Polygon and MultiPolygon types.
 type GeoJSONGeometry struct {
 	Type        string          `json:"type"`
-	Coordinates [][][]float64   `json:"coordinates"`
+	Coordinates json.RawMessage `json:"coordinates"`
+
+	// Parsed polygon rings (outer ring only for simplicity)
+	// For MultiPolygon, this is the first polygon's outer ring.
+	parsedRings [][][]float64
 }
 
 // ProtectedArea represents a conservation area with polygon geometry.
 type ProtectedArea struct {
-	ID       string          `json:"id"`
-	Name     string          `json:"name"`
-	Country  string          `json:"country"`
-	Geometry GeoJSONGeometry `json:"geometry"`
-	BufferKm float64         `json:"buffer_km"`
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Country     string          `json:"country"`
+	CountryCode string          `json:"country_code"`
+	WDPAID      string          `json:"wdpa_id,omitempty"`
+	AreaKm2     float64         `json:"area_km2,omitempty"`
+	Geometry    GeoJSONGeometry `json:"geometry"`
+	BufferKm    float64         `json:"buffer_km"`
 
 	// Cached bounding box for fast rejection
 	bbox *boundingBox
@@ -38,6 +47,31 @@ type ProtectedArea struct {
 type boundingBox struct {
 	LatMin, LatMax float64
 	LonMin, LonMax float64
+}
+
+// KeystonePA represents a protected area from keystones_basic.json.
+type KeystonePA struct {
+	ID          string  `json:"id"`
+	CountryCode string  `json:"country_code"`
+	Country     string  `json:"country"`
+	Name        string  `json:"name"`
+	Partner     *string `json:"partner"`
+	Staff       *int    `json:"staff"`
+	Budget      *int    `json:"budget"`
+	Donor       *string `json:"donor"`
+	Performance *string `json:"performance"`
+	WDPAID      string  `json:"wdpa_id"`
+	AreaKm2     *int    `json:"area_km2"`
+	Coordinates struct {
+		Lat float64 `json:"lat"`
+		Lon float64 `json:"lon"`
+	} `json:"coordinates"`
+}
+
+// KeystoneWithBoundary represents a keystone PA with fetched boundary.
+type KeystoneWithBoundary struct {
+	KeystonePA
+	Geometry *GeoJSONGeometry `json:"geometry,omitempty"`
 }
 
 // AreaStore holds a collection of protected areas for lookup.
@@ -65,13 +99,223 @@ func LoadAreas(path string) (*AreaStore, error) {
 	return &AreaStore{Areas: areas}, nil
 }
 
-// computeBoundingBox calculates and caches the bounding box for fast rejection.
-func (a *ProtectedArea) computeBoundingBox() {
-	if len(a.Geometry.Coordinates) == 0 {
+// LoadKeystones loads protected areas from keystones files.
+// It prefers keystones_with_boundaries.json if it exists, otherwise falls back to
+// keystones_basic.json and generates circle approximations.
+func LoadKeystones(dataDir string) (*AreaStore, error) {
+	// Try loading keystones with boundaries first
+	boundariesPath := dataDir + "/keystones_with_boundaries.json"
+	if _, err := os.Stat(boundariesPath); err == nil {
+		areas, err := loadKeystonesWithBoundaries(boundariesPath)
+		if err == nil {
+			fmt.Printf("Loaded %d keystones with boundaries from %s\n", len(areas.Areas), boundariesPath)
+			return areas, nil
+		}
+		// Fall through to basic if there's an error
+		fmt.Printf("Warning: failed to load boundaries file, falling back to basic: %v\n", err)
+	}
+
+	// Fall back to basic keystones with circle approximations
+	basicPath := dataDir + "/keystones_basic.json"
+	areas, err := loadKeystonesBasic(basicPath)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("Loaded %d keystones with circle approximations from %s\n", len(areas.Areas), basicPath)
+	return areas, nil
+}
+
+// loadKeystonesBasic loads keystones from basic JSON and creates circle approximations.
+func loadKeystonesBasic(path string) (*AreaStore, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var keystones []KeystonePA
+	if err := json.Unmarshal(data, &keystones); err != nil {
+		return nil, err
+	}
+
+	areas := make([]ProtectedArea, 0, len(keystones))
+	for _, ks := range keystones {
+		area := keystoneToArea(ks)
+		area.computeBoundingBox()
+		areas = append(areas, area)
+	}
+
+	return &AreaStore{Areas: areas}, nil
+}
+
+// loadKeystonesWithBoundaries loads keystones that have actual boundaries.
+func loadKeystonesWithBoundaries(path string) (*AreaStore, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var keystones []KeystoneWithBoundary
+	if err := json.Unmarshal(data, &keystones); err != nil {
+		return nil, err
+	}
+
+	areas := make([]ProtectedArea, 0, len(keystones))
+	for _, ks := range keystones {
+		var area ProtectedArea
+		if ks.Geometry != nil && len(ks.Geometry.Coordinates) > 0 {
+			// Use actual boundary
+			area = ProtectedArea{
+				ID:          ks.ID,
+				Name:        ks.Name,
+				Country:     ks.Country,
+				CountryCode: ks.CountryCode,
+				WDPAID:      ks.WDPAID,
+				Geometry:    *ks.Geometry,
+				BufferKm:    2.0,
+			}
+			if ks.AreaKm2 != nil {
+				area.AreaKm2 = float64(*ks.AreaKm2)
+			}
+		} else {
+			// Fall back to circle approximation
+			area = keystoneToArea(ks.KeystonePA)
+		}
+		area.computeBoundingBox()
+		areas = append(areas, area)
+	}
+
+	return &AreaStore{Areas: areas}, nil
+}
+
+// keystoneToArea converts a KeystonePA to a ProtectedArea with circle geometry.
+func keystoneToArea(ks KeystonePA) ProtectedArea {
+	// Calculate radius from area (A = πr²)
+	areaKm2 := 1000.0 // Default 1000 km² if not specified
+	if ks.AreaKm2 != nil {
+		areaKm2 = float64(*ks.AreaKm2)
+	}
+
+	radiusKm := math.Sqrt(areaKm2 / math.Pi)
+
+	// Create circle polygon
+	geometry := createCirclePolygon(ks.Coordinates.Lat, ks.Coordinates.Lon, radiusKm)
+
+	return ProtectedArea{
+		ID:          ks.ID,
+		Name:        ks.Name,
+		Country:     ks.Country,
+		CountryCode: ks.CountryCode,
+		WDPAID:      ks.WDPAID,
+		AreaKm2:     areaKm2,
+		Geometry:    geometry,
+		BufferKm:    2.0, // Default buffer
+	}
+}
+
+// createCirclePolygon creates a polygon approximating a circle.
+// Uses 32 points for smooth appearance.
+func createCirclePolygon(centerLat, centerLon, radiusKm float64) GeoJSONGeometry {
+	const numPoints = 32
+
+	// Convert radius to degrees
+	// Latitude degrees are roughly constant
+	radiusLatDeg := radiusKm / KmPerDegree
+	// Longitude degrees vary by latitude
+	radiusLonDeg := radiusKm / (KmPerDegree * math.Cos(centerLat*math.Pi/180))
+
+	ring := make([][]float64, numPoints+1)
+	for i := 0; i < numPoints; i++ {
+		angle := 2 * math.Pi * float64(i) / float64(numPoints)
+		lat := centerLat + radiusLatDeg*math.Sin(angle)
+		lon := centerLon + radiusLonDeg*math.Cos(angle)
+		// GeoJSON uses [lon, lat] order
+		ring[i] = []float64{lon, lat}
+	}
+	// Close the ring
+	ring[numPoints] = ring[0]
+
+	rings := [][][]float64{ring}
+	coords, _ := json.Marshal(rings)
+
+	return GeoJSONGeometry{
+		Type:        "Polygon",
+		Coordinates: coords,
+		parsedRings: rings,
+	}
+}
+
+// parseGeometry parses the raw coordinates into polygon rings.
+func (g *GeoJSONGeometry) parseGeometry() {
+	if g.parsedRings != nil || len(g.Coordinates) == 0 {
 		return
 	}
 
-	ring := a.Geometry.Coordinates[0] // Outer ring
+	switch g.Type {
+	case "Polygon":
+		// Polygon: [[[lon, lat], ...]]
+		var rings [][][]float64
+		if err := json.Unmarshal(g.Coordinates, &rings); err == nil {
+			g.parsedRings = rings
+		}
+	case "MultiPolygon":
+		// MultiPolygon: [[[[lon, lat], ...]]]
+		// Find the largest polygon by bounding box area
+		var multiRings [][][][]float64
+		if err := json.Unmarshal(g.Coordinates, &multiRings); err == nil && len(multiRings) > 0 {
+			largestIdx := 0
+			largestArea := 0.0
+			for i, rings := range multiRings {
+				if len(rings) > 0 && len(rings[0]) > 0 {
+					area := bboxArea(rings[0])
+					if area > largestArea {
+						largestArea = area
+						largestIdx = i
+					}
+				}
+			}
+			g.parsedRings = multiRings[largestIdx]
+		}
+	}
+}
+
+// bboxArea calculates approximate bounding box area for a ring.
+func bboxArea(ring [][]float64) float64 {
+	if len(ring) == 0 {
+		return 0
+	}
+	minLat, maxLat := ring[0][1], ring[0][1]
+	minLon, maxLon := ring[0][0], ring[0][0]
+	for _, coord := range ring {
+		if coord[1] < minLat {
+			minLat = coord[1]
+		}
+		if coord[1] > maxLat {
+			maxLat = coord[1]
+		}
+		if coord[0] < minLon {
+			minLon = coord[0]
+		}
+		if coord[0] > maxLon {
+			maxLon = coord[0]
+		}
+	}
+	return (maxLat - minLat) * (maxLon - minLon)
+}
+
+// getRings returns the parsed polygon rings.
+func (g *GeoJSONGeometry) getRings() [][][]float64 {
+	g.parseGeometry()
+	return g.parsedRings
+}
+
+// computeBoundingBox calculates and caches the bounding box for fast rejection.
+func (a *ProtectedArea) computeBoundingBox() {
+	rings := a.Geometry.getRings()
+	if len(rings) == 0 {
+		return
+	}
+
+	ring := rings[0] // Outer ring
 	if len(ring) == 0 {
 		return
 	}
@@ -143,13 +387,15 @@ func (a *ProtectedArea) ContainsPoint(lat, lon float64) bool {
 		}
 	}
 
+	rings := a.Geometry.getRings()
+
 	// Check if point is inside the polygon
-	if pointInPolygon(lat, lon, a.Geometry.Coordinates) {
+	if pointInPolygon(lat, lon, rings) {
 		return true
 	}
 
 	// Check if point is within buffer distance of polygon edge
-	if bufferDeg > 0 && pointNearPolygonEdge(lat, lon, a.Geometry.Coordinates, bufferDeg) {
+	if bufferDeg > 0 && pointNearPolygonEdge(lat, lon, rings, bufferDeg) {
 		return true
 	}
 
@@ -158,13 +404,13 @@ func (a *ProtectedArea) ContainsPoint(lat, lon float64) bool {
 
 // pointInPolygon checks if a point is inside a polygon using ray casting algorithm.
 // Coordinates are in GeoJSON format: [lon, lat].
-func pointInPolygon(lat, lon float64, coords [][][]float64) bool {
-	if len(coords) == 0 {
+func pointInPolygon(lat, lon float64, rings [][][]float64) bool {
+	if len(rings) == 0 {
 		return false
 	}
 
 	// Check outer ring
-	ring := coords[0]
+	ring := rings[0]
 	return pointInRing(lat, lon, ring)
 }
 
@@ -195,12 +441,12 @@ func pointInRing(lat, lon float64, ring [][]float64) bool {
 }
 
 // pointNearPolygonEdge checks if a point is within bufferDeg of any polygon edge.
-func pointNearPolygonEdge(lat, lon float64, coords [][][]float64, bufferDeg float64) bool {
-	if len(coords) == 0 {
+func pointNearPolygonEdge(lat, lon float64, rings [][][]float64, bufferDeg float64) bool {
+	if len(rings) == 0 {
 		return false
 	}
 
-	ring := coords[0]
+	ring := rings[0]
 	n := len(ring)
 	if n < 2 {
 		return false

@@ -1,6 +1,7 @@
 package areas
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -8,15 +9,18 @@ import (
 
 // Helper to create a simple rectangular polygon geometry
 func makeRectPolygon(latMin, latMax, lonMin, lonMax float64) GeoJSONGeometry {
+	rings := [][][]float64{{
+		{lonMin, latMin}, // SW
+		{lonMax, latMin}, // SE
+		{lonMax, latMax}, // NE
+		{lonMin, latMax}, // NW
+		{lonMin, latMin}, // SW (close ring)
+	}}
+	coords, _ := json.Marshal(rings)
 	return GeoJSONGeometry{
-		Type: "Polygon",
-		Coordinates: [][][]float64{{
-			{lonMin, latMin}, // SW
-			{lonMax, latMin}, // SE
-			{lonMax, latMax}, // NE
-			{lonMin, latMax}, // NW
-			{lonMin, latMin}, // SW (close ring)
-		}},
+		Type:        "Polygon",
+		Coordinates: coords,
+		parsedRings: rings,
 	}
 }
 
@@ -53,17 +57,20 @@ func TestPointInPolygon(t *testing.T) {
 
 func TestPointInIrregularPolygon(t *testing.T) {
 	// Test with a triangle-shaped polygon
+	rings := [][][]float64{{
+		{0.0, 0.0},   // bottom left
+		{2.0, 0.0},   // bottom right
+		{1.0, 2.0},   // top center
+		{0.0, 0.0},   // close
+	}}
+	coords, _ := json.Marshal(rings)
 	triangle := ProtectedArea{
 		ID:   "triangle",
 		Name: "Triangle Area",
 		Geometry: GeoJSONGeometry{
-			Type: "Polygon",
-			Coordinates: [][][]float64{{
-				{0.0, 0.0},   // bottom left
-				{2.0, 0.0},   // bottom right
-				{1.0, 2.0},   // top center
-				{0.0, 0.0},   // close
-			}},
+			Type:        "Polygon",
+			Coordinates: coords,
+			parsedRings: rings,
 		},
 		BufferKm: 0.0,
 	}
@@ -232,5 +239,46 @@ func TestLoadRealAreasFile(t *testing.T) {
 	area = store.FindArea(50.0, 0.0) // London area - should be outside
 	if area != nil {
 		t.Errorf("expected nil for London coordinates, got %s", area.ID)
+	}
+}
+
+func TestLoadKeystones(t *testing.T) {
+	// Test loading keystones from data directory
+	store, err := LoadKeystones("../../data")
+	if err != nil {
+		t.Fatalf("LoadKeystones failed: %v", err)
+	}
+
+	// Should have 162 keystones
+	if len(store.Areas) != 162 {
+		t.Errorf("expected 162 keystones, got %d", len(store.Areas))
+	}
+
+	// Check first area has expected fields
+	if len(store.Areas) > 0 {
+		area := store.Areas[0]
+		if area.ID == "" {
+			t.Error("expected area to have ID")
+		}
+		if area.Name == "" {
+			t.Error("expected area to have Name")
+		}
+		if area.Country == "" {
+			t.Error("expected area to have Country")
+		}
+		if area.WDPAID == "" {
+			t.Error("expected area to have WDPAID")
+		}
+		if area.bbox == nil {
+			t.Error("expected area to have computed bounding box")
+		}
+	}
+
+	// Test that FindArea works for a known point (Cameia center)
+	area := store.FindArea(-11.5, 21.5)
+	if area == nil {
+		t.Error("expected to find Cameia at -11.5, 21.5")
+	} else if area.ID != "AGO_Cameia" {
+		t.Errorf("expected AGO_Cameia, got %s", area.ID)
 	}
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5 Million Paws - Conservation Globe</title>
+    <title>5MP.globe - Global Conservation Effort</title>
     <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
     <style>
@@ -12,7 +12,9 @@
         
         .header { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: rgba(18,18,18,0.95); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; backdrop-filter: blur(10px); }
         .logo { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; color: #fff; }
-        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .logo-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+        .logo-icon svg { width: 28px; height: 28px; }
+        .logo-subtitle { font-size: 11px; font-weight: 400; color: #888; margin-top: 2px; }
         .auth-buttons { display: flex; gap: 12px; align-items: center; }
         .user-info { color: #22c55e; font-size: 14px; }
 
@@ -89,29 +91,114 @@
         .filter-section:last-child { margin-bottom: 0; }
         .filter-section-label { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
 
-        .toggle-group { display: flex; gap: 6px; }
-        .toggle-btn { flex: 1; padding: 8px 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #888; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .toggle-btn:hover { background: rgba(255,255,255,0.1); color: #a0a0a0; }
-        .toggle-btn.active { background: rgba(34,197,94,0.15); border-color: #22c55e; color: #22c55e; }
-        .toggle-btn svg { width: 12px; height: 12px; }
-        .toggle-btn .radio-icon { width: 12px; height: 12px; border: 2px solid currentColor; border-radius: 50%; position: relative; }
-        .toggle-btn.active .radio-icon::after { content: ''; position: absolute; top: 2px; left: 2px; width: 4px; height: 4px; background: currentColor; border-radius: 50%; }
-
-        .filter-select { width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #e0e0e0; font-size: 13px; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
-        .filter-select:hover { border-color: rgba(255,255,255,0.2); }
-        .filter-select:focus { outline: none; border-color: #22c55e; }
-
-        .btn-download { width: 100%; padding: 10px 14px; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 6px; color: #fff; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+        .btn-download { flex: 1; padding: 10px 14px; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 6px; color: #fff; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
         .btn-download:hover { background: linear-gradient(135deg, #16a34a, #15803d); transform: translateY(-1px); }
         .btn-download svg { width: 16px; height: 16px; }
+
+        .download-row { display: flex; gap: 8px; }
+        .btn-bbox { width: 42px; height: 42px; padding: 0; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #a0a0a0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .btn-bbox:hover { background: rgba(255,255,255,0.1); color: #22c55e; border-color: rgba(255,255,255,0.2); }
+        .btn-bbox svg { width: 18px; height: 18px; }
+
+        .date-input { width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #e0e0e0; font-size: 13px; cursor: pointer; }
+        .date-input:hover { border-color: rgba(255,255,255,0.2); }
+        .date-input:focus { outline: none; border-color: #22c55e; }
+        .date-input::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.5); cursor: pointer; }
+        .date-row { display: flex; gap: 8px; align-items: center; }
+        .date-row label { font-size: 11px; color: #666; min-width: 32px; }
+        .date-row input { flex: 1; }
+
+        .activity-section { margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; }
+        .activity-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 4px 0; }
+        .activity-header:hover .activity-title { color: #fff; }
+        .activity-title { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; transition: color 0.2s; }
+        .activity-toggle { width: 16px; height: 16px; color: #666; transition: transform 0.2s; }
+        .activity-toggle.expanded { transform: rotate(180deg); }
+        .activity-list { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .activity-list.expanded { max-height: 300px; }
+        .activity-item { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 11px; color: #888; }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-date { color: #666; }
+        .activity-location { color: #a0a0a0; }
+        .activity-distance { color: #22c55e; font-weight: 500; float: right; }
+        .activity-more { padding: 8px 0; text-align: center; font-size: 11px; color: #22c55e; cursor: pointer; }
+        .activity-more:hover { text-decoration: underline; }
+        .activity-empty { padding: 12px 0; text-align: center; font-size: 11px; color: #555; }
+
+        /* Search Box Styles */
+        .search-container { display: flex; align-items: center; position: relative; }
+        .search-toggle { width: 40px; height: 40px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .search-toggle:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .search-toggle svg { width: 18px; height: 18px; color: #a0a0a0; }
+        .search-toggle:hover svg { color: #22c55e; }
+        .search-toggle.active { background: rgba(34,197,94,0.15); border-color: #22c55e; }
+        .search-toggle.active svg { color: #22c55e; }
+        .search-input-wrapper { display: none; align-items: center; position: relative; margin-left: 8px; }
+        .search-input-wrapper.open { display: flex; }
+        .search-input { width: 280px; padding: 10px 36px 10px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e0e0e0; font-size: 14px; transition: all 0.2s; }
+        .search-input:focus { outline: none; border-color: #22c55e; background: rgba(255,255,255,0.08); }
+        .search-input::placeholder { color: #666; }
+        .search-clear { position: absolute; right: 10px; background: none; border: none; color: #666; font-size: 18px; cursor: pointer; padding: 0; line-height: 1; }
+        .search-clear:hover { color: #fff; }
+        .search-results { position: absolute; top: 100%; left: 48px; width: 280px; max-height: 320px; overflow-y: auto; background: rgba(26,26,26,0.98); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; margin-top: 4px; display: none; z-index: 1001; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .search-results.open { display: block; }
+        .search-result-item { padding: 12px 14px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.15s; }
+        .search-result-item:last-child { border-bottom: none; }
+        .search-result-item:hover { background: rgba(34,197,94,0.1); }
+        .search-result-name { font-size: 14px; color: #fff; margin-bottom: 2px; }
+        .search-result-country { font-size: 12px; color: #888; }
+        .search-no-results { padding: 16px 14px; text-align: center; color: #666; font-size: 13px; }
+        .search-loading { padding: 16px 14px; text-align: center; color: #888; font-size: 13px; }
+
+        /* PA Stats Modal Styles */
+        .pa-stats-modal { max-width: 380px; }
+        .pa-stats-content { }
+        .pa-stats-section { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .pa-stats-section:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .pa-stats-section-title { font-size: 12px; font-weight: 600; color: #22c55e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+        .pa-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+        .pa-stat-label { font-size: 14px; color: #888; }
+        .pa-stat-value { font-size: 14px; color: #fff; font-weight: 500; }
+        .pa-patrol-stats .pa-stat-value { color: #22c55e; }
+        .pa-stats-link { margin-top: 20px; }
+        .pa-stats-link a { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #a0a0a0; text-decoration: none; font-size: 13px; transition: all 0.2s; }
+        .pa-stats-link a:hover { background: rgba(255,255,255,0.1); color: #22c55e; border-color: rgba(34,197,94,0.3); }
+        .pa-stats-link svg { width: 16px; height: 16px; }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="logo">
-            <div class="logo-icon">🐾</div>
-            <span>5 Million Paws</span>
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <ellipse cx="12" cy="12" rx="4" ry="10"/>
+                    <path d="M2 12h20"/>
+                    <path d="M4.5 6.5h15"/>
+                    <path d="M4.5 17.5h15"/>
+                </svg>
+            </div>
+            <div>
+                <span>5MP.globe</span>
+                <div class="logo-subtitle">Global Conservation Effort</div>
+            </div>
         </div>
+        
+        <!-- Search Box -->
+        <div class="search-container" id="search-container">
+            <button class="search-toggle" id="search-toggle" onclick="toggleSearch()" title="Search Protected Areas">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+            <div class="search-input-wrapper" id="search-input-wrapper">
+                <input type="text" class="search-input" id="search-input" placeholder="Search protected areas..." autocomplete="off" onkeyup="handleSearchInput(event)" onfocus="showSearchResults()">
+                <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display: none;">&times;</button>
+            </div>
+            <div class="search-results" id="search-results"></div>
+        </div>
+        
         <div class="auth-buttons">
             {{if .User}}
             <span class="user-info">{{.User.Email}}</span>
@@ -167,45 +254,56 @@
             </div>
         </div>
         <div class="filter-panel-content">
-            <!-- Time Period Section -->
+            <!-- Date Range Section -->
             <div class="filter-section">
-                <div class="filter-section-label">Time Period</div>
-                <div class="toggle-group">
-                    <button class="toggle-btn" data-period="daily" onclick="setTimePeriod('daily')">
-                        <span class="radio-icon"></span>
-                        Daily
-                    </button>
-                    <button class="toggle-btn" data-period="monthly" onclick="setTimePeriod('monthly')">
-                        <span class="radio-icon"></span>
-                        Monthly
-                    </button>
-                    <button class="toggle-btn active" data-period="annual" onclick="setTimePeriod('annual')">
-                        <span class="radio-icon"></span>
-                        Annual
-                    </button>
+                <div class="filter-section-label">Date Range</div>
+                <div class="date-row" style="margin-bottom: 8px;">
+                    <label>From</label>
+                    <input type="date" class="date-input" id="date-from" onchange="updateDateRange()">
                 </div>
-            </div>
-
-            <!-- Select Date Section -->
-            <div class="filter-section">
-                <div class="filter-section-label">Select Date</div>
-                <select class="filter-select" id="year-select" onchange="setSelectedYear(this.value)">
-                    <option value="2024">2024</option>
-                    <option value="2025" selected>2025</option>
-                    <option value="2026">2026</option>
-                </select>
+                <div class="date-row">
+                    <label>To</label>
+                    <input type="date" class="date-input" id="date-to" onchange="updateDateRange()">
+                </div>
             </div>
 
             <!-- Download Section -->
             <div class="filter-section">
-                <button class="btn-download" onclick="downloadData()">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                <div class="download-row">
+                    <button class="btn-download" onclick="downloadData()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download
+                    </button>
+                    <button class="btn-bbox" onclick="selectBoundingBox()" title="Select area to download">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3h6v6H3z"></path>
+                            <path d="M15 3h6v6h-6z"></path>
+                            <path d="M3 15h6v6H3z"></path>
+                            <path d="M15 15h6v6h-6z"></path>
+                            <line x1="9" y1="6" x2="15" y2="6"></line>
+                            <line x1="9" y1="18" x2="15" y2="18"></line>
+                            <line x1="6" y1="9" x2="6" y2="15"></line>
+                            <line x1="18" y1="9" x2="18" y2="15"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Activity Log Section -->
+            <div class="activity-section">
+                <div class="activity-header" onclick="toggleActivityLog()">
+                    <span class="activity-title">Recent Activity</span>
+                    <svg class="activity-toggle" id="activity-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
-                    Download Data
-                </button>
+                </div>
+                <div class="activity-list" id="activity-list">
+                    <!-- Activity items will be loaded here -->
+                </div>
             </div>
         </div>
     </div>
@@ -286,6 +384,53 @@
                     <button type="submit" class="btn btn-primary">Upload</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- PA Stats Modal -->
+    <div id="modal-pa-stats" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal pa-stats-modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="pa-stats-name">Protected Area</h2>
+                <button class="modal-close" onclick="closeModal('pa-stats')">&times;</button>
+            </div>
+            <div class="pa-stats-content">
+                <div class="pa-stats-section">
+                    <div class="pa-stat-row">
+                        <span class="pa-stat-label">Country</span>
+                        <span class="pa-stat-value" id="pa-stats-country">--</span>
+                    </div>
+                    <div class="pa-stat-row">
+                        <span class="pa-stat-label">Area</span>
+                        <span class="pa-stat-value" id="pa-stats-area">-- km²</span>
+                    </div>
+                    <div class="pa-stat-row" id="pa-stats-wdpa-row">
+                        <span class="pa-stat-label">WDPA ID</span>
+                        <span class="pa-stat-value" id="pa-stats-wdpa">--</span>
+                    </div>
+                </div>
+                <div class="pa-stats-section pa-patrol-stats">
+                    <h3 class="pa-stats-section-title">Patrol Stats</h3>
+                    <div class="pa-stat-row">
+                        <span class="pa-stat-label">Total Distance</span>
+                        <span class="pa-stat-value" id="pa-stats-distance">-- km</span>
+                    </div>
+                    <div class="pa-stat-row">
+                        <span class="pa-stat-label">Total Patrols</span>
+                        <span class="pa-stat-value" id="pa-stats-patrols">--</span>
+                    </div>
+                </div>
+                <div class="pa-stats-link" id="pa-stats-link-container" style="display: none;">
+                    <a href="#" id="pa-stats-pp-link" target="_blank" rel="noopener noreferrer">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                        View on Protected Planet
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -556,9 +701,25 @@
         loadStats();
 
         // Filter Panel State
-        let timePeriod = 'annual';
-        let selectedYear = '2025';
         let filterPanelOpen = false;
+        let dateFrom = null;
+        let dateTo = null;
+        let activityExpanded = false;
+
+        // Initialize date range to past month
+        function initDateRange() {
+            const today = new Date();
+            const monthAgo = new Date();
+            monthAgo.setDate(monthAgo.getDate() - 30);
+            
+            const formatDate = (d) => d.toISOString().split('T')[0];
+            
+            dateFrom = formatDate(monthAgo);
+            dateTo = formatDate(today);
+            
+            document.getElementById('date-from').value = dateFrom;
+            document.getElementById('date-to').value = dateTo;
+        }
 
         function toggleFilterPanel() {
             filterPanelOpen = !filterPanelOpen;
@@ -573,36 +734,262 @@
             }
         }
 
-        function setTimePeriod(period) {
-            timePeriod = period;
-            // Update toggle button states
-            document.querySelectorAll('.toggle-btn[data-period]').forEach(btn => {
-                if (btn.dataset.period === period) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-            reloadGridData();
-        }
-
-        function setSelectedYear(year) {
-            selectedYear = year;
+        function updateDateRange() {
+            dateFrom = document.getElementById('date-from').value;
+            dateTo = document.getElementById('date-to').value;
             reloadGridData();
         }
 
         function reloadGridData() {
-            const url = `/api/grid?year=${selectedYear}&period=${timePeriod}&t=${Date.now()}`;
+            let url = `/api/grid?t=${Date.now()}`;
+            if (dateFrom) url += `&from=${dateFrom}`;
+            if (dateTo) url += `&to=${dateTo}`;
+            
             const gridSource = map.getSource('grid');
             if (gridSource) {
                 gridSource.setData(url);
             }
-            console.log(`Reloading grid data: year=${selectedYear}, period=${timePeriod}`);
+            console.log(`Reloading grid data: from=${dateFrom}, to=${dateTo}`);
         }
 
         function downloadData() {
-            alert(`Download data for ${timePeriod} period, year ${selectedYear}\n\nThis feature will export the filtered conservation data.`);
+            const fromStr = dateFrom || 'beginning';
+            const toStr = dateTo || 'now';
+            alert(`Download data from ${fromStr} to ${toStr}\n\nThis feature will export the filtered conservation data.`);
         }
+
+        function selectBoundingBox() {
+            alert('Bounding box selection mode\n\nClick and drag on the map to select an area for download.\n\n(This feature is coming soon)');
+        }
+
+        function toggleActivityLog() {
+            activityExpanded = !activityExpanded;
+            const list = document.getElementById('activity-list');
+            const icon = document.getElementById('activity-toggle-icon');
+            
+            if (activityExpanded) {
+                list.classList.add('expanded');
+                icon.classList.add('expanded');
+                loadActivityLog();
+            } else {
+                list.classList.remove('expanded');
+                icon.classList.remove('expanded');
+            }
+        }
+
+        async function loadActivityLog() {
+            const list = document.getElementById('activity-list');
+            
+            try {
+                const res = await fetch('/api/activity');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.activities && data.activities.length > 0) {
+                        list.innerHTML = data.activities.slice(0, 10).map(a => {
+                            const date = new Date(a.date);
+                            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            const location = a.location || 'Unknown';
+                            const distance = a.distance_km ? a.distance_km.toFixed(1) + ' km' : '';
+                            return `<div class="activity-item">
+                                <span class="activity-date">${dateStr}</span> · 
+                                <span class="activity-location">${location}</span>
+                                ${distance ? `<span class="activity-distance">${distance}</span>` : ''}
+                            </div>`;
+                        }).join('');
+                    } else {
+                        list.innerHTML = '<div class="activity-empty">No recent activity</div>';
+                    }
+                } else {
+                    throw new Error('Failed to load');
+                }
+            } catch (err) {
+                // Show placeholder data if API not available
+                list.innerHTML = '<div class="activity-empty">No recent activity</div>';
+            }
+        }
+
+        // Initialize date range on page load
+        initDateRange();
+
+        // ========== Search Functionality ==========
+        let searchOpen = false;
+        let searchTimeout = null;
+        let cachedAreas = null;
+
+        function toggleSearch() {
+            searchOpen = !searchOpen;
+            const toggle = document.getElementById('search-toggle');
+            const wrapper = document.getElementById('search-input-wrapper');
+            const input = document.getElementById('search-input');
+            const results = document.getElementById('search-results');
+            
+            if (searchOpen) {
+                toggle.classList.add('active');
+                wrapper.classList.add('open');
+                setTimeout(() => input.focus(), 100);
+            } else {
+                toggle.classList.remove('active');
+                wrapper.classList.remove('open');
+                results.classList.remove('open');
+                input.value = '';
+                document.getElementById('search-clear').style.display = 'none';
+            }
+        }
+
+        function handleSearchInput(e) {
+            const query = e.target.value.trim();
+            const clearBtn = document.getElementById('search-clear');
+            
+            clearBtn.style.display = query.length > 0 ? 'block' : 'none';
+            
+            if (searchTimeout) clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                hideSearchResults();
+                return;
+            }
+            
+            // Debounce search
+            searchTimeout = setTimeout(() => searchAreas(query), 200);
+        }
+
+        async function searchAreas(query) {
+            const results = document.getElementById('search-results');
+            results.innerHTML = '<div class="search-loading">Searching...</div>';
+            results.classList.add('open');
+            
+            try {
+                const res = await fetch(`/api/areas/search?q=${encodeURIComponent(query)}`);
+                if (!res.ok) throw new Error('Search failed');
+                
+                const areas = await res.json();
+                displaySearchResults(areas);
+            } catch (err) {
+                console.error('Search error:', err);
+                results.innerHTML = '<div class="search-no-results">Search failed</div>';
+            }
+        }
+
+        function displaySearchResults(areas) {
+            const results = document.getElementById('search-results');
+            
+            if (areas.length === 0) {
+                results.innerHTML = '<div class="search-no-results">No protected areas found</div>';
+                return;
+            }
+            
+            results.innerHTML = areas.map(area => `
+                <div class="search-result-item" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
+                    <div class="search-result-name">${escapeHtml(area.name)}</div>
+                    <div class="search-result-country">${escapeHtml(area.country || 'Unknown')}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectSearchResult(area) {
+            // Hide search
+            hideSearchResults();
+            document.getElementById('search-input').value = area.name;
+            
+            // Fly to the area
+            if (area.bbox && area.bbox.length === 4) {
+                map.fitBounds([
+                    [area.bbox[0], area.bbox[1]], // SW
+                    [area.bbox[2], area.bbox[3]]  // NE
+                ], { padding: 50, duration: 1500 });
+            } else if (area.center && area.center.length === 2) {
+                map.flyTo({
+                    center: area.center,
+                    zoom: 10,
+                    duration: 1500
+                });
+            }
+            
+            // Show stats modal after flying
+            setTimeout(() => showPAStatsModal(area), 800);
+        }
+
+        function showSearchResults() {
+            const query = document.getElementById('search-input').value.trim();
+            if (query.length >= 2) {
+                document.getElementById('search-results').classList.add('open');
+            }
+        }
+
+        function hideSearchResults() {
+            document.getElementById('search-results').classList.remove('open');
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-clear').style.display = 'none';
+            hideSearchResults();
+            document.getElementById('search-input').focus();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Close search results when clicking outside
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('search-container');
+            if (!container.contains(e.target)) {
+                hideSearchResults();
+            }
+        });
+
+        // ========== PA Stats Modal ==========
+        function showPAStatsModal(props) {
+            // Set modal content
+            document.getElementById('pa-stats-name').textContent = props.name || 'Protected Area';
+            document.getElementById('pa-stats-country').textContent = props.country || '--';
+            
+            const areaKm2 = props.area_km2 || props.area;
+            if (areaKm2) {
+                document.getElementById('pa-stats-area').textContent = Number(areaKm2).toLocaleString() + ' km²';
+            } else {
+                document.getElementById('pa-stats-area').textContent = '--';
+            }
+            
+            const wdpaId = props.wdpa_id || props.wdpaid;
+            const wdpaRow = document.getElementById('pa-stats-wdpa-row');
+            if (wdpaId) {
+                document.getElementById('pa-stats-wdpa').textContent = wdpaId;
+                wdpaRow.style.display = 'flex';
+                
+                // Show Protected Planet link
+                const linkContainer = document.getElementById('pa-stats-link-container');
+                const ppLink = document.getElementById('pa-stats-pp-link');
+                ppLink.href = `https://www.protectedplanet.net/${wdpaId}`;
+                linkContainer.style.display = 'block';
+            } else {
+                wdpaRow.style.display = 'none';
+                document.getElementById('pa-stats-link-container').style.display = 'none';
+            }
+            
+            // Patrol stats (placeholder - would need API endpoint for per-PA stats)
+            document.getElementById('pa-stats-distance').textContent = '-- km';
+            document.getElementById('pa-stats-patrols').textContent = '--';
+            
+            // Show modal
+            showModal('pa-stats');
+        }
+
+        // Update PA click handler to show modal instead of popup
+        map.on('load', function() {
+            // Remove the default popup click handler and add modal handler
+            map.off('click', 'areas-fill');
+            
+            map.on('click', 'areas-fill', function(e) {
+                if (e.features.length > 0) {
+                    const props = e.features[0].properties;
+                    showPAStatsModal(props);
+                }
+            });
+        });
     </script>
 </body>
 </html>
