@@ -117,16 +117,8 @@
 
         /* Time Slider - Google Timelapse Style */
         .time-slider-container { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.9) 70%, transparent 100%); z-index: 400; padding: 8px 20px 12px; display: flex; flex-direction: column; }
-        .time-slider-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-        .time-slider-controls { display: flex; align-items: center; gap: 12px; }
-        .time-slider-play { width: 32px; height: 32px; border-radius: 50%; background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.4); color: #22c55e; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .time-slider-play:hover { background: rgba(34,197,94,0.3); border-color: #22c55e; }
-        .time-slider-play.playing { background: rgba(34,197,94,0.4); }
-        .time-slider-play svg { width: 14px; height: 14px; fill: currentColor; }
-        .time-slider-date { font-size: 14px; font-weight: 600; color: #22c55e; min-width: 180px; }
-        .time-slider-speed { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #666; }
-        .time-slider-speed select { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: #a0a0a0; padding: 4px 8px; font-size: 11px; cursor: pointer; }
-        .time-slider-speed select:focus { outline: none; border-color: #22c55e; }
+        .time-slider-header { margin-bottom: 6px; }
+        .time-slider-date { font-size: 14px; font-weight: 600; color: #22c55e; }
         .time-slider-track-wrapper { position: relative; flex: 1; padding: 0 8px; }
         .time-slider-track { position: relative; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer; }
         .time-slider-range { position: absolute; height: 100%; background: linear-gradient(90deg, rgba(34,197,94,0.6), #22c55e); border-radius: 3px; pointer-events: none; }
@@ -149,9 +141,7 @@
 
         @media (max-width: 768px) {
             .time-slider-container { height: 60px; padding: 6px 12px 10px; }
-            .time-slider-date { font-size: 12px; min-width: 140px; }
-            .time-slider-play { width: 28px; height: 28px; }
-            .time-slider-speed { display: none; }
+            .time-slider-date { font-size: 12px; }
             #map { bottom: 60px !important; }
         }
 
@@ -529,21 +519,7 @@
     <!-- Time Slider -->
     <div class="time-slider-container" id="time-slider-container">
         <div class="time-slider-header">
-            <div class="time-slider-controls">
-                <button class="time-slider-play" id="time-slider-play" onclick="toggleTimeAnimation()" title="Play/Pause">
-                    <svg id="play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-                    <svg id="pause-icon" viewBox="0 0 24 24" style="display:none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                </button>
-                <div class="time-slider-date" id="time-slider-date">Jan 2020 - Dec 2024</div>
-            </div>
-            <div class="time-slider-speed">
-                <span>Speed:</span>
-                <select id="time-slider-speed" onchange="updateAnimationSpeed()">
-                    <option value="2000">Slow</option>
-                    <option value="1000" selected>Normal</option>
-                    <option value="500">Fast</option>
-                </select>
-            </div>
+            <div class="time-slider-date" id="time-slider-date">Jan 2020 - Dec 2024</div>
         </div>
         <div class="time-slider-track-wrapper">
             <div class="time-slider-track" id="time-slider-track">
@@ -2109,9 +2085,6 @@
         
         let sliderStartValue = TOTAL_MONTHS - 12; // Default: last 12 months
         let sliderEndValue = TOTAL_MONTHS;
-        let isPlaying = false;
-        let animationInterval = null;
-        let animationSpeed = 1000;
         
         function monthsBetween(d1, d2) {
             return (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
@@ -2276,60 +2249,6 @@
                 updateSliderDisplay();
                 updateDateFilter();
             });
-        }
-        
-        // Animation controls
-        window.toggleTimeAnimation = function() {
-            isPlaying = !isPlaying;
-            const playIcon = document.getElementById('play-icon');
-            const pauseIcon = document.getElementById('pause-icon');
-            const playBtn = document.getElementById('time-slider-play');
-            
-            if (isPlaying) {
-                playIcon.style.display = 'none';
-                pauseIcon.style.display = 'block';
-                playBtn.classList.add('playing');
-                startAnimation();
-            } else {
-                playIcon.style.display = 'block';
-                pauseIcon.style.display = 'none';
-                playBtn.classList.remove('playing');
-                stopAnimation();
-            }
-        };
-        
-        window.updateAnimationSpeed = function() {
-            animationSpeed = parseInt(document.getElementById('time-slider-speed').value);
-            if (isPlaying) {
-                stopAnimation();
-                startAnimation();
-            }
-        };
-        
-        function startAnimation() {
-            // Keep a 12-month window and slide it forward
-            const windowSize = 12;
-            
-            animationInterval = setInterval(() => {
-                if (sliderEndValue >= TOTAL_MONTHS) {
-                    // Reset to beginning
-                    sliderStartValue = 0;
-                    sliderEndValue = windowSize;
-                } else {
-                    sliderStartValue++;
-                    sliderEndValue++;
-                }
-                
-                updateSliderDisplay();
-                updateDateFilter();
-            }, animationSpeed);
-        }
-        
-        function stopAnimation() {
-            if (animationInterval) {
-                clearInterval(animationInterval);
-                animationInterval = null;
-            }
         }
         
         // Initialize slider
