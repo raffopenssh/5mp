@@ -50,6 +50,50 @@ type Migration struct {
 	ExecutedAt      time.Time `json:"executed_at"`
 }
 
+type PaPublication struct {
+	ID           int64     `json:"id"`
+	PaID         string    `json:"pa_id"`
+	OpenalexID   string    `json:"openalex_id"`
+	Title        string    `json:"title"`
+	Authors      *string   `json:"authors"`
+	Year         *int64    `json:"year"`
+	Doi          *string   `json:"doi"`
+	Url          *string   `json:"url"`
+	Abstract     *string   `json:"abstract"`
+	CitedByCount *int64    `json:"cited_by_count"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+type PaPublicationSync struct {
+	PaID        string    `json:"pa_id"`
+	LastSync    time.Time `json:"last_sync"`
+	ResultCount int64     `json:"result_count"`
+}
+
+type ParkChecklist struct {
+	ID          int64      `json:"id"`
+	PaID        string     `json:"pa_id"`
+	ItemID      string     `json:"item_id"`
+	Status      string     `json:"status"`
+	Notes       *string    `json:"notes"`
+	DocumentUrl *string    `json:"document_url"`
+	UpdatedBy   *string    `json:"updated_by"`
+	UpdatedAt   *time.Time `json:"updated_at"`
+}
+
+type ParkDocument struct {
+	ID          int64      `json:"id"`
+	PaID        string     `json:"pa_id"`
+	Category    string     `json:"category"`
+	ItemID      *string    `json:"item_id"`
+	Title       string     `json:"title"`
+	Description *string    `json:"description"`
+	FileUrl     *string    `json:"file_url"`
+	FileType    *string    `json:"file_type"`
+	UploadedBy  *string    `json:"uploaded_by"`
+	UploadedAt  *time.Time `json:"uploaded_at"`
+}
+
 type Session struct {
 	ID        string    `json:"id"`
 	UserID    string    `json:"user_id"`

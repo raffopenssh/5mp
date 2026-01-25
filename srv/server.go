@@ -125,6 +125,15 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/legal/pa/", s.HandleAPILegalByPA)
 	mux.HandleFunc("GET /api/legal/", s.HandleAPILegalByCountry)
 
+	// Checklist endpoints
+	mux.HandleFunc("GET /api/checklist/schema", s.HandleAPIChecklistSchema)
+	mux.HandleFunc("GET /api/parks/", s.HandleAPIGetParkChecklist) // /api/parks/{id}/checklist
+	mux.HandleFunc("POST /api/checklist/update", s.HandleAPIUpdateChecklistItem)
+
+	// Publications endpoints
+	mux.HandleFunc("GET /api/parks/{id}/publications/count", s.HandleAPIPublicationCount)
+	mux.HandleFunc("GET /api/parks/{id}/publications", s.HandleAPIPublications)
+
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
 	

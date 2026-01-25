@@ -509,3 +509,94 @@ func (s *Server) HandleAPIWDPASearch(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(results)
 }
+
+// HandleAPIPublications returns publications for a protected area.
+// GET /api/parks/{id}/publications
+func (s *Server) HandleAPIPublications(w http.ResponseWriter, r *http.Request) {
+	// Extract PA ID from URL path: /api/parks/{id}/publications
+	path := r.URL.Path
+	path = strings.TrimPrefix(path, "/api/parks/")
+	path = strings.TrimSuffix(path, "/publications")
+	paID := path
+
+	if paID == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "missing park ID"})
+		return
+	}
+
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	pubs, err := q.GetPublicationsByPA(ctx, paID)
+	if err != nil {
+		slog.Error("failed to get publications", "pa_id", paID, "error", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "database error"})
+		return
+	}
+
+	// Transform to API response
+	results := make([]map[string]interface{}, 0, len(pubs))
+	for _, p := range pubs {
+		item := map[string]interface{}{
+			"id":       p.ID,
+			"title":    p.Title,
+		}
+		if p.Authors != nil {
+			var authors []string
+			json.Unmarshal([]byte(*p.Authors), &authors)
+			item["authors"] = authors
+		}
+		if p.Year != nil {
+			item["year"] = *p.Year
+		}
+		if p.Doi != nil {
+			item["doi"] = *p.Doi
+		}
+		if p.Url != nil {
+			item["url"] = *p.Url
+		}
+		if p.Abstract != nil {
+			item["abstract"] = *p.Abstract
+		}
+		if p.CitedByCount != nil {
+			item["cited_by_count"] = *p.CitedByCount
+		}
+		results = append(results, item)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	json.NewEncoder(w).Encode(results)
+}
+
+// HandleAPIPublicationCount returns the publication count for a PA.
+// GET /api/parks/{id}/publications/count
+func (s *Server) HandleAPIPublicationCount(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	path = strings.TrimPrefix(path, "/api/parks/")
+	path = strings.TrimSuffix(path, "/publications/count")
+	paID := path
+
+	if paID == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "missing park ID"})
+		return
+	}
+
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	count, err := q.GetPublicationCountByPA(ctx, paID)
+	if err != nil {
+		count = 0
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "public, max-age=300")
+	json.NewEncoder(w).Encode(map[string]interface{}{"count": count})
+}
