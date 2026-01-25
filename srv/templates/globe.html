@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>5MP.globe - Global Conservation Effort</title>
-    <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet">
     <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -58,7 +56,7 @@
 
         .maplibregl-ctrl-attrib { background: rgba(18,18,18,0.8) !important; }
 
-        /* Pulse animation for effort dots - applied via canvas filter */
+         
         @keyframes pulse-glow {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
@@ -66,55 +64,86 @@
 
         .stats-panel { position: fixed; top: 66px; right: 10px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 16px; z-index: 100; font-size: 12px; min-width: 140px; }
         .stats-panel h3 { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .stats-period { font-weight: 400; color: #555; font-size: 10px; }
         .stats-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
         .stats-item:last-child { margin-bottom: 0; }
         .stats-label { color: #888; }
         .stats-value { color: #22c55e; font-weight: 600; font-variant-numeric: tabular-nums; }
         .maplibregl-ctrl-attrib a { color: #666 !important; }
+        .page-views { position: fixed; bottom: 8px; right: 8px; background: rgba(18,18,18,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 4px 8px; font-size: 10px; color: #555; z-index: 90; }
 
-        /* Filter Panel Styles */
-        .filter-toggle { position: fixed; top: 66px; left: 10px; width: 40px; height: 40px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 150; transition: all 0.2s; }
-        .filter-toggle:hover { background: rgba(30,30,30,0.95); border-color: rgba(255,255,255,0.2); }
-        .filter-toggle svg { width: 20px; height: 20px; color: #a0a0a0; }
-        .filter-toggle:hover svg { color: #22c55e; }
-        .filter-toggle.active { background: rgba(34,197,94,0.15); border-color: #22c55e; }
-        .filter-toggle.active svg { color: #22c55e; }
+         
+         
+        .map-toolbar { position: fixed; top: 66px; left: 10px; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; gap: 8px; z-index: 150; }
+        .toolbar-btn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center; -webkit-transition: all 0.2s; transition: all 0.2s; padding: 0; }
+        .toolbar-btn:hover { background: rgba(30,30,30,0.95); border-color: rgba(255,255,255,0.2); }
+        .toolbar-btn svg { width: 20px; height: 20px; color: #a0a0a0; }
+        .toolbar-btn:hover svg { color: #22c55e; }
+        .toolbar-btn.active { background: rgba(34,197,94,0.15); border-color: #22c55e; }
+        .toolbar-btn.active svg { color: #22c55e; }
+        .toolbar-btn:focus { outline: none; border-color: #22c55e; }
+        .toolbar-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+        .toolbar-separator { height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0; }
 
-        .filter-panel { position: fixed; top: 66px; left: 10px; width: 240px; background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 100; backdrop-filter: blur(10px); transform: translateX(-260px); opacity: 0; transition: all 0.3s ease; pointer-events: none; }
-        .filter-panel.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
-        .filter-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .filter-panel-title { font-size: 14px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+         
+        .filter-panel { position: fixed; top: 66px; left: 62px; width: 260px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-320px); transform: translateX(-320px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 80px); overflow-y: auto; }
+        .filter-panel.open { -webkit-transform: translateX(0); transform: translateX(0); opacity: 1; pointer-events: auto; }
+        .filter-panel-header { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .filter-panel-title { font-size: 14px; font-weight: 600; color: #fff; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; gap: 8px; }
         .filter-panel-title svg { width: 16px; height: 16px; color: #22c55e; }
+        .filter-panel-close { background: none; border: none; color: #666; font-size: 20px; cursor: pointer; padding: 4px; line-height: 1; }
+        .filter-panel-close:hover { color: #fff; }
         .filter-panel-content { padding: 16px; }
 
         .filter-section { margin-bottom: 20px; }
         .filter-section:last-child { margin-bottom: 0; }
         .filter-section-label { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
 
-        .btn-download { flex: 1; padding: 10px 14px; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 6px; color: #fff; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
-        .btn-download:hover { background: linear-gradient(135deg, #16a34a, #15803d); transform: translateY(-1px); }
-        .btn-download svg { width: 16px; height: 16px; }
-
-        .download-row { display: flex; gap: 8px; }
-        .btn-bbox { width: 42px; height: 42px; padding: 0; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #a0a0a0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .btn-bbox:hover { background: rgba(255,255,255,0.1); color: #22c55e; border-color: rgba(255,255,255,0.2); }
-        .btn-bbox svg { width: 18px; height: 18px; }
-
-        .date-input { width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #e0e0e0; font-size: 13px; cursor: pointer; }
+         
+        .date-range-display { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: 13px; color: #22c55e; text-align: center; }
+        .date-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+        .date-preset-btn { flex: 1; min-width: calc(33% - 4px); padding: 8px 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #a0a0a0; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+        .date-preset-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); }
+        .date-preset-btn.active { background: rgba(34,197,94,0.15); border-color: #22c55e; color: #22c55e; }
+        .date-custom-toggle { margin-bottom: 10px; }
+        .date-custom-btn { width: 100%; padding: 8px; background: transparent; border: 1px dashed rgba(255,255,255,0.15); border-radius: 6px; color: #666; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+        .date-custom-btn:hover { border-color: rgba(255,255,255,0.3); color: #888; }
+        .date-custom-btn.active { border-color: #22c55e; border-style: solid; color: #22c55e; }
+        .date-input-row { display: -webkit-box; display: -webkit-flex; display: flex; gap: 8px; margin-bottom: 8px; }
+        .date-input-row:last-child { margin-bottom: 0; }
+        .date-input-group { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; }
+        .date-input-group label { display: block; font-size: 10px; color: #666; margin-bottom: 4px; text-transform: uppercase; }
+        .date-input { width: 100%; padding: 8px 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #e0e0e0; font-size: 13px; }
         .date-input:hover { border-color: rgba(255,255,255,0.2); }
         .date-input:focus { outline: none; border-color: #22c55e; }
-        .date-input::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.5); cursor: pointer; }
-        .date-row { display: flex; gap: 8px; align-items: center; }
-        .date-row label { font-size: 11px; color: #666; min-width: 32px; }
-        .date-row input { flex: 1; }
+        .date-input::-webkit-calendar-picker-indicator { -webkit-filter: invert(1) opacity(0.5); filter: invert(1) opacity(0.5); cursor: pointer; }
+         
+        .date-hint { font-size: 9px; color: #555; margin-top: 2px; display: none; }
+        .date-input[type="text"] + .date-hint { display: block; }
+
+         
+        .bbox-info { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; font-size: 11px; color: #60a5fa; display: none; }
+        .bbox-info.active { display: block; }
+        .bbox-info-header { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; -webkit-box-align: center; -webkit-align-items: center; align-items: center; margin-bottom: 6px; }
+        .bbox-info-title { font-weight: 600; }
+        .bbox-clear { background: none; border: none; color: #60a5fa; cursor: pointer; font-size: 16px; padding: 0; line-height: 1; }
+        .bbox-clear:hover { color: #93c5fd; }
+        .bbox-coords { font-family: monospace; font-size: 10px; color: #93c5fd; word-break: break-all; }
+
+         
+        .download-section { display: -webkit-box; display: -webkit-flex; display: flex; gap: 8px; }
+        .btn-download { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; padding: 10px 12px; min-height: 44px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #a0a0a0; font-size: 12px; font-weight: 500; cursor: pointer; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center; gap: 6px; -webkit-transition: all 0.2s; transition: all 0.2s; }
+        .btn-download:hover { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
+        .btn-download:active { -webkit-transform: translateY(1px); transform: translateY(1px); }
+        .btn-download svg { width: 16px; height: 16px; }
 
         .activity-section { margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; }
-        .activity-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 4px 0; }
+        .activity-header { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; cursor: pointer; padding: 4px 0; }
         .activity-header:hover .activity-title { color: #fff; }
-        .activity-title { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; transition: color 0.2s; }
-        .activity-toggle { width: 16px; height: 16px; color: #666; transition: transform 0.2s; }
-        .activity-toggle.expanded { transform: rotate(180deg); }
-        .activity-list { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .activity-title { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; -webkit-transition: color 0.2s; transition: color 0.2s; }
+        .activity-toggle { width: 16px; height: 16px; color: #666; -webkit-transition: -webkit-transform 0.2s; transition: transform 0.2s; }
+        .activity-toggle.expanded { -webkit-transform: rotate(180deg); transform: rotate(180deg); }
+        .activity-list { max-height: 0; overflow: hidden; -webkit-transition: max-height 0.3s ease; transition: max-height 0.3s ease; }
         .activity-list.expanded { max-height: 300px; }
         .activity-item { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 11px; color: #888; }
         .activity-item:last-child { border-bottom: none; }
@@ -125,24 +154,32 @@
         .activity-more:hover { text-decoration: underline; }
         .activity-empty { padding: 12px 0; text-align: center; font-size: 11px; color: #555; }
 
-        /* Search Box Styles */
-        .search-container { display: flex; align-items: center; position: relative; }
-        .search-toggle { width: 40px; height: 40px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .search-toggle:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
-        .search-toggle svg { width: 18px; height: 18px; color: #a0a0a0; }
-        .search-toggle:hover svg { color: #22c55e; }
-        .search-toggle.active { background: rgba(34,197,94,0.15); border-color: #22c55e; }
-        .search-toggle.active svg { color: #22c55e; }
-        .search-input-wrapper { display: none; align-items: center; position: relative; margin-left: 8px; }
-        .search-input-wrapper.open { display: flex; }
-        .search-input { width: 280px; padding: 10px 36px 10px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e0e0e0; font-size: 14px; transition: all 0.2s; }
+         
+        .bbox-draw-overlay { position: fixed; top: 56px; left: 0; right: 0; bottom: 0; z-index: 200; cursor: crosshair; display: none; }
+        .bbox-draw-overlay.active { display: block; }
+        .bbox-draw-rect { position: absolute; border: 2px dashed #60a5fa; background: rgba(59,130,246,0.1); pointer-events: none; }
+        .bbox-draw-hint { position: fixed; top: 70px; left: 50%; -webkit-transform: translateX(-50%); transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; padding: 10px 16px; font-size: 13px; color: #60a5fa; z-index: 210; display: none; }
+        .bbox-draw-hint.active { display: block; }
+
+         /* Search Panel */
+        .search-panel { position: fixed; top: 66px; left: 62px; width: 280px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-340px); transform: translateX(-340px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 80px); overflow-y: auto; }
+        .search-panel.open { -webkit-transform: translateX(0); transform: translateX(0); opacity: 1; pointer-events: auto; }
+        .search-panel-header { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .search-panel-title { font-size: 14px; font-weight: 600; color: #fff; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; gap: 8px; }
+        .search-panel-title svg { width: 16px; height: 16px; color: #22c55e; }
+        .search-panel-close { background: none; border: none; color: #666; font-size: 20px; cursor: pointer; padding: 4px; line-height: 1; }
+        .search-panel-close:hover { color: #fff; }
+        .search-panel-content { padding: 16px; }
+        .search-input-wrapper { position: relative; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; }
+        .search-input { width: 100%; padding: 10px 36px 10px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e0e0e0; font-size: 14px; -webkit-transition: all 0.2s; transition: all 0.2s; }
         .search-input:focus { outline: none; border-color: #22c55e; background: rgba(255,255,255,0.08); }
+        .search-input::-webkit-input-placeholder { color: #666; }
         .search-input::placeholder { color: #666; }
-        .search-clear { position: absolute; right: 10px; background: none; border: none; color: #666; font-size: 18px; cursor: pointer; padding: 0; line-height: 1; }
+        .search-clear { position: absolute; right: 10px; background: none; border: none; color: #666; font-size: 18px; cursor: pointer; padding: 0; line-height: 1; min-width: 24px; min-height: 24px; }
         .search-clear:hover { color: #fff; }
-        .search-results { position: absolute; top: 100%; left: 48px; width: 280px; max-height: 320px; overflow-y: auto; background: rgba(26,26,26,0.98); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; margin-top: 4px; display: none; z-index: 1001; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .search-results { width: 100%; max-height: 320px; overflow-y: auto; background: rgba(26,26,26,0.98); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; margin-top: 12px; display: none; -webkit-box-shadow: 0 10px 40px rgba(0,0,0,0.5); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
         .search-results.open { display: block; }
-        .search-result-item { padding: 12px 14px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.15s; }
+        .search-result-item { padding: 12px 14px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.06); -webkit-transition: background 0.15s; transition: background 0.15s; min-height: 44px; }
         .search-result-item:last-child { border-bottom: none; }
         .search-result-item:hover { background: rgba(34,197,94,0.1); }
         .search-result-name { font-size: 14px; color: #fff; margin-bottom: 2px; }
@@ -150,7 +187,7 @@
         .search-no-results { padding: 16px 14px; text-align: center; color: #666; font-size: 13px; }
         .search-loading { padding: 16px 14px; text-align: center; color: #888; font-size: 13px; }
 
-        /* PA Stats Modal Styles */
+         
         .pa-stats-modal { max-width: 380px; }
         .pa-stats-content { }
         .pa-stats-section { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
@@ -164,6 +201,24 @@
         .pa-stats-link a { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #a0a0a0; text-decoration: none; font-size: 13px; transition: all 0.2s; }
         .pa-stats-link a:hover { background: rgba(255,255,255,0.1); color: #22c55e; border-color: rgba(34,197,94,0.3); }
         .pa-stats-link svg { width: 16px; height: 16px; }
+
+         
+        @media (max-width: 768px) {
+            .header { padding: 0 12px; }
+            .logo-subtitle { display: none; }
+            .map-toolbar { top: auto; bottom: 24px; left: 10px; -webkit-flex-direction: row; flex-direction: row; }
+            .filter-panel { top: auto; bottom: 80px; left: 10px; width: calc(100vw - 20px); max-width: 320px; -webkit-transform: translateY(400px); transform: translateY(400px); max-height: 60vh; }
+            .filter-panel.open { -webkit-transform: translateY(0); transform: translateY(0); }
+            .search-panel { top: auto; bottom: 80px; left: 10px; width: calc(100vw - 20px); max-width: 320px; -webkit-transform: translateY(400px); transform: translateY(400px); max-height: 60vh; }
+            .search-panel.open { -webkit-transform: translateY(0); transform: translateY(0); }
+            .stats-panel { top: auto; bottom: 80px; right: 10px; left: auto; }
+            .fab { bottom: 90px; }
+            .auth-buttons .btn { padding: 6px 12px; font-size: 13px; }
+        }
+        @media (max-width: 480px) {
+            .logo span { font-size: 16px; }
+            .auth-buttons .btn { padding: 6px 10px; font-size: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -171,11 +226,11 @@
         <div class="logo">
             <div class="logo-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <ellipse cx="12" cy="12" rx="4" ry="10"/>
-                    <path d="M2 12h20"/>
-                    <path d="M4.5 6.5h15"/>
-                    <path d="M4.5 17.5h15"/>
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <ellipse cx="12" cy="12" rx="4" ry="10"></ellipse>
+                    <path d="M2 12h20"></path>
+                    <path d="M4.5 6.5h15"></path>
+                    <path d="M4.5 17.5h15"></path>
                 </svg>
             </div>
             <div>
@@ -184,67 +239,82 @@
             </div>
         </div>
         
-        <!-- Search Box -->
-        <div class="search-container" id="search-container">
-            <button class="search-toggle" id="search-toggle" onclick="toggleSearch()" title="Search Protected Areas">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-            </button>
-            <div class="search-input-wrapper" id="search-input-wrapper">
-                <input type="text" class="search-input" id="search-input" placeholder="Search protected areas..." autocomplete="off" onkeyup="handleSearchInput(event)" onfocus="showSearchResults()">
-                <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display: none;">&times;</button>
-            </div>
-            <div class="search-results" id="search-results"></div>
-        </div>
-        
         <div class="auth-buttons">
-            {{if .User}}
-            <span class="user-info">{{.User.Email}}</span>
-            <button class="btn btn-secondary" onclick="logout()">Logout</button>
-            {{else}}
+            
             <button class="btn btn-secondary" onclick="showModal('login')">Login</button>
             <button class="btn btn-primary" onclick="showModal('register')">Register</button>
-            {{end}}
+            
         </div>
     </header>
 
-    <div id="map"></div>
+    <div id="map" class="maplibregl-map"><div class="maplibregl-canvas-container maplibregl-interactive maplibregl-touch-drag-pan maplibregl-touch-zoom-rotate"><canvas class="maplibregl-canvas" tabindex="0" aria-label="Map" role="region" width="375" height="756" style="width: 375px; height: 756px;"></canvas></div><div class="maplibregl-control-container"><div class="maplibregl-ctrl-top-left "></div><div class="maplibregl-ctrl-top-right "><div class="maplibregl-ctrl maplibregl-ctrl-group"><button class="maplibregl-ctrl-zoom-in" type="button" title="Zoom in" aria-label="Zoom in" aria-disabled="false"><span class="maplibregl-ctrl-icon" aria-hidden="true"></span></button><button class="maplibregl-ctrl-zoom-out" type="button" title="Zoom out" aria-label="Zoom out" aria-disabled="false"><span class="maplibregl-ctrl-icon" aria-hidden="true"></span></button><button class="maplibregl-ctrl-compass" type="button" title="Reset bearing to north" aria-label="Reset bearing to north"><span class="maplibregl-ctrl-icon" aria-hidden="true" style="transform: rotate(0deg);"></span></button></div></div><div class="maplibregl-ctrl-bottom-left "></div><div class="maplibregl-ctrl-bottom-right "><details class="maplibregl-ctrl maplibregl-ctrl-attrib maplibregl-compact maplibregl-compact-show" open=""><summary class="maplibregl-ctrl-attrib-button" title="Toggle attribution" aria-label="Toggle attribution"></summary><div class="maplibregl-ctrl-attrib-inner">© OpenStreetMap contributors, © CARTO | <a href="https://maplibre.org/" target="_blank">MapLibre</a></div></details></div></div><div id="map-legend" style="position: absolute; bottom: 30px; left: 10px; background: rgba(18, 18, 18, 0.9); padding: 12px 16px; border-radius: 8px; font-size: 12px; z-index: 100; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div style="font-weight: 600; margin-bottom: 10px; color: #fff;">Patrol Intensity</div>
+                <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                    <div style="width: 100px; height: 12px; background: linear-gradient(to right, rgba(34,197,94,0), rgba(34,197,94,0.3), rgba(74,222,128,0.6), rgba(134,239,172,0.85), rgba(187,247,208,1)); border-radius: 3px; margin-right: 8px;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666; width: 100px;">
+                    <span>Low</span><span>High</span>
+                </div>
+                <div style="margin-top: 8px; font-size: 10px; color: #555;">100 km² per pixel</div>
+            </div></div>
 
     <div class="stats-panel">
-        <h3>Global Stats</h3>
+        <h3 id="stats-title">Stats <span class="stats-period">(12 mo)</span></h3>
         <div class="stats-item">
             <span class="stats-label">Active Pixels</span>
-            <span class="stats-value" id="stats-pixels">--</span>
+            <span class="stats-value" id="stats-pixels">15</span>
         </div>
         <div class="stats-item">
             <span class="stats-label">Total Distance</span>
-            <span class="stats-value" id="stats-distance">-- km</span>
+            <span class="stats-value" id="stats-distance">1,980.8 km</span>
         </div>
         <div class="stats-item">
             <span class="stats-label">Total Patrols</span>
-            <span class="stats-value" id="stats-patrols">--</span>
+            <span class="stats-value" id="stats-patrols">80</span>
         </div>
     </div>
 
-    <!-- Filter Toggle Button -->
-    <button class="filter-toggle" id="filter-toggle" onclick="toggleFilterPanel()" title="Toggle Filters">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="4" y1="21" x2="4" y2="14"></line>
-            <line x1="4" y1="10" x2="4" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12" y2="3"></line>
-            <line x1="20" y1="21" x2="20" y2="16"></line>
-            <line x1="20" y1="12" x2="20" y2="3"></line>
-            <line x1="1" y1="14" x2="7" y2="14"></line>
-            <line x1="9" y1="8" x2="15" y2="8"></line>
-            <line x1="17" y1="16" x2="23" y2="16"></line>
-        </svg>
-    </button>
+    
+    <div class="map-toolbar" id="map-toolbar">
+        
+        <button class="toolbar-btn active" id="filter-toggle" onclick="toggleFilterPanel()" title="Filters">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+        </button>
+        
+        <button class="toolbar-btn" id="toolbar-search" onclick="toggleSearch()" title="Search">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+        </button>
+        
+        <button class="toolbar-btn" id="bbox-toggle" onclick="startBboxSelection()" title="Select Area">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+            </svg>
+        </button>
+        <div class="toolbar-separator"></div>
+        
+        <button class="toolbar-btn" id="download-toggle" onclick="showDownloadOptions()" title="Download Data">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+        </button>
+    </div>
 
-    <!-- Filter Panel -->
-    <div class="filter-panel" id="filter-panel">
+    
+    <div class="bbox-draw-overlay" id="bbox-draw-overlay"></div>
+    <div class="bbox-draw-hint" id="bbox-draw-hint">Click and drag to select area. Press ESC to cancel.</div>
+
+    
+    <div class="filter-panel open" id="filter-panel">
         <div class="filter-panel-header">
             <div class="filter-panel-title">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -252,48 +322,67 @@
                 </svg>
                 Filters
             </div>
+            <button class="filter-panel-close" onclick="toggleFilterPanel()">×</button>
         </div>
         <div class="filter-panel-content">
-            <!-- Date Range Section -->
+            
             <div class="filter-section">
                 <div class="filter-section-label">Date Range</div>
-                <div class="date-row" style="margin-bottom: 8px;">
-                    <label>From</label>
-                    <input type="date" class="date-input" id="date-from" onchange="updateDateRange()">
+                <div class="date-range-display" id="date-range-display">Last 12 Months</div>
+                <div class="date-presets" id="date-presets">
+                    <button class="date-preset-btn" onclick="setDatePreset('30d')">30 Days</button>
+                    <button class="date-preset-btn" onclick="setDatePreset('90d')">90 Days</button>
+                    <button class="date-preset-btn" onclick="setDatePreset('6m')">6 Months</button>
+                    <button class="date-preset-btn active" onclick="setDatePreset('12m')">12 Months</button>
+                    <button class="date-preset-btn" onclick="setDatePreset('all')">All Time</button>
                 </div>
-                <div class="date-row">
-                    <label>To</label>
-                    <input type="date" class="date-input" id="date-to" onchange="updateDateRange()">
+                <div class="date-custom-toggle">
+                    <button class="date-custom-btn" onclick="toggleCustomDates()" id="custom-date-toggle">Custom Range</button>
+                </div>
+                <div class="date-input-row" id="date-custom-inputs" style="display: none;">
+                    <div class="date-input-group">
+                        <label>From</label>
+                        <input type="date" class="date-input" id="date-from" onchange="updateDateRange(true)">
+                    </div>
+                    <div class="date-input-group">
+                        <label>To</label>
+                        <input type="date" class="date-input" id="date-to" onchange="updateDateRange(true)">
+                    </div>
                 </div>
             </div>
 
-            <!-- Download Section -->
+            
+            <div class="bbox-info" id="bbox-info">
+                <div class="bbox-info-header">
+                    <span class="bbox-info-title">Selected Area</span>
+                    <button class="bbox-clear" onclick="clearBbox()" title="Clear selection">×</button>
+                </div>
+                <div class="bbox-coords" id="bbox-coords"></div>
+            </div>
+
+            
             <div class="filter-section">
-                <div class="download-row">
-                    <button class="btn-download" onclick="downloadData()">
+                <div class="filter-section-label">Download Data</div>
+                <div class="download-section">
+                    <button class="btn-download" onclick="downloadData('csv')">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
                         </svg>
-                        Download
+                        CSV
                     </button>
-                    <button class="btn-bbox" onclick="selectBoundingBox()" title="Select area to download">
+                    <button class="btn-download" onclick="downloadData('geojson')">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 3h6v6H3z"></path>
-                            <path d="M15 3h6v6h-6z"></path>
-                            <path d="M3 15h6v6H3z"></path>
-                            <path d="M15 15h6v6h-6z"></path>
-                            <line x1="9" y1="6" x2="15" y2="6"></line>
-                            <line x1="9" y1="18" x2="15" y2="18"></line>
-                            <line x1="6" y1="9" x2="6" y2="15"></line>
-                            <line x1="18" y1="9" x2="18" y2="15"></line>
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                         </svg>
+                        GeoJSON
                     </button>
                 </div>
             </div>
 
-            <!-- Activity Log Section -->
+            
             <div class="activity-section">
                 <div class="activity-header" onclick="toggleActivityLog()">
                     <span class="activity-title">Recent Activity</span>
@@ -302,29 +391,50 @@
                     </svg>
                 </div>
                 <div class="activity-list" id="activity-list">
-                    <!-- Activity items will be loaded here -->
+                    
                 </div>
             </div>
         </div>
     </div>
 
-    <button class="fab {{if .User}}visible{{end}}" onclick="showModal('upload')" title="Upload Data">+</button>
+    <!-- Search Panel -->
+    <div class="search-panel" id="search-panel">
+        <div class="search-panel-header">
+            <div class="search-panel-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search Protected Areas
+            </div>
+            <button class="search-panel-close" onclick="toggleSearch()">×</button>
+        </div>
+        <div class="search-panel-content">
+            <div class="search-input-wrapper">
+                <input type="text" class="search-input" id="search-input" placeholder="Search protected areas..." autocomplete="off" onkeyup="handleSearchInput(event)" onfocus="showSearchResults()">
+                <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display: none;">×</button>
+            </div>
+            <div class="search-results" id="search-results"></div>
+        </div>
+    </div>
 
-    <!-- Login Modal -->
+    <button class="fab " onclick="showModal('upload')" title="Upload Data">+</button>
+
+    
     <div id="modal-login" class="modal-overlay" onclick="closeModalOnOverlay(event)">
         <div class="modal">
             <div class="modal-header">
                 <h2 class="modal-title">Welcome Back</h2>
-                <button class="modal-close" onclick="closeModal('login')">&times;</button>
+                <button class="modal-close" onclick="closeModal('login')">×</button>
             </div>
             <form id="form-login" onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                    <input type="email" name="email" class="form-input" placeholder="you@example.com" required="">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+                    <input type="password" name="password" class="form-input" placeholder="••••••••" required="">
                 </div>
                 <div class="form-error" id="login-error"></div>
                 <div class="form-footer">
@@ -335,25 +445,25 @@
         </div>
     </div>
 
-    <!-- Register Modal -->
+    
     <div id="modal-register" class="modal-overlay" onclick="closeModalOnOverlay(event)">
         <div class="modal">
             <div class="modal-header">
                 <h2 class="modal-title">Create Account</h2>
-                <button class="modal-close" onclick="closeModal('register')">&times;</button>
+                <button class="modal-close" onclick="closeModal('register')">×</button>
             </div>
             <form id="form-register" onsubmit="handleRegister(event)">
                 <div class="form-group">
                     <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                    <input type="email" name="email" class="form-input" placeholder="you@example.com" required="">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-input" placeholder="••••••••" minlength="8" required>
+                    <input type="password" name="password" class="form-input" placeholder="••••••••" minlength="8" required="">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Confirm Password</label>
-                    <input type="password" name="confirm" class="form-input" placeholder="••••••••" required>
+                    <input type="password" name="confirm" class="form-input" placeholder="••••••••" required="">
                 </div>
                 <div class="form-error" id="register-error"></div>
                 <div class="form-footer">
@@ -364,20 +474,20 @@
         </div>
     </div>
 
-    <!-- Upload Modal -->
+    
     <div id="modal-upload" class="modal-overlay" onclick="closeModalOnOverlay(event)">
         <div class="modal">
             <div class="modal-header">
                 <h2 class="modal-title">Upload Conservation Data</h2>
-                <button class="modal-close" onclick="closeModal('upload')">&times;</button>
+                <button class="modal-close" onclick="closeModal('upload')">×</button>
             </div>
             <form id="form-upload" onsubmit="handleUpload(event)">
                 <div class="upload-area" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
                     <div class="upload-icon">📍</div>
-                    <p class="upload-text">Drag & drop GPX files here, or <strong>browse</strong></p>
+                    <p class="upload-text">Drag &amp; drop GPX files here, or <strong>browse</strong></p>
                     <p class="upload-text" style="margin-top: 8px; font-size: 12px;">GPS patrol track files (.gpx)</p>
                 </div>
-                <input type="file" id="file-input" name="files" accept=".gpx" multiple style="display: none;" onchange="updateFileName(this)">
+                <input type="file" id="file-input" name="files" accept=".gpx" multiple="" style="display: none;" onchange="updateFileName(this)">
                 <div id="selected-file" style="margin-bottom: 16px; color: #22c55e; font-size: 14px;"></div>
                 <div class="form-error" id="upload-error"></div>
                 <div class="form-footer">
@@ -387,12 +497,12 @@
         </div>
     </div>
 
-    <!-- PA Stats Modal -->
+    
     <div id="modal-pa-stats" class="modal-overlay" onclick="closeModalOnOverlay(event)">
         <div class="modal pa-stats-modal">
             <div class="modal-header">
                 <h2 class="modal-title" id="pa-stats-name">Protected Area</h2>
-                <button class="modal-close" onclick="closeModal('pa-stats')">&times;</button>
+                <button class="modal-close" onclick="closeModal('pa-stats')">×</button>
             </div>
             <div class="pa-stats-content">
                 <div class="pa-stats-section">
@@ -436,9 +546,9 @@
 
     <script>
         const MAPTILER_KEY = 'dea58ea0389007e386776c4f583f4425';
-        const API_HOST = '{{.Hostname}}';
+        const API_HOST = 'five-mp-conservation-effort';
 
-        // Use a dark basemap style
+        
         const darkStyle = {
             version: 8,
             name: 'Dark',
@@ -465,21 +575,21 @@
         });
         map.addControl(new maplibregl.NavigationControl(), 'top-right');
 
-        // Add map layers on load
+        
         map.on('load', function() {
-            // Add protected areas source
+            
             map.addSource('areas', {
                 type: 'geojson',
                 data: '/api/areas'
             });
 
-            // Add grid source
+            
             map.addSource('grid', {
                 type: 'geojson',
                 data: '/api/grid'
             });
 
-            // Protected areas fill layer
+            
             map.addLayer({
                 id: 'areas-fill',
                 type: 'fill',
@@ -490,7 +600,7 @@
                 }
             });
 
-            // Protected areas outline layer
+            
             map.addLayer({
                 id: 'areas-outline',
                 type: 'line',
@@ -501,13 +611,13 @@
                 }
             });
 
-            // Grid cells layer - heatmap style with continuous gradient
+            
             map.addLayer({
                 id: 'grid-cells',
                 type: 'heatmap',
                 source: 'grid',
                 paint: {
-                    // Weight based on intensity
+                    
                     'heatmap-weight': [
                         'interpolate',
                         ['linear'],
@@ -515,7 +625,7 @@
                         0, 0,
                         1, 1
                     ],
-                    // Intensity increases with zoom
+                    
                     'heatmap-intensity': [
                         'interpolate',
                         ['linear'],
@@ -523,7 +633,7 @@
                         0, 0.5,
                         9, 2
                     ],
-                    // Green color gradient
+                    
                     'heatmap-color': [
                         'interpolate',
                         ['linear'],
@@ -535,7 +645,7 @@
                         0.8, 'rgba(134, 239, 172, 0.85)',
                         1, 'rgba(187, 247, 208, 1)'
                     ],
-                    // Radius increases with zoom
+                    
                     'heatmap-radius': [
                         'interpolate',
                         ['linear'],
@@ -543,7 +653,7 @@
                         0, 15,
                         9, 30
                     ],
-                    // Opacity decreases at high zoom
+                    
                     'heatmap-opacity': [
                         'interpolate',
                         ['linear'],
@@ -554,7 +664,7 @@
                 }
             });
 
-            // Popup for protected areas
+            
             map.on('click', 'areas-fill', function(e) {
                 if (e.features.length > 0) {
                     const props = e.features[0].properties;
@@ -568,7 +678,7 @@
                 }
             });
 
-            // Popup for grid cells (click only)
+            
             map.on('click', 'grid-cells', function(e) {
                 e.originalEvent.stopPropagation();
                 if (e.features.length > 0) {
@@ -589,13 +699,13 @@
                 }
             });
 
-            // Change cursor on hover
+            
             map.on('mouseenter', 'areas-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', 'areas-fill', function() { map.getCanvas().style.cursor = ''; });
             map.on('mouseenter', 'grid-cells', function() { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', 'grid-cells', function() { map.getCanvas().style.cursor = ''; });
 
-            // Create legend
+            
             const legend = document.createElement('div');
             legend.id = 'map-legend';
             legend.style.cssText = 'position: absolute; bottom: 30px; left: 10px; background: rgba(18,18,18,0.9); padding: 12px 16px; border-radius: 8px; font-size: 12px; z-index: 100; border: 1px solid rgba(255,255,255,0.1);';
@@ -692,7 +802,7 @@
                     throw new Error(text || 'Upload failed');
                 }
                 closeModal('upload');
-                // Refresh the grid data and stats (using current filter settings)
+                
                 reloadGridData();
                 loadStats();
                 alert('Upload successful! ' + fileInput.files.length + ' file(s) processed.');
@@ -703,50 +813,198 @@
             if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
         });
 
-        // Load global stats
+        
         async function loadStats() {
             try {
-                const res = await fetch('/api/stats');
+                // Build URL with filters
+                var url = '/api/stats';
+                var params = [];
+                if (dateFrom) params.push('from=' + dateFrom);
+                if (dateTo) params.push('to=' + dateTo);
+                if (currentBbox) params.push('bbox=' + currentBbox.join(','));
+                if (params.length > 0) url += '?' + params.join('&');
+                
+                const res = await fetch(url);
                 if (res.ok) {
                     const stats = await res.json();
                     document.getElementById('stats-pixels').textContent = (stats.active_pixels || 0).toLocaleString();
                     document.getElementById('stats-distance').textContent = (stats.total_distance_km || 0).toLocaleString(undefined, {maximumFractionDigits: 1}) + ' km';
                     document.getElementById('stats-patrols').textContent = (stats.total_patrols || 0).toLocaleString();
                 }
+                // Update stats title to reflect current filter
+                updateStatsTitle();
             } catch (err) {
                 console.error('Failed to load stats:', err);
             }
         }
-        loadStats();
-
-        // Filter Panel State
-        let filterPanelOpen = false;
-        let dateFrom = null;
-        let dateTo = null;
+        
+        function updateStatsTitle() {
+            var period = document.querySelector('.stats-period');
+            if (period) {
+                var presetLabels = {'30d': '30d', '90d': '90d', '6m': '6 mo', '12m': '12 mo', 'all': 'all time', 'custom': 'custom'};
+                var label = presetLabels[currentPreset] || '12 mo';
+                if (currentBbox) label += ', area';
+                period.textContent = '(' + label + ')';
+            }
+        }
+        // Declare state variables before they're used
+        let filterPanelOpen = true; // Panel starts open in HTML
+        let searchOpen = false;
+        var dateFrom = null;
+        var dateTo = null;
+        var currentPreset = '12m';
+        var customDatesOpen = false;
         let activityExpanded = false;
+        let currentBbox = null; 
+        let bboxDrawing = false;
+        let bboxStartPoint = null;
+        
+        // Initial stats load will happen after initDateRange sets dates
+        // loadStats(); // Moved to after initDateRange
 
-        // Initialize date range to past month
+        
+        function checkDateInputSupport() {
+            var input = document.createElement('input');
+            input.setAttribute('type', 'date');
+            if (input.type === 'text') {
+                
+                var dateInputs = document.querySelectorAll('.date-input[type="date"]');
+                for (var i = 0; i < dateInputs.length; i++) {
+                    dateInputs[i].type = 'text';
+                    dateInputs[i].placeholder = 'YYYY-MM-DD';
+                }
+            }
+        }
+        checkDateInputSupport();
+
+        
+        function formatDateDisplay(dateStr) {
+            if (!dateStr) return null;
+            try {
+                var d = new Date(dateStr + 'T00:00:00');
+                var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return months[d.getMonth()] + ' ' + d.getFullYear();
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        
+        function updateDateRangeDisplay() {
+            var display = document.getElementById('date-range-display');
+            if (dateFrom && dateTo) {
+                display.textContent = formatDateDisplay(dateFrom) + ' - ' + formatDateDisplay(dateTo);
+            } else if (dateFrom) {
+                display.textContent = 'From ' + formatDateDisplay(dateFrom);
+            } else if (dateTo) {
+                display.textContent = 'Until ' + formatDateDisplay(dateTo);
+            } else {
+                display.textContent = 'All Time';
+            }
+        }
+
         function initDateRange() {
-            const today = new Date();
-            const monthAgo = new Date();
-            monthAgo.setDate(monthAgo.getDate() - 30);
+            setDatePreset('12m');
+        }
+        
+        function setDatePreset(preset) {
+            currentPreset = preset;
+            var today = new Date();
+            var from = new Date();
+            var formatDate = function(d) { return d.toISOString().split('T')[0]; };
             
-            const formatDate = (d) => d.toISOString().split('T')[0];
+            // Clear active class from all preset buttons
+            document.querySelectorAll('.date-preset-btn').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
             
-            dateFrom = formatDate(monthAgo);
+            // Set the date range based on preset
+            switch(preset) {
+                case '30d':
+                    from.setDate(today.getDate() - 30);
+                    break;
+                case '90d':
+                    from.setDate(today.getDate() - 90);
+                    break;
+                case '6m':
+                    from.setMonth(today.getMonth() - 6);
+                    break;
+                case '12m':
+                    from.setFullYear(today.getFullYear() - 1);
+                    break;
+                case 'all':
+                    dateFrom = '';
+                    dateTo = '';
+                    document.getElementById('date-from').value = '';
+                    document.getElementById('date-to').value = '';
+                    document.getElementById('date-range-display').textContent = 'All Time';
+                    // Mark active
+                    event && event.target && event.target.classList.add('active');
+                    document.querySelector('.date-preset-btn[onclick*="all"]').classList.add('active');
+                    // Close custom dates if open
+                    if (customDatesOpen) toggleCustomDates();
+                    reloadGridData();
+                    return;
+            }
+            
+            dateFrom = formatDate(from);
             dateTo = formatDate(today);
-            
             document.getElementById('date-from').value = dateFrom;
             document.getElementById('date-to').value = dateTo;
+            
+            // Update display with preset name
+            var presetNames = {'30d': 'Last 30 Days', '90d': 'Last 90 Days', '6m': 'Last 6 Months', '12m': 'Last 12 Months'};
+            document.getElementById('date-range-display').textContent = presetNames[preset] || 'Custom';
+            
+            // Mark active button
+            document.querySelector('.date-preset-btn[onclick*="' + preset + '"]').classList.add('active');
+            
+            // Close custom dates if open
+            if (customDatesOpen) toggleCustomDates();
+            
+            reloadGridData();
+        }
+        
+        function toggleCustomDates() {
+            customDatesOpen = !customDatesOpen;
+            var inputs = document.getElementById('date-custom-inputs');
+            var toggle = document.getElementById('custom-date-toggle');
+            if (customDatesOpen) {
+                inputs.style.display = 'flex';
+                toggle.classList.add('active');
+            } else {
+                inputs.style.display = 'none';
+                toggle.classList.remove('active');
+            }
+        }
+        
+        function updateDateRange(isCustom) {
+            dateFrom = document.getElementById('date-from').value;
+            dateTo = document.getElementById('date-to').value;
+            if (isCustom) {
+                // Clear preset selection when using custom dates
+                document.querySelectorAll('.date-preset-btn').forEach(function(btn) {
+                    btn.classList.remove('active');
+                });
+                currentPreset = 'custom';
+            }
+            updateDateRangeDisplay();
+            reloadGridData();
         }
 
         function toggleFilterPanel() {
             filterPanelOpen = !filterPanelOpen;
-            const panel = document.getElementById('filter-panel');
-            const toggle = document.getElementById('filter-toggle');
+            var panel = document.getElementById('filter-panel');
+            var toggle = document.getElementById('filter-toggle');
             if (filterPanelOpen) {
                 panel.classList.add('open');
                 toggle.classList.add('active');
+                // Close search panel if open
+                if (searchOpen) {
+                    searchOpen = false;
+                    document.getElementById('search-panel').classList.remove('open');
+                    document.getElementById('toolbar-search').classList.remove('active');
+                }
             } else {
                 panel.classList.remove('open');
                 toggle.classList.remove('active');
@@ -756,29 +1014,206 @@
         function updateDateRange() {
             dateFrom = document.getElementById('date-from').value;
             dateTo = document.getElementById('date-to').value;
+            updateDateRangeDisplay();
             reloadGridData();
         }
 
         function reloadGridData() {
-            let url = `/api/grid?t=${Date.now()}`;
-            if (dateFrom) url += `&from=${dateFrom}`;
-            if (dateTo) url += `&to=${dateTo}`;
+            var url = '/api/grid?t=' + Date.now();
+            if (dateFrom) url += '&from=' + dateFrom;
+            if (dateTo) url += '&to=' + dateTo;
+            if (currentBbox) {
+                url += '&bbox=' + currentBbox.join(',');
+            }
             
-            const gridSource = map.getSource('grid');
+            var gridSource = map.getSource('grid');
             if (gridSource) {
                 gridSource.setData(url);
             }
-            console.log(`Reloading grid data: from=${dateFrom}, to=${dateTo}`);
+            console.log('Reloading grid data: from=' + dateFrom + ', to=' + dateTo + ', bbox=' + (currentBbox ? currentBbox.join(',') : 'none'));
+            // Also reload stats when filters change
+            loadStats();
         }
 
-        function downloadData() {
-            const fromStr = dateFrom || 'beginning';
-            const toStr = dateTo || 'now';
-            alert(`Download data from ${fromStr} to ${toStr}\n\nThis feature will export the filtered conservation data.`);
+        
+        function startBboxSelection() {
+            bboxDrawing = true;
+            bboxStartPoint = null;
+            document.getElementById('bbox-draw-overlay').classList.add('active');
+            document.getElementById('bbox-draw-hint').classList.add('active');
+            document.getElementById('bbox-toggle').classList.add('active');
+            map.getCanvas().style.cursor = 'crosshair';
         }
 
-        function selectBoundingBox() {
-            alert('Bounding box selection mode\n\nClick and drag on the map to select an area for download.\n\n(This feature is coming soon)');
+        function cancelBboxSelection() {
+            bboxDrawing = false;
+            bboxStartPoint = null;
+            document.getElementById('bbox-draw-overlay').classList.remove('active');
+            document.getElementById('bbox-draw-hint').classList.remove('active');
+            document.getElementById('bbox-toggle').classList.remove('active');
+            map.getCanvas().style.cursor = '';
+            
+            var rect = document.querySelector('.bbox-draw-rect');
+            if (rect) rect.remove();
+        }
+
+        function setBbox(minLng, minLat, maxLng, maxLat) {
+            currentBbox = [minLng, minLat, maxLng, maxLat];
+            document.getElementById('bbox-info').classList.add('active');
+            document.getElementById('bbox-coords').textContent = 
+                'SW: ' + minLng.toFixed(4) + ', ' + minLat.toFixed(4) + 
+                ' | NE: ' + maxLng.toFixed(4) + ', ' + maxLat.toFixed(4);
+            
+            
+            drawBboxOnMap();
+            reloadGridData();
+        }
+
+        function clearBbox() {
+            currentBbox = null;
+            document.getElementById('bbox-info').classList.remove('active');
+            removeBboxFromMap();
+            reloadGridData();
+        }
+
+        function drawBboxOnMap() {
+            removeBboxFromMap();
+            if (!currentBbox || !map.getSource) return;
+            
+            var coords = [
+                [currentBbox[0], currentBbox[1]],
+                [currentBbox[2], currentBbox[1]],
+                [currentBbox[2], currentBbox[3]],
+                [currentBbox[0], currentBbox[3]],
+                [currentBbox[0], currentBbox[1]]
+            ];
+            
+            try {
+                map.addSource('bbox-selection', {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        geometry: { type: 'Polygon', coordinates: [coords] }
+                    }
+                });
+                map.addLayer({
+                    id: 'bbox-selection-fill',
+                    type: 'fill',
+                    source: 'bbox-selection',
+                    paint: { 'fill-color': '#60a5fa', 'fill-opacity': 0.1 }
+                });
+                map.addLayer({
+                    id: 'bbox-selection-line',
+                    type: 'line',
+                    source: 'bbox-selection',
+                    paint: { 'line-color': '#60a5fa', 'line-width': 2, 'line-dasharray': [2, 2] }
+                });
+            } catch (e) {
+                console.log('Could not draw bbox on map:', e);
+            }
+        }
+
+        function removeBboxFromMap() {
+            try {
+                if (map.getLayer('bbox-selection-fill')) map.removeLayer('bbox-selection-fill');
+                if (map.getLayer('bbox-selection-line')) map.removeLayer('bbox-selection-line');
+                if (map.getSource('bbox-selection')) map.removeSource('bbox-selection');
+            } catch (e) {}
+        }
+
+        
+        (function() {
+            var overlay = document.getElementById('bbox-draw-overlay');
+            var startX, startY, rect;
+            
+            function getMapCoords(clientX, clientY) {
+                var mapEl = document.getElementById('map');
+                var mapRect = mapEl.getBoundingClientRect();
+                var point = { x: clientX - mapRect.left, y: clientY - mapRect.top };
+                return map.unproject([point.x, point.y]);
+            }
+            
+            function onStart(e) {
+                e.preventDefault();
+                var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                startX = clientX;
+                startY = clientY;
+                bboxStartPoint = getMapCoords(clientX, clientY);
+                
+                rect = document.createElement('div');
+                rect.className = 'bbox-draw-rect';
+                rect.style.left = clientX + 'px';
+                rect.style.top = clientY + 'px';
+                rect.style.width = '0px';
+                rect.style.height = '0px';
+                document.body.appendChild(rect);
+            }
+            
+            function onMove(e) {
+                if (!bboxStartPoint || !rect) return;
+                e.preventDefault();
+                var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                var left = Math.min(startX, clientX);
+                var top = Math.min(startY, clientY);
+                var width = Math.abs(clientX - startX);
+                var height = Math.abs(clientY - startY);
+                
+                rect.style.left = left + 'px';
+                rect.style.top = top + 'px';
+                rect.style.width = width + 'px';
+                rect.style.height = height + 'px';
+            }
+            
+            function onEnd(e) {
+                if (!bboxStartPoint) return;
+                var clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+                var clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+                var endPoint = getMapCoords(clientX, clientY);
+                
+                var minLng = Math.min(bboxStartPoint.lng, endPoint.lng);
+                var maxLng = Math.max(bboxStartPoint.lng, endPoint.lng);
+                var minLat = Math.min(bboxStartPoint.lat, endPoint.lat);
+                var maxLat = Math.max(bboxStartPoint.lat, endPoint.lat);
+                
+                
+                if (Math.abs(maxLng - minLng) > 0.001 && Math.abs(maxLat - minLat) > 0.001) {
+                    setBbox(minLng, minLat, maxLng, maxLat);
+                }
+                
+                cancelBboxSelection();
+            }
+            
+            overlay.addEventListener('mousedown', onStart);
+            overlay.addEventListener('mousemove', onMove);
+            overlay.addEventListener('mouseup', onEnd);
+            overlay.addEventListener('touchstart', onStart);
+            overlay.addEventListener('touchmove', onMove);
+            overlay.addEventListener('touchend', onEnd);
+        })();
+
+        
+        function showDownloadOptions() {
+            if (!filterPanelOpen) toggleFilterPanel();
+            
+        }
+
+        function downloadData(format) {
+            format = format || 'csv';
+            var url = '/api/export?format=' + format;
+            if (dateFrom) url += '&from=' + dateFrom;
+            if (dateTo) url += '&to=' + dateTo;
+            if (currentBbox) url += '&bbox=' + currentBbox.join(',');
+            
+            
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'patrol-data.' + (format === 'geojson' ? 'geojson' : 'csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         function toggleActivityLog() {
@@ -803,16 +1238,17 @@
                 const res = await fetch('/api/activity');
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.activities && data.activities.length > 0) {
-                        list.innerHTML = data.activities.slice(0, 10).map(a => {
-                            const date = new Date(a.date);
-                            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    // API returns array directly
+                    const activities = Array.isArray(data) ? data : (data.activities || []);
+                    if (activities.length > 0) {
+                        list.innerHTML = activities.slice(0, 10).map(a => {
+                            const dateStr = a.date || 'Unknown';
                             const location = a.location || 'Unknown';
-                            const distance = a.distance_km ? a.distance_km.toFixed(1) + ' km' : '';
+                            const distance = a.distance ? a.distance.toFixed(1) + ' km' : '';
+                            const typeIcon = {'foot': '🚶', 'vehicle': '🚗', 'aircraft': '✈️'}[a.type] || '📍';
                             return `<div class="activity-item">
-                                <span class="activity-date">${dateStr}</span> · 
-                                <span class="activity-location">${location}</span>
-                                ${distance ? `<span class="activity-distance">${distance}</span>` : ''}
+                                <span class="activity-date">${typeIcon} ${dateStr}</span>
+                                <span class="activity-distance">${distance}</span>
                             </div>`;
                         }).join('');
                     } else {
@@ -822,33 +1258,38 @@
                     throw new Error('Failed to load');
                 }
             } catch (err) {
-                // Show placeholder data if API not available
+                console.error('Activity load error:', err);
                 list.innerHTML = '<div class="activity-empty">No recent activity</div>';
             }
         }
 
-        // Initialize date range on page load
+        
         initDateRange();
 
-        // ========== Search Functionality ==========
-        let searchOpen = false;
+        
         let searchTimeout = null;
         let cachedAreas = null;
 
         function toggleSearch() {
             searchOpen = !searchOpen;
-            const toggle = document.getElementById('search-toggle');
-            const wrapper = document.getElementById('search-input-wrapper');
+            const toolbarBtn = document.getElementById('toolbar-search');
+            const panel = document.getElementById('search-panel');
             const input = document.getElementById('search-input');
             const results = document.getElementById('search-results');
             
             if (searchOpen) {
-                toggle.classList.add('active');
-                wrapper.classList.add('open');
+                toolbarBtn.classList.add('active');
+                panel.classList.add('open');
+                // Close filter panel if open
+                if (filterPanelOpen) {
+                    filterPanelOpen = false;
+                    document.getElementById('filter-panel').classList.remove('open');
+                    document.getElementById('filter-toggle').classList.remove('active');
+                }
                 setTimeout(() => input.focus(), 100);
             } else {
-                toggle.classList.remove('active');
-                wrapper.classList.remove('open');
+                toolbarBtn.classList.remove('active');
+                panel.classList.remove('open');
                 results.classList.remove('open');
                 input.value = '';
                 document.getElementById('search-clear').style.display = 'none';
@@ -868,7 +1309,7 @@
                 return;
             }
             
-            // Debounce search
+            
             searchTimeout = setTimeout(() => searchAreas(query), 200);
         }
 
@@ -906,15 +1347,15 @@
         }
 
         function selectSearchResult(area) {
-            // Hide search
+            
             hideSearchResults();
             document.getElementById('search-input').value = area.name;
             
-            // Fly to the area
+            
             if (area.bbox && area.bbox.length === 4) {
                 map.fitBounds([
-                    [area.bbox[0], area.bbox[1]], // SW
-                    [area.bbox[2], area.bbox[3]]  // NE
+                    [area.bbox[0], area.bbox[1]], 
+                    [area.bbox[2], area.bbox[3]]  
                 ], { padding: 50, duration: 1500 });
             } else if (area.center && area.center.length === 2) {
                 map.flyTo({
@@ -924,7 +1365,7 @@
                 });
             }
             
-            // Show stats modal after flying
+            
             setTimeout(() => showPAStatsModal(area), 800);
         }
 
@@ -952,17 +1393,18 @@
             return div.innerHTML;
         }
 
-        // Close search results when clicking outside
+        
         document.addEventListener('click', (e) => {
-            const container = document.getElementById('search-container');
-            if (!container.contains(e.target)) {
+            const panel = document.getElementById('search-panel');
+            const toolbarBtn = document.getElementById('toolbar-search');
+            if (panel && !panel.contains(e.target) && !toolbarBtn.contains(e.target)) {
                 hideSearchResults();
             }
         });
 
-        // ========== PA Stats Modal ==========
+        
         function showPAStatsModal(props) {
-            // Set modal content
+            
             document.getElementById('pa-stats-name').textContent = props.name || 'Protected Area';
             document.getElementById('pa-stats-country').textContent = props.country || '--';
             
@@ -979,7 +1421,7 @@
                 document.getElementById('pa-stats-wdpa').textContent = wdpaId;
                 wdpaRow.style.display = 'flex';
                 
-                // Show Protected Planet link
+                
                 const linkContainer = document.getElementById('pa-stats-link-container');
                 const ppLink = document.getElementById('pa-stats-pp-link');
                 ppLink.href = `https://www.protectedplanet.net/${wdpaId}`;
@@ -989,17 +1431,17 @@
                 document.getElementById('pa-stats-link-container').style.display = 'none';
             }
             
-            // Patrol stats (placeholder - would need API endpoint for per-PA stats)
+            
             document.getElementById('pa-stats-distance').textContent = '-- km';
             document.getElementById('pa-stats-patrols').textContent = '--';
             
-            // Show modal
+            
             showModal('pa-stats');
         }
 
-        // Update PA click handler to show modal instead of popup
+        
         map.on('load', function() {
-            // Remove the default popup click handler and add modal handler
+            
             map.off('click', 'areas-fill');
             
             map.on('click', 'areas-fill', function(e) {
@@ -1010,5 +1452,15 @@
             });
         });
     </script>
-</body>
-</html>
+
+
+    <div class="page-views" id="page-views"></div>
+    <script>
+    (function() {
+        var key = '5mp_views';
+        var views = parseInt(localStorage.getItem(key) || '0', 10) + 1;
+        localStorage.setItem(key, views);
+        document.getElementById('page-views').textContent = views.toLocaleString() + ' views';
+    })();
+    </script>
+</body></html>
