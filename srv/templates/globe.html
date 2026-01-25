@@ -83,6 +83,38 @@
         .maplibregl-ctrl-attrib a { color: #666 !important; }
         .page-views { position: fixed; bottom: 8px; right: 8px; background: rgba(18,18,18,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 4px 8px; font-size: 10px; color: #555; z-index: 90; }
 
+        /* Latest Activity Banner */
+        .latest-activity-banner { position: fixed; top: 66px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 10px 16px 10px 14px; z-index: 150; backdrop-filter: blur(10px); display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.3s ease; max-width: calc(100vw - 180px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .latest-activity-banner:hover { background: rgba(24,24,24,0.98); border-color: #22c55e; transform: translateX(-50%) scale(1.02); }
+        .latest-activity-banner.hidden { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(-20px); }
+        .latest-activity-icon { width: 32px; height: 32px; background: rgba(34,197,94,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .latest-activity-icon svg { width: 16px; height: 16px; color: #22c55e; }
+        .latest-activity-content { flex: 1; min-width: 0; }
+        .latest-activity-title { font-size: 10px; font-weight: 600; color: #22c55e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+        .latest-activity-message { font-size: 13px; color: #e0e0e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .latest-activity-message .location { color: #fff; font-weight: 500; }
+        .latest-activity-message .stats { color: #888; }
+        .latest-activity-close { width: 24px; height: 24px; background: none; border: none; color: #666; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s; flex-shrink: 0; }
+        .latest-activity-close:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .latest-activity-dots { display: flex; gap: 4px; margin-left: 8px; }
+        .latest-activity-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all 0.2s; cursor: pointer; }
+        .latest-activity-dot:hover { background: rgba(255,255,255,0.4); }
+        .latest-activity-dot.active { background: #22c55e; }
+        @keyframes activity-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 8px rgba(34,197,94,0); } }
+        .latest-activity-banner.pulse { animation: activity-pulse 2s ease-out; }
+
+        /* Activity highlight marker on map */
+        .activity-marker { width: 24px; height: 24px; background: rgba(34,197,94,0.3); border: 2px solid #22c55e; border-radius: 50%; position: relative; }
+        .activity-marker::after { content: ''; position: absolute; inset: -8px; border: 2px solid rgba(34,197,94,0.5); border-radius: 50%; animation: marker-pulse 1.5s ease-out infinite; }
+        @keyframes marker-pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+
+        @media (max-width: 768px) {
+            .latest-activity-banner { top: 62px; left: 10px; right: 10px; transform: none; max-width: none; }
+            .latest-activity-banner:hover { transform: none; }
+            .latest-activity-banner.hidden { transform: translateY(-20px); }
+            .latest-activity-dots { display: none; }
+        }
+
         /* Time Slider - Google Timelapse Style */
         .time-slider-container { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.9) 70%, transparent 100%); z-index: 400; padding: 8px 20px 12px; display: flex; flex-direction: column; }
         .time-slider-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
@@ -150,36 +182,7 @@
         .filter-section:last-child { margin-bottom: 0; }
         .filter-section-label { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
 
-         
-        .date-range-display { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: 13px; color: #22c55e; text-align: center; }
-        .date-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-        .date-preset-btn { flex: 1; min-width: calc(33% - 4px); padding: 8px 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #a0a0a0; font-size: 11px; cursor: pointer; transition: all 0.2s; }
-        .date-preset-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); }
-        .date-preset-btn.active { background: rgba(34,197,94,0.15); border-color: #22c55e; color: #22c55e; }
-        .date-custom-toggle { margin-bottom: 10px; }
-        .date-custom-btn { width: 100%; padding: 8px; background: transparent; border: 1px dashed rgba(255,255,255,0.15); border-radius: 6px; color: #666; font-size: 11px; cursor: pointer; transition: all 0.2s; }
-        .date-custom-btn:hover { border-color: rgba(255,255,255,0.3); color: #888; }
-        .date-custom-btn.active { border-color: #22c55e; border-style: solid; color: #22c55e; }
-        .date-input-row { display: -webkit-box; display: -webkit-flex; display: flex; gap: 8px; margin-bottom: 8px; }
-        .date-input-row:last-child { margin-bottom: 0; }
-        .date-input-group { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; }
-        .date-input-group label { display: block; font-size: 10px; color: #666; margin-bottom: 4px; text-transform: uppercase; }
-        .date-input { width: 100%; padding: 8px 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #e0e0e0; font-size: 13px; }
-        .date-input:hover { border-color: rgba(255,255,255,0.2); }
-        .date-input:focus { outline: none; border-color: #22c55e; }
-        .date-input::-webkit-calendar-picker-indicator { -webkit-filter: invert(1) opacity(0.5); filter: invert(1) opacity(0.5); cursor: pointer; }
-         
-        .date-hint { font-size: 9px; color: #555; margin-top: 2px; display: none; }
-        .date-input[type="text"] + .date-hint { display: block; }
 
-         
-        .bbox-info { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; font-size: 11px; color: #60a5fa; display: none; }
-        .bbox-info.active { display: block; }
-        .bbox-info-header { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; -webkit-box-align: center; -webkit-align-items: center; align-items: center; margin-bottom: 6px; }
-        .bbox-info-title { font-weight: 600; }
-        .bbox-clear { background: none; border: none; color: #60a5fa; cursor: pointer; font-size: 16px; padding: 0; line-height: 1; }
-        .bbox-clear:hover { color: #93c5fd; }
-        .bbox-coords { font-family: monospace; font-size: 10px; color: #93c5fd; word-break: break-all; }
 
          
         .download-section { display: -webkit-box; display: -webkit-flex; display: flex; gap: 8px; }
@@ -238,20 +241,52 @@
         .search-no-results { padding: 16px 14px; text-align: center; color: #666; font-size: 13px; }
         .search-loading { padding: 16px 14px; text-align: center; color: #888; font-size: 13px; }
 
-         
-        .pa-stats-modal { max-width: 380px; }
-        .pa-stats-content { }
-        .pa-stats-section { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .pa-stats-section:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-        .pa-stats-section-title { font-size: 12px; font-weight: 600; color: #22c55e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
-        .pa-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
-        .pa-stat-label { font-size: 14px; color: #888; }
-        .pa-stat-value { font-size: 14px; color: #fff; font-weight: 500; }
-        .pa-patrol-stats .pa-stat-value { color: #22c55e; }
-        .pa-stats-link { margin-top: 20px; }
-        .pa-stats-link a { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #a0a0a0; text-decoration: none; font-size: 13px; transition: all 0.2s; }
-        .pa-stats-link a:hover { background: rgba(255,255,255,0.1); color: #22c55e; border-color: rgba(34,197,94,0.3); }
-        .pa-stats-link svg { width: 16px; height: 16px; }
+        /* Active Filters Display */
+        .active-filters { margin-bottom: 16px; }
+        .active-filter-item { display: flex; align-items: center; justify-content: space-between; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; font-size: 12px; }
+        .active-filter-item.area { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.2); }
+        .active-filter-item.area .filter-item-icon { color: #60a5fa; }
+        .active-filter-item.area .filter-item-value { color: #93c5fd; }
+        .active-filter-item.park { background: rgba(168,85,247,0.1); border-color: rgba(168,85,247,0.2); }
+        .active-filter-item.park .filter-item-icon { color: #a855f7; }
+        .active-filter-item.park .filter-item-value { color: #c4b5fd; }
+        .filter-item-content { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+        .filter-item-icon { width: 14px; height: 14px; color: #22c55e; flex-shrink: 0; }
+        .filter-item-label { color: #888; font-size: 10px; text-transform: uppercase; }
+        .filter-item-value { color: #22c55e; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .filter-item-clear { background: none; border: none; color: #666; cursor: pointer; font-size: 14px; padding: 2px 4px; line-height: 1; flex-shrink: 0; }
+        .filter-item-clear:hover { color: #fff; }
+
+        /* Selected Parks */
+        .selected-parks { margin-top: 12px; }
+        .selected-parks-empty { font-size: 11px; color: #555; text-align: center; padding: 12px; }
+        .selected-park-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.15); border-radius: 6px; margin-bottom: 6px; cursor: pointer; transition: all 0.2s; }
+        .selected-park-item:hover { background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.3); }
+        .selected-park-item:last-child { margin-bottom: 0; }
+        .selected-park-icon { width: 16px; height: 16px; color: #a855f7; flex-shrink: 0; }
+        .selected-park-name { flex: 1; font-size: 12px; color: #e0e0e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .selected-park-remove { background: none; border: none; color: #666; cursor: pointer; font-size: 14px; padding: 2px; line-height: 1; }
+        .selected-park-remove:hover { color: #ef4444; }
+
+        /* PA Popup Tooltip (map popup style) */
+        .maplibregl-popup-content { background: rgba(18,18,18,0.95) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 8px !important; padding: 0 !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; min-width: 220px; max-width: 280px; }
+        .maplibregl-popup-tip { border-top-color: rgba(18,18,18,0.95) !important; }
+        .maplibregl-popup-close-button { color: #666 !important; font-size: 18px !important; padding: 4px 8px !important; }
+        .maplibregl-popup-close-button:hover { color: #fff !important; background: transparent !important; }
+        .pa-popup { padding: 12px; }
+        .pa-popup-header { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .pa-popup-name { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+        .pa-popup-country { font-size: 11px; color: #888; display: flex; align-items: center; gap: 4px; }
+        .pa-popup-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .pa-popup-stat { background: rgba(255,255,255,0.04); border-radius: 4px; padding: 8px; }
+        .pa-popup-stat-label { font-size: 9px; color: #666; text-transform: uppercase; margin-bottom: 2px; }
+        .pa-popup-stat-value { font-size: 13px; color: #22c55e; font-weight: 600; }
+        .pa-popup-stat-value.muted { color: #888; }
+        .pa-popup-actions { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .pa-popup-btn { flex: 1; padding: 6px 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #a0a0a0; font-size: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .pa-popup-btn:hover { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
+        .pa-popup-btn svg { width: 12px; height: 12px; }
+        .pa-popup-btn.selected { background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.3); color: #a855f7; }
 
          
         @media (max-width: 768px) {
@@ -297,6 +332,29 @@
             
         </div>
     </header>
+
+    <!-- Latest Activity Banner -->
+    <div class="latest-activity-banner hidden" id="latest-activity-banner" onclick="handleActivityBannerClick()">
+        <div class="latest-activity-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+        </div>
+        <div class="latest-activity-content">
+            <div class="latest-activity-title">Latest Activity</div>
+            <div class="latest-activity-message" id="latest-activity-message">
+                <span class="location">Loading...</span>
+            </div>
+        </div>
+        <div class="latest-activity-dots" id="latest-activity-dots"></div>
+        <button class="latest-activity-close" onclick="dismissActivityBanner(event)" title="Dismiss">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </div>
 
     <div id="map" class="maplibregl-map"><div class="maplibregl-canvas-container maplibregl-interactive maplibregl-touch-drag-pan maplibregl-touch-zoom-rotate"><canvas class="maplibregl-canvas" tabindex="0" aria-label="Map" role="region" width="375" height="756" style="width: 375px; height: 756px;"></canvas></div><div class="maplibregl-control-container"><div class="maplibregl-ctrl-top-left "></div><div class="maplibregl-ctrl-top-right "><div class="maplibregl-ctrl maplibregl-ctrl-group"><button class="maplibregl-ctrl-zoom-in" type="button" title="Zoom in" aria-label="Zoom in" aria-disabled="false"><span class="maplibregl-ctrl-icon" aria-hidden="true"></span></button><button class="maplibregl-ctrl-zoom-out" type="button" title="Zoom out" aria-label="Zoom out" aria-disabled="false"><span class="maplibregl-ctrl-icon" aria-hidden="true"></span></button><button class="maplibregl-ctrl-compass" type="button" title="Reset bearing to north" aria-label="Reset bearing to north"><span class="maplibregl-ctrl-icon" aria-hidden="true" style="transform: rotate(0deg);"></span></button></div></div><div class="maplibregl-ctrl-bottom-left "></div><div class="maplibregl-ctrl-bottom-right "><details class="maplibregl-ctrl maplibregl-ctrl-attrib maplibregl-compact maplibregl-compact-show" open=""><summary class="maplibregl-ctrl-attrib-button" title="Toggle attribution" aria-label="Toggle attribution"></summary><div class="maplibregl-ctrl-attrib-inner">© OpenStreetMap contributors, © CARTO | <a href="https://maplibre.org/" target="_blank">MapLibre</a></div></details></div></div><div id="map-legend" style="position: absolute; bottom: 30px; left: 10px; background: rgba(18, 18, 18, 0.9); padding: 12px 16px; border-radius: 8px; font-size: 12px; z-index: 100; border: 1px solid rgba(255, 255, 255, 0.1);">
                 <div style="font-weight: 600; margin-bottom: 10px; color: #fff;">Patrol Intensity</div>
@@ -371,33 +429,59 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                 </svg>
-                Filters
+                Active Filters
             </div>
             <button class="filter-panel-close" onclick="toggleFilterPanel()">×</button>
         </div>
         <div class="filter-panel-content">
-            
-            <div class="filter-section">
-                <div class="filter-section-label">Date Range</div>
-                <div class="date-range-display" id="date-range-display">Use time slider below ↓</div>
-                <div style="font-size: 11px; color: #666; text-align: center;">Drag the slider at the bottom to filter by date</div>
-                <!-- Hidden inputs for compatibility -->
-                <input type="hidden" id="date-from">
-                <input type="hidden" id="date-to">
-            </div>
-
-            
-            <div class="bbox-info" id="bbox-info">
-                <div class="bbox-info-header">
-                    <span class="bbox-info-title">Selected Area</span>
-                    <button class="bbox-clear" onclick="clearBbox()" title="Clear selection">×</button>
+            <!-- Active Filters -->
+            <div class="active-filters" id="active-filters">
+                <!-- Time Range Filter -->
+                <div class="active-filter-item" id="filter-time">
+                    <div class="filter-item-content">
+                        <svg class="filter-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <div>
+                            <div class="filter-item-label">Time Range</div>
+                            <div class="filter-item-value" id="filter-time-value">Last 12 months</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="bbox-coords" id="bbox-coords"></div>
+                
+                <!-- Selected Area Filter (hidden by default) -->
+                <div class="active-filter-item area" id="filter-area" style="display: none;">
+                    <div class="filter-item-content">
+                        <svg class="filter-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        </svg>
+                        <div>
+                            <div class="filter-item-label">Selected Area</div>
+                            <div class="filter-item-value" id="filter-area-value">Custom region</div>
+                        </div>
+                    </div>
+                    <button class="filter-item-clear" onclick="clearBbox()" title="Clear">×</button>
+                </div>
             </div>
-
             
+            <!-- Selected Parks -->
             <div class="filter-section">
-                <div class="filter-section-label">Download Data</div>
+                <div class="filter-section-label">Selected Parks</div>
+                <div class="selected-parks" id="selected-parks">
+                    <div class="selected-parks-empty" id="selected-parks-empty">Click a park on the map to select it</div>
+                </div>
+            </div>
+            
+            <!-- Hidden inputs for compatibility -->
+            <input type="hidden" id="date-from">
+            <input type="hidden" id="date-to">
+            <div id="bbox-info" style="display:none;"></div>
+            <div id="bbox-coords" style="display:none;"></div>
+
+            <!-- Download Section -->
+            <div class="filter-section">
+                <div class="filter-section-label">Export Data</div>
                 <div class="download-section">
                     <button class="btn-download" onclick="downloadData('csv')">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -414,19 +498,6 @@
                         </svg>
                         GeoJSON
                     </button>
-                </div>
-            </div>
-
-            
-            <div class="activity-section">
-                <div class="activity-header" onclick="toggleActivityLog()">
-                    <span class="activity-title">Recent Activity</span>
-                    <svg class="activity-toggle" id="activity-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </div>
-                <div class="activity-list" id="activity-list">
-                    
                 </div>
             </div>
         </div>
@@ -562,51 +633,7 @@
     </div>
 
     
-    <div id="modal-pa-stats" class="modal-overlay" onclick="closeModalOnOverlay(event)">
-        <div class="modal pa-stats-modal">
-            <div class="modal-header">
-                <h2 class="modal-title" id="pa-stats-name">Protected Area</h2>
-                <button class="modal-close" onclick="closeModal('pa-stats')">×</button>
-            </div>
-            <div class="pa-stats-content">
-                <div class="pa-stats-section">
-                    <div class="pa-stat-row">
-                        <span class="pa-stat-label">Country</span>
-                        <span class="pa-stat-value" id="pa-stats-country">--</span>
-                    </div>
-                    <div class="pa-stat-row">
-                        <span class="pa-stat-label">Area</span>
-                        <span class="pa-stat-value" id="pa-stats-area">-- km²</span>
-                    </div>
-                    <div class="pa-stat-row" id="pa-stats-wdpa-row">
-                        <span class="pa-stat-label">WDPA ID</span>
-                        <span class="pa-stat-value" id="pa-stats-wdpa">--</span>
-                    </div>
-                </div>
-                <div class="pa-stats-section pa-patrol-stats">
-                    <h3 class="pa-stats-section-title">Patrol Stats</h3>
-                    <div class="pa-stat-row">
-                        <span class="pa-stat-label">Total Distance</span>
-                        <span class="pa-stat-value" id="pa-stats-distance">-- km</span>
-                    </div>
-                    <div class="pa-stat-row">
-                        <span class="pa-stat-label">Total Patrols</span>
-                        <span class="pa-stat-value" id="pa-stats-patrols">--</span>
-                    </div>
-                </div>
-                <div class="pa-stats-link" id="pa-stats-link-container" style="display: none;">
-                    <a href="#" id="pa-stats-pp-link" target="_blank" rel="noopener noreferrer">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                            <polyline points="15 3 21 3 21 9"></polyline>
-                            <line x1="10" y1="14" x2="21" y2="3"></line>
-                        </svg>
-                        View on Protected Planet
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- PA Stats Modal removed - now using map popups -->
 
     <script>
         const MAPTILER_KEY = 'dea58ea0389007e386776c4f583f4425';
@@ -1124,11 +1151,18 @@
 
         function setBbox(minLng, minLat, maxLng, maxLat) {
             currentBbox = [minLng, minLat, maxLng, maxLat];
-            document.getElementById('bbox-info').classList.add('active');
-            document.getElementById('bbox-coords').textContent = 
-                'SW: ' + minLng.toFixed(4) + ', ' + minLat.toFixed(4) + 
-                ' | NE: ' + maxLng.toFixed(4) + ', ' + maxLat.toFixed(4);
             
+            // Update filter panel display
+            var filterArea = document.getElementById('filter-area');
+            var filterAreaValue = document.getElementById('filter-area-value');
+            if (filterArea && filterAreaValue) {
+                filterArea.style.display = 'flex';
+                // Calculate approximate area size
+                var latDiff = Math.abs(maxLat - minLat);
+                var lngDiff = Math.abs(maxLng - minLng);
+                var approxKm = Math.round(latDiff * 111 * lngDiff * 111 * Math.cos((minLat + maxLat) / 2 * Math.PI / 180));
+                filterAreaValue.textContent = approxKm.toLocaleString() + ' km² region';
+            }
             
             drawBboxOnMap();
             reloadGridData();
@@ -1136,7 +1170,13 @@
 
         function clearBbox() {
             currentBbox = null;
-            document.getElementById('bbox-info').classList.remove('active');
+            
+            // Hide filter panel display
+            var filterArea = document.getElementById('filter-area');
+            if (filterArea) {
+                filterArea.style.display = 'none';
+            }
+            
             removeBboxFromMap();
             reloadGridData();
         }
@@ -1328,6 +1368,188 @@
             }
         }
 
+        // Latest Activity Banner functionality
+        let latestActivities = [];
+        let currentActivityIndex = 0;
+        let activityRotationInterval = null;
+        let activityMarker = null;
+        let bannerDismissed = false;
+
+        // Sample/demo data for when no real activity exists
+        const sampleActivities = [
+            { location: 'Serengeti National Park', distance: 12.5, date: 'Today', type: 'foot', lat: -2.3333, lon: 34.8333 },
+            { location: 'Kruger National Park', distance: 8.2, date: 'Yesterday', type: 'vehicle', lat: -24.0167, lon: 31.4833 },
+            { location: 'Masai Mara Reserve', distance: 15.7, date: 'Jan 28', type: 'foot', lat: -1.5, lon: 35.0 },
+            { location: 'Yellowstone National Park', distance: 22.1, date: 'Jan 27', type: 'foot', lat: 44.4280, lon: -110.5885 },
+            { location: 'Great Barrier Reef', distance: 5.3, date: 'Jan 26', type: 'vehicle', lat: -18.2871, lon: 147.6992 }
+        ];
+
+        async function loadLatestActivityBanner() {
+            if (bannerDismissed) return;
+            
+            try {
+                const res = await fetch('/api/activity');
+                if (!res.ok) throw new Error('Failed to load');
+                
+                const data = await res.json();
+                latestActivities = (Array.isArray(data) ? data : (data.activities || [])).filter(a => a.lat && a.lon);
+                
+                // Use sample data if no real data with coordinates
+                if (latestActivities.length === 0) {
+                    latestActivities = sampleActivities;
+                }
+                
+                if (latestActivities.length > 0) {
+                    updateActivityBannerDisplay();
+                    showActivityBanner();
+                    startActivityRotation();
+                }
+            } catch (err) {
+                console.error('Latest activity load error:', err);
+                // Fall back to sample data on error
+                latestActivities = sampleActivities;
+                if (latestActivities.length > 0) {
+                    updateActivityBannerDisplay();
+                    showActivityBanner();
+                    startActivityRotation();
+                }
+            }
+        }
+
+        function updateActivityBannerDisplay() {
+            if (latestActivities.length === 0) return;
+            
+            const activity = latestActivities[currentActivityIndex];
+            const messageEl = document.getElementById('latest-activity-message');
+            const dotsEl = document.getElementById('latest-activity-dots');
+            
+            // Format the message
+            const location = activity.location || 'Unknown location';
+            const distance = activity.distance ? activity.distance.toFixed(1) + ' km' : '';
+            const date = activity.date || '';
+            const typeIcon = {'foot': '🚶', 'vehicle': '🚗', 'aircraft': '✈️'}[activity.type] || '';
+            
+            let statsText = '';
+            if (distance && date) statsText = ` • ${distance} • ${date}`;
+            else if (distance) statsText = ` • ${distance}`;
+            else if (date) statsText = ` • ${date}`;
+            
+            messageEl.innerHTML = `${typeIcon} New patrol in <span class="location">${escapeHtml(location)}</span><span class="stats">${statsText}</span>`;
+            
+            // Update dots
+            if (latestActivities.length > 1) {
+                dotsEl.innerHTML = latestActivities.slice(0, 5).map((_, i) => 
+                    `<div class="latest-activity-dot ${i === currentActivityIndex ? 'active' : ''}" onclick="selectActivity(${i}, event)"></div>`
+                ).join('');
+            } else {
+                dotsEl.innerHTML = '';
+            }
+        }
+
+        function showActivityBanner() {
+            const banner = document.getElementById('latest-activity-banner');
+            banner.classList.remove('hidden');
+            // Add pulse effect when showing
+            banner.classList.add('pulse');
+            setTimeout(() => banner.classList.remove('pulse'), 2000);
+        }
+
+        function hideActivityBanner() {
+            const banner = document.getElementById('latest-activity-banner');
+            banner.classList.add('hidden');
+            removeActivityMarker();
+        }
+
+        function dismissActivityBanner(event) {
+            event.stopPropagation();
+            bannerDismissed = true;
+            hideActivityBanner();
+            stopActivityRotation();
+        }
+
+        function startActivityRotation() {
+            stopActivityRotation();
+            if (latestActivities.length > 1) {
+                activityRotationInterval = setInterval(() => {
+                    currentActivityIndex = (currentActivityIndex + 1) % Math.min(latestActivities.length, 5);
+                    updateActivityBannerDisplay();
+                }, 10000); // Rotate every 10 seconds
+            }
+        }
+
+        function stopActivityRotation() {
+            if (activityRotationInterval) {
+                clearInterval(activityRotationInterval);
+                activityRotationInterval = null;
+            }
+        }
+
+        function selectActivity(index, event) {
+            if (event) event.stopPropagation();
+            currentActivityIndex = index;
+            updateActivityBannerDisplay();
+            // Reset rotation timer
+            startActivityRotation();
+        }
+
+        function handleActivityBannerClick() {
+            if (latestActivities.length === 0) return;
+            
+            const activity = latestActivities[currentActivityIndex];
+            if (activity.lat && activity.lon) {
+                zoomToActivity(activity);
+            }
+        }
+
+        function zoomToActivity(activity) {
+            // Remove existing marker
+            removeActivityMarker();
+            
+            // Fly to location
+            map.flyTo({
+                center: [activity.lon, activity.lat],
+                zoom: 12,
+                duration: 1500,
+                essential: true
+            });
+            
+            // Add pulsing marker after flight completes
+            setTimeout(() => {
+                addActivityMarker(activity.lon, activity.lat);
+            }, 1600);
+        }
+
+        function addActivityMarker(lon, lat) {
+            removeActivityMarker();
+            
+            // Create marker element
+            const el = document.createElement('div');
+            el.className = 'activity-marker';
+            
+            // Add marker to map
+            activityMarker = new maplibregl.Marker({ element: el })
+                .setLngLat([lon, lat])
+                .addTo(map);
+            
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                removeActivityMarker();
+            }, 10000);
+        }
+
+        function removeActivityMarker() {
+            if (activityMarker) {
+                activityMarker.remove();
+                activityMarker = null;
+            }
+        }
+
+        // Load banner after map is ready
+        map.on('load', function() {
+            // Small delay to let other things initialize
+            setTimeout(loadLatestActivityBanner, 1000);
+        });
+
         
         initDateRange();
 
@@ -1412,26 +1634,30 @@
         }
 
         function selectSearchResult(area) {
-            
             hideSearchResults();
             document.getElementById('search-input').value = area.name;
             
-            
+            // Fly to the area
+            let targetCenter = null;
             if (area.bbox && area.bbox.length === 4) {
                 map.fitBounds([
                     [area.bbox[0], area.bbox[1]], 
                     [area.bbox[2], area.bbox[3]]  
                 ], { padding: 50, duration: 1500 });
+                targetCenter = [(area.bbox[0] + area.bbox[2]) / 2, (area.bbox[1] + area.bbox[3]) / 2];
             } else if (area.center && area.center.length === 2) {
                 map.flyTo({
                     center: area.center,
                     zoom: 10,
                     duration: 1500
                 });
+                targetCenter = area.center;
             }
             
-            
-            setTimeout(() => showPAStatsModal(area), 800);
+            // Show popup after flying
+            if (targetCenter) {
+                setTimeout(() => showPAPopup(area, { lng: targetCenter[0], lat: targetCenter[1] }), 800);
+            }
         }
 
         function showSearchResults() {
@@ -1467,52 +1693,155 @@
             }
         });
 
+        // Selected parks management
+        let selectedParks = [];
+        let currentPAPopup = null;
         
-        function showPAStatsModal(props) {
+        function showPAPopup(props, lngLat) {
+            // Close existing popup
+            if (currentPAPopup) {
+                currentPAPopup.remove();
+            }
             
-            document.getElementById('pa-stats-name').textContent = props.name || 'Protected Area';
-            document.getElementById('pa-stats-country').textContent = props.country || '--';
-            
+            const name = props.name || 'Protected Area';
+            const country = props.country || 'Unknown';
             const areaKm2 = props.area_km2 || props.area;
-            if (areaKm2) {
-                document.getElementById('pa-stats-area').textContent = Number(areaKm2).toLocaleString() + ' km²';
-            } else {
-                document.getElementById('pa-stats-area').textContent = '--';
-            }
-            
             const wdpaId = props.wdpa_id || props.wdpaid;
-            const wdpaRow = document.getElementById('pa-stats-wdpa-row');
-            if (wdpaId) {
-                document.getElementById('pa-stats-wdpa').textContent = wdpaId;
-                wdpaRow.style.display = 'flex';
-                
-                
-                const linkContainer = document.getElementById('pa-stats-link-container');
-                const ppLink = document.getElementById('pa-stats-pp-link');
-                ppLink.href = `https://www.protectedplanet.net/${wdpaId}`;
-                linkContainer.style.display = 'block';
+            const isSelected = selectedParks.some(p => p.id === (wdpaId || name));
+            
+            const areaDisplay = areaKm2 ? Number(areaKm2).toLocaleString() + ' km²' : '--';
+            
+            const popupContent = `
+                <div class="pa-popup">
+                    <div class="pa-popup-header">
+                        <div class="pa-popup-name">${escapeHtml(name)}</div>
+                        <div class="pa-popup-country">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            ${escapeHtml(country)}
+                        </div>
+                    </div>
+                    <div class="pa-popup-stats">
+                        <div class="pa-popup-stat">
+                            <div class="pa-popup-stat-label">Area</div>
+                            <div class="pa-popup-stat-value${!areaKm2 ? ' muted' : ''}">${areaDisplay}</div>
+                        </div>
+                        <div class="pa-popup-stat">
+                            <div class="pa-popup-stat-label">WDPA ID</div>
+                            <div class="pa-popup-stat-value${!wdpaId ? ' muted' : ''}">${wdpaId || '--'}</div>
+                        </div>
+                    </div>
+                    <div class="pa-popup-actions">
+                        <button class="pa-popup-btn${isSelected ? ' selected' : ''}" onclick="toggleParkSelection('${escapeHtml(wdpaId || name)}', '${escapeHtml(name)}', ${JSON.stringify(props.bbox || null).replace(/"/g, "'")}, ${JSON.stringify(props.center || (lngLat ? [lngLat.lng, lngLat.lat] : null)).replace(/"/g, "'")})">
+                            <svg viewBox="0 0 24 24" fill="${isSelected ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            ${isSelected ? 'Selected' : 'Select'}
+                        </button>
+                        ${wdpaId ? `<a class="pa-popup-btn" href="https://www.protectedplanet.net/${wdpaId}" target="_blank" rel="noopener">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                            Details
+                        </a>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            currentPAPopup = new maplibregl.Popup({ closeButton: true, maxWidth: '300px' })
+                .setLngLat(lngLat)
+                .setHTML(popupContent)
+                .addTo(map);
+        }
+        
+        function toggleParkSelection(id, name, bbox, center) {
+            const index = selectedParks.findIndex(p => p.id === id);
+            if (index >= 0) {
+                selectedParks.splice(index, 1);
             } else {
-                wdpaRow.style.display = 'none';
-                document.getElementById('pa-stats-link-container').style.display = 'none';
+                selectedParks.push({ id, name, bbox, center });
+            }
+            updateSelectedParksDisplay();
+            // Close and reopen popup to update button state
+            if (currentPAPopup) {
+                currentPAPopup.remove();
+            }
+        }
+        
+        function removeSelectedPark(id) {
+            selectedParks = selectedParks.filter(p => p.id !== id);
+            updateSelectedParksDisplay();
+        }
+        
+        function flyToSelectedPark(id) {
+            const park = selectedParks.find(p => p.id === id);
+            if (park) {
+                if (park.bbox && park.bbox.length === 4) {
+                    map.fitBounds([[park.bbox[0], park.bbox[1]], [park.bbox[2], park.bbox[3]]], { padding: 50, duration: 1500 });
+                } else if (park.center && park.center.length === 2) {
+                    map.flyTo({ center: park.center, zoom: 10, duration: 1500 });
+                }
+            }
+        }
+        
+        function updateSelectedParksDisplay() {
+            const container = document.getElementById('selected-parks');
+            const emptyMsg = document.getElementById('selected-parks-empty');
+            
+            if (selectedParks.length === 0) {
+                if (emptyMsg) emptyMsg.style.display = 'block';
+                // Remove park items but keep empty message
+                const items = container.querySelectorAll('.selected-park-item');
+                items.forEach(item => item.remove());
+                return;
             }
             
+            if (emptyMsg) emptyMsg.style.display = 'none';
             
-            document.getElementById('pa-stats-distance').textContent = '-- km';
-            document.getElementById('pa-stats-patrols').textContent = '--';
+            // Remove existing items
+            const items = container.querySelectorAll('.selected-park-item');
+            items.forEach(item => item.remove());
             
-            
-            showModal('pa-stats');
+            // Add park items
+            selectedParks.forEach(park => {
+                const item = document.createElement('div');
+                item.className = 'selected-park-item';
+                item.innerHTML = `
+                    <svg class="selected-park-icon" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span class="selected-park-name" onclick="flyToSelectedPark('${park.id}')">${escapeHtml(park.name)}</span>
+                    <button class="selected-park-remove" onclick="removeSelectedPark('${park.id}')" title="Remove">×</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        // Update time filter display when slider changes
+        function updateTimeFilterDisplay(startDate, endDate) {
+            const filterTimeValue = document.getElementById('filter-time-value');
+            if (filterTimeValue) {
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                filterTimeValue.textContent = months[start.getMonth()] + ' ' + start.getFullYear() + ' - ' + months[end.getMonth()] + ' ' + end.getFullYear();
+            }
         }
 
-        
+        // Override map click for PA areas
         map.on('load', function() {
-            
+            // Remove default click handler
             map.off('click', 'areas-fill');
             
+            // Add new popup-based handler
             map.on('click', 'areas-fill', function(e) {
                 if (e.features.length > 0) {
                     const props = e.features[0].properties;
-                    showPAStatsModal(props);
+                    showPAPopup(props, e.lngLat);
                 }
             });
         });
@@ -1835,6 +2164,11 @@
             dateFrom = formatDateISO(startDate);
             dateTo = formatDateISO(endDate);
             currentPreset = 'custom';
+            
+            // Update filter panel display
+            if (typeof updateTimeFilterDisplay === 'function') {
+                updateTimeFilterDisplay(dateFrom, dateTo);
+            }
             
             // Reload data
             reloadGridData();

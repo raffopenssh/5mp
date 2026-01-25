@@ -764,6 +764,75 @@ func (q *Queries) ListGPXUploadsByUser(ctx context.Context, userID string) ([]Gp
 	return items, nil
 }
 
+const listGPXUploadsWithCoords = `-- name: ListGPXUploadsWithCoords :many
+SELECT 
+    u.id, u.user_id, u.filename, u.movement_type, u.protected_area_id,
+    u.upload_date, u.start_time, u.end_time, u.total_distance_km, u.total_points,
+    AVG(t.lat) as centroid_lat,
+    AVG(t.lon) as centroid_lon
+FROM gpx_uploads u
+LEFT JOIN track_points t ON u.id = t.upload_id
+GROUP BY u.id
+ORDER BY u.upload_date DESC
+LIMIT ? OFFSET ?
+`
+
+type ListGPXUploadsWithCoordsParams struct {
+	Limit  int64 `json:"limit"`
+	Offset int64 `json:"offset"`
+}
+
+type ListGPXUploadsWithCoordsRow struct {
+	ID              int64      `json:"id"`
+	UserID          string     `json:"user_id"`
+	Filename        string     `json:"filename"`
+	MovementType    string     `json:"movement_type"`
+	ProtectedAreaID *string    `json:"protected_area_id"`
+	UploadDate      time.Time  `json:"upload_date"`
+	StartTime       *time.Time `json:"start_time"`
+	EndTime         *time.Time `json:"end_time"`
+	TotalDistanceKm float64    `json:"total_distance_km"`
+	TotalPoints     int64      `json:"total_points"`
+	CentroidLat     *float64   `json:"centroid_lat"`
+	CentroidLon     *float64   `json:"centroid_lon"`
+}
+
+func (q *Queries) ListGPXUploadsWithCoords(ctx context.Context, arg ListGPXUploadsWithCoordsParams) ([]ListGPXUploadsWithCoordsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listGPXUploadsWithCoords, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListGPXUploadsWithCoordsRow{}
+	for rows.Next() {
+		var i ListGPXUploadsWithCoordsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Filename,
+			&i.MovementType,
+			&i.ProtectedAreaID,
+			&i.UploadDate,
+			&i.StartTime,
+			&i.EndTime,
+			&i.TotalDistanceKm,
+			&i.TotalPoints,
+			&i.CentroidLat,
+			&i.CentroidLon,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPendingUsers = `-- name: ListPendingUsers :many
 SELECT id, email, name, organization, organization_type, role, created_at, approved_at, approved_by, password_hash FROM users WHERE role = 'pending' ORDER BY created_at DESC
 `
