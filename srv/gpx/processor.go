@@ -13,6 +13,7 @@ type Point struct {
 	Lat, Lon  float64
 	Elevation *float64
 	Time      *time.Time
+	Desc      string // Optional description (e.g., from inReach messages)
 }
 
 // Segment represents a continuous track segment with computed statistics.
@@ -62,6 +63,7 @@ type gpxPoint struct {
 	Lon       float64  `xml:"lon,attr"`
 	Elevation *float64 `xml:"ele"`
 	Time      string   `xml:"time"`
+	Desc      string   `xml:"desc"`
 }
 
 // ParseGPX parses GPX XML from an io.Reader into structured data.
@@ -92,6 +94,7 @@ func ParseGPX(r io.Reader) (*GPXData, error) {
 					Lat:       pt.Lat,
 					Lon:       pt.Lon,
 					Elevation: pt.Elevation,
+					Desc:      pt.Desc,
 				}
 
 				if pt.Time != "" {

@@ -38,6 +38,7 @@ type SegmentSummary struct {
 	Points       int        `json:"points"`
 	Area         string     `json:"area"`
 	GridCellIDs  []string   `json:"grid_cells,omitempty"`
+	Analysis     *GPXAnalysis `json:"analysis,omitempty"`
 }
 
 // uploadPageData is the data passed to the upload template.
@@ -141,13 +142,37 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 				gridCells = append(gridCells, cell)
 			}
 
+			// Perform GPX pattern analysis
+			analysisPoints := make([]struct {
+				Lat, Lon  float64
+				Time      *time.Time
+				Elevation *float64
+				Desc      string
+			}, len(seg.Points))
+			for i, pt := range seg.Points {
+				analysisPoints[i].Lat = pt.Lat
+				analysisPoints[i].Lon = pt.Lon
+				analysisPoints[i].Time = pt.Time
+				analysisPoints[i].Elevation = pt.Elevation
+				analysisPoints[i].Desc = pt.Desc
+			}
+			analysis := AnalyzeGPXSegment(analysisPoints)
+
+			// Use analysis-derived movement type if available
+			movementType := seg.MovementType
+			if analysis.MovementType != "" {
+				movementType = analysis.MovementType
+			}
+
 			allSegments = append(allSegments, SegmentSummary{
-				StartTime:   seg.StartTime,
-				EndTime:     seg.EndTime,
-				DistanceKm:  seg.DistanceKm,
-				Points:      len(seg.Points),
-				Area:        areaName,
-				GridCellIDs: gridCells,
+				StartTime:    seg.StartTime,
+				EndTime:      seg.EndTime,
+				MovementType: movementType,
+				DistanceKm:   seg.DistanceKm,
+				Points:       len(seg.Points),
+				Area:         areaName,
+				GridCellIDs:  gridCells,
+				Analysis:     &analysis,
 			})
 		}
 
