@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"strings"
 
 	"srv.exe.dev/db/dbgen"
 )
@@ -47,9 +46,7 @@ func (s *Server) HandleAPIChecklistSchema(w http.ResponseWriter, r *http.Request
 
 // HandleAPIGetParkChecklist returns checklist status for a park
 func (s *Server) HandleAPIGetParkChecklist(w http.ResponseWriter, r *http.Request) {
-	paID := strings.TrimPrefix(r.URL.Path, "/api/parks/")
-	paID = strings.TrimSuffix(paID, "/checklist")
-	
+	paID := r.PathValue("id")
 	if paID == "" {
 		http.Error(w, "park ID required", http.StatusBadRequest)
 		return

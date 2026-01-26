@@ -73,15 +73,22 @@ func (s *Server) runResearchSync(ctx context.Context) {
 		syncedSet[id] = true
 	}
 
-	// Find unsycned PAs first, then stale ones
-	var toSync []string
+	// paInfo stores ID, name, and country for sync
+	type paInfo struct {
+		ID      string
+		Name    string
+		Country string
+	}
+
+	// Find unsynced PAs first, then stale ones
+	var toSync []paInfo
 	for _, area := range s.AreaStore.Areas {
 		paID := area.WDPAID
 		if paID == "" {
 			paID = area.ID
 		}
 		if !syncedSet[paID] {
-			toSync = append(toSync, paID+":"+area.Name)
+			toSync = append(toSync, paInfo{ID: paID, Name: area.Name, Country: area.Country})
 			if len(toSync) >= 3 { // Process 3 new PAs per run
 				break
 			}
@@ -92,33 +99,27 @@ func (s *Server) runResearchSync(ctx context.Context) {
 	if len(toSync) == 0 {
 		stale, _ := q.GetPAsNeedingPublicationSync(ctx, 3)
 		for _, id := range stale {
-			// Find name for this PA
+			// Find name and country for this PA
 			for _, area := range s.AreaStore.Areas {
 				paID := area.WDPAID
 				if paID == "" {
 					paID = area.ID
 				}
 				if paID == id {
-					toSync = append(toSync, paID+":"+area.Name)
+					toSync = append(toSync, paInfo{ID: paID, Name: area.Name, Country: area.Country})
 					break
 				}
 			}
 		}
 	}
 
-	for _, entry := range toSync {
-		parts := strings.SplitN(entry, ":", 2)
-		if len(parts) != 2 {
-			continue
-		}
-		paID, name := parts[0], parts[1]
-
-		count, err := s.fetchPublicationsForPA(ctx, paID, name)
+	for _, pa := range toSync {
+		count, err := s.fetchPublicationsForPA(ctx, pa.ID, pa.Name, pa.Country)
 		if err != nil {
-			slog.Error("failed to fetch publications", "pa_id", paID, "name", name, "error", err)
+			slog.Error("failed to fetch publications", "pa_id", pa.ID, "name", pa.Name, "error", err)
 			continue
 		}
-		slog.Info("fetched publications", "pa_id", paID, "name", name, "count", count)
+		slog.Info("fetched publications", "pa_id", pa.ID, "name", pa.Name, "count", count)
 
 		// Rate limit: wait between requests
 		time.Sleep(2 * time.Second)
@@ -126,9 +127,13 @@ func (s *Server) runResearchSync(ctx context.Context) {
 }
 
 // fetchPublicationsForPA fetches research papers for a protected area.
-func (s *Server) fetchPublicationsForPA(ctx context.Context, paID, name string) (int, error) {
-	// Build search query - use park name
-	searchQuery := url.QueryEscape(name + " protected area conservation")
+func (s *Server) fetchPublicationsForPA(ctx context.Context, paID, name, country string) (int, error) {
+	// Build search query - use park name and country for better results
+	query := name
+	if country != "" {
+		query = name + " " + country
+	}
+	searchQuery := url.QueryEscape(query + " conservation wildlife")
 	apiURL := fmt.Sprintf(
 		"https://api.openalex.org/works?search=%s&filter=type:article&per_page=25&sort=cited_by_count:desc",
 		searchQuery,
