@@ -1374,8 +1374,136 @@
                 filterAreaValue.textContent = formatNumber(approxKm) + ' km² region';
             }
             
+            // Auto-select PAs that intersect the bbox
+            selectPAsInBbox(minLng, minLat, maxLng, maxLat);
+            
             drawBboxOnMap();
             reloadGridData();
+        }
+
+        // Select PAs that intersect the given bounding box
+        function selectPAsInBbox(minLng, minLat, maxLng, maxLat) {
+            if (!map || !map.getSource('areas')) return;
+            
+            // Clear previous bbox selection
+            selectedPAIds.clear();
+            selectedParks = [];
+            
+            // Query all features from the areas source
+            var features = map.querySourceFeatures('areas');
+            
+            features.forEach(function(feature) {
+                var props = feature.properties;
+                var paId = props.id || props.wdpa_id;
+                if (!paId) return;
+                
+                // Check if feature intersects bbox
+                // Get feature bounds from geometry
+                var geom = feature.geometry;
+                if (!geom || !geom.coordinates) return;
+                
+                var featureBounds = getGeometryBounds(geom);
+                if (!featureBounds) return;
+                
+                // Check if bboxes overlap
+                if (bboxesIntersect(
+                    [minLng, minLat, maxLng, maxLat],
+                    featureBounds
+                )) {
+                    selectedPAIds.add(paId);
+                    selectedParks.push({
+                        id: paId,
+                        name: props.name || 'Unknown',
+                        bbox: featureBounds,
+                        center: [(featureBounds[0] + featureBounds[2]) / 2, (featureBounds[1] + featureBounds[3]) / 2]
+                    });
+                }
+            });
+            
+            // Update map highlighting and display
+            updatePAHighlighting();
+            updateSelectedParksDisplay();
+        }
+        
+        // Get bounds [minLng, minLat, maxLng, maxLat] from a GeoJSON geometry
+        function getGeometryBounds(geom) {
+            var minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+            
+            function processCoords(coords) {
+                if (typeof coords[0] === 'number') {
+                    // It's a point [lng, lat]
+                    if (coords[0] < minLng) minLng = coords[0];
+                    if (coords[0] > maxLng) maxLng = coords[0];
+                    if (coords[1] < minLat) minLat = coords[1];
+                    if (coords[1] > maxLat) maxLat = coords[1];
+                } else {
+                    // It's an array of coords
+                    coords.forEach(processCoords);
+                }
+            }
+            
+            if (geom.coordinates) {
+                processCoords(geom.coordinates);
+            }
+            
+            if (minLng === Infinity) return null;
+            return [minLng, minLat, maxLng, maxLat];
+        }
+        
+        // Check if two bboxes [minLng, minLat, maxLng, maxLat] intersect
+        function bboxesIntersect(a, b) {
+            return !(a[2] < b[0] || b[2] < a[0] || a[3] < b[1] || b[3] < a[1]);
+        }
+        
+        // Update PA layer styling based on selectedPAIds
+        function updatePAHighlighting() {
+            if (!map || !map.getLayer || !map.getLayer('areas-fill')) return;
+            
+            if (selectedPAIds.size === 0) {
+                // No selection - use default keystones styling
+                if (keystonesEnabled) {
+                    map.setPaintProperty('areas-fill', 'fill-color', '#22c55e');
+                    map.setPaintProperty('areas-fill', 'fill-opacity', 0.2);
+                    map.setPaintProperty('areas-outline', 'line-color', '#22c55e');
+                    map.setPaintProperty('areas-outline', 'line-width', 1);
+                } else {
+                    map.setPaintProperty('areas-fill', 'fill-color', '#666666');
+                    map.setPaintProperty('areas-fill', 'fill-opacity', 0.1);
+                    map.setPaintProperty('areas-outline', 'line-color', '#555555');
+                    map.setPaintProperty('areas-outline', 'line-width', 1);
+                }
+            } else {
+                // Has selection - highlight selected PAs in green, others in grey
+                var selectedIds = Array.from(selectedPAIds);
+                
+                map.setPaintProperty('areas-fill', 'fill-color', [
+                    'case',
+                    ['in', ['get', 'id'], ['literal', selectedIds]],
+                    '#22c55e',  // Selected: green
+                    '#666666'   // Not selected: grey
+                ]);
+                
+                map.setPaintProperty('areas-fill', 'fill-opacity', [
+                    'case',
+                    ['in', ['get', 'id'], ['literal', selectedIds]],
+                    0.35,  // Selected: more opaque
+                    0.1    // Not selected: faded
+                ]);
+                
+                map.setPaintProperty('areas-outline', 'line-color', [
+                    'case',
+                    ['in', ['get', 'id'], ['literal', selectedIds]],
+                    '#22c55e',  // Selected: green
+                    '#555555'   // Not selected: grey
+                ]);
+                
+                map.setPaintProperty('areas-outline', 'line-width', [
+                    'case',
+                    ['in', ['get', 'id'], ['literal', selectedIds]],
+                    2,  // Selected: thicker
+                    1   // Not selected: normal
+                ]);
+            }
         }
 
         function toggleMovementType(type) {
@@ -1398,17 +1526,8 @@
             keystonesEnabled = enabled;
             if (!map || !map.getLayer) return;
             
-            if (enabled) {
-                // Show keystones in green (active state)
-                map.setPaintProperty('areas-fill', 'fill-color', '#22c55e');
-                map.setPaintProperty('areas-fill', 'fill-opacity', 0.2);
-                map.setPaintProperty('areas-outline', 'line-color', '#22c55e');
-            } else {
-                // Show keystones in grey (inactive state)
-                map.setPaintProperty('areas-fill', 'fill-color', '#666666');
-                map.setPaintProperty('areas-fill', 'fill-opacity', 0.1);
-                map.setPaintProperty('areas-outline', 'line-color', '#555555');
-            }
+            // Use updatePAHighlighting to handle both keystones toggle and selected PAs
+            updatePAHighlighting();
         }
 
         function getActiveMovementTypes() {
@@ -1427,6 +1546,12 @@
             if (filterArea) {
                 filterArea.style.display = 'none';
             }
+            
+            // Clear PA selection
+            selectedPAIds.clear();
+            selectedParks = [];
+            updatePAHighlighting();
+            updateSelectedParksDisplay();
             
             removeBboxFromMap();
             reloadGridData();
@@ -2019,6 +2144,7 @@
 
         // Selected parks management
         let selectedParks = [];
+        let selectedPAIds = new Set();  // Track PA IDs selected via bbox or clicks
         let currentPAPopup = null;
         
         function showPAPopup(props, lngLat) {
