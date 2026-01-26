@@ -336,27 +336,74 @@ func (s *Server) HandleAPILogout(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
-// HandleAPIStats returns global statistics.
+// HandleAPIStats returns global statistics filtered by date range and movement type.
+// Query params:
+//   - from: start date (YYYY-MM-DD)
+//   - to: end date (YYYY-MM-DD)
+//   - type: movement type filter (foot,vehicle,aerial)
+//   - bbox: bounding box (minLng,minLat,maxLng,maxLat) - not yet implemented
 func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
-	year := int64(time.Now().Year())
 
-	stats, err := q.GetGlobalStats(ctx, year)
-	if err != nil {
-		slog.Error("failed to get global stats", "error", err)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "database error"})
-		return
+	// Parse date range
+	fromStr := r.URL.Query().Get("from")
+	toStr := r.URL.Query().Get("to")
+	typeFilter := r.URL.Query().Get("type")
+
+	// Default to current year if no dates provided
+	now := time.Now()
+	fromYear := int64(now.Year())
+	toYear := int64(now.Year())
+	if fromStr != "" {
+		if t, err := time.Parse("2006-01-02", fromStr); err == nil {
+			fromYear = int64(t.Year())
+		}
+	}
+	if toStr != "" {
+		if t, err := time.Parse("2006-01-02", toStr); err == nil {
+			toYear = int64(t.Year())
+		}
+	}
+
+	// Aggregate stats across requested years
+	var activePixels, totalUploads int64
+	var totalDistanceKm float64
+	seenPixels := make(map[string]bool)
+
+	for year := fromYear; year <= toYear; year++ {
+		rows, err := q.GetEffortDataByYear(ctx, year)
+		if err != nil {
+			continue
+		}
+
+		for _, row := range rows {
+			// Apply movement type filter
+			if typeFilter != "" && row.MovementType != "all" {
+				if !strings.Contains(typeFilter, row.MovementType) {
+					continue
+				}
+			}
+			// Only count "all" type to avoid double counting
+			if row.MovementType != "all" {
+				continue
+			}
+
+			if !seenPixels[row.GridCellID] {
+				seenPixels[row.GridCellID] = true
+				activePixels++
+			}
+			totalDistanceKm += row.TotalDistanceKm
+			totalUploads += row.UniqueUploads
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "public, max-age=30")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"active_pixels":     stats.ActivePixels,
-		"total_distance_km": stats.TotalDistanceKm,
-		"total_patrols":     stats.TotalUploads,
+		"active_pixels":     activePixels,
+		"total_distance_km": totalDistanceKm,
+		"total_patrols":     totalUploads,
 	})
 }
 
