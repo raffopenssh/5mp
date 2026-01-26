@@ -2289,9 +2289,12 @@
             const index = selectedParks.findIndex(p => p.id === id);
             if (index >= 0) {
                 selectedParks.splice(index, 1);
+                selectedPAIds.delete(id);
             } else {
                 selectedParks.push({ id, name, bbox, center });
+                selectedPAIds.add(id);
             }
+            updatePAHighlighting();
             updateSelectedParksDisplay();
             // Close and reopen popup to update button state
             if (currentPAPopup) {
@@ -2301,6 +2304,8 @@
         
         function removeSelectedPark(id) {
             selectedParks = selectedParks.filter(p => p.id !== id);
+            selectedPAIds.delete(id);
+            updatePAHighlighting();
             updateSelectedParksDisplay();
         }
         
