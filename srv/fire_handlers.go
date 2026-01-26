@@ -29,5 +29,5 @@ func (s *Server) handleFireBoundary(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleFireAnalysis(w http.ResponseWriter, r *http.Request) {
-	s.templates.ExecuteTemplate(w, "fire_analysis.html", nil)
+	s.renderTemplate(w, "fire_analysis.html", nil)
 }
