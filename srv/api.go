@@ -187,10 +187,14 @@ func (s *Server) HandleAPIAreas(w http.ResponseWriter, r *http.Request) {
 				Coordinates: area.Geometry.Coordinates,
 			},
 			Properties: map[string]interface{}{
-				"id":        area.ID,
-				"name":      area.Name,
-				"country":   area.Country,
-				"buffer_km": area.BufferKm,
+				"id":          area.ID,
+				"name":        area.Name,
+				"country":     area.Country,
+				"country_code": area.CountryCode,
+				"wdpa_id":     area.WDPAID,
+				"area_km2":    area.AreaKm2,
+				"partner":     area.Partner,
+				"buffer_km":   area.BufferKm,
 			},
 		}
 		features = append(features, feature)
@@ -513,12 +517,7 @@ func (s *Server) HandleAPIWDPASearch(w http.ResponseWriter, r *http.Request) {
 // HandleAPIPublications returns publications for a protected area.
 // GET /api/parks/{id}/publications
 func (s *Server) HandleAPIPublications(w http.ResponseWriter, r *http.Request) {
-	// Extract PA ID from URL path: /api/parks/{id}/publications
-	path := r.URL.Path
-	path = strings.TrimPrefix(path, "/api/parks/")
-	path = strings.TrimSuffix(path, "/publications")
-	paID := path
-
+	paID := r.PathValue("id")
 	if paID == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -576,11 +575,7 @@ func (s *Server) HandleAPIPublications(w http.ResponseWriter, r *http.Request) {
 // HandleAPIPublicationCount returns the publication count for a PA.
 // GET /api/parks/{id}/publications/count
 func (s *Server) HandleAPIPublicationCount(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
-	path = strings.TrimPrefix(path, "/api/parks/")
-	path = strings.TrimSuffix(path, "/publications/count")
-	paID := path
-
+	paID := r.PathValue("id")
 	if paID == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)

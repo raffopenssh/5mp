@@ -693,8 +693,8 @@
                 type: 'geojson',
                 data: '/api/grid',
                 cluster: true,
-                clusterRadius: 30,
-                clusterMaxZoom: 6,
+                clusterRadius: 20,
+                clusterMaxZoom: 4,
                 clusterProperties: {
                     'sum_intensity': ['+', ['get', 'intensity']],
                     'sum_distance': ['+', ['coalesce', ['get', 'total_distance_km'], 0]],
@@ -725,6 +725,71 @@
             });
 
             
+            // Grid pixel rendering - uniform circles with radial intensity fill
+            // Soft glow layer for aggregation effect
+            map.addLayer({
+                id: 'grid-glow',
+                type: 'circle',
+                source: 'grid',
+                filter: ['!', ['has', 'point_count']],
+                paint: {
+                    'circle-color': '#22c55e',
+                    'circle-radius': 16,
+                    'circle-blur': 1,
+                    'circle-opacity': [
+                        'interpolate', ['linear'],
+                        ['coalesce', ['get', 'intensity'], 0.3],
+                        0, 0.1,
+                        0.5, 0.2,
+                        1, 0.35
+                    ]
+                }
+            });
+
+            // Inner fill - small center dot that grows with intensity
+            map.addLayer({
+                id: 'grid-fill',
+                type: 'circle',
+                source: 'grid',
+                filter: ['!', ['has', 'point_count']],
+                paint: {
+                    'circle-color': '#4ade80',
+                    'circle-radius': [
+                        'interpolate', ['linear'],
+                        ['coalesce', ['get', 'intensity'], 0.3],
+                        0, 0,
+                        0.2, 2,
+                        0.5, 4,
+                        0.8, 6,
+                        1, 8
+                    ],
+                    'circle-blur': 0.3,
+                    'circle-opacity': [
+                        'interpolate', ['linear'],
+                        ['coalesce', ['get', 'intensity'], 0.3],
+                        0, 0,
+                        0.3, 0.4,
+                        0.6, 0.7,
+                        1, 0.95
+                    ]
+                }
+            });
+
+            // Outer ring/outline - always visible, uniform size, bright
+            map.addLayer({
+                id: 'grid-cells',
+                type: 'circle',
+                source: 'grid',
+                filter: ['!', ['has', 'point_count']],
+                paint: {
+                    'circle-color': 'transparent',
+                    'circle-radius': 10,
+                    'circle-stroke-color': '#4ade80',
+                    'circle-stroke-width': 1.5,
+                    'circle-opacity': 1
+                }
+            });
+
             // Clustered circles layer (for zoomed out view)
             map.addLayer({
                 id: 'grid-clusters',
@@ -737,20 +802,14 @@
                         'interpolate', ['linear'],
                         ['get', 'point_count'],
                         2, 12,
-                        10, 18,
-                        50, 25,
-                        100, 35
+                        10, 16,
+                        50, 20,
+                        100, 24
                     ],
                     'circle-stroke-color': '#4ade80',
                     'circle-stroke-width': 2,
-                    'circle-blur': 0.4,
-                    'circle-opacity': [
-                        'interpolate', ['linear'],
-                        ['get', 'point_count'],
-                        2, 0.6,
-                        50, 0.85,
-                        100, 1
-                    ]
+                    'circle-blur': 0.2,
+                    'circle-opacity': 0.7
                 }
             });
 
@@ -763,44 +822,10 @@
                 layout: {
                     'text-field': '{point_count_abbreviated}',
                     'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-                    'text-size': 12
+                    'text-size': 11
                 },
                 paint: {
                     'text-color': '#ffffff'
-                }
-            });
-
-            // Individual unclustered circles (grid-cells for compatibility)
-            map.addLayer({
-                id: 'grid-cells',
-                type: 'circle',
-                source: 'grid',
-                filter: ['!', ['has', 'point_count']],
-                paint: {
-                    'circle-color': [
-                        'interpolate', ['linear'],
-                        ['coalesce', ['get', 'intensity'], 0.5],
-                        0, 'rgba(34, 197, 94, 0.3)',
-                        0.5, 'rgba(34, 197, 94, 0.6)',
-                        1, '#22c55e'
-                    ],
-                    'circle-radius': 10,
-                    'circle-stroke-color': '#4ade80',
-                    'circle-stroke-width': 2,
-                    'circle-blur': [
-                        'interpolate', ['linear'],
-                        ['coalesce', ['get', 'intensity'], 0.5],
-                        0, 0.6,
-                        0.5, 0.4,
-                        1, 0.2
-                    ],
-                    'circle-opacity': [
-                        'interpolate', ['linear'],
-                        ['coalesce', ['get', 'intensity'], 0.5],
-                        0, 0.5,
-                        0.5, 0.75,
-                        1, 1
-                    ]
                 }
             });
 
@@ -809,11 +834,20 @@
                 if (e.features.length > 0) {
                     const props = e.features[0].properties;
                     const name = props.name || 'Protected Area';
-                    const description = props.description || '';
-                    const area = props.area_km2 ? `<br>Area: ${props.area_km2} km²` : '';
+                    const country = props.country || '';
+                    const area = props.area_km2 ? props.area_km2.toLocaleString() + ' km²' : '';
+                    const wdpaId = props.wdpa_id || '';
+                    const partner = props.partner || '';
+                    
+                    let html = `<strong style="font-size: 14px;">${name}</strong>`;
+                    if (country) html += `<br><span style="color: #888;">${country}</span>`;
+                    if (area) html += `<br>Area: <strong>${area}</strong>`;
+                    if (partner) html += `<br>Partner: <span style="color: #22c55e;">${partner}</span>`;
+                    if (wdpaId) html += `<br><span style="color: #666; font-size: 10px;">WDPA ID: ${wdpaId}</span>`;
+                    
                     new maplibregl.Popup()
                         .setLngLat(e.lngLat)
-                        .setHTML(`<strong>${name}</strong>${description ? '<br>' + description : ''}${area}`)
+                        .setHTML(html)
                         .addTo(map);
                 }
             });
@@ -2164,16 +2198,14 @@
             // Store original paint if not already stored
             if (!originalCirclePaint) {
                 originalCirclePaint = {
-                    'circle-opacity': map.getPaintProperty('grid-cells', 'circle-opacity'),
                     'circle-stroke-width': map.getPaintProperty('grid-cells', 'circle-stroke-width'),
-                    'circle-stroke-color': map.getPaintProperty('grid-cells', 'circle-stroke-color'),
-                    'circle-color': map.getPaintProperty('grid-cells', 'circle-color')
+                    'circle-stroke-color': map.getPaintProperty('grid-cells', 'circle-stroke-color')
                 };
             }
             
             // Enhance visibility with white stroke for better contrast
             map.setPaintProperty('grid-cells', 'circle-stroke-color', '#ffffff');
-            map.setPaintProperty('grid-cells', 'circle-stroke-width', 3);
+            map.setPaintProperty('grid-cells', 'circle-stroke-width', 2.5);
             
             // Also enhance clusters
             if (map.getLayer('grid-clusters')) {
@@ -2189,21 +2221,24 @@
         function animatePixelHighlight() {
             if (activeStatMode !== 'pixels') return;
             
-            let opacity = 0.9;
+            let glowOpacity = 0.4;
             let direction = -1;
             
             function pulse() {
-                if (activeStatMode !== 'pixels' || !map.getLayer('grid-cells')) {
+                if (activeStatMode !== 'pixels' || !map.getLayer('grid-glow')) {
                     return;
                 }
                 
-                opacity += direction * 0.02;
-                if (opacity <= 0.5) direction = 1;
-                if (opacity >= 0.9) direction = -1;
+                glowOpacity += direction * 0.015;
+                if (glowOpacity <= 0.2) direction = 1;
+                if (glowOpacity >= 0.5) direction = -1;
                 
-                map.setPaintProperty('grid-cells', 'circle-opacity', opacity);
+                // Pulse the glow layer
+                if (map.getLayer('grid-glow')) {
+                    map.setPaintProperty('grid-glow', 'circle-opacity', glowOpacity);
+                }
                 if (map.getLayer('grid-clusters')) {
-                    map.setPaintProperty('grid-clusters', 'circle-opacity', opacity);
+                    map.setPaintProperty('grid-clusters', 'circle-opacity', 0.5 + glowOpacity);
                 }
                 pixelAnimationFrame = requestAnimationFrame(pulse);
             }
@@ -2301,20 +2336,38 @@
         }
 
         function resetHeatmapStyle() {
-            if (!map.getLayer('grid-cells') || !originalCirclePaint) return;
+            if (!map.getLayer('grid-cells')) return;
             
-            // Restore original circle properties
-            Object.keys(originalCirclePaint).forEach(prop => {
-                if (originalCirclePaint[prop] !== undefined) {
-                    map.setPaintProperty('grid-cells', prop, originalCirclePaint[prop]);
-                }
-            });
+            // Restore original grid-cells style
+            if (originalCirclePaint) {
+                Object.keys(originalCirclePaint).forEach(prop => {
+                    if (originalCirclePaint[prop] !== undefined) {
+                        map.setPaintProperty('grid-cells', prop, originalCirclePaint[prop]);
+                    }
+                });
+            } else {
+                // Default values
+                map.setPaintProperty('grid-cells', 'circle-stroke-color', '#4ade80');
+                map.setPaintProperty('grid-cells', 'circle-stroke-width', 1.5);
+            }
+            
+            // Reset glow layer
+            if (map.getLayer('grid-glow')) {
+                map.setPaintProperty('grid-glow', 'circle-opacity', [
+                    'interpolate', ['linear'],
+                    ['coalesce', ['get', 'intensity'], 0.3],
+                    0, 0.15,
+                    0.5, 0.25,
+                    1, 0.4
+                ]);
+            }
             
             // Also reset clusters to original style
             if (map.getLayer('grid-clusters')) {
                 map.setPaintProperty('grid-clusters', 'circle-color', '#22c55e');
                 map.setPaintProperty('grid-clusters', 'circle-stroke-color', '#4ade80');
                 map.setPaintProperty('grid-clusters', 'circle-stroke-width', 2);
+                map.setPaintProperty('grid-clusters', 'circle-opacity', 0.7);
             }
         }
 
