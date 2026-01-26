@@ -23,6 +23,7 @@ type Server struct {
 	WDPAIndex    *areas.WDPAIndex
 	Auth         *auth.Manager
 	LegalStore   *LegalStore
+	GADMStore    *GADMStore
 }
 
 type pageData struct {
