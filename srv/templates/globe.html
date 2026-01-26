@@ -832,7 +832,7 @@
                 filter: ['has', 'point_count'],
                 layout: {
                     'text-field': '{point_count_abbreviated}',
-                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                    'text-font': ['Open Sans Semibold'],
                     'text-size': 11
                 },
                 paint: {
@@ -1237,7 +1237,24 @@
             reloadGridData();
         }
 
+        var mapLoaded = false;
+        var pendingGridReload = false;
+        
+        map.on('load', function() {
+            mapLoaded = true;
+            if (pendingGridReload) {
+                pendingGridReload = false;
+                reloadGridData();
+            }
+        });
+        
         function reloadGridData() {
+            // Wait for map to be loaded
+            if (!mapLoaded) {
+                pendingGridReload = true;
+                return;
+            }
+            
             var url = '/api/grid?t=' + Date.now();
             if (dateFrom) url += '&from=' + dateFrom;
             if (dateTo) url += '&to=' + dateTo;
@@ -1252,7 +1269,7 @@
             
             console.log('Reloading grid data: from=' + dateFrom + ', to=' + dateTo + ', bbox=' + (currentBbox ? currentBbox.join(',') : 'none') + ', types=' + types.join(','));
             
-            // Fetch data and set it (setData with URL doesn't always work reliably)
+            // Fetch data and set it
             fetch(url)
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
