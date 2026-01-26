@@ -657,6 +657,7 @@
         const darkStyle = {
             version: 8,
             name: 'Dark',
+            glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
             sources: {
                 'osm': {
                     type: 'raster',
@@ -691,7 +692,7 @@
             
             map.addSource('grid', {
                 type: 'geojson',
-                data: '/api/grid',
+                data: { type: 'FeatureCollection', features: [] },
                 cluster: true,
                 clusterRadius: 20,
                 clusterMaxZoom: 4,
@@ -1249,11 +1250,21 @@
                 url += '&type=' + types.join(',');
             }
             
-            var gridSource = map.getSource('grid');
-            if (gridSource) {
-                gridSource.setData(url);
-            }
             console.log('Reloading grid data: from=' + dateFrom + ', to=' + dateTo + ', bbox=' + (currentBbox ? currentBbox.join(',') : 'none') + ', types=' + types.join(','));
+            
+            // Fetch data and set it (setData with URL doesn't always work reliably)
+            fetch(url)
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var gridSource = map.getSource('grid');
+                    if (gridSource) {
+                        gridSource.setData(data);
+                    }
+                })
+                .catch(function(err) {
+                    console.error('Failed to load grid data:', err);
+                });
+            
             // Also reload stats when filters change
             loadStats();
         }
