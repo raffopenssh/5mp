@@ -39,7 +39,7 @@
               type="file"
               id="fileInput"
               name="gpx"
-              accept=".gpx,application/gpx+xml"
+              accept=".gpx,.zip,application/gpx+xml,application/zip"
               multiple
               class="hidden"
             />
@@ -164,7 +164,10 @@
       });
 
       function handleFiles(files) {
-        selectedFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.gpx'));
+        selectedFiles = Array.from(files).filter(f => {
+          const name = f.name.toLowerCase();
+          return name.endsWith('.gpx') || name.endsWith('.zip');
+        });
         updateFileList();
       }
 

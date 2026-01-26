@@ -725,7 +725,9 @@
             });
 
             
-            // Grid pixel rendering - uniform circles with radial intensity fill
+            // Grid pixel rendering - uniform outline with radial fill that overflows at high intensity
+            // Intensity is based on coverage: 1.0 = 80%+ of 100km² cell covered
+            
             // Soft glow layer for aggregation effect
             map.addLayer({
                 id: 'grid-glow',
@@ -734,19 +736,25 @@
                 filter: ['!', ['has', 'point_count']],
                 paint: {
                     'circle-color': '#22c55e',
-                    'circle-radius': 16,
+                    'circle-radius': [
+                        'interpolate', ['linear'],
+                        ['coalesce', ['get', 'intensity'], 0],
+                        0, 12,
+                        0.5, 16,
+                        1, 22
+                    ],
                     'circle-blur': 1,
                     'circle-opacity': [
                         'interpolate', ['linear'],
-                        ['coalesce', ['get', 'intensity'], 0.3],
-                        0, 0.1,
-                        0.5, 0.2,
+                        ['coalesce', ['get', 'intensity'], 0],
+                        0, 0.08,
+                        0.5, 0.18,
                         1, 0.35
                     ]
                 }
             });
 
-            // Inner fill - small center dot that grows with intensity
+            // Inner fill - grows with intensity, overflows outline at full coverage
             map.addLayer({
                 id: 'grid-fill',
                 type: 'circle',
@@ -756,26 +764,28 @@
                     'circle-color': '#4ade80',
                     'circle-radius': [
                         'interpolate', ['linear'],
-                        ['coalesce', ['get', 'intensity'], 0.3],
+                        ['coalesce', ['get', 'intensity'], 0],
                         0, 0,
-                        0.2, 2,
-                        0.5, 4,
-                        0.8, 6,
-                        1, 8
+                        0.1, 2,
+                        0.3, 4,
+                        0.5, 6,
+                        0.8, 9,
+                        1, 13  // Overflow the 10px outline at full intensity
                     ],
-                    'circle-blur': 0.3,
+                    'circle-blur': 0.25,
                     'circle-opacity': [
                         'interpolate', ['linear'],
-                        ['coalesce', ['get', 'intensity'], 0.3],
+                        ['coalesce', ['get', 'intensity'], 0],
                         0, 0,
-                        0.3, 0.4,
-                        0.6, 0.7,
-                        1, 0.95
+                        0.2, 0.35,
+                        0.5, 0.6,
+                        0.8, 0.85,
+                        1, 1
                     ]
                 }
             });
 
-            // Outer ring/outline - always visible, uniform size, bright
+            // Outer ring/outline - always visible, uniform size
             map.addLayer({
                 id: 'grid-cells',
                 type: 'circle',
