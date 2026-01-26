@@ -1,9 +1,12 @@
 package srv
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"math"
 	"net/http"
@@ -15,7 +18,7 @@ import (
 	"srv.exe.dev/srv/gpx"
 )
 
-const maxUploadSize = 50 << 20 // 50MB
+const maxUploadSize = 100 << 20 // 100MB (increased for zip files)
 
 // UploadResponse is the JSON response for file uploads.
 type UploadResponse struct {
@@ -28,9 +31,13 @@ type UploadResponse struct {
 
 // SegmentSummary represents a processed segment in the upload response.
 type SegmentSummary struct {
-	MovementType string  `json:"movement_type"`
-	DistanceKm   float64 `json:"distance_km"`
-	Area         string  `json:"area"`
+	StartTime    *time.Time `json:"start_time,omitempty"`
+	EndTime      *time.Time `json:"end_time,omitempty"`
+	MovementType string     `json:"movement_type,omitempty"`
+	DistanceKm   float64    `json:"distance_km"`
+	Points       int        `json:"points"`
+	Area         string     `json:"area"`
+	GridCellIDs  []string   `json:"grid_cells,omitempty"`
 }
 
 // uploadPageData is the data passed to the upload template.
@@ -89,23 +96,16 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	// Process each file
-	for _, fileHeader := range files {
-		file, err := fileHeader.Open()
+	// Helper to process a single GPX file
+	processGPX := func(filename string, reader io.Reader) error {
+		gpxData, err := gpx.ParseGPX(reader)
 		if err != nil {
-			continue
-		}
-
-		// Parse GPX
-		gpxData, err := gpx.ParseGPX(file)
-		file.Close()
-		if err != nil {
-			continue
+			return err
 		}
 
 		filesProcessed++
 
-		// Count points and split into segments
+		// Count points
 		for _, track := range gpxData.Tracks {
 			for _, seg := range track.Segments {
 				totalPoints += len(seg)
@@ -131,22 +131,94 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
+			// Collect unique grid cells touched by this segment
+			cellSet := make(map[string]bool)
+			for _, pt := range seg.Points {
+				cellSet[gridCellIDForPoint(pt.Lat, pt.Lon)] = true
+			}
+			gridCells := make([]string, 0, len(cellSet))
+			for cell := range cellSet {
+				gridCells = append(gridCells, cell)
+			}
+
 			allSegments = append(allSegments, SegmentSummary{
-				MovementType: seg.MovementType,
-				DistanceKm:   seg.DistanceKm,
-				Area:         areaName,
+				StartTime:   seg.StartTime,
+				EndTime:     seg.EndTime,
+				DistanceKm:  seg.DistanceKm,
+				Points:      len(seg.Points),
+				Area:        areaName,
+				GridCellIDs: gridCells,
 			})
 		}
 
 		// Persist upload to database
 		if s.DB != nil {
-			if err := s.persistUpload(ctx, userID, userEmail, fileHeader.Filename, segments); err != nil {
-				// Log error but don't fail the request
-				slog.Warn("failed to persist upload", "error", err, "filename", fileHeader.Filename)
+			if err := s.persistUpload(ctx, userID, userEmail, filename, segments); err != nil {
+				slog.Warn("failed to persist upload", "error", err, "filename", filename)
 			} else {
-				slog.Info("persisted upload", "filename", fileHeader.Filename, "segments", len(segments))
+				slog.Info("persisted upload", "filename", filename, "segments", len(segments))
 			}
 		}
+		return nil
+	}
+
+	// Process each uploaded file
+	for _, fileHeader := range files {
+		file, err := fileHeader.Open()
+		if err != nil {
+			continue
+		}
+
+		filename := strings.ToLower(fileHeader.Filename)
+
+		// Check if it's a zip file
+		if strings.HasSuffix(filename, ".zip") {
+			// Read zip into memory
+			data, err := io.ReadAll(file)
+			file.Close()
+			if err != nil {
+				slog.Error("failed to read zip file", "error", err)
+				continue
+			}
+
+			// Open as zip archive
+			zipReader, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+			if err != nil {
+				slog.Error("failed to open zip archive", "error", err)
+				continue
+			}
+
+			// Process each GPX file in the zip
+			for _, zf := range zipReader.File {
+				zfName := strings.ToLower(zf.Name)
+				// Skip Mac OS X metadata and non-GPX files
+				if strings.Contains(zfName, "__macosx") || !strings.HasSuffix(zfName, ".gpx") {
+					continue
+				}
+
+				zfReader, err := zf.Open()
+				if err != nil {
+					continue
+				}
+
+				if err := processGPX(zf.Name, zfReader); err != nil {
+					slog.Debug("failed to parse GPX from zip", "file", zf.Name, "error", err)
+				}
+				zfReader.Close()
+			}
+			continue
+		}
+
+		// Regular GPX file
+		if !strings.HasSuffix(filename, ".gpx") {
+			file.Close()
+			continue
+		}
+
+		if err := processGPX(fileHeader.Filename, file); err != nil {
+			slog.Debug("failed to parse GPX", "file", fileHeader.Filename, "error", err)
+		}
+		file.Close()
 	}
 
 	// Return response

@@ -143,10 +143,14 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 // buildGridFeature creates a GeoJSON feature for a grid cell.
 // Returns a Point at the center of the cell for circle visualization.
 func buildGridFeature(gridCellID string, latCenter, lonCenter, totalDistanceKm float64, totalPoints, uniqueUploads int64, movementType string, maxDistance float64) GeoJSONFeature {
-	// Calculate intensity (normalized 0-1)
-	var intensity float64
-	if maxDistance > 0 {
-		intensity = totalDistanceKm / maxDistance
+	// Calculate intensity based on coverage percentage of the 100 km² cell
+	// Each cell is ~10km x 10km = 100 km²
+	// Coverage = distance / cell_size (e.g., 80km patrol = 80% coverage)
+	// Full intensity (1.0) at 80km+ of patrol distance
+	const fullCoverageKm = 80.0 // 80% of 100 km² cell
+	intensity := totalDistanceKm / fullCoverageKm
+	if intensity > 1.0 {
+		intensity = 1.0
 	}
 
 	// Return Point at center of cell (GeoJSON uses [lon, lat] order)
