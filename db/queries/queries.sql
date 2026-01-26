@@ -159,3 +159,44 @@ SELECT * FROM park_documents WHERE pa_id = ? ORDER BY uploaded_at DESC;
 -- name: InsertParkDocument :exec
 INSERT INTO park_documents (pa_id, category, item_id, title, description, file_url, file_type, uploaded_by)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Subcell visits tracking for spatial coverage
+
+INSERT INTO subcell_visits (grid_cell_id, subcell_id, year, month, visit_count)
+VALUES (?, ?, ?, ?, 1)
+ON CONFLICT(grid_cell_id, subcell_id, year, month) DO UPDATE SET
+    visit_count = visit_count + 1;
+
+SELECT COUNT(DISTINCT subcell_id) as covered_subcells
+FROM subcell_visits
+WHERE grid_cell_id = ? AND year = ? AND month = ?;
+
+SELECT COUNT(DISTINCT subcell_id) as covered_subcells
+FROM subcell_visits
+WHERE grid_cell_id = ? AND year = ?;
+
+UPDATE effort_data SET coverage_percent = ? 
+WHERE grid_cell_id = ? AND year = ? AND month = ? AND movement_type = ?;
+
+-- Subcell visits tracking for spatial coverage (day granularity)
+
+-- name: UpsertSubcellVisit :exec
+INSERT INTO subcell_visits (grid_cell_id, subcell_id, visit_date, visit_count)
+VALUES (?, ?, ?, 1)
+ON CONFLICT(grid_cell_id, subcell_id, visit_date) DO UPDATE SET
+    visit_count = visit_count + 1;
+
+-- name: GetSubcellCoverageByDateRange :one
+SELECT COUNT(DISTINCT subcell_id) as covered_subcells
+FROM subcell_visits
+WHERE grid_cell_id = ? AND visit_date >= ? AND visit_date <= ?;
+
+-- name: GetSubcellVisitsByDateRange :many
+SELECT grid_cell_id, subcell_id, visit_date, visit_count
+FROM subcell_visits
+WHERE grid_cell_id = ? AND visit_date >= ? AND visit_date <= ?
+ORDER BY visit_date;
+
+-- name: UpdateEffortCoverage :exec
+UPDATE effort_data SET coverage_percent = ? 
+WHERE grid_cell_id = ? AND year = ? AND month = ? AND movement_type = ?;

@@ -78,12 +78,13 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 
 	// Aggregate data across all requested years
 	aggregated := make(map[string]*struct {
-		LatCenter     float64
-		LonCenter     float64
-		TotalDistance float64
-		TotalPoints   int64
-		UniqueUploads int64
-		MovementType  string
+		LatCenter       float64
+		LonCenter       float64
+		TotalDistance   float64
+		TotalPoints     int64
+		UniqueUploads   int64
+		MovementType    string
+		CoveragePercent *float64
 	})
 
 	for _, year := range years {
@@ -108,13 +109,14 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 			// Convert to common row type
 			for _, r := range monthRows {
 				rows = append(rows, dbgen.GetEffortDataByYearRow{
-					GridCellID:     r.GridCellID,
-					LatCenter:      r.LatCenter,
-					LonCenter:      r.LonCenter,
+					GridCellID:      r.GridCellID,
+					LatCenter:       r.LatCenter,
+					LonCenter:       r.LonCenter,
 					TotalDistanceKm: r.TotalDistanceKm,
-					TotalPoints:    r.TotalPoints,
-					UniqueUploads:  r.UniqueUploads,
-					MovementType:   r.MovementType,
+					TotalPoints:     r.TotalPoints,
+					UniqueUploads:   r.UniqueUploads,
+					MovementType:    r.MovementType,
+					CoveragePercent: r.CoveragePercent,
 				})
 			}
 		} else {
@@ -129,21 +131,27 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 				agg.TotalDistance += row.TotalDistanceKm
 				agg.TotalPoints += row.TotalPoints
 				agg.UniqueUploads += row.UniqueUploads
+				// Take max coverage across periods
+				if row.CoveragePercent != nil && (agg.CoveragePercent == nil || *row.CoveragePercent > *agg.CoveragePercent) {
+					agg.CoveragePercent = row.CoveragePercent
+				}
 			} else {
 				aggregated[row.GridCellID] = &struct {
-					LatCenter     float64
-					LonCenter     float64
-					TotalDistance float64
-					TotalPoints   int64
-					UniqueUploads int64
-					MovementType  string
+					LatCenter       float64
+					LonCenter       float64
+					TotalDistance   float64
+					TotalPoints     int64
+					UniqueUploads   int64
+					MovementType    string
+					CoveragePercent *float64
 				}{
-					LatCenter:     row.LatCenter,
-					LonCenter:     row.LonCenter,
-					TotalDistance: row.TotalDistanceKm,
-					TotalPoints:   row.TotalPoints,
-					UniqueUploads: row.UniqueUploads,
-					MovementType:  row.MovementType,
+					LatCenter:       row.LatCenter,
+					LonCenter:       row.LonCenter,
+					TotalDistance:   row.TotalDistanceKm,
+					TotalPoints:     row.TotalPoints,
+					UniqueUploads:   row.UniqueUploads,
+					MovementType:    row.MovementType,
+					CoveragePercent: row.CoveragePercent,
 				}
 			}
 		}
@@ -161,6 +169,7 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 			agg.TotalPoints,
 			agg.UniqueUploads,
 			agg.MovementType,
+			agg.CoveragePercent,
 		)
 		features = append(features, feature)
 	}
@@ -177,15 +186,24 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 
 // buildGridFeature creates a GeoJSON feature for a grid cell.
 // Returns a Point at the center of the cell for circle visualization.
-func buildGridFeature(gridCellID string, latCenter, lonCenter, totalDistanceKm float64, totalPoints, uniqueUploads int64, movementType string) GeoJSONFeature {
-	// Calculate intensity based on coverage of the 100 sq km cell
-	// Each cell is ~10km x 10km = 100 sq km
-	// 80km of patrol distance = 80% coverage = full intensity (1.0)
-	// The time slider controls the period - if 80km in a month, that's full for that month
-	const fullCoverageKm = 80.0
-	intensity := totalDistanceKm / fullCoverageKm
+// coveragePercent is the spatial coverage (0-100) of subcells visited within the 10x10km cell.
+func buildGridFeature(gridCellID string, latCenter, lonCenter, totalDistanceKm float64, totalPoints, uniqueUploads int64, movementType string, coveragePercent *float64) GeoJSONFeature {
+	// Calculate intensity based on SPATIAL COVERAGE of the 100 sq km cell
+	// Each 10x10km cell is divided into 100 subcells of ~1km x 1km
+	// Intensity = percentage of subcells visited
+	// 80% spatial coverage = full intensity (1.0)
+	// >80% = overglow effect
+	var intensity float64
+	if coveragePercent != nil && *coveragePercent > 0 {
+		// Use actual spatial coverage
+		intensity = *coveragePercent / 80.0 // 80% coverage = 1.0 intensity
+	} else {
+		// Fallback: estimate from distance (legacy data)
+		// Assume 1km of patrol = ~1% coverage (rough approximation)
+		intensity = totalDistanceKm / 80.0
+	}
 	if intensity > 1.5 {
-		intensity = 1.5 // Cap for overglow effect (>100% coverage)
+		intensity = 1.5 // Cap for overglow effect
 	}
 
 	// Return Point at center of cell (GeoJSON uses [lon, lat] order)
@@ -202,6 +220,7 @@ func buildGridFeature(gridCellID string, latCenter, lonCenter, totalDistanceKm f
 			"unique_uploads":    uniqueUploads,
 			"movement_type":     movementType,
 			"intensity":         intensity,
+			"coverage_percent":  coveragePercent,
 		},
 	}
 }
