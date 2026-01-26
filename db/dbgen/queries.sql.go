@@ -189,7 +189,7 @@ func (q *Queries) GetChecklistStats(ctx context.Context, paID string) (GetCheckl
 }
 
 const getEffortDataByBounds = `-- name: GetEffortDataByBounds :many
-SELECT e.id, e.grid_cell_id, e.year, e.month, e.day, e.movement_type, e.total_distance_km, e.total_points, e.unique_uploads, e.protected_area_ids, g.lat_center, g.lon_center, g.lat_min, g.lat_max, g.lon_min, g.lon_max
+SELECT e.id, e.grid_cell_id, e.year, e.month, e.day, e.movement_type, e.total_distance_km, e.total_points, e.unique_uploads, e.protected_area_ids, e.coverage_percent, g.lat_center, g.lon_center, g.lat_min, g.lat_max, g.lon_min, g.lon_max
 FROM effort_data e
 JOIN grid_cells g ON e.grid_cell_id = g.id
 WHERE g.lat_center >= ? AND g.lat_center <= ?
@@ -213,22 +213,23 @@ type GetEffortDataByBoundsParams struct {
 }
 
 type GetEffortDataByBoundsRow struct {
-	ID               int64   `json:"id"`
-	GridCellID       string  `json:"grid_cell_id"`
-	Year             int64   `json:"year"`
-	Month            int64   `json:"month"`
-	Day              *int64  `json:"day"`
-	MovementType     string  `json:"movement_type"`
-	TotalDistanceKm  float64 `json:"total_distance_km"`
-	TotalPoints      int64   `json:"total_points"`
-	UniqueUploads    int64   `json:"unique_uploads"`
-	ProtectedAreaIds *string `json:"protected_area_ids"`
-	LatCenter        float64 `json:"lat_center"`
-	LonCenter        float64 `json:"lon_center"`
-	LatMin           float64 `json:"lat_min"`
-	LatMax           float64 `json:"lat_max"`
-	LonMin           float64 `json:"lon_min"`
-	LonMax           float64 `json:"lon_max"`
+	ID               int64    `json:"id"`
+	GridCellID       string   `json:"grid_cell_id"`
+	Year             int64    `json:"year"`
+	Month            int64    `json:"month"`
+	Day              *int64   `json:"day"`
+	MovementType     string   `json:"movement_type"`
+	TotalDistanceKm  float64  `json:"total_distance_km"`
+	TotalPoints      int64    `json:"total_points"`
+	UniqueUploads    int64    `json:"unique_uploads"`
+	ProtectedAreaIds *string  `json:"protected_area_ids"`
+	CoveragePercent  *float64 `json:"coverage_percent"`
+	LatCenter        float64  `json:"lat_center"`
+	LonCenter        float64  `json:"lon_center"`
+	LatMin           float64  `json:"lat_min"`
+	LatMax           float64  `json:"lat_max"`
+	LonMin           float64  `json:"lon_min"`
+	LonMax           float64  `json:"lon_max"`
 }
 
 func (q *Queries) GetEffortDataByBounds(ctx context.Context, arg GetEffortDataByBoundsParams) ([]GetEffortDataByBoundsRow, error) {
@@ -262,6 +263,7 @@ func (q *Queries) GetEffortDataByBounds(ctx context.Context, arg GetEffortDataBy
 			&i.TotalPoints,
 			&i.UniqueUploads,
 			&i.ProtectedAreaIds,
+			&i.CoveragePercent,
 			&i.LatCenter,
 			&i.LonCenter,
 			&i.LatMin,
@@ -283,25 +285,26 @@ func (q *Queries) GetEffortDataByBounds(ctx context.Context, arg GetEffortDataBy
 }
 
 const getEffortDataByYear = `-- name: GetEffortDataByYear :many
-SELECT e.id, e.grid_cell_id, e.year, e.month, e.day, e.movement_type, e.total_distance_km, e.total_points, e.unique_uploads, e.protected_area_ids, g.lat_center, g.lon_center
+SELECT e.id, e.grid_cell_id, e.year, e.month, e.day, e.movement_type, e.total_distance_km, e.total_points, e.unique_uploads, e.protected_area_ids, e.coverage_percent, g.lat_center, g.lon_center
 FROM effort_data e
 JOIN grid_cells g ON e.grid_cell_id = g.id
 WHERE e.year = ? AND e.day IS NULL AND e.movement_type = 'all'
 `
 
 type GetEffortDataByYearRow struct {
-	ID               int64   `json:"id"`
-	GridCellID       string  `json:"grid_cell_id"`
-	Year             int64   `json:"year"`
-	Month            int64   `json:"month"`
-	Day              *int64  `json:"day"`
-	MovementType     string  `json:"movement_type"`
-	TotalDistanceKm  float64 `json:"total_distance_km"`
-	TotalPoints      int64   `json:"total_points"`
-	UniqueUploads    int64   `json:"unique_uploads"`
-	ProtectedAreaIds *string `json:"protected_area_ids"`
-	LatCenter        float64 `json:"lat_center"`
-	LonCenter        float64 `json:"lon_center"`
+	ID               int64    `json:"id"`
+	GridCellID       string   `json:"grid_cell_id"`
+	Year             int64    `json:"year"`
+	Month            int64    `json:"month"`
+	Day              *int64   `json:"day"`
+	MovementType     string   `json:"movement_type"`
+	TotalDistanceKm  float64  `json:"total_distance_km"`
+	TotalPoints      int64    `json:"total_points"`
+	UniqueUploads    int64    `json:"unique_uploads"`
+	ProtectedAreaIds *string  `json:"protected_area_ids"`
+	CoveragePercent  *float64 `json:"coverage_percent"`
+	LatCenter        float64  `json:"lat_center"`
+	LonCenter        float64  `json:"lon_center"`
 }
 
 func (q *Queries) GetEffortDataByYear(ctx context.Context, year int64) ([]GetEffortDataByYearRow, error) {
@@ -324,6 +327,7 @@ func (q *Queries) GetEffortDataByYear(ctx context.Context, year int64) ([]GetEff
 			&i.TotalPoints,
 			&i.UniqueUploads,
 			&i.ProtectedAreaIds,
+			&i.CoveragePercent,
 			&i.LatCenter,
 			&i.LonCenter,
 		); err != nil {
@@ -341,7 +345,7 @@ func (q *Queries) GetEffortDataByYear(ctx context.Context, year int64) ([]GetEff
 }
 
 const getEffortDataByYearMonth = `-- name: GetEffortDataByYearMonth :many
-SELECT e.id, e.grid_cell_id, e.year, e.month, e.day, e.movement_type, e.total_distance_km, e.total_points, e.unique_uploads, e.protected_area_ids, g.lat_center, g.lon_center
+SELECT e.id, e.grid_cell_id, e.year, e.month, e.day, e.movement_type, e.total_distance_km, e.total_points, e.unique_uploads, e.protected_area_ids, e.coverage_percent, g.lat_center, g.lon_center
 FROM effort_data e
 JOIN grid_cells g ON e.grid_cell_id = g.id
 WHERE e.year = ? AND e.month = ? AND e.day IS NULL AND e.movement_type = 'all'
@@ -353,18 +357,19 @@ type GetEffortDataByYearMonthParams struct {
 }
 
 type GetEffortDataByYearMonthRow struct {
-	ID               int64   `json:"id"`
-	GridCellID       string  `json:"grid_cell_id"`
-	Year             int64   `json:"year"`
-	Month            int64   `json:"month"`
-	Day              *int64  `json:"day"`
-	MovementType     string  `json:"movement_type"`
-	TotalDistanceKm  float64 `json:"total_distance_km"`
-	TotalPoints      int64   `json:"total_points"`
-	UniqueUploads    int64   `json:"unique_uploads"`
-	ProtectedAreaIds *string `json:"protected_area_ids"`
-	LatCenter        float64 `json:"lat_center"`
-	LonCenter        float64 `json:"lon_center"`
+	ID               int64    `json:"id"`
+	GridCellID       string   `json:"grid_cell_id"`
+	Year             int64    `json:"year"`
+	Month            int64    `json:"month"`
+	Day              *int64   `json:"day"`
+	MovementType     string   `json:"movement_type"`
+	TotalDistanceKm  float64  `json:"total_distance_km"`
+	TotalPoints      int64    `json:"total_points"`
+	UniqueUploads    int64    `json:"unique_uploads"`
+	ProtectedAreaIds *string  `json:"protected_area_ids"`
+	CoveragePercent  *float64 `json:"coverage_percent"`
+	LatCenter        float64  `json:"lat_center"`
+	LonCenter        float64  `json:"lon_center"`
 }
 
 func (q *Queries) GetEffortDataByYearMonth(ctx context.Context, arg GetEffortDataByYearMonthParams) ([]GetEffortDataByYearMonthRow, error) {
@@ -387,6 +392,7 @@ func (q *Queries) GetEffortDataByYearMonth(ctx context.Context, arg GetEffortDat
 			&i.TotalPoints,
 			&i.UniqueUploads,
 			&i.ProtectedAreaIds,
+			&i.CoveragePercent,
 			&i.LatCenter,
 			&i.LonCenter,
 		); err != nil {
@@ -619,6 +625,73 @@ func (q *Queries) GetSession(ctx context.Context, id string) (GetSessionRow, err
 		&i.Role,
 	)
 	return i, err
+}
+
+const getSubcellCoverageByDateRange = `-- name: GetSubcellCoverageByDateRange :one
+SELECT COUNT(DISTINCT subcell_id) as covered_subcells
+FROM subcell_visits
+WHERE grid_cell_id = ? AND visit_date >= ? AND visit_date <= ?
+`
+
+type GetSubcellCoverageByDateRangeParams struct {
+	GridCellID  string    `json:"grid_cell_id"`
+	VisitDate   time.Time `json:"visit_date"`
+	VisitDate_2 time.Time `json:"visit_date_2"`
+}
+
+func (q *Queries) GetSubcellCoverageByDateRange(ctx context.Context, arg GetSubcellCoverageByDateRangeParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getSubcellCoverageByDateRange, arg.GridCellID, arg.VisitDate, arg.VisitDate_2)
+	var covered_subcells int64
+	err := row.Scan(&covered_subcells)
+	return covered_subcells, err
+}
+
+const getSubcellVisitsByDateRange = `-- name: GetSubcellVisitsByDateRange :many
+SELECT grid_cell_id, subcell_id, visit_date, visit_count
+FROM subcell_visits
+WHERE grid_cell_id = ? AND visit_date >= ? AND visit_date <= ?
+ORDER BY visit_date
+`
+
+type GetSubcellVisitsByDateRangeParams struct {
+	GridCellID  string    `json:"grid_cell_id"`
+	VisitDate   time.Time `json:"visit_date"`
+	VisitDate_2 time.Time `json:"visit_date_2"`
+}
+
+type GetSubcellVisitsByDateRangeRow struct {
+	GridCellID string    `json:"grid_cell_id"`
+	SubcellID  string    `json:"subcell_id"`
+	VisitDate  time.Time `json:"visit_date"`
+	VisitCount int64     `json:"visit_count"`
+}
+
+func (q *Queries) GetSubcellVisitsByDateRange(ctx context.Context, arg GetSubcellVisitsByDateRangeParams) ([]GetSubcellVisitsByDateRangeRow, error) {
+	rows, err := q.db.QueryContext(ctx, getSubcellVisitsByDateRange, arg.GridCellID, arg.VisitDate, arg.VisitDate_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetSubcellVisitsByDateRangeRow{}
+	for rows.Next() {
+		var i GetSubcellVisitsByDateRangeRow
+		if err := rows.Scan(
+			&i.GridCellID,
+			&i.SubcellID,
+			&i.VisitDate,
+			&i.VisitCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getTotalDistanceByYear = `-- name: GetTotalDistanceByYear :one
@@ -1005,6 +1078,30 @@ func (q *Queries) ListPendingUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
+const updateEffortCoverage = `-- name: UpdateEffortCoverage :exec
+UPDATE effort_data SET coverage_percent = ? 
+WHERE grid_cell_id = ? AND year = ? AND month = ? AND movement_type = ?
+`
+
+type UpdateEffortCoverageParams struct {
+	CoveragePercent *float64 `json:"coverage_percent"`
+	GridCellID      string   `json:"grid_cell_id"`
+	Year            int64    `json:"year"`
+	Month           int64    `json:"month"`
+	MovementType    string   `json:"movement_type"`
+}
+
+func (q *Queries) UpdateEffortCoverage(ctx context.Context, arg UpdateEffortCoverageParams) error {
+	_, err := q.db.ExecContext(ctx, updateEffortCoverage,
+		arg.CoveragePercent,
+		arg.GridCellID,
+		arg.Year,
+		arg.Month,
+		arg.MovementType,
+	)
+	return err
+}
+
 const updateUserPassword = `-- name: UpdateUserPassword :exec
 UPDATE users SET password_hash = ? WHERE id = ?
 `
@@ -1105,5 +1202,25 @@ func (q *Queries) UpsertEffortData(ctx context.Context, arg UpsertEffortDataPara
 		arg.UniqueUploads,
 		arg.ProtectedAreaIds,
 	)
+	return err
+}
+
+const upsertSubcellVisit = `-- name: UpsertSubcellVisit :exec
+
+INSERT INTO subcell_visits (grid_cell_id, subcell_id, visit_date, visit_count)
+VALUES (?, ?, ?, 1)
+ON CONFLICT(grid_cell_id, subcell_id, visit_date) DO UPDATE SET
+    visit_count = visit_count + 1
+`
+
+type UpsertSubcellVisitParams struct {
+	GridCellID string    `json:"grid_cell_id"`
+	SubcellID  string    `json:"subcell_id"`
+	VisitDate  time.Time `json:"visit_date"`
+}
+
+// Subcell visits tracking for spatial coverage (day granularity)
+func (q *Queries) UpsertSubcellVisit(ctx context.Context, arg UpsertSubcellVisitParams) error {
+	_, err := q.db.ExecContext(ctx, upsertSubcellVisit, arg.GridCellID, arg.SubcellID, arg.VisitDate)
 	return err
 }

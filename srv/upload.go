@@ -556,6 +556,11 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 		}
 	}
 
+	// Track subcell visits for spatial coverage calculation
+	if err := s.trackSubcellVisits(ctx, q, segments, year, month); err != nil {
+		return fmt.Errorf("track subcell visits: %w", err)
+	}
+
 	return nil
 }
 
@@ -575,4 +580,80 @@ func haversineDistanceKm(lat1, lon1, lat2, lon2 float64) float64 {
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 
 	return earthRadiusKm * c
+}
+
+// subcellIDForPoint returns the subcell ID (0-9 row/col) within a 10km x 10km grid cell
+// Each grid cell is divided into 100 subcells of ~1km x 1km
+func subcellIDForPoint(lat, lon float64) string {
+	// Get the grid cell bounds
+	latMin, _, lonMin, _ := gridCellBounds(lat, lon)
+	
+	// Calculate position within the cell (0-1 range)
+	latPos := (lat - latMin) / gridCellSize
+	lonPos := (lon - lonMin) / gridCellSize
+	
+	// Convert to subcell index (0-9)
+	row := int(latPos * 10)
+	col := int(lonPos * 10)
+	
+	// Clamp to valid range
+	if row < 0 { row = 0 }
+	if row > 9 { row = 9 }
+	if col < 0 { col = 0 }
+	if col > 9 { col = 9 }
+	
+	return fmt.Sprintf("%d_%d", row, col)
+}
+
+// trackSubcellVisits records which subcells within each grid cell have been visited
+// Uses the actual point timestamps for day-level granularity
+func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segments []gpx.Segment, defaultYear, defaultMonth int64) error {
+	// Track visited subcells per grid cell per day
+	// Key: "gridCellID:subcellID:date" -> true
+	visitedSubcells := make(map[string]bool)
+	
+	defaultDate := time.Date(int(defaultYear), time.Month(defaultMonth), 1, 0, 0, 0, 0, time.UTC)
+	
+	for _, seg := range segments {
+		for _, pt := range seg.Points {
+			gridCellID := gridCellIDForPoint(pt.Lat, pt.Lon)
+			subcellID := subcellIDForPoint(pt.Lat, pt.Lon)
+			
+			// Use point timestamp if available, otherwise default date
+			visitDate := defaultDate
+			if pt.Time != nil {
+				visitDate = time.Date(pt.Time.Year(), pt.Time.Month(), pt.Time.Day(), 0, 0, 0, 0, time.UTC)
+			}
+			
+			key := fmt.Sprintf("%s:%s:%s", gridCellID, subcellID, visitDate.Format("2006-01-02"))
+			visitedSubcells[key] = true
+		}
+	}
+	
+	// Store subcell visits with day granularity
+	for key := range visitedSubcells {
+		parts := strings.Split(key, ":")
+		if len(parts) != 3 {
+			continue
+		}
+		gridCellID := parts[0]
+		subcellID := parts[1]
+		visitDateStr := parts[2]
+		
+		visitDate, err := time.Parse("2006-01-02", visitDateStr)
+		if err != nil {
+			continue
+		}
+		
+		err = q.UpsertSubcellVisit(ctx, dbgen.UpsertSubcellVisitParams{
+			GridCellID: gridCellID,
+			SubcellID:  subcellID,
+			VisitDate:  visitDate,
+		})
+		if err != nil {
+			return fmt.Errorf("upsert subcell visit: %w", err)
+		}
+	}
+	
+	return nil
 }

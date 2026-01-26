@@ -9,16 +9,63 @@ import (
 )
 
 type EffortDatum struct {
-	ID               int64   `json:"id"`
-	GridCellID       string  `json:"grid_cell_id"`
-	Year             int64   `json:"year"`
-	Month            int64   `json:"month"`
-	Day              *int64  `json:"day"`
-	MovementType     string  `json:"movement_type"`
-	TotalDistanceKm  float64 `json:"total_distance_km"`
-	TotalPoints      int64   `json:"total_points"`
-	UniqueUploads    int64   `json:"unique_uploads"`
-	ProtectedAreaIds *string `json:"protected_area_ids"`
+	ID               int64    `json:"id"`
+	GridCellID       string   `json:"grid_cell_id"`
+	Year             int64    `json:"year"`
+	Month            int64    `json:"month"`
+	Day              *int64   `json:"day"`
+	MovementType     string   `json:"movement_type"`
+	TotalDistanceKm  float64  `json:"total_distance_km"`
+	TotalPoints      int64    `json:"total_points"`
+	UniqueUploads    int64    `json:"unique_uploads"`
+	ProtectedAreaIds *string  `json:"protected_area_ids"`
+	CoveragePercent  *float64 `json:"coverage_percent"`
+}
+
+type FireDailyGrid struct {
+	ID              int64    `json:"id"`
+	GridCellID      string   `json:"grid_cell_id"`
+	Date            string   `json:"date"`
+	FireCount       int64    `json:"fire_count"`
+	TotalFrp        *float64 `json:"total_frp"`
+	AvgConfidence   *float64 `json:"avg_confidence"`
+	InProtectedArea *int64   `json:"in_protected_area"`
+	ProtectedAreaID *string  `json:"protected_area_id"`
+}
+
+type FireDataSync struct {
+	ID              int64   `json:"id"`
+	ParkID          string  `json:"park_id"`
+	BboxWest        float64 `json:"bbox_west"`
+	BboxSouth       float64 `json:"bbox_south"`
+	BboxEast        float64 `json:"bbox_east"`
+	BboxNorth       float64 `json:"bbox_north"`
+	BufferKm        float64 `json:"buffer_km"`
+	FirstDate       *string `json:"first_date"`
+	LastDate        *string `json:"last_date"`
+	LastSyncAt      *string `json:"last_sync_at"`
+	TotalDetections *int64  `json:"total_detections"`
+}
+
+type FireDetection struct {
+	ID              int64    `json:"id"`
+	Latitude        float64  `json:"latitude"`
+	Longitude       float64  `json:"longitude"`
+	Brightness      *float64 `json:"brightness"`
+	Scan            *float64 `json:"scan"`
+	Track           *float64 `json:"track"`
+	AcqDate         string   `json:"acq_date"`
+	AcqTime         *string  `json:"acq_time"`
+	Satellite       *string  `json:"satellite"`
+	Instrument      *string  `json:"instrument"`
+	Confidence      *string  `json:"confidence"`
+	Version         *string  `json:"version"`
+	BrightT31       *float64 `json:"bright_t31"`
+	Frp             *float64 `json:"frp"`
+	Daynight        *string  `json:"daynight"`
+	GridCellID      *string  `json:"grid_cell_id"`
+	InProtectedArea *int64   `json:"in_protected_area"`
+	ProtectedAreaID *string  `json:"protected_area_id"`
 }
 
 type GpxUpload struct {
@@ -99,6 +146,14 @@ type Session struct {
 	UserID    string    `json:"user_id"`
 	CreatedAt time.Time `json:"created_at"`
 	ExpiresAt time.Time `json:"expires_at"`
+}
+
+type SubcellVisit struct {
+	ID         int64     `json:"id"`
+	GridCellID string    `json:"grid_cell_id"`
+	SubcellID  string    `json:"subcell_id"`
+	VisitDate  time.Time `json:"visit_date"`
+	VisitCount int64     `json:"visit_count"`
 }
 
 type TrackPoint struct {
