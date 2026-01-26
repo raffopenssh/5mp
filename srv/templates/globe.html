@@ -340,13 +340,15 @@
 
     <div id="map" class="maplibregl-map"><div class="maplibregl-canvas-container maplibregl-interactive maplibregl-touch-drag-pan maplibregl-touch-zoom-rotate"><canvas class="maplibregl-canvas" tabindex="0" aria-label="Map" role="region" width="375" height="756" style="width: 375px; height: 756px;"></canvas></div><div class="maplibregl-control-container"><div class="maplibregl-ctrl-top-left "></div><div class="maplibregl-ctrl-top-right "><div class="maplibregl-ctrl maplibregl-ctrl-group"><button class="maplibregl-ctrl-zoom-in" type="button" title="Zoom in" aria-label="Zoom in" aria-disabled="false"><span class="maplibregl-ctrl-icon" aria-hidden="true"></span></button><button class="maplibregl-ctrl-zoom-out" type="button" title="Zoom out" aria-label="Zoom out" aria-disabled="false"><span class="maplibregl-ctrl-icon" aria-hidden="true"></span></button><button class="maplibregl-ctrl-compass" type="button" title="Reset bearing to north" aria-label="Reset bearing to north"><span class="maplibregl-ctrl-icon" aria-hidden="true" style="transform: rotate(0deg);"></span></button></div></div><div class="maplibregl-ctrl-bottom-left "></div><div class="maplibregl-ctrl-bottom-right "><details class="maplibregl-ctrl maplibregl-ctrl-attrib maplibregl-compact maplibregl-compact-show" open=""><summary class="maplibregl-ctrl-attrib-button" title="Toggle attribution" aria-label="Toggle attribution"></summary><div class="maplibregl-ctrl-attrib-inner">© OpenStreetMap contributors, © CARTO | <a href="https://maplibre.org/" target="_blank">MapLibre</a></div></details></div></div><div id="map-legend" style="position: absolute; bottom: 30px; left: 10px; background: rgba(18, 18, 18, 0.9); padding: 12px 16px; border-radius: 8px; font-size: 12px; z-index: 100; border: 1px solid rgba(255, 255, 255, 0.1);">
                 <div style="font-weight: 600; margin-bottom: 10px; color: #fff;">Patrol Intensity</div>
-                <div style="display: flex; align-items: center; margin-bottom: 6px;">
-                    <div style="width: 100px; height: 12px; background: linear-gradient(to right, rgba(34,197,94,0), rgba(34,197,94,0.3), rgba(74,222,128,0.6), rgba(134,239,172,0.85), rgba(187,247,208,1)); border-radius: 3px; margin-right: 8px;"></div>
+                <div style="position: relative; height: 20px; margin-bottom: 6px;">
+                    <div style="position: absolute; width: 100%; height: 16px; top: 2px; border-radius: 8px; background: linear-gradient(to right, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.4), rgba(74, 222, 128, 0.7), #4ade80); box-shadow: inset 0 0 0 1px rgba(74, 222, 128, 0.5);"></div>
+                    <div style="position: absolute; right: 0; top: 0; width: 20px; height: 20px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 12px 4px rgba(34, 197, 94, 0.8), 0 0 20px 8px rgba(34, 197, 94, 0.4);"></div>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666; width: 100px;">
-                    <span>Low</span><span>High</span>
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #888;">
+                    <span>Low</span>
+                    <span>High</span>
                 </div>
-                <div style="margin-top: 8px; font-size: 10px; color: #555;">100 km² per pixel</div>
+                <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 10px; color: #555;">100 km² per pixel<br>Click clusters to zoom</div>
             </div></div>
 
     <div class="stats-panel">
@@ -729,6 +731,34 @@
             // Grid pixel rendering - uniform outline with radial fill that overflows at high intensity
             // Intensity is based on coverage: 1.0 = 80%+ of 100km² cell covered
             
+            // Outer glow halo for high intensity pixels (>80%)
+            map.addLayer({
+                id: 'grid-halo',
+                type: 'circle',
+                source: 'grid',
+                filter: ['!', ['has', 'point_count']],
+                paint: {
+                    'circle-color': '#22c55e',
+                    'circle-radius': [
+                        'interpolate', ['linear'],
+                        ['coalesce', ['get', 'intensity'], 0],
+                        0, 0,
+                        0.7, 0,
+                        0.8, 28,
+                        1, 38
+                    ],
+                    'circle-blur': 1.5,
+                    'circle-opacity': [
+                        'interpolate', ['linear'],
+                        ['coalesce', ['get', 'intensity'], 0],
+                        0, 0,
+                        0.7, 0,
+                        0.8, 0.25,
+                        1, 0.5
+                    ]
+                }
+            });
+
             // Soft glow layer for aggregation effect
             map.addLayer({
                 id: 'grid-glow',
@@ -740,17 +770,19 @@
                     'circle-radius': [
                         'interpolate', ['linear'],
                         ['coalesce', ['get', 'intensity'], 0],
-                        0, 12,
-                        0.5, 16,
-                        1, 22
+                        0, 14,
+                        0.5, 20,
+                        0.8, 26,
+                        1, 30
                     ],
-                    'circle-blur': 1,
+                    'circle-blur': 1.2,
                     'circle-opacity': [
                         'interpolate', ['linear'],
                         ['coalesce', ['get', 'intensity'], 0],
-                        0, 0.08,
-                        0.5, 0.18,
-                        1, 0.35
+                        0, 0.1,
+                        0.5, 0.25,
+                        0.8, 0.4,
+                        1, 0.55
                     ]
                 }
             });
@@ -770,17 +802,17 @@
                         0.1, 2,
                         0.3, 4,
                         0.5, 6,
-                        0.8, 9,
-                        1, 13  // Overflow the 10px outline at full intensity
+                        0.8, 10,
+                        1, 14  // Overflow the 10px outline at full intensity
                     ],
-                    'circle-blur': 0.25,
+                    'circle-blur': 0.3,
                     'circle-opacity': [
                         'interpolate', ['linear'],
                         ['coalesce', ['get', 'intensity'], 0],
                         0, 0,
-                        0.2, 0.35,
-                        0.5, 0.6,
-                        0.8, 0.85,
+                        0.2, 0.4,
+                        0.5, 0.65,
+                        0.8, 0.9,
                         1, 1
                     ]
                 }
@@ -915,17 +947,13 @@
             legend.style.cssText = 'position: absolute; bottom: 30px; left: 10px; background: rgba(18,18,18,0.9); padding: 12px 16px; border-radius: 8px; font-size: 12px; z-index: 100; border: 1px solid rgba(255,255,255,0.1);';
             legend.innerHTML = `
                 <div style="font-weight: 600; margin-bottom: 10px; color: #fff;">Patrol Intensity</div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <div style="width: 16px; height: 16px; background: rgba(34, 197, 94, 0.3); border: 2px solid #4ade80; border-radius: 50%; filter: blur(1px);"></div>
-                    <span style="color: #888; font-size: 11px;">Low</span>
+                <div style="position: relative; height: 20px; margin-bottom: 6px;">
+                    <div style="position: absolute; width: 100%; height: 16px; top: 2px; border-radius: 8px; background: linear-gradient(to right, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.4), rgba(74, 222, 128, 0.7), #4ade80); box-shadow: inset 0 0 0 1px rgba(74, 222, 128, 0.5);"></div>
+                    <div style="position: absolute; right: 0; top: 0; width: 20px; height: 20px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 12px 4px rgba(34, 197, 94, 0.8), 0 0 20px 8px rgba(34, 197, 94, 0.4);"></div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <div style="width: 16px; height: 16px; background: rgba(34, 197, 94, 0.6); border: 2px solid #4ade80; border-radius: 50%; box-shadow: 0 0 6px #22c55e;"></div>
-                    <span style="color: #888; font-size: 11px;">Medium</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <div style="width: 16px; height: 16px; background: #22c55e; border: 2px solid #4ade80; border-radius: 50%; box-shadow: 0 0 12px #22c55e;"></div>
-                    <span style="color: #888; font-size: 11px;">High</span>
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #888;">
+                    <span>Low</span>
+                    <span>High</span>
                 </div>
                 <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 10px; color: #555;">100 km² per pixel<br>Click clusters to zoom</div>
             `;
