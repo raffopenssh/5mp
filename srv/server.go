@@ -121,6 +121,11 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/stats", s.HandleAPIStats)
 	mux.HandleFunc("GET /api/activity", s.HandleAPIActivity)
 
+	// Fire data endpoints
+	mux.HandleFunc("GET /api/fire/chinko/daily", s.handleFireDailyData)
+	mux.HandleFunc("GET /api/fire/chinko/boundary", s.handleFireBoundary)
+	mux.HandleFunc("GET /fire", s.handleFireAnalysis)
+
 	// Legal framework endpoints
 	mux.HandleFunc("GET /api/legal/pa/", s.HandleAPILegalByPA)
 	mux.HandleFunc("GET /api/legal/", s.HandleAPILegalByCountry)

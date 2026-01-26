@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chinko Fire Analysis - 5MP</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; }
+        #map { width: 100%; height: 70vh; }
+        .controls { padding: 20px; background: #16213e; }
+        .date-display { font-size: 2em; font-weight: bold; color: #00d4ff; margin-bottom: 10px; }
+        .stats { display: flex; gap: 30px; margin: 15px 0; flex-wrap: wrap; }
+        .stat-box { background: #0f3460; padding: 15px 25px; border-radius: 8px; }
+        .stat-box.infractions { border-left: 4px solid #ff4444; }
+        .stat-box.buffer { border-left: 4px solid #44ff44; }
+        .stat-value { font-size: 2em; font-weight: bold; }
+        .stat-label { color: #888; font-size: 0.9em; }
+        .timeline { margin: 20px 0; }
+        .timeline input { width: 100%; }
+        .playback { display: flex; gap: 10px; align-items: center; margin: 10px 0; }
+        .playback button { padding: 10px 20px; background: #00d4ff; color: #000; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .playback button:hover { background: #00a8cc; }
+        .speed-control { display: flex; align-items: center; gap: 10px; }
+        .legend { position: absolute; bottom: 30px; right: 10px; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 8px; z-index: 1000; }
+        .legend-item { display: flex; align-items: center; gap: 10px; margin: 5px 0; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .legend-dot.infraction { background: #ff4444; }
+        .legend-dot.buffer { background: #44ff44; }
+        .insight-box { background: #0f3460; padding: 20px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #ffd700; }
+        .insight-title { font-weight: bold; color: #ffd700; margin-bottom: 10px; }
+        .monthly-chart { height: 150px; margin-top: 20px; display: flex; align-items: flex-end; gap: 2px; }
+        .month-bar { flex: 1; background: linear-gradient(to top, #ff4444, #ff8888); border-radius: 3px 3px 0 0; position: relative; cursor: pointer; }
+        .month-bar:hover::after { content: attr(data-info); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #000; padding: 5px 10px; border-radius: 4px; white-space: nowrap; font-size: 0.8em; }
+        .month-label { text-align: center; font-size: 0.7em; color: #888; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot infraction"></div> Fire inside PA (Infraction)</div>
+        <div class="legend-item"><div class="legend-dot buffer"></div> Fire in buffer zone</div>
+        <div style="margin-top: 10px; font-size: 0.8em; color: #888;">
+            PA boundary shown in blue
+        </div>
+    </div>
+    
+    <div class="controls">
+        <div class="date-display" id="currentDate">Loading...</div>
+        
+        <div class="stats">
+            <div class="stat-box infractions">
+                <div class="stat-value" id="insideCount">0</div>
+                <div class="stat-label">Fires Inside PA (Infractions)</div>
+            </div>
+            <div class="stat-box buffer">
+                <div class="stat-value" id="outsideCount">0</div>
+                <div class="stat-label">Fires in Buffer Zone</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="totalYTD">0</div>
+                <div class="stat-label">Total Infractions YTD</div>
+            </div>
+        </div>
+        
+        <div class="timeline">
+            <input type="range" id="dateSlider" min="0" max="100" value="0">
+        </div>
+        
+        <div class="playback">
+            <button id="playBtn">▶ Play</button>
+            <button id="resetBtn">⟲ Reset</button>
+            <div class="speed-control">
+                <span>Speed:</span>
+                <input type="range" id="speedSlider" min="1" max="10" value="5" style="width: 100px;">
+                <span id="speedValue">5</span>
+            </div>
+        </div>
+        
+        <div class="insight-box">
+            <div class="insight-title">🔥 Key Observations - Chinko 2023</div>
+            <p id="insightText">
+                <strong>Transhumance Pattern Detected:</strong> Fire data reveals clear movement of nomadic herders from NORTH to SOUTH during dry season (Dec-Mar).
+                <br><br>
+                • <strong>January:</strong> Fires concentrated in northern buffer - herders entering from Sudan/Chad
+                <br>• <strong>February:</strong> Peak infractions (7,638 fires inside PA!) - herders moving through Chinko
+                <br>• <strong>March:</strong> Fires move to southern areas as herders continue south
+                <br>• <strong>April-October:</strong> Wet season - minimal fire activity
+                <br>• <strong>November-December:</strong> Return migration begins from south
+                <br><br>
+                <em>These fires likely indicate illegal grazing incursions, with herders burning grass to create fresh pasture for cattle.</em>
+            </p>
+        </div>
+        
+        <div id="monthlyChart" class="monthly-chart"></div>
+        <div style="display: flex; justify-content: space-between; padding: 0 5px;">
+            <span class="month-label">Jan</span>
+            <span class="month-label">Feb</span>
+            <span class="month-label">Mar</span>
+            <span class="month-label">Apr</span>
+            <span class="month-label">May</span>
+            <span class="month-label">Jun</span>
+            <span class="month-label">Jul</span>
+            <span class="month-label">Aug</span>
+            <span class="month-label">Sep</span>
+            <span class="month-label">Oct</span>
+            <span class="month-label">Nov</span>
+            <span class="month-label">Dec</span>
+        </div>
+    </div>
+
+    <script>
+        // Initialize map centered on Chinko
+        const map = L.map('map').setView([6.15, 24.0], 8);
+        
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap © CARTO'
+        }).addTo(map);
+        
+        let fireData = [];
+        let boundary = null;
+        let currentIndex = 0;
+        let isPlaying = false;
+        let playInterval = null;
+        let fireMarkers = L.layerGroup().addTo(map);
+        
+        // Monthly data for chart
+        const monthlyInfractions = [3635, 7638, 538, 22, 3, 2, 0, 0, 0, 0, 56, 1075];
+        const maxMonthly = Math.max(...monthlyInfractions);
+        
+        // Build monthly chart
+        const chartDiv = document.getElementById('monthlyChart');
+        monthlyInfractions.forEach((count, i) => {
+            const bar = document.createElement('div');
+            bar.className = 'month-bar';
+            bar.style.height = (count / maxMonthly * 100) + '%';
+            bar.style.minHeight = count > 0 ? '3px' : '0';
+            bar.setAttribute('data-info', `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i]}: ${count.toLocaleString()} infractions`);
+            chartDiv.appendChild(bar);
+        });
+        
+        // Load data
+        Promise.all([
+            fetch('/api/fire/chinko/daily').then(r => r.json()),
+            fetch('/api/fire/chinko/boundary').then(r => r.json())
+        ]).then(([fires, bound]) => {
+            fireData = fires;
+            boundary = bound;
+            
+            // Draw PA boundary
+            L.geoJSON(boundary, {
+                style: { color: '#00d4ff', weight: 2, fillOpacity: 0.1 }
+            }).addTo(map);
+            
+            // Setup slider
+            const slider = document.getElementById('dateSlider');
+            slider.max = fireData.length - 1;
+            slider.addEventListener('input', () => {
+                currentIndex = parseInt(slider.value);
+                renderDay(currentIndex);
+            });
+            
+            renderDay(0);
+        });
+        
+        function renderDay(index) {
+            if (index >= fireData.length) return;
+            
+            const day = fireData[index];
+            document.getElementById('currentDate').textContent = day.date;
+            document.getElementById('insideCount').textContent = day.inside_count.toLocaleString();
+            document.getElementById('outsideCount').textContent = day.outside_count.toLocaleString();
+            
+            // Calculate YTD infractions
+            let ytd = 0;
+            for (let i = 0; i <= index; i++) {
+                ytd += fireData[i].inside_count;
+            }
+            document.getElementById('totalYTD').textContent = ytd.toLocaleString();
+            
+            // Clear and redraw markers
+            fireMarkers.clearLayers();
+            
+            // Draw outside fires (green) first
+            day.outside.forEach(f => {
+                L.circleMarker([f.lat, f.lon], {
+                    radius: 3,
+                    color: '#44ff44',
+                    fillColor: '#44ff44',
+                    fillOpacity: 0.6,
+                    weight: 0
+                }).addTo(fireMarkers);
+            });
+            
+            // Draw inside fires (red/infractions) on top
+            day.inside.forEach(f => {
+                L.circleMarker([f.lat, f.lon], {
+                    radius: 4,
+                    color: '#ff4444',
+                    fillColor: '#ff4444',
+                    fillOpacity: 0.8,
+                    weight: 0
+                }).addTo(fireMarkers);
+            });
+            
+            document.getElementById('dateSlider').value = index;
+        }
+        
+        // Playback controls
+        document.getElementById('playBtn').addEventListener('click', () => {
+            if (isPlaying) {
+                isPlaying = false;
+                clearInterval(playInterval);
+                document.getElementById('playBtn').textContent = '▶ Play';
+            } else {
+                isPlaying = true;
+                document.getElementById('playBtn').textContent = '⏸ Pause';
+                const speed = 11 - parseInt(document.getElementById('speedSlider').value);
+                playInterval = setInterval(() => {
+                    currentIndex++;
+                    if (currentIndex >= fireData.length) {
+                        currentIndex = 0;
+                    }
+                    renderDay(currentIndex);
+                }, speed * 100);
+            }
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            currentIndex = 0;
+            renderDay(0);
+        });
+        
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            document.getElementById('speedValue').textContent = e.target.value;
+            if (isPlaying) {
+                clearInterval(playInterval);
+                const speed = 11 - parseInt(e.target.value);
+                playInterval = setInterval(() => {
+                    currentIndex++;
+                    if (currentIndex >= fireData.length) currentIndex = 0;
+                    renderDay(currentIndex);
+                }, speed * 100);
+            }
+        });
+    </script>
+</body>
+</html>
