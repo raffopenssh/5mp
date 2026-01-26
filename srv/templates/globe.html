@@ -754,7 +754,8 @@
             // Grid pixel rendering - uniform outline with radial fill that overflows at high intensity
             // Intensity is based on coverage: 1.0 = 80%+ of 100km² cell covered
             
-            // Outer glow halo for high intensity pixels (>80%)
+            // Outer glow halo - visible at all intensities, stronger at high intensity
+            // Intensity: 0 = no visits, 1.0 = monthly visits, >1.0 = more frequent (overglow)
             map.addLayer({
                 id: 'grid-halo',
                 type: 'circle',
@@ -765,24 +766,24 @@
                     'circle-radius': [
                         'interpolate', ['linear'],
                         ['coalesce', ['get', 'intensity'], 0],
-                        0, 0,
-                        0.7, 0,
-                        0.8, 28,
-                        1, 38
+                        0, 14,      // Always show base glow
+                        0.5, 20,    // Moderate visits
+                        1.0, 32,    // Monthly visits - full glow
+                        1.5, 45     // Overglow for >2x/month
                     ],
-                    'circle-blur': 1.5,
+                    'circle-blur': 1.2,
                     'circle-opacity': [
                         'interpolate', ['linear'],
                         ['coalesce', ['get', 'intensity'], 0],
-                        0, 0,
-                        0.7, 0,
-                        0.8, 0.25,
-                        1, 0.5
+                        0, 0.15,    // Always visible
+                        0.5, 0.3,
+                        1.0, 0.5,
+                        1.5, 0.7    // Strong overglow
                     ]
                 }
             });
 
-            // Soft glow layer for aggregation effect
+            // Soft inner glow layer
             map.addLayer({
                 id: 'grid-glow',
                 type: 'circle',
@@ -793,24 +794,24 @@
                     'circle-radius': [
                         'interpolate', ['linear'],
                         ['coalesce', ['get', 'intensity'], 0],
-                        0, 14,
-                        0.5, 20,
-                        0.8, 26,
-                        1, 30
+                        0, 12,
+                        0.5, 16,
+                        1.0, 22,
+                        1.5, 28
                     ],
-                    'circle-blur': 1.2,
+                    'circle-blur': 0.8,
                     'circle-opacity': [
                         'interpolate', ['linear'],
                         ['coalesce', ['get', 'intensity'], 0],
-                        0, 0.1,
-                        0.5, 0.25,
-                        0.8, 0.4,
-                        1, 0.55
+                        0, 0.2,
+                        0.5, 0.4,
+                        1.0, 0.6,
+                        1.5, 0.8
                     ]
                 }
             });
 
-            // Inner fill - grows with intensity, overflows outline at full coverage
+            // Inner fill - grows with intensity, overflows outline at high frequency
             map.addLayer({
                 id: 'grid-fill',
                 type: 'circle',
@@ -825,18 +826,19 @@
                         0.1, 2,
                         0.3, 4,
                         0.5, 6,
-                        0.8, 10,
-                        1, 14  // Overflow the 10px outline at full intensity
+                        0.8, 9,
+                        1.0, 12,   // Monthly = slight overflow
+                        1.5, 16    // High frequency = strong overflow
                     ],
-                    'circle-blur': 0.3,
+                    'circle-blur': 0.2,
                     'circle-opacity': [
                         'interpolate', ['linear'],
                         ['coalesce', ['get', 'intensity'], 0],
                         0, 0,
-                        0.2, 0.4,
-                        0.5, 0.65,
-                        0.8, 0.9,
-                        1, 1
+                        0.2, 0.5,
+                        0.5, 0.7,
+                        1.0, 0.9,
+                        1.5, 1
                     ]
                 }
             });

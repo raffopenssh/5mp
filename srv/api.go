@@ -161,7 +161,6 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 			agg.TotalPoints,
 			agg.UniqueUploads,
 			agg.MovementType,
-			80.0, // maxDistance not used anymore - intensity based on coverage
 		)
 		features = append(features, feature)
 	}
@@ -178,15 +177,15 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 
 // buildGridFeature creates a GeoJSON feature for a grid cell.
 // Returns a Point at the center of the cell for circle visualization.
-func buildGridFeature(gridCellID string, latCenter, lonCenter, totalDistanceKm float64, totalPoints, uniqueUploads int64, movementType string, maxDistance float64) GeoJSONFeature {
-	// Calculate intensity based on coverage percentage of the 100 km² cell
-	// Each cell is ~10km x 10km = 100 km²
-	// Coverage = distance / cell_size (e.g., 80km patrol = 80% coverage)
-	// Full intensity (1.0) at 80km+ of patrol distance
-	const fullCoverageKm = 80.0 // 80% of 100 km² cell
+func buildGridFeature(gridCellID string, latCenter, lonCenter, totalDistanceKm float64, totalPoints, uniqueUploads int64, movementType string) GeoJSONFeature {
+	// Calculate intensity based on coverage of the 100 sq km cell
+	// Each cell is ~10km x 10km = 100 sq km
+	// 80km of patrol distance = 80% coverage = full intensity (1.0)
+	// The time slider controls the period - if 80km in a month, that's full for that month
+	const fullCoverageKm = 80.0
 	intensity := totalDistanceKm / fullCoverageKm
-	if intensity > 1.0 {
-		intensity = 1.0
+	if intensity > 1.5 {
+		intensity = 1.5 // Cap for overglow effect (>100% coverage)
 	}
 
 	// Return Point at center of cell (GeoJSON uses [lon, lat] order)
