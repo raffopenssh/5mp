@@ -58,6 +58,15 @@ func run() error {
 		slog.Warn("failed to load legal frameworks", "error", err)
 	}
 
+	// Load GADM data for country/region search
+	gadmPath := dataDir + "/gadm_africa.json"
+	if gadmStore, err := srv.LoadGADMStore(gadmPath); err == nil {
+		server.GADMStore = gadmStore
+		slog.Info("loaded GADM data", "countries", len(gadmStore.Countries), "regions", len(gadmStore.Regions))
+	} else {
+		slog.Warn("failed to load GADM data", "error", err)
+	}
+
 	// Start research publication worker in background
 	ctx := context.Background()
 	go server.StartResearchWorker(ctx)

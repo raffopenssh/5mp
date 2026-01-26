@@ -407,11 +407,15 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// HandleAPIAreasSearch searches protected areas by name.
+// HandleAPIAreasSearch searches protected areas, countries, and regions by name.
 // Query params:
 //   - q: search query (required)
-// Returns matching PAs with center coordinates for map navigation.
-// Results include both loaded (keystone) PAs and unloaded WDPA PAs.
+// Returns matching results with center coordinates for map navigation.
+// Results include:
+//   - Loaded (keystone) PAs - shown in green
+//   - Unloaded WDPA PAs - shown in grey
+//   - Countries - for zooming to country view
+//   - Administrative regions (GADM L1) - provinces, states, etc.
 func (s *Server) HandleAPIAreasSearch(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
 	if query == "" {
@@ -422,21 +426,37 @@ func (s *Server) HandleAPIAreasSearch(w http.ResponseWriter, r *http.Request) {
 
 	// Case-insensitive search
 	queryLower := strings.ToLower(query)
-	results := make([]map[string]interface{}, 0, 20)
+	results := make([]map[string]interface{}, 0, 30)
 
 	// Track WDPA IDs we've already added from loaded areas
 	loadedWDPAIDs := make(map[string]bool)
 
-	// First, search loaded areas (keystones) - these show in green
+	// 1. Search countries first (if query matches)
+	if s.GADMStore != nil {
+		countries := s.GADMStore.SearchCountries(query, 3)
+		for _, c := range countries {
+			results = append(results, map[string]interface{}{
+				"type":    "country",
+				"name":    c.Name,
+				"code":    c.Code,
+				"center":  c.Center,
+				"bbox":    c.BBox,
+			})
+		}
+	}
+
+	// 2. Search loaded areas (keystones) - these show in green
 	if s.AreaStore != nil {
 		for _, area := range s.AreaStore.Areas {
-			if strings.Contains(strings.ToLower(area.Name), queryLower) {
+			if strings.Contains(strings.ToLower(area.Name), queryLower) ||
+				strings.Contains(strings.ToLower(area.Country), queryLower) {
 				// Calculate center from bounding box
 				latMin, latMax, lonMin, lonMax := area.GetBoundingBox()
 				centerLat := (latMin + latMax) / 2
 				centerLon := (lonMin + lonMax) / 2
 
 				results = append(results, map[string]interface{}{
+					"type":      "pa",
 					"id":        area.ID,
 					"name":      area.Name,
 					"country":   area.Country,
@@ -449,16 +469,16 @@ func (s *Server) HandleAPIAreasSearch(w http.ResponseWriter, r *http.Request) {
 
 				loadedWDPAIDs[area.WDPAID] = true
 
-				if len(results) >= 10 {
+				if len(results) >= 15 {
 					break
 				}
 			}
 		}
 	}
 
-	// Then, search WDPA index for additional unloaded areas - these show in grey
-	if s.WDPAIndex != nil && len(results) < 20 {
-		wdpaResults := s.WDPAIndex.Search(query, 20-len(results))
+	// 3. Search WDPA index for additional unloaded areas - these show in grey
+	if s.WDPAIndex != nil && len(results) < 25 {
+		wdpaResults := s.WDPAIndex.Search(query, 25-len(results))
 		for _, entry := range wdpaResults {
 			// Skip if already added from loaded areas
 			wdpaIDStr := strconv.Itoa(entry.WDPAID)
@@ -467,6 +487,7 @@ func (s *Server) HandleAPIAreasSearch(w http.ResponseWriter, r *http.Request) {
 			}
 
 			results = append(results, map[string]interface{}{
+				"type":        "pa",
 				"name":        entry.Name,
 				"country":     entry.Country,
 				"wdpa_id":     wdpaIDStr,
@@ -475,9 +496,26 @@ func (s *Server) HandleAPIAreasSearch(w http.ResponseWriter, r *http.Request) {
 				"loaded":      false, // This PA is NOT loaded in the system
 			})
 
-			if len(results) >= 20 {
+			if len(results) >= 25 {
 				break
 			}
+		}
+	}
+
+	// 4. Search administrative regions (GADM L1)
+	if s.GADMStore != nil && len(results) < 30 {
+		regions := s.GADMStore.SearchRegions(query, 30-len(results))
+		for _, r := range regions {
+			results = append(results, map[string]interface{}{
+				"type":         "region",
+				"id":           r.ID,
+				"name":         r.Name,
+				"country":      r.Country,
+				"country_code": r.CountryCode,
+				"region_type":  r.Type,
+				"center":       r.Center,
+				"bbox":         r.BBox,
+			})
 		}
 	}
 

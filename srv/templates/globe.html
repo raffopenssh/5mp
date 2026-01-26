@@ -53,6 +53,8 @@
         .fab { position: fixed; bottom: 94px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; color: #fff; font-size: 24px; cursor: pointer; box-shadow: 0 4px 14px rgba(34,197,94,0.4); transition: all 0.2s; z-index: 500; display: none; align-items: center; justify-content: center; }
         .fab:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(34,197,94,0.5); }
         .fab.visible { display: flex; }
+        .info-btn { position: fixed; bottom: 10px; right: 10px; width: 28px; height: 28px; border-radius: 50%; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.2); color: #22c55e; font-size: 14px; cursor: pointer; z-index: 500; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .info-btn:hover { background: rgba(34,197,94,0.2); border-color: #22c55e; }
 
         .maplibregl-ctrl-attrib { background: rgba(18,18,18,0.8) !important; }
 
@@ -584,6 +586,15 @@
         </div>
     </div>
 
+    <!-- Info Button (5MP Manifest) -->
+    <button class="info-btn" onclick="showModal('manifest')" title="About 5MP">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 16v-4"></path>
+            <path d="M12 8h.01"></path>
+        </svg>
+    </button>
+
     
     <div id="modal-login" class="modal-overlay" onclick="closeModalOnOverlay(event)">
         <div class="modal">
@@ -662,7 +673,48 @@
     </div>
 
     
-    <!-- PA Stats Modal removed - now using map popups -->
+    <!-- 5MP Manifest Modal -->
+    <div id="modal-manifest" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2 class="modal-title" style="display: flex; align-items: center; gap: 10px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        <path d="M2 12h20"></path>
+                    </svg>
+                    5 Megapixels of Global Conservation
+                </h2>
+                <button class="modal-close" onclick="closeModal('manifest')">×</button>
+            </div>
+            <div style="padding: 20px; font-size: 14px; line-height: 1.7; color: #c0c0c0;">
+                <p style="font-size: 16px; color: #fff; margin-bottom: 16px;"><strong>A transparent map of global conservation effort</strong></p>
+                
+                <p style="margin-bottom: 16px;">In 2017, the OECD estimated global biodiversity finance at USD 78-91 billion, while potentially harmful investments reached USD 500 billion. Despite this spending, we lack a comprehensive map of where conservation effort actually happens on the ground.</p>
+                
+                <p style="margin-bottom: 16px;">We have Google Earth and high-resolution satellite imagery, but no global map showing conservation coverage. Meanwhile, satellite timelapse reveals protected area boundaries being eroded since 2008, accelerating during the 6th mass extinction.</p>
+                
+                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">The 5MP Vision</h3>
+                <p style="margin-bottom: 16px;">With Earth's surface at 510 million km², dividing into 100 km² pixels gives us <strong>5.1 million pixels</strong> – the resolution of an average digital camera in 2010. We aim to create a transparent map showing conservation patrol coverage for each of these pixels.</p>
+                
+                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">How It Works</h3>
+                <ul style="margin-bottom: 16px; padding-left: 20px;">
+                    <li style="margin-bottom: 8px;">Rangers and conservation staff upload GPS patrol tracks</li>
+                    <li style="margin-bottom: 8px;">Tracks are aggregated into 10×10 km grid cells</li>
+                    <li style="margin-bottom: 8px;">Coverage intensity shows patrol density per pixel</li>
+                    <li style="margin-bottom: 8px;">Transparency ensures accountability and prevents double-counting</li>
+                </ul>
+                
+                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">Why This Matters</h3>
+                <p style="margin-bottom: 16px;">Before climate-driven increases in conservation finance, we need transparent reporting. This map reveals gaps, highlights effective coverage, and ensures resources reach where they're needed most.</p>
+                
+                <div style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 16px; margin-top: 20px;">
+                    <p style="color: #22c55e; font-weight: 600; margin-bottom: 8px;">Join the Initiative</p>
+                    <p style="margin: 0;">Upload your patrol data to contribute to the global conservation map. Every track helps build a complete picture of where conservation happens.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         const MAPTILER_KEY = 'dea58ea0389007e386776c4f583f4425';
