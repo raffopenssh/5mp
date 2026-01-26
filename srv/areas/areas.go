@@ -36,6 +36,7 @@ type ProtectedArea struct {
 	CountryCode string          `json:"country_code"`
 	WDPAID      string          `json:"wdpa_id,omitempty"`
 	AreaKm2     float64         `json:"area_km2,omitempty"`
+	Partner     string          `json:"partner,omitempty"`
 	Geometry    GeoJSONGeometry `json:"geometry"`
 	BufferKm    float64         `json:"buffer_km"`
 
@@ -200,6 +201,11 @@ func keystoneToArea(ks KeystonePA) ProtectedArea {
 	// Create circle polygon
 	geometry := createCirclePolygon(ks.Coordinates.Lat, ks.Coordinates.Lon, radiusKm)
 
+	partner := ""
+	if ks.Partner != nil {
+		partner = *ks.Partner
+	}
+
 	return ProtectedArea{
 		ID:          ks.ID,
 		Name:        ks.Name,
@@ -207,6 +213,7 @@ func keystoneToArea(ks KeystonePA) ProtectedArea {
 		CountryCode: ks.CountryCode,
 		WDPAID:      ks.WDPAID,
 		AreaKm2:     areaKm2,
+		Partner:     partner,
 		Geometry:    geometry,
 		BufferKm:    2.0, // Default buffer
 	}

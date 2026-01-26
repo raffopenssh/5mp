@@ -42,92 +42,128 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
-	// Parse query params
+	// Parse query params - support both year/month and from/to date range
 	yearStr := r.URL.Query().Get("year")
 	monthStr := r.URL.Query().Get("month")
+	fromStr := r.URL.Query().Get("from")
+	toStr := r.URL.Query().Get("to")
 
-	year := int64(time.Now().Year())
-	if yearStr != "" {
+	// If from/to provided, extract years to query
+	var years []int64
+	if fromStr != "" || toStr != "" {
+		now := time.Now()
+		fromYear := int64(now.Year() - 1)
+		toYear := int64(now.Year())
+		if fromStr != "" {
+			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
+				fromYear = int64(t.Year())
+			}
+		}
+		if toStr != "" {
+			if t, err := time.Parse("2006-01-02", toStr); err == nil {
+				toYear = int64(t.Year())
+			}
+		}
+		for y := fromYear; y <= toYear; y++ {
+			years = append(years, y)
+		}
+	} else if yearStr != "" {
 		if y, err := strconv.ParseInt(yearStr, 10, 64); err == nil {
-			year = y
+			years = []int64{y}
 		}
-	}
-
-	var rows []dbgen.GetEffortDataByYearRow
-	var rowsWithMonth []dbgen.GetEffortDataByYearMonthRow
-	var err error
-
-	if monthStr != "" {
-		month, parseErr := strconv.ParseInt(monthStr, 10, 64)
-		if parseErr != nil || month < 1 || month > 12 {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{"error": "invalid month parameter"})
-			return
-		}
-		rowsWithMonth, err = q.GetEffortDataByYearMonth(ctx, dbgen.GetEffortDataByYearMonthParams{
-			Year:  year,
-			Month: month,
-		})
 	} else {
-		rows, err = q.GetEffortDataByYear(ctx, year)
+		// Default to current year
+		years = []int64{int64(time.Now().Year())}
 	}
 
-	if err != nil {
-		slog.Error("failed to query effort data", "error", err)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "database error"})
-		return
-	}
+	// Aggregate data across all requested years
+	aggregated := make(map[string]*struct {
+		LatCenter     float64
+		LonCenter     float64
+		TotalDistance float64
+		TotalPoints   int64
+		UniqueUploads int64
+		MovementType  string
+	})
 
-	// Find max distance for normalization
-	var maxDistance float64
-	if monthStr != "" {
-		for _, row := range rowsWithMonth {
-			if row.TotalDistanceKm > maxDistance {
-				maxDistance = row.TotalDistanceKm
+	for _, year := range years {
+		var rows []dbgen.GetEffortDataByYearRow
+		var err error
+
+		if monthStr != "" {
+			month, parseErr := strconv.ParseInt(monthStr, 10, 64)
+			if parseErr != nil || month < 1 || month > 12 {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(map[string]string{"error": "invalid month parameter"})
+				return
+			}
+			monthRows, err := q.GetEffortDataByYearMonth(ctx, dbgen.GetEffortDataByYearMonthParams{
+				Year:  year,
+				Month: month,
+			})
+			if err != nil {
+				continue
+			}
+			// Convert to common row type
+			for _, r := range monthRows {
+				rows = append(rows, dbgen.GetEffortDataByYearRow{
+					GridCellID:     r.GridCellID,
+					LatCenter:      r.LatCenter,
+					LonCenter:      r.LonCenter,
+					TotalDistanceKm: r.TotalDistanceKm,
+					TotalPoints:    r.TotalPoints,
+					UniqueUploads:  r.UniqueUploads,
+					MovementType:   r.MovementType,
+				})
+			}
+		} else {
+			rows, err = q.GetEffortDataByYear(ctx, year)
+			if err != nil {
+				continue
 			}
 		}
-	} else {
+
 		for _, row := range rows {
-			if row.TotalDistanceKm > maxDistance {
-				maxDistance = row.TotalDistanceKm
+			if agg, exists := aggregated[row.GridCellID]; exists {
+				agg.TotalDistance += row.TotalDistanceKm
+				agg.TotalPoints += row.TotalPoints
+				agg.UniqueUploads += row.UniqueUploads
+			} else {
+				aggregated[row.GridCellID] = &struct {
+					LatCenter     float64
+					LonCenter     float64
+					TotalDistance float64
+					TotalPoints   int64
+					UniqueUploads int64
+					MovementType  string
+				}{
+					LatCenter:     row.LatCenter,
+					LonCenter:     row.LonCenter,
+					TotalDistance: row.TotalDistanceKm,
+					TotalPoints:   row.TotalPoints,
+					UniqueUploads: row.UniqueUploads,
+					MovementType:  row.MovementType,
+				}
 			}
 		}
 	}
 
-	// Build GeoJSON features
-	features := make([]GeoJSONFeature, 0)
+	// Build GeoJSON features from aggregated data
+	features := make([]GeoJSONFeature, 0, len(aggregated))
 
-	if monthStr != "" {
-		for _, row := range rowsWithMonth {
-			feature := buildGridFeature(
-				row.GridCellID,
-				row.LatCenter,
-				row.LonCenter,
-				row.TotalDistanceKm,
-				row.TotalPoints,
-				row.UniqueUploads,
-				row.MovementType,
-				maxDistance,
-			)
-			features = append(features, feature)
-		}
-	} else {
-		for _, row := range rows {
-			feature := buildGridFeature(
-				row.GridCellID,
-				row.LatCenter,
-				row.LonCenter,
-				row.TotalDistanceKm,
-				row.TotalPoints,
-				row.UniqueUploads,
-				row.MovementType,
-				maxDistance,
-			)
-			features = append(features, feature)
-		}
+	for gridCellID, agg := range aggregated {
+		feature := buildGridFeature(
+			gridCellID,
+			agg.LatCenter,
+			agg.LonCenter,
+			agg.TotalDistance,
+			agg.TotalPoints,
+			agg.UniqueUploads,
+			agg.MovementType,
+			80.0, // maxDistance not used anymore - intensity based on coverage
+		)
+		features = append(features, feature)
 	}
 
 	fc := GeoJSONFeatureCollection{
