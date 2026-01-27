@@ -1,83 +1,76 @@
-# Continuation Instructions for Shelley
+# Continuation Instructions
 
 ## Current State (2026-01-27)
 
-### Completed
-1. **Fire Group Detection Algorithm** (`scripts/fire_group_detection.py`)
-   - DBSCAN clustering for daily fire clusters
-   - Trajectory linking across days
-   - Classification: transhumance, herder_local, management, village
+### Fire Group Infraction Analysis - COMPLETED
 
-2. **Enhanced Fire Analysis** (`scripts/fire_analysis_enhanced.py`)
-   - Infraction detection (fires inside PA boundary using shapely)
-   - Fire front latitude tracking by week/month
-   - Monthly infraction statistics
-   - Verified against Chinko 2023: 12,913 infractions, Feb 15 peak (969)
+New analysis in `scripts/analyze_group_infractions.py`:
 
-3. **Park Analysis Page** (`/park/{id}`)
-   - Interactive map with fire visualization
-   - Fire statistics by year
-   - Monthly chart
-   - Roadless area placeholder
-   - Map layers toggle
+**Key Metrics:**
+- `days_burning_inside`: How long fires detected inside PA
+- `groups_transited`: Groups that passed through PA, continued burning outside (NO staff contact)
+- `groups_stopped_inside`: Fires stopped inside PA (possible staff contact/intervention)
+- Full trajectory: origin → entry → inside → exit → destination
+- Cross-border tracking with 300km buffer
 
-4. **Fire Analysis Background Job** (`scripts/fire_analysis_job.py`)
-   - 77 parks analyzed with 231 year-records
-   - Results stored in `park_fire_analysis` table
+**Interpretation:**
+- `STOPPED_INSIDE` = Good sign - rangers may have contacted the group
+- `TRANSITED` = Bad sign - group burned through PA with no intervention
+- Compare parks on these metrics for management effectiveness
 
-5. **Repo Cleanup**
-   - Removed .venv, binaries, database files from git
-   - Comprehensive .gitignore
-
-### Fire Analysis Key Metrics (Chinko 2023)
-- Total fires in bbox: 46,559
-- Infractions (inside PA): 12,913 (27.9%)
-- Peak day: Feb 15 with 969 fires
-- February highest infraction rate: 58.5%
-- Net southward movement: 35.9 km
-
-### TODO - Remaining Tasks
-
-1. **OSM Roads Integration**
-   - Implement Overpass API query in `HandleParkRoads`
-   - Calculate roadless percentage (area >1km from roads)
-   - Store results in database
-   - Reference paper: "A global map of roadless areas and their conservation status"
-
-2. **Fire Animation Enhancement**
-   - Add daily fire layer to park_analysis.html
-   - Animate fire detections over time
-   - Color by infraction (red) vs buffer (orange)
-
-3. **Update Fire Analysis Job**
-   - Run `fire_analysis_enhanced.py` to populate infraction data
-   - Migration 007 adds infraction columns
-
-### API Endpoints Available
-```
-GET /park/{id}                    - Park analysis page
-GET /api/park/{id}/fire-analysis  - Fire analysis JSON
-GET /api/park/{id}/boundary       - Park boundary GeoJSON
-GET /api/park/{id}/roads          - Road data (placeholder)
-```
-
-### NASA FIRMS API
-- API Key: `d20648f156456e42dacd1e5bf48a64c0`
-- VM may not reach NASA servers - use cached data
-- Fire data in `data/fire/viirs-jpss1_2023_Central_African_Republic.csv`
-
-### Key Files
-- `scripts/fire_analysis_enhanced.py` - Infraction detection
-- `scripts/fire_group_detection.py` - Movement pattern analysis
-- `srv/park_analysis.go` - Park analysis handlers
-- `srv/templates/park_analysis.html` - Interactive park view
-- `db/migrations/007-fire-infractions.sql` - New infraction columns
+**Sample Results (Chinko 2023):**
+- 18 groups entered PA
+- 12 stopped inside (67%) - potential ranger contact
+- 6 transited (33%) - no intervention
+- Avg 9.9 days burning inside
 
 ### Database Tables
-- `park_fire_analysis` - Fire analysis results per park/year
-- `fire_detections` - Individual fire points (schema ready)
-- `fire_daily_grid` - Aggregated per grid cell per day
+
+```sql
+-- Group-based trajectory analysis
+park_group_infractions:
+  - total_groups, transhumance_groups, herder_groups
+  - avg_days_burning, median_days_burning, max_days_burning
+  - groups_transited, groups_stopped_inside, groups_stopped_after
+  - trajectories_json (full trajectory data with origin/dest)
+
+-- Simple fire count analysis  
+park_fire_analysis:
+  - total_fires, dry_season_fires
+  - total_infractions, infraction_rate
+  - monthly_stats_json
+```
+
+### Fire Data Available
+
+Downloaded 2022-2024 for African countries in `data/fire/viirs-jpss1/{year}/`
+- Tanzania, Kenya, Ethiopia, Zambia, Zimbabwe, Mozambique
+- Botswana, Namibia, South Africa, CAR, DRC, Angola
+- Cameroon, Chad, Uganda, Rwanda, Gabon
+
+### TODO
+
+1. **Run full analysis** - Currently only 10 park-years done
+   ```bash
+   python3 scripts/analyze_group_infractions.py  # Takes ~10 min
+   ```
+
+2. **Add to park modal** - Show group infraction stats in globe.html popup
+   - Groups entered this year
+   - % that stopped inside (response rate)
+   - Avg days burning inside
+
+3. **OSM Roads / Roadless** - Not started
+   - Use Overpass API to fetch roads
+   - Calculate % area >1km from roads
+
+4. **Keep park_analysis.html** but make it match globe.html style
+   - Or just enhance the park modal with expandable details
+
+### Key Files
+- `scripts/analyze_group_infractions.py` - Group trajectory analysis
+- `scripts/fire_group_detection.py` - DBSCAN clustering + trajectory linking
+- `scripts/update_fire_infractions.py` - Simple fire count analysis
 
 ### Git
-- Repo: https://github.com/raffopenssh/5mp.git
-- Always commit and push before ending session
+Push before ending: `git push origin main`
