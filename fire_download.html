@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NASA FIRMS Fire Data Downloads</title>
+    <style>
+        body { font-family: system-ui; max-width: 800px; margin: 40px auto; padding: 20px; background: #1a1a2e; color: #eee; }
+        h1 { color: #ff6b35; }
+        h2 { color: #f7c873; margin-top: 30px; }
+        a { color: #4da6ff; }
+        .note { background: #2a2a4a; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        code { background: #0f0f23; padding: 2px 6px; border-radius: 3px; }
+        ul { line-height: 2; }
+    </style>
+</head>
+<body>
+    <h1>🔥 NASA FIRMS Fire Data Downloads</h1>
+    
+    <div class="note">
+        <strong>Note:</strong> This server cannot reach NASA directly. Click these links to download in your browser, then upload the files here.
+    </div>
+
+    <h2>API Data Downloads</h2>
+    <p>MAP_KEY: <code>d20648f156456e42dacd1e5bf48a64c0</code></p>
+    
+    <h3>Recent Fire Data (CSV)</h3>
+    <ul>
+        <li><a href="https://firms.modaps.eosdis.nasa.gov/api/area/csv/d20648f156456e42dacd1e5bf48a64c0/VIIRS_NOAA20_NRT/-180,-90,180,90/1" target="_blank">World - VIIRS NOAA20 - Last 24h</a></li>
+        <li><a href="https://firms.modaps.eosdis.nasa.gov/api/area/csv/d20648f156456e42dacd1e5bf48a64c0/VIIRS_SNPP_NRT/-180,-90,180,90/1" target="_blank">World - VIIRS SNPP - Last 24h</a></li>
+        <li><a href="https://firms.modaps.eosdis.nasa.gov/api/area/csv/d20648f156456e42dacd1e5bf48a64c0/MODIS_NRT/-180,-90,180,90/1" target="_blank">World - MODIS - Last 24h</a></li>
+        <li><a href="https://firms.modaps.eosdis.nasa.gov/api/country/csv/d20648f156456e42dacd1e5bf48a64c0/VIIRS_NOAA20_NRT/USA/1" target="_blank">USA - VIIRS NOAA20 - Last 24h</a></li>
+    </ul>
+
+    <h3>Custom Query Builder</h3>
+    <p>Format: <code>https://firms.modaps.eosdis.nasa.gov/api/area/csv/{MAP_KEY}/{SOURCE}/{west,south,east,north}/{days}/{date}</code></p>
+    <p>Example: <a href="https://firms.modaps.eosdis.nasa.gov/api/area/csv/d20648f156456e42dacd1e5bf48a64c0/VIIRS_NOAA20_SP/1,1,2,2/3/2025-01-02" target="_blank">Small test area - 3 days from Jan 2, 2025</a></p>
+
+    <h2>Archive Downloads (Last 2 Weeks)</h2>
+    <ul>
+        <li><a href="https://nrt3.modaps.eosdis.nasa.gov/archive/FIRMS" target="_blank">FIRMS Archive Browser</a></li>
+        <li><a href="https://nrt3.modaps.eosdis.nasa.gov/archive/FIRMS/viirs/" target="_blank">VIIRS Data Archive</a></li>
+        <li><a href="https://nrt3.modaps.eosdis.nasa.gov/archive/FIRMS/modis/" target="_blank">MODIS Data Archive</a></li>
+    </ul>
+
+    <h2>Bulk Downloads (Historical)</h2>
+    <ul>
+        <li><a href="https://firms.modaps.eosdis.nasa.gov/data/country/zips/" target="_blank">Country-level ZIP archives</a></li>
+    </ul>
+
+    <h2>Data Sources</h2>
+    <ul>
+        <li><code>VIIRS_NOAA20_NRT</code> - VIIRS on NOAA-20 (Near Real-Time)</li>
+        <li><code>VIIRS_NOAA21_NRT</code> - VIIRS on NOAA-21 (Near Real-Time)</li>
+        <li><code>VIIRS_SNPP_NRT</code> - VIIRS on Suomi NPP (Near Real-Time)</li>
+        <li><code>MODIS_NRT</code> - MODIS (Near Real-Time)</li>
+        <li><code>VIIRS_NOAA20_SP</code> - VIIRS on NOAA-20 (Standard Processing)</li>
+    </ul>
+</body>
+</html>

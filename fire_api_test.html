@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NASA FIRMS Fire Data API Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        h1 { color: #ff6b35; }
+        h2 { color: #f7c873; margin-top: 30px; }
+        .test-section {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        button {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #e55a2b; }
+        button:disabled { background: #666; cursor: not-allowed; }
+        pre {
+            background: #0f0f23;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #1d4e1d; }
+        .error { background: #4e1d1d; }
+        .loading { background: #4e4e1d; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+        th { background: #2a2a4a; }
+        .map-container {
+            width: 100%;
+            height: 400px;
+            background: #0f0f23;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .map-container img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 NASA FIRMS Fire Data API Test</h1>
+    <p>Testing API access with MAP_KEY: <code>d20648f156456e42dacd1e5bf48a64c0</code></p>
+
+    <div class="test-section">
+        <h2>1. MAP_KEY Status</h2>
+        <button onclick="testMapKeyStatus()">Check Status</button>
+        <div id="mapkey-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Data Availability</h2>
+        <button onclick="testDataAvailability()">Check Available Data</button>
+        <div id="availability-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Countries List</h2>
+        <button onclick="testCountries()">Get Countries</button>
+        <div id="countries-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Fire Data (CSV) - USA Last 24h</h2>
+        <button onclick="testFireDataUSA()">Get USA Fires</button>
+        <button onclick="testFireDataWorld()">Get World Fires (24h)</button>
+        <div id="firedata-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Fire Data by Area (California Region)</h2>
+        <button onclick="testAreaData()">Get California Area Fires</button>
+        <div id="area-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. WMS Map Image</h2>
+        <p>Fetching fire map tiles via WMS (last 24h fires, world view)</p>
+        <button onclick="testWMSMap()">Load Fire Map</button>
+        <div id="wms-result"></div>
+        <div class="map-container" id="map-container">
+            <span>Click button to load map</span>
+        </div>
+    </div>
+
+    <script>
+        const MAP_KEY = 'd20648f156456e42dacd1e5bf48a64c0';
+        const BASE_URL = 'https://firms.modaps.eosdis.nasa.gov';
+
+        function showStatus(elementId, message, type) {
+            document.getElementById(elementId).innerHTML = 
+                `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showResult(elementId, content) {
+            document.getElementById(elementId).innerHTML = content;
+        }
+
+        async function testMapKeyStatus() {
+            const resultId = 'mapkey-result';
+            showStatus(resultId, 'Loading...', 'loading');
+            try {
+                const url = `${BASE_URL}/mapserver/mapkey_status/?MAP_KEY=${MAP_KEY}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                showResult(resultId, `
+                    <div class="status success">✅ MAP_KEY is valid!</div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `);
+            } catch (error) {
+                showResult(resultId, `
+                    <div class="status error">❌ Error: ${error.message}</div>
+                `);
+            }
+        }
+
+        async function testDataAvailability() {
+            const resultId = 'availability-result';
+            showStatus(resultId, 'Loading...', 'loading');
+            try {
+                const url = `${BASE_URL}/api/data_availability/csv/${MAP_KEY}/all`;
+                const response = await fetch(url);
+                const text = await response.text();
+                const lines = text.trim().split('\n');
+                const headers = lines[0].split(',');
+                let tableHtml = '<table><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+                for (let i = 1; i < Math.min(lines.length, 15); i++) {
+                    const cols = lines[i].split(',');
+                    tableHtml += '<tr>' + cols.map(c => `<td>${c}</td>`).join('') + '</tr>';
+                }
+                tableHtml += '</table>';
+                showResult(resultId, `
+                    <div class="status success">✅ Got ${lines.length - 1} datasets</div>
+                    ${tableHtml}
+                `);
+            } catch (error) {
+                showResult(resultId, `
+                    <div class="status error">❌ Error: ${error.message}</div>
+                `);
+            }
+        }
+
+        async function testCountries() {
+            const resultId = 'countries-result';
+            showStatus(resultId, 'Loading...', 'loading');
+            try {
+                const url = `${BASE_URL}/api/countries/?format=json`;
+                const response = await fetch(url);
+                const data = await response.json();
+                showResult(resultId, `
+                    <div class="status success">✅ Got ${data.length} countries</div>
+                    <pre>${JSON.stringify(data.slice(0, 20), null, 2)}...</pre>
+                `);
+            } catch (error) {
+                showResult(resultId, `
+                    <div class="status error">❌ Error: ${error.message}</div>
+                `);
+            }
+        }
+
+        async function testFireDataUSA() {
+            const resultId = 'firedata-result';
+            showStatus(resultId, 'Loading USA fire data...', 'loading');
+            try {
+                // VIIRS_SNPP_NRT for near-real-time data
+                const url = `${BASE_URL}/api/country/csv/${MAP_KEY}/VIIRS_SNPP_NRT/USA/1`;
+                const response = await fetch(url);
+                const text = await response.text();
+                const lines = text.trim().split('\n');
+                
+                if (lines.length > 1) {
+                    const headers = lines[0].split(',');
+                    let tableHtml = '<table><tr>' + headers.slice(0, 8).map(h => `<th>${h}</th>`).join('') + '</tr>';
+                    for (let i = 1; i < Math.min(lines.length, 11); i++) {
+                        const cols = lines[i].split(',');
+                        tableHtml += '<tr>' + cols.slice(0, 8).map(c => `<td>${c}</td>`).join('') + '</tr>';
+                    }
+                    tableHtml += '</table>';
+                    showResult(resultId, `
+                        <div class="status success">✅ Got ${lines.length - 1} fire detections in USA (last 24h)</div>
+                        ${tableHtml}
+                        <details><summary>Raw CSV (first 20 lines)</summary><pre>${lines.slice(0, 20).join('\n')}</pre></details>
+                    `);
+                } else {
+                    showResult(resultId, `
+                        <div class="status success">✅ No fires detected in USA in last 24h</div>
+                    `);
+                }
+            } catch (error) {
+                showResult(resultId, `
+                    <div class="status error">❌ Error: ${error.message}</div>
+                `);
+            }
+        }
+
+        async function testFireDataWorld() {
+            const resultId = 'firedata-result';
+            showStatus(resultId, 'Loading world fire data...', 'loading');
+            try {
+                const url = `${BASE_URL}/api/area/csv/${MAP_KEY}/VIIRS_SNPP_NRT/-180,-90,180,90/1`;
+                const response = await fetch(url);
+                const text = await response.text();
+                const lines = text.trim().split('\n');
+                
+                if (lines.length > 1) {
+                    const headers = lines[0].split(',');
+                    let tableHtml = '<table><tr>' + headers.slice(0, 8).map(h => `<th>${h}</th>`).join('') + '</tr>';
+                    for (let i = 1; i < Math.min(lines.length, 11); i++) {
+                        const cols = lines[i].split(',');
+                        tableHtml += '<tr>' + cols.slice(0, 8).map(c => `<td>${c}</td>`).join('') + '</tr>';
+                    }
+                    tableHtml += '</table>';
+                    showResult(resultId, `
+                        <div class="status success">✅ Got ${lines.length - 1} fire detections worldwide (last 24h)</div>
+                        ${tableHtml}
+                    `);
+                } else {
+                    showResult(resultId, `
+                        <div class="status success">✅ No fires detected worldwide (unlikely - check API)</div>
+                    `);
+                }
+            } catch (error) {
+                showResult(resultId, `
+                    <div class="status error">❌ Error: ${error.message}</div>
+                `);
+            }
+        }
+
+        async function testAreaData() {
+            const resultId = 'area-result';
+            showStatus(resultId, 'Loading California area data...', 'loading');
+            try {
+                // California bounding box: west,south,east,north
+                const url = `${BASE_URL}/api/area/csv/${MAP_KEY}/VIIRS_SNPP_NRT/-124,32,-114,42/1`;
+                const response = await fetch(url);
+                const text = await response.text();
+                const lines = text.trim().split('\n');
+                
+                if (lines.length > 1) {
+                    const headers = lines[0].split(',');
+                    let tableHtml = '<table><tr>' + headers.slice(0, 8).map(h => `<th>${h}</th>`).join('') + '</tr>';
+                    for (let i = 1; i < Math.min(lines.length, 11); i++) {
+                        const cols = lines[i].split(',');
+                        tableHtml += '<tr>' + cols.slice(0, 8).map(c => `<td>${c}</td>`).join('') + '</tr>';
+                    }
+                    tableHtml += '</table>';
+                    showResult(resultId, `
+                        <div class="status success">✅ Got ${lines.length - 1} fire detections in California region (last 24h)</div>
+                        ${tableHtml}
+                    `);
+                } else {
+                    showResult(resultId, `
+                        <div class="status success">✅ No fires detected in California region in last 24h</div>
+                    `);
+                }
+            } catch (error) {
+                showResult(resultId, `
+                    <div class="status error">❌ Error: ${error.message}</div>
+                `);
+            }
+        }
+
+        function testWMSMap() {
+            const resultId = 'wms-result';
+            showStatus(resultId, 'Loading WMS map...', 'loading');
+            
+            // WMS GetMap request for fire layer
+            const wmsUrl = `${BASE_URL}/mapserver/wms/fires/${MAP_KEY}/?` + new URLSearchParams({
+                service: 'WMS',
+                request: 'GetMap',
+                version: '1.1.1',
+                layers: 'fires_viirs_snpp_24',
+                styles: '',
+                srs: 'EPSG:4326',
+                bbox: '-180,-90,180,90',
+                width: '800',
+                height: '400',
+                format: 'image/png',
+                transparent: 'true'
+            });
+
+            const img = new Image();
+            img.onload = () => {
+                document.getElementById('map-container').innerHTML = '';
+                document.getElementById('map-container').appendChild(img);
+                showResult(resultId, `
+                    <div class="status success">✅ WMS map loaded successfully</div>
+                    <p><small>URL: ${wmsUrl}</small></p>
+                `);
+            };
+            img.onerror = () => {
+                showResult(resultId, `
+                    <div class="status error">❌ Failed to load WMS map image</div>
+                    <p><small>URL: ${wmsUrl}</small></p>
+                `);
+            };
+            img.src = wmsUrl;
+        }
+    </script>
+</body>
+</html>
