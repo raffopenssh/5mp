@@ -1,0 +1,4 @@
+# Large fire data files - download separately
+data/fire/*.csv
+data/fire/*.zip
+data/fire/viirs-jpss1/
