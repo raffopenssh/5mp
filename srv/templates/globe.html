@@ -131,6 +131,20 @@
         @keyframes toastFadeIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         @keyframes toastFadeOut { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(20px); } }
 
+        /* Upload success toast - clickable */
+        .upload-toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(34, 197, 94, 0.95); color: white; padding: 14px 20px; border-radius: 10px; font-size: 14px; z-index: 9999; box-shadow: 0 4px 20px rgba(0,0,0,0.3); animation: toastFadeIn 0.3s ease; cursor: pointer; display: flex; align-items: center; gap: 12px; max-width: 90vw; }
+        .upload-toast:hover { background: rgba(34, 197, 94, 1); transform: translateX(-50%) scale(1.02); }
+        .upload-toast-icon { font-size: 20px; }
+        .upload-toast-content { flex: 1; }
+        .upload-toast-title { font-weight: 600; margin-bottom: 2px; }
+        .upload-toast-subtitle { font-size: 12px; opacity: 0.9; }
+        .upload-toast-action { background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+        .upload-toast-close { position: absolute; top: 6px; right: 8px; background: none; border: none; color: rgba(255,255,255,0.7); font-size: 16px; cursor: pointer; padding: 2px 6px; line-height: 1; }
+        .upload-toast-close:hover { color: white; }
+
+        /* Upload highlight layer */
+        @keyframes uploadHighlightPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.5; } }
+
         @media (max-width: 768px) {
             .notification-dropdown { left: auto; right: -10px; width: calc(100vw - 40px); max-width: 300px; }
         }
@@ -712,6 +726,38 @@
                     <p style="color: #22c55e; font-weight: 600; margin-bottom: 8px;">Join the Initiative</p>
                     <p style="margin: 0;">Upload your patrol data to contribute to the global conservation map. Every track helps build a complete picture of where conservation happens.</p>
                 </div>
+
+                <h3 style="color: #22c55e; margin: 28px 0 16px; font-size: 16px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 24px;">Methodology</h3>
+
+                <h4 style="color: #fff; margin: 16px 0 8px; font-size: 14px;">🥾 Patrol Effort Intensity</h4>
+                <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px;">
+                    <li style="margin-bottom: 6px;">10×10 km grid cells (0.1° × 0.1°)</li>
+                    <li style="margin-bottom: 6px;">Intensity = spatial coverage: % of 1 km subcells visited</li>
+                    <li style="margin-bottom: 6px;">Color gradient: low coverage → full intensity (>80%)</li>
+                    <li style="margin-bottom: 6px;">Data source: uploaded GPX patrol tracks</li>
+                </ul>
+
+                <h4 style="color: #fff; margin: 16px 0 8px; font-size: 14px;">🔥 Fire Analysis</h4>
+                <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px;">
+                    <li style="margin-bottom: 6px;">NASA VIIRS satellite fire detections</li>
+                    <li style="margin-bottom: 6px;">Group tracking: DBSCAN clustering (15 km radius) + trajectory linking</li>
+                    <li style="margin-bottom: 6px;">Infraction detection: fires inside PA boundaries</li>
+                    <li style="margin-bottom: 6px;">Response metrics: groups stopped inside (possible ranger contact) vs transited through</li>
+                </ul>
+
+                <h4 style="color: #888; margin: 16px 0 8px; font-size: 14px;">🛤️ Roadless Areas <span style="font-size: 11px; background: #333; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">coming soon</span></h4>
+                <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px; color: #888;">
+                    <li style="margin-bottom: 6px;">OpenStreetMap road data</li>
+                    <li style="margin-bottom: 6px;">Roadless = area >1 km from any road</li>
+                    <li style="margin-bottom: 6px;">Based on: "A global map of roadless areas and their conservation status" (Science, 2016)</li>
+                </ul>
+
+                <h4 style="color: #888; margin: 16px 0 8px; font-size: 14px;">🏘️ Human Settlement (GHSL) <span style="font-size: 11px; background: #333; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">coming soon</span></h4>
+                <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px; color: #888;">
+                    <li style="margin-bottom: 6px;">Global Human Settlement Layer (EU JRC)</li>
+                    <li style="margin-bottom: 6px;">Built-up surface area within/near PA</li>
+                    <li style="margin-bottom: 6px;">Population estimates at 100 m resolution</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -1121,7 +1167,7 @@
             
             const formData = new FormData();
             for (let file of fileInput.files) {
-                formData.append('files', file);
+                formData.append('gpx', file);
             }
             
             try {
@@ -1130,12 +1176,228 @@
                     const text = await res.text();
                     throw new Error(text || 'Upload failed');
                 }
+                const result = await res.json();
                 closeModal('upload');
                 
                 reloadGridData();
                 loadStats();
-                alert('Upload successful! ' + fileInput.files.length + ' file(s) processed.');
+                
+                // Collect all grid cells and date range from segments
+                const allGridCells = [];
+                let minDate = null, maxDate = null;
+                if (result.segments && result.segments.length > 0) {
+                    for (const seg of result.segments) {
+                        if (seg.grid_cells) {
+                            allGridCells.push(...seg.grid_cells);
+                        }
+                        if (seg.start_time) {
+                            const d = new Date(seg.start_time);
+                            if (!minDate || d < minDate) minDate = d;
+                        }
+                        if (seg.end_time) {
+                            const d = new Date(seg.end_time);
+                            if (!maxDate || d > maxDate) maxDate = d;
+                        }
+                    }
+                }
+                const uniqueGridCells = [...new Set(allGridCells)];
+                const dateRange = (minDate && maxDate) ? { start: minDate, end: maxDate } : null;
+                
+                // Store upload info for later use
+                const uploadInfo = {
+                    gridCells: uniqueGridCells,
+                    dateRange: dateRange,
+                    filesProcessed: result.files_processed || fileInput.files.length,
+                    totalDistance: result.total_distance_km || 0,
+                    timestamp: Date.now()
+                };
+                sessionStorage.setItem('lastUpload', JSON.stringify(uploadInfo));
+                
+                // Show clickable toast
+                showUploadToast(uploadInfo);
             } catch (err) { showError('upload', err.message); }
+        }
+
+        // Show clickable upload success toast
+        function showUploadToast(uploadInfo) {
+            // Remove any existing upload toast
+            const existing = document.querySelector('.upload-toast');
+            if (existing) existing.remove();
+            
+            const distanceText = uploadInfo.totalDistance > 0 
+                ? formatNumber(uploadInfo.totalDistance, 1) + ' km'
+                : '';
+            const pixelCount = uploadInfo.gridCells.length;
+            const subtitle = [distanceText, pixelCount + ' pixel' + (pixelCount !== 1 ? 's' : '')].filter(Boolean).join(' • ');
+            
+            const toast = document.createElement('div');
+            toast.className = 'upload-toast';
+            toast.innerHTML = `
+                <div class="upload-toast-icon">✓</div>
+                <div class="upload-toast-content">
+                    <div class="upload-toast-title">Upload successful!</div>
+                    <div class="upload-toast-subtitle">${subtitle}</div>
+                </div>
+                <div class="upload-toast-action">View on map →</div>
+                <button class="upload-toast-close" onclick="event.stopPropagation(); this.parentElement.remove();">&times;</button>
+            `;
+            
+            toast.addEventListener('click', () => {
+                toast.remove();
+                highlightUploadedPixels(uploadInfo.gridCells, uploadInfo.dateRange);
+            });
+            
+            document.body.appendChild(toast);
+            
+            // Auto-dismiss after 15 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.animation = 'toastFadeOut 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 15000);
+        }
+
+        // Highlight uploaded pixels on the map
+        let uploadHighlightSource = null;
+        let uploadHighlightTimeout = null;
+        
+        function highlightUploadedPixels(gridCellIds, dateRange) {
+            if (!gridCellIds || gridCellIds.length === 0) {
+                showToast('No grid cells to highlight', 'info');
+                return;
+            }
+            
+            // Parse grid cell IDs to get bounds (format: "lat_lon" like "-2.3_34.8")
+            const coords = gridCellIds.map(id => {
+                const parts = id.split('_');
+                if (parts.length === 2) {
+                    const lat = parseFloat(parts[0]);
+                    const lon = parseFloat(parts[1]);
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        return { lat, lon };
+                    }
+                }
+                return null;
+            }).filter(Boolean);
+            
+            if (coords.length === 0) {
+                showToast('Could not parse grid cell coordinates', 'info');
+                return;
+            }
+            
+            // Calculate bounds with padding (grid cells are 0.1 degrees)
+            const cellSize = 0.1;
+            const padding = 0.1; // Extra padding around bounds
+            let minLat = Infinity, maxLat = -Infinity, minLon = Infinity, maxLon = -Infinity;
+            coords.forEach(c => {
+                minLat = Math.min(minLat, c.lat);
+                maxLat = Math.max(maxLat, c.lat + cellSize);
+                minLon = Math.min(minLon, c.lon);
+                maxLon = Math.max(maxLon, c.lon + cellSize);
+            });
+            
+            // Create GeoJSON for highlight layer
+            const features = coords.map(c => ({
+                type: 'Feature',
+                properties: { highlighted: true },
+                geometry: {
+                    type: 'Point',
+                    coordinates: [c.lon + cellSize/2, c.lat + cellSize/2]
+                }
+            }));
+            const highlightGeoJSON = { type: 'FeatureCollection', features };
+            
+            // Add or update highlight source/layer
+            if (map.getSource('upload-highlight')) {
+                map.getSource('upload-highlight').setData(highlightGeoJSON);
+            } else {
+                map.addSource('upload-highlight', {
+                    type: 'geojson',
+                    data: highlightGeoJSON
+                });
+                
+                // Add pulsing highlight layer
+                map.addLayer({
+                    id: 'upload-highlight-pulse',
+                    type: 'circle',
+                    source: 'upload-highlight',
+                    paint: {
+                        'circle-radius': [
+                            'interpolate', ['exponential', 2], ['zoom'],
+                            4, 8,
+                            6, 16,
+                            8, 40,
+                            10, 80,
+                            12, 200
+                        ],
+                        'circle-color': '#fbbf24',
+                        'circle-opacity': 0.4,
+                        'circle-blur': 0.8
+                    }
+                });
+                
+                // Add ring highlight layer
+                map.addLayer({
+                    id: 'upload-highlight-ring',
+                    type: 'circle',
+                    source: 'upload-highlight',
+                    paint: {
+                        'circle-radius': [
+                            'interpolate', ['exponential', 2], ['zoom'],
+                            4, 4,
+                            6, 10,
+                            8, 25,
+                            10, 50,
+                            12, 120
+                        ],
+                        'circle-color': 'transparent',
+                        'circle-stroke-width': 3,
+                        'circle-stroke-color': '#fbbf24'
+                    }
+                });
+            }
+            
+            // Fit bounds with animation
+            const bounds = [[minLon - padding, minLat - padding], [maxLon + padding, maxLat + padding]];
+            map.fitBounds(bounds, {
+                padding: { top: 100, bottom: 150, left: 50, right: 50 },
+                maxZoom: 12,
+                duration: 1500
+            });
+            
+            // Update time slider if date range provided
+            if (dateRange && dateRange.start && dateRange.end) {
+                setTimeSliderRange(dateRange.start, dateRange.end);
+            }
+            
+            // Clear previous timeout
+            if (uploadHighlightTimeout) {
+                clearTimeout(uploadHighlightTimeout);
+            }
+            
+            // Auto-remove highlight after 20 seconds
+            uploadHighlightTimeout = setTimeout(() => {
+                removeUploadHighlight();
+            }, 20000);
+            
+            showToast('Showing ' + gridCellIds.length + ' uploaded pixel' + (gridCellIds.length !== 1 ? 's' : ''), 'success');
+        }
+        
+        function removeUploadHighlight() {
+            if (map.getLayer('upload-highlight-pulse')) {
+                map.removeLayer('upload-highlight-pulse');
+            }
+            if (map.getLayer('upload-highlight-ring')) {
+                map.removeLayer('upload-highlight-ring');
+            }
+            if (map.getSource('upload-highlight')) {
+                map.removeSource('upload-highlight');
+            }
+            if (uploadHighlightTimeout) {
+                clearTimeout(uploadHighlightTimeout);
+                uploadHighlightTimeout = null;
+            }
         }
 
         document.addEventListener('keydown', (e) => {
@@ -2251,7 +2513,16 @@
                             <div class="pa-popup-stat-label">Research</div>
                             <div class="pa-popup-stat-value" id="pub-count-${paId}" style="cursor: pointer" onclick="showPublications('${paId}', '${escapeHtml(name)}')">...</div>
                         </div>
+                        <div class="pa-popup-stat">
+                            <div class="pa-popup-stat-label">🔥 Fire Groups</div>
+                            <div class="pa-popup-stat-value muted" id="fire-groups-${paId}">...</div>
+                        </div>
+                        <div class="pa-popup-stat">
+                            <div class="pa-popup-stat-label">Response Rate</div>
+                            <div class="pa-popup-stat-value muted" id="response-rate-${paId}">...</div>
+                        </div>
                     </div>
+                    <div class="pa-popup-footer" id="data-status-${paId}" style="font-size: 9px; color: #555; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);"></div>
                     <div class="pa-popup-actions">
                         <button class="pa-popup-btn${isSelected ? ' selected' : ''}" onclick="toggleParkSelection('${escapeHtml(wdpaId || name)}', '${escapeHtml(name)}', ${JSON.stringify(props.bbox || null).replace(/"/g, "'")}, ${JSON.stringify(props.center || (lngLat ? [lngLat.lng, lngLat.lat] : null)).replace(/"/g, "'")})">
                             <svg viewBox="0 0 24 24" fill="${isSelected ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
@@ -2276,9 +2547,65 @@
                 .setHTML(popupContent)
                 .addTo(map);
             
-            // Fetch publication count
+            // Fetch publication count and other data
             if (paId) {
                 fetchPublicationCount(paId);
+                fetchFireStats(paId);
+                fetchDataStatus(paId);
+            }
+        }
+        
+        async function fetchFireStats(paId) {
+            try {
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/infractions?year=2023`);
+                const data = await resp.json();
+                const groupsEl = document.getElementById(`fire-groups-${paId}`);
+                const rateEl = document.getElementById(`response-rate-${paId}`);
+                
+                if (groupsEl) {
+                    if (data.total_groups > 0) {
+                        groupsEl.textContent = `${data.total_groups} (2023)`;
+                        groupsEl.classList.remove('muted');
+                        groupsEl.style.color = data.total_groups > 10 ? '#ef4444' : '#f97316';
+                    } else {
+                        groupsEl.textContent = '--';
+                    }
+                }
+                if (rateEl) {
+                    if (data.total_groups > 0) {
+                        const rate = Math.round(data.response_rate);
+                        rateEl.textContent = `${rate}%`;
+                        rateEl.classList.remove('muted');
+                        rateEl.style.color = rate >= 60 ? '#22c55e' : rate >= 40 ? '#f97316' : '#ef4444';
+                    } else {
+                        rateEl.textContent = '--';
+                    }
+                }
+            } catch (e) {
+                console.log('Fire stats not available');
+            }
+        }
+        
+        async function fetchDataStatus(paId) {
+            try {
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/data-status`);
+                const data = await resp.json();
+                const el = document.getElementById(`data-status-${paId}`);
+                if (!el) return;
+                
+                const pending = [];
+                if (!data.fire_analysis?.ready) pending.push('fire');
+                if (!data.group_infractions?.ready) pending.push('groups');
+                if (!data.ghsl?.ready) pending.push('population');
+                if (!data.roadless?.ready) pending.push('roads');
+                
+                if (pending.length > 0 && pending.length < 4) {
+                    el.innerHTML = `<span style="color: #666;">⏳ Processing: ${pending.join(', ')}</span>`;
+                } else if (pending.length === 0) {
+                    el.innerHTML = `<span style="color: #22c55e;">✓ All data ready</span>`;
+                }
+            } catch (e) {
+                // Silently fail
             }
         }
         
@@ -2893,6 +3220,27 @@
             // Set initial date filter to match slider
             updateDateFilter();
         }
+        
+        // Expose function to set time slider range programmatically (for upload highlight)
+        window.setTimeSliderRange = function(startDate, endDate) {
+            // Convert dates to slider values (months from SLIDER_START_DATE)
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            // Clamp to valid range
+            let newStart = monthsBetween(SLIDER_START_DATE, start);
+            let newEnd = monthsBetween(SLIDER_START_DATE, end);
+            
+            // Ensure values are within bounds
+            newStart = Math.max(0, Math.min(newStart, TOTAL_MONTHS - 1));
+            newEnd = Math.max(newStart + 1, Math.min(newEnd + 1, TOTAL_MONTHS)); // +1 to include end month
+            
+            sliderStartValue = newStart;
+            sliderEndValue = newEnd;
+            
+            updateSliderDisplay();
+            updateDateFilter();
+        };
         
         // Wait for DOM and map to be ready
         if (document.readyState === 'loading') {

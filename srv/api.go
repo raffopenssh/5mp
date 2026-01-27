@@ -738,3 +738,129 @@ func (s *Server) HandleAPIPublicationCount(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Cache-Control", "public, max-age=300")
 	json.NewEncoder(w).Encode(map[string]interface{}{"count": count})
 }
+
+// ParkDataStatus represents the processing status for a park's various data sources
+type ParkDataStatus struct {
+	ParkID         string `json:"park_id"`
+	FireAnalysis   *DataSourceStatus `json:"fire_analysis,omitempty"`
+	GroupInfractions *DataSourceStatus `json:"group_infractions,omitempty"`
+	Publications   *DataSourceStatus `json:"publications,omitempty"`
+	GHSL           *DataSourceStatus `json:"ghsl,omitempty"`
+	Roadless       *DataSourceStatus `json:"roadless,omitempty"`
+}
+
+type DataSourceStatus struct {
+	Ready     bool   `json:"ready"`
+	LastUpdate string `json:"last_update,omitempty"`
+	Message   string `json:"message,omitempty"`
+}
+
+// HandleAPIParkDataStatus returns the processing status for various data sources for a park
+func (s *Server) HandleAPIParkDataStatus(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+	if parkID == "" {
+		http.Error(w, "Park ID required", http.StatusBadRequest)
+		return
+	}
+	
+	// Map WDPA ID to internal park_id if needed
+	internalID := parkID
+	if s.AreaStore != nil {
+		for _, area := range s.AreaStore.Areas {
+			if area.WDPAID == parkID {
+				internalID = area.ID
+				break
+			}
+		}
+	}
+	
+	status := ParkDataStatus{ParkID: parkID}
+	
+	// Check fire analysis
+	var fireCount int
+	var fireDate string
+	err := s.DB.QueryRow(`SELECT COUNT(*), MAX(analyzed_at) FROM park_fire_analysis WHERE park_id = ?`, internalID).Scan(&fireCount, &fireDate)
+	if err == nil && fireCount > 0 {
+		status.FireAnalysis = &DataSourceStatus{Ready: true, LastUpdate: fireDate}
+	} else {
+		status.FireAnalysis = &DataSourceStatus{Ready: false, Message: "Fire analysis pending"}
+	}
+	
+	// Check group infractions
+	var groupCount int
+	var groupDate string
+	err = s.DB.QueryRow(`SELECT COUNT(*), MAX(analyzed_at) FROM park_group_infractions WHERE park_id = ?`, internalID).Scan(&groupCount, &groupDate)
+	if err == nil && groupCount > 0 {
+		status.GroupInfractions = &DataSourceStatus{Ready: true, LastUpdate: groupDate}
+	} else {
+		status.GroupInfractions = &DataSourceStatus{Ready: false, Message: "Group analysis pending"}
+	}
+	
+	// Check publications
+	var pubCount int
+	var pubDate string
+	err = s.DB.QueryRow(`SELECT COUNT(*), MAX(synced_at) FROM pa_publication_sync WHERE pa_id = ?`, parkID).Scan(&pubCount, &pubDate)
+	if err == nil && pubCount > 0 {
+		status.Publications = &DataSourceStatus{Ready: true, LastUpdate: pubDate}
+	} else {
+		status.Publications = &DataSourceStatus{Ready: false, Message: "Publication sync pending"}
+	}
+	
+	// GHSL - not implemented yet
+	status.GHSL = &DataSourceStatus{Ready: false, Message: "Coming soon"}
+	
+	// Roadless - not implemented yet
+	status.Roadless = &DataSourceStatus{Ready: false, Message: "Coming soon"}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(status)
+}
+
+// HandleAPIParkInfractionSummary returns group infraction summary for modal display
+func (s *Server) HandleAPIParkInfractionSummary(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+	year := r.URL.Query().Get("year")
+	if year == "" {
+		year = "2023" // Default to most recent full year
+	}
+	
+	// Map WDPA ID to internal park_id if needed
+	internalID := parkID
+	if s.AreaStore != nil {
+		for _, area := range s.AreaStore.Areas {
+			if area.WDPAID == parkID {
+				internalID = area.ID
+				break
+			}
+		}
+	}
+	
+	var result struct {
+		Year              int     `json:"year"`
+		TotalGroups       int     `json:"total_groups"`
+		GroupsStoppedInside int   `json:"groups_stopped_inside"`
+		GroupsTransited   int     `json:"groups_transited"`
+		AvgDaysBurning    float64 `json:"avg_days_burning"`
+		ResponseRate      float64 `json:"response_rate"` // % stopped inside
+	}
+	
+	err := s.DB.QueryRow(`
+		SELECT year, total_groups, groups_stopped_inside, groups_transited, avg_days_burning
+		FROM park_group_infractions 
+		WHERE park_id = ? AND year = ?
+	`, internalID, year).Scan(&result.Year, &result.TotalGroups, &result.GroupsStoppedInside, &result.GroupsTransited, &result.AvgDaysBurning)
+	
+	if err != nil {
+		// Return empty/zero result rather than error
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(result)
+		return
+	}
+	
+	if result.TotalGroups > 0 {
+		result.ResponseRate = float64(result.GroupsStoppedInside) / float64(result.TotalGroups) * 100
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
+}

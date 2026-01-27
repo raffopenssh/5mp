@@ -143,6 +143,8 @@ func (s *Server) Serve(addr string) error {
 
 	// Publications endpoints (more specific routes first)
 	mux.HandleFunc("GET /api/parks/{id}/publications/count", s.HandleAPIPublicationCount)
+	mux.HandleFunc("GET /api/parks/{id}/data-status", s.HandleAPIParkDataStatus)
+	mux.HandleFunc("GET /api/parks/{id}/infractions", s.HandleAPIParkInfractionSummary)
 	mux.HandleFunc("GET /api/parks/{id}/publications", s.HandleAPIPublications)
 	mux.HandleFunc("GET /api/parks/{id}/checklist", s.HandleAPIGetParkChecklist)
 
