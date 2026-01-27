@@ -128,6 +128,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/fire/daily-geojson", s.handleFireDailyGeoJSON)
 	mux.HandleFunc("GET /fire", s.handleFireAnalysis)
 	mux.HandleFunc("GET /fire/animation", s.handleFireAnimation)
+	mux.HandleFunc("GET /api/park/{id}/fire-analysis", s.handleParkFireAnalysis)
 
 	// Legal framework endpoints
 	mux.HandleFunc("GET /api/legal/pa/", s.HandleAPILegalByPA)
