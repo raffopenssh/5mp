@@ -1,4 +1,33 @@
+# Compiled binaries
+server
+fetchboundaries
+fetchpas
+*.exe
+
+# Database files
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+5mp.db
+*.db
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
 # Large fire data files - download separately
 data/fire/*.csv
 data/fire/*.zip
 data/fire/viirs-jpss1/
+
+# Temp files
+live_globe.html
+*.tmp
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
