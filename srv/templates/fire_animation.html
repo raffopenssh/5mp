@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chinko Fire Animation</title>
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        
+        .controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+            min-width: 300px;
+        }
+        
+        .controls h3 {
+            margin: 0 0 10px 0;
+            color: #ff6b35;
+        }
+        
+        .date-display {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #ffcc00;
+        }
+        
+        .fire-count {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        
+        .slider-container {
+            margin: 15px 0;
+        }
+        
+        #dateSlider {
+            width: 100%;
+            cursor: pointer;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            flex: 1;
+        }
+        
+        .btn-play { background: #22c55e; color: white; }
+        .btn-play:hover { background: #16a34a; }
+        .btn-pause { background: #ef4444; color: white; }
+        .btn-pause:hover { background: #dc2626; }
+        .btn-reset { background: #6b7280; color: white; }
+        .btn-reset:hover { background: #4b5563; }
+        
+        .speed-control {
+            margin-top: 10px;
+        }
+        
+        .speed-control label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .stats-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+            min-width: 200px;
+        }
+        
+        .stats-panel h4 {
+            margin: 0 0 10px 0;
+            color: #ff6b35;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+        
+        .stat-label { color: #aaa; }
+        .stat-value { color: #fff; font-weight: bold; }
+        
+        .trail-toggle {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #444;
+        }
+        
+        .trail-toggle label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .trail-toggle input {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="controls">
+        <h3>🔥 Chinko Fire Animation</h3>
+        <div class="date-display" id="currentDate">Loading...</div>
+        <div class="fire-count" id="fireCount">-- fires</div>
+        
+        <div class="slider-container">
+            <input type="range" id="dateSlider" min="0" max="100" value="0">
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn btn-play" id="playBtn">▶ Play</button>
+            <button class="btn btn-pause" id="pauseBtn">⏸ Pause</button>
+            <button class="btn btn-reset" id="resetBtn">↺ Reset</button>
+        </div>
+        
+        <div class="speed-control">
+            <label>Animation Speed</label>
+            <input type="range" id="speedSlider" min="50" max="1000" value="300" style="width: 100%;">
+        </div>
+        
+        <div class="trail-toggle">
+            <label>
+                <input type="checkbox" id="trailToggle" checked>
+                Show 3-day trail (movement tracking)
+            </label>
+        </div>
+    </div>
+    
+    <div class="stats-panel">
+        <h4>Daily Statistics</h4>
+        <div class="stat-row">
+            <span class="stat-label">Avg Latitude:</span>
+            <span class="stat-value" id="avgLat">--</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Fire Front:</span>
+            <span class="stat-value" id="frontDirection">--</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Total FRP:</span>
+            <span class="stat-value" id="totalFrp">-- MW</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Day/Night:</span>
+            <span class="stat-value" id="dayNight">--</span>
+        </div>
+    </div>
+    
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ff0000;"></div>
+            <span>Current day fires</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ff6600; opacity: 0.7;"></div>
+            <span>Yesterday</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ffaa00; opacity: 0.5;"></div>
+            <span>2 days ago</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ffcc00; opacity: 0.3;"></div>
+            <span>3 days ago</span>
+        </div>
+    </div>
+
+    <script>
+        // Initialize map
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: {
+                version: 8,
+                sources: {
+                    'carto-dark': {
+                        type: 'raster',
+                        tiles: [
+                            'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
+                        ],
+                        tileSize: 256,
+                        attribution: '© CartoDB'
+                    }
+                },
+                layers: [{
+                    id: 'carto-dark-layer',
+                    type: 'raster',
+                    source: 'carto-dark',
+                    minzoom: 0,
+                    maxzoom: 19
+                }]
+            },
+            center: [24.0, 6.5],
+            zoom: 7
+        });
+
+        let dailyData = {};
+        let dates = [];
+        let currentIndex = 0;
+        let isPlaying = false;
+        let animationInterval = null;
+        let previousLat = null;
+
+        // Load fire data
+        fetch('/api/fire/daily-geojson')
+            .then(r => r.json())
+            .then(data => {
+                dailyData = data;
+                dates = Object.keys(data).sort();
+                
+                document.getElementById('dateSlider').max = dates.length - 1;
+                
+                map.on('load', () => {
+                    initializeLayers();
+                    updateDisplay(0);
+                });
+            });
+
+        function initializeLayers() {
+            // Trail layers (older fires)
+            for (let i = 3; i >= 0; i--) {
+                const opacity = i === 0 ? 0.9 : (0.7 - i * 0.15);
+                const color = i === 0 ? '#ff0000' : 
+                              i === 1 ? '#ff6600' : 
+                              i === 2 ? '#ffaa00' : '#ffcc00';
+                const radius = i === 0 ? 6 : (5 - i);
+                
+                map.addSource(`fires-day-${i}`, {
+                    type: 'geojson',
+                    data: { type: 'FeatureCollection', features: [] }
+                });
+                
+                // Heatmap layer
+                map.addLayer({
+                    id: `fires-heat-${i}`,
+                    type: 'heatmap',
+                    source: `fires-day-${i}`,
+                    paint: {
+                        'heatmap-weight': ['interpolate', ['linear'], ['get', 'frp'], 0, 0.1, 50, 1],
+                        'heatmap-intensity': 1,
+                        'heatmap-color': [
+                            'interpolate', ['linear'], ['heatmap-density'],
+                            0, 'rgba(0,0,0,0)',
+                            0.2, color,
+                            0.4, color,
+                            0.6, color,
+                            1, '#ffffff'
+                        ],
+                        'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 5, 10, 9, 30],
+                        'heatmap-opacity': opacity * 0.6
+                    }
+                });
+                
+                // Point layer
+                map.addLayer({
+                    id: `fires-points-${i}`,
+                    type: 'circle',
+                    source: `fires-day-${i}`,
+                    paint: {
+                        'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, radius, 10, radius * 2],
+                        'circle-color': color,
+                        'circle-opacity': opacity,
+                        'circle-stroke-width': i === 0 ? 1 : 0,
+                        'circle-stroke-color': '#ffffff'
+                    }
+                });
+            }
+        }
+
+        function updateDisplay(index) {
+            currentIndex = index;
+            const date = dates[index];
+            const fires = dailyData[date];
+            
+            document.getElementById('currentDate').textContent = date;
+            document.getElementById('fireCount').textContent = `${fires.features.length} fires detected`;
+            document.getElementById('dateSlider').value = index;
+            
+            // Update current day fires
+            map.getSource('fires-day-0').setData(fires);
+            
+            // Update trail layers
+            const showTrail = document.getElementById('trailToggle').checked;
+            for (let i = 1; i <= 3; i++) {
+                const trailIndex = index - i;
+                if (showTrail && trailIndex >= 0) {
+                    map.getSource(`fires-day-${i}`).setData(dailyData[dates[trailIndex]]);
+                } else {
+                    map.getSource(`fires-day-${i}`).setData({ type: 'FeatureCollection', features: [] });
+                }
+            }
+            
+            // Calculate statistics
+            if (fires.features.length > 0) {
+                const lats = fires.features.map(f => f.geometry.coordinates[1]);
+                const avgLat = lats.reduce((a, b) => a + b, 0) / lats.length;
+                
+                document.getElementById('avgLat').textContent = avgLat.toFixed(2) + '°N';
+                
+                // Direction
+                if (previousLat !== null) {
+                    const movement = (previousLat - avgLat) * 111; // km
+                    if (Math.abs(movement) > 1) {
+                        document.getElementById('frontDirection').textContent = 
+                            movement > 0 ? `↓ ${movement.toFixed(0)}km S` : `↑ ${Math.abs(movement).toFixed(0)}km N`;
+                    } else {
+                        document.getElementById('frontDirection').textContent = '→ stationary';
+                    }
+                }
+                previousLat = avgLat;
+                
+                // FRP
+                const totalFrp = fires.features.reduce((sum, f) => sum + (f.properties.frp || 0), 0);
+                document.getElementById('totalFrp').textContent = totalFrp.toFixed(0) + ' MW';
+                
+                // Day/Night
+                const dayCount = fires.features.filter(f => f.properties.daynight === 'D').length;
+                const pct = (100 * dayCount / fires.features.length).toFixed(0);
+                document.getElementById('dayNight').textContent = `${pct}% day`;
+            }
+        }
+
+        function play() {
+            if (isPlaying) return;
+            isPlaying = true;
+            const speed = 1100 - parseInt(document.getElementById('speedSlider').value);
+            animationInterval = setInterval(() => {
+                currentIndex++;
+                if (currentIndex >= dates.length) {
+                    currentIndex = 0;
+                    previousLat = null;
+                }
+                updateDisplay(currentIndex);
+            }, speed);
+        }
+
+        function pause() {
+            isPlaying = false;
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+            }
+        }
+
+        function reset() {
+            pause();
+            previousLat = null;
+            updateDisplay(0);
+        }
+
+        // Event listeners
+        document.getElementById('playBtn').addEventListener('click', play);
+        document.getElementById('pauseBtn').addEventListener('click', pause);
+        document.getElementById('resetBtn').addEventListener('click', reset);
+        
+        document.getElementById('dateSlider').addEventListener('input', (e) => {
+            pause();
+            previousLat = null;
+            updateDisplay(parseInt(e.target.value));
+        });
+        
+        document.getElementById('speedSlider').addEventListener('input', () => {
+            if (isPlaying) {
+                pause();
+                play();
+            }
+        });
+        
+        document.getElementById('trailToggle').addEventListener('change', () => {
+            updateDisplay(currentIndex);
+        });
+    </script>
+</body>
+</html>

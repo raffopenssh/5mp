@@ -18,6 +18,16 @@ func (s *Server) handleFireDailyData(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+func (s *Server) handleFireDailyGeoJSON(w http.ResponseWriter, r *http.Request) {
+	data, err := os.ReadFile("data/fire/chinko_daily_geojson.json")
+	if err != nil {
+		http.Error(w, "Fire data not found", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
+}
+
 func (s *Server) handleFireBoundary(w http.ResponseWriter, r *http.Request) {
 	data, err := os.ReadFile("data/fire/chinko_boundary.json")
 	if err != nil {
@@ -30,4 +40,8 @@ func (s *Server) handleFireBoundary(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleFireAnalysis(w http.ResponseWriter, r *http.Request) {
 	s.renderTemplate(w, "fire_analysis.html", nil)
+}
+
+func (s *Server) handleFireAnimation(w http.ResponseWriter, r *http.Request) {
+	s.renderTemplate(w, "fire_animation.html", nil)
 }
