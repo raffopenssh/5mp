@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Park Analysis - {{.Name}}</title>
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #0f172a; 
+            color: #e2e8f0; 
+        }
+        
+        .layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            grid-template-rows: auto 1fr;
+            height: 100vh;
+        }
+        
+        .header {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 16px 24px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+        
+        .header-stats {
+            display: flex;
+            gap: 24px;
+        }
+        
+        .header-stat {
+            text-align: center;
+        }
+        
+        .header-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #22c55e;
+        }
+        
+        .header-stat-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+        
+        .sidebar {
+            background: #1e293b;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        
+        .section {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .section-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-title::before {
+            content: '';
+            width: 3px;
+            height: 16px;
+            background: #3b82f6;
+            border-radius: 2px;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Fire stats */
+        .fire-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .fire-stat {
+            background: #1e293b;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .fire-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .fire-stat-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        
+        .fire-stat.transhumance .fire-stat-value { color: #f97316; }
+        .fire-stat.management .fire-stat-value { color: #22c55e; }
+        .fire-stat.herder .fire-stat-value { color: #eab308; }
+        .fire-stat.village .fire-stat-value { color: #ef4444; }
+        
+        /* Year selector */
+        .year-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .year-tab {
+            flex: 1;
+            padding: 8px;
+            background: #1e293b;
+            border: none;
+            border-radius: 4px;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        
+        .year-tab.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .year-tab:hover:not(.active) {
+            background: #334155;
+        }
+        
+        /* Monthly chart */
+        .monthly-chart {
+            height: 80px;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            margin-top: 12px;
+        }
+        
+        .month-bar {
+            flex: 1;
+            background: linear-gradient(to top, #f97316, #fbbf24);
+            border-radius: 2px 2px 0 0;
+            min-height: 4px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .month-bar:hover {
+            filter: brightness(1.2);
+        }
+        
+        .month-labels {
+            display: flex;
+            gap: 2px;
+            margin-top: 4px;
+        }
+        
+        .month-labels span {
+            flex: 1;
+            text-align: center;
+            font-size: 0.625rem;
+            color: #64748b;
+        }
+        
+        /* Roadless */
+        .roadless-meter {
+            height: 24px;
+            background: #334155;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            margin-top: 8px;
+        }
+        
+        .roadless-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            border-radius: 12px;
+            transition: width 0.5s ease;
+        }
+        
+        .roadless-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        /* Toggle buttons */
+        .toggle-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: #1e293b;
+            border: none;
+            border-radius: 6px;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .toggle-btn:hover {
+            background: #334155;
+        }
+        
+        .toggle-btn.active {
+            background: #3b82f6;
+        }
+        
+        .toggle-indicator {
+            width: 36px;
+            height: 20px;
+            background: #475569;
+            border-radius: 10px;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .toggle-btn.active .toggle-indicator {
+            background: #60a5fa;
+        }
+        
+        .toggle-indicator::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.2s;
+        }
+        
+        .toggle-btn.active .toggle-indicator::after {
+            left: 18px;
+        }
+        
+        /* Time slider */
+        .time-controls {
+            margin-top: 12px;
+        }
+        
+        .time-slider {
+            width: 100%;
+            margin: 8px 0;
+        }
+        
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+        
+        .play-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .play-btn {
+            flex: 1;
+            padding: 8px;
+            background: #22c55e;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .play-btn:hover {
+            background: #16a34a;
+        }
+        
+        .play-btn.pause {
+            background: #ef4444;
+        }
+        
+        /* Legend overlay */
+        .map-legend {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 12px;
+            border-radius: 8px;
+            z-index: 100;
+            font-size: 0.75rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+        }
+        
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .legend-line {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+        
+        /* Back button */
+        .back-btn {
+            padding: 8px 16px;
+            background: #334155;
+            border: none;
+            border-radius: 6px;
+            color: #e2e8f0;
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-btn:hover {
+            background: #475569;
+        }
+        
+        /* Loading state */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            color: #94a3b8;
+        }
+        
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #334155;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr;
+            }
+            
+            .sidebar {
+                max-height: 40vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <header class="header">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <a href="/" class="back-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back
+                </a>
+                <h1 id="parkName">{{.Name}}</h1>
+            </div>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <div class="header-stat-value" id="areaKm2">-</div>
+                    <div class="header-stat-label">km²</div>
+                </div>
+                <div class="header-stat">
+                    <div class="header-stat-value" id="roadlessPercent">-</div>
+                    <div class="header-stat-label">Roadless</div>
+                </div>
+            </div>
+        </header>
+        
+        <aside class="sidebar">
+            <!-- Fire Analysis -->
+            <div class="section">
+                <div class="section-title">🔥 Fire Analysis</div>
+                
+                <div class="year-tabs" id="yearTabs">
+                    <button class="year-tab active" data-year="2024">2024</button>
+                    <button class="year-tab" data-year="2023">2023</button>
+                    <button class="year-tab" data-year="2022">2022</button>
+                </div>
+                
+                <div class="fire-summary" id="fireSummary">
+                    <div class="fire-stat transhumance">
+                        <div class="fire-stat-value" id="transhumanceCount">-</div>
+                        <div class="fire-stat-label">Transhumance</div>
+                    </div>
+                    <div class="fire-stat management">
+                        <div class="fire-stat-value" id="managementCount">-</div>
+                        <div class="fire-stat-label">Management</div>
+                    </div>
+                    <div class="fire-stat herder">
+                        <div class="fire-stat-value" id="herderCount">-</div>
+                        <div class="fire-stat-label">Herder</div>
+                    </div>
+                    <div class="fire-stat village">
+                        <div class="fire-stat-value" id="villageCount">-</div>
+                        <div class="fire-stat-label">Village/Local</div>
+                    </div>
+                </div>
+                
+                <div class="monthly-chart" id="monthlyChart"></div>
+                <div class="month-labels">
+                    <span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span>
+                    <span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span>
+                </div>
+            </div>
+            
+            <!-- Roadless Analysis -->
+            <div class="section">
+                <div class="section-title">🛤️ Roadless Area</div>
+                <div class="roadless-meter">
+                    <div class="roadless-fill" id="roadlessFill" style="width: 0%"></div>
+                    <span class="roadless-label" id="roadlessLabel">Loading...</span>
+                </div>
+                <p style="margin-top: 8px; font-size: 0.75rem; color: #64748b;">
+                    Area >1km from any road (OSM data)
+                </p>
+            </div>
+            
+            <!-- Map Layers -->
+            <div class="section">
+                <div class="section-title">🗺️ Map Layers</div>
+                <div class="toggle-group">
+                    <button class="toggle-btn active" data-layer="fires">
+                        <span>🔥 Fire Detections</span>
+                        <span class="toggle-indicator"></span>
+                    </button>
+                    <button class="toggle-btn" data-layer="roads">
+                        <span>🛤️ Roads (OSM)</span>
+                        <span class="toggle-indicator"></span>
+                    </button>
+                    <button class="toggle-btn" data-layer="patrols">
+                        <span>👣 Patrol Coverage</span>
+                        <span class="toggle-indicator"></span>
+                    </button>
+                    <button class="toggle-btn active" data-layer="boundary">
+                        <span>📍 Park Boundary</span>
+                        <span class="toggle-indicator"></span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Time Controls -->
+            <div class="section">
+                <div class="section-title">⏱️ Time Animation</div>
+                <div class="time-controls">
+                    <div class="time-display">
+                        <span id="timeStart">Jan 2024</span>
+                        <span id="timeCurrent">-</span>
+                        <span id="timeEnd">Dec 2024</span>
+                    </div>
+                    <input type="range" class="time-slider" id="timeSlider" min="0" max="365" value="0">
+                    <div class="play-controls">
+                        <button class="play-btn" id="playBtn">▶ Play</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <main style="position: relative;">
+            <div id="map"></div>
+            <div class="map-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #f97316;"></div>
+                    <span>Transhumance fire</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #22c55e;"></div>
+                    <span>Management burn</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #ef4444;"></div>
+                    <span>Other fire</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #94a3b8;"></div>
+                    <span>Road</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #3b82f6; height: 2px;"></div>
+                    <span>Park boundary</span>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Park data from template
+        const parkData = {
+            id: "{{.ID}}",
+            name: "{{.Name}}",
+            lat: {{.Lat}},
+            lon: {{.Lon}},
+            bbox: {{.BBoxJSON}}
+        };
+        
+        // Initialize map
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: {
+                version: 8,
+                sources: {
+                    'osm': {
+                        type: 'raster',
+                        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                        tileSize: 256,
+                        attribution: '© OpenStreetMap'
+                    }
+                },
+                layers: [{
+                    id: 'osm',
+                    type: 'raster',
+                    source: 'osm'
+                }]
+            },
+            center: [parkData.lon, parkData.lat],
+            zoom: 8
+        });
+        
+        // State
+        let fireData = null;
+        let selectedYear = 2024;
+        let isPlaying = false;
+        let animationFrame = null;
+        
+        // Fit to bbox if available
+        map.on('load', () => {
+            if (parkData.bbox && parkData.bbox.length === 4) {
+                map.fitBounds([
+                    [parkData.bbox[0], parkData.bbox[1]], // SW
+                    [parkData.bbox[2], parkData.bbox[3]]  // NE
+                ], { padding: 50 });
+            }
+            
+            loadParkData();
+        });
+        
+        async function loadParkData() {
+            // Load fire analysis
+            try {
+                const resp = await fetch(`/api/park/${parkData.id}/fire-analysis`);
+                if (resp.ok) {
+                    fireData = await resp.json();
+                    updateFireStats(selectedYear);
+                }
+            } catch (e) {
+                console.error('Failed to load fire data:', e);
+            }
+            
+            // Load boundary
+            loadBoundary();
+            
+            // Load roads
+            loadRoads();
+        }
+        
+        async function loadBoundary() {
+            try {
+                const resp = await fetch(`/api/park/${parkData.id}/boundary`);
+                if (resp.ok) {
+                    const geojson = await resp.json();
+                    
+                    if (map.getSource('boundary')) {
+                        map.getSource('boundary').setData(geojson);
+                    } else {
+                        map.addSource('boundary', { type: 'geojson', data: geojson });
+                        map.addLayer({
+                            id: 'boundary-fill',
+                            type: 'fill',
+                            source: 'boundary',
+                            paint: {
+                                'fill-color': '#3b82f6',
+                                'fill-opacity': 0.1
+                            }
+                        });
+                        map.addLayer({
+                            id: 'boundary-line',
+                            type: 'line',
+                            source: 'boundary',
+                            paint: {
+                                'line-color': '#3b82f6',
+                                'line-width': 2
+                            }
+                        });
+                    }
+                    
+                    // Calculate area
+                    if (geojson.features && geojson.features[0]) {
+                        // Rough area calculation would go here
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load boundary:', e);
+            }
+        }
+        
+        async function loadRoads() {
+            // Roads will come from Overpass API or cached data
+            try {
+                const resp = await fetch(`/api/park/${parkData.id}/roads`);
+                if (resp.ok) {
+                    const geojson = await resp.json();
+                    
+                    if (!map.getSource('roads')) {
+                        map.addSource('roads', { type: 'geojson', data: geojson });
+                        map.addLayer({
+                            id: 'roads-line',
+                            type: 'line',
+                            source: 'roads',
+                            paint: {
+                                'line-color': '#94a3b8',
+                                'line-width': 1.5
+                            },
+                            layout: {
+                                'visibility': 'none'
+                            }
+                        });
+                    }
+                    
+                    // Calculate roadless percentage
+                    if (geojson.properties && geojson.properties.roadless_percent) {
+                        updateRoadless(geojson.properties.roadless_percent);
+                    }
+                }
+            } catch (e) {
+                console.error('Roads not available:', e);
+                document.getElementById('roadlessLabel').textContent = 'No data';
+            }
+        }
+        
+        function updateFireStats(year) {
+            if (!fireData) return;
+            
+            const yearData = fireData.find(d => d.year === year);
+            if (!yearData) {
+                document.getElementById('transhumanceCount').textContent = '-';
+                document.getElementById('managementCount').textContent = '-';
+                document.getElementById('herderCount').textContent = '-';
+                document.getElementById('villageCount').textContent = '-';
+                return;
+            }
+            
+            document.getElementById('transhumanceCount').textContent = yearData.transhumance_groups || 0;
+            document.getElementById('managementCount').textContent = yearData.management_groups || 0;
+            document.getElementById('herderCount').textContent = yearData.herder_groups || 0;
+            document.getElementById('villageCount').textContent = yearData.village_groups || 0;
+            
+            // Update monthly chart (placeholder - would need monthly data)
+            updateMonthlyChart(yearData);
+        }
+        
+        function updateMonthlyChart(yearData) {
+            const chart = document.getElementById('monthlyChart');
+            chart.innerHTML = '';
+            
+            // Placeholder monthly distribution (would come from actual data)
+            const months = [5, 8, 12, 6, 3, 1, 2, 15, 25, 30, 20, 10];
+            const max = Math.max(...months);
+            
+            months.forEach((count, i) => {
+                const bar = document.createElement('div');
+                bar.className = 'month-bar';
+                bar.style.height = (count / max * 100) + '%';
+                bar.title = `Month ${i + 1}: ${count} fires`;
+                chart.appendChild(bar);
+            });
+        }
+        
+        function updateRoadless(percent) {
+            const fill = document.getElementById('roadlessFill');
+            const label = document.getElementById('roadlessLabel');
+            const headerStat = document.getElementById('roadlessPercent');
+            
+            fill.style.width = percent + '%';
+            label.textContent = percent.toFixed(1) + '%';
+            headerStat.textContent = percent.toFixed(0) + '%';
+        }
+        
+        // Year tab handlers
+        document.querySelectorAll('.year-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.year-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                selectedYear = parseInt(tab.dataset.year);
+                updateFireStats(selectedYear);
+            });
+        });
+        
+        // Layer toggle handlers
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                const layer = btn.dataset.layer;
+                const visible = btn.classList.contains('active');
+                
+                if (layer === 'roads' && map.getLayer('roads-line')) {
+                    map.setLayoutProperty('roads-line', 'visibility', visible ? 'visible' : 'none');
+                }
+                if (layer === 'boundary') {
+                    if (map.getLayer('boundary-fill')) {
+                        map.setLayoutProperty('boundary-fill', 'visibility', visible ? 'visible' : 'none');
+                        map.setLayoutProperty('boundary-line', 'visibility', visible ? 'visible' : 'none');
+                    }
+                }
+            });
+        });
+        
+        // Play button
+        document.getElementById('playBtn').addEventListener('click', function() {
+            isPlaying = !isPlaying;
+            this.textContent = isPlaying ? '⏸ Pause' : '▶ Play';
+            this.classList.toggle('pause', isPlaying);
+            
+            if (isPlaying) {
+                animate();
+            }
+        });
+        
+        function animate() {
+            if (!isPlaying) return;
+            
+            const slider = document.getElementById('timeSlider');
+            let val = parseInt(slider.value);
+            val = (val + 1) % 366;
+            slider.value = val;
+            
+            // Update time display
+            const date = new Date(selectedYear, 0, 1);
+            date.setDate(date.getDate() + val);
+            document.getElementById('timeCurrent').textContent = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            animationFrame = setTimeout(animate, 100);
+        }
+        
+        // Time slider change
+        document.getElementById('timeSlider').addEventListener('input', function() {
+            const val = parseInt(this.value);
+            const date = new Date(selectedYear, 0, 1);
+            date.setDate(date.getDate() + val);
+            document.getElementById('timeCurrent').textContent = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        });
+    </script>
+</body>
+</html>
