@@ -1,0 +1,9 @@
+[2026-01-27 05:47:55] ============================================================
+[2026-01-27 05:47:55] Starting fire data download
+[2026-01-27 05:47:55] Countries: 54
+[2026-01-27 05:47:55] Years: [2018, 2019, 2020, 2021, 2022, 2023, 2024]
+[2026-01-27 05:47:55] Total files: 378
+[2026-01-27 05:47:55] ============================================================
+[2026-01-27 05:47:55] DOWNLOAD viirs-jpss1_2018_Central_African_Republic.csv...
+[2026-01-27 05:50:09] CONNECTION ERROR viirs-jpss1_2018_Central_African_Republic.csv: HTTPSConnectionPool(host='firms.modaps.eosdis.nasa.gov', port=443): Max retries exceeded with url: /data/country/viirs-jpss1/2018/viirs-jpss1_2018_Central_African_Republic.csv (Caused by NewConnectionError("HTTPSConnection(host='firms.modaps.eosdis.nasa.gov', port=443): Failed to establish a new connection: [Errno 101] Network is unreachable"))
+[2026-01-27 05:50:41] DOWNLOAD viirs-jpss1_2019_Central_African_Republic.csv...
