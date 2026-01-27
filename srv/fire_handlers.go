@@ -59,7 +59,7 @@ func (s *Server) handleParkFireAnalysis(w http.ResponseWriter, r *http.Request) 
 	rows, err := s.DB.Query(`
 		SELECT year, total_fires, dry_season_fires, transhumance_groups,
 		       transhumance_fires, avg_transhumance_speed, herder_groups,
-		       management_groups, village_groups, peak_month, analysis_json
+		       management_groups, village_groups, analysis_json
 		FROM park_fire_analysis
 		WHERE park_id = ?
 		ORDER BY year DESC
@@ -81,7 +81,6 @@ func (s *Server) handleParkFireAnalysis(w http.ResponseWriter, r *http.Request) 
 		HerderGroups         int             `json:"herder_groups"`
 		ManagementGroups     int             `json:"management_groups"`
 		VillageGroups        int             `json:"village_groups"`
-		PeakMonth            *int            `json:"peak_month"`
 		Groups               json.RawMessage `json:"groups,omitempty"`
 	}
 
@@ -89,13 +88,12 @@ func (s *Server) handleParkFireAnalysis(w http.ResponseWriter, r *http.Request) 
 	for rows.Next() {
 		var ya YearAnalysis
 		var analysisJSON sql.NullString
-		var peakMonth, drySeasonFires, transhumanceFires, herderGroups, mgmtGroups, villageGroups sql.NullInt64
+		var drySeasonFires, transhumanceFires, herderGroups, mgmtGroups, villageGroups sql.NullInt64
 		var avgSpeed sql.NullFloat64
 		
 		err := rows.Scan(&ya.Year, &ya.TotalFires, &drySeasonFires,
 			&ya.TranshumanceGroups, &transhumanceFires, &avgSpeed,
-			&herderGroups, &mgmtGroups, &villageGroups,
-			&peakMonth, &analysisJSON)
+			&herderGroups, &mgmtGroups, &villageGroups, &analysisJSON)
 		if err != nil {
 			log.Printf("Scan error: %v", err)
 			continue
@@ -107,10 +105,6 @@ func (s *Server) handleParkFireAnalysis(w http.ResponseWriter, r *http.Request) 
 		if herderGroups.Valid { ya.HerderGroups = int(herderGroups.Int64) }
 		if mgmtGroups.Valid { ya.ManagementGroups = int(mgmtGroups.Int64) }
 		if villageGroups.Valid { ya.VillageGroups = int(villageGroups.Int64) }
-		if peakMonth.Valid {
-			pm := int(peakMonth.Int64)
-			ya.PeakMonth = &pm
-		}
 		if analysisJSON.Valid {
 			ya.Groups = json.RawMessage(analysisJSON.String)
 		}
