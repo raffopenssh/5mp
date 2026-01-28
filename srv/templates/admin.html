@@ -52,6 +52,24 @@
       
       .empty { text-align: center; padding: 40px 20px; color: #555; font-size: 14px; }
       
+      .upload-section { padding: 20px; }
+      .upload-form { display: flex; flex-direction: column; gap: 12px; }
+      .upload-form input[type="file"] { background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; padding: 20px; color: #a0a0a0; cursor: pointer; }
+      .upload-form input[type="file"]:hover { border-color: rgba(34,197,94,0.5); background: rgba(34,197,94,0.05); }
+      .btn-upload { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+      .btn-upload:hover { background: rgba(34,197,94,0.25); }
+      .btn-upload:disabled { opacity: 0.5; cursor: not-allowed; }
+      
+      .disk-info { display: inline-flex; align-items: center; gap: 6px; background: rgba(59,130,246,0.15); color: #60a5fa; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+      .processing-status { background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.3); color: #eab308; padding: 10px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+      .processing-status::before { content: "⏳"; }
+      
+      .tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; padding: 16px; }
+      .tile-link { display: block; padding: 8px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #60a5fa; text-decoration: none; font-size: 12px; font-family: monospace; text-align: center; transition: all 0.2s; }
+      .tile-link:hover { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); }
+      .tile-have { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); color: #22c55e; }
+      .tile-count { font-size: 12px; color: #666; padding: 0 16px 16px; }
+      
       @media (max-width: 768px) {
         .container { padding: 16px; }
         .stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -180,6 +198,75 @@
           </table>
           {{else}}
           <div class="empty">No approved users yet</div>
+          {{end}}
+        </div>
+      </div>
+
+      <!-- Data Upload Section -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Bulk Data Upload</div>
+          <div class="section-subtitle">Upload VIIRS fire data and GHSL tiles <span class="disk-info">💾 {{.DiskAvailable}} available</span></div>
+        </div>
+        <div class="section-content">
+          {{if .ProcessingStatus}}
+          <div class="processing-status">{{.ProcessingStatus}}</div>
+          {{end}}
+          
+          <div class="upload-section">
+            <h4 style="color: #fff; margin-bottom: 12px; font-size: 14px;">🔥 VIIRS Fire Data Upload</h4>
+            <form method="POST" action="/admin/upload/fire" enctype="multipart/form-data" class="upload-form">
+              <input type="file" name="fire_csv" accept=".csv" required />
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <button type="submit" class="btn-upload">Upload Fire CSV</button>
+                <span style="font-size: 12px; color: #666;">Accepts VIIRS CSV files from FIRMS</span>
+              </div>
+            </form>
+          </div>
+          
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); margin: 20px 0;"></div>
+          
+          <div class="upload-section">
+            <h4 style="color: #fff; margin-bottom: 12px; font-size: 14px;">🏗️ GHSL Tile Upload</h4>
+            <form method="POST" action="/admin/upload/ghsl" enctype="multipart/form-data" class="upload-form">
+              <input type="file" name="ghsl_zip" accept=".zip" required />
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <button type="submit" class="btn-upload">Upload GHSL ZIP</button>
+                <span style="font-size: 12px; color: #666;">Accepts GHSL tile ZIP files containing TIF</span>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- GHSL Tiles Status -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">GHSL Tiles Status</div>
+          <div class="section-subtitle">Required tiles for settlement density analysis</div>
+        </div>
+        <div class="section-content">
+          <div class="tile-count">
+            <strong style="color: #22c55e;">{{len .HaveGHSLTiles}}</strong> tiles available, 
+            <strong style="color: #eab308;">{{len .NeededGHSLTiles}}</strong> tiles needed
+          </div>
+          
+          {{if .HaveGHSLTiles}}
+          <div style="padding: 0 16px 8px;"><small style="color: #666; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Available Tiles</small></div>
+          <div class="tile-grid">
+            {{range .HaveGHSLTiles}}
+            <span class="tile-link tile-have">✓ {{.}}</span>
+            {{end}}
+          </div>
+          {{end}}
+          
+          {{if .NeededGHSLTiles}}
+          <div style="padding: 16px 16px 8px; border-top: 1px solid rgba(255,255,255,0.05);"><small style="color: #666; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Needed Tiles (click to download)</small></div>
+          <div class="tile-grid">
+            {{range .NeededGHSLTiles}}
+            <a href="{{.URL}}" target="_blank" class="tile-link" title="Download {{.ID}}">{{.ID}}</a>
+            {{end}}
+          </div>
           {{end}}
         </div>
       </div>

@@ -74,6 +74,7 @@ def load_fire_data_for_region(bbox, year):
     all_fires = []
     patterns = [
         FIRE_DIR / "viirs-jpss1" / str(year) / "*.csv",
+        FIRE_DIR / "viirs-jpss" / str(year) / "*.csv",
         FIRE_DIR / f"viirs-jpss1_{year}_*.csv"
     ]
     for pattern in patterns:
