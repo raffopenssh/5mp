@@ -329,6 +329,30 @@
         .pa-popup-btn svg { width: 12px; height: 12px; }
         .pa-popup-btn.selected { background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.3); color: #a855f7; }
 
+        /* Enhanced PA Popup with Collapsible Sections */
+        .pa-popup-section { margin-top: 8px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+        .pa-popup-section-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: rgba(255,255,255,0.03); cursor: pointer; transition: background 0.2s; }
+        .pa-popup-section-header:hover { background: rgba(255,255,255,0.06); }
+        .pa-popup-section-title { font-size: 10px; color: #888; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+        .pa-popup-section-icon { font-size: 12px; }
+        .pa-popup-section-toggle { font-size: 10px; color: #555; transition: transform 0.2s; }
+        .pa-popup-section.open .pa-popup-section-toggle { transform: rotate(180deg); }
+        .pa-popup-section-content { display: none; padding: 8px 10px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); }
+        .pa-popup-section.open .pa-popup-section-content { display: block; }
+        .pa-popup-section-loading { font-size: 10px; color: #666; }
+        .pa-popup-section-empty { font-size: 10px; color: #555; font-style: italic; }
+        .pa-popup-mini-stat { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; }
+        .pa-popup-mini-stat-label { color: #666; }
+        .pa-popup-mini-stat-value { color: #22c55e; font-weight: 500; }
+        .pa-popup-mini-stat-value.warning { color: #f97316; }
+        .pa-popup-mini-stat-value.bad { color: #ef4444; }
+        .pa-popup-mini-stat-value.muted { color: #555; }
+        .pa-popup-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .pa-popup-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+        .pa-popup-bar-fill.good { background: #22c55e; }
+        .pa-popup-bar-fill.warning { background: #f97316; }
+        .pa-popup-bar-fill.bad { background: #ef4444; }
+
         /* Fire Stats Modal */
         .fire-stats-container { padding: 20px; }
         .fire-stats-title { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
@@ -2616,7 +2640,7 @@
             const areaDisplay = areaKm2 ? formatNumber(areaKm2) + ' km²' : '--';
             
             const popupContent = `
-                <div class="pa-popup">
+                <div class="pa-popup" style="min-width: 260px;">
                     <div class="pa-popup-header">
                         <div class="pa-popup-name">${escapeHtml(name)}</div>
                         <div class="pa-popup-country">
@@ -2624,40 +2648,62 @@
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                                 <circle cx="12" cy="10" r="3"></circle>
                             </svg>
-                            ${escapeHtml(country)}
+                            ${escapeHtml(country)} ${areaKm2 ? `• ${areaDisplay}` : ''}
                         </div>
                     </div>
-                    <div class="pa-popup-stats">
-                        <div class="pa-popup-stat">
-                            <div class="pa-popup-stat-label">Area</div>
-                            <div class="pa-popup-stat-value${!areaKm2 ? ' muted' : ''}">${areaDisplay}</div>
+                    
+                    <!-- Fire Section -->
+                    <div class="pa-popup-section" id="fire-section-${paId}" onclick="togglePopupSection(this)">
+                        <div class="pa-popup-section-header">
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◈</span> Fire Activity</div>
+                            <span class="pa-popup-section-toggle">▼</span>
                         </div>
-                        <div class="pa-popup-stat">
-                            <div class="pa-popup-stat-label">Research</div>
-                            <div class="pa-popup-stat-value" id="pub-count-${paId}" style="cursor: pointer" onclick="showPublications('${paId}', '${escapeHtml(name)}')">...</div>
-                        </div>
-                        <div class="pa-popup-stat">
-                            <div class="pa-popup-stat-label">🔥 Fire Groups</div>
-                            <div class="pa-popup-stat-value muted" id="fire-groups-${paId}">...</div>
-                        </div>
-                        <div class="pa-popup-stat">
-                            <div class="pa-popup-stat-label">Response Rate</div>
-                            <div class="pa-popup-stat-value muted" id="response-rate-${paId}">...</div>
+                        <div class="pa-popup-section-content" id="fire-content-${paId}">
+                            <div class="pa-popup-section-loading">Loading...</div>
                         </div>
                     </div>
-                    <div class="pa-popup-footer" id="data-status-${paId}" style="font-size: 9px; color: #555; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);"></div>
+                    
+                    <!-- Settlements Section -->
+                    <div class="pa-popup-section" id="ghsl-section-${paId}" onclick="togglePopupSection(this)">
+                        <div class="pa-popup-section-header">
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◻</span> Settlements</div>
+                            <span class="pa-popup-section-toggle">▼</span>
+                        </div>
+                        <div class="pa-popup-section-content" id="ghsl-content-${paId}">
+                            <div class="pa-popup-section-loading">Loading...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Roadless Section -->
+                    <div class="pa-popup-section" id="road-section-${paId}" onclick="togglePopupSection(this)">
+                        <div class="pa-popup-section-header">
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">═</span> Roads</div>
+                            <span class="pa-popup-section-toggle">▼</span>
+                        </div>
+                        <div class="pa-popup-section-content" id="road-content-${paId}">
+                            <div class="pa-popup-section-loading">Loading...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Research Section -->
+                    <div class="pa-popup-section" id="research-section-${paId}" onclick="togglePopupSection(this)">
+                        <div class="pa-popup-section-header">
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◉</span> Research</div>
+                            <span class="pa-popup-section-toggle">▼</span>
+                        </div>
+                        <div class="pa-popup-section-content" id="research-content-${paId}">
+                            <div class="pa-popup-section-loading">Loading...</div>
+                        </div>
+                    </div>
+                    
                     <div class="pa-popup-actions">
-                        <button class="pa-popup-btn${isSelected ? ' selected' : ''}" onclick="toggleParkSelection('${escapeHtml(wdpaId || name)}', '${escapeHtml(name)}', ${JSON.stringify(props.bbox || null).replace(/"/g, "'")}, ${JSON.stringify(props.center || (lngLat ? [lngLat.lng, lngLat.lat] : null)).replace(/"/g, "'")})">
+                        <button class="pa-popup-btn${isSelected ? ' selected' : ''}" onclick="event.stopPropagation(); toggleParkSelection('${escapeHtml(wdpaId || name)}', '${escapeHtml(name)}', ${JSON.stringify(props.bbox || null).replace(/"/g, "'")}, ${JSON.stringify(props.center || (lngLat ? [lngLat.lng, lngLat.lat] : null)).replace(/"/g, "'")})">
                             <svg viewBox="0 0 24 24" fill="${isSelected ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                             </svg>
                             ${isSelected ? 'Selected' : 'Select'}
                         </button>
-                        <button class="pa-popup-btn" onclick="showParkStatsModal('${paId}', '${escapeHtml(name)}')" id="stats-btn-${paId}">
-                            <span style="font-size: 14px;">📊</span>
-                            Stats
-                        </button>
-                        ${wdpaId ? `<a class="pa-popup-btn" href="https://www.protectedplanet.net/${wdpaId}" target="_blank" rel="noopener">
+                        ${wdpaId ? `<a class="pa-popup-btn" href="https://www.protectedplanet.net/${wdpaId}" target="_blank" rel="noopener" onclick="event.stopPropagation();">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                                 <polyline points="15 3 21 3 21 9"></polyline>
@@ -2669,57 +2715,140 @@
                 </div>
             `;
             
-            currentPAPopup = new maplibregl.Popup({ closeButton: true, maxWidth: '300px' })
+            currentPAPopup = new maplibregl.Popup({ closeButton: true, maxWidth: '320px' })
                 .setLngLat(lngLat)
                 .setHTML(popupContent)
                 .addTo(map);
             
-            // Fetch publication count and other data
+            // Fetch all section data
             if (paId) {
-                fetchPublicationCount(paId);
-                fetchFireStats(paId);
-                fetchDataStatus(paId);
+                fetchPopupFireData(paId);
+                fetchPopupGHSLData(paId);
+                fetchPopupRoadData(paId);
+                fetchPopupResearchData(paId, name);
             }
         }
         
-        // Store fire stats data for modal
-        const fireStatsCache = {};
+        // Toggle collapsible popup section
+        function togglePopupSection(section) {
+            // Prevent toggle if clicking on a link/button inside
+            if (event.target.closest('a, button')) return;
+            section.classList.toggle('open');
+        }
         
-        async function fetchFireStats(paId) {
+        // Popup section data fetching functions
+        async function fetchPopupFireData(paId) {
+            const el = document.getElementById(`fire-content-${paId}`);
+            if (!el) return;
             try {
                 const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/infractions?year=2023`);
                 const data = await resp.json();
-                
-                // Cache the data for the modal
-                fireStatsCache[paId] = data;
-                
-                const groupsEl = document.getElementById(`fire-groups-${paId}`);
-                const rateEl = document.getElementById(`response-rate-${paId}`);
-                const fireBtn = document.getElementById(`fire-btn-${paId}`);
-                
-                if (groupsEl) {
-                    if (data.total_groups > 0) {
-                        groupsEl.textContent = `${data.total_groups} (2023)`;
-                        groupsEl.classList.remove('muted');
-                        groupsEl.style.color = data.total_groups > 10 ? '#ef4444' : '#f97316';
-                        // Show the fire stats button
-                        if (fireBtn) fireBtn.style.display = 'flex';
-                    } else {
-                        groupsEl.textContent = '--';
-                    }
-                }
-                if (rateEl) {
-                    if (data.total_groups > 0) {
-                        const rate = Math.round(data.response_rate);
-                        rateEl.textContent = `${rate}%`;
-                        rateEl.classList.remove('muted');
-                        rateEl.style.color = rate >= 60 ? '#22c55e' : rate >= 40 ? '#f97316' : '#ef4444';
-                    } else {
-                        rateEl.textContent = '--';
-                    }
+                if (data.total_groups > 0) {
+                    const rate = Math.round(data.response_rate || 0);
+                    const rateClass = rate >= 60 ? '' : rate >= 40 ? ' warning' : ' bad';
+                    el.innerHTML = `
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Fire groups (2023)</span>
+                            <span class="pa-popup-mini-stat-value${data.total_groups > 10 ? ' bad' : ' warning'}">${data.total_groups}</span>
+                        </div>
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Response rate</span>
+                            <span class="pa-popup-mini-stat-value${rateClass}">${rate}%</span>
+                        </div>
+                        <div class="pa-popup-bar"><div class="pa-popup-bar-fill${rate >= 60 ? ' good' : rate >= 40 ? ' warning' : ' bad'}" style="width: ${rate}%;"></div></div>
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Avg days inside</span>
+                            <span class="pa-popup-mini-stat-value">${data.avg_days_inside ? data.avg_days_inside.toFixed(1) : '--'}</span>
+                        </div>
+                    `;
+                } else {
+                    el.innerHTML = '<div class="pa-popup-section-empty">No fire activity recorded</div>';
                 }
             } catch (e) {
-                console.log('Fire stats not available');
+                el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
+            }
+        }
+        
+        async function fetchPopupGHSLData(paId) {
+            const el = document.getElementById(`ghsl-content-${paId}`);
+            if (!el) return;
+            try {
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/stats`);
+                const data = await resp.json();
+                if (data.settlement) {
+                    const s = data.settlement;
+                    el.innerHTML = `
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Built-up area</span>
+                            <span class="pa-popup-mini-stat-value">${s.built_up_km2.toFixed(2)} km²</span>
+                        </div>
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Settlement count</span>
+                            <span class="pa-popup-mini-stat-value">${s.settlement_count || '--'}</span>
+                        </div>
+                        ${s.population_est ? `<div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Population est.</span>
+                            <span class="pa-popup-mini-stat-value">${formatNumber(s.population_est)}</span>
+                        </div>` : ''}
+                    `;
+                } else {
+                    el.innerHTML = '<div class="pa-popup-section-empty">No settlement data</div>';
+                }
+            } catch (e) {
+                el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
+            }
+        }
+        
+        async function fetchPopupRoadData(paId) {
+            const el = document.getElementById(`road-content-${paId}`);
+            if (!el) return;
+            try {
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/stats`);
+                const data = await resp.json();
+                if (data.roadless) {
+                    const r = data.roadless;
+                    const pct = r.roadless_percentage;
+                    const pctClass = pct >= 80 ? ' good' : pct >= 50 ? ' warning' : ' bad';
+                    el.innerHTML = `
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Roadless area</span>
+                            <span class="pa-popup-mini-stat-value${pctClass}">${pct.toFixed(1)}%</span>
+                        </div>
+                        <div class="pa-popup-bar"><div class="pa-popup-bar-fill${pct >= 80 ? ' good' : pct >= 50 ? ' warning' : ' bad'}" style="width: ${pct}%;"></div></div>
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Road length</span>
+                            <span class="pa-popup-mini-stat-value">${r.total_road_km.toFixed(1)} km</span>
+                        </div>
+                    `;
+                } else {
+                    el.innerHTML = '<div class="pa-popup-section-empty">Roadless data not yet processed</div>';
+                }
+            } catch (e) {
+                el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
+            }
+        }
+        
+        async function fetchPopupResearchData(paId, paName) {
+            const el = document.getElementById(`research-content-${paId}`);
+            if (!el) return;
+            try {
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/publications/count`);
+                const data = await resp.json();
+                if (data.count > 0) {
+                    el.innerHTML = `
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Publications found</span>
+                            <span class="pa-popup-mini-stat-value">${data.count}</span>
+                        </div>
+                        <button class="pa-popup-btn" style="margin-top: 8px; width: 100%;" onclick="event.stopPropagation(); showPublications('${paId}', '${escapeHtml(paName)}')">
+                            ▶ View papers
+                        </button>
+                    `;
+                } else {
+                    el.innerHTML = '<div class="pa-popup-section-empty">No publications found yet</div>';
+                }
+            } catch (e) {
+                el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
             }
         }
         
