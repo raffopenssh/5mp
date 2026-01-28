@@ -107,6 +107,9 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /admin", s.RequireAdmin(s.HandleAdminPage))
 	mux.HandleFunc("POST /admin/approve", s.RequireAdmin(s.HandleApproveUser))
 	mux.HandleFunc("POST /admin/reject", s.RequireAdmin(s.HandleRejectUser))
+	mux.HandleFunc("POST /admin/upload/fire", s.RequireAdmin(s.HandleUploadFire))
+	mux.HandleFunc("POST /admin/upload/ghsl", s.RequireAdmin(s.HandleUploadGHSL))
+	mux.HandleFunc("GET /admin/status", s.RequireAdmin(s.HandleProcessingStatus))
 	
 	// API routes
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)

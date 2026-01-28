@@ -317,6 +317,29 @@
         .pa-popup-btn svg { width: 12px; height: 12px; }
         .pa-popup-btn.selected { background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.3); color: #a855f7; }
 
+        /* Fire Stats Modal */
+        .fire-stats-container { padding: 20px; }
+        .fire-stats-title { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .fire-stats-subtitle { font-size: 12px; color: #888; margin-bottom: 16px; }
+        .fire-stats-divider { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 16px 0; }
+        .fire-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .fire-stat-card { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 12px; border: 1px solid rgba(255,255,255,0.06); }
+        .fire-stat-card.full-width { grid-column: span 2; }
+        .fire-stat-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .fire-stat-value { font-size: 20px; font-weight: 700; color: #fff; }
+        .fire-stat-value.good { color: #22c55e; }
+        .fire-stat-value.warning { color: #f97316; }
+        .fire-stat-value.bad { color: #ef4444; }
+        .fire-stat-detail { font-size: 11px; color: #666; margin-top: 4px; }
+        .fire-stat-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+        .fire-stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+        .fire-stat-bar-fill.good { background: linear-gradient(90deg, #22c55e, #16a34a); }
+        .fire-stat-bar-fill.warning { background: linear-gradient(90deg, #f97316, #ea580c); }
+        .fire-stat-bar-fill.bad { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        .fire-stats-empty { text-align: center; padding: 40px 20px; color: #666; }
+        .fire-stats-empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+        .fire-stats-empty-text { font-size: 14px; }
+
          
         @media (max-width: 768px) {
             .header { padding: 0 12px; }
@@ -758,6 +781,19 @@
                     <li style="margin-bottom: 6px;">Built-up surface area within/near PA</li>
                     <li style="margin-bottom: 6px;">Population estimates at 100 m resolution</li>
                 </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fire Stats Modal -->
+    <div id="modal-fire-stats" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 class="modal-title">🔥 Fire Activity</h2>
+                <button class="modal-close" onclick="closeModal('fire-stats')">×</button>
+            </div>
+            <div class="fire-stats-container" id="fire-stats-content">
+                <!-- Content populated by JavaScript -->
             </div>
         </div>
     </div>
@@ -2530,13 +2566,17 @@
                             </svg>
                             ${isSelected ? 'Selected' : 'Select'}
                         </button>
+                        <button class="pa-popup-btn" onclick="showFireStatsModal('${paId}', '${escapeHtml(name)}')" id="fire-btn-${paId}" style="display: none;">
+                            <span style="font-size: 14px;">🔥</span>
+                            Fire Stats
+                        </button>
                         ${wdpaId ? `<a class="pa-popup-btn" href="https://www.protectedplanet.net/${wdpaId}" target="_blank" rel="noopener">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                                 <polyline points="15 3 21 3 21 9"></polyline>
                                 <line x1="10" y1="14" x2="21" y2="3"></line>
                             </svg>
-                            Details
+                            WDPA
                         </a>` : ''}
                     </div>
                 </div>
@@ -2555,18 +2595,28 @@
             }
         }
         
+        // Store fire stats data for modal
+        const fireStatsCache = {};
+        
         async function fetchFireStats(paId) {
             try {
                 const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/infractions?year=2023`);
                 const data = await resp.json();
+                
+                // Cache the data for the modal
+                fireStatsCache[paId] = data;
+                
                 const groupsEl = document.getElementById(`fire-groups-${paId}`);
                 const rateEl = document.getElementById(`response-rate-${paId}`);
+                const fireBtn = document.getElementById(`fire-btn-${paId}`);
                 
                 if (groupsEl) {
                     if (data.total_groups > 0) {
                         groupsEl.textContent = `${data.total_groups} (2023)`;
                         groupsEl.classList.remove('muted');
                         groupsEl.style.color = data.total_groups > 10 ? '#ef4444' : '#f97316';
+                        // Show the fire stats button
+                        if (fireBtn) fireBtn.style.display = 'flex';
                     } else {
                         groupsEl.textContent = '--';
                     }
@@ -2584,6 +2634,79 @@
             } catch (e) {
                 console.log('Fire stats not available');
             }
+        }
+        
+        function showFireStatsModal(paId, paName) {
+            const data = fireStatsCache[paId];
+            const container = document.getElementById('fire-stats-content');
+            
+            if (!data || data.total_groups === 0) {
+                container.innerHTML = `
+                    <div class="fire-stats-empty">
+                        <div class="fire-stats-empty-icon">🔥</div>
+                        <div class="fire-stats-empty-text">No fire group data available for ${escapeHtml(paName)} yet.</div>
+                    </div>
+                `;
+                showModal('fire-stats');
+                return;
+            }
+            
+            const responseRate = Math.round(data.response_rate || 0);
+            const transitRate = data.total_groups > 0 ? Math.round((data.groups_transited / data.total_groups) * 100) : 0;
+            const avgDays = data.avg_days_burning ? data.avg_days_burning.toFixed(1) : '0';
+            
+            // Determine color classes
+            const responseClass = responseRate >= 60 ? 'good' : responseRate >= 40 ? 'warning' : 'bad';
+            const transitClass = transitRate <= 30 ? 'good' : transitRate <= 50 ? 'warning' : 'bad';
+            
+            container.innerHTML = `
+                <div class="fire-stats-title">
+                    <span>🔥</span>
+                    ${escapeHtml(paName)}
+                </div>
+                <div class="fire-stats-subtitle">Fire Activity • ${data.year || 2023}</div>
+                <hr class="fire-stats-divider">
+                
+                <div class="fire-stats-grid">
+                    <div class="fire-stat-card">
+                        <div class="fire-stat-label">Fire Groups Entered</div>
+                        <div class="fire-stat-value" style="color: ${data.total_groups > 10 ? '#ef4444' : '#f97316'};">${data.total_groups}</div>
+                        <div class="fire-stat-detail">detected entering park</div>
+                    </div>
+                    
+                    <div class="fire-stat-card">
+                        <div class="fire-stat-label">Avg Days Inside</div>
+                        <div class="fire-stat-value">${avgDays}</div>
+                        <div class="fire-stat-detail">days burning per group</div>
+                    </div>
+                    
+                    <div class="fire-stat-card">
+                        <div class="fire-stat-label">Stopped Inside</div>
+                        <div class="fire-stat-value ${responseClass}">${data.groups_stopped_inside || 0} <span style="font-size: 14px;">(${responseRate}%)</span></div>
+                        <div class="fire-stat-detail">${responseRate >= 60 ? '✓ Good response' : responseRate >= 40 ? '⚠ Moderate' : '✗ Needs attention'}</div>
+                        <div class="fire-stat-bar">
+                            <div class="fire-stat-bar-fill ${responseClass}" style="width: ${responseRate}%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="fire-stat-card">
+                        <div class="fire-stat-label">Transited Through</div>
+                        <div class="fire-stat-value ${transitClass}">${data.groups_transited || 0} <span style="font-size: 14px;">(${transitRate}%)</span></div>
+                        <div class="fire-stat-detail">${transitRate <= 30 ? '✓ Low transit' : transitRate <= 50 ? '⚠ Moderate' : '✗ High transit'}</div>
+                        <div class="fire-stat-bar">
+                            <div class="fire-stat-bar-fill ${transitClass}" style="width: ${transitRate}%;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="fire-stats-divider">
+                <div style="font-size: 11px; color: #666; text-align: center;">
+                    Response Rate = groups that stopped inside (rangers may have contacted them)<br>
+                    Transit Rate = groups that passed through without stopping
+                </div>
+            `;
+            
+            showModal('fire-stats');
         }
         
         async function fetchDataStatus(paId) {
