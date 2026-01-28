@@ -156,7 +156,10 @@ func (s *Server) Serve(addr string) error {
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
 	
 	slog.Info("starting server", "addr", addr)
-	return http.ListenAndServe(addr, mux)
+	
+	// Wrap with password protection middleware
+	protectedHandler := s.PasswordMiddleware(mux)
+	return http.ListenAndServe(addr, protectedHandler)
 }
 
 
