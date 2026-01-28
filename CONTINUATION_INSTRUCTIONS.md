@@ -1,76 +1,87 @@
 # Continuation Instructions
 
-## Current State (2026-01-27)
+## Current State (2026-01-28)
 
-### Fire Group Infraction Analysis - COMPLETED
+### Data Processing Complete
 
-New analysis in `scripts/analyze_group_infractions.py`:
+**Fire Data:**
+- 1,764,155 fire detections stored (inside-park fires only)
+- 398 park-group infractions analyzed (with trajectory JSON)
+- Years: 2018-2024 processed
+- Raw CSVs deleted to save space (5GB freed)
 
-**Key Metrics:**
-- `days_burning_inside`: How long fires detected inside PA
-- `groups_transited`: Groups that passed through PA, continued burning outside (NO staff contact)
-- `groups_stopped_inside`: Fires stopped inside PA (possible staff contact/intervention)
-- Full trajectory: origin → entry → inside → exit → destination
-- Cross-border tracking with 300km buffer
+**GHSL Settlement Data:**
+- 155 parks processed (limited by available tiles)
+- Only 5 of 30 needed tiles available
+- Settlements detected: varies by park coverage
 
-**Interpretation:**
-- `STOPPED_INSIDE` = Good sign - rangers may have contacted the group
-- `TRANSITED` = Bad sign - group burned through PA with no intervention
-- Compare parks on these metrics for management effectiveness
+**OSM Roadless:**
+- 3 parks processed (analysis ongoing or interrupted)
+- Script: `scripts/osm_roadless_analysis.py`
 
-**Sample Results (Chinko 2023):**
-- 18 groups entered PA
-- 12 stopped inside (67%) - potential ranger contact
-- 6 transited (33%) - no intervention
-- Avg 9.9 days burning inside
+### Streaming Processors (Memory Efficient)
 
-### Database Tables
+New scripts that process directly from ZIP files without full extraction:
 
+1. **Fire Processor**: `scripts/fire_processor_streaming.py`
+   - Streams fires from ZIP, processes per-park
+   - Deletes ZIP after processing
+   - Usage: `python scripts/fire_processor_streaming.py --zip /path/to/viirs.zip`
+
+2. **GHSL Processor**: `scripts/ghsl_processor_streaming.py`
+   - Extracts TIF to temp dir, processes, deletes
+   - Usage: `python scripts/ghsl_processor_streaming.py --zip /path/to/tile.zip`
+
+### Admin Upload Interface
+
+- `/admin` page has bulk upload for VIIRS CSV and GHSL ZIP
+- Uploads trigger background processing via Python scripts
+- Files deleted after processing to save disk space
+- Shows needed GHSL tile download links
+
+### Park Stats API
+
+`GET /api/parks/{id}/stats` returns:
+- Fire activity with trajectory insights
+- Settlement data (where available)
+- Roadless percentage (where available)
+- Narrative insights based on data
+
+### Database Schema
+
+Key tables:
 ```sql
--- Group-based trajectory analysis
-park_group_infractions:
-  - total_groups, transhumance_groups, herder_groups
-  - avg_days_burning, median_days_burning, max_days_burning
-  - groups_transited, groups_stopped_inside, groups_stopped_after
-  - trajectories_json (full trajectory data with origin/dest)
-
--- Simple fire count analysis  
-park_fire_analysis:
-  - total_fires, dry_season_fires
-  - total_infractions, infraction_rate
-  - monthly_stats_json
+fire_detections (1.7M rows) - individual fires inside parks
+park_group_infractions (398 rows) - fire group analysis with trajectories_json
+ghsl_data (155 rows) - settlement data per park
+osm_roadless_data (3 rows) - roadless analysis
 ```
-
-### Fire Data Available
-
-Downloaded 2022-2024 for African countries in `data/fire/viirs-jpss1/{year}/`
-- Tanzania, Kenya, Ethiopia, Zambia, Zimbabwe, Mozambique
-- Botswana, Namibia, South Africa, CAR, DRC, Angola
-- Cameroon, Chad, Uganda, Rwanda, Gabon
 
 ### TODO
 
-1. **Run full analysis** - Currently only 10 park-years done
+1. **Resume OSM roadless analysis** - only 3 parks done
    ```bash
-   python3 scripts/analyze_group_infractions.py  # Takes ~10 min
+   source .venv/bin/activate
+   nohup python scripts/osm_roadless_analysis.py > logs/osm_roadless.log 2>&1 &
    ```
 
-2. **Add to park modal** - Show group infraction stats in globe.html popup
-   - Groups entered this year
-   - % that stopped inside (response rate)
-   - Avg days burning inside
+2. **Get more GHSL tiles** - 25 needed, JRC server blocked from this network
+   - Admin page shows download links for manual download
+   - Upload via admin interface after downloading elsewhere
 
-3. **OSM Roads / Roadless** - Not started
-   - Use Overpass API to fetch roads
-   - Calculate % area >1km from roads
+3. **Fire data 2025** - need FIRMS API access or COTS proxy
+   - Current data ends at 2024
 
-4. **Keep park_analysis.html** but make it match globe.html style
-   - Or just enhance the park modal with expandable details
+4. **Improve park modal** - show insights as collapsible narrative text
 
 ### Key Files
-- `scripts/analyze_group_infractions.py` - Group trajectory analysis
-- `scripts/fire_group_detection.py` - DBSCAN clustering + trajectory linking
-- `scripts/update_fire_infractions.py` - Simple fire count analysis
+
+- `srv/park_stats_handlers.go` - park stats API with insights
+- `srv/admin_handlers.go` - bulk upload handlers
+- `scripts/fire_processor_streaming.py` - memory-efficient fire processing
+- `scripts/ghsl_processor_streaming.py` - memory-efficient GHSL processing
+- `scripts/osm_roadless_analysis.py` - roadless wilderness analysis
 
 ### Git
-Push before ending: `git push origin main`
+
+Commit frequently: `git add -A && git commit -m "message" && git push github main`

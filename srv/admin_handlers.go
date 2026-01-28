@@ -8,7 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -300,7 +300,7 @@ func (s *Server) HandleUploadFire(w http.ResponseWriter, r *http.Request) {
 
 	slog.Info("fire data uploaded", "filename", header.Filename, "size", written, "temp", tmpFile.Name())
 
-	// Start background processing
+	// Start background processing with Python script
 	go func() {
 		setProcessingStatus(fmt.Sprintf("Processing fire data: %s (%d bytes)", header.Filename, written))
 		defer func() {
@@ -308,11 +308,16 @@ func (s *Server) HandleUploadFire(w http.ResponseWriter, r *http.Request) {
 			setProcessingStatus("")
 		}()
 
-		// Determine target directory based on filename (e.g., fire_nrt_J1V-C2_xxxxx.csv -> year)
-		// For now, just log that processing would happen
-		time.Sleep(2 * time.Second) // Simulate processing
-		slog.Info("fire data processing complete", "filename", header.Filename)
-		setProcessingStatus("Fire data processed: " + header.Filename)
+		// Run the streaming fire processor
+		cmd := exec.Command(".venv/bin/python", "scripts/fire_processor_streaming.py", "--zip", tmpFile.Name())
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			slog.Error("fire processing failed", "error", err, "output", string(output))
+			setProcessingStatus("Fire processing failed: " + err.Error())
+		} else {
+			slog.Info("fire data processing complete", "filename", header.Filename, "output", string(output))
+			setProcessingStatus("Fire data processed: " + header.Filename)
+		}
 		time.Sleep(5 * time.Second)
 	}()
 
@@ -412,21 +417,29 @@ func (s *Server) HandleUploadGHSL(w http.ResponseWriter, r *http.Request) {
 
 	slog.Info("GHSL tile extracted", "tile", tileID, "path", destPath, "size", written)
 
-	// Start background processing
+	// Start background processing with Python script
 	go func() {
 		setProcessingStatus(fmt.Sprintf("Processing GHSL tile: %s", tileID))
 		defer func() {
+			// Clean up extracted TIF after processing to save disk space
+			os.RemoveAll(ghslDir)
 			setProcessingStatus("")
 		}()
 
-		// Run any post-processing (e.g., regenerate indexes)
-		time.Sleep(2 * time.Second) // Simulate processing
-		slog.Info("GHSL tile processing complete", "tile", tileID)
-		setProcessingStatus("GHSL tile processed: " + tileID)
+		// Run the streaming GHSL processor
+		cmd := exec.Command(".venv/bin/python", "scripts/ghsl_processor_streaming.py", "--zip", destPath, "--keep")
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			slog.Error("GHSL processing failed", "error", err, "output", string(output))
+			setProcessingStatus("GHSL processing failed: " + err.Error())
+		} else {
+			slog.Info("GHSL tile processing complete", "tile", tileID, "output", string(output))
+			setProcessingStatus("GHSL tile processed: " + tileID)
+		}
 		time.Sleep(5 * time.Second)
 	}()
 
-	http.Redirect(w, r, fmt.Sprintf("/admin?success=GHSL+tile+%s+uploaded+and+extracted+(%d+bytes)", tileID, written), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/admin?success=GHSL+tile+%s+uploaded.+Processing+in+background.", tileID), http.StatusSeeOther)
 }
 
 // extractGHSLTileID extracts the tile ID (e.g., R5_C18) from a GHSL filename.

@@ -172,10 +172,22 @@ def process_park_year(park, year, conn):
     transited = len([t for t in infraction_trajs if t['outcome'] == 'TRANSITED'])
     avg_days = np.mean([t['days_burning_inside'] for t in infraction_trajs])
     
+    # Store simplified trajectory data (origin, destination, outcome for each group)
+    traj_summary = [{
+        'origin': {'lat': t['origin_lat'], 'lon': t['origin_lon'], 'date': t['origin_date']},
+        'dest': {'lat': t['dest_lat'], 'lon': t['dest_lon'], 'date': t['dest_date']},
+        'entry_date': t['entry_date'],
+        'last_inside': t['last_inside_date'],
+        'days_inside': t['days_burning_inside'],
+        'fires_inside': t['fires_inside'],
+        'outcome': t['outcome'],
+        'path': t['centroids'][:20]  # Limit path points to save space
+    } for t in infraction_trajs]
+    
     conn.execute("""INSERT OR REPLACE INTO park_group_infractions 
-        (park_id, year, total_groups, groups_stopped_inside, groups_transited, avg_days_burning, analyzed_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)""",
-        (park_id, year, len(infraction_trajs), stopped, transited, round(avg_days, 2), datetime.now().isoformat()))
+        (park_id, year, total_groups, groups_stopped_inside, groups_transited, avg_days_burning, analyzed_at, trajectories_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (park_id, year, len(infraction_trajs), stopped, transited, round(avg_days, 2), datetime.now().isoformat(), json.dumps(traj_summary)))
     
     return {'inside_fires': inside_count, 'groups': len(infraction_trajs), 'stopped': stopped, 'transited': transited}
 
