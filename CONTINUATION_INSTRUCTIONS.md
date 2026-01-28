@@ -1,77 +1,70 @@
 # Continuation Instructions
 
-## Current State (2026-01-28 23:26 UTC)
+## Current State (2026-01-28 23:30 UTC)
 
 ### Active Background Processes
-- **OSM Places Quick Download**: PID 2847 - Processing first 10 parks
-  - Log: `logs/osm_quick.log`
-  - Currently: 282 places downloaded
+1. **OSM Places Quick Download**: PID 2847 - 6+ parks processed, 1125+ places
+2. **Deforestation Analyzer**: PID 2703 - Processing CAF_Chinko
 
-### Database Status (1.7M+ records preserved)
-- **fire_detections**: 1,764,155 records ✓ DO NOT DELETE
-- **park_group_infractions**: 398 records ✓
-- **osm_places**: 282 records (growing)
-- **osm_roadless_data**: 3 records
-- **park_settlements**: Empty (pending GHSL processing)
-- **deforestation_events**: Empty (pending processing)
+### Database Status (Fire data preserved!)
+| Table | Count | Status |
+|-------|-------|--------|
+| fire_detections | 1,764,155 | ✓ PRESERVED |
+| park_group_infractions | 398 | ✓ PRESERVED |
+| osm_places | 1,125+ | Growing |
+| osm_roadless_data | 3 | Needs expansion |
+| park_settlements | 0 | Pending GHSL |
+| deforestation_events | 0 | Processing |
 
 ### Downloaded Data Files
-- `data/ghsl_examples.zip` - 749MB GHSL tiles with population data
-- `data/ghsl_manual.pdf` - 15MB documentation  
-- `data/hansen_lossyear_10N_020E.tif` - 76MB Hansen deforestation
+- `data/ghsl_examples.zip` - 749MB (BUILT_S + POP tiles)
+- `data/ghsl_manual.pdf` - 15MB
+- `data/hansen_lossyear_10N_020E.tif` - 76MB
 
-### New Scripts Created (Tasks 7-9)
-1. **scripts/ghsl_enhanced_processor.py** - Settlement detection with population
-2. **scripts/download_osm_places.py** - OSM villages/rivers download
-3. **scripts/deforestation_analyzer.py** - Hansen forest loss analysis
+### Scripts Created (Tasks 7-9)
+| Script | Purpose |
+|--------|---------|
+| `scripts/ghsl_enhanced_processor.py` | Settlement + population detection |
+| `scripts/download_osm_places.py` | OSM villages/rivers |
+| `scripts/deforestation_analyzer.py` | Hansen forest loss |
 
-### Run Order (Sequential to avoid memory issues)
-1. ✓ OSM Places (running) - completes in ~30 min for 10 parks
-2. GHSL Enhanced - run after OSM completes
-3. Deforestation - run after GHSL completes
+### Commands to Run Tasks
 
-### Commands
-
-Start Server:
 ```bash
+# Start server
 cd /home/exedev/5mpglobe && make build && pkill -f "./server"; nohup ./server > logs/server.log 2>&1 &
-```
 
-Resume OSM Download (all parks):
-```bash
+# Resume OSM Places (all parks)
 cd /home/exedev/5mpglobe && source .venv/bin/activate
 nohup python scripts/download_osm_places.py --buffer-km 20 > logs/osm_places.log 2>&1 &
-```
 
-Run GHSL Processing:
-```bash
-cd /home/exedev/5mpglobe && source .venv/bin/activate  
-python scripts/ghsl_enhanced_processor.py --zip data/ghsl_examples.zip
-```
+# Run GHSL Processing
+source .venv/bin/activate
+python scripts/ghsl_enhanced_processor.py --park CAF_Chinko
 
-Run Deforestation:
-```bash
-cd /home/exedev/5mpglobe && source .venv/bin/activate
+# Run Deforestation
+source .venv/bin/activate
 python scripts/deforestation_analyzer.py
 ```
 
 ### Monitor Progress
 ```bash
-tail -f logs/osm_quick.log
-sqlite3 db.sqlite3 "SELECT COUNT(*) FROM osm_places;"
+# Check processes
 ps aux | grep python | grep -v grep
+
+# Database counts
+sqlite3 db.sqlite3 "SELECT 'osm_places', COUNT(*) FROM osm_places UNION SELECT 'deforest', COUNT(*) FROM deforestation_events;"
+
+# OSM progress by park
+sqlite3 db.sqlite3 "SELECT park_id, COUNT(*) FROM osm_places GROUP BY park_id;"
 ```
 
-### DB Download
-```bash
-cp db.sqlite3 srv/static/downloads/5mp_data.sqlite3
-# URL: https://five-mp-conservation-effort.exe.xyz:8000/static/downloads/5mp_data.sqlite3
-```
+### URLs
+- App: https://five-mp-conservation-effort.exe.xyz:8000/?pwd=ngi2026
+- DB: https://five-mp-conservation-effort.exe.xyz:8000/static/downloads/5mp_data.sqlite3
 
----
-
-## API Keys
+### API Key
 - earthaccess: I3Ca5DUxxQH7nv0miCbBnngrerhMDOkIQfgOHLVP
 
-## App Password
-- ngi2026, apn2026, or j2026
+### App Passwords
+- ngi2026, apn2026, j2026
