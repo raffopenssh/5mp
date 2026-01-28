@@ -1,47 +1,43 @@
 # Continuation Instructions
 
-## Current State (2026-01-28 22:35 UTC)
+## Current State (2026-01-28 22:55 UTC)
 
 ### Background Processes Running
-- **Fire Processing**: PID 846 - Processing 2019 African countries (still running, ~15 hours in)
-- **OSM Roadless**: PID 1887 - Just restarted, 128/162 parks done
+- **Fire Processing**: PID 846 - Processing 2021 African countries (still running)
+- **OSM Roadless**: PID 1888 - 13/34 parks processed (157 total done)
 
 ### Database Status
-- **fire_detections**: 1,764,155 records (DO NOT DELETE - took hours to calculate)
-- **park_group_infractions**: 398 records
+- **fire_detections**: ~3.8M records (still processing)
+- **osm_roadless_data**: 157 records
 - **park_ghsl_data**: 155 records
-- **osm_roadless_data**: 128 records (34 remaining)
-- **park_fire_analysis**: 231 records
 
-### Database Dump
-Download: https://five-mp-conservation-effort.exe.xyz:8000/static/downloads/5mp_data.sqlite3?pwd=ngi2026
+### Recently Completed Tasks
+- ✅ Task 6: Patrol intensity now based on temporal frequency (monthly visits)
+  - New SQL query GetEffortDataWithMonthCounts
+  - Dry months count fully, rainy months weighted 0.3
+- ✅ Task 5: Enhanced tooltip with collapsible sections
+  - Fire Activity, Settlements, Roads, Research sections
+  - Monocolor unicode icons, inline data loading
+- ✅ Task 14: Mobile responsive improvements
+  - Touch-friendly defaults, proper panel positioning
 
-### Completed Tasks
-- ✅ Task 10: Password protection (ngi2026, apn2026, j2026)
-- ✅ Task 13: UI polish - removed STATS label, added footer with views/version/GitHub
+### Server
+Restart after changes:
+```bash
+cd /home/exedev/5mp && make build && pkill -f "./server"; ./server &
+# Public URL: https://fivemp-testing.exe.xyz:8000/?pwd=ngi2026
+```
 
 ---
 
 ## REMAINING TASKS (Priority Order)
 
-### HIGH PRIORITY - UI Tasks (Can do now, no memory conflict)
+### HIGH PRIORITY
 
-#### Task 5: UI Improvement - Merge Modal into Tooltip ⭐
-- Remove separate park modal, enhance tooltip with collapsible sections
-- Show: fire, settlements, roadless, legal texts, encroachment logs
-- Use monocolor icons matching toolbar style
-- Respect current time filter for stats
-- Code: `srv/templates/globe.html` PA popup section (~line 2500)
-
-#### Task 6: Patrol Intensity Logic Fix ⭐
-- Current: single visit = 100% (WRONG)
-- Correct: need monthly visits in dry season (Nov-Apr) for full coverage
-- Rainy season (May-Oct): lower expectation due to inaccessibility
-- Code: Grid intensity calculation in handlers and globe.html
-
-#### Task 14: Mobile Responsive
-- Better positions for stats and legend
-- Test and fix mobile layout
+#### Task 11: Paper Research Improvement
+- Filter to ensure park name appears in abstract
+- Currently returns papers that may not be directly about the park
+- Code: `srv/server.go` publication fetching
 
 ### MEDIUM PRIORITY - Background Processing Tasks
 
@@ -66,13 +62,6 @@ Download: https://five-mp-conservation-effort.exe.xyz:8000/static/downloads/5mp_
 - Store events with GeoJSON and descriptions
 
 ### LOWER PRIORITY
-
-#### Task 1-4: Various UI enhancements
-- Already partially done, review needed
-
-#### Task 11: Paper Research Improvement
-- Filter to ensure park name appears in abstract
-- Code: `srv/server.go` publication fetching
 
 #### Task 12: VIIRS API Fix (Lowest Priority)
 - Try CORS proxy or earthaccess library
@@ -100,12 +89,6 @@ tail -20 /home/exedev/5mp/logs/osm_roadless.log
 sqlite3 /home/exedev/5mp/db.sqlite3 "SELECT 'fire', COUNT(*) FROM fire_detections UNION SELECT 'osm', COUNT(*) FROM osm_roadless_data UNION SELECT 'ghsl', COUNT(*) FROM park_ghsl_data;"
 ```
 
-### Server
-```bash
-cd /home/exedev/5mp && make build && pkill -f "./server"; ./server &
-# Public URL: https://fivemp-testing.exe.xyz:8000/?pwd=ngi2026
-```
-
 ---
 
 ## API Keys
@@ -116,4 +99,3 @@ cd /home/exedev/5mp && make build && pkill -f "./server"; ./server &
 - GHSL tiles: https://drive.google.com/file/d/1BVynyEFKnYB-gwEsbfc2MILAGQcJlo6K/view
 - GHSL examples: https://drive.google.com/file/d/1Ubr6iYyFXpjTF-uDma6mrUww4dyLEhu5/view
 - GHSL manual: https://drive.google.com/file/d/1yS_lD07eQUe46ffrYrfao-C9ghya9nYh/view
-
