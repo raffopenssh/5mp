@@ -42,6 +42,17 @@ KEYSTONES_PATH = DATA_DIR / "keystones_with_boundaries.json"
 
 YEARS = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
 
+# African countries in the ZIP (filename format)
+AFRICAN_COUNTRIES = [
+    'Algeria', 'Angola', 'Benin', 'Botswana', 'Cameroon',
+    'Central_African_Republic', 'Chad', 'Cote_d_Ivoire',
+    'Democratic_Republic_of_the_Congo', 'Equatorial_Guinea',
+    'Ethiopia', 'Gabon', 'Ghana', 'Kenya', 'Lesotho', 'Liberia',
+    'Malawi', 'Mali', 'Mozambique', 'Namibia', 'Niger', 'Nigeria',
+    'Republic_of_Congo', 'Rwanda', 'Senegal', 'South_Africa',
+    'South_Sudan', 'Sudan', 'Tanzania', 'Togo', 'Uganda', 'Zambia', 'Zimbabwe'
+]
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -59,10 +70,15 @@ def get_db():
     return conn
 
 
-def stream_fires_from_zip(zip_path: Path, year: int = None) -> Iterator[Dict]:
+def stream_fires_from_zip(zip_path: Path, year: int = None, africa_only: bool = True) -> Iterator[Dict]:
     """
     Stream fire records from a ZIP file without extracting.
     Yields one record at a time to minimize memory usage.
+    
+    Args:
+        zip_path: Path to the ZIP file
+        year: Filter by year (optional)
+        africa_only: If True, only process African countries (much faster)
     """
     with zipfile.ZipFile(zip_path, 'r') as zf:
         for name in zf.namelist():
@@ -74,6 +90,12 @@ def stream_fires_from_zip(zip_path: Path, year: int = None) -> Iterator[Dict]:
             # Filter by year if specified
             if year and str(year) not in name:
                 continue
+            
+            # Filter by African countries if specified
+            if africa_only:
+                is_african = any(country in name for country in AFRICAN_COUNTRIES)
+                if not is_african:
+                    continue
                 
             logger.info(f"  Processing {name}...")
             try:
