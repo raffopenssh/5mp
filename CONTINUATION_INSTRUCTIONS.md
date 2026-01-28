@@ -1,87 +1,179 @@
 # Continuation Instructions
 
-## Current State (2026-01-28)
+## Current State (2026-01-28 07:30 UTC)
 
-### Data Processing Complete
+### Background Processes Running
+- **Fire Processing**: PID 846 - Processing African countries from fire_data.zip
+- **OSM Roadless**: PID 778 - Processing parks (2/157 done, ~1.3 hours remaining)
 
-**Fire Data:**
-- 1,764,155 fire detections stored (inside-park fires only)
-- 398 park-group infractions analyzed (with trajectory JSON)
-- Years: 2018-2024 processed
-- Raw CSVs deleted to save space (5GB freed)
+### Database Status
+- **fire_detections**: 1,764,155 records (DO NOT DELETE - took hours to calculate)
+- **park_group_infractions**: 398 records (being updated with trajectories)
+- **park_ghsl_data**: 155 records
+- **osm_roadless_data**: 6 records (growing)
+- **park_fire_analysis**: 231 records
 
-**GHSL Settlement Data:**
-- 155 parks processed (limited by available tiles)
-- Only 5 of 30 needed tiles available
-- Settlements detected: varies by park coverage
+### Database Dump
+Download pre-processed data: https://five-mp-conservation-effort.exe.xyz:8000/static/downloads/5mp_data.sqlite3
 
-**OSM Roadless:**
-- 3 parks processed (analysis ongoing or interrupted)
-- Script: `scripts/osm_roadless_analysis.py`
+### Data Files Location
+- Fire data ZIP: `data/downloads/fire_data.zip` (2.3GB)
+- GHSL data ZIP: needs re-download from Google Drive
 
-### Streaming Processors (Memory Efficient)
+---
 
-New scripts that process directly from ZIP files without full extraction:
+## OPEN TASKS (Priority Order)
 
-1. **Fire Processor**: `scripts/fire_processor_streaming.py`
-   - Streams fires from ZIP, processes per-park
-   - Deletes ZIP after processing
-   - Usage: `python scripts/fire_processor_streaming.py --zip /path/to/viirs.zip`
+### HIGH PRIORITY - Do First (Sequential to avoid memory conflicts)
 
-2. **GHSL Processor**: `scripts/ghsl_processor_streaming.py`
-   - Extracts TIF to temp dir, processes, deletes
-   - Usage: `python scripts/ghsl_processor_streaming.py --zip /path/to/tile.zip`
+#### Task 1: Notification Click Enhancement
+- When users click upload notifications, highlight pixels, zoom smoothly, set time frame
+- Code location: `srv/templates/globe.html` lines 2116-2270
+- Already partially working, needs time range sync improvement
 
-### Admin Upload Interface
+#### Task 2: Processing Status in UI
+- Park modal footer should show which data is complete vs processing
+- Add estimated completion dates
+- Code location: `srv/templates/globe.html` showParkStatsModal function (~line 2639)
 
-- `/admin` page has bulk upload for VIIRS CSV and GHSL ZIP
-- Uploads trigger background processing via Python scripts
-- Files deleted after processing to save disk space
-- Shows needed GHSL tile download links
+#### Task 3: Legal Texts & Checklist
+- Legal texts data: `data/legal_frameworks.json` (10 countries covered)
+- Checklist schema: `data/park_checklist_schema.json`
+- Ensure all checklist items are visible in park info
 
-### Park Stats API
+#### Task 4: Manifest Documentation
+- Add methodology docs for: effort intensity, fire, roadless, GHSL
+- Location: Create `docs/METHODOLOGY.md` or update README
 
-`GET /api/parks/{id}/stats` returns:
-- Fire activity with trajectory insights
-- Settlement data (where available)
-- Roadless percentage (where available)
-- Narrative insights based on data
+#### Task 5: UI Improvement - Merge Modal into Tooltip
+- Remove separate park modal, enhance tooltip with collapsible sections
+- Show key info: fire, settlements, roadless, legal texts, encroachment logs
+- Use monocolor icons matching toolbar style
+- Respect current time filter for stats
+- Code: `srv/templates/globe.html` PA popup section (~line 2500)
 
-### Database Schema
+#### Task 6: Patrol Intensity Logic Fix
+- Current: single visit = 100% (wrong)
+- Correct: need monthly visits in dry season for full coverage
+- Rainy season: lower expectation due to inaccessibility
+- Code: Grid intensity calculation in handlers and globe.html
 
-Key tables:
-```sql
-fire_detections (1.7M rows) - individual fires inside parks
-park_group_infractions (398 rows) - fire group analysis with trajectories_json
-ghsl_data (155 rows) - settlement data per park
-osm_roadless_data (3 rows) - roadless analysis
+### MEDIUM PRIORITY - Can Run in Background
+
+#### Task 7: GHSL Data Enhancement
+- Download additional GHSL examples: https://drive.google.com/file/d/1Ubr6iYyFXpjTF-uDma6mrUww4dyLEhu5/view
+- Download manual: https://drive.google.com/file/d/1yS_lD07eQUe46ffrYrfao-C9ghya9nYh/view
+- API key for earthaccess: I3Ca5DUxxQH7nv0miCbBnngrerhMDOkIQfgOHLVP
+- Process: building footprints, population estimates, settlement classification
+- Label settlements with nearby OSM place names
+- Store GPS locations for settlements in park and buffer
+- **Memory**: Work with zipped files directly, don't extract
+
+#### Task 8: Geographic Context in Text
+- Enhance fire/GHSL messages with real place names
+- Download villages/rivers from Overpass API
+- Store simplified GeoJSON for reference
+- Example output: "herder group came from Toulouse (Sudan), crossed X river south of Yalinga..."
+
+#### Task 9: Deforestation Analysis
+- Data source: https://storage.googleapis.com/earthenginepartners-hansen/GFC-2024-v1.12/Hansen_GFC-2024-v1.12_lossyear_10N_020E.tif
+- Value encoding: 0=2000, 24=2024
+- Detect patterns: farming (near villages), mining (near rivers, no villages), roads (strip-shaped), forestry
+- Store events with GeoJSON, year, description, nearby places
+- Include village names, pattern type, area cleared, trends
+
+### LOWER PRIORITY
+
+#### Task 10: Password Protection
+- Add password gate: "ngi2026", "apn2026", or "j2026"
+- Keep database download accessible (add password as URL param)
+
+#### Task 11: Paper Research Improvement
+- Current papers often don't specifically mention the park
+- Filter to ensure park name appears in abstract
+- Code: `srv/server.go` publication fetching
+
+#### Task 12: VIIRS API Fix (Lowest Priority)
+- Current: only area function works
+- Try CORS proxy or earthaccess library
+- Alternative: ESA CCI FireCCI dataset
+- API key for earthaccess: I3Ca5DUxxQH7nv0miCbBnngrerhMDOkIQfgOHLVP
+
+#### Task 13: UI Polish
+- Remove "STATS (CUSTOM)" label - users understand naturally
+- Move view counter before "MapLibre" with | separator
+- Add version number (count commits)
+- Add GitHub icon linking to repo
+
+#### Task 14: Mobile Responsive
+- Better positions for stats and legend
+- Test and fix mobile layout
+
+---
+
+## Sub-Agent Guidelines
+
+### Memory Management
+- **NEVER run multiple data-intensive tasks simultaneously**
+- Fire, GHSL, OSM, Deforestation processing must be sequential
+- Check `free -h` before starting heavy processing
+- Use streaming/chunked processing for large files
+
+### File Locations
+```
+/home/exedev/5mp/
+├── srv/templates/globe.html    # Main UI
+├── srv/server.go               # Main server
+├── srv/park_stats_handlers.go  # Park stats API
+├── srv/admin_handlers.go       # Admin + uploads
+├── scripts/
+│   ├── fire_processor_streaming.py
+│   ├── osm_roadless_analysis.py
+│   ├── ghsl_processor_streaming.py
+│   └── regenerate_trajectories.py
+├── data/
+│   ├── keystones_with_boundaries.json
+│   ├── legal_frameworks.json
+│   └── downloads/
+└── db.sqlite3
 ```
 
-### TODO
+### Commit Frequently
+```bash
+git add <specific files>
+git commit -m "descriptive message"
+git push origin main
+```
 
-1. **Resume OSM roadless analysis** - only 3 parks done
-   ```bash
-   source .venv/bin/activate
-   nohup python scripts/osm_roadless_analysis.py > logs/osm_roadless.log 2>&1 &
-   ```
+### Check Background Process Status
+```bash
+# Check running processes
+ps aux | grep -E "fire_processor|osm_roadless|ghsl_processor" | grep python
 
-2. **Get more GHSL tiles** - 25 needed, JRC server blocked from this network
-   - Admin page shows download links for manual download
-   - Upload via admin interface after downloading elsewhere
+# Check logs
+tail -20 /home/exedev/5mp/logs/fire_processing.log
+tail -20 /home/exedev/5mp/logs/osm_roadless.log
 
-3. **Fire data 2025** - need FIRMS API access or COTS proxy
-   - Current data ends at 2024
+# Check progress files
+cat /home/exedev/5mp/data/osm_roadless_progress.json
+```
 
-4. **Improve park modal** - show insights as collapsible narrative text
+### Server
+```bash
+# Rebuild and restart
+cd /home/exedev/5mp && make build
+# Server runs on port 8000
+# Public URL: https://fivemp-testing.exe.xyz:8000/
+```
 
-### Key Files
+---
 
-- `srv/park_stats_handlers.go` - park stats API with insights
-- `srv/admin_handlers.go` - bulk upload handlers
-- `scripts/fire_processor_streaming.py` - memory-efficient fire processing
-- `scripts/ghsl_processor_streaming.py` - memory-efficient GHSL processing
-- `scripts/osm_roadless_analysis.py` - roadless wilderness analysis
+## Google Drive Links for Data
+- Fire data: https://drive.google.com/file/d/1w59TvLxsOjTSRQWeQx3XYEdzeSTydUXP/view
+- GHSL tiles: https://drive.google.com/file/d/1BVynyEFKnYB-gwEsbfc2MILAGQcJlo6K/view
+- GHSL examples: https://drive.google.com/file/d/1Ubr6iYyFXpjTF-uDma6mrUww4dyLEhu5/view
+- GHSL manual: https://drive.google.com/file/d/1yS_lD07eQUe46ffrYrfao-C9ghya9nYh/view
 
-### Git
+## API Keys
+- earthaccess: I3Ca5DUxxQH7nv0miCbBnngrerhMDOkIQfgOHLVP
 
-Commit frequently: `git add -A && git commit -m "message" && git push github main`
