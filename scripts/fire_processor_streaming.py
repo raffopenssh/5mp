@@ -66,6 +66,9 @@ def stream_fires_from_zip(zip_path: Path, year: int = None) -> Iterator[Dict]:
     """
     with zipfile.ZipFile(zip_path, 'r') as zf:
         for name in zf.namelist():
+            # Skip macOS metadata files
+            if '__MACOSX' in name or name.startswith('._'):
+                continue
             if not name.endswith('.csv'):
                 continue
             # Filter by year if specified
@@ -73,30 +76,34 @@ def stream_fires_from_zip(zip_path: Path, year: int = None) -> Iterator[Dict]:
                 continue
                 
             logger.info(f"  Processing {name}...")
-            with zf.open(name) as f:
-                # Read CSV from zip
-                text_wrapper = io.TextIOWrapper(f, encoding='utf-8')
-                reader = csv.DictReader(text_wrapper)
-                for row in reader:
-                    try:
-                        yield {
-                            'latitude': float(row.get('latitude', 0)),
-                            'longitude': float(row.get('longitude', 0)),
-                            'acq_date': row.get('acq_date', ''),
-                            'acq_time': row.get('acq_time', ''),
-                            'bright_ti4': float(row.get('bright_ti4', 0)) if row.get('bright_ti4') else None,
-                            'scan': float(row.get('scan', 0)) if row.get('scan') else None,
-                            'track': float(row.get('track', 0)) if row.get('track') else None,
-                            'satellite': row.get('satellite', ''),
-                            'instrument': row.get('instrument', ''),
-                            'confidence': row.get('confidence', ''),
-                            'version': row.get('version', ''),
-                            'bright_ti5': float(row.get('bright_ti5', 0)) if row.get('bright_ti5') else None,
-                            'frp': float(row.get('frp', 0)) if row.get('frp') else None,
-                            'daynight': row.get('daynight', ''),
-                        }
-                    except (ValueError, TypeError):
-                        continue
+            try:
+                with zf.open(name) as f:
+                    # Read CSV from zip with error handling for encoding
+                    text_wrapper = io.TextIOWrapper(f, encoding='utf-8', errors='ignore')
+                    reader = csv.DictReader(text_wrapper)
+                    for row in reader:
+                        try:
+                            yield {
+                                'latitude': float(row.get('latitude', 0)),
+                                'longitude': float(row.get('longitude', 0)),
+                                'acq_date': row.get('acq_date', ''),
+                                'acq_time': row.get('acq_time', ''),
+                                'bright_ti4': float(row.get('bright_ti4', 0)) if row.get('bright_ti4') else None,
+                                'scan': float(row.get('scan', 0)) if row.get('scan') else None,
+                                'track': float(row.get('track', 0)) if row.get('track') else None,
+                                'satellite': row.get('satellite', ''),
+                                'instrument': row.get('instrument', ''),
+                                'confidence': row.get('confidence', ''),
+                                'version': row.get('version', ''),
+                                'bright_ti5': float(row.get('bright_ti5', 0)) if row.get('bright_ti5') else None,
+                                'frp': float(row.get('frp', 0)) if row.get('frp') else None,
+                                'daynight': row.get('daynight', ''),
+                            }
+                        except (ValueError, TypeError):
+                            continue
+            except Exception as e:
+                logger.warning(f"  Error reading {name}: {e}")
+                continue
 
 
 def stream_fires_from_directory(data_dir: Path, year: int, bbox: Tuple[float, float, float, float]) -> Iterator[Dict]:
