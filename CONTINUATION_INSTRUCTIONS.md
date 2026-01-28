@@ -1,89 +1,93 @@
 # Continuation Instructions
 
-## Current State (2026-01-28 22:55 UTC)
+## Current State (2026-01-28 23:20 UTC)
 
-### Background Processes Running
-- **Fire Processing**: PID 846 - Processing 2021 African countries (still running)
-- **OSM Roadless**: PID 1888 - 13/34 parks processed (157 total done)
+### Active Background Processes
+- **OSM Places Download**: PID 2728 - Downloading villages/rivers/towns for all parks
+  - Log: `logs/osm_places.log`
+  - Progress: ~1 park per 30-60 seconds (rate limited)
 
 ### Database Status
-- **fire_detections**: ~3.8M records (still processing)
-- **osm_roadless_data**: 157 records
-- **park_ghsl_data**: 155 records
+- **fire_detections**: 1,764,155 records ✓
+- **park_group_infractions**: 398 records ✓ 
+- **osm_roadless_data**: 3 records (needs more processing)
+- **osm_places**: New table (populating)
+- **park_settlements**: New table (empty)
+- **deforestation_events**: New table (empty)
 
-### Recently Completed Tasks
-- ✅ Task 6: Patrol intensity now based on temporal frequency (monthly visits)
-  - New SQL query GetEffortDataWithMonthCounts
-  - Dry months count fully, rainy months weighted 0.3
-- ✅ Task 5: Enhanced tooltip with collapsible sections
-  - Fire Activity, Settlements, Roads, Research sections
-  - Monocolor unicode icons, inline data loading
-- ✅ Task 14: Mobile responsive improvements
-  - Touch-friendly defaults, proper panel positioning
-- ✅ Task 11: Paper research filtering
-  - Quoted park name for exact phrase matching
-  - Filter to only papers mentioning park in title/abstract
+### Downloaded Data Files
+- `data/ghsl_examples.zip` - 749MB GHSL tiles (BUILT_S 10m/100m, POP 100m)
+- `data/ghsl_manual.pdf` - 15MB GHSL documentation
+- `data/hansen_lossyear_10N_020E.tif` - 76MB Hansen deforestation data
+
+### New Scripts Created (Tasks 7-9)
+1. **scripts/ghsl_enhanced_processor.py** - Task 7
+   - Combines built-up surface with population data
+   - Creates park_settlements with GPS coordinates
+   - Labels settlements with OSM village names
+
+2. **scripts/download_osm_places.py** - Task 8
+   - Downloads villages, rivers, towns from Overpass API
+   - Rate limited (30s between parks)
+   - Provides utility functions for place lookup
+
+3. **scripts/deforestation_analyzer.py** - Task 9
+   - Processes Hansen GFC-2024 lossyear data
+   - Classifies patterns (farming, mining, road, forestry)
+   - Generates narratives with nearby place names
+
+### Run Order (Due to Memory Constraints)
+1. ✓ OSM Places (currently running) - light memory usage
+2. WAIT for OSM Places to finish, then run GHSL Enhanced
+3. WAIT for both, then run Deforestation Analyzer
 
 ### Server
-Restart after changes:
 ```bash
-cd /home/exedev/5mp && make build && pkill -f "./server"; ./server &
-# Public URL: https://fivemp-testing.exe.xyz:8000/?pwd=ngi2026
+cd /home/exedev/5mpglobe && make build && pkill -f "./server"; ./server &
+# URL: https://five-mp-conservation-effort.exe.xyz:8000/?pwd=ngi2026
+```
+
+### Monitor Progress
+```bash
+# OSM Places
+tail -f logs/osm_places.log
+sqlite3 db.sqlite3 "SELECT COUNT(*) FROM osm_places;"
+
+# Check all processes
+ps aux | grep python | grep -v grep
+```
+
+### DB Snapshot Download
+```bash
+# Copy latest DB for download
+cp db.sqlite3 srv/static/downloads/5mp_data.sqlite3
+# URL: https://five-mp-conservation-effort.exe.xyz:8000/static/downloads/5mp_data.sqlite3
 ```
 
 ---
 
-## REMAINING TASKS (Priority Order)
+## REMAINING TASKS
 
-### MEDIUM PRIORITY - Background Processing Tasks
+### Task 7: GHSL Enhancement (Script Ready)
+- Run after OSM places completes:
+  ```bash
+  source .venv/bin/activate
+  python scripts/ghsl_enhanced_processor.py --zip data/ghsl_examples.zip
+  ```
 
-#### Task 7: GHSL Data Enhancement
-**WAIT for fire processing to complete before starting**
-- Download GHSL examples: https://drive.google.com/file/d/1Ubr6iYyFXpjTF-uDma6mrUww4dyLEhu5/view
-- Download manual: https://drive.google.com/file/d/1yS_lD07eQUe46ffrYrfao-C9ghya9nYh/view
-- Process: building footprints, population estimates
-- Label settlements with OSM place names
-- **Memory**: Work with zipped files directly
+### Task 8: Geographic Context (Running)
+- OSM places download in progress
+- Will enable rich place-based descriptions for fire/settlement events
 
-#### Task 8: Geographic Context in Text
-**WAIT for OSM to complete**
-- Download villages/rivers from Overpass API
-- Store simplified GeoJSON for reference
-- Enhance fire/GHSL messages with place names
+### Task 9: Deforestation (Script Ready)
+- Run after Tasks 7 & 8:
+  ```bash
+  source .venv/bin/activate
+  python scripts/deforestation_analyzer.py --park CAF_Chinko
+  ```
 
-#### Task 9: Deforestation Analysis
-**WAIT for Tasks 7 & 8**
-- Data: Hansen GFC-2024 lossyear tiles
-- Detect patterns: farming, mining, roads, forestry
-- Store events with GeoJSON and descriptions
-
-### LOWER PRIORITY
-
-#### Task 12: VIIRS API Fix (Lowest Priority)
-- Try CORS proxy or earthaccess library
-- API key: I3Ca5DUxxQH7nv0miCbBnngrerhMDOkIQfgOHLVP
-
----
-
-## Sub-Agent Guidelines
-
-### Memory Management
-- **NEVER run multiple data-intensive tasks simultaneously**
-- Check `free -h` before starting heavy processing
-- Fire processing currently using ~500MB
-
-### Check Background Process Status
-```bash
-# Check running processes
-ps aux | grep -E "fire_processor|osm_roadless" | grep python
-
-# Check logs
-tail -20 /home/exedev/5mp/logs/fire_processing.log
-tail -20 /home/exedev/5mp/logs/osm_roadless.log
-
-# Database counts
-sqlite3 /home/exedev/5mp/db.sqlite3 "SELECT 'fire', COUNT(*) FROM fire_detections UNION SELECT 'osm', COUNT(*) FROM osm_roadless_data UNION SELECT 'ghsl', COUNT(*) FROM park_ghsl_data;"
-```
+### Task 12: VIIRS API Fix
+- Try earthaccess library with key: I3Ca5DUxxQH7nv0miCbBnngrerhMDOkIQfgOHLVP
 
 ---
 
@@ -91,7 +95,5 @@ sqlite3 /home/exedev/5mp/db.sqlite3 "SELECT 'fire', COUNT(*) FROM fire_detection
 - earthaccess: I3Ca5DUxxQH7nv0miCbBnngrerhMDOkIQfgOHLVP
 
 ## Google Drive Links
-- Fire data: https://drive.google.com/file/d/1w59TvLxsOjTSRQWeQx3XYEdzeSTydUXP/view
-- GHSL tiles: https://drive.google.com/file/d/1BVynyEFKnYB-gwEsbfc2MILAGQcJlo6K/view
 - GHSL examples: https://drive.google.com/file/d/1Ubr6iYyFXpjTF-uDma6mrUww4dyLEhu5/view
 - GHSL manual: https://drive.google.com/file/d/1yS_lD07eQUe46ffrYrfao-C9ghya9nYh/view
