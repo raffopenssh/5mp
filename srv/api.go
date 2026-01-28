@@ -38,6 +38,7 @@ type GeoJSONGeometry struct {
 // Query params:
 //   - year: filter by year (optional, defaults to current year)
 //   - month: filter by month (optional, 1-12)
+//   - from/to: date range (optional, format: YYYY-MM-DD)
 func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
@@ -48,12 +49,12 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
 
-	// If from/to provided, extract years to query
-	var years []int64
+	// Determine year range for query
+	var fromYear, toYear int64
+	now := time.Now()
 	if fromStr != "" || toStr != "" {
-		now := time.Now()
-		fromYear := int64(now.Year() - 1)
-		toYear := int64(now.Year())
+		fromYear = int64(now.Year() - 1)
+		toYear = int64(now.Year())
 		if fromStr != "" {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
 				fromYear = int64(t.Year())
@@ -64,114 +65,149 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 				toYear = int64(t.Year())
 			}
 		}
-		for y := fromYear; y <= toYear; y++ {
-			years = append(years, y)
-		}
 	} else if yearStr != "" {
 		if y, err := strconv.ParseInt(yearStr, 10, 64); err == nil {
-			years = []int64{y}
+			fromYear = y
+			toYear = y
 		}
 	} else {
 		// Default to current year
-		years = []int64{int64(time.Now().Year())}
+		fromYear = int64(now.Year())
+		toYear = int64(now.Year())
 	}
 
-	// Aggregate data across all requested years
-	aggregated := make(map[string]*struct {
-		LatCenter       float64
-		LonCenter       float64
-		TotalDistance   float64
-		TotalPoints     int64
-		UniqueUploads   int64
-		MovementType    string
-		CoveragePercent *float64
-	})
+	var features []GeoJSONFeature
 
-	for _, year := range years {
-		var rows []dbgen.GetEffortDataByYearRow
-		var err error
-
-		if monthStr != "" {
-			month, parseErr := strconv.ParseInt(monthStr, 10, 64)
-			if parseErr != nil || month < 1 || month > 12 {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusBadRequest)
-				json.NewEncoder(w).Encode(map[string]string{"error": "invalid month parameter"})
-				return
-			}
-			monthRows, err := q.GetEffortDataByYearMonth(ctx, dbgen.GetEffortDataByYearMonthParams{
+	// Special case: single month query (no month counting needed)
+	if monthStr != "" {
+		month, parseErr := strconv.ParseInt(monthStr, 10, 64)
+		if parseErr != nil || month < 1 || month > 12 {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": "invalid month parameter"})
+			return
+		}
+		// Query each year and aggregate
+		aggregated := make(map[string]*struct {
+			LatCenter       float64
+			LonCenter       float64
+			TotalDistance   float64
+			TotalPoints     int64
+			UniqueUploads   int64
+			MovementType    string
+			CoveragePercent *float64
+		})
+		for year := fromYear; year <= toYear; year++ {
+			rows, err := q.GetEffortDataByYearMonth(ctx, dbgen.GetEffortDataByYearMonthParams{
 				Year:  year,
 				Month: month,
 			})
 			if err != nil {
 				continue
 			}
-			// Convert to common row type
-			for _, r := range monthRows {
-				rows = append(rows, dbgen.GetEffortDataByYearRow{
-					GridCellID:      r.GridCellID,
-					LatCenter:       r.LatCenter,
-					LonCenter:       r.LonCenter,
-					TotalDistanceKm: r.TotalDistanceKm,
-					TotalPoints:     r.TotalPoints,
-					UniqueUploads:   r.UniqueUploads,
-					MovementType:    r.MovementType,
-					CoveragePercent: r.CoveragePercent,
-				})
-			}
-		} else {
-			rows, err = q.GetEffortDataByYear(ctx, year)
-			if err != nil {
-				continue
+			for _, row := range rows {
+				if agg, exists := aggregated[row.GridCellID]; exists {
+					agg.TotalDistance += row.TotalDistanceKm
+					agg.TotalPoints += row.TotalPoints
+					agg.UniqueUploads += row.UniqueUploads
+					if row.CoveragePercent != nil && (agg.CoveragePercent == nil || *row.CoveragePercent > *agg.CoveragePercent) {
+						agg.CoveragePercent = row.CoveragePercent
+					}
+				} else {
+					aggregated[row.GridCellID] = &struct {
+						LatCenter       float64
+						LonCenter       float64
+						TotalDistance   float64
+						TotalPoints     int64
+						UniqueUploads   int64
+						MovementType    string
+						CoveragePercent *float64
+					}{
+						LatCenter:       row.LatCenter,
+						LonCenter:       row.LonCenter,
+						TotalDistance:   row.TotalDistanceKm,
+						TotalPoints:     row.TotalPoints,
+						UniqueUploads:   row.UniqueUploads,
+						MovementType:    row.MovementType,
+						CoveragePercent: row.CoveragePercent,
+					}
+				}
 			}
 		}
-
-		for _, row := range rows {
-			if agg, exists := aggregated[row.GridCellID]; exists {
-				agg.TotalDistance += row.TotalDistanceKm
-				agg.TotalPoints += row.TotalPoints
-				agg.UniqueUploads += row.UniqueUploads
-				// Take max coverage across periods
-				if row.CoveragePercent != nil && (agg.CoveragePercent == nil || *row.CoveragePercent > *agg.CoveragePercent) {
-					agg.CoveragePercent = row.CoveragePercent
-				}
+		features = make([]GeoJSONFeature, 0, len(aggregated))
+		for gridCellID, agg := range aggregated {
+			// For single month, use 1 dry or rainy month based on which season
+			var dryMonths, rainyMonths int64
+			if month >= 11 || month <= 4 { // Nov-Apr = dry season
+				dryMonths = 1
 			} else {
-				aggregated[row.GridCellID] = &struct {
-					LatCenter       float64
-					LonCenter       float64
-					TotalDistance   float64
-					TotalPoints     int64
-					UniqueUploads   int64
-					MovementType    string
-					CoveragePercent *float64
-				}{
-					LatCenter:       row.LatCenter,
-					LonCenter:       row.LonCenter,
-					TotalDistance:   row.TotalDistanceKm,
-					TotalPoints:     row.TotalPoints,
-					UniqueUploads:   row.UniqueUploads,
-					MovementType:    row.MovementType,
-					CoveragePercent: row.CoveragePercent,
+				rainyMonths = 1
+			}
+			feature := buildGridFeature(
+				gridCellID,
+				agg.LatCenter,
+				agg.LonCenter,
+				agg.TotalDistance,
+				agg.TotalPoints,
+				agg.UniqueUploads,
+				agg.MovementType,
+				agg.CoveragePercent,
+				dryMonths,
+				rainyMonths,
+			)
+			features = append(features, feature)
+		}
+	} else {
+		// Use the optimized SQL query that calculates month counts
+		rows, err := q.GetEffortDataWithMonthCounts(ctx, dbgen.GetEffortDataWithMonthCountsParams{
+			Year:   fromYear,
+			Year_2: toYear,
+		})
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"error": "database error"})
+			return
+		}
+
+		features = make([]GeoJSONFeature, 0, len(rows))
+		for _, row := range rows {
+			// Convert nullable fields from SQL
+			var totalDistance float64
+			if row.TotalDistanceKm != nil {
+				totalDistance = *row.TotalDistanceKm
+			}
+			var totalPoints int64
+			if row.TotalPoints != nil {
+				totalPoints = int64(*row.TotalPoints)
+			}
+			var uniqueUploads int64
+			if row.UniqueUploads != nil {
+				if v, ok := row.UniqueUploads.(int64); ok {
+					uniqueUploads = v
 				}
 			}
+			var coveragePercent *float64
+			if row.CoveragePercent != nil {
+				if v, ok := row.CoveragePercent.(float64); ok {
+					coveragePercent = &v
+				}
+			}
+
+			feature := buildGridFeature(
+				row.GridCellID,
+				row.LatCenter,
+				row.LonCenter,
+				totalDistance,
+				totalPoints,
+				uniqueUploads,
+				"all", // movement_type is always 'all' in this query
+				coveragePercent,
+				row.DryMonths,
+				row.RainyMonths,
+			)
+			features = append(features, feature)
 		}
-	}
-
-	// Build GeoJSON features from aggregated data
-	features := make([]GeoJSONFeature, 0, len(aggregated))
-
-	for gridCellID, agg := range aggregated {
-		feature := buildGridFeature(
-			gridCellID,
-			agg.LatCenter,
-			agg.LonCenter,
-			agg.TotalDistance,
-			agg.TotalPoints,
-			agg.UniqueUploads,
-			agg.MovementType,
-			agg.CoveragePercent,
-		)
-		features = append(features, feature)
 	}
 
 	fc := GeoJSONFeatureCollection{
@@ -186,22 +222,37 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 
 // buildGridFeature creates a GeoJSON feature for a grid cell.
 // Returns a Point at the center of the cell for circle visualization.
-// coveragePercent is the spatial coverage (0-100) of subcells visited within the 10x10km cell.
-func buildGridFeature(gridCellID string, latCenter, lonCenter, totalDistanceKm float64, totalPoints, uniqueUploads int64, movementType string, coveragePercent *float64) GeoJSONFeature {
-	// Calculate intensity based on SPATIAL COVERAGE of the 100 sq km cell
-	// Each 10x10km cell is divided into 100 subcells of ~1km x 1km
-	// Intensity = percentage of subcells visited
-	// 80% spatial coverage = full intensity (1.0)
-	// >80% = overglow effect
+// dryMonths and rainyMonths are the count of distinct months visited in each season.
+// For full patrol coverage, rangers need to visit each cell monthly during dry season.
+func buildGridFeature(gridCellID string, latCenter, lonCenter, totalDistanceKm float64, totalPoints, uniqueUploads int64, movementType string, coveragePercent *float64, dryMonths, rainyMonths int64) GeoJSONFeature {
+	// Calculate intensity based on TEMPORAL FREQUENCY of visits
+	// 
+	// For effective poacher/herder detection:
+	// - Dry season (Nov-Apr = 6 months): Need monthly visits, weight = 1.0 per month
+	// - Rainy season (May-Oct = 6 months): Limited access, weight = 0.3 per month
+	// 
+	// Full intensity (1.0) = visited all dry season months + some rainy months
+	// Expected weighted visits = 6 * 1.0 (dry) + 6 * 0.3 (rainy) = 7.8
+	// But for practical purposes, we use 6 dry months as the baseline (ignoring rainy)
+	
 	var intensity float64
-	if coveragePercent != nil && *coveragePercent > 0 {
-		// Use actual spatial coverage
-		intensity = *coveragePercent / 80.0 // 80% coverage = 1.0 intensity
+	
+	// Primary calculation: temporal frequency (monthly visits)
+	if dryMonths > 0 || rainyMonths > 0 {
+		// Weight: dry months count fully, rainy months count 30%
+		actualWeight := float64(dryMonths) + float64(rainyMonths)*0.3
+		// Expected: 6 dry months = full coverage for a year
+		expectedWeight := 6.0
+		intensity = actualWeight / expectedWeight
+	} else if coveragePercent != nil && *coveragePercent > 0 {
+		// Fallback: spatial coverage (legacy behavior)
+		intensity = *coveragePercent / 80.0
 	} else {
-		// Fallback: estimate from distance (legacy data)
-		// Assume 1km of patrol = ~1% coverage (rough approximation)
+		// Last fallback: estimate from distance
+		// ~80km patrol in a year = ~1 full coverage (very rough)
 		intensity = totalDistanceKm / 80.0
 	}
+	
 	if intensity > 1.5 {
 		intensity = 1.5 // Cap for overglow effect
 	}

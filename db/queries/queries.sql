@@ -200,3 +200,23 @@ ORDER BY visit_date;
 -- name: UpdateEffortCoverage :exec
 UPDATE effort_data SET coverage_percent = ? 
 WHERE grid_cell_id = ? AND year = ? AND month = ? AND movement_type = ?;
+
+-- name: GetEffortDataWithMonthCounts :many
+SELECT 
+    g.id as grid_cell_id,
+    g.lat_center,
+    g.lon_center,
+    SUM(e.total_distance_km) as total_distance_km,
+    SUM(e.total_points) as total_points,
+    MAX(e.unique_uploads) as unique_uploads,
+    MAX(e.coverage_percent) as coverage_percent,
+    GROUP_CONCAT(DISTINCT e.month) as months_visited,
+    COUNT(DISTINCT e.month) as month_count,
+    COUNT(DISTINCT CASE WHEN e.month IN (11, 12, 1, 2, 3, 4) THEN e.month END) as dry_months,
+    COUNT(DISTINCT CASE WHEN e.month IN (5, 6, 7, 8, 9, 10) THEN e.month END) as rainy_months
+FROM grid_cells g
+JOIN effort_data e ON e.grid_cell_id = g.id
+WHERE e.year BETWEEN ? AND ? 
+  AND e.day IS NULL 
+  AND e.movement_type = 'all'
+GROUP BY g.id, g.lat_center, g.lon_center;
