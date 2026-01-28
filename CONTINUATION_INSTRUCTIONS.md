@@ -20,6 +20,9 @@
   - Monocolor unicode icons, inline data loading
 - ✅ Task 14: Mobile responsive improvements
   - Touch-friendly defaults, proper panel positioning
+- ✅ Task 11: Paper research filtering
+  - Quoted park name for exact phrase matching
+  - Filter to only papers mentioning park in title/abstract
 
 ### Server
 Restart after changes:
@@ -31,13 +34,6 @@ cd /home/exedev/5mp && make build && pkill -f "./server"; ./server &
 ---
 
 ## REMAINING TASKS (Priority Order)
-
-### HIGH PRIORITY
-
-#### Task 11: Paper Research Improvement
-- Filter to ensure park name appears in abstract
-- Currently returns papers that may not be directly about the park
-- Code: `srv/server.go` publication fetching
 
 ### MEDIUM PRIORITY - Background Processing Tasks
 
