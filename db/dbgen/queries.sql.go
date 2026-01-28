@@ -409,6 +409,81 @@ func (q *Queries) GetEffortDataByYearMonth(ctx context.Context, arg GetEffortDat
 	return items, nil
 }
 
+const getEffortDataWithMonthCounts = `-- name: GetEffortDataWithMonthCounts :many
+SELECT 
+    g.id as grid_cell_id,
+    g.lat_center,
+    g.lon_center,
+    SUM(e.total_distance_km) as total_distance_km,
+    SUM(e.total_points) as total_points,
+    MAX(e.unique_uploads) as unique_uploads,
+    MAX(e.coverage_percent) as coverage_percent,
+    GROUP_CONCAT(DISTINCT e.month) as months_visited,
+    COUNT(DISTINCT e.month) as month_count,
+    COUNT(DISTINCT CASE WHEN e.month IN (11, 12, 1, 2, 3, 4) THEN e.month END) as dry_months,
+    COUNT(DISTINCT CASE WHEN e.month IN (5, 6, 7, 8, 9, 10) THEN e.month END) as rainy_months
+FROM grid_cells g
+JOIN effort_data e ON e.grid_cell_id = g.id
+WHERE e.year BETWEEN ? AND ? 
+  AND e.day IS NULL 
+  AND e.movement_type = 'all'
+GROUP BY g.id, g.lat_center, g.lon_center
+`
+
+type GetEffortDataWithMonthCountsParams struct {
+	Year   int64 `json:"year"`
+	Year_2 int64 `json:"year_2"`
+}
+
+type GetEffortDataWithMonthCountsRow struct {
+	GridCellID      string      `json:"grid_cell_id"`
+	LatCenter       float64     `json:"lat_center"`
+	LonCenter       float64     `json:"lon_center"`
+	TotalDistanceKm *float64    `json:"total_distance_km"`
+	TotalPoints     *float64    `json:"total_points"`
+	UniqueUploads   interface{} `json:"unique_uploads"`
+	CoveragePercent interface{} `json:"coverage_percent"`
+	MonthsVisited   string      `json:"months_visited"`
+	MonthCount      int64       `json:"month_count"`
+	DryMonths       int64       `json:"dry_months"`
+	RainyMonths     int64       `json:"rainy_months"`
+}
+
+func (q *Queries) GetEffortDataWithMonthCounts(ctx context.Context, arg GetEffortDataWithMonthCountsParams) ([]GetEffortDataWithMonthCountsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getEffortDataWithMonthCounts, arg.Year, arg.Year_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetEffortDataWithMonthCountsRow{}
+	for rows.Next() {
+		var i GetEffortDataWithMonthCountsRow
+		if err := rows.Scan(
+			&i.GridCellID,
+			&i.LatCenter,
+			&i.LonCenter,
+			&i.TotalDistanceKm,
+			&i.TotalPoints,
+			&i.UniqueUploads,
+			&i.CoveragePercent,
+			&i.MonthsVisited,
+			&i.MonthCount,
+			&i.DryMonths,
+			&i.RainyMonths,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getGPXUpload = `-- name: GetGPXUpload :one
 SELECT id, user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points FROM gpx_uploads WHERE id = ?
 `

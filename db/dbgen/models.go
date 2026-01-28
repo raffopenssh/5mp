@@ -68,6 +68,14 @@ type FireDetection struct {
 	ProtectedAreaID *string  `json:"protected_area_id"`
 }
 
+type GhslDatum struct {
+	ID              int64    `json:"id"`
+	ParkID          string   `json:"park_id"`
+	BuiltUpKm2      *float64 `json:"built_up_km2"`
+	SettlementCount *int64   `json:"settlement_count"`
+	AnalyzedAt      *string  `json:"analyzed_at"`
+}
+
 type GpxUpload struct {
 	ID              int64      `json:"id"`
 	UserID          string     `json:"user_id"`
@@ -95,6 +103,14 @@ type Migration struct {
 	MigrationNumber int64     `json:"migration_number"`
 	MigrationName   string    `json:"migration_name"`
 	ExecutedAt      time.Time `json:"executed_at"`
+}
+
+type OsmRoadlessDatum struct {
+	ID                 int64    `json:"id"`
+	ParkID             string   `json:"park_id"`
+	RoadlessPercentage *float64 `json:"roadless_percentage"`
+	TotalRoadKm        *float64 `json:"total_road_km"`
+	AnalyzedAt         *string  `json:"analyzed_at"`
 }
 
 type PaPublication struct {
@@ -139,6 +155,33 @@ type ParkDocument struct {
 	FileType    *string    `json:"file_type"`
 	UploadedBy  *string    `json:"uploaded_by"`
 	UploadedAt  *time.Time `json:"uploaded_at"`
+}
+
+type ParkFireAnalysis struct {
+	ID                     int64    `json:"id"`
+	ParkID                 string   `json:"park_id"`
+	AnalyzedAt             *string  `json:"analyzed_at"`
+	TotalFires             *int64   `json:"total_fires"`
+	TotalInfractions       *int64   `json:"total_infractions"`
+	InfractionRate         *float64 `json:"infraction_rate"`
+	PeakInfractionDay      *string  `json:"peak_infraction_day"`
+	PeakInfractionCount    *int64   `json:"peak_infraction_count"`
+	NetSouthKm             *float64 `json:"net_south_km"`
+	AvgDailyMovementKm     *float64 `json:"avg_daily_movement_km"`
+	MonthlyStatsJson       *string  `json:"monthly_stats_json"`
+	GroupsStoppedInside    *int64   `json:"groups_stopped_inside"`
+	GroupsTransitedThrough *int64   `json:"groups_transited_through"`
+}
+
+type ParkGroupInfraction struct {
+	ID                  int64    `json:"id"`
+	ParkID              string   `json:"park_id"`
+	Year                int64    `json:"year"`
+	TotalGroups         *int64   `json:"total_groups"`
+	GroupsStoppedInside *int64   `json:"groups_stopped_inside"`
+	GroupsTransited     *int64   `json:"groups_transited"`
+	AvgDaysBurning      *float64 `json:"avg_days_burning"`
+	AnalyzedAt          *string  `json:"analyzed_at"`
 }
 
 type Session struct {
