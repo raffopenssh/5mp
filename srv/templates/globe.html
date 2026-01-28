@@ -55,6 +55,11 @@
         .fab.visible { display: flex; }
         .info-btn { position: fixed; bottom: 10px; right: 10px; width: 28px; height: 28px; border-radius: 50%; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.2); color: #22c55e; font-size: 14px; cursor: pointer; z-index: 500; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .info-btn:hover { background: rgba(34,197,94,0.2); border-color: #22c55e; }
+        .footer-attribution { position: fixed; bottom: 0; right: 0; background: rgba(18,18,18,0.85); padding: 4px 10px; font-size: 10px; color: #666; z-index: 100; border-top-left-radius: 6px; display: flex; align-items: center; gap: 6px; }
+        .footer-attribution a { color: #888; text-decoration: none; display: flex; align-items: center; }
+        .footer-attribution a:hover { color: #22c55e; }
+        .footer-sep { color: #444; }
+        .github-link svg { fill: currentColor; }
 
         .maplibregl-ctrl-attrib { background: rgba(18,18,18,0.8) !important; }
 
@@ -401,7 +406,6 @@
             </div></div>
 
     <div class="stats-panel">
-        <h3 id="stats-title">Stats <span class="stats-period">(12 mo)</span></h3>
         <div class="stats-item" id="stat-pixels" onclick="handleStatClick('pixels')" title="Click to highlight active grid cells">
             <span class="stats-label">Active Pixels</span>
             <span class="stats-value" id="stats-pixels">15</span>
@@ -414,7 +418,6 @@
             <span class="stats-label">Total Patrols</span>
             <span class="stats-value" id="stats-patrols">80</span>
         </div>
-        <div class="page-views" id="page-views"></div>
     </div>
 
     
@@ -631,6 +634,21 @@
             <path d="M12 8h.01"></path>
         </svg>
     </button>
+
+    <!-- Footer attribution bar -->
+    <div class="footer-attribution">
+        <span id="page-views-footer">0 views</span>
+        <span class="footer-sep">|</span>
+        <span>v0.70</span>
+        <span class="footer-sep">|</span>
+        <a href="https://github.com/raffopenssh/5mp" target="_blank" title="View on GitHub" class="github-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+        </a>
+        <span class="footer-sep">|</span>
+        <a href="https://maplibre.org/" target="_blank" class="maplibre-link">MapLibre</a>
+    </div>
 
     
     <div id="modal-login" class="modal-overlay" onclick="closeModalOnOverlay(event)">
@@ -3430,7 +3448,8 @@
         var key = '5mp_views';
         var views = parseInt(localStorage.getItem(key) || '0', 10) + 1;
         localStorage.setItem(key, views);
-        document.getElementById('page-views').textContent = (views >= 1000 ? views.toLocaleString() : views) + ' views';
+        var el = document.getElementById('page-views-footer');
+        if (el) el.textContent = (views >= 1000 ? views.toLocaleString() : views) + ' views';
     })();
     </script>
 </body></html>
