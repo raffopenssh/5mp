@@ -150,6 +150,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/parks/{id}/infractions", s.HandleAPIParkInfractionSummary)
 	mux.HandleFunc("GET /api/parks/{id}/publications", s.HandleAPIPublications)
 	mux.HandleFunc("GET /api/parks/{id}/checklist", s.HandleAPIGetParkChecklist)
+	mux.HandleFunc("GET /api/parks/{id}/stats", s.HandleAPIParkStats)
 
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
