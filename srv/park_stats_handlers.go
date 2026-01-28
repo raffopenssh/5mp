@@ -83,7 +83,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 	// Query GHSL settlement data
 	var settlement SettlementStats
 	err = s.DB.QueryRow(`
-		SELECT built_up_km2, settlement_count
+		SELECT built_up_area_km2, settlement_count
 		FROM ghsl_data
 		WHERE park_id = ?
 	`, internalID).Scan(&settlement.BuiltUpKm2, &settlement.SettlementCount)
@@ -95,7 +95,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 	// Query OSM roadless data
 	var roadless RoadlessStats
 	err = s.DB.QueryRow(`
-		SELECT roadless_percentage, total_road_km
+		SELECT roadless_percentage, road_length_km
 		FROM osm_roadless_data
 		WHERE park_id = ?
 	`, internalID).Scan(&roadless.RoadlessPercentage, &roadless.TotalRoadKm)
