@@ -128,14 +128,12 @@ func (s *Server) runResearchSync(ctx context.Context) {
 
 // fetchPublicationsForPA fetches research papers for a protected area.
 func (s *Server) fetchPublicationsForPA(ctx context.Context, paID, name, country string) (int, error) {
-	// Build search query - use park name and country for better results
-	query := name
-	if country != "" {
-		query = name + " " + country
-	}
-	searchQuery := url.QueryEscape(query + " conservation wildlife")
+	// Use quoted name for exact phrase matching, combined with conservation terms
+	// This ensures we get papers that actually mention the park name
+	quotedName := `"` + name + `"`
+	searchQuery := url.QueryEscape(quotedName)
 	apiURL := fmt.Sprintf(
-		"https://api.openalex.org/works?search=%s&filter=type:article&per_page=25&sort=cited_by_count:desc",
+		"https://api.openalex.org/works?search=%s&filter=type:article&per_page=50&sort=cited_by_count:desc",
 		searchQuery,
 	)
 
@@ -162,8 +160,30 @@ func (s *Server) fetchPublicationsForPA(ctx context.Context, paID, name, country
 
 	q := dbgen.New(s.DB)
 	count := 0
+	
+	// Normalize park name for matching (lowercase, no extra spaces)
+	nameNormalized := strings.ToLower(strings.TrimSpace(name))
+	// Also try without common suffixes for matching
+	nameShort := strings.TrimSuffix(nameNormalized, " national park")
+	nameShort = strings.TrimSuffix(nameShort, " game reserve")
+	nameShort = strings.TrimSuffix(nameShort, " reserve")
 
 	for _, work := range data.Results {
+		// Reconstruct abstract from inverted index
+		abstract := reconstructAbstract(work.AbstractInvertedIndex)
+		
+		// Filter: park name must appear in title or abstract
+		titleLower := strings.ToLower(work.Title)
+		abstractLower := strings.ToLower(abstract)
+		
+		nameInTitle := strings.Contains(titleLower, nameNormalized) || strings.Contains(titleLower, nameShort)
+		nameInAbstract := strings.Contains(abstractLower, nameNormalized) || strings.Contains(abstractLower, nameShort)
+		
+		if !nameInTitle && !nameInAbstract {
+			// Skip papers that don't mention the park name
+			continue
+		}
+		
 		// Extract authors
 		authors := make([]string, 0, len(work.Authorships))
 		for _, a := range work.Authorships {
@@ -172,9 +192,6 @@ func (s *Server) fetchPublicationsForPA(ctx context.Context, paID, name, country
 			}
 		}
 		authorsJSON, _ := json.Marshal(authors)
-
-		// Reconstruct abstract from inverted index
-		abstract := reconstructAbstract(work.AbstractInvertedIndex)
 
 		// Get URL
 		workURL := work.PrimaryLocation.LandingPageURL
