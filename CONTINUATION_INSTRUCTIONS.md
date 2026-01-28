@@ -1,99 +1,77 @@
 # Continuation Instructions
 
-## Current State (2026-01-28 23:20 UTC)
+## Current State (2026-01-28 23:26 UTC)
 
 ### Active Background Processes
-- **OSM Places Download**: PID 2728 - Downloading villages/rivers/towns for all parks
-  - Log: `logs/osm_places.log`
-  - Progress: ~1 park per 30-60 seconds (rate limited)
+- **OSM Places Quick Download**: PID 2847 - Processing first 10 parks
+  - Log: `logs/osm_quick.log`
+  - Currently: 282 places downloaded
 
-### Database Status
-- **fire_detections**: 1,764,155 records ✓
-- **park_group_infractions**: 398 records ✓ 
-- **osm_roadless_data**: 3 records (needs more processing)
-- **osm_places**: New table (populating)
-- **park_settlements**: New table (empty)
-- **deforestation_events**: New table (empty)
+### Database Status (1.7M+ records preserved)
+- **fire_detections**: 1,764,155 records ✓ DO NOT DELETE
+- **park_group_infractions**: 398 records ✓
+- **osm_places**: 282 records (growing)
+- **osm_roadless_data**: 3 records
+- **park_settlements**: Empty (pending GHSL processing)
+- **deforestation_events**: Empty (pending processing)
 
 ### Downloaded Data Files
-- `data/ghsl_examples.zip` - 749MB GHSL tiles (BUILT_S 10m/100m, POP 100m)
-- `data/ghsl_manual.pdf` - 15MB GHSL documentation
-- `data/hansen_lossyear_10N_020E.tif` - 76MB Hansen deforestation data
+- `data/ghsl_examples.zip` - 749MB GHSL tiles with population data
+- `data/ghsl_manual.pdf` - 15MB documentation  
+- `data/hansen_lossyear_10N_020E.tif` - 76MB Hansen deforestation
 
 ### New Scripts Created (Tasks 7-9)
-1. **scripts/ghsl_enhanced_processor.py** - Task 7
-   - Combines built-up surface with population data
-   - Creates park_settlements with GPS coordinates
-   - Labels settlements with OSM village names
+1. **scripts/ghsl_enhanced_processor.py** - Settlement detection with population
+2. **scripts/download_osm_places.py** - OSM villages/rivers download
+3. **scripts/deforestation_analyzer.py** - Hansen forest loss analysis
 
-2. **scripts/download_osm_places.py** - Task 8
-   - Downloads villages, rivers, towns from Overpass API
-   - Rate limited (30s between parks)
-   - Provides utility functions for place lookup
+### Run Order (Sequential to avoid memory issues)
+1. ✓ OSM Places (running) - completes in ~30 min for 10 parks
+2. GHSL Enhanced - run after OSM completes
+3. Deforestation - run after GHSL completes
 
-3. **scripts/deforestation_analyzer.py** - Task 9
-   - Processes Hansen GFC-2024 lossyear data
-   - Classifies patterns (farming, mining, road, forestry)
-   - Generates narratives with nearby place names
+### Commands
 
-### Run Order (Due to Memory Constraints)
-1. ✓ OSM Places (currently running) - light memory usage
-2. WAIT for OSM Places to finish, then run GHSL Enhanced
-3. WAIT for both, then run Deforestation Analyzer
-
-### Server
+Start Server:
 ```bash
-cd /home/exedev/5mpglobe && make build && pkill -f "./server"; ./server &
-# URL: https://five-mp-conservation-effort.exe.xyz:8000/?pwd=ngi2026
+cd /home/exedev/5mpglobe && make build && pkill -f "./server"; nohup ./server > logs/server.log 2>&1 &
+```
+
+Resume OSM Download (all parks):
+```bash
+cd /home/exedev/5mpglobe && source .venv/bin/activate
+nohup python scripts/download_osm_places.py --buffer-km 20 > logs/osm_places.log 2>&1 &
+```
+
+Run GHSL Processing:
+```bash
+cd /home/exedev/5mpglobe && source .venv/bin/activate  
+python scripts/ghsl_enhanced_processor.py --zip data/ghsl_examples.zip
+```
+
+Run Deforestation:
+```bash
+cd /home/exedev/5mpglobe && source .venv/bin/activate
+python scripts/deforestation_analyzer.py
 ```
 
 ### Monitor Progress
 ```bash
-# OSM Places
-tail -f logs/osm_places.log
+tail -f logs/osm_quick.log
 sqlite3 db.sqlite3 "SELECT COUNT(*) FROM osm_places;"
-
-# Check all processes
 ps aux | grep python | grep -v grep
 ```
 
-### DB Snapshot Download
+### DB Download
 ```bash
-# Copy latest DB for download
 cp db.sqlite3 srv/static/downloads/5mp_data.sqlite3
 # URL: https://five-mp-conservation-effort.exe.xyz:8000/static/downloads/5mp_data.sqlite3
 ```
 
 ---
 
-## REMAINING TASKS
-
-### Task 7: GHSL Enhancement (Script Ready)
-- Run after OSM places completes:
-  ```bash
-  source .venv/bin/activate
-  python scripts/ghsl_enhanced_processor.py --zip data/ghsl_examples.zip
-  ```
-
-### Task 8: Geographic Context (Running)
-- OSM places download in progress
-- Will enable rich place-based descriptions for fire/settlement events
-
-### Task 9: Deforestation (Script Ready)
-- Run after Tasks 7 & 8:
-  ```bash
-  source .venv/bin/activate
-  python scripts/deforestation_analyzer.py --park CAF_Chinko
-  ```
-
-### Task 12: VIIRS API Fix
-- Try earthaccess library with key: I3Ca5DUxxQH7nv0miCbBnngrerhMDOkIQfgOHLVP
-
----
-
 ## API Keys
 - earthaccess: I3Ca5DUxxQH7nv0miCbBnngrerhMDOkIQfgOHLVP
 
-## Google Drive Links
-- GHSL examples: https://drive.google.com/file/d/1Ubr6iYyFXpjTF-uDma6mrUww4dyLEhu5/view
-- GHSL manual: https://drive.google.com/file/d/1yS_lD07eQUe46ffrYrfao-C9ghya9nYh/view
+## App Password
+- ngi2026, apn2026, or j2026
