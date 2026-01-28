@@ -785,14 +785,14 @@
         </div>
     </div>
 
-    <!-- Fire Stats Modal -->
-    <div id="modal-fire-stats" class="modal-overlay" onclick="closeModalOnOverlay(event)">
-        <div class="modal" style="max-width: 400px;">
+    <!-- Park Stats Modal -->
+    <div id="modal-park-stats" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal" style="max-width: 420px;">
             <div class="modal-header">
-                <h2 class="modal-title">🔥 Fire Activity</h2>
-                <button class="modal-close" onclick="closeModal('fire-stats')">×</button>
+                <h2 class="modal-title">🏞️ Park Statistics</h2>
+                <button class="modal-close" onclick="closeModal('park-stats')">×</button>
             </div>
-            <div class="fire-stats-container" id="fire-stats-content">
+            <div class="fire-stats-container" id="park-stats-content">
                 <!-- Content populated by JavaScript -->
             </div>
         </div>
@@ -2566,9 +2566,9 @@
                             </svg>
                             ${isSelected ? 'Selected' : 'Select'}
                         </button>
-                        <button class="pa-popup-btn" onclick="showFireStatsModal('${paId}', '${escapeHtml(name)}')" id="fire-btn-${paId}" style="display: none;">
-                            <span style="font-size: 14px;">🔥</span>
-                            Fire Stats
+                        <button class="pa-popup-btn" onclick="showParkStatsModal('${paId}', '${escapeHtml(name)}')" id="stats-btn-${paId}">
+                            <span style="font-size: 14px;">📊</span>
+                            Stats
                         </button>
                         ${wdpaId ? `<a class="pa-popup-btn" href="https://www.protectedplanet.net/${wdpaId}" target="_blank" rel="noopener">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2636,77 +2636,126 @@
             }
         }
         
-        function showFireStatsModal(paId, paName) {
-            const data = fireStatsCache[paId];
-            const container = document.getElementById('fire-stats-content');
+        async function showParkStatsModal(paId, paName) {
+            const container = document.getElementById('park-stats-content');
             
-            if (!data || data.total_groups === 0) {
-                container.innerHTML = `
-                    <div class="fire-stats-empty">
-                        <div class="fire-stats-empty-icon">🔥</div>
-                        <div class="fire-stats-empty-text">No fire group data available for ${escapeHtml(paName)} yet.</div>
-                    </div>
-                `;
-                showModal('fire-stats');
-                return;
-            }
-            
-            const responseRate = Math.round(data.response_rate || 0);
-            const transitRate = data.total_groups > 0 ? Math.round((data.groups_transited / data.total_groups) * 100) : 0;
-            const avgDays = data.avg_days_burning ? data.avg_days_burning.toFixed(1) : '0';
-            
-            // Determine color classes
-            const responseClass = responseRate >= 60 ? 'good' : responseRate >= 40 ? 'warning' : 'bad';
-            const transitClass = transitRate <= 30 ? 'good' : transitRate <= 50 ? 'warning' : 'bad';
-            
+            // Show loading state
             container.innerHTML = `
-                <div class="fire-stats-title">
-                    <span>🔥</span>
-                    ${escapeHtml(paName)}
-                </div>
-                <div class="fire-stats-subtitle">Fire Activity • ${data.year || 2023}</div>
-                <hr class="fire-stats-divider">
-                
-                <div class="fire-stats-grid">
-                    <div class="fire-stat-card">
-                        <div class="fire-stat-label">Fire Groups Entered</div>
-                        <div class="fire-stat-value" style="color: ${data.total_groups > 10 ? '#ef4444' : '#f97316'};">${data.total_groups}</div>
-                        <div class="fire-stat-detail">detected entering park</div>
-                    </div>
-                    
-                    <div class="fire-stat-card">
-                        <div class="fire-stat-label">Avg Days Inside</div>
-                        <div class="fire-stat-value">${avgDays}</div>
-                        <div class="fire-stat-detail">days burning per group</div>
-                    </div>
-                    
-                    <div class="fire-stat-card">
-                        <div class="fire-stat-label">Stopped Inside</div>
-                        <div class="fire-stat-value ${responseClass}">${data.groups_stopped_inside || 0} <span style="font-size: 14px;">(${responseRate}%)</span></div>
-                        <div class="fire-stat-detail">${responseRate >= 60 ? '✓ Good response' : responseRate >= 40 ? '⚠ Moderate' : '✗ Needs attention'}</div>
-                        <div class="fire-stat-bar">
-                            <div class="fire-stat-bar-fill ${responseClass}" style="width: ${responseRate}%;"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="fire-stat-card">
-                        <div class="fire-stat-label">Transited Through</div>
-                        <div class="fire-stat-value ${transitClass}">${data.groups_transited || 0} <span style="font-size: 14px;">(${transitRate}%)</span></div>
-                        <div class="fire-stat-detail">${transitRate <= 30 ? '✓ Low transit' : transitRate <= 50 ? '⚠ Moderate' : '✗ High transit'}</div>
-                        <div class="fire-stat-bar">
-                            <div class="fire-stat-bar-fill ${transitClass}" style="width: ${transitRate}%;"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <hr class="fire-stats-divider">
-                <div style="font-size: 11px; color: #666; text-align: center;">
-                    Response Rate = groups that stopped inside (rangers may have contacted them)<br>
-                    Transit Rate = groups that passed through without stopping
+                <div class="fire-stats-empty">
+                    <div class="fire-stats-empty-icon">⏳</div>
+                    <div class="fire-stats-empty-text">Loading stats...</div>
                 </div>
             `;
+            showModal('park-stats');
             
-            showModal('fire-stats');
+            try {
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/stats`);
+                const data = await resp.json();
+                
+                let html = `
+                    <div class="fire-stats-title">
+                        <span>🏞️</span>
+                        ${escapeHtml(paName)}
+                    </div>
+                    <div class="fire-stats-subtitle">Park Statistics</div>
+                `;
+                
+                // Fire section
+                if (data.fire && data.fire.groups_entered > 0) {
+                    const fire = data.fire;
+                    const responseRate = Math.round(fire.response_rate || 0);
+                    const transitRate = fire.groups_entered > 0 ? Math.round((fire.groups_transited / fire.groups_entered) * 100) : 0;
+                    const responseClass = responseRate >= 60 ? 'good' : responseRate >= 40 ? 'warning' : 'bad';
+                    
+                    html += `
+                        <hr class="fire-stats-divider">
+                        <div style="font-size: 12px; color: #888; margin-bottom: 8px;">🔥 FIRE ACTIVITY • ${fire.year || 2023}</div>
+                        <div class="fire-stats-grid">
+                            <div class="fire-stat-card">
+                                <div class="fire-stat-label">Groups Entered</div>
+                                <div class="fire-stat-value" style="color: ${fire.groups_entered > 10 ? '#ef4444' : '#f97316'};">${fire.groups_entered}</div>
+                            </div>
+                            <div class="fire-stat-card">
+                                <div class="fire-stat-label">Response Rate</div>
+                                <div class="fire-stat-value ${responseClass}">${responseRate}%</div>
+                                <div class="fire-stat-bar">
+                                    <div class="fire-stat-bar-fill ${responseClass}" style="width: ${responseRate}%;"></div>
+                                </div>
+                            </div>
+                            <div class="fire-stat-card">
+                                <div class="fire-stat-label">Avg Days Inside</div>
+                                <div class="fire-stat-value">${fire.avg_days_inside ? fire.avg_days_inside.toFixed(1) : '0'}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <hr class="fire-stats-divider">
+                        <div style="font-size: 12px; color: #666;">🔥 FIRE: No data available</div>
+                    `;
+                }
+                
+                // Settlement section
+                if (data.settlement) {
+                    const s = data.settlement;
+                    html += `
+                        <hr class="fire-stats-divider">
+                        <div style="font-size: 12px; color: #888; margin-bottom: 8px;">🏘️ SETTLEMENTS</div>
+                        <div class="fire-stats-grid">
+                            <div class="fire-stat-card">
+                                <div class="fire-stat-label">Built-up Area</div>
+                                <div class="fire-stat-value">${s.built_up_km2.toFixed(2)} km²</div>
+                            </div>
+                            <div class="fire-stat-card">
+                                <div class="fire-stat-label">Settlement Count</div>
+                                <div class="fire-stat-value">${s.settlement_count}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <hr class="fire-stats-divider">
+                        <div style="font-size: 12px; color: #666;">🏘️ SETTLEMENTS: No data available</div>
+                    `;
+                }
+                
+                // Roadless section
+                if (data.roadless) {
+                    const r = data.roadless;
+                    const roadlessClass = r.roadless_percentage >= 80 ? 'good' : r.roadless_percentage >= 50 ? 'warning' : 'bad';
+                    html += `
+                        <hr class="fire-stats-divider">
+                        <div style="font-size: 12px; color: #888; margin-bottom: 8px;">🚷 ROADLESS AREAS</div>
+                        <div class="fire-stats-grid">
+                            <div class="fire-stat-card">
+                                <div class="fire-stat-label">Roadless</div>
+                                <div class="fire-stat-value ${roadlessClass}">${r.roadless_percentage.toFixed(1)}%</div>
+                                <div class="fire-stat-bar">
+                                    <div class="fire-stat-bar-fill ${roadlessClass}" style="width: ${r.roadless_percentage}%;"></div>
+                                </div>
+                            </div>
+                            <div class="fire-stat-card">
+                                <div class="fire-stat-label">Total Roads</div>
+                                <div class="fire-stat-value">${r.total_road_km.toFixed(1)} km</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <hr class="fire-stats-divider">
+                        <div style="font-size: 12px; color: #666;">🚷 ROADLESS: No data available</div>
+                    `;
+                }
+                
+                container.innerHTML = html;
+            } catch (e) {
+                container.innerHTML = `
+                    <div class="fire-stats-empty">
+                        <div class="fire-stats-empty-icon">⚠️</div>
+                        <div class="fire-stats-empty-text">Failed to load stats for ${escapeHtml(paName)}</div>
+                    </div>
+                `;
+            }
         }
         
         async function fetchDataStatus(paId) {
