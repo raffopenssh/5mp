@@ -6,31 +6,30 @@ Reads GHSL data directly from ZIP file, combines built-up surface with
 population estimates, and stores settlement locations with GPS coordinates.
 
 Features:
-- Reads TIF files from ZIP without full extraction
-- Combines BUILT_S (built-up surface) with POP (population)
+- Reads TIF files from ZIP without full extraction (memory efficient)
+- Combines BUILT_S (built-up surface) with POP (population) data
 - Detects settlement clusters and estimates households
-- Queries Overpass API for nearby village names
-- Memory efficient: one tile at a time
+- Uses local osm_places table for nearby place lookups (no API calls)
+- Calculates bearing/direction from nearest place
+- One tile at a time for memory efficiency
+
+Output format:
+  "Building cluster 150m², ~16 people, 50 km north-northeast of Yalinga"
 
 Usage:
     source .venv/bin/activate
-    python scripts/ghsl_enhanced_processor.py
-    python scripts/ghsl_enhanced_processor.py --park AGO_Cameia
-    python scripts/ghsl_enhanced_processor.py --dry-run
+    python scripts/ghsl_enhanced_processor.py --zip data/ghsl_examples.zip
+    python scripts/ghsl_enhanced_processor.py --park CAF_Chinko --dry-run
 """
 
 import json
 import sqlite3
 import zipfile
-import tempfile
 import argparse
 import logging
-import time
-import requests
+import math
 from pathlib import Path
-from datetime import datetime
 from typing import Dict, List, Tuple, Optional
-from io import BytesIO
 import numpy as np
 
 try:
@@ -63,13 +62,96 @@ MIN_CLUSTER_PIXELS = 3  # Minimum pixels for a settlement cluster
 HOUSEHOLD_SIZE = 5.2  # Average people per household in Africa
 BUILDING_SIZE_M2 = 50  # Average building footprint
 
-# API settings
-OVERPASS_URL = "https://overpass-api.de/api/interpreter"
-OVERPASS_TIMEOUT = 30
-API_SLEEP = 2  # Seconds between Overpass requests
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Cardinal direction names (16-point compass)
+CARDINAL_DIRECTIONS = [
+    "north", "north-northeast", "northeast", "east-northeast",
+    "east", "east-southeast", "southeast", "south-southeast",
+    "south", "south-southwest", "southwest", "west-southwest",
+    "west", "west-northwest", "northwest", "north-northwest"
+]
+
+
+def calculate_bearing(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """
+    Calculate bearing from point 1 to point 2.
+    Returns bearing in degrees (0-360, where 0=north, 90=east).
+    """
+    lat1_rad = math.radians(lat1)
+    lat2_rad = math.radians(lat2)
+    dlon_rad = math.radians(lon2 - lon1)
+    
+    x = math.sin(dlon_rad) * math.cos(lat2_rad)
+    y = math.cos(lat1_rad) * math.sin(lat2_rad) - \
+        math.sin(lat1_rad) * math.cos(lat2_rad) * math.cos(dlon_rad)
+    
+    bearing = math.atan2(x, y)
+    bearing_deg = math.degrees(bearing)
+    return (bearing_deg + 360) % 360
+
+
+def bearing_to_cardinal(bearing: float) -> str:
+    """
+    Convert bearing (0-360) to cardinal direction string.
+    Uses 16-point compass (e.g., "north-northeast").
+    """
+    # Each direction covers 22.5 degrees
+    index = int((bearing + 11.25) / 22.5) % 16
+    return CARDINAL_DIRECTIONS[index]
+
+
+def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate distance between two points in kilometers."""
+    R = 6371  # Earth's radius in km
+    
+    lat1_rad = math.radians(lat1)
+    lat2_rad = math.radians(lat2)
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    
+    a = math.sin(dlat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon/2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    
+    return R * c
+
+
+def find_nearest_place(cursor, park_id: str, lat: float, lon: float) -> Optional[Dict]:
+    """
+    Find nearest place from osm_places table for a given park.
+    Returns dict with name, distance_km, and direction.
+    """
+    # Use squared distance approximation for sorting (faster than haversine for ordering)
+    cursor.execute('''
+        SELECT name, lat, lon, place_type,
+               (lat - ?) * (lat - ?) + (lon - ?) * (lon - ?) as dist_sq
+        FROM osm_places 
+        WHERE park_id = ?
+        ORDER BY dist_sq
+        LIMIT 1
+    ''', (lat, lat, lon, lon, park_id))
+    
+    row = cursor.fetchone()
+    if not row:
+        return None
+    
+    place_name, place_lat, place_lon, place_type, _ = row
+    
+    # Calculate actual distance
+    distance_km = haversine_distance(lat, lon, place_lat, place_lon)
+    
+    # Calculate bearing FROM the place TO the settlement
+    # (so we can say "X km north of PlaceName")
+    bearing = calculate_bearing(place_lat, place_lon, lat, lon)
+    direction = bearing_to_cardinal(bearing)
+    
+    return {
+        'name': place_name,
+        'distance_km': distance_km,
+        'direction': direction,
+        'place_type': place_type
+    }
 
 
 class GHSLEnhancedProcessor:
@@ -140,24 +222,21 @@ class GHSLEnhancedProcessor:
         return index
     
     def _init_db(self):
-        """Create park_settlements table"""
+        """Create park_settlements table with required schema"""
         conn = sqlite3.connect(DB_PATH)
         conn.execute("""CREATE TABLE IF NOT EXISTS park_settlements (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY,
             park_id TEXT NOT NULL,
             lat REAL NOT NULL,
             lon REAL NOT NULL,
-            area_m2 REAL DEFAULT 0,
-            population_estimate REAL DEFAULT 0,
-            households_estimate REAL DEFAULT 0,
-            nearest_village_name TEXT,
-            distance_to_village_km REAL,
-            building_type TEXT,  -- 'temporary', 'small', 'medium', 'large'
-            in_buffer INTEGER DEFAULT 0,  -- 1 if in 10km buffer, 0 if in park
-            tile_row INTEGER,
-            tile_col INTEGER,
-            detected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(park_id, lat, lon)
+            area_m2 REAL,
+            population_est INTEGER,
+            households_est INTEGER,
+            nearest_place TEXT,
+            distance_to_place_km REAL,
+            direction_from_place TEXT,
+            settlement_type TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )""")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_settlements_park ON park_settlements(park_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_settlements_location ON park_settlements(lat, lon)")
@@ -298,79 +377,42 @@ class GHSLEnhancedProcessor:
             
             households = population / HOUSEHOLD_SIZE
             
-            # Classify building type by area
+            # Classify settlement type by area
             if area_m2 < 200:
-                building_type = 'temporary'
+                settlement_type = 'temporary'
             elif area_m2 < 1000:
-                building_type = 'small'
+                settlement_type = 'small'
             elif area_m2 < 5000:
-                building_type = 'medium'
+                settlement_type = 'medium'
             else:
-                building_type = 'large'
+                settlement_type = 'large'
             
             settlements.append({
                 'lat': lat,
                 'lon': lon,
                 'area_m2': area_m2,
-                'population_estimate': population,
-                'households_estimate': households,
-                'building_type': building_type,
-                'in_buffer': 0 if in_park else 1
+                'population_est': int(round(population)),
+                'households_est': int(round(households)),
+                'settlement_type': settlement_type,
+                'in_park': in_park  # Track for filtering if needed
             })
         
         return settlements
     
-    def query_village_name(self, lat: float, lon: float, radius_km: float = 10) -> Optional[Tuple[str, float]]:
-        """Query Overpass API for nearest village/town name"""
-        query = f"""
-        [out:json][timeout:{OVERPASS_TIMEOUT}];
-        (
-          node["place"~"village|town|hamlet|locality"](around:{radius_km*1000},{lat},{lon});
-          way["place"~"village|town|hamlet|locality"](around:{radius_km*1000},{lat},{lon});
-        );
-        out center;
-        """
+    def _format_settlement_description(self, settlement: Dict) -> str:
+        """Format settlement as human-readable description."""
+        area = settlement.get('area_m2', 0)
+        pop = settlement.get('population_est', 0)
         
-        try:
-            resp = requests.post(OVERPASS_URL, data={'data': query}, timeout=OVERPASS_TIMEOUT)
-            if resp.status_code != 200:
-                return None
-            
-            data = resp.json()
-            elements = data.get('elements', [])
-            
-            if not elements:
-                return None
-            
-            # Find nearest with a name
-            best = None
-            best_dist = float('inf')
-            
-            for el in elements:
-                name = el.get('tags', {}).get('name')
-                if not name:
-                    continue
-                
-                # Get coordinates
-                if el['type'] == 'node':
-                    el_lat, el_lon = el['lat'], el['lon']
-                elif 'center' in el:
-                    el_lat, el_lon = el['center']['lat'], el['center']['lon']
-                else:
-                    continue
-                
-                # Calculate distance (approximate)
-                dist_km = ((lat - el_lat)**2 + (lon - el_lon)**2)**0.5 * 111
-                
-                if dist_km < best_dist:
-                    best_dist = dist_km
-                    best = (name, dist_km)
-            
-            return best
-            
-        except Exception as e:
-            logger.warning(f"Overpass query failed: {e}")
-            return None
+        desc = f"Building cluster {area:.0f}m², ~{pop} people"
+        
+        if settlement.get('nearest_place') and settlement.get('distance_to_place_km'):
+            dist = settlement['distance_to_place_km']
+            direction = settlement.get('direction_from_place', '')
+            place = settlement['nearest_place']
+            desc += f", {dist:.0f} km {direction} of {place}"
+        
+        return desc
     
     def process_park(self, park: Dict, dry_run: bool = False) -> int:
         """Process a single park, return number of settlements found"""
@@ -428,40 +470,40 @@ class GHSLEnhancedProcessor:
             logger.info(f"No settlements found for {park_id}")
             return 0
         
-        # Query village names for settlements (limit to avoid API overload)
-        for i, s in enumerate(all_settlements[:20]):  # Max 20 queries per park
-            village_info = self.query_village_name(s['lat'], s['lon'])
-            if village_info:
-                s['nearest_village_name'] = village_info[0]
-                s['distance_to_village_km'] = village_info[1]
-            time.sleep(API_SLEEP)
-        
-        if dry_run:
-            logger.info(f"[DRY RUN] Would insert {len(all_settlements)} settlements for {park_id}")
-            for s in all_settlements[:5]:
-                logger.info(f"  - {s['lat']:.4f}, {s['lon']:.4f}: {s['area_m2']:.0f}m², "
-                           f"{s['population_estimate']:.0f} people, type={s['building_type']}")
-            return len(all_settlements)
-        
-        # Insert into database
+        # Open database connection for both reading osm_places and writing settlements
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         
+        # Find nearest place for each settlement using local osm_places table
+        for s in all_settlements:
+            place_info = find_nearest_place(cursor, park_id, s['lat'], s['lon'])
+            if place_info:
+                s['nearest_place'] = place_info['name']
+                s['distance_to_place_km'] = place_info['distance_km']
+                s['direction_from_place'] = place_info['direction']
+        
+        if dry_run:
+            conn.close()
+            logger.info(f"[DRY RUN] Would insert {len(all_settlements)} settlements for {park_id}")
+            for s in all_settlements[:5]:
+                desc = self._format_settlement_description(s)
+                logger.info(f"  - {desc}")
+            return len(all_settlements)
+        
+        # Insert into database
         inserted = 0
         for s in all_settlements:
             try:
                 cursor.execute("""
-                    INSERT OR REPLACE INTO park_settlements 
-                    (park_id, lat, lon, area_m2, population_estimate, households_estimate,
-                     nearest_village_name, distance_to_village_km, building_type, in_buffer,
-                     tile_row, tile_col)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO park_settlements 
+                    (park_id, lat, lon, area_m2, population_est, households_est,
+                     nearest_place, distance_to_place_km, direction_from_place, settlement_type)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     park_id, s['lat'], s['lon'], s['area_m2'],
-                    s['population_estimate'], s['households_estimate'],
-                    s.get('nearest_village_name'), s.get('distance_to_village_km'),
-                    s['building_type'], s['in_buffer'],
-                    s.get('tile_row'), s.get('tile_col')
+                    s['population_est'], s['households_est'],
+                    s.get('nearest_place'), s.get('distance_to_place_km'),
+                    s.get('direction_from_place'), s['settlement_type']
                 ))
                 inserted += 1
             except sqlite3.IntegrityError:
@@ -486,9 +528,6 @@ class GHSLEnhancedProcessor:
                 count = self.process_park(park, dry_run=dry_run)
                 total_settlements += count
                 parks_processed += 1
-                
-                # Sleep between parks to avoid memory buildup
-                time.sleep(1)
                 
             except Exception as e:
                 logger.error(f"Error processing {park['id']}: {e}")
