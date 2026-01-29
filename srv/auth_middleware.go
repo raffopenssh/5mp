@@ -3,6 +3,7 @@ package srv
 import (
 	"crypto/subtle"
 	"net/http"
+	"strings"
 )
 
 // Valid passwords for testing access
@@ -30,6 +31,11 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 		// Check query param (for setting cookie)
 		pwd := r.URL.Query().Get("pwd")
 		if isValidPassword(pwd) {
+			// For API endpoints, just serve directly (no redirect)
+			if strings.HasPrefix(r.URL.Path, "/api/") {
+				next.ServeHTTP(w, r)
+				return
+			}
 			// Set cookie for future requests
 			http.SetCookie(w, &http.Cookie{
 				Name:     "access_pwd",

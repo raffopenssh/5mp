@@ -111,6 +111,11 @@
         .toggle-switch input:checked + .toggle-switch-slider { background: rgba(34,197,94,0.4); }
         .toggle-switch input:checked + .toggle-switch-slider:before { transform: translateX(16px); background: #22c55e; }
 
+        /* Compact Keystones Toggle */
+        .keystones-compact-toggle { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #888; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .keystones-compact-toggle:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+        .keystones-compact-toggle.active { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
+
         /* Notification Button and Dropdown */
         .notification-btn { position: relative; }
         .notification-badge { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: badge-pulse 2s ease-out infinite; }
@@ -633,19 +638,10 @@
             <!-- Selected Parks -->
             <div class="filter-section">
                 <div class="filter-section-label">Selected Parks</div>
-                <div class="toggle-switch-row">
-                    <span class="toggle-switch-label">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
-                            <circle cx="12" cy="10" r="3"/>
-                        </svg>
-                        162 Keystones
-                    </span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="keystones-toggle" checked onchange="toggleKeystones(this.checked)">
-                        <span class="toggle-switch-slider"></span>
-                    </label>
-                </div>
+                <button class="keystones-compact-toggle active" id="keystones-toggle-btn" onclick="toggleKeystonesBtn()" title="Toggle 162 Keystones visibility">
+                    <span>🏛️</span> <span>162</span>
+                </button>
+                <input type="checkbox" id="keystones-toggle" checked style="display:none;">
                 <div class="selected-parks" id="selected-parks">
                     <div class="selected-parks-empty" id="selected-parks-empty">Click a park on the map to select it</div>
                 </div>
@@ -1157,27 +1153,8 @@
             });
 
             
-            map.on('click', 'areas-fill', function(e) {
-                if (e.features.length > 0) {
-                    const props = e.features[0].properties;
-                    const name = props.name || 'Protected Area';
-                    const country = props.country || '';
-                    const area = props.area_km2 ? props.area_km2.toLocaleString() + ' km²' : '';
-                    const wdpaId = props.wdpa_id || '';
-                    const partner = props.partner || '';
-                    
-                    let html = `<strong style="font-size: 14px;">${name}</strong>`;
-                    if (country) html += `<br><span style="color: #888;">${country}</span>`;
-                    if (area) html += `<br>Area: <strong>${area}</strong>`;
-                    if (partner) html += `<br>Partner: <span style="color: #22c55e;">${partner}</span>`;
-                    if (wdpaId) html += `<br><span style="color: #666; font-size: 10px;">WDPA ID: ${wdpaId}</span>`;
-                    
-                    new maplibregl.Popup()
-                        .setLngLat(e.lngLat)
-                        .setHTML(html)
-                        .addTo(map);
-                }
-            });
+            // PA click handler is set up in the 'Override map click for PA areas' section below
+            // to show the enhanced popup with collapsible sections
 
             
             map.on('click', 'grid-cells', function(e) {
@@ -2004,6 +1981,19 @@
             if (!map || !map.getLayer) return;
             
             // Use updatePAHighlighting to handle both keystones toggle and selected PAs
+            updatePAHighlighting();
+        }
+
+        function toggleKeystonesBtn() {
+            var btn = document.getElementById('keystones-toggle-btn');
+            var checkbox = document.getElementById('keystones-toggle');
+            keystonesEnabled = !keystonesEnabled;
+            checkbox.checked = keystonesEnabled;
+            if (keystonesEnabled) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
             updatePAHighlighting();
         }
 
@@ -3218,19 +3208,23 @@
             }
         }
 
-        // Override map click for PA areas
-        map.on('load', function() {
-            // Remove default click handler
-            map.off('click', 'areas-fill');
-            
-            // Add new popup-based handler
+        // Set up PA click handler (enhanced popup with collapsible sections)
+        // This runs after map is ready and sets up the single click handler for areas-fill
+        function setupPAClickHandler() {
             map.on('click', 'areas-fill', function(e) {
                 if (e.features.length > 0) {
                     const props = e.features[0].properties;
                     showPAPopup(props, e.lngLat);
                 }
             });
-        });
+        }
+        
+        // Set up the handler - if map already loaded, do it now; otherwise wait
+        if (map.loaded()) {
+            setupPAClickHandler();
+        } else {
+            map.on('load', setupPAClickHandler);
+        }
 
         // Stats panel interactivity
         let activeStatMode = null;
