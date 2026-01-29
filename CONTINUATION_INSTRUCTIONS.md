@@ -1,39 +1,38 @@
 # Continuation Instructions
 
-## Current State (2026-01-29 06:35 UTC)
+## Current State (2026-01-29 19:55 UTC)
 
 ### System Status
-- **Memory:** 6.8GB available ✓
-- **Disk:** ~4GB free (large DB)
+- **Memory:** ~6.4GB available
+- **Disk:** Hansen tiles downloaded (1.2GB), GHSL examples downloaded (785MB)
+
+### Background Processes Running
+1. **Deforestation Analysis** (PID 5434): Processing all 162 parks
+   - Uses `scripts/deforestation_analyzer.py`
+   - Log: `data/hansen/analysis_full.log`
+   - Currently processing tile 00N_010E (COD_Tumba-Lediima)
 
 ### Database Summary
 | Table | Count | Status |
 |-------|-------|--------|
-| fire_detections | 4,621,211 | ✓ Complete (this VM has more data) |
+| fire_detections | 4,621,211 | ✓ Complete |
 | park_group_infractions | 801 | ✓ Complete |
 | osm_roadless_data | 162 | ✓ Complete |
-| osm_places | 10,600 | ✓ **Imported** (villages, rivers, towns) |
-| deforestation_events | 96 | ✓ **Imported** (4 parks done) |
-| deforestation_clusters | 1,097 | ✓ **Imported** |
+| osm_places | 10,600 | ✓ Complete (villages, rivers, towns) |
+| deforestation_events | ~48+ | ⏳ Running (2+ parks done so far) |
+| deforestation_clusters | growing | ⏳ Running |
 | park_ghsl_data | 155 | ✓ Complete |
-| park_settlements | 0 | Pending GHSL enhancement |
+| park_settlements | 0 | Ready (script enhanced, needs run) |
 
-### Completed Tasks
-1. ✅ **Narrative APIs** - Working with place names
-   - `GET /api/parks/{id}/fire-narrative` - Shows nearby rivers/villages
-   - `GET /api/parks/{id}/deforestation-narrative` - Full yearly breakdown with places
-2. ✅ **Legal texts in tooltip** - §LEGAL section added to park popup
-3. ✅ **OSM Places imported** - 10,600 places (4772 villages, 3360 rivers, 2280 hamlets)
-4. ✅ **Deforestation data imported** - 96 events, 1097 clusters from 4 parks
-5. ✅ **Compact keystones toggle** - Shows [🏛️ 162]
+### Data Files Available
+- `data/hansen/` - 32 Hansen GFC-2024 tiles (1.2GB total)
+- `data/ghsl_examples.zip` - GHSL built-up + population tiles (785MB)
 
-### Deforestation Coverage
-Parks with deforestation data (Hansen 2001-2024):
-- ✅ CAF_Bamingui-Bangoran (24 years)
-- ✅ CAF_Chinko (24 years)  
-- ✅ CAF_Manovo_Gounda_St_Floris (24 years)
-- ✅ COD_Abumonbazi (24 years)
-- ⏳ Other parks - script running on other VM
+### Completed Tasks This Session
+1. ✅ Downloaded all 32 Hansen GFC tiles for Africa
+2. ✅ Enhanced `deforestation_analyzer.py` - multi-tile support, auto park-tile matching
+3. ✅ Enhanced `ghsl_enhanced_processor.py` - local osm_places lookup, bearing/direction
+4. ✅ Started full deforestation analysis (running in background)
 
 ---
 
@@ -41,40 +40,56 @@ Parks with deforestation data (Hansen 2001-2024):
 
 ### HIGH PRIORITY - Data Tasks
 
-#### Task: GHSL Enhancement (park_settlements)
-**Script ready:** `scripts/ghsl_enhanced_processor.py`
-- Needs GHSL tiles data file
-- Will populate park_settlements table
+#### Deforestation Analysis (Running)
+Monitor progress:
+```bash
+tail -30 data/hansen/analysis_full.log
+sqlite3 db.sqlite3 "SELECT COUNT(DISTINCT park_id) as parks, COUNT(*) as events, ROUND(SUM(area_km2),1) as total_km2 FROM deforestation_events;"
+```
 
-#### Task: More Deforestation Parks
-- Script `scripts/deforestation_analyzer.py` can process more parks
-- Need Hansen GFC tiles (~1.5hrs per park)
+#### GHSL Settlement Processing (Ready to Run)
+After deforestation completes:
+```bash
+source .venv/bin/activate
+python scripts/ghsl_enhanced_processor.py --zip data/ghsl_examples.zip
+```
 
 ### MEDIUM PRIORITY - UI Tasks
 
-#### 1. Fix Legal Section Not Opening
-- Legal section in popup doesn't expand on click
-- Data loads (API works) but UI toggle may be broken
-
-#### 2. Remove EXPORT DATA Section
+#### 1. Remove EXPORT DATA Section
 - Remove CSV/GeoJSON buttons from filter panel (redundant)
 
-#### 3. Test Narrative Display in UI
-- Narratives exist via API but need UI integration in popup
+#### 2. Make Popup Scrollable
+- Add max-height and overflow-y to `.pa-popup` for Legal section visibility
+
+#### 3. Add Fire Trajectory Azimuth
+- Add 360° direction for fire group movement when no places nearby
 
 ---
 
 ## Commands
 
-### Test Narrative APIs
+### Monitor Deforestation
 ```bash
-curl -s --cookie "access_pwd=ngi2026" "http://localhost:8000/api/parks/CAF_Chinko/fire-narrative" | python3 -m json.tool
-curl -s --cookie "access_pwd=ngi2026" "http://localhost:8000/api/parks/CAF_Chinko/deforestation-narrative" | python3 -m json.tool
+# Check progress
+tail -30 data/hansen/analysis_full.log
+
+# Database status
+sqlite3 db.sqlite3 "SELECT park_id, COUNT(*) as years, ROUND(SUM(area_km2),2) as km2 FROM deforestation_events GROUP BY park_id ORDER BY km2 DESC LIMIT 20;"
+
+# Check if still running
+ps aux | grep deforest | grep -v grep
 ```
 
-### Database Counts
+### Run GHSL Processing
 ```bash
-sqlite3 db.sqlite3 "SELECT 'osm_places', COUNT(*) FROM osm_places UNION ALL SELECT 'deforestation', COUNT(*) FROM deforestation_events UNION ALL SELECT 'fire', COUNT(*) FROM fire_detections;"
+source .venv/bin/activate
+python scripts/ghsl_enhanced_processor.py --zip data/ghsl_examples.zip
+```
+
+### Test Narrative APIs
+```bash
+curl -s --cookie "access_pwd=ngi2026" "http://localhost:8000/api/parks/GAB_Loango/deforestation-narrative" | python3 -m json.tool
 ```
 
 ### Server
@@ -86,7 +101,6 @@ make build && pkill -f "./server"; nohup ./server > /tmp/server.log 2>&1 &
 
 ## URLs
 - App: https://fivemp-testing.exe.xyz:8000/?pwd=ngi2026
-- DB Download: /static/downloads/5mp_data.sqlite3
 
 ## Passwords
 ngi2026, apn2026, j2026
