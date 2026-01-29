@@ -1,10 +1,13 @@
 # Continuation Instructions
 
-## Current State (2026-01-28 23:58 UTC)
+## Current State (2026-01-29 00:05 UTC)
+
+### System Status
+- **Memory:** 6.2GB available ✓
+- **Disk:** 6.9GB free ✓
 
 ### Active Background Processes (This VM)
-1. **OSM Places Download**: ~28 parks done, 3,229 places (1,212 rivers)
-2. **Deforestation Analysis**: Processing 13 parks, 24+ events
+1. **Deforestation Analysis** (PID 3001): 48+ events detected, still running
 
 ### Other VM Note
 **https://fivemp-testing.shelley.exe.xyz/** has fire algorithm running - will have more fire data soon. Check status and sync if needed.
@@ -14,8 +17,8 @@
 |-------|-------|
 | fire_detections | 1,764,155 ✓ |
 | park_group_infractions | 398 ✓ |
-| osm_places | 3,229 (1,212 rivers, 1,098 villages) |
-| deforestation_events | 24+ |
+| osm_places | 10,600 ✓ (rivers, villages, towns) |
+| deforestation_events | 48+ (growing) |
 | park_settlements | 0 (pending GHSL) |
 
 ### Downloaded Data Files
@@ -35,39 +38,46 @@
 - Labels settlements with OSM village names
 - Stores in `park_settlements` table
 
-**Run after OSM completes:**
+**Run after deforestation completes:**
 ```bash
 source .venv/bin/activate
 python scripts/ghsl_enhanced_processor.py --zip data/ghsl_examples.zip
 ```
 
-**Additional GHSL sources to try:**
+**GHSL Data Alternatives (if direct download fails):**
+- Google Earth Engine Built-up Surface 10m: 
+  https://developers.google.com/earth-engine/datasets/catalog/JRC_GHSL_P2023A_GHS_BUILT_S_10m
+- Google Earth Engine Built-up Characteristics:
+  https://developers.google.com/earth-engine/datasets/catalog/JRC_GHSL_P2023A_GHS_BUILT_C
 - earthaccess library: https://github.com/nsidc/earthaccess
-- Google Earth Engine: https://developers.google.com/earth-engine/datasets/catalog/JRC_GHSL_P2023A_GHS_BUILT_S_10m
 - API key: I3Ca5DUxxQH7nv0miCbBnngrerhMDOkIQfgOHLVP
 
 ### Task 8: Geographic Context in Text
-**Script ready:** `scripts/download_osm_places.py`
-- ✓ Rivers captured (1,212)
-- ✓ Villages/hamlets captured (1,926)
+**OSM Download COMPLETE:** 10,600 places captured
+- Rivers, villages, hamlets, towns
 - Use place names in fire/settlement/deforestation descriptions
-- Store simplified GeoJSON for spatial queries
 
 **Example narrative:**
 > "Fire group originated near Yalinga, crossed the Chinko River, entered park Dec 15, burned 8 days near Mbuti village."
 
 ### Task 9: Deforestation Analysis
 **Script running:** `scripts/deforestation_analyzer.py`
-- ✓ 24+ events detected
+- ✓ 48+ events detected (growing)
 - Classifies patterns: farming, mining, road, forestry
 - Generates narratives with coordinates
-- Uses nearby village/river names
 
 ### Task: Build Narrative APIs
 Create rich textual description endpoints:
 - `GET /api/parks/{id}/fire-narrative` - Fire group movements with places
 - `GET /api/parks/{id}/deforestation-narrative` - Forest loss with context
 - `GET /api/parks/{id}/settlement-narrative` - Settlements with nearby places
+
+### Task: Add Legal Texts to Park Tooltip
+- Park tooltip should show legal framework information
+- Display: designation, establishment year, governing body
+- Show country-level legislation links
+- Data source: `data/legal_frameworks.json`
+- Currently only 10 countries have data - may need expansion
 
 ### Task: VIIRS API Fix (After Other Data Tasks)
 **Problem:** FIRMS API CORS issues
@@ -106,8 +116,8 @@ Create rich textual description endpoints:
 | Script | Status | Purpose |
 |--------|--------|---------|
 | `ghsl_enhanced_processor.py` | **Ready** | Settlements + population |
-| `download_osm_places.py` | Running | Villages, rivers, towns |
-| `deforestation_analyzer.py` | Running | Hansen forest loss |
+| `download_osm_places.py` | **Complete** | 10,600 places captured |
+| `deforestation_analyzer.py` | **Running** | 48+ events |
 | `fire_processor_streaming.py` | Ready | Process fire CSVs from ZIP |
 
 ---
@@ -120,17 +130,12 @@ source .venv/bin/activate
 python scripts/ghsl_enhanced_processor.py --zip data/ghsl_examples.zip
 ```
 
-### Resume OSM Download (all parks)
-```bash
-source .venv/bin/activate
-nohup python scripts/download_osm_places.py --buffer-km 20 > logs/osm_places.log 2>&1 &
-```
-
 ### Monitor Progress
 ```bash
 ps aux | grep python | grep -v grep
 sqlite3 db.sqlite3 "SELECT place_type, COUNT(*) FROM osm_places GROUP BY place_type;"
 sqlite3 db.sqlite3 "SELECT park_id, COUNT(*) FROM deforestation_events GROUP BY park_id;"
+free -h
 ```
 
 ### Server
