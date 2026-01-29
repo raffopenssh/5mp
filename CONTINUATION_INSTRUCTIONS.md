@@ -1,6 +1,6 @@
 # Continuation Instructions
 
-## Current State (2026-01-29 05:55 UTC)
+## Current State (2026-01-29 06:00 UTC)
 
 ### System Status
 - **Memory:** 5.8GB available ✓
@@ -26,8 +26,11 @@
    - `GET /api/parks/{id}/fire-narrative` - Working
    - `GET /api/parks/{id}/deforestation-narrative` - Working  
    - `GET /api/parks/{id}/settlement-narrative` - Placeholder ready
-2. ✅ **Auth fix** - API endpoints work with `?pwd=` param without redirect
-3. ✅ **UI Fixes** (via subagent)
+2. ✅ **Cardinal Directions** - Narratives now include directions
+   - Example: "8 km north-northeast of Gigi, 6 km northwest of the Ebola"
+   - Uses 16-point compass (N, NNE, NE, ENE, E, etc.)
+3. ✅ **Auth fix** - API endpoints work with `?pwd=` param without redirect
+4. ✅ **UI Fixes** (via subagent)
    - Fixed double tooltip issue
    - Simplified "162 Keystones" to compact toggle `[🏛️ 162]`
    - Menu X button investigated (code looks correct)
@@ -38,7 +41,7 @@ Parks in Hansen tile (20E-30E, 0N-10N): **13 total**
 - ✅ CAF_Chinko (24 years)  
 - ✅ CAF_Manovo_Gounda_St_Floris (24 years)
 - ✅ COD_Abumonbazi (24 years)
-- ⏳ COD_Bili-Uere
+- ⏳ COD_Bili-Uere (processing now)
 - ⏳ COD_Garamba
 - ⏳ COD_Maiko
 - ⏳ COD_Okapis
@@ -48,7 +51,9 @@ Parks in Hansen tile (20E-30E, 0N-10N): **13 total**
 - ⏳ UGA_Queen_Elizabeth
 - ⏳ UGA_Rwenzori_Mountains
 
-**Note:** Script is CPU-bound at 99.9%. ~1.5 hours per park due to large raster processing.
+**Note:** Script is CPU-bound at 99.9%. ~1.5 hours per park.
+**ETA for completion:** ~13.5 more hours (9 parks remaining).
+**Option:** Could kill and optimize script, but will lose current progress.
 
 ---
 
