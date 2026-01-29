@@ -319,7 +319,7 @@
         .maplibregl-popup-tip { border-top-color: rgba(18,18,18,0.95) !important; }
         .maplibregl-popup-close-button { color: #666 !important; font-size: 18px !important; padding: 4px 8px !important; }
         .maplibregl-popup-close-button:hover { color: #fff !important; background: transparent !important; }
-        .pa-popup { padding: 12px; }
+        .pa-popup { padding: 12px; max-height: 400px; overflow-y: auto; }
         .pa-popup-header { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
         .pa-popup-name { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px; }
         .pa-popup-country { font-size: 11px; color: #888; display: flex; align-items: center; gap: 4px; }
@@ -653,27 +653,6 @@
             <div id="bbox-info" style="display:none;"></div>
             <div id="bbox-coords" style="display:none;"></div>
 
-            <!-- Download Section -->
-            <div class="filter-section">
-                <div class="filter-section-label">Export Data</div>
-                <div class="download-section">
-                    <button class="btn-download" onclick="downloadData('csv')">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                        </svg>
-                        CSV
-                    </button>
-                    <button class="btn-download" onclick="downloadData('geojson')">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="2" y1="12" x2="22" y2="12"></line>
-                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                        </svg>
-                        GeoJSON
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
