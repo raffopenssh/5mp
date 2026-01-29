@@ -85,6 +85,43 @@ func haversineDistance(lat1, lon1, lat2, lon2 float64) float64 {
 	return R * c
 }
 
+// bearingTo calculates the initial bearing from point 1 to point 2 in degrees (0-360)
+func bearingTo(lat1, lon1, lat2, lon2 float64) float64 {
+	lat1Rad := lat1 * math.Pi / 180
+	lat2Rad := lat2 * math.Pi / 180
+	dLon := (lon2 - lon1) * math.Pi / 180
+
+	y := math.Sin(dLon) * math.Cos(lat2Rad)
+	x := math.Cos(lat1Rad)*math.Sin(lat2Rad) - math.Sin(lat1Rad)*math.Cos(lat2Rad)*math.Cos(dLon)
+	bearing := math.Atan2(y, x) * 180 / math.Pi
+	return math.Mod(bearing+360, 360) // Normalize to 0-360
+}
+
+// bearingToCardinal converts a bearing in degrees to a cardinal/intercardinal direction
+func bearingToCardinal(bearing float64) string {
+	// 16-point compass directions
+	directions := []string{
+		"north", "north-northeast", "northeast", "east-northeast",
+		"east", "east-southeast", "southeast", "south-southeast",
+		"south", "south-southwest", "southwest", "west-southwest",
+		"west", "west-northwest", "northwest", "north-northwest",
+	}
+	// Each direction covers 22.5 degrees, offset by 11.25 to center
+	index := int(math.Round(bearing/22.5)) % 16
+	return directions[index]
+}
+
+// formatPlaceWithDirection formats a place name with distance and direction from a reference point
+func formatPlaceWithDirection(placeName, placeType string, distKm, refLat, refLon, placeLat, placeLon float64) string {
+	bearing := bearingTo(refLat, refLon, placeLat, placeLon)
+	direction := bearingToCardinal(bearing)
+	
+	if placeType == "river" || placeType == "stream" {
+		return fmt.Sprintf("%.0fkm %s of %s", distKm, direction, placeName)
+	}
+	return fmt.Sprintf("%.0fkm %s of %s", distKm, direction, placeName)
+}
+
 // findNearestPlaces finds the nearest OSM places to a given coordinate
 func (s *Server) findNearestPlaces(parkID string, lat, lon float64, limit int, placeTypes []string) ([]OSMPlace, error) {
 	var places []OSMPlace
@@ -147,22 +184,25 @@ func (s *Server) describeLocation(parkID string, lat, lon float64) string {
 	var parts []string
 	
 	if len(settlements) > 0 && settlements[0].Distance < 30 {
-		dist := settlements[0].Distance
-		name := settlements[0].Name
-		if dist < 5 {
-			parts = append(parts, fmt.Sprintf("near %s", name))
+		p := settlements[0]
+		if p.Distance < 5 {
+			parts = append(parts, fmt.Sprintf("near %s", p.Name))
 		} else {
-			parts = append(parts, fmt.Sprintf("%.0f km from %s", dist, name))
+			// Direction FROM settlement TO the location
+			bearing := bearingTo(p.Lat, p.Lon, lat, lon)
+			direction := bearingToCardinal(bearing)
+			parts = append(parts, fmt.Sprintf("%.0f km %s of %s", p.Distance, direction, p.Name))
 		}
 	}
 	
 	if len(rivers) > 0 && rivers[0].Distance < 20 {
-		dist := rivers[0].Distance
-		name := rivers[0].Name
-		if dist < 3 {
-			parts = append(parts, fmt.Sprintf("along the %s", name))
+		p := rivers[0]
+		if p.Distance < 3 {
+			parts = append(parts, fmt.Sprintf("along the %s", p.Name))
 		} else {
-			parts = append(parts, fmt.Sprintf("%.0f km from the %s", dist, name))
+			bearing := bearingTo(p.Lat, p.Lon, lat, lon)
+			direction := bearingToCardinal(bearing)
+			parts = append(parts, fmt.Sprintf("%.0f km %s of the %s", p.Distance, direction, p.Name))
 		}
 	}
 	
@@ -402,14 +442,16 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 			key := p.Name
 			if !seen[key] && p.Distance < 100 {
 				seen[key] = true
-				story.NearbyPlaces = append(story.NearbyPlaces, fmt.Sprintf("%s (%s, %.0fkm)", p.Name, p.PlaceType, p.Distance))
+				desc := formatPlaceWithDirection(p.Name, p.PlaceType, p.Distance, lat, lon, p.Lat, p.Lon)
+				story.NearbyPlaces = append(story.NearbyPlaces, desc)
 			}
 		}
 		for _, p := range rivers {
 			key := p.Name
 			if !seen[key] && p.Distance < 100 {
 				seen[key] = true
-				story.NearbyPlaces = append(story.NearbyPlaces, fmt.Sprintf("%s River (%.0fkm)", p.Name, p.Distance))
+				desc := formatPlaceWithDirection(p.Name+" River", p.PlaceType, p.Distance, lat, lon, p.Lat, p.Lon)
+				story.NearbyPlaces = append(story.NearbyPlaces, desc)
 			}
 		}
 		
