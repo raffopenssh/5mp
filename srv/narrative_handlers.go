@@ -23,12 +23,50 @@ type OSMPlace struct {
 
 // FireNarrative contains rich textual description of fire movements
 type FireNarrative struct {
-	ParkID     string           `json:"park_id"`
-	ParkName   string           `json:"park_name"`
-	Year       int              `json:"year"`
-	Summary    string           `json:"summary"`
-	Narratives []FireGroupStory `json:"narratives"`
-	KeyPlaces  []OSMPlace       `json:"key_places"`
+	ParkID       string            `json:"park_id"`
+	ParkName     string            `json:"park_name"`
+	Year         int               `json:"year"`
+	Summary      string            `json:"summary"`
+	Narratives   []FireGroupStory  `json:"narratives"`
+	KeyPlaces    []OSMPlace        `json:"key_places"`
+	Hotspots     []FireHotspot     `json:"hotspots,omitempty"`
+	Trend        *FireTrendAnalysis `json:"trend,omitempty"`
+	ResponseRate float64           `json:"response_rate"`
+	TotalFires   int               `json:"total_fires"`
+	PeakMonth    string            `json:"peak_month,omitempty"`
+}
+
+// FireHotspot represents a geographic concentration of fire activity
+type FireHotspot struct {
+	Lat          float64  `json:"lat"`
+	Lon          float64  `json:"lon"`
+	FireCount    int      `json:"fire_count"`
+	Percentage   float64  `json:"percentage"`
+	Description  string   `json:"description"`
+	NearbyPlaces []string `json:"nearby_places"`
+}
+
+// FireTrendAnalysis provides multi-year trend information
+type FireTrendAnalysis struct {
+	Years           []FireYearSummary `json:"years"`
+	TrendDirection  string            `json:"trend_direction"` // increasing, decreasing, stable
+	AvgResponseRate float64           `json:"avg_response_rate"`
+	WorstYear       int               `json:"worst_year"`
+	WorstYearGroups int               `json:"worst_year_groups"`
+	BestYear        int               `json:"best_year"`
+	BestYearRate    float64           `json:"best_year_rate"`
+	Narrative       string            `json:"narrative"`
+}
+
+// FireYearSummary provides per-year fire statistics
+type FireYearSummary struct {
+	Year            int     `json:"year"`
+	TotalGroups     int     `json:"total_groups"`
+	StoppedInside   int     `json:"stopped_inside"`
+	Transited       int     `json:"transited"`
+	ResponseRate    float64 `json:"response_rate"`
+	TotalFires      int     `json:"total_fires"`
+	AvgDaysBurning  float64 `json:"avg_days_burning"`
 }
 
 // FireGroupStory describes a single fire group's movement
@@ -48,12 +86,17 @@ type FireGroupStory struct {
 
 // DeforestationNarrative contains rich textual description of forest loss
 type DeforestationNarrative struct {
-	ParkID      string                    `json:"park_id"`
-	ParkName    string                    `json:"park_name"`
-	Summary     string                    `json:"summary"`
-	YearlyStory []DeforestationYearStory  `json:"yearly_stories"`
-	TotalLoss   float64                   `json:"total_loss_km2"`
-	WorstYear   int                       `json:"worst_year"`
+	ParkID            string                    `json:"park_id"`
+	ParkName          string                    `json:"park_name"`
+	Summary           string                    `json:"summary"`
+	YearlyStory       []DeforestationYearStory  `json:"yearly_stories"`
+	TotalLoss         float64                   `json:"total_loss_km2"`
+	WorstYear         int                       `json:"worst_year"`
+	TrendDirection    string                    `json:"trend_direction"`       // "improving", "worsening", "stable"
+	TrendPercentChange float64                  `json:"trend_percent_change"`  // percentage change between periods
+	FiveYearAvgEarly  float64                   `json:"five_year_avg_early"`   // earliest 5-year average
+	FiveYearAvgRecent float64                   `json:"five_year_avg_recent"`  // most recent 5-year average
+	Hotspots          []DeforestationHotspot    `json:"hotspots,omitempty"`    // worst cluster hotspots
 }
 
 // DeforestationYearStory describes forest loss for a single year
@@ -65,12 +108,47 @@ type DeforestationYearStory struct {
 	NearbyPlaces []string `json:"nearby_places"`
 }
 
-// SettlementNarrative contains description of settlements (placeholder)
+// DeforestationHotspot describes a significant cluster of deforestation
+type DeforestationHotspot struct {
+	Year        int     `json:"year"`
+	ClusterID   int     `json:"cluster_id"`
+	AreaKm2     float64 `json:"area_km2"`
+	Lat         float64 `json:"lat"`
+	Lon         float64 `json:"lon"`
+	PatternType string  `json:"pattern_type"`
+	Description string  `json:"description"`
+}
+
+// SettlementNarrative contains description of settlements and human-wildlife interface
 type SettlementNarrative struct {
-	ParkID   string `json:"park_id"`
-	ParkName string `json:"park_name"`
-	Summary  string `json:"summary"`
-	Status   string `json:"status"` // "pending" until GHSL data ready
+	ParkID              string               `json:"park_id"`
+	ParkName            string               `json:"park_name"`
+	Summary             string               `json:"summary"`
+	Status              string               `json:"status"`
+	SettlementCount     int                  `json:"settlement_count"`
+	TotalPopulation     int64                `json:"total_population"`
+	PopulationDensity   float64              `json:"population_density_per_km2"`
+	ParkAreaKm2         float64              `json:"park_area_km2"`
+	ConflictRisk        string               `json:"conflict_risk"`
+	LargestSettlements  []SettlementDetail   `json:"largest_settlements"`
+	RegionalBreakdown   []RegionSettlement   `json:"regional_breakdown,omitempty"`
+}
+
+// SettlementDetail describes a single settlement
+type SettlementDetail struct {
+	Name              string  `json:"name"`
+	Population        int64   `json:"population"`
+	Lat               float64 `json:"lat"`
+	Lon               float64 `json:"lon"`
+	Direction         string  `json:"direction"`
+	NearestBoundaryKm float64 `json:"nearest_boundary_km,omitempty"`
+}
+
+// RegionSettlement groups settlements by geographic region within the park
+type RegionSettlement struct {
+	Region         string `json:"region"`
+	SettlementCount int   `json:"settlement_count"`
+	Population     int64  `json:"population"`
 }
 
 // haversineDistance calculates distance between two lat/lon points in km
@@ -244,18 +322,19 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 	
-	// Get most recent year's fire data with trajectories
+	// Get most recent year's fire data
 	var year int
 	var totalGroups, stoppedInside, transited int
+	var avgDaysBurning float64
 	var trajJSON sql.NullString
 	
 	err := s.DB.QueryRow(`
-		SELECT year, total_groups, groups_stopped_inside, groups_transited, trajectories_json
+		SELECT year, total_groups, groups_stopped_inside, groups_transited, avg_days_burning, trajectories_json
 		FROM park_group_infractions 
 		WHERE park_id = ? AND total_groups > 0
 		ORDER BY year DESC
 		LIMIT 1
-	`, internalID).Scan(&year, &totalGroups, &stoppedInside, &transited, &trajJSON)
+	`, internalID).Scan(&year, &totalGroups, &stoppedInside, &transited, &avgDaysBurning, &trajJSON)
 	
 	narrative := FireNarrative{
 		ParkID:   internalID,
@@ -274,14 +353,51 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	
-	// Build summary
+	// Calculate response rate
+	if totalGroups > 0 {
+		narrative.ResponseRate = float64(stoppedInside) / float64(totalGroups) * 100
+	}
+	
+	// Get total fire count for this year
+	var totalFires int
+	s.DB.QueryRow(`
+		SELECT COUNT(*) FROM fire_detections 
+		WHERE protected_area_id = ? AND strftime('%Y', acq_date) = ?
+	`, internalID, fmt.Sprintf("%d", year)).Scan(&totalFires)
+	narrative.TotalFires = totalFires
+	
+	// Get peak month
+	var peakMonth string
+	var peakCount int
+	s.DB.QueryRow(`
+		SELECT strftime('%m', acq_date) as month, COUNT(*) as cnt
+		FROM fire_detections 
+		WHERE protected_area_id = ? AND strftime('%Y', acq_date) = ?
+		GROUP BY month ORDER BY cnt DESC LIMIT 1
+	`, internalID, fmt.Sprintf("%d", year)).Scan(&peakMonth, &peakCount)
+	monthNames := map[string]string{
+		"01": "January", "02": "February", "03": "March", "04": "April",
+		"05": "May", "06": "June", "07": "July", "08": "August",
+		"09": "September", "10": "October", "11": "November", "12": "December",
+	}
+	narrative.PeakMonth = monthNames[peakMonth]
+	
+	// Build enhanced summary
 	var summaryParts []string
-	summaryParts = append(summaryParts, fmt.Sprintf("In %d, %d fire group(s) entered %s.", year, totalGroups, parkName))
+	summaryParts = append(summaryParts, fmt.Sprintf("In %d, %s experienced %d fire detections across %d distinct fire groups.", 
+		year, parkName, totalFires, totalGroups))
 	if stoppedInside > 0 {
-		summaryParts = append(summaryParts, fmt.Sprintf("%d group(s) stopped inside (possible ranger contact).", stoppedInside))
+		summaryParts = append(summaryParts, fmt.Sprintf("%d group(s) (%.0f%%) were stopped inside the park, suggesting effective ranger intervention.", 
+			stoppedInside, narrative.ResponseRate))
 	}
 	if transited > 0 {
-		summaryParts = append(summaryParts, fmt.Sprintf("%d group(s) transited through without stopping.", transited))
+		summaryParts = append(summaryParts, fmt.Sprintf("%d group(s) transited through without being stopped.", transited))
+	}
+	if narrative.PeakMonth != "" {
+		summaryParts = append(summaryParts, fmt.Sprintf("Peak fire activity occurred in %s.", narrative.PeakMonth))
+	}
+	if avgDaysBurning > 0 {
+		summaryParts = append(summaryParts, fmt.Sprintf("Fire groups burned inside the park for an average of %.1f days.", avgDaysBurning))
 	}
 	narrative.Summary = strings.Join(summaryParts, " ")
 	
@@ -367,15 +483,35 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 	
+	// Generate hotspot analysis from fire_detections (works without trajectory JSON)
+	narrative.Hotspots = s.analyzeFireHotspots(internalID, year, totalFires)
+	
+	// Generate multi-year trend analysis
+	narrative.Trend = s.analyzeFireTrend(internalID, year)
+	
+	// If no trajectory-based narratives, generate hotspot-based narratives
+	if len(narrative.Narratives) == 0 && len(narrative.Hotspots) > 0 {
+		for i, hs := range narrative.Hotspots {
+			if i >= 5 { // Limit to top 5 hotspots
+				break
+			}
+			story := FireGroupStory{
+				GroupNum:    i + 1,
+				FiresInside: hs.FireCount,
+				Outcome:     "HOTSPOT",
+				Narrative:   hs.Description,
+				NearbyPlaces: hs.NearbyPlaces,
+			}
+			narrative.Narratives = append(narrative.Narratives, story)
+		}
+	}
+	
 	// Get key places in the park for context
 	keyPlaces, _ := s.findNearestPlaces(internalID, 0, 0, 0, nil)
 	if len(keyPlaces) == 0 {
-		// Get all places for this park
 		rows, err := s.DB.Query(`
 			SELECT id, park_id, place_type, name, lat, lon
-			FROM osm_places
-			WHERE park_id = ?
-			LIMIT 20
+			FROM osm_places WHERE park_id = ? LIMIT 20
 		`, internalID)
 		if err == nil {
 			defer rows.Close()
@@ -424,7 +560,7 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		SELECT year, area_km2, pattern_type, lat, lon, description
 		FROM deforestation_events
 		WHERE park_id = ?
-		ORDER BY year DESC
+		ORDER BY year ASC
 	`, internalID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -435,6 +571,10 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	var totalLoss float64
 	var worstYear int
 	var worstLoss float64
+	var yearlyAreas []struct {
+		year int
+		area float64
+	}
 	
 	for rows.Next() {
 		var year int
@@ -447,16 +587,24 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 			continue
 		}
 		
+		yearlyAreas = append(yearlyAreas, struct {
+			year int
+			area float64
+		}{year, area})
+		
 		totalLoss += area
 		if area > worstLoss {
 			worstLoss = area
 			worstYear = year
 		}
 		
+		// Determine actual pattern type from cluster data for this year
+		actualPattern := s.determinePatternType(internalID, year, patternType.String)
+		
 		story := DeforestationYearStory{
 			Year:        year,
 			AreaKm2:     area,
-			PatternType: patternType.String,
+			PatternType: actualPattern,
 		}
 		
 		// Find nearby places for context (settlements and rivers)
@@ -481,9 +629,9 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 			}
 		}
 		
-		// Build narrative
+		// Build narrative with varied pattern description
 		locationDesc := s.describeLocation(internalID, lat, lon)
-		patternDesc := describePattern(patternType.String)
+		patternDesc := describePatternVaried(actualPattern, area, year)
 		
 		story.Narrative = fmt.Sprintf("In %d, %.2f km² of forest was lost %s. %s",
 			year, area, locationDesc, patternDesc)
@@ -491,22 +639,35 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		narrative.YearlyStory = append(narrative.YearlyStory, story)
 	}
 	
+	// Reverse to show most recent first
+	for i, j := 0, len(narrative.YearlyStory)-1; i < j; i, j = i+1, j-1 {
+		narrative.YearlyStory[i], narrative.YearlyStory[j] = narrative.YearlyStory[j], narrative.YearlyStory[i]
+	}
+	
 	narrative.TotalLoss = totalLoss
 	narrative.WorstYear = worstYear
 	
-	// Build summary
+	// Calculate 5-year rolling average trend
+	narrative.TrendDirection, narrative.TrendPercentChange, 
+		narrative.FiveYearAvgEarly, narrative.FiveYearAvgRecent = calculateTrend(yearlyAreas)
+	
+	// Fetch worst hotspots from clusters table
+	narrative.Hotspots = s.fetchHotspots(internalID, 5)
+	
+	// Build summary with trend information
 	if totalLoss == 0 {
 		narrative.Summary = fmt.Sprintf("No significant deforestation events recorded for %s.", parkName)
 	} else {
-		narrative.Summary = fmt.Sprintf("%s has experienced %.2f km² of forest loss across %d recorded years. The worst year was %d with %.2f km² lost.",
-			parkName, totalLoss, len(narrative.YearlyStory), worstYear, worstLoss)
+		trendDesc := describeTrend(narrative.TrendDirection, narrative.TrendPercentChange)
+		narrative.Summary = fmt.Sprintf("%s has experienced %.2f km² of forest loss across %d recorded years. The worst year was %d with %.2f km² lost. %s",
+			parkName, totalLoss, len(narrative.YearlyStory), worstYear, worstLoss, trendDesc)
 	}
 	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(narrative)
 }
 
-// HandleAPISettlementNarrative returns description of settlements (placeholder)
+// HandleAPISettlementNarrative returns comprehensive narrative about settlements and human-wildlife interface
 // GET /api/parks/{id}/settlement-narrative
 func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Request) {
 	parkID := r.PathValue("id")
@@ -518,47 +679,229 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	// Map WDPA ID to internal park_id if needed
 	internalID := parkID
 	parkName := parkID
+	var parkAreaKm2 float64
 	if s.AreaStore != nil {
 		for _, area := range s.AreaStore.Areas {
 			if area.WDPAID == parkID || area.ID == parkID {
 				internalID = area.ID
 				parkName = area.Name
+				parkAreaKm2 = area.AreaKm2
 				break
 			}
 		}
 	}
 	
-	// Check if we have GHSL data
-	var builtUp float64
-	var settlementCount int
-	err := s.DB.QueryRow(`
-		SELECT built_up_km2, settlement_count
-		FROM ghsl_data
-		WHERE park_id = ?
-	`, internalID).Scan(&builtUp, &settlementCount)
-	
 	narrative := SettlementNarrative{
-		ParkID:   internalID,
-		ParkName: parkName,
+		ParkID:      internalID,
+		ParkName:    parkName,
+		ParkAreaKm2: parkAreaKm2,
 	}
 	
-	if err == sql.ErrNoRows {
-		narrative.Status = "pending"
-		narrative.Summary = fmt.Sprintf("Settlement analysis for %s is pending. GHSL (Global Human Settlement Layer) data has not yet been processed for this park.", parkName)
-	} else if err != nil {
+	// Get settlement statistics from park_settlements table
+	var settlementCount int
+	var totalPopulation sql.NullFloat64
+	err := s.DB.QueryRow(`
+		SELECT COUNT(*) as count, COALESCE(SUM(population_estimate), 0) as total_pop
+		FROM park_settlements
+		WHERE park_id = ?
+	`, internalID).Scan(&settlementCount, &totalPopulation)
+	
+	if err != nil {
 		narrative.Status = "error"
 		narrative.Summary = "Error retrieving settlement data."
-	} else {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(narrative)
+		return
+	}
+	
+	narrative.SettlementCount = settlementCount
+	narrative.TotalPopulation = int64(totalPopulation.Float64)
+	
+	// Calculate population density
+	if parkAreaKm2 > 0 {
+		narrative.PopulationDensity = totalPopulation.Float64 / parkAreaKm2
+	}
+	
+	// Assess human-wildlife conflict risk
+	narrative.ConflictRisk = assessConflictRisk(settlementCount, narrative.PopulationDensity)
+	
+	// Handle zero settlements case (pristine areas)
+	if settlementCount == 0 {
 		narrative.Status = "complete"
-		if settlementCount == 0 && builtUp == 0 {
-			narrative.Summary = fmt.Sprintf("No permanent settlements detected inside %s boundaries. This suggests good protection from human encroachment.", parkName)
-		} else {
-			narrative.Summary = fmt.Sprintf("%s contains %d detected settlement(s) covering approximately %.2f km² of built-up area. Further analysis with OSM place data can provide specific village and hamlet names.", parkName, settlementCount, builtUp)
+		narrative.ConflictRisk = "minimal"
+		narrative.Summary = generatePristineNarrative(parkName, parkAreaKm2)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(narrative)
+		return
+	}
+	
+	// Get largest settlements
+	largestRows, err := s.DB.Query(`
+		SELECT 
+			COALESCE(nearest_place, 'Unnamed settlement') as name,
+			CAST(COALESCE(population_estimate, 0) AS INTEGER) as population,
+			lat, lon,
+			COALESCE(direction, '') as direction,
+			COALESCE(distance_km, 0) as distance_km
+		FROM park_settlements
+		WHERE park_id = ?
+		ORDER BY population_estimate DESC
+		LIMIT 10
+	`, internalID)
+	
+	if err == nil {
+		defer largestRows.Close()
+		for largestRows.Next() {
+			var sd SettlementDetail
+			var distKm float64
+			if err := largestRows.Scan(&sd.Name, &sd.Population, &sd.Lat, &sd.Lon, &sd.Direction, &distKm); err == nil {
+				sd.NearestBoundaryKm = distKm
+				narrative.LargestSettlements = append(narrative.LargestSettlements, sd)
+			}
 		}
 	}
 	
+	// Get regional breakdown by quadrant
+	regionRows, err := s.DB.Query(`
+		WITH park_center AS (
+			SELECT AVG(lat) as center_lat, AVG(lon) as center_lon
+			FROM park_settlements WHERE park_id = ?
+		)
+		SELECT 
+			CASE 
+				WHEN s.lat >= pc.center_lat AND s.lon >= pc.center_lon THEN 'Northeast'
+				WHEN s.lat >= pc.center_lat AND s.lon < pc.center_lon THEN 'Northwest'
+				WHEN s.lat < pc.center_lat AND s.lon >= pc.center_lon THEN 'Southeast'
+				ELSE 'Southwest'
+			END as region,
+			COUNT(*) as count,
+			COALESCE(SUM(population_estimate), 0) as population
+		FROM park_settlements s, park_center pc
+		WHERE s.park_id = ?
+		GROUP BY region
+		ORDER BY population DESC
+	`, internalID, internalID)
+	
+	if err == nil {
+		defer regionRows.Close()
+		for regionRows.Next() {
+			var rs RegionSettlement
+			if err := regionRows.Scan(&rs.Region, &rs.SettlementCount, &rs.Population); err == nil {
+				narrative.RegionalBreakdown = append(narrative.RegionalBreakdown, rs)
+			}
+		}
+	}
+	
+	// Generate comprehensive narrative
+	narrative.Status = "complete"
+	narrative.Summary = generateSettlementNarrative(parkName, settlementCount, narrative.TotalPopulation, 
+		narrative.PopulationDensity, narrative.ConflictRisk, narrative.LargestSettlements, narrative.RegionalBreakdown)
+	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(narrative)
+}
+
+// assessConflictRisk determines human-wildlife conflict risk level
+func assessConflictRisk(settlementCount int, density float64) string {
+	if settlementCount == 0 {
+		return "minimal"
+	}
+	if density > 50 {
+		return "critical"
+	}
+	if density > 20 || settlementCount > 50 {
+		return "high"
+	}
+	if density > 5 || settlementCount > 20 {
+		return "moderate"
+	}
+	return "low"
+}
+
+// generatePristineNarrative creates narrative for parks with no settlements
+func generatePristineNarrative(parkName string, areaKm2 float64) string {
+	var narrative strings.Builder
+	narrative.WriteString(fmt.Sprintf("%s shows no detectable human settlements within park boundaries. ", parkName))
+	
+	if areaKm2 > 0 {
+		narrative.WriteString(fmt.Sprintf("This %.0f km² protected area represents a pristine wilderness corridor with minimal direct human-wildlife interface. ", areaKm2))
+	}
+	
+	narrative.WriteString("Conservation priority: Maintain buffer zones and monitor boundary areas for encroachment. ")
+	narrative.WriteString("This intact habitat status is rare in the region and critical for wildlife movement corridors.")
+	
+	return narrative.String()
+}
+
+// generateSettlementNarrative creates comprehensive narrative for populated parks
+func generateSettlementNarrative(parkName string, count int, totalPop int64, density float64, risk string, 
+	largest []SettlementDetail, regions []RegionSettlement) string {
+	var narrative strings.Builder
+	
+	// Opening summary
+	narrative.WriteString(fmt.Sprintf("%s contains %d identified settlements with an estimated total population of %s people", 
+		parkName, count, formatPopulation(totalPop)))
+	
+	if density > 0 {
+		narrative.WriteString(fmt.Sprintf(" (density: %.1f people/km²)", density))
+	}
+	narrative.WriteString(". ")
+	
+	// Risk assessment
+	switch risk {
+	case "critical":
+		narrative.WriteString("⚠️ CRITICAL: Human-wildlife conflict risk is severe. Immediate community engagement and buffer zone management required. ")
+	case "high":
+		narrative.WriteString("⚠️ HIGH ALERT: Significant human-wildlife conflict potential exists. Proactive community outreach and wildlife corridor protection recommended. ")
+	case "moderate":
+		narrative.WriteString("Human-wildlife conflict risk is moderate. Regular community liaison and monitoring programs advised. ")
+	case "low":
+		narrative.WriteString("Human presence is relatively low, but vigilance for encroachment is still recommended. ")
+	}
+	
+	// Regional distribution
+	if len(regions) > 0 {
+		var highestPop int64
+		var highestRegion string
+		for _, r := range regions {
+			if r.Population > highestPop {
+				highestPop = r.Population
+				highestRegion = r.Region
+			}
+		}
+		if highestRegion != "" {
+			narrative.WriteString(fmt.Sprintf("Population concentration is highest in the %s sector. ", highestRegion))
+		}
+	}
+	
+	// Key settlements
+	if len(largest) > 0 {
+		top3 := largest
+		if len(top3) > 3 {
+			top3 = top3[:3]
+		}
+		names := make([]string, 0, len(top3))
+		for _, s := range top3 {
+			names = append(names, fmt.Sprintf("%s (~%s)", s.Name, formatPopulation(s.Population)))
+		}
+		narrative.WriteString(fmt.Sprintf("Priority engagement communities: %s. ", strings.Join(names, ", ")))
+	}
+	
+	// Conservation recommendation
+	narrative.WriteString("Community-based conservation programs and human-wildlife conflict mitigation measures are essential for sustainable coexistence.")
+	
+	return narrative.String()
+}
+
+// formatPopulation formats population numbers with K/M suffixes
+func formatPopulation(pop int64) string {
+	if pop >= 1000000 {
+		return fmt.Sprintf("%.1fM", float64(pop)/1000000)
+	}
+	if pop >= 1000 {
+		return fmt.Sprintf("%.0fK", float64(pop)/1000)
+	}
+	return fmt.Sprintf("%d", pop)
 }
 
 // Helper function to describe deforestation patterns
@@ -577,6 +920,238 @@ func describePattern(pattern string) string {
 	}
 }
 
+// describePatternVaried provides varied pattern descriptions based on context
+func describePatternVaried(pattern string, areaKm2 float64, year int) string {
+	// Different phrasings for variety
+	scatteredPhrases := []string{
+		"The scattered pattern is consistent with smallholder agricultural expansion.",
+		"Dispersed clearing suggests multiple small-scale farming operations.",
+		"The diffuse pattern indicates gradual encroachment from various points.",
+		"Multiple small clearings are typical of subsistence agriculture.",
+	}
+	
+	clusterPhrases := []string{
+		"The clustered pattern may indicate mining activity or localized clearing.",
+		"Concentrated loss suggests organized clearing for commercial purposes.",
+		"The tight cluster pattern is consistent with settlement expansion.",
+		"Focused deforestation indicates a single major clearing event.",
+	}
+	
+	stripPhrases := []string{
+		"The linear pattern suggests road construction or logging track expansion.",
+		"Linear clearing indicates infrastructure development or logging access.",
+		"The strip pattern is consistent with road-building or utility corridors.",
+	}
+	
+	edgePhrases := []string{
+		"Loss concentrated along park boundaries indicates agricultural encroachment from surrounding communities.",
+		"Edge-focused clearing reflects pressure from adjacent farming areas.",
+		"Boundary-adjacent loss suggests expansion of neighboring settlements.",
+	}
+	
+	// Use year as seed for deterministic variety
+	index := year % 4
+	
+	switch pattern {
+	case "strip":
+		return stripPhrases[index%len(stripPhrases)]
+	case "cluster":
+		return clusterPhrases[index%len(clusterPhrases)]
+	case "scattered":
+		return scatteredPhrases[index%len(scatteredPhrases)]
+	case "edge":
+		return edgePhrases[index%len(edgePhrases)]
+	default:
+		// Provide context-based default
+		if areaKm2 > 5 {
+			return "The significant loss area warrants investigation into underlying causes."
+		}
+		return "Further analysis needed to determine the cause of forest loss."
+	}
+}
+
+// calculateTrend computes the 5-year rolling average trend
+func calculateTrend(yearlyAreas []struct {
+	year int
+	area float64
+}) (direction string, percentChange, earlyAvg, recentAvg float64) {
+	if len(yearlyAreas) < 5 {
+		return "insufficient_data", 0, 0, 0
+	}
+	
+	// Calculate early 5-year average (first 5 years)
+	earlyYears := 5
+	if len(yearlyAreas) < 10 {
+		earlyYears = len(yearlyAreas) / 2
+	}
+	if earlyYears < 2 {
+		earlyYears = 2
+	}
+	
+	var earlySum float64
+	for i := 0; i < earlyYears; i++ {
+		earlySum += yearlyAreas[i].area
+	}
+	earlyAvg = earlySum / float64(earlyYears)
+	
+	// Calculate recent 5-year average (last 5 years)
+	recentYears := 5
+	if len(yearlyAreas) < 10 {
+		recentYears = len(yearlyAreas) - earlyYears
+	}
+	if recentYears < 2 {
+		recentYears = 2
+	}
+	
+	var recentSum float64
+	for i := len(yearlyAreas) - recentYears; i < len(yearlyAreas); i++ {
+		recentSum += yearlyAreas[i].area
+	}
+	recentAvg = recentSum / float64(recentYears)
+	
+	// Calculate percent change
+	if earlyAvg > 0 {
+		percentChange = ((recentAvg - earlyAvg) / earlyAvg) * 100
+	}
+	
+	// Determine trend direction (10% threshold for "stable")
+	if percentChange > 10 {
+		direction = "worsening"
+	} else if percentChange < -10 {
+		direction = "improving"
+	} else {
+		direction = "stable"
+	}
+	
+	return direction, percentChange, earlyAvg, recentAvg
+}
+
+// describeTrend generates human-readable trend description
+func describeTrend(direction string, percentChange float64) string {
+	switch direction {
+	case "worsening":
+		return fmt.Sprintf("⚠️ TREND ALERT: Deforestation has increased by %.0f%% comparing recent years to earlier periods.", percentChange)
+	case "improving":
+		return fmt.Sprintf("✅ POSITIVE TREND: Deforestation has decreased by %.0f%% comparing recent years to earlier periods.", -percentChange)
+	case "stable":
+		return "Deforestation rates have remained relatively stable over the monitoring period."
+	default:
+		return "Insufficient data to determine long-term trend."
+	}
+}
+
+// fetchHotspots retrieves the worst deforestation clusters for a park
+func (s *Server) fetchHotspots(parkID string, limit int) []DeforestationHotspot {
+	var hotspots []DeforestationHotspot
+	
+	rows, err := s.DB.Query(`
+		SELECT year, cluster_id, area_km2, lat, lon, COALESCE(pattern_type, 'unknown'), COALESCE(description, '')
+		FROM deforestation_clusters
+		WHERE park_id = ?
+		ORDER BY area_km2 DESC
+		LIMIT ?
+	`, parkID, limit)
+	if err != nil {
+		return hotspots
+	}
+	defer rows.Close()
+	
+	for rows.Next() {
+		var h DeforestationHotspot
+		if err := rows.Scan(&h.Year, &h.ClusterID, &h.AreaKm2, &h.Lat, &h.Lon, &h.PatternType, &h.Description); err != nil {
+			continue
+		}
+		
+		// Generate description if empty
+		if h.Description == "" {
+			locationDesc := s.describeLocation(parkID, h.Lat, h.Lon)
+			h.Description = fmt.Sprintf("%.2f km² lost in %d %s", h.AreaKm2, h.Year, locationDesc)
+		}
+		
+		hotspots = append(hotspots, h)
+	}
+	
+	return hotspots
+}
+
+// determinePatternType analyzes cluster data to determine actual pattern type
+func (s *Server) determinePatternType(parkID string, year int, defaultPattern string) string {
+	// Query clusters for this park/year to analyze distribution
+	var clusterCount int
+	var totalArea float64
+	var latMin, latMax, lonMin, lonMax sql.NullFloat64
+	
+	err := s.DB.QueryRow(`
+		SELECT COUNT(*), COALESCE(SUM(area_km2), 0),
+		       MIN(lat), MAX(lat), MIN(lon), MAX(lon)
+		FROM deforestation_clusters
+		WHERE park_id = ? AND year = ?
+	`, parkID, year).Scan(&clusterCount, &totalArea, &latMin, &latMax, &lonMin, &lonMax)
+	
+	if err != nil || clusterCount == 0 {
+		return defaultPattern
+	}
+	
+	// Calculate geographic spread
+	latSpread := 0.0
+	lonSpread := 0.0
+	if latMin.Valid && latMax.Valid {
+		latSpread = latMax.Float64 - latMin.Float64
+	}
+	if lonMin.Valid && lonMax.Valid {
+		lonSpread = lonMax.Float64 - lonMin.Float64
+	}
+	
+	// Determine pattern based on cluster analysis
+	if clusterCount == 1 {
+		return "cluster" // Single concentrated area
+	}
+	
+	// Check for linear (strip) pattern - one dimension much larger than other
+	aspectRatio := 0.0
+	if latSpread > 0 && lonSpread > 0 {
+		if latSpread > lonSpread {
+			aspectRatio = latSpread / lonSpread
+		} else {
+			aspectRatio = lonSpread / latSpread
+		}
+	}
+	
+	if aspectRatio > 3.0 {
+		return "strip" // Linear pattern
+	}
+	
+	// Check for cluster vs scattered based on density
+	spreadArea := latSpread * lonSpread * 111 * 111 // Rough km² conversion
+	if spreadArea > 0 {
+		density := float64(clusterCount) / spreadArea
+		if density > 0.5 { // High density of clusters
+			return "cluster"
+		}
+	}
+	
+	// If many small clusters spread out
+	if clusterCount > 5 {
+		return "scattered"
+	}
+	
+	// Check if clusters are from database with explicit pattern
+	var clusterPattern sql.NullString
+	s.DB.QueryRow(`
+		SELECT pattern_type FROM deforestation_clusters
+		WHERE park_id = ? AND year = ? AND pattern_type IS NOT NULL
+		GROUP BY pattern_type
+		ORDER BY COUNT(*) DESC
+		LIMIT 1
+	`, parkID, year).Scan(&clusterPattern)
+	
+	if clusterPattern.Valid && clusterPattern.String != "" {
+		return clusterPattern.String
+	}
+	
+	return defaultPattern
+}
+
 // Helper function to get unique strings from a slice
 func uniqueStrings(input []string) []string {
 	seen := make(map[string]bool)
@@ -588,4 +1163,190 @@ func uniqueStrings(input []string) []string {
 		}
 	}
 	return result
+}
+
+// analyzeFireHotspots identifies geographic concentrations of fire activity
+func (s *Server) analyzeFireHotspots(parkID string, year int, totalFires int) []FireHotspot {
+	var hotspots []FireHotspot
+	
+	// Query fire clusters by 0.1 degree grid cells
+	rows, err := s.DB.Query(`
+		SELECT 
+			ROUND(latitude, 1) as lat_bucket,
+			ROUND(longitude, 1) as lon_bucket,
+			AVG(latitude) as avg_lat,
+			AVG(longitude) as avg_lon,
+			COUNT(*) as fire_count
+		FROM fire_detections 
+		WHERE protected_area_id = ? AND strftime('%Y', acq_date) = ?
+		GROUP BY lat_bucket, lon_bucket
+		HAVING fire_count >= 10
+		ORDER BY fire_count DESC
+		LIMIT 10
+	`, parkID, fmt.Sprintf("%d", year))
+	if err != nil {
+		return hotspots
+	}
+	defer rows.Close()
+	
+	for rows.Next() {
+		var latBucket, lonBucket, avgLat, avgLon float64
+		var fireCount int
+		if err := rows.Scan(&latBucket, &lonBucket, &avgLat, &avgLon, &fireCount); err != nil {
+			continue
+		}
+		
+		hs := FireHotspot{
+			Lat:       avgLat,
+			Lon:       avgLon,
+			FireCount: fireCount,
+		}
+		if totalFires > 0 {
+			hs.Percentage = float64(fireCount) / float64(totalFires) * 100
+		}
+		
+		// Find nearby places for context
+		settlements, _ := s.findNearestPlaces(parkID, avgLat, avgLon, 2, []string{"village", "hamlet", "town", "city"})
+		rivers, _ := s.findNearestPlaces(parkID, avgLat, avgLon, 1, []string{"river", "stream"})
+		
+		var nearbyNames []string
+		for _, p := range settlements {
+			if p.Distance < 30 {
+				nearbyNames = append(nearbyNames, fmt.Sprintf("%s (%.0fkm)", p.Name, p.Distance))
+			}
+		}
+		for _, p := range rivers {
+			if p.Distance < 20 {
+				nearbyNames = append(nearbyNames, fmt.Sprintf("%s River (%.0fkm)", p.Name, p.Distance))
+			}
+		}
+		hs.NearbyPlaces = nearbyNames
+		
+		// Build description
+		locationDesc := s.describeLocation(parkID, avgLat, avgLon)
+		hs.Description = fmt.Sprintf("Fire hotspot %s with %d detections (%.1f%% of park total). ",
+			locationDesc, fireCount, hs.Percentage)
+		if len(nearbyNames) > 0 {
+			hs.Description += fmt.Sprintf("Nearby: %s.", strings.Join(nearbyNames, ", "))
+		}
+		
+		hotspots = append(hotspots, hs)
+	}
+	
+	return hotspots
+}
+
+// analyzeFireTrend provides multi-year trend analysis
+func (s *Server) analyzeFireTrend(parkID string, currentYear int) *FireTrendAnalysis {
+	trend := &FireTrendAnalysis{}
+	
+	// Get all years of data
+	rows, err := s.DB.Query(`
+		SELECT 
+			pgi.year,
+			pgi.total_groups,
+			pgi.groups_stopped_inside,
+			pgi.groups_transited,
+			pgi.avg_days_burning,
+			COALESCE(fd.fire_count, 0) as total_fires
+		FROM park_group_infractions pgi
+		LEFT JOIN (
+			SELECT 
+				protected_area_id,
+				CAST(strftime('%Y', acq_date) AS INTEGER) as year,
+				COUNT(*) as fire_count
+			FROM fire_detections
+			GROUP BY protected_area_id, strftime('%Y', acq_date)
+		) fd ON pgi.park_id = fd.protected_area_id AND pgi.year = fd.year
+		WHERE pgi.park_id = ?
+		ORDER BY pgi.year
+	`, parkID)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	
+	var totalResponseRate float64
+	var yearCount int
+	var worstGroups int
+	var bestRate float64 = -1
+	
+	for rows.Next() {
+		var ys FireYearSummary
+		if err := rows.Scan(&ys.Year, &ys.TotalGroups, &ys.StoppedInside, &ys.Transited, &ys.AvgDaysBurning, &ys.TotalFires); err != nil {
+			continue
+		}
+		if ys.TotalGroups > 0 {
+			ys.ResponseRate = float64(ys.StoppedInside) / float64(ys.TotalGroups) * 100
+			totalResponseRate += ys.ResponseRate
+			yearCount++
+			
+			if ys.TotalGroups > worstGroups {
+				worstGroups = ys.TotalGroups
+				trend.WorstYear = ys.Year
+				trend.WorstYearGroups = ys.TotalGroups
+			}
+			if bestRate < 0 || ys.ResponseRate > bestRate {
+				bestRate = ys.ResponseRate
+				trend.BestYear = ys.Year
+				trend.BestYearRate = ys.ResponseRate
+			}
+		}
+		trend.Years = append(trend.Years, ys)
+	}
+	
+	if yearCount > 0 {
+		trend.AvgResponseRate = totalResponseRate / float64(yearCount)
+	}
+	
+	// Determine trend direction
+	if len(trend.Years) >= 3 {
+		recentAvg := 0.0
+		earlyAvg := 0.0
+		mid := len(trend.Years) / 2
+		for i, y := range trend.Years {
+			if i < mid {
+				earlyAvg += float64(y.TotalGroups)
+			} else {
+				recentAvg += float64(y.TotalGroups)
+			}
+		}
+		earlyAvg /= float64(mid)
+		recentAvg /= float64(len(trend.Years) - mid)
+		
+		if recentAvg > earlyAvg*1.2 {
+			trend.TrendDirection = "increasing"
+		} else if recentAvg < earlyAvg*0.8 {
+			trend.TrendDirection = "decreasing"
+		} else {
+			trend.TrendDirection = "stable"
+		}
+	}
+	
+	// Build trend narrative
+	if len(trend.Years) > 1 {
+		var narr strings.Builder
+		narr.WriteString(fmt.Sprintf("Analysis of %d years of fire data (%d-%d). ",
+			len(trend.Years), trend.Years[0].Year, trend.Years[len(trend.Years)-1].Year))
+		
+		switch trend.TrendDirection {
+		case "increasing":
+			narr.WriteString("⚠️ Fire pressure is INCREASING - enhanced monitoring recommended. ")
+		case "decreasing":
+			narr.WriteString("✓ Fire pressure is DECREASING - conservation efforts may be working. ")
+		case "stable":
+			narr.WriteString("Fire pressure remains relatively stable over the analysis period. ")
+		}
+		
+		narr.WriteString(fmt.Sprintf("Average response rate: %.0f%%. ", trend.AvgResponseRate))
+		if trend.WorstYear > 0 {
+			narr.WriteString(fmt.Sprintf("Worst year: %d with %d fire groups. ", trend.WorstYear, trend.WorstYearGroups))
+		}
+		if trend.BestYear > 0 {
+			narr.WriteString(fmt.Sprintf("Best response rate: %.0f%% in %d.", trend.BestYearRate, trend.BestYear))
+		}
+		trend.Narrative = narr.String()
+	}
+	
+	return trend
 }

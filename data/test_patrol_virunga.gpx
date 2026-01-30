@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Test">
+  <metadata>
+    <name>Virunga Patrol Test</name>
+    <time>2024-06-15T08:00:00Z</time>
+  </metadata>
+  <trk>
+    <name>Ranger Team Alpha - Sector North</name>
+    <trkseg>
+      <!-- Foot patrol in northern Virunga near Beni -->
+      <trkpt lat="0.49" lon="29.47"><ele>1200</ele><time>2024-06-15T06:00:00Z</time></trkpt>
+      <trkpt lat="0.491" lon="29.472"><ele>1210</ele><time>2024-06-15T06:30:00Z</time></trkpt>
+      <trkpt lat="0.492" lon="29.474"><ele>1220</ele><time>2024-06-15T07:00:00Z</time></trkpt>
+      <trkpt lat="0.493" lon="29.476"><ele>1230</ele><time>2024-06-15T07:30:00Z</time></trkpt>
+      <trkpt lat="0.494" lon="29.478"><ele>1240</ele><time>2024-06-15T08:00:00Z</time></trkpt>
+      <trkpt lat="0.495" lon="29.48"><ele>1250</ele><time>2024-06-15T08:30:00Z</time></trkpt>
+      <trkpt lat="0.496" lon="29.482"><ele>1260</ele><time>2024-06-15T09:00:00Z</time></trkpt>
+      <trkpt lat="0.497" lon="29.484"><ele>1270</ele><time>2024-06-15T09:30:00Z</time></trkpt>
+      <trkpt lat="0.498" lon="29.486"><ele>1280</ele><time>2024-06-15T10:00:00Z</time></trkpt>
+      <trkpt lat="0.499" lon="29.488"><ele>1290</ele><time>2024-06-15T10:30:00Z</time></trkpt>
+    </trkseg>
+  </trk>
+  <trk>
+    <name>Vehicle Patrol - Eastern Boundary</name>
+    <trkseg>
+      <!-- Vehicle patrol (faster speeds) -->
+      <trkpt lat="-0.5" lon="29.6"><ele>1500</ele><time>2024-06-15T08:00:00Z</time></trkpt>
+      <trkpt lat="-0.52" lon="29.62"><ele>1510</ele><time>2024-06-15T08:10:00Z</time></trkpt>
+      <trkpt lat="-0.54" lon="29.64"><ele>1520</ele><time>2024-06-15T08:20:00Z</time></trkpt>
+      <trkpt lat="-0.56" lon="29.66"><ele>1530</ele><time>2024-06-15T08:30:00Z</time></trkpt>
+      <trkpt lat="-0.58" lon="29.68"><ele>1540</ele><time>2024-06-15T08:40:00Z</time></trkpt>
+      <trkpt lat="-0.60" lon="29.70"><ele>1550</ele><time>2024-06-15T08:50:00Z</time></trkpt>
+      <trkpt lat="-0.62" lon="29.72"><ele>1560</ele><time>2024-06-15T09:00:00Z</time></trkpt>
+    </trkseg>
+  </trk>
+  <trk>
+    <name>Aerial Survey - Gorilla Habitat</name>
+    <trkseg>
+      <!-- Aerial (very fast) -->
+      <trkpt lat="-1.4" lon="29.5"><ele>3000</ele><time>2024-06-15T10:00:00Z</time></trkpt>
+      <trkpt lat="-1.35" lon="29.55"><ele>3000</ele><time>2024-06-15T10:05:00Z</time></trkpt>
+      <trkpt lat="-1.30" lon="29.60"><ele>3000</ele><time>2024-06-15T10:10:00Z</time></trkpt>
+      <trkpt lat="-1.25" lon="29.65"><ele>3000</ele><time>2024-06-15T10:15:00Z</time></trkpt>
+      <trkpt lat="-1.20" lon="29.70"><ele>3000</ele><time>2024-06-15T10:20:00Z</time></trkpt>
+    </trkseg>
+  </trk>
+</gpx>
