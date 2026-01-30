@@ -98,6 +98,7 @@ func bearingTo(lat1, lon1, lat2, lon2 float64) float64 {
 }
 
 // bearingToCardinal converts a bearing in degrees to a cardinal/intercardinal direction
+// Uses 16-point compass with boundaries: N=348.75-11.25, NNE=11.25-33.75, etc.
 func bearingToCardinal(bearing float64) string {
 	// 16-point compass directions
 	directions := []string{
@@ -106,9 +107,17 @@ func bearingToCardinal(bearing float64) string {
 		"south", "south-southwest", "southwest", "west-southwest",
 		"west", "west-northwest", "northwest", "north-northwest",
 	}
-	// Each direction covers 22.5 degrees, offset by 11.25 to center
-	index := int(math.Round(bearing/22.5)) % 16
+	// Each direction covers 22.5 degrees, offset by 11.25 to center on cardinal points
+	// Adding 11.25 shifts so that 0° is center of "north" range
+	index := int(math.Floor((bearing+11.25)/22.5)) % 16
 	return directions[index]
+}
+
+// bearingToCardinalWithDegrees returns a compass direction with bearing in degrees
+// Example: "north-northeast (bearing 022°)"
+func bearingToCardinalWithDegrees(bearing float64) string {
+	cardinal := bearingToCardinal(bearing)
+	return fmt.Sprintf("%s (bearing %03.0f°)", cardinal, bearing)
 }
 
 // formatPlaceWithDirection formats a place name with distance and direction from a reference point
@@ -292,8 +301,7 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 				
 				// Calculate trajectory bearing (azimuth) from origin to destination
 				trajBearing := bearingTo(t.Origin.Lat, t.Origin.Lon, t.Destination.Lat, t.Destination.Lon)
-				trajCardinal := bearingToCardinal(trajBearing)
-				movementDesc := fmt.Sprintf("moving %s (bearing %03.0f°)", trajCardinal, trajBearing)
+				movementDesc := fmt.Sprintf("moving %s", bearingToCardinalWithDegrees(trajBearing))
 				
 				// Describe origin location
 				story.OriginDesc = s.describeLocation(internalID, t.Origin.Lat, t.Origin.Lon)
