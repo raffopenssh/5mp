@@ -252,7 +252,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 	// Query GHSL settlement data
 	var settlement SettlementStats
 	err = s.DB.QueryRow(`
-		SELECT built_up_area_km2, settlement_count
+		SELECT built_up_km2, settlement_count
 		FROM ghsl_data
 		WHERE park_id = ?
 	`, internalID).Scan(&settlement.BuiltUpKm2, &settlement.SettlementCount)
