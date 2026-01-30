@@ -82,6 +82,83 @@
         {"name": "Law on Environment", "year": 2018, "url": "https://www.rema.gov.rw/"},
         {"name": "Law on Forestry", "year": 2013, "url": "https://www.rdb.rw/"}
       ]
+    },
+    "CAF": {
+      "name": "Central African Republic",
+      "legislation": [
+        {"name": "Code de la Chasse et des Aires Protégées", "year": 1984, "url": "https://www.ecolex.org/details/legislation/ordonnance-no-84033-portant-code-de-la-chasse-et-de-la-protection-de-la-faune-lex-faoc003004/"},
+        {"name": "Loi portant Code de l'Environnement", "year": 2007, "url": "https://www.ecolex.org/"},
+        {"name": "Code Forestier", "year": 2008, "url": "https://www.ecolex.org/"}
+      ]
+    },
+    "COD": {
+      "name": "Democratic Republic of the Congo",
+      "legislation": [
+        {"name": "Loi relative à la Conservation de la Nature", "year": 2014, "url": "https://www.ecolex.org/details/legislation/loi-n-14003-du-11-fevrier-2014-relative-a-la-conservation-de-la-nature-lex-faoc137058/"},
+        {"name": "Loi portant Principes Fondamentaux relatifs à la Protection de l'Environnement", "year": 2011, "url": "https://www.ecolex.org/"},
+        {"name": "Code Forestier", "year": 2002, "url": "https://www.ecolex.org/"},
+        {"name": "Ordonnance relative à la Conservation de la Nature", "year": 1969, "url": "https://www.ecolex.org/"}
+      ]
+    },
+    "CMR": {
+      "name": "Cameroon",
+      "legislation": [
+        {"name": "Loi portant Régime des Forêts, de la Faune et de la Pêche", "year": 1994, "url": "https://www.ecolex.org/details/legislation/loi-no-9401-portant-regime-des-forets-de-la-faune-et-de-la-peche-lex-faoc004845/"},
+        {"name": "Loi-Cadre relative à la Gestion de l'Environnement", "year": 1996, "url": "https://www.ecolex.org/"},
+        {"name": "Décret fixant les Modalités d'Application du Régime de la Faune", "year": 1995, "url": "https://www.ecolex.org/"}
+      ]
+    },
+    "AGO": {
+      "name": "Angola",
+      "legislation": [
+        {"name": "Lei das Áreas de Conservação Ambiental", "year": 2020, "url": "https://www.minamb.gov.ao/"},
+        {"name": "Lei de Bases do Ambiente", "year": 1998, "url": "https://www.ecolex.org/"},
+        {"name": "Lei da Fauna Selvagem e das Áreas de Conservação", "year": 2017, "url": "https://www.ecolex.org/"},
+        {"name": "Lei das Florestas e Fauna Selvagem", "year": 2017, "url": "https://www.ecolex.org/"}
+      ]
+    },
+    "GAB": {
+      "name": "Gabon",
+      "legislation": [
+        {"name": "Loi relative aux Parcs Nationaux", "year": 2007, "url": "https://www.ecolex.org/details/legislation/loi-n-0032007-relative-aux-parcs-nationaux-lex-faoc074686/"},
+        {"name": "Code Forestier", "year": 2001, "url": "https://www.ecolex.org/"},
+        {"name": "Décret fixant les Statuts de l'Agence Nationale des Parcs Nationaux", "year": 2008, "url": "https://www.ecolex.org/"},
+        {"name": "Loi relative à la Protection de l'Environnement", "year": 2014, "url": "https://www.ecolex.org/"}
+      ]
+    },
+    "TCD": {
+      "name": "Chad",
+      "legislation": [
+        {"name": "Loi portant Régime des Forêts, de la Faune et des Ressources Halieutiques", "year": 2008, "url": "https://www.ecolex.org/"},
+        {"name": "Loi portant Protection de l'Environnement", "year": 1998, "url": "https://www.ecolex.org/"},
+        {"name": "Décret portant Création des Aires Protégées", "year": 1963, "url": "https://www.ecolex.org/"}
+      ]
+    },
+    "SSD": {
+      "name": "South Sudan",
+      "legislation": [
+        {"name": "Wildlife Conservation and National Parks Act", "year": 2015, "url": "https://www.ecolex.org/"},
+        {"name": "Environmental Protection Bill", "year": 2015, "url": "https://www.ecolex.org/"},
+        {"name": "Land Act", "year": 2009, "url": "https://www.ecolex.org/"}
+      ]
+    },
+    "ETH": {
+      "name": "Ethiopia",
+      "legislation": [
+        {"name": "Wildlife Development, Conservation and Utilization Proclamation", "year": 2008, "url": "https://www.ecolex.org/"},
+        {"name": "Forest Development, Conservation and Utilization Proclamation", "year": 2018, "url": "https://www.ecolex.org/"},
+        {"name": "Environmental Impact Assessment Proclamation", "year": 2002, "url": "https://www.ecolex.org/"},
+        {"name": "Ethiopian Wildlife Conservation Authority Establishment Proclamation", "year": 2008, "url": "https://www.ewca.gov.et/"}
+      ]
+    },
+    "SEN": {
+      "name": "Senegal",
+      "legislation": [
+        {"name": "Code de la Chasse et de la Protection de la Faune", "year": 1986, "url": "https://www.ecolex.org/"},
+        {"name": "Code Forestier", "year": 1998, "url": "https://www.ecolex.org/"},
+        {"name": "Code de l'Environnement", "year": 2001, "url": "https://www.ecolex.org/"},
+        {"name": "Loi relative aux Aires Marines Protégées", "year": 2004, "url": "https://www.ecolex.org/"}
+      ]
     }
   },
   "pa_specific": {
@@ -196,6 +273,104 @@
         "Part of Virunga Massif transboundary conservation"
       ],
       "international_designations": ["UNESCO World Heritage Site (Virunga)"]
+    },
+    "COD_Virunga": {
+      "name": "Virunga National Park",
+      "legal_designation": "National Park",
+      "establishment_year": 1925,
+      "governing_body": "ICCN",
+      "specific_regulations": [
+        "Africa's oldest national park",
+        "Gorilla permits required for mountain gorilla tracking",
+        "Armed ranger escorts required",
+        "Security clearances may be needed"
+      ],
+      "international_designations": ["UNESCO World Heritage Site", "Ramsar Site"]
+    },
+    "COD_Garamba": {
+      "name": "Garamba National Park",
+      "legal_designation": "National Park",
+      "establishment_year": 1938,
+      "governing_body": "ICCN/African Parks",
+      "specific_regulations": [
+        "Critical northern white rhino habitat (historically)",
+        "Kordofan giraffe population",
+        "Co-managed with African Parks"
+      ],
+      "international_designations": ["UNESCO World Heritage Site"]
+    },
+    "GAB_Lope": {
+      "name": "Lopé National Park",
+      "legal_designation": "National Park",
+      "establishment_year": 2002,
+      "governing_body": "ANPN",
+      "specific_regulations": [
+        "Forest elephant stronghold",
+        "Western lowland gorilla habitat",
+        "Research permits required for scientific work"
+      ],
+      "international_designations": ["UNESCO World Heritage Site"]
+    },
+    "CMR_Dja": {
+      "name": "Dja Faunal Reserve",
+      "legal_designation": "Faunal Reserve",
+      "establishment_year": 1950,
+      "governing_body": "MINFOF",
+      "specific_regulations": [
+        "Hunting prohibited",
+        "Traditional use rights for indigenous Baka communities",
+        "Research permits from ministry required"
+      ],
+      "international_designations": ["UNESCO World Heritage Site", "Biosphere Reserve"]
+    },
+    "ETH_Simien": {
+      "name": "Simien Mountains National Park",
+      "legal_designation": "National Park",
+      "establishment_year": 1969,
+      "governing_body": "EWCA",
+      "specific_regulations": [
+        "Gelada baboon viewing",
+        "Ethiopian wolf conservation area",
+        "Trekking permits required",
+        "Armed scouts mandatory for multi-day treks"
+      ],
+      "international_designations": ["UNESCO World Heritage Site"]
+    },
+    "CAF_Dzanga_Sangha": {
+      "name": "Dzanga-Sangha Special Reserve",
+      "legal_designation": "Special Reserve",
+      "establishment_year": 1990,
+      "governing_body": "WWF/Government",
+      "specific_regulations": [
+        "Lowland gorilla habituation program",
+        "Forest elephant viewing at Dzanga Bai",
+        "Part of Sangha Trinational transboundary area"
+      ],
+      "international_designations": ["UNESCO World Heritage Site (Sangha Trinational)"]
+    },
+    "TCD_Zakouma": {
+      "name": "Zakouma National Park",
+      "legal_designation": "National Park",
+      "establishment_year": 1963,
+      "governing_body": "African Parks",
+      "specific_regulations": [
+        "Elephant recovery success story",
+        "Managed by African Parks since 2010",
+        "Kordofan giraffe population"
+      ],
+      "international_designations": []
+    },
+    "SEN_Niokolo_Koba": {
+      "name": "Niokolo-Koba National Park",
+      "legal_designation": "National Park",
+      "establishment_year": 1954,
+      "governing_body": "DPN",
+      "specific_regulations": [
+        "Largest protected area in Senegal",
+        "Western giant eland habitat",
+        "Lions present"
+      ],
+      "international_designations": ["UNESCO World Heritage Site", "Biosphere Reserve"]
     }
   }
 }
