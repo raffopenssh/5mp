@@ -1,17 +1,24 @@
 # Continuation Instructions
 
-## Current State (2026-01-30 06:15 UTC)
+## Current State (2026-01-31)
 
-### Database Summary - ALL COMPLETE
-| Table | Count | Status |
-|-------|-------|--------|
-| fire_detections | 1,764,155 | ✓ Complete |
-| park_group_infractions | 398 | ✓ Complete |
-| osm_places | 10,600 | ✓ Complete |
-| deforestation_events | 293 | ✓ Complete (13 parks in local Hansen tile) |
-| deforestation_clusters | 185 | ✓ Complete |
-| park_settlements | 15,066 | ✓ Complete (161 parks, 7 pristine) |
-| osm_roadless_data | Running on other VM | ✓ In progress elsewhere |
+### Database Summary - Production Data
+| Table | Count | Description |
+|-------|-------|-------------|
+| fire_detections | 4,621,211 | FIRMS satellite fire data |
+| park_settlements | 15,066 | GHSL settlement data (161 parks) |
+| deforestation_events | 3,218 | Hansen forest loss events |
+| deforestation_clusters | 5,616 | Clustered deforestation polygons |
+| osm_roadless_data | 162 | OSM-derived roadless analysis |
+| park_group_infractions | 801 | Fire infractions by park group |
+| osm_places | 10,600 | OpenStreetMap place names |
+| ghsl_data | 161 | Global Human Settlement Layer tiles |
+| park_ghsl_data | 155 | Park-specific GHSL data |
+| park_documents | 7 | Management plan documents |
+| gpx_uploads | 59 | Uploaded GPS tracks |
+| users | 2 | Registered users |
+
+**Database size:** 1.3 GB
 
 ### 7 Pristine Wilderness Parks (No Settlements)
 1. CMR_Nki (Cameroon)
@@ -22,105 +29,140 @@
 6. TZA_Rungwa (Tanzania)
 7. TZA_Ugalla (Tanzania)
 
-### Completed This Session
-1. ✅ **GHSL Settlements** - 15,066 across all 161 parks
-2. ✅ **Legal Frameworks** - Expanded from 10 to 19 countries
-3. ✅ **Password Page** - Restyled with dark theme, animations
-4. ✅ **UI Monochrome Icons** - Replaced colored emojis
+---
 
-### Open Tasks
+## What's Working ✓
 
-#### UI Polish
-1. Fire trajectory azimuth in narratives (bearing 022°)
+### Core Features
+- **Globe visualization** with 162 keystone park markers
+- **Fire analysis** - detection data, narratives, animations
+- **Deforestation analysis** - Hansen data with clustering
+- **Settlement analysis** - GHSL population data
+- **Legal frameworks** - 19 countries covered
+- **Password protection** - Dark themed login page
+- **API endpoints** - Fire, deforestation, settlement narratives
+- **Data download** - SQLite database export
+
+### UI/UX
+- Monochrome icons (no colored emojis)
+- Dark theme password page with animations
+- Scrollable park popups with all sections
+- Mobile responsive design
+
+---
+
+## What Needs Attention
+
+### Priority Tasks
+1. Fire trajectory azimuth display in narratives (bearing 022°)
 2. Visual testing/screenshots
+3. Park management plans (5-year/10-year docs)
+4. Service currently inactive - needs restart
 
-#### Content
-1. Park management plans (5-year/10-year docs)
-
----
-
-## URLs
-- App: https://five-mp-conservation-effort.exe.xyz:8000/?pwd=ngi2026
-- DB Download: https://five-mp-conservation-effort.exe.xyz:8000/static/downloads/5mp_data.sqlite3
-- Other VM: https://fivemp-testing.shelley.exe.xyz/
-
-## Passwords
-ngi2026, apn2026, j2026
+### Potential Improvements
+- More park documents
+- Extended legal framework coverage
+- Performance optimization for large fire queries
 
 ---
 
-## Comprehensive Testing Scenarios
+## Commands for Common Tasks
 
-### 1. Globe Navigation
-- [ ] Load globe at https://five-mp-conservation-effort.exe.xyz:8000/?pwd=ngi2026
-- [ ] Verify 162 keystone markers visible
-- [ ] Click a park marker - popup appears with stats
-- [ ] Popup is scrollable (Legal section visible)
-- [ ] Close popup with X button
-- [ ] Zoom in/out works smoothly
-- [ ] Pan/rotate globe works
+### Build and Run
+```bash
+cd /home/exedev/5mp
+make build
+./server  # or: sudo systemctl start srv
+```
 
-### 2. Filter Panel
-- [ ] Open filter panel (hamburger menu)
-- [ ] Toggle "162 Keystones" - parks show/hide
-- [ ] Search for a park by name
-- [ ] Close panel with X button
-- [ ] All controls are monochrome (no colored emojis)
+### Restart Service
+```bash
+make build && sudo systemctl restart srv
+journalctl -u srv -f  # View logs
+```
 
-### 3. Park Detail Sections
-Test with COD_Virunga (has all data types):
-- [ ] Fire Analysis section expands
-- [ ] Shows fire count and dates
-- [ ] Deforestation section shows events
-- [ ] Settlements section shows count
-- [ ] Legal section shows country legislation
+### Database Queries
+```bash
+# Table counts
+sqlite3 db.sqlite3 "
+SELECT 'fire_detections', COUNT(*) FROM fire_detections
+UNION ALL SELECT 'park_settlements', COUNT(*) FROM park_settlements
+UNION ALL SELECT 'deforestation_events', COUNT(*) FROM deforestation_events
+UNION ALL SELECT 'osm_roadless_data', COUNT(*) FROM osm_roadless_data
+UNION ALL SELECT 'park_group_infractions', COUNT(*) FROM park_group_infractions;
+"
 
-### 4. Narrative APIs
+# Check specific park
+sqlite3 db.sqlite3 "SELECT * FROM fire_detections WHERE park_id='COD_Virunga' LIMIT 5;"
+```
+
+### Test APIs
 ```bash
 # Fire narrative
-curl -s "http://localhost:8000/api/parks/COD_Virunga/fire-narrative?pwd=ngi2026" | python3 -m json.tool | head -30
+curl -s "http://localhost:8000/api/parks/COD_Virunga/fire-narrative?pwd=ngi2026" | jq
 
-# Deforestation narrative  
-curl -s "http://localhost:8000/api/parks/COD_Virunga/deforestation-narrative?pwd=ngi2026" | python3 -m json.tool | head -30
+# Deforestation narrative
+curl -s "http://localhost:8000/api/parks/COD_Virunga/deforestation-narrative?pwd=ngi2026" | jq
 
 # Settlement narrative
-curl -s "http://localhost:8000/api/parks/COD_Virunga/settlement-narrative?pwd=ngi2026" | python3 -m json.tool | head -30
+curl -s "http://localhost:8000/api/parks/COD_Virunga/settlement-narrative?pwd=ngi2026" | jq
+
+# Park stats
+curl -s "http://localhost:8000/api/parks/COD_Virunga/stats?pwd=ngi2026" | jq
 ```
 
-### 5. Pristine Wilderness Parks
-Test one of the 7 parks with no settlements:
-- [ ] CMR_Nki shows 0 settlements
-- [ ] Popup indicates pristine wilderness status
-
-### 6. Password Page
-- [ ] Navigate to app without password
-- [ ] Password page shows dark theme
-- [ ] Animated particles visible
-- [ ] Enter "ngi2026" - redirects to globe
-
-### 7. Data Download
-- [ ] Download DB from /static/downloads/5mp_data.sqlite3
-- [ ] Verify tables: fire_detections, park_settlements, deforestation_events
-
-### 8. Mobile Responsiveness
-- [ ] Test at 375px width (iPhone)
-- [ ] Panels stack properly
-- [ ] Touch controls work
-
-### 9. Data Integrity
+### Code Generation
 ```bash
-sqlite3 db.sqlite3 "
-SELECT 'fire' as type, COUNT(*) FROM fire_detections
-UNION ALL SELECT 'settlements', COUNT(*) FROM park_settlements
-UNION ALL SELECT 'deforestation', COUNT(*) FROM deforestation_events
-UNION ALL SELECT 'osm_places', COUNT(*) FROM osm_places
-UNION ALL SELECT 'legal_countries', 19;
-"
+cd db && sqlc generate  # Regenerate DB code from queries
 ```
 
-Expected:
-- fire_detections: 1,764,155
-- park_settlements: 15,066
-- deforestation_events: 293
-- osm_places: 10,600
-- legal_countries: 19
+### Run Tests
+```bash
+make test
+go test ./srv/... -v
+```
+
+---
+
+## URLs and Access
+
+### Production
+- **App:** https://five-mp-conservation-effort.exe.xyz:8000/?pwd=ngi2026
+- **DB Download:** https://five-mp-conservation-effort.exe.xyz:8000/static/downloads/5mp_data.sqlite3
+
+### Local Development
+- **App:** http://localhost:8000/?pwd=ngi2026
+
+### Passwords
+- `ngi2026` - Primary access
+- `apn2026` - Alternative
+- `j2026` - Alternative
+
+---
+
+## Testing Checklist
+
+### Globe Navigation
+- [ ] Load globe, verify 162 keystone markers
+- [ ] Click park marker - popup with stats
+- [ ] Popup scrollable, Legal section visible
+- [ ] Zoom/pan/rotate works
+
+### Filter Panel
+- [ ] Open filter panel (hamburger)
+- [ ] Toggle "162 Keystones"
+- [ ] Search park by name
+- [ ] All controls monochrome
+
+### Park Details (use COD_Virunga)
+- [ ] Fire Analysis section expands
+- [ ] Deforestation section shows events
+- [ ] Settlements section shows count
+- [ ] Legal section shows legislation
+
+### Data Integrity
+```bash
+sqlite3 db.sqlite3 "SELECT COUNT(*) FROM fire_detections;"  # Expected: 4,621,211
+sqlite3 db.sqlite3 "SELECT COUNT(*) FROM park_settlements;"  # Expected: 15,066
+sqlite3 db.sqlite3 "SELECT COUNT(*) FROM deforestation_events;"  # Expected: 3,218
+```
