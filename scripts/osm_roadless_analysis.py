@@ -265,10 +265,19 @@ class OSMRoadlessAnalyzer:
         # Project to UTM
         transformer_to_utm = pyproj.Transformer.from_crs("EPSG:4326", utm_crs, always_xy=True)
         
-        # Project park
-        park_coords = list(park_shape.exterior.coords)
-        park_utm_coords = [transformer_to_utm.transform(x, y) for x, y in park_coords]
-        park_utm = Polygon(park_utm_coords)
+        # Project park (handle both Polygon and MultiPolygon)
+        from shapely.geometry import MultiPolygon
+        
+        def project_polygon(poly, transformer):
+            exterior_coords = [transformer.transform(x, y) for x, y in poly.exterior.coords]
+            interior_coords = [[transformer.transform(x, y) for x, y in ring.coords] for ring in poly.interiors]
+            return Polygon(exterior_coords, interior_coords)
+        
+        if isinstance(park_shape, MultiPolygon):
+            projected_polys = [project_polygon(poly, transformer_to_utm) for poly in park_shape.geoms]
+            park_utm = MultiPolygon(projected_polys)
+        else:
+            park_utm = project_polygon(park_shape, transformer_to_utm)
         
         # Process roads in chunks of 100
         chunk_size = 100
