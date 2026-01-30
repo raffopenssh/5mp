@@ -2,76 +2,60 @@
 
 ## Context
 Working directory: `/home/exedev/5mp`
-This is a Go web server with Python data processing scripts for conservation monitoring.
+Go web server with Python data processing scripts for conservation monitoring.
 
-**Read CONTINUATION_INSTRUCTIONS.md for full task list and status.**
+**Read CONTINUATION_INSTRUCTIONS.md for full status.**
 
-## Immediate Priority
+## Background Processes
+1. **Deforestation** - Check if 25% done (40+ parks), then stop: `pkill -f deforestation_analyzer`
+2. **Roadless rerun** - Running for 18 parks with missing data (has MultiPolygon bug)
 
-### 1. Check Deforestation Progress
-```bash
-sqlite3 db.sqlite3 "SELECT COUNT(DISTINCT park_id) FROM deforestation_events;"
-# If >= 40 parks (25% of 162), stop the process:
-pkill -f deforestation_analyzer
-```
+## Priority Tasks
 
-### 2. Run GHSL Settlement Processing (HIGH PRIORITY)
+### 1. GHSL Settlement Processing (HIGH)
 ```bash
 source .venv/bin/activate
 python scripts/ghsl_enhanced_processor.py --zip data/ghsl_examples.zip
 ```
-This will populate `park_settlements` table with:
-- Building footprints with GPS coordinates
-- Population estimates
-- Nearest place names from osm_places (10,600 records)
-- Direction/distance descriptions
+Populates `park_settlements` with building footprints, population, nearest places.
+
+### 2. Fix Roadless MultiPolygon Bug (HIGH)
+18 parks fail with: `'MultiPolygon' object has no attribute 'exterior'`
+Fix in `scripts/osm_roadless_analysis.py` - handle MultiPolygon geometries.
+Parks: CAF_Dzanga_Park, COD_Kundelungu, COD_Salonga, COD_Virunga, COG_Ntokou-Pikounda, 
+GAB_Monts_de_Cristal, GNQ_Reserva_de_la_Paz, NGA_Cross_River, NGA_Kainji_Lake, RWA_Nyungwe,
+TZA_Selous, UGA_Queen_Elizabeth, ZAF_Mountain_Zebra-Camdeboo, ZAF_Namaqua, ZAF_Richtersveld,
+ZAF_Sederberg, ZMB_Musalangu, ZWE_Matetsi
 
 ### 3. UI Tasks (use subagents)
-Split these to subagents to limit token size:
 
-**Subagent 1: Remove Export Section**
-- Remove EXPORT DATA section (CSV/GeoJSON buttons) from filter panel in `srv/templates/globe.html`
+**Subagent: ui-export** - Remove EXPORT DATA section from filter panel in globe.html
 
-**Subagent 2: Scrollable Popup**
-- Add `max-height: 400px; overflow-y: auto;` to `.pa-popup` CSS
-- Legal section currently gets cut off
+**Subagent: ui-popup** - Add scrollable popup (max-height: 400px, overflow-y: auto to .pa-popup)
 
-**Subagent 3: Fire Trajectory Azimuth**
-- In `srv/narrative_handlers.go`, add 360° direction for fire group movement
-- Use when no nearby places found (fallback from "at coordinates")
-- Example: "moving north-northeast (bearing 022°)"
+**Subagent: ui-azimuth** - Add fire trajectory azimuth in narrative_handlers.go when no places nearby
 
-## Database Status (as of last check)
+## Database Status
 | Table | Count | Notes |
 |-------|-------|-------|
 | fire_detections | 4,621,211 | Complete |
-| park_group_infractions | 801 | Complete |
-| osm_places | 10,600 | Villages, rivers, hamlets |
-| deforestation_events | ~200+ | Running, check progress |
-| park_settlements | 0 | Run GHSL processor |
-
-## Key Files
-- `scripts/ghsl_enhanced_processor.py` - Settlement detection (ready)
-- `scripts/deforestation_analyzer.py` - Forest loss (running)
-- `srv/templates/globe.html` - Main UI
-- `srv/narrative_handlers.go` - Narrative text APIs
-
-## Data Files
-- `data/ghsl_examples.zip` (785MB) - GHSL built-up + population
-- `data/hansen/` (1.2GB) - 32 Hansen GFC tiles
+| osm_places | 10,600 | Complete |
+| osm_roadless_data | 162 (144 with data) | 18 need rerun |
+| deforestation_events | ~200+ | Check progress |
+| park_settlements | 0 | Run GHSL |
 
 ## Commands
 ```bash
-# Check processes
-ps aux | grep python | grep -v grep
+# Check deforestation progress
+sqlite3 db.sqlite3 "SELECT COUNT(DISTINCT park_id) FROM deforestation_events;"
 
-# Memory
-free -h
+# Check roadless rerun
+tail -30 logs/roadless_rerun.log
 
 # Server
 make build && pkill -f "./server"; nohup ./server > /tmp/server.log 2>&1 &
 ```
 
 ## URLs
-- App: https://fivemp-testing.exe.xyz:8000/?pwd=ngi2026
-- Passwords: ngi2026, apn2026, j2026
+App: https://fivemp-testing.exe.xyz:8000/?pwd=ngi2026
+Passwords: ngi2026, apn2026, j2026
