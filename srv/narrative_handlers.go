@@ -290,15 +290,21 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 					Outcome:     t.Outcome,
 				}
 				
+				// Calculate trajectory bearing (azimuth) from origin to destination
+				trajBearing := bearingTo(t.Origin.Lat, t.Origin.Lon, t.Destination.Lat, t.Destination.Lon)
+				trajCardinal := bearingToCardinal(trajBearing)
+				movementDesc := fmt.Sprintf("moving %s (bearing %03.0f°)", trajCardinal, trajBearing)
+				
 				// Describe origin location
 				story.OriginDesc = s.describeLocation(internalID, t.Origin.Lat, t.Origin.Lon)
 				
-				// If no nearby place found, add trajectory azimuth as fallback
+				// If no nearby place found, include coordinates with movement direction
 				if strings.HasPrefix(story.OriginDesc, "at coordinates") {
-					bearing := bearingTo(t.Origin.Lat, t.Origin.Lon, t.Destination.Lat, t.Destination.Lon)
-					cardinal := bearingToCardinal(bearing)
-					story.OriginDesc = fmt.Sprintf("(%.3f°, %.3f°), moving %s (bearing %03.0f°)",
-						t.Origin.Lat, t.Origin.Lon, cardinal, bearing)
+					story.OriginDesc = fmt.Sprintf("(%.3f°, %.3f°), %s",
+						t.Origin.Lat, t.Origin.Lon, movementDesc)
+				} else {
+					// Add movement direction to location description
+					story.OriginDesc = fmt.Sprintf("%s, %s", story.OriginDesc, movementDesc)
 				}
 				
 				// Describe destination location
