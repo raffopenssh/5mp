@@ -343,8 +343,12 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 					}
 				}
 				
-				narr.WriteString(fmt.Sprintf("Burned inside the park for %d days (%d fire detections). ", 
-					t.DaysInside, t.FiresInside))
+				daysWord := "days"
+				if t.DaysInside == 1 {
+					daysWord = "day"
+				}
+				narr.WriteString(fmt.Sprintf("Burned inside the park for %d %s (%d fire detections). ", 
+					t.DaysInside, daysWord, t.FiresInside))
 				
 				switch t.Outcome {
 				case "STOPPED_INSIDE":

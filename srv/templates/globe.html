@@ -2435,6 +2435,17 @@
                         </div>
                     </div>
                     
+                    <!-- Deforestation Section -->
+                    <div class="pa-popup-section" id="deforest-section-${paId}" onclick="togglePopupSection(this)">
+                        <div class="pa-popup-section-header">
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">▲</span> Deforestation</div>
+                            <span class="pa-popup-section-toggle">▼</span>
+                        </div>
+                        <div class="pa-popup-section-content" id="deforest-content-${paId}">
+                            <div class="pa-popup-section-loading">Loading...</div>
+                        </div>
+                    </div>
+                    
                     <!-- Roadless Section -->
                     <div class="pa-popup-section" id="road-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
@@ -2496,6 +2507,7 @@
             if (paId) {
                 fetchPopupFireData(paId);
                 fetchPopupGHSLData(paId);
+                fetchPopupDeforestData(paId);
                 fetchPopupRoadData(paId);
                 fetchPopupResearchData(paId, name);
                 fetchPopupLegalData(paId);
@@ -2566,6 +2578,38 @@
                     `;
                 } else {
                     el.innerHTML = '<div class="pa-popup-section-empty">No settlement data</div>';
+                }
+            } catch (e) {
+                el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
+            }
+        }
+        
+        async function fetchPopupDeforestData(paId) {
+            const el = document.getElementById(`deforest-content-${paId}`);
+            if (!el) return;
+            try {
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/deforestation-narrative`);
+                const data = await resp.json();
+                if (data.status === 'complete' && data.total_area_km2 > 0) {
+                    el.innerHTML = `
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Total forest loss</span>
+                            <span class="pa-popup-mini-stat-value">${data.total_area_km2.toFixed(2)} km²</span>
+                        </div>
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Years analyzed</span>
+                            <span class="pa-popup-mini-stat-value">${data.years_analyzed || '--'}</span>
+                        </div>
+                        ${data.worst_year ? `<div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Worst year</span>
+                            <span class="pa-popup-mini-stat-value">${data.worst_year} (${data.worst_year_km2?.toFixed(2)} km²)</span>
+                        </div>` : ''}
+                        ${data.recent_trend ? `<div style="margin-top: 8px; font-size: 10px; color: #888;">${data.recent_trend}</div>` : ''}
+                    `;
+                } else if (data.status === 'complete') {
+                    el.innerHTML = '<div class="pa-popup-section-empty">No deforestation detected</div>';
+                } else {
+                    el.innerHTML = '<div class="pa-popup-section-empty">Deforestation data pending</div>';
                 }
             } catch (e) {
                 el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
