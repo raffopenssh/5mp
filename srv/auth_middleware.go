@@ -169,7 +169,7 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         .logo { 
             width: 64px;
             height: 64px;
-            margin-bottom: 16px; 
+            margin: 0 auto 16px auto; 
             animation: globePulse 4s ease-in-out infinite;
             display: flex;
             align-items: center;
