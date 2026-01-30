@@ -1,95 +1,68 @@
 # Continuation Instructions
 
-## Current State (2026-01-29 19:55 UTC)
+## Current State (2026-01-30 06:05 UTC)
 
 ### System Status
-- **Memory:** ~6.4GB available
-- **Disk:** Hansen tiles downloaded (1.2GB), GHSL examples downloaded (785MB)
-
-### Background Processes Running
-1. **Deforestation Analysis** (PID 5434): Processing all 162 parks
-   - Uses `scripts/deforestation_analyzer.py`
-   - Log: `data/hansen/analysis_full.log`
-   - Currently processing tile 00N_010E (COD_Tumba-Lediima)
+- **Memory:** ~6GB available
+- **GHSL Processing:** ✓ COMPLETE - 15,066 settlements
 
 ### Database Summary
 | Table | Count | Status |
 |-------|-------|--------|
-| fire_detections | 4,621,211 | ✓ Complete |
-| park_group_infractions | 801 | ✓ Complete |
-| osm_roadless_data | 162 | ✓ Complete |
-| osm_places | 10,600 | ✓ Complete (villages, rivers, towns) |
-| deforestation_events | ~48+ | ⏳ Running (2+ parks done so far) |
-| deforestation_clusters | growing | ⏳ Running |
-| park_ghsl_data | 155 | ✓ Complete |
-| park_settlements | 0 | Ready (script enhanced, needs run) |
+| fire_detections | 1,764,155 | ✓ Complete |
+| park_group_infractions | 398 | ✓ Complete |
+| osm_places | 10,600 | ✓ Complete |
+| deforestation_events | 293 | ✓ Complete (13 parks) |
+| deforestation_clusters | 185 | ✓ Complete |
+| park_settlements | 15,066 | ✓ Complete (161 parks) |
+| osm_roadless_data | 3 | ⚠️ Only 3 parks |
 
-### Data Files Available
-- `data/hansen/` - 32 Hansen GFC-2024 tiles (1.2GB total)
-- `data/ghsl_examples.zip` - GHSL built-up + population tiles (785MB)
+### Completed This Session
+1. ✅ **GHSL Global Processing** - 15,066 settlements across ALL 161 parks
+   - Downloaded global 100m GHSL file (2.1GB)
+   - Script: `scripts/ghsl_global_processor.py`
+   
+2. ✅ **Password Page Restyle** - Dark theme with animations
+   - Matches globe.html aesthetic
+   - Floating particles, frosted glass effect
+   
+3. ✅ **UI Fixes** - Monochrome icons
+   - Replaced 18 colored emojis with Unicode symbols
+   - Popup already scrollable
 
-### Completed Tasks This Session
-1. ✅ Downloaded all 32 Hansen GFC tiles for Africa
-2. ✅ Enhanced `deforestation_analyzer.py` - multi-tile support, auto park-tile matching
-3. ✅ Enhanced `ghsl_enhanced_processor.py` - local osm_places lookup, bearing/direction
-4. ✅ Started full deforestation analysis (running in background)
+### Remaining Tasks
 
----
+#### HIGH PRIORITY - Data
+1. **Roadless Areas** - Only 3/162 parks have data
+   - Script: `scripts/osm_roadless_analysis.py`
+   - Uses Overpass API (rate limited)
+   
+2. **Deforestation** - Running on other VM
+   - Only 13 parks from single Hansen tile here
 
-## REMAINING TASKS
+#### MEDIUM PRIORITY - Content
+1. **Legal Frameworks** - Expand from 10 to more countries
+   - Search with French/Portuguese keywords
+   - Add park management plans
 
-### HIGH PRIORITY - Data Tasks
-
-#### Deforestation Analysis (Running)
-Monitor progress:
-```bash
-tail -30 data/hansen/analysis_full.log
-sqlite3 db.sqlite3 "SELECT COUNT(DISTINCT park_id) as parks, COUNT(*) as events, ROUND(SUM(area_km2),1) as total_km2 FROM deforestation_events;"
-```
-
-#### GHSL Settlement Processing (Ready to Run)
-After deforestation completes:
-```bash
-source .venv/bin/activate
-python scripts/ghsl_enhanced_processor.py --zip data/ghsl_examples.zip
-```
-
-### MEDIUM PRIORITY - UI Tasks
-
-#### 1. Remove EXPORT DATA Section
-- Remove CSV/GeoJSON buttons from filter panel (redundant)
-
-#### 2. Make Popup Scrollable
-- Add max-height and overflow-y to `.pa-popup` for Legal section visibility
-
-#### 3. Add Fire Trajectory Azimuth
-- Add 360° direction for fire group movement when no places nearby
+#### LOW PRIORITY - UI
+1. Fire trajectory azimuth (bearing 022°)
+2. Any remaining visual polish
 
 ---
 
 ## Commands
 
-### Monitor Deforestation
+### Check Data
 ```bash
-# Check progress
-tail -30 data/hansen/analysis_full.log
-
-# Database status
-sqlite3 db.sqlite3 "SELECT park_id, COUNT(*) as years, ROUND(SUM(area_km2),2) as km2 FROM deforestation_events GROUP BY park_id ORDER BY km2 DESC LIMIT 20;"
-
-# Check if still running
-ps aux | grep deforest | grep -v grep
+sqlite3 db.sqlite3 "SELECT COUNT(*) as settlements FROM park_settlements;"
+sqlite3 db.sqlite3 "SELECT COUNT(*) as roadless FROM osm_roadless_data;"
 ```
 
-### Run GHSL Processing
+### Run Roadless Analysis
 ```bash
 source .venv/bin/activate
-python scripts/ghsl_enhanced_processor.py --zip data/ghsl_examples.zip
-```
-
-### Test Narrative APIs
-```bash
-curl -s --cookie "access_pwd=ngi2026" "http://localhost:8000/api/parks/GAB_Loango/deforestation-narrative" | python3 -m json.tool
+nohup python scripts/osm_roadless_analysis.py > logs/roadless.log 2>&1 &
 ```
 
 ### Server
@@ -100,7 +73,8 @@ make build && pkill -f "./server"; nohup ./server > /tmp/server.log 2>&1 &
 ---
 
 ## URLs
-- App: https://fivemp-testing.exe.xyz:8000/?pwd=ngi2026
+- App: https://five-mp-conservation-effort.exe.xyz:8000/?pwd=ngi2026
+- DB Download: https://five-mp-conservation-effort.exe.xyz:8000/static/downloads/5mp_data.sqlite3
 
 ## Passwords
 ngi2026, apn2026, j2026

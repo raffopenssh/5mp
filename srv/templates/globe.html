@@ -225,13 +225,6 @@
 
 
 
-         
-        .download-section { display: -webkit-box; display: -webkit-flex; display: flex; gap: 8px; }
-        .btn-download { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; padding: 10px 12px; min-height: 44px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #a0a0a0; font-size: 12px; font-weight: 500; cursor: pointer; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center; gap: 6px; -webkit-transition: all 0.2s; transition: all 0.2s; }
-        .btn-download:hover { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
-        .btn-download:active { -webkit-transform: translateY(1px); transform: translateY(1px); }
-        .btn-download svg { width: 16px; height: 16px; }
-
         .activity-section { margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; }
         .activity-header { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; cursor: pointer; padding: 4px 0; }
         .activity-header:hover .activity-title { color: #fff; }
@@ -436,9 +429,6 @@
             .search-input { padding: 12px 40px 12px 14px; font-size: 16px; /* Prevents zoom on iOS */ }
             .search-clear { min-width: 36px; min-height: 36px; }
             .search-result-item { padding: 14px; min-height: 48px; }
-            
-            /* Download buttons */
-            .btn-download { min-height: 48px; padding: 12px; }
         }
         
         @media (max-width: 480px) {
@@ -543,15 +533,6 @@
             </svg>
         </button>
         <div class="toolbar-separator"></div>
-        
-        <button class="toolbar-btn" id="download-toggle" onclick="showDownloadOptions()" title="Download Data">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-        </button>
-        
         <button class="toolbar-btn notification-btn" id="notification-toggle" onclick="toggleNotificationDropdown()" title="Recent Activity">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -639,7 +620,7 @@
             <div class="filter-section">
                 <div class="filter-section-label">Selected Parks</div>
                 <button class="keystones-compact-toggle active" id="keystones-toggle-btn" onclick="toggleKeystonesBtn()" title="Toggle 162 Keystones visibility">
-                    <span>🏛️</span> <span>162</span>
+                    <span style="font-size: 14px;">▣</span> <span>162</span>
                 </button>
                 <input type="checkbox" id="keystones-toggle" checked style="display:none;">
                 <div class="selected-parks" id="selected-parks">
@@ -781,7 +762,7 @@
             </div>
             <form id="form-upload" onsubmit="handleUpload(event)">
                 <div class="upload-area" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-                    <div class="upload-icon">📍</div>
+                    <div class="upload-icon">◉</div>
                     <p class="upload-text">Drag &amp; drop GPX files here, or <strong>browse</strong></p>
                     <p class="upload-text" style="margin-top: 8px; font-size: 12px;">GPS patrol track files (.gpx)</p>
                 </div>
@@ -838,7 +819,7 @@
 
                 <h3 style="color: #22c55e; margin: 28px 0 16px; font-size: 16px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 24px;">Methodology</h3>
 
-                <h4 style="color: #fff; margin: 16px 0 8px; font-size: 14px;">🥾 Patrol Effort Intensity</h4>
+                <h4 style="color: #fff; margin: 16px 0 8px; font-size: 14px;">▸ Patrol Effort Intensity</h4>
                 <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px;">
                     <li style="margin-bottom: 6px;">10×10 km grid cells (0.1° × 0.1°)</li>
                     <li style="margin-bottom: 6px;">Intensity = spatial coverage: % of 1 km subcells visited</li>
@@ -846,7 +827,7 @@
                     <li style="margin-bottom: 6px;">Data source: uploaded GPX patrol tracks</li>
                 </ul>
 
-                <h4 style="color: #fff; margin: 16px 0 8px; font-size: 14px;">🔥 Fire Analysis</h4>
+                <h4 style="color: #fff; margin: 16px 0 8px; font-size: 14px;">▸ Fire Analysis</h4>
                 <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px;">
                     <li style="margin-bottom: 6px;">NASA VIIRS satellite fire detections</li>
                     <li style="margin-bottom: 6px;">Group tracking: DBSCAN clustering (15 km radius) + trajectory linking</li>
@@ -854,14 +835,14 @@
                     <li style="margin-bottom: 6px;">Response metrics: groups stopped inside (possible ranger contact) vs transited through</li>
                 </ul>
 
-                <h4 style="color: #888; margin: 16px 0 8px; font-size: 14px;">🛤️ Roadless Areas <span style="font-size: 11px; background: #333; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">coming soon</span></h4>
+                <h4 style="color: #888; margin: 16px 0 8px; font-size: 14px;">▸ Roadless Areas <span style="font-size: 11px; background: #333; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">coming soon</span></h4>
                 <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px; color: #888;">
                     <li style="margin-bottom: 6px;">OpenStreetMap road data</li>
                     <li style="margin-bottom: 6px;">Roadless = area >1 km from any road</li>
                     <li style="margin-bottom: 6px;">Based on: "A global map of roadless areas and their conservation status" (Science, 2016)</li>
                 </ul>
 
-                <h4 style="color: #888; margin: 16px 0 8px; font-size: 14px;">🏘️ Human Settlement (GHSL) <span style="font-size: 11px; background: #333; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">coming soon</span></h4>
+                <h4 style="color: #888; margin: 16px 0 8px; font-size: 14px;">▸ Human Settlement (GHSL) <span style="font-size: 11px; background: #333; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">coming soon</span></h4>
                 <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px; color: #888;">
                     <li style="margin-bottom: 6px;">Global Human Settlement Layer (EU JRC)</li>
                     <li style="margin-bottom: 6px;">Built-up surface area within/near PA</li>
@@ -875,7 +856,7 @@
     <div id="modal-park-stats" class="modal-overlay" onclick="closeModalOnOverlay(event)">
         <div class="modal" style="max-width: 420px;">
             <div class="modal-header">
-                <h2 class="modal-title">🏞️ Park Statistics</h2>
+                <h2 class="modal-title">Park Statistics</h2>
                 <button class="modal-close" onclick="closeModal('park-stats')">×</button>
             </div>
             <div class="fire-stats-container" id="park-stats-content">
@@ -2121,28 +2102,6 @@
             overlay.addEventListener('touchend', onEnd);
         })();
 
-        
-        function showDownloadOptions() {
-            if (!filterPanelOpen) toggleFilterPanel();
-            
-        }
-
-        function downloadData(format) {
-            format = format || 'csv';
-            var url = '/api/export?format=' + format;
-            if (dateFrom) url += '&from=' + dateFrom;
-            if (dateTo) url += '&to=' + dateTo;
-            if (currentBbox) url += '&bbox=' + currentBbox.join(',');
-            
-            
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = 'patrol-data.' + (format === 'geojson' ? 'geojson' : 'csv');
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
         function toggleActivityLog() {
             activityExpanded = !activityExpanded;
             const list = document.getElementById('activity-list');
@@ -2172,7 +2131,7 @@
                             const dateStr = a.date || 'Unknown';
                             const location = a.location || 'Unknown';
                             const distance = a.distance ? a.distance.toFixed(1) + ' km' : '';
-                            const typeIcon = {'foot': '🚶', 'vehicle': '🚗', 'aircraft': '✈️'}[a.type] || '📍';
+                            const typeIcon = {'foot': '○', 'vehicle': '□', 'aircraft': '△'}[a.type] || '◇';
                             return `<div class="activity-item">
                                 <span class="activity-date">${typeIcon} ${dateStr}</span>
                                 <span class="activity-distance">${distance}</span>
@@ -2241,7 +2200,7 @@
                 const location = activity.location || 'Unknown location';
                 const distance = activity.distance ? activity.distance.toFixed(1) + ' km' : '';
                 const date = activity.date || '';
-                const typeIcon = {'foot': '🚶', 'vehicle': '🚗', 'aircraft': '✈️'}[activity.type] || '📍';
+                const typeIcon = {'foot': '○', 'vehicle': '□', 'aircraft': '△'}[activity.type] || '◇';
                 
                 let details = '';
                 if (distance && date) details = `${distance} • ${date}`;
@@ -2511,7 +2470,7 @@
                         ${area.area_km2 ? '<br>' + area.area_km2.toLocaleString() + ' km²' : ''}
                     </div>
                     <div style="background: rgba(128,128,128,0.15); border-radius: 6px; padding: 10px; text-align: center;">
-                        <div style="font-size: 12px; color: #888; margin-bottom: 4px;">⚠️ PA not yet in system</div>
+                        <div style="font-size: 12px; color: #888; margin-bottom: 4px;">△ PA not yet in system</div>
                         <div style="font-size: 11px; color: #666;">Coordinates unavailable</div>
                     </div>
                     ${area.wdpa_id ? '<div style="margin-top: 10px; font-size: 11px; color: #555;">WDPA ID: ' + area.wdpa_id + '</div>' : ''}
@@ -2910,7 +2869,7 @@
                 
                 let html = `
                     <div class="fire-stats-title">
-                        <span>🏞️</span>
+                        <span>▣</span>
                         ${escapeHtml(paName)}
                     </div>
                     <div class="fire-stats-subtitle">Park Statistics</div>
@@ -2925,7 +2884,7 @@
                     
                     html += `
                         <hr class="fire-stats-divider">
-                        <div style="font-size: 12px; color: #888; margin-bottom: 8px;">🔥 FIRE ACTIVITY • ${fire.year || 2023}</div>
+                        <div style="font-size: 12px; color: #888; margin-bottom: 8px;">◆ FIRE ACTIVITY • ${fire.year || 2023}</div>
                         <div class="fire-stats-grid">
                             <div class="fire-stat-card">
                                 <div class="fire-stat-label">Groups Entered</div>
@@ -2947,7 +2906,7 @@
                 } else {
                     html += `
                         <hr class="fire-stats-divider">
-                        <div style="font-size: 12px; color: #666;">🔥 FIRE: No data available</div>
+                        <div style="font-size: 12px; color: #666;">◆ FIRE: No data available</div>
                     `;
                 }
                 
@@ -2956,7 +2915,7 @@
                     const s = data.settlement;
                     html += `
                         <hr class="fire-stats-divider">
-                        <div style="font-size: 12px; color: #888; margin-bottom: 8px;">🏘️ SETTLEMENTS</div>
+                        <div style="font-size: 12px; color: #888; margin-bottom: 8px;">■ SETTLEMENTS</div>
                         <div class="fire-stats-grid">
                             <div class="fire-stat-card">
                                 <div class="fire-stat-label">Built-up Area</div>
@@ -2971,7 +2930,7 @@
                 } else {
                     html += `
                         <hr class="fire-stats-divider">
-                        <div style="font-size: 12px; color: #666;">🏘️ SETTLEMENTS: No data available</div>
+                        <div style="font-size: 12px; color: #666;">■ SETTLEMENTS: No data available</div>
                     `;
                 }
                 
@@ -2981,7 +2940,7 @@
                     const roadlessClass = r.roadless_percentage >= 80 ? 'good' : r.roadless_percentage >= 50 ? 'warning' : 'bad';
                     html += `
                         <hr class="fire-stats-divider">
-                        <div style="font-size: 12px; color: #888; margin-bottom: 8px;">🚷 ROADLESS AREAS</div>
+                        <div style="font-size: 12px; color: #888; margin-bottom: 8px;">○ ROADLESS AREAS</div>
                         <div class="fire-stats-grid">
                             <div class="fire-stat-card">
                                 <div class="fire-stat-label">Roadless</div>
@@ -2999,7 +2958,7 @@
                 } else {
                     html += `
                         <hr class="fire-stats-divider">
-                        <div style="font-size: 12px; color: #666;">🚷 ROADLESS: No data available</div>
+                        <div style="font-size: 12px; color: #666;">○ ROADLESS: No data available</div>
                     `;
                 }
                 
@@ -3007,7 +2966,7 @@
             } catch (e) {
                 container.innerHTML = `
                     <div class="fire-stats-empty">
-                        <div class="fire-stats-empty-icon">⚠️</div>
+                        <div class="fire-stats-empty-icon">△</div>
                         <div class="fire-stats-empty-text">Failed to load stats for ${escapeHtml(paName)}</div>
                     </div>
                 `;
