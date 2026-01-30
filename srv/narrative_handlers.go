@@ -293,6 +293,14 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 				// Describe origin location
 				story.OriginDesc = s.describeLocation(internalID, t.Origin.Lat, t.Origin.Lon)
 				
+				// If no nearby place found, add trajectory azimuth as fallback
+				if strings.HasPrefix(story.OriginDesc, "at coordinates") {
+					bearing := bearingTo(t.Origin.Lat, t.Origin.Lon, t.Destination.Lat, t.Destination.Lon)
+					cardinal := bearingToCardinal(bearing)
+					story.OriginDesc = fmt.Sprintf("(%.3f°, %.3f°), moving %s (bearing %03.0f°)",
+						t.Origin.Lat, t.Origin.Lon, cardinal, bearing)
+				}
+				
 				// Describe destination location
 				story.DestDesc = s.describeLocation(internalID, t.Destination.Lat, t.Destination.Lon)
 				
