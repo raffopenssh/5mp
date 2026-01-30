@@ -21,6 +21,9 @@ type ParkStats struct {
 	// Roadless data
 	Roadless *RoadlessStats `json:"roadless,omitempty"`
 	
+	// Deforestation data
+	Deforestation *DeforestationStats `json:"deforestation,omitempty"`
+	
 	// Narrative insights
 	Insights []string `json:"insights,omitempty"`
 	
@@ -75,6 +78,19 @@ type SettlementStats struct {
 type RoadlessStats struct {
 	RoadlessPercentage float64 `json:"roadless_percentage"`
 	TotalRoadKm        float64 `json:"total_road_km"`
+}
+
+type DeforestationStats struct {
+	TotalLossKm2 float64 `json:"total_loss_km2"`
+	WorstYear    int     `json:"worst_year"`
+	WorstYearKm2 float64 `json:"worst_year_km2"`
+	Trend        string  `json:"trend"` // "improving", "worsening", "stable"
+	YearlyData   []YearlyDeforestation `json:"yearly_data,omitempty"`
+}
+
+type YearlyDeforestation struct {
+	Year    int     `json:"year"`
+	LossKm2 float64 `json:"loss_km2"`
 }
 
 type FireDayCount struct {
@@ -232,18 +248,29 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	
-	// Get multi-year fire trend
+	// Get multi-year fire trend with total fires per year
 	rows, err = s.DB.Query(`
-		SELECT year, total_groups
-		FROM park_group_infractions
-		WHERE park_id = ?
-		ORDER BY year
+		SELECT 
+			pgi.year,
+			pgi.total_groups,
+			COALESCE(fd.fire_count, 0) as total_fires
+		FROM park_group_infractions pgi
+		LEFT JOIN (
+			SELECT 
+				protected_area_id,
+				CAST(strftime('%Y', acq_date) AS INTEGER) as year,
+				COUNT(*) as fire_count
+			FROM fire_detections
+			GROUP BY protected_area_id, strftime('%Y', acq_date)
+		) fd ON pgi.park_id = fd.protected_area_id AND pgi.year = fd.year
+		WHERE pgi.park_id = ?
+		ORDER BY pgi.year
 	`, internalID)
 	if err == nil {
 		defer rows.Close()
 		for rows.Next() {
 			var yr YearlyFireSummary
-			if rows.Scan(&yr.Year, &yr.Groups) == nil {
+			if rows.Scan(&yr.Year, &yr.Groups, &yr.TotalFires) == nil {
 				stats.FireTrend = append(stats.FireTrend, yr)
 			}
 		}
@@ -290,6 +317,82 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 			insights = append(insights, fmt.Sprintf(
 				"⚠️ Only %.0f%% roadless - significant road network may fragment habitat.",
 				roadless.RoadlessPercentage))
+		}
+	}
+	
+	// Query deforestation data
+	var deforestation DeforestationStats
+	rows, err = s.DB.Query(`
+		SELECT year, area_km2
+		FROM deforestation_events
+		WHERE park_id = ?
+		ORDER BY year
+	`, internalID)
+	if err == nil {
+		defer rows.Close()
+		var totalLoss float64
+		var worstYear int
+		var worstYearKm2 float64
+		var yearlyData []YearlyDeforestation
+		var recentYearsTotal float64
+		var olderYearsTotal float64
+		var recentYearsCount int
+		var olderYearsCount int
+		
+		for rows.Next() {
+			var year int
+			var areaKm2 float64
+			if rows.Scan(&year, &areaKm2) == nil {
+				totalLoss += areaKm2
+				yearlyData = append(yearlyData, YearlyDeforestation{Year: year, LossKm2: areaKm2})
+				if areaKm2 > worstYearKm2 {
+					worstYear = year
+					worstYearKm2 = areaKm2
+				}
+				// Calculate trend: compare last 5 years vs previous 5 years
+				if year >= 2020 {
+					recentYearsTotal += areaKm2
+					recentYearsCount++
+				} else if year >= 2015 {
+					olderYearsTotal += areaKm2
+					olderYearsCount++
+				}
+			}
+		}
+		
+		if len(yearlyData) > 0 {
+			deforestation.TotalLossKm2 = totalLoss
+			deforestation.WorstYear = worstYear
+			deforestation.WorstYearKm2 = worstYearKm2
+			deforestation.YearlyData = yearlyData
+			
+			// Calculate trend based on average loss per year
+			if recentYearsCount > 0 && olderYearsCount > 0 {
+				recentAvg := recentYearsTotal / float64(recentYearsCount)
+				olderAvg := olderYearsTotal / float64(olderYearsCount)
+				if recentAvg > olderAvg*1.2 {
+					deforestation.Trend = "worsening"
+				} else if recentAvg < olderAvg*0.8 {
+					deforestation.Trend = "improving"
+				} else {
+					deforestation.Trend = "stable"
+				}
+			} else {
+				deforestation.Trend = "insufficient_data"
+			}
+			
+			stats.Deforestation = &deforestation
+			
+			// Generate deforestation insights
+			insights = append(insights, fmt.Sprintf(
+				"🌳 Total forest loss: %.1f km² since 2001. Worst year was %d (%.1f km²).",
+				totalLoss, worstYear, worstYearKm2))
+			
+			if deforestation.Trend == "worsening" {
+				insights = append(insights, "⚠️ Deforestation trend is worsening - recent years show higher loss than 2015-2019.")
+			} else if deforestation.Trend == "improving" {
+				insights = append(insights, "✓ Deforestation trend is improving - recent years show lower loss than 2015-2019.")
+			}
 		}
 	}
 	
