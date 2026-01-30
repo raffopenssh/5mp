@@ -5,20 +5,19 @@
 ### Database Summary - Production Data
 | Table | Count | Description |
 |-------|-------|-------------|
-| fire_detections | 4,621,211 | FIRMS satellite fire data |
+| fire_detections | 1,764,155 | FIRMS satellite fire data |
 | park_settlements | 15,066 | GHSL settlement data (161 parks) |
-| deforestation_events | 3,218 | Hansen forest loss events |
-| deforestation_clusters | 5,616 | Clustered deforestation polygons |
+| deforestation_events | 293 | Hansen forest loss events |
+| deforestation_clusters | ~2,000 | Clustered deforestation polygons |
 | osm_roadless_data | 162 | OSM-derived roadless analysis |
-| park_group_infractions | 801 | Fire infractions by park group |
+| park_group_infractions | ~800 | Fire infractions by park group |
 | osm_places | 10,600 | OpenStreetMap place names |
-| ghsl_data | 161 | Global Human Settlement Layer tiles |
-| park_ghsl_data | 155 | Park-specific GHSL data |
-| park_documents | 7 | Management plan documents |
-| gpx_uploads | 59 | Uploaded GPS tracks |
-| users | 2 | Registered users |
+| park_documents | 35+ | Management plan documents |
+| gpx_uploads | 0 | Uploaded GPS tracks (needs testing) |
+| users | 1 | Test user |
 
-**Database size:** 1.3 GB
+**Database size:** ~500 MB
+**Note:** Remote VM at https://fivemp-testing.exe.xyz:8000 has larger dataset (4.6M fires, 3,218 deforestation events)
 
 ### 7 Pristine Wilderness Parks (No Settlements)
 1. CMR_Nki (Cameroon)
@@ -35,34 +34,43 @@
 
 ### Core Features
 - **Globe visualization** with 162 keystone park markers
-- **Fire analysis** - detection data, narratives, animations
-- **Deforestation analysis** - Hansen data with clustering
-- **Settlement analysis** - GHSL population data
+- **Fire analysis** - enhanced with hotspots, trends, response rates
+- **Deforestation analysis** - trend direction, 5-year comparisons, hotspots
+- **Settlement analysis** - GHSL population data with conflict risk assessment
 - **Legal frameworks** - 19 countries covered
 - **Password protection** - Dark themed login page
-- **API endpoints** - Fire, deforestation, settlement narratives
-- **Data download** - SQLite database export
+- **Park Stats API** - Now includes deforestation statistics
+
+### Narrative Enhancements (NEW)
+- **Fire Narratives**: Hotspot analysis with nearby places, multi-year trends, peak months
+- **Deforestation Narratives**: Trend direction (improving/worsening/stable), hotspot clusters
+- **Settlement Narratives**: Conflict risk tiers, population density analysis
 
 ### UI/UX
 - Monochrome icons (no colored emojis)
 - Dark theme password page with animations
 - Scrollable park popups with all sections
 - Mobile responsive design
+- Search functionality (works)
+- Filter panel (works)
+- Grid selection mode (works)
+- Info/Manifest modal (works)
+- Recent Activity notifications (works)
 
 ---
 
 ## What Needs Attention
 
 ### Priority Tasks
-1. Fire trajectory azimuth display in narratives (bearing 022°)
-2. Visual testing/screenshots
-3. Park management plans (5-year/10-year docs)
-4. Service currently inactive - needs restart
+1. **GPX Upload Testing** - Auth required, test with real patrol data
+2. **Patrol Intensity Display** - Upload data to show on map
+3. **Fire narratives field** - Still null (generates from hotspots instead)
+4. **Publications endpoint** - Returns empty (no data seeded)
 
-### Potential Improvements
-- More park documents
-- Extended legal framework coverage
-- Performance optimization for large fire queries
+### Test Data Available
+- `data/test_patrol_virunga.gpx` - Synthetic Virunga patrol
+- `data/virunga_patrol.gpx` - Real Ethiopia patrol data
+- `data/another_patrol.gpx` - European test data
 
 ---
 
@@ -70,7 +78,7 @@
 
 ### Build and Run
 ```bash
-cd /home/exedev/5mp
+cd /home/exedev/5mpglobe
 make build
 ./server  # or: sudo systemctl start srv
 ```
@@ -91,35 +99,21 @@ UNION ALL SELECT 'deforestation_events', COUNT(*) FROM deforestation_events
 UNION ALL SELECT 'osm_roadless_data', COUNT(*) FROM osm_roadless_data
 UNION ALL SELECT 'park_group_infractions', COUNT(*) FROM park_group_infractions;
 "
-
-# Check specific park
-sqlite3 db.sqlite3 "SELECT * FROM fire_detections WHERE park_id='COD_Virunga' LIMIT 5;"
 ```
 
 ### Test APIs
 ```bash
-# Fire narrative
-curl -s "http://localhost:8000/api/parks/COD_Virunga/fire-narrative?pwd=ngi2026" | jq
+# Fire narrative (enhanced!)
+curl -s "http://localhost:8000/api/parks/COD_Virunga/fire-narrative?pwd=ngi2026" | jq '.summary, .hotspots[:2], .trend'
 
-# Deforestation narrative
-curl -s "http://localhost:8000/api/parks/COD_Virunga/deforestation-narrative?pwd=ngi2026" | jq
+# Deforestation narrative (with trends!)
+curl -s "http://localhost:8000/api/parks/COD_Virunga/deforestation-narrative?pwd=ngi2026" | jq '.trend_direction, .hotspots[:2]'
 
 # Settlement narrative
-curl -s "http://localhost:8000/api/parks/COD_Virunga/settlement-narrative?pwd=ngi2026" | jq
+curl -s "http://localhost:8000/api/parks/COD_Virunga/settlement-narrative?pwd=ngi2026" | jq '.conflict_risk, .largest_settlements[:3]'
 
-# Park stats
-curl -s "http://localhost:8000/api/parks/COD_Virunga/stats?pwd=ngi2026" | jq
-```
-
-### Code Generation
-```bash
-cd db && sqlc generate  # Regenerate DB code from queries
-```
-
-### Run Tests
-```bash
-make test
-go test ./srv/... -v
+# Park stats (now with deforestation!)
+curl -s "http://localhost:8000/api/parks/COD_Virunga/stats?pwd=ngi2026" | jq '.deforestation'
 ```
 
 ---
@@ -128,7 +122,7 @@ go test ./srv/... -v
 
 ### Production
 - **App:** https://five-mp-conservation-effort.exe.xyz:8000/?pwd=ngi2026
-- **DB Download:** https://five-mp-conservation-effort.exe.xyz:8000/static/downloads/5mp_data.sqlite3
+- **Testing VM:** https://fivemp-testing.exe.xyz:8000/?pwd=ngi2026 (larger dataset)
 
 ### Local Development
 - **App:** http://localhost:8000/?pwd=ngi2026
@@ -143,26 +137,67 @@ go test ./srv/... -v
 ## Testing Checklist
 
 ### Globe Navigation
-- [ ] Load globe, verify 162 keystone markers
-- [ ] Click park marker - popup with stats
-- [ ] Popup scrollable, Legal section visible
-- [ ] Zoom/pan/rotate works
+- [x] Load globe, verify 162 keystone markers
+- [x] Click park marker - popup with stats
+- [x] Popup scrollable, Legal section visible
+- [x] Zoom/pan/rotate works
 
 ### Filter Panel
-- [ ] Open filter panel (hamburger)
-- [ ] Toggle "162 Keystones"
-- [ ] Search park by name
-- [ ] All controls monochrome
+- [x] Open filter panel (hamburger)
+- [x] Toggle movement types (Foot, Vehicle, Aerial)
+- [x] Toggle "162 Keystones"
+- [x] Time slider works
 
-### Park Details (use COD_Virunga)
-- [ ] Fire Analysis section expands
-- [ ] Deforestation section shows events
-- [ ] Settlements section shows count
-- [ ] Legal section shows legislation
+### Search
+- [x] Search for "Virunga"
+- [x] Results appear with "loaded" badges
+- [x] Click result zooms to park
 
-### Data Integrity
+### API Endpoints (All Tested ✓)
+- [x] /api/parks/{id}/stats
+- [x] /api/parks/{id}/fire-narrative
+- [x] /api/parks/{id}/deforestation-narrative
+- [x] /api/parks/{id}/settlement-narrative
+- [x] /api/parks/{id}/documents
+- [x] /api/parks/{id}/management-plans
+- [x] /api/parks/{id}/infractions
+- [x] /api/parks/{id}/data-status
+
+### GPX Upload (Needs Testing)
+- [ ] Login as test user (test@example.com)
+- [ ] Upload GPX file via modal
+- [ ] Verify patrol data appears on map
+- [ ] Check patrol intensity legend
+
+---
+
+## For Other VM Instances
+
+### Sync Database
+The remote VM at https://fivemp-testing.exe.xyz:8000 has more data:
+- 4.6M fire detections vs 1.7M here
+- 3,218 deforestation events vs 293 here
+
+To sync (if database download works):
 ```bash
-sqlite3 db.sqlite3 "SELECT COUNT(*) FROM fire_detections;"  # Expected: 4,621,211
-sqlite3 db.sqlite3 "SELECT COUNT(*) FROM park_settlements;"  # Expected: 15,066
-sqlite3 db.sqlite3 "SELECT COUNT(*) FROM deforestation_events;"  # Expected: 3,218
+curl -L -o db.sqlite3.new "https://fivemp-testing.exe.xyz:8000/static/downloads/5mp_data.sqlite3?pwd=ngi2026"
+# Verify integrity before replacing
+sqlite3 db.sqlite3.new "PRAGMA integrity_check;"
 ```
+
+### Required Files
+- `data/keystones_with_boundaries.json` - Park boundary data
+- `data/wdpa_index.json` - WDPA protected area index
+- `data/legal_frameworks.json` - Legal framework data
+- `db.sqlite3` - SQLite database
+
+---
+
+## User Roles for Testing
+
+| Type | Use Case |
+|------|----------|
+| Ministry Staff | Overview of all 162 parks, national trends, compliance |
+| NGO Managers | Regional focus, funding allocation, intervention priorities |
+| Park Rangers | Patrol planning, fire response, threat assessment |
+| Researchers | Data export, trend analysis, publication support |
