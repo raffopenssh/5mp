@@ -520,7 +520,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	var builtUp float64
 	var settlementCount int
 	err := s.DB.QueryRow(`
-		SELECT built_up_area_km2, settlement_count
+		SELECT built_up_km2, settlement_count
 		FROM ghsl_data
 		WHERE park_id = ?
 	`, internalID).Scan(&builtUp, &settlementCount)
