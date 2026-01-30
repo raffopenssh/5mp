@@ -75,7 +75,6 @@
 
         .stats-panel { position: fixed; top: 66px; right: 10px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 16px; z-index: 100; font-size: 12px; min-width: 140px; }
         .stats-panel h3 { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-        .stats-period { font-weight: 400; color: #555; font-size: 10px; }
         .stats-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding: 6px 8px; margin: 0 -8px 6px -8px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; position: relative; }
         .stats-item:last-child { margin-bottom: 0; }
         .stats-item:hover { background: rgba(34,197,94,0.1); }
@@ -173,8 +172,6 @@
         .time-slider-handle { position: absolute; top: 50%; width: 16px; height: 16px; background: #22c55e; border: 2px solid #fff; border-radius: 50%; transform: translate(-50%, -50%); cursor: grab; z-index: 2; transition: transform 0.1s, box-shadow 0.1s; }
         .time-slider-handle:hover { transform: translate(-50%, -50%) scale(1.2); box-shadow: 0 0 10px rgba(34,197,94,0.5); }
         .time-slider-handle:active { cursor: grabbing; }
-        .time-slider-handle.start { }
-        .time-slider-handle.end { }
         .time-slider-ticks { position: relative; height: 20px; margin-top: 4px; }
         .time-slider-tick { position: absolute; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
         .time-slider-tick-line { width: 1px; height: 6px; background: rgba(255,255,255,0.2); }
@@ -668,8 +665,8 @@
         <div class="time-slider-track-wrapper">
             <div class="time-slider-track" id="time-slider-track">
                 <div class="time-slider-range" id="time-slider-range"></div>
-                <div class="time-slider-handle start" id="time-slider-start" data-handle="start"></div>
-                <div class="time-slider-handle end" id="time-slider-end" data-handle="end"></div>
+                <div class="time-slider-handle start" id="time-slider-start" data-handle="start" role="slider" aria-label="Start date" tabindex="0"></div>
+                <div class="time-slider-handle end" id="time-slider-end" data-handle="end" role="slider" aria-label="End date" tabindex="0"></div>
             </div>
             <div class="time-slider-ticks" id="time-slider-ticks"></div>
         </div>
@@ -1495,29 +1492,18 @@
                     document.getElementById('stats-distance').textContent = formatNumber(stats.total_distance_km || 0, 1) + ' km';
                     document.getElementById('stats-patrols').textContent = formatNumber(stats.total_patrols || 0);
                 }
-                // Update stats title to reflect current filter
-                updateStatsTitle();
+
             } catch (err) {
                 console.error('Failed to load stats:', err);
             }
         }
         
-        function updateStatsTitle() {
-            var period = document.querySelector('.stats-period');
-            if (period) {
-                var presetLabels = {'30d': '30d', '90d': '90d', '6m': '6 mo', '12m': '12 mo', 'all': 'all time', 'custom': 'custom'};
-                var label = presetLabels[currentPreset] || '12 mo';
-                if (currentBbox) label += ', area';
-                period.textContent = '(' + label + ')';
-            }
-        }
         // Declare state variables before they're used
         let filterPanelOpen = true; // Panel starts open in HTML
         let searchOpen = false;
         var dateFrom = null;
         var dateTo = null;
         var currentPreset = '12m';
-        var customDatesOpen = false;
         let activityExpanded = false;
         let currentBbox = null; 
         let bboxDrawing = false;
@@ -1528,137 +1514,6 @@
         
         // Initial stats load will happen after initDateRange sets dates
         // loadStats(); // Moved to after initDateRange
-
-        
-        function checkDateInputSupport() {
-            var input = document.createElement('input');
-            input.setAttribute('type', 'date');
-            if (input.type === 'text') {
-                
-                var dateInputs = document.querySelectorAll('.date-input[type="date"]');
-                for (var i = 0; i < dateInputs.length; i++) {
-                    dateInputs[i].type = 'text';
-                    dateInputs[i].placeholder = 'YYYY-MM-DD';
-                }
-            }
-        }
-        checkDateInputSupport();
-
-        
-        function formatDateDisplay(dateStr) {
-            if (!dateStr) return null;
-            try {
-                var d = new Date(dateStr + 'T00:00:00');
-                var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                return months[d.getMonth()] + ' ' + d.getFullYear();
-            } catch (e) {
-                return dateStr;
-            }
-        }
-
-        
-        function updateDateRangeDisplay() {
-            var display = document.getElementById('date-range-display');
-            if (dateFrom && dateTo) {
-                display.textContent = formatDateDisplay(dateFrom) + ' - ' + formatDateDisplay(dateTo);
-            } else if (dateFrom) {
-                display.textContent = 'From ' + formatDateDisplay(dateFrom);
-            } else if (dateTo) {
-                display.textContent = 'Until ' + formatDateDisplay(dateTo);
-            } else {
-                display.textContent = 'All Time';
-            }
-        }
-
-        function initDateRange() {
-            // Date range is now controlled by the time slider at the bottom
-            // Don't call setDatePreset - slider will set dates on init
-        }
-        
-        function setDatePreset(preset) {
-            currentPreset = preset;
-            var today = new Date();
-            var from = new Date();
-            var formatDate = function(d) { return d.toISOString().split('T')[0]; };
-            
-            // Clear active class from all preset buttons
-            document.querySelectorAll('.date-preset-btn').forEach(function(btn) {
-                btn.classList.remove('active');
-            });
-            
-            // Set the date range based on preset
-            switch(preset) {
-                case '30d':
-                    from.setDate(today.getDate() - 30);
-                    break;
-                case '90d':
-                    from.setDate(today.getDate() - 90);
-                    break;
-                case '6m':
-                    from.setMonth(today.getMonth() - 6);
-                    break;
-                case '12m':
-                    from.setFullYear(today.getFullYear() - 1);
-                    break;
-                case 'all':
-                    dateFrom = '';
-                    dateTo = '';
-                    document.getElementById('date-from').value = '';
-                    document.getElementById('date-to').value = '';
-                    document.getElementById('date-range-display').textContent = 'All Time';
-                    // Mark active
-                    event && event.target && event.target.classList.add('active');
-                    document.querySelector('.date-preset-btn[onclick*="all"]').classList.add('active');
-                    // Close custom dates if open
-                    if (customDatesOpen) toggleCustomDates();
-                    reloadGridData();
-                    return;
-            }
-            
-            dateFrom = formatDate(from);
-            dateTo = formatDate(today);
-            document.getElementById('date-from').value = dateFrom;
-            document.getElementById('date-to').value = dateTo;
-            
-            // Update display with preset name
-            var presetNames = {'30d': 'Last 30 Days', '90d': 'Last 90 Days', '6m': 'Last 6 Months', '12m': 'Last 12 Months'};
-            document.getElementById('date-range-display').textContent = presetNames[preset] || 'Custom';
-            
-            // Mark active button
-            document.querySelector('.date-preset-btn[onclick*="' + preset + '"]').classList.add('active');
-            
-            // Close custom dates if open
-            if (customDatesOpen) toggleCustomDates();
-            
-            reloadGridData();
-        }
-        
-        function toggleCustomDates() {
-            customDatesOpen = !customDatesOpen;
-            var inputs = document.getElementById('date-custom-inputs');
-            var toggle = document.getElementById('custom-date-toggle');
-            if (customDatesOpen) {
-                inputs.style.display = 'flex';
-                toggle.classList.add('active');
-            } else {
-                inputs.style.display = 'none';
-                toggle.classList.remove('active');
-            }
-        }
-        
-        function updateDateRange(isCustom) {
-            dateFrom = document.getElementById('date-from').value;
-            dateTo = document.getElementById('date-to').value;
-            if (isCustom) {
-                // Clear preset selection when using custom dates
-                document.querySelectorAll('.date-preset-btn').forEach(function(btn) {
-                    btn.classList.remove('active');
-                });
-                currentPreset = 'custom';
-            }
-            updateDateRangeDisplay();
-            reloadGridData();
-        }
 
         function toggleFilterPanel() {
             filterPanelOpen = !filterPanelOpen;
@@ -1679,7 +1534,6 @@
             }
         }
 
-        // Note: updateDateRange(isCustom) is defined above - duplicate removed
 
         var mapLoaded = false;
         var pendingGridReload = false;

@@ -160,6 +160,50 @@ func (q *Queries) DeleteUserSessions(ctx context.Context, userID string) error {
 	return err
 }
 
+const getAllParkDocuments = `-- name: GetAllParkDocuments :many
+SELECT id, pa_id, category, item_id, title, description, file_url, file_type,
+       uploaded_by, uploaded_at, year, summary
+FROM park_documents 
+WHERE pa_id = ?
+ORDER BY category, year DESC, uploaded_at DESC
+`
+
+func (q *Queries) GetAllParkDocuments(ctx context.Context, paID string) ([]ParkDocument, error) {
+	rows, err := q.db.QueryContext(ctx, getAllParkDocuments, paID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ParkDocument{}
+	for rows.Next() {
+		var i ParkDocument
+		if err := rows.Scan(
+			&i.ID,
+			&i.PaID,
+			&i.Category,
+			&i.ItemID,
+			&i.Title,
+			&i.Description,
+			&i.FileUrl,
+			&i.FileType,
+			&i.UploadedBy,
+			&i.UploadedAt,
+			&i.Year,
+			&i.Summary,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getChecklistStats = `-- name: GetChecklistStats :one
 SELECT 
     COUNT(*) as total,
@@ -633,7 +677,7 @@ func (q *Queries) GetParkChecklistItems(ctx context.Context, paID string) ([]Par
 }
 
 const getParkDocuments = `-- name: GetParkDocuments :many
-SELECT id, pa_id, category, item_id, title, description, file_url, file_type, uploaded_by, uploaded_at FROM park_documents WHERE pa_id = ? ORDER BY uploaded_at DESC
+SELECT id, pa_id, category, item_id, title, description, file_url, file_type, uploaded_by, uploaded_at, year, summary FROM park_documents WHERE pa_id = ? ORDER BY uploaded_at DESC
 `
 
 func (q *Queries) GetParkDocuments(ctx context.Context, paID string) ([]ParkDocument, error) {
@@ -656,6 +700,59 @@ func (q *Queries) GetParkDocuments(ctx context.Context, paID string) ([]ParkDocu
 			&i.FileType,
 			&i.UploadedBy,
 			&i.UploadedAt,
+			&i.Year,
+			&i.Summary,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getParkDocumentsByCategory = `-- name: GetParkDocumentsByCategory :many
+
+SELECT id, pa_id, category, item_id, title, description, file_url, file_type, 
+       uploaded_by, uploaded_at, year, summary
+FROM park_documents 
+WHERE pa_id = ? AND category = ?
+ORDER BY year DESC, uploaded_at DESC
+`
+
+type GetParkDocumentsByCategoryParams struct {
+	PaID     string `json:"pa_id"`
+	Category string `json:"category"`
+}
+
+// Park management plan and document queries
+func (q *Queries) GetParkDocumentsByCategory(ctx context.Context, arg GetParkDocumentsByCategoryParams) ([]ParkDocument, error) {
+	rows, err := q.db.QueryContext(ctx, getParkDocumentsByCategory, arg.PaID, arg.Category)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ParkDocument{}
+	for rows.Next() {
+		var i ParkDocument
+		if err := rows.Scan(
+			&i.ID,
+			&i.PaID,
+			&i.Category,
+			&i.ItemID,
+			&i.Title,
+			&i.Description,
+			&i.FileUrl,
+			&i.FileType,
+			&i.UploadedBy,
+			&i.UploadedAt,
+			&i.Year,
+			&i.Summary,
 		); err != nil {
 			return nil, err
 		}
@@ -885,6 +982,40 @@ func (q *Queries) InsertParkDocument(ctx context.Context, arg InsertParkDocument
 		arg.FileUrl,
 		arg.FileType,
 		arg.UploadedBy,
+	)
+	return err
+}
+
+const insertParkDocumentExtended = `-- name: InsertParkDocumentExtended :exec
+INSERT INTO park_documents (pa_id, category, item_id, title, description, file_url, file_type, uploaded_by, year, summary)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`
+
+type InsertParkDocumentExtendedParams struct {
+	PaID        string  `json:"pa_id"`
+	Category    string  `json:"category"`
+	ItemID      *string `json:"item_id"`
+	Title       string  `json:"title"`
+	Description *string `json:"description"`
+	FileUrl     *string `json:"file_url"`
+	FileType    *string `json:"file_type"`
+	UploadedBy  *string `json:"uploaded_by"`
+	Year        *int64  `json:"year"`
+	Summary     *string `json:"summary"`
+}
+
+func (q *Queries) InsertParkDocumentExtended(ctx context.Context, arg InsertParkDocumentExtendedParams) error {
+	_, err := q.db.ExecContext(ctx, insertParkDocumentExtended,
+		arg.PaID,
+		arg.Category,
+		arg.ItemID,
+		arg.Title,
+		arg.Description,
+		arg.FileUrl,
+		arg.FileType,
+		arg.UploadedBy,
+		arg.Year,
+		arg.Summary,
 	)
 	return err
 }

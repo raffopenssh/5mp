@@ -220,3 +220,23 @@ WHERE e.year BETWEEN ? AND ?
   AND e.day IS NULL 
   AND e.movement_type = 'all'
 GROUP BY g.id, g.lat_center, g.lon_center;
+
+-- Park management plan and document queries
+
+-- name: GetParkDocumentsByCategory :many
+SELECT id, pa_id, category, item_id, title, description, file_url, file_type, 
+       uploaded_by, uploaded_at, year, summary
+FROM park_documents 
+WHERE pa_id = ? AND category = ?
+ORDER BY year DESC, uploaded_at DESC;
+
+-- name: GetAllParkDocuments :many
+SELECT id, pa_id, category, item_id, title, description, file_url, file_type,
+       uploaded_by, uploaded_at, year, summary
+FROM park_documents 
+WHERE pa_id = ?
+ORDER BY category, year DESC, uploaded_at DESC;
+
+-- name: InsertParkDocumentExtended :exec
+INSERT INTO park_documents (pa_id, category, item_id, title, description, file_url, file_type, uploaded_by, year, summary)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);

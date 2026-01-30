@@ -155,6 +155,8 @@ type ParkDocument struct {
 	FileType    *string    `json:"file_type"`
 	UploadedBy  *string    `json:"uploaded_by"`
 	UploadedAt  *time.Time `json:"uploaded_at"`
+	Year        *int64     `json:"year"`
+	Summary     *string    `json:"summary"`
 }
 
 type ParkFireAnalysis struct {

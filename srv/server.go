@@ -151,6 +151,8 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/parks/{id}/publications", s.HandleAPIPublications)
 	mux.HandleFunc("GET /api/parks/{id}/checklist", s.HandleAPIGetParkChecklist)
 	mux.HandleFunc("GET /api/parks/{id}/stats", s.HandleAPIParkStats)
+	mux.HandleFunc("GET /api/parks/{id}/documents", s.HandleAPIParkDocuments)
+	mux.HandleFunc("GET /api/parks/{id}/management-plans", s.HandleAPIParkManagementPlans)
 
 	// Narrative endpoints (rich textual descriptions with OSM place names)
 	mux.HandleFunc("GET /api/parks/{id}/fire-narrative", s.HandleAPIFireNarrative)
