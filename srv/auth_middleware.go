@@ -167,10 +167,18 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         }
         
         .logo { 
-            font-size: 56px; 
+            width: 64px;
+            height: 64px;
             margin-bottom: 16px; 
             animation: globePulse 4s ease-in-out infinite;
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo svg {
+            width: 56px;
+            height: 56px;
         }
         
         @keyframes globePulse {
@@ -298,7 +306,8 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
                 margin: 20px;
                 padding: 36px 28px;
             }
-            .logo { font-size: 48px; }
+            .logo { width: 48px; height: 48px; }
+            .logo svg { width: 42px; height: 42px; }
             h1 { font-size: 22px; }
         }
     </style>
@@ -317,7 +326,15 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         <div class="particle"></div>
     </div>
     <div class="container">
-        <div class="logo">🌍</div>
+        <div class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <ellipse cx="12" cy="12" rx="4" ry="10"></ellipse>
+                <path d="M2 12h20"></path>
+                <path d="M4.5 6.5h15"></path>
+                <path d="M4.5 17.5h15"></path>
+            </svg>
+        </div>
         <div class="logo-text">
             <h1>5MP.globe</h1>
         </div>
