@@ -2526,14 +2526,16 @@
             const el = document.getElementById(`fire-content-${paId}`);
             if (!el) return;
             try {
-                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/infractions?year=2023`);
+                // Use time filter year, or extract from dateFrom, or default to most recent
+                let year = dateTo ? new Date(dateTo).getFullYear() : new Date().getFullYear();
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/infractions?year=${year}`);
                 const data = await resp.json();
                 if (data.total_groups > 0) {
                     const rate = Math.round(data.response_rate || 0);
                     const rateClass = rate >= 60 ? '' : rate >= 40 ? ' warning' : ' bad';
                     el.innerHTML = `
                         <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Fire groups (2023)</span>
+                            <span class="pa-popup-mini-stat-label">Fire groups (${year})</span>
                             <span class="pa-popup-mini-stat-value${data.total_groups > 10 ? ' bad' : ' warning'}">${data.total_groups}</span>
                         </div>
                         <div class="pa-popup-mini-stat">
@@ -2588,7 +2590,14 @@
             const el = document.getElementById(`deforest-content-${paId}`);
             if (!el) return;
             try {
-                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/deforestation-narrative`);
+                let url = `/api/parks/${encodeURIComponent(paId)}/deforestation-narrative`;
+                if (dateFrom || dateTo) {
+                    const params = [];
+                    if (dateFrom) params.push('from=' + dateFrom);
+                    if (dateTo) params.push('to=' + dateTo);
+                    url += '?' + params.join('&');
+                }
+                const resp = await fetch(url);
                 const data = await resp.json();
                 if (data.status === 'complete' && data.total_area_km2 > 0) {
                     el.innerHTML = `
