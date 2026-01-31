@@ -88,6 +88,20 @@
         .stats-item.active::after { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.6); }
         .stats-label { color: #888; transition: color 0.2s; }
         .stats-value { color: #22c55e; font-weight: 600; font-variant-numeric: tabular-nums; transition: color 0.2s; }
+        .stats-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 8px -8px; }
+        .stats-header { font-size: 9px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; padding: 0 8px; }
+        .stats-trend { font-size: 10px; margin-left: 4px; }
+        .stats-trend.up { color: #ef4444; }
+        .stats-trend.down { color: #22c55e; }
+        .stats-trend.stable { color: #666; }
+        .stats-trend.improving { color: #22c55e; }
+        .stats-trend.worsening { color: #ef4444; }
+        .stats-item.fire .stats-value { color: #f97316; }
+        .stats-item.fire:hover .stats-value { color: #fb923c; }
+        .stats-item.deforest .stats-value { color: #eab308; }
+        .stats-item.deforest:hover .stats-value { color: #facc15; }
+        .stats-item.settlement .stats-value { color: #a855f7; }
+        .stats-item.settlement:hover .stats-value { color: #c084fc; }
         @keyframes stats-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         .stats-item.pulsing { animation: stats-pulse 0.6s ease-in-out; }
         .maplibregl-ctrl-attrib a { color: #666 !important; }
@@ -112,6 +126,9 @@
 
         /* Compact Keystones Toggle */
         .keystones-compact-toggle { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #888; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .export-btn { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 12px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; color: #60a5fa; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .export-btn:hover { background: rgba(59,130,246,0.25); border-color: rgba(59,130,246,0.5); }
+        .export-btn svg { flex-shrink: 0; }
         .keystones-compact-toggle:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
         .keystones-compact-toggle.active { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
 
@@ -219,6 +236,12 @@
         .filter-section { margin-bottom: 20px; }
         .filter-section:last-child { margin-bottom: 0; }
         .filter-section-label { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+
+        /* Country filter dropdown */
+        .country-select { width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #e0e0e0; font-size: 13px; cursor: pointer; transition: all 0.2s; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+        .country-select:hover { border-color: rgba(255,255,255,0.2); background-color: rgba(255,255,255,0.08); }
+        .country-select:focus { outline: none; border-color: #22c55e; }
+        .country-select option { background: #1a1a1a; color: #e0e0e0; padding: 8px; }
 
 
 
@@ -387,11 +410,14 @@
             .search-panel { top: auto; bottom: 140px; left: 10px; width: calc(100vw - 20px); max-width: none; -webkit-transform: translateY(400px); transform: translateY(400px); max-height: 50vh; }
             .search-panel.open { -webkit-transform: translateY(0); transform: translateY(0); }
             
-            /* Stats panel - compact horizontal at top */
-            .stats-panel { top: 58px; bottom: auto; right: 10px; left: 10px; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; gap: 8px; padding: 8px 12px; min-width: auto; }
-            .stats-item { -webkit-box-flex: 1; flex: 1; text-align: center; padding: 4px 0; }
+            /* Stats panel - compact grid at top */
+            .stats-panel { top: 58px; bottom: auto; right: 10px; left: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 8px; padding: 8px 12px; min-width: auto; }
+            .stats-header { display: none; }
+            .stats-divider { display: none; }
+            .stats-item { text-align: center; padding: 4px 0; margin: 0; }
             .stats-label { font-size: 9px; }
             .stats-value { font-size: 14px; }
+            .stats-trend { font-size: 8px; }
             
             /* Legend repositioned to avoid toolbar */
             #map-legend { bottom: 140px !important; left: 10px; max-width: calc(100vw - 80px); font-size: 11px; padding: 10px 12px; }
@@ -433,9 +459,10 @@
             .auth-buttons .btn { padding: 6px 10px; font-size: 12px; }
             
             /* Even more compact stats */
-            .stats-panel { padding: 6px 8px; gap: 4px; }
+            .stats-panel { padding: 6px 8px; gap: 2px 4px; grid-template-columns: repeat(3, 1fr); }
             .stats-label { font-size: 8px; }
-            .stats-value { font-size: 12px; }
+            .stats-value { font-size: 11px; }
+            .stats-trend { font-size: 7px; }
             
             /* Smaller toolbar buttons */
             .toolbar-btn { width: 36px; height: 36px; min-width: 36px; min-height: 36px; }
@@ -491,6 +518,7 @@
             </div></div>
 
     <div class="stats-panel">
+        <div class="stats-header">Patrol Activity</div>
         <div class="stats-item" id="stat-pixels" onclick="handleStatClick('pixels')" title="Click to highlight active grid cells">
             <span class="stats-label">Active Pixels</span>
             <span class="stats-value" id="stats-pixels">15</span>
@@ -502,6 +530,20 @@
         <div class="stats-item" id="stat-patrols" onclick="handleStatClick('patrols')" title="Click to zoom to patrol coverage">
             <span class="stats-label">Total Patrols</span>
             <span class="stats-value" id="stats-patrols">80</span>
+        </div>
+        <div class="stats-divider"></div>
+        <div class="stats-header">Conservation Data</div>
+        <div class="stats-item fire" id="stat-fires" title="Fire detections in selected period">
+            <span class="stats-label">Fire Activity</span>
+            <span class="stats-value"><span id="stats-fires">0</span><span class="stats-trend stable" id="stats-fire-trend"></span></span>
+        </div>
+        <div class="stats-item deforest" id="stat-deforest" title="Total forest loss in selected period">
+            <span class="stats-label">Deforestation</span>
+            <span class="stats-value"><span id="stats-deforest">0 km²</span><span class="stats-trend stable" id="stats-deforest-trend"></span></span>
+        </div>
+        <div class="stats-item settlement" id="stat-settlements" title="Total settlements across all parks">
+            <span class="stats-label">Settlements</span>
+            <span class="stats-value" id="stats-settlements">0</span>
         </div>
     </div>
 
@@ -603,6 +645,14 @@
                 </div>
             </div>
             
+            <!-- Country Filter -->
+            <div class="filter-section">
+                <div class="filter-section-label">Country</div>
+                <select class="country-select" id="country-filter" onchange="handleCountryFilter()">
+                    <option value="">All Countries</option>
+                </select>
+            </div>
+
             <!-- Movement Type Toggles -->
             <div class="filter-section">
                 <div class="filter-section-label">Movement Type</div>
@@ -623,6 +673,19 @@
                 <div class="selected-parks" id="selected-parks">
                     <div class="selected-parks-empty" id="selected-parks-empty">Click a park on the map to select it</div>
                 </div>
+            </div>
+            
+            <!-- Export Section -->
+            <div class="filter-section">
+                <div class="filter-section-label">Export Data</div>
+                <button class="export-btn" onclick="exportParksCSV()" title="Export park data as CSV">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Export Parks CSV
+                </button>
             </div>
             
             <!-- Hidden inputs for compatibility -->
@@ -1159,6 +1222,13 @@
 
             map.on('mouseenter', 'areas-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', 'areas-fill', function() { map.getCanvas().style.cursor = ''; });
+
+            // Populate country dropdown when areas data loads
+            map.on('sourcedata', function(e) {
+                if (e.sourceId === 'areas' && e.isSourceLoaded) {
+                    populateCountryFilter();
+                }
+            });
             map.on('mouseenter', 'grid-cells', function() { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', 'grid-cells', function() { map.getCanvas().style.cursor = ''; });
             map.on('mouseenter', 'grid-clusters', function() { map.getCanvas().style.cursor = 'pointer'; });
@@ -1496,6 +1566,22 @@
                     document.getElementById('stats-pixels').textContent = formatNumber(stats.active_pixels || 0);
                     document.getElementById('stats-distance').textContent = formatNumber(stats.total_distance_km || 0, 1) + ' km';
                     document.getElementById('stats-patrols').textContent = formatNumber(stats.total_patrols || 0);
+                    
+                    // Conservation data
+                    document.getElementById('stats-fires').textContent = formatNumber(stats.total_fires || 0);
+                    const fireTrend = stats.fire_trend || 'stable';
+                    const fireTrendEl = document.getElementById('stats-fire-trend');
+                    fireTrendEl.className = 'stats-trend ' + fireTrend;
+                    fireTrendEl.textContent = fireTrend === 'up' ? ' ▲' : (fireTrend === 'down' ? ' ▼' : '');
+                    
+                    const deforest = stats.total_deforestation || 0;
+                    document.getElementById('stats-deforest').textContent = formatNumber(deforest, 1) + ' km²';
+                    const deforestTrend = stats.deforest_trend || 'stable';
+                    const deforestTrendEl = document.getElementById('stats-deforest-trend');
+                    deforestTrendEl.className = 'stats-trend ' + deforestTrend;
+                    deforestTrendEl.textContent = deforestTrend === 'worsening' ? ' ▲' : (deforestTrend === 'improving' ? ' ▼' : '');
+                    
+                    document.getElementById('stats-settlements').textContent = formatNumber(stats.total_settlements || 0);
                 }
 
             } catch (err) {
@@ -1516,6 +1602,7 @@
         
         // Movement type filter state (all on by default)
         var movementTypes = { foot: true, vehicle: true, aerial: true };
+        var currentCountryFilter = ''; // Country filter state
         
         // Initial stats load will happen after initDateRange sets dates
         // loadStats(); // Moved to after initDateRange
@@ -1539,6 +1626,10 @@
             }
         }
 
+        // Export parks data as CSV
+        function exportParksCSV() {
+            window.location.href = '/api/export/parks?format=csv';
+        }
 
         var mapLoaded = false;
         var pendingGridReload = false;
@@ -1793,6 +1884,105 @@
                 btn.classList.remove('active');
             }
             updatePAHighlighting();
+        }
+
+        // Country filter functions
+        var countryFilterPopulated = false;
+        function populateCountryFilter() {
+            if (countryFilterPopulated) return;
+            if (!map || !map.getSource('areas')) return;
+            
+            var features = map.querySourceFeatures('areas');
+            if (features.length === 0) return;
+            
+            // Extract unique countries
+            var countries = new Set();
+            features.forEach(function(f) {
+                if (f.properties && f.properties.country) {
+                    countries.add(f.properties.country);
+                }
+            });
+            
+            // Sort countries alphabetically
+            var sortedCountries = Array.from(countries).sort();
+            
+            // Populate the dropdown
+            var select = document.getElementById('country-filter');
+            if (!select) return;
+            
+            sortedCountries.forEach(function(country) {
+                var option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                select.appendChild(option);
+            });
+            
+            countryFilterPopulated = true;
+        }
+
+        function handleCountryFilter() {
+            var select = document.getElementById('country-filter');
+            currentCountryFilter = select ? select.value : '';
+            applyCountryFilter();
+            updateCountryStats();
+        }
+
+        function applyCountryFilter() {
+            if (!map || !map.getLayer('areas-fill')) return;
+            
+            if (currentCountryFilter === '') {
+                // No filter - show all areas
+                map.setFilter('areas-fill', null);
+                map.setFilter('areas-outline', null);
+            } else {
+                // Filter to selected country
+                var filter = ['==', ['get', 'country'], currentCountryFilter];
+                map.setFilter('areas-fill', filter);
+                map.setFilter('areas-outline', filter);
+            }
+            
+            // Update PA highlighting to respect the filter
+            updatePAHighlighting();
+        }
+
+        function updateCountryStats() {
+            if (!map || !map.getSource('areas')) return;
+            
+            var features = map.querySourceFeatures('areas');
+            var filteredFeatures = features;
+            
+            if (currentCountryFilter !== '') {
+                filteredFeatures = features.filter(function(f) {
+                    return f.properties && f.properties.country === currentCountryFilter;
+                });
+            }
+            
+            // Count unique parks in the filtered set
+            var uniqueParks = new Set();
+            var totalAreaKm2 = 0;
+            filteredFeatures.forEach(function(f) {
+                if (f.properties && f.properties.id) {
+                    if (!uniqueParks.has(f.properties.id)) {
+                        uniqueParks.add(f.properties.id);
+                        if (f.properties.area_km2) {
+                            totalAreaKm2 += f.properties.area_km2;
+                        }
+                    }
+                }
+            });
+            
+            // Update the keystones count display if filtering
+            var keystonesBtn = document.getElementById('keystones-toggle-btn');
+            if (keystonesBtn) {
+                var countSpan = keystonesBtn.querySelector('span:last-child');
+                if (countSpan) {
+                    if (currentCountryFilter === '') {
+                        countSpan.textContent = '162'; // Default total
+                    } else {
+                        countSpan.textContent = uniqueParks.size;
+                    }
+                }
+            }
         }
 
         function getActiveMovementTypes() {
