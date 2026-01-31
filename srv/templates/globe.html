@@ -26,7 +26,7 @@
         .btn-primary { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; }
         .btn-primary:hover { background: linear-gradient(135deg, #16a34a, #15803d); }
 
-        #map { position: absolute; top: 56px; left: 0; right: 0; bottom: 0; }
+        #map { position: absolute; top: 56px; left: 0; right: 0; bottom: 0; z-index: 1; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
         .modal-overlay.active { display: flex; }
@@ -968,12 +968,26 @@
             }]
         };
 
+        // Check for WebGL support and warn if not available
+        if (!maplibregl.supported()) {
+            document.getElementById('map').innerHTML = '<div style="padding: 40px; text-align: center; color: #888;"><h3>WebGL Not Supported</h3><p>Your browser does not support WebGL, which is required for the map.</p><p>Please try using a modern browser like Chrome, Firefox, or Safari.</p></div>';
+        }
+        
         const map = new maplibregl.Map({
             container: 'map',
             style: darkStyle,
             center: [20, 0],
-            zoom: 3
+            zoom: 3,
+            antialias: true,
+            preserveDrawingBuffer: true,  // Helps with Safari
+            failIfMajorPerformanceCaveat: false  // Don't fail on software rendering
         });
+        
+        // Handle map errors
+        map.on('error', function(e) {
+            console.error('MapLibre error:', e.error);
+        });
+        
         map.addControl(new maplibregl.NavigationControl(), 'top-right');
         
         // Global state - declared early for use in multiple functions
@@ -3252,9 +3266,29 @@
         // Set up PA click handler (enhanced popup with collapsible sections)
         // This runs after map is ready and sets up the single click handler for areas-fill
         function setupPAClickHandler() {
+            // Use both layer-specific and general click with feature query for better browser compat
             map.on('click', 'areas-fill', function(e) {
-                if (e.features.length > 0) {
+                console.log('areas-fill click handler fired', e.features?.length);
+                if (e.features && e.features.length > 0) {
+                    e.originalEvent.stopPropagation();
                     const props = e.features[0].properties;
+                    showPAPopup(props, e.lngLat);
+                }
+            });
+            
+            // Fallback: general click handler that checks for PA features
+            // This helps on browsers where layer-specific handlers may not fire reliably
+            map.on('click', function(e) {
+                // Skip if popup already showing or if we're in bbox draw mode
+                if (currentPAPopup || document.getElementById('bbox-draw-overlay')?.classList.contains('active')) {
+                    return;
+                }
+                
+                // Query for PA features at click point
+                const paFeatures = map.queryRenderedFeatures(e.point, { layers: ['areas-fill'] });
+                if (paFeatures.length > 0) {
+                    console.log('Fallback PA click handler - found PA:', paFeatures[0].properties?.name);
+                    const props = paFeatures[0].properties;
                     showPAPopup(props, e.lngLat);
                 }
             });
