@@ -903,6 +903,11 @@
             zoom: 3
         });
         map.addControl(new maplibregl.NavigationControl(), 'top-right');
+        
+        // Global state - declared early for use in multiple functions
+        let currentPAPopup = null;
+        let selectedParks = [];
+        let selectedPAIds = new Set();  // Track PA IDs selected via bbox or clicks
 
         
         map.on('load', function() {
@@ -2312,7 +2317,7 @@
             
             // If we have coordinates, show popup at that location
             if (coords) {
-                currentPAPopup = new mapboxgl.Popup({ closeOnClick: true, maxWidth: '300px' })
+                currentPAPopup = new maplibregl.Popup({ closeOnClick: true, maxWidth: '300px' })
                     .setLngLat(coords)
                     .setHTML(popupContent)
                     .addTo(map);
@@ -2380,11 +2385,7 @@
             }
         });
 
-        // Selected parks management
-        let selectedParks = [];
-        let selectedPAIds = new Set();  // Track PA IDs selected via bbox or clicks
-        let currentPAPopup = null;
-        
+        // Park popup handler
         function showPAPopup(props, lngLat) {
             // Close existing popup
             if (currentPAPopup) {
