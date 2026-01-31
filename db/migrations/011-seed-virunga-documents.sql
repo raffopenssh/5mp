@@ -2,7 +2,7 @@
 -- These are real publicly available documents and reports
 
 -- Virunga Management Plan 2020-2025
-INSERT INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
+INSERT OR IGNORE INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
 VALUES (
     'COD_Virunga',
     'management_plan',
@@ -15,7 +15,7 @@ VALUES (
 );
 
 -- Virunga Alliance Annual Report 2022
-INSERT INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
+INSERT OR IGNORE INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
 VALUES (
     'COD_Virunga',
     'annual_report',
@@ -28,7 +28,7 @@ VALUES (
 );
 
 -- Virunga Alliance Annual Report 2021
-INSERT INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
+INSERT OR IGNORE INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
 VALUES (
     'COD_Virunga',
     'annual_report',
@@ -41,7 +41,7 @@ VALUES (
 );
 
 -- IUCN World Heritage Outlook Assessment
-INSERT INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
+INSERT OR IGNORE INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
 VALUES (
     'COD_Virunga',
     'research_report',
@@ -54,7 +54,7 @@ VALUES (
 );
 
 -- UNESCO State of Conservation Report
-INSERT INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
+INSERT OR IGNORE INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
 VALUES (
     'COD_Virunga',
     'legal_document',
@@ -67,7 +67,7 @@ VALUES (
 );
 
 -- Add sample documents for Garamba as well (another major DRC park)
-INSERT INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
+INSERT OR IGNORE INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
 VALUES (
     'COD_Garamba',
     'management_plan',
@@ -79,7 +79,7 @@ VALUES (
     'Management plan developed under African Parks partnership. Focuses on anti-poaching operations, community relations, and restoration of elephant and other large mammal populations after severe poaching crisis.'
 );
 
-INSERT INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
+INSERT OR IGNORE INTO park_documents (pa_id, category, title, description, file_url, file_type, year, summary)
 VALUES (
     'COD_Garamba',
     'annual_report',
