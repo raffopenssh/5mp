@@ -792,7 +792,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	var settlementCount int
 	var totalPopulation sql.NullFloat64
 	err := s.DB.QueryRow(`
-		SELECT COUNT(*) as count, COALESCE(SUM(population_estimate), 0) as total_pop
+		SELECT COUNT(*) as count, COALESCE(SUM(population_est), 0) as total_pop
 		FROM park_settlements
 		WHERE park_id = ?
 	`, internalID).Scan(&settlementCount, &totalPopulation)
@@ -830,13 +830,13 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	largestRows, err := s.DB.Query(`
 		SELECT 
 			COALESCE(nearest_place, 'Unnamed settlement') as name,
-			CAST(COALESCE(population_estimate, 0) AS INTEGER) as population,
+			CAST(COALESCE(population_est, 0) AS INTEGER) as population,
 			lat, lon,
 			COALESCE(direction, '') as direction,
 			COALESCE(distance_km, 0) as distance_km
 		FROM park_settlements
 		WHERE park_id = ?
-		ORDER BY population_estimate DESC
+		ORDER BY population_est DESC
 		LIMIT 10
 	`, internalID)
 	
@@ -866,7 +866,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 				ELSE 'Southwest'
 			END as region,
 			COUNT(*) as count,
-			COALESCE(SUM(population_estimate), 0) as population
+			COALESCE(SUM(population_est), 0) as population
 		FROM park_settlements s, park_center pc
 		WHERE s.park_id = ?
 		GROUP BY region
