@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // ParkStats combines fire, settlement, and roadless data for a park
@@ -126,19 +128,52 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	
+	// Parse time filter parameters
+	yearStr := r.URL.Query().Get("year")
+	fromStr := r.URL.Query().Get("from")
+	toStr := r.URL.Query().Get("to")
+	
+	var fromYear, toYear int
+	now := time.Now()
+	
+	if yearStr != "" {
+		if y, err := strconv.Atoi(yearStr); err == nil {
+			fromYear = y
+			toYear = y
+		}
+	} else {
+		// Default: all available years
+		fromYear = 2000
+		toYear = now.Year()
+		if fromStr != "" {
+			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
+				fromYear = t.Year()
+			}
+		}
+		if toStr != "" {
+			if t, err := time.Parse("2006-01-02", toStr); err == nil {
+				toYear = t.Year()
+			}
+		}
+	}
+	
 	stats := ParkStats{ParkID: parkID}
 	var insights []string
 	
-	// Query fire infraction data (most recent year) with trajectories
+	// Query aggregated fire infraction data across year range
 	var fire FireStats
 	var trajJSON sql.NullString
 	err := s.DB.QueryRow(`
-		SELECT year, total_groups, groups_stopped_inside, groups_transited, avg_days_burning, trajectories_json
+		SELECT 
+			MAX(year) as year,
+			SUM(total_groups) as total_groups,
+			SUM(groups_stopped_inside) as stopped,
+			SUM(groups_transited) as transited,
+			AVG(avg_days_burning) as avg_days,
+			(SELECT trajectories_json FROM park_group_infractions WHERE park_id = ? ORDER BY year DESC LIMIT 1) as traj
 		FROM park_group_infractions 
-		WHERE park_id = ?
-		ORDER BY year DESC
-		LIMIT 1
-	`, internalID).Scan(&fire.Year, &fire.GroupsEntered, &fire.GroupsStoppedInside, &fire.GroupsTransited, &fire.AvgDaysInside, &trajJSON)
+		WHERE park_id = ? AND year >= ? AND year <= ?
+	`, internalID, internalID, fromYear, toYear).Scan(&fire.Year, &fire.GroupsEntered, &fire.GroupsStoppedInside, &fire.GroupsTransited, &fire.AvgDaysInside, &trajJSON)
 	
 	if err == nil && fire.GroupsEntered > 0 {
 		// Parse trajectory JSON if available
