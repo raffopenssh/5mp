@@ -7,7 +7,9 @@ import (
 	"math"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // OSMPlace represents a place from the osm_places table
@@ -322,19 +324,49 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 	
-	// Get most recent year's fire data
+	// Parse time filter parameters
+	yearStr := r.URL.Query().Get("year")
+	fromStr := r.URL.Query().Get("from")
+	toStr := r.URL.Query().Get("to")
+	
+	var filterYear int
+	if yearStr != "" {
+		if y, err := strconv.Atoi(yearStr); err == nil {
+			filterYear = y
+		}
+	} else if fromStr != "" {
+		if t, err := time.Parse("2006-01-02", fromStr); err == nil {
+			filterYear = t.Year()
+		}
+	} else if toStr != "" {
+		if t, err := time.Parse("2006-01-02", toStr); err == nil {
+			filterYear = t.Year()
+		}
+	}
+	
+	// Get fire data - use specified year or most recent
 	var year int
 	var totalGroups, stoppedInside, transited int
 	var avgDaysBurning float64
 	var trajJSON sql.NullString
 	
-	err := s.DB.QueryRow(`
-		SELECT year, total_groups, groups_stopped_inside, groups_transited, avg_days_burning, trajectories_json
-		FROM park_group_infractions 
-		WHERE park_id = ? AND total_groups > 0
-		ORDER BY year DESC
-		LIMIT 1
-	`, internalID).Scan(&year, &totalGroups, &stoppedInside, &transited, &avgDaysBurning, &trajJSON)
+	var err error
+	if filterYear > 0 {
+		err = s.DB.QueryRow(`
+			SELECT year, total_groups, groups_stopped_inside, groups_transited, avg_days_burning, trajectories_json
+			FROM park_group_infractions 
+			WHERE park_id = ? AND year = ? AND total_groups > 0
+			LIMIT 1
+		`, internalID, filterYear).Scan(&year, &totalGroups, &stoppedInside, &transited, &avgDaysBurning, &trajJSON)
+	} else {
+		err = s.DB.QueryRow(`
+			SELECT year, total_groups, groups_stopped_inside, groups_transited, avg_days_burning, trajectories_json
+			FROM park_group_infractions 
+			WHERE park_id = ? AND total_groups > 0
+			ORDER BY year DESC
+			LIMIT 1
+		`, internalID).Scan(&year, &totalGroups, &stoppedInside, &transited, &avgDaysBurning, &trajJSON)
+	}
 	
 	narrative := FireNarrative{
 		ParkID:   internalID,
@@ -550,18 +582,45 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		}
 	}
 	
+	// Parse time filter parameters
+	yearStr := r.URL.Query().Get("year")
+	fromStr := r.URL.Query().Get("from")
+	toStr := r.URL.Query().Get("to")
+	
+	var fromYear, toYear int
+	if yearStr != "" {
+		if y, err := strconv.Atoi(yearStr); err == nil {
+			fromYear = y
+			toYear = y
+		}
+	} else {
+		// Default to all years if no filter
+		fromYear = 1900
+		toYear = 2100
+		if fromStr != "" {
+			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
+				fromYear = t.Year()
+			}
+		}
+		if toStr != "" {
+			if t, err := time.Parse("2006-01-02", toStr); err == nil {
+				toYear = t.Year()
+			}
+		}
+	}
+	
 	narrative := DeforestationNarrative{
 		ParkID:   internalID,
 		ParkName: parkName,
 	}
 	
-	// Query deforestation events
+	// Query deforestation events with time filter
 	rows, err := s.DB.Query(`
 		SELECT year, area_km2, pattern_type, lat, lon, description
 		FROM deforestation_events
-		WHERE park_id = ?
+		WHERE park_id = ? AND year >= ? AND year <= ?
 		ORDER BY year ASC
-	`, internalID)
+	`, internalID, fromYear, toYear)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
