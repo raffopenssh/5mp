@@ -324,58 +324,69 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 	
-	// Parse time filter parameters
+	// Parse time filter parameters - support multi-year ranges
 	yearStr := r.URL.Query().Get("year")
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
 	
-	var filterYear int
+	var fromYear, toYear int
+	now := time.Now()
+	
 	if yearStr != "" {
 		if y, err := strconv.Atoi(yearStr); err == nil {
-			filterYear = y
+			fromYear = y
+			toYear = y
 		}
-	} else if fromStr != "" {
-		if t, err := time.Parse("2006-01-02", fromStr); err == nil {
-			filterYear = t.Year()
+	} else {
+		// Default: all available years
+		fromYear = 2000
+		toYear = now.Year()
+		if fromStr != "" {
+			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
+				fromYear = t.Year()
+			}
 		}
-	} else if toStr != "" {
-		if t, err := time.Parse("2006-01-02", toStr); err == nil {
-			filterYear = t.Year()
+		if toStr != "" {
+			if t, err := time.Parse("2006-01-02", toStr); err == nil {
+				toYear = t.Year()
+			}
 		}
 	}
 	
-	// Get fire data - use specified year or most recent
-	var year int
+	// Get aggregated fire data across year range
 	var totalGroups, stoppedInside, transited int
 	var avgDaysBurning float64
-	var trajJSON sql.NullString
+	var yearCount int
 	
-	var err error
-	if filterYear > 0 {
-		err = s.DB.QueryRow(`
-			SELECT year, total_groups, groups_stopped_inside, groups_transited, avg_days_burning, trajectories_json
-			FROM park_group_infractions 
-			WHERE park_id = ? AND year = ? AND total_groups > 0
-			LIMIT 1
-		`, internalID, filterYear).Scan(&year, &totalGroups, &stoppedInside, &transited, &avgDaysBurning, &trajJSON)
-	} else {
-		err = s.DB.QueryRow(`
-			SELECT year, total_groups, groups_stopped_inside, groups_transited, avg_days_burning, trajectories_json
-			FROM park_group_infractions 
-			WHERE park_id = ? AND total_groups > 0
-			ORDER BY year DESC
-			LIMIT 1
-		`, internalID).Scan(&year, &totalGroups, &stoppedInside, &transited, &avgDaysBurning, &trajJSON)
+	err := s.DB.QueryRow(`
+		SELECT 
+			COUNT(DISTINCT year) as year_count,
+			SUM(total_groups) as total_groups,
+			SUM(groups_stopped_inside) as stopped,
+			SUM(groups_transited) as transited,
+			AVG(avg_days_burning) as avg_days
+		FROM park_group_infractions 
+		WHERE park_id = ? AND year >= ? AND year <= ? AND total_groups > 0
+	`, internalID, fromYear, toYear).Scan(&yearCount, &totalGroups, &stoppedInside, &transited, &avgDaysBurning)
+	
+	// Use toYear as the "display year" for single-year or latest in range
+	displayYear := toYear
+	if fromYear == toYear {
+		displayYear = fromYear
 	}
 	
 	narrative := FireNarrative{
 		ParkID:   internalID,
 		ParkName: parkName,
-		Year:     year,
+		Year:     displayYear,
 	}
 	
 	if err == sql.ErrNoRows || totalGroups == 0 {
-		narrative.Summary = fmt.Sprintf("No significant fire group incursions recorded for %s.", parkName)
+		periodDesc := fmt.Sprintf("%d", fromYear)
+		if fromYear != toYear {
+			periodDesc = fmt.Sprintf("%d-%d", fromYear, toYear)
+		}
+		narrative.Summary = fmt.Sprintf("No significant fire group incursions recorded for %s in %s.", parkName, periodDesc)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(narrative)
 		return
@@ -390,23 +401,27 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		narrative.ResponseRate = float64(stoppedInside) / float64(totalGroups) * 100
 	}
 	
-	// Get total fire count for this year
+	// Get total fire count for the year range
 	var totalFires int
 	s.DB.QueryRow(`
 		SELECT COUNT(*) FROM fire_detections 
-		WHERE protected_area_id = ? AND strftime('%Y', acq_date) = ?
-	`, internalID, fmt.Sprintf("%d", year)).Scan(&totalFires)
+		WHERE protected_area_id = ? 
+		  AND CAST(strftime('%Y', acq_date) AS INTEGER) >= ? 
+		  AND CAST(strftime('%Y', acq_date) AS INTEGER) <= ?
+	`, internalID, fromYear, toYear).Scan(&totalFires)
 	narrative.TotalFires = totalFires
 	
-	// Get peak month
+	// Get peak month across the range
 	var peakMonth string
 	var peakCount int
 	s.DB.QueryRow(`
 		SELECT strftime('%m', acq_date) as month, COUNT(*) as cnt
 		FROM fire_detections 
-		WHERE protected_area_id = ? AND strftime('%Y', acq_date) = ?
+		WHERE protected_area_id = ? 
+		  AND CAST(strftime('%Y', acq_date) AS INTEGER) >= ?
+		  AND CAST(strftime('%Y', acq_date) AS INTEGER) <= ?
 		GROUP BY month ORDER BY cnt DESC LIMIT 1
-	`, internalID, fmt.Sprintf("%d", year)).Scan(&peakMonth, &peakCount)
+	`, internalID, fromYear, toYear).Scan(&peakMonth, &peakCount)
 	monthNames := map[string]string{
 		"01": "January", "02": "February", "03": "March", "04": "April",
 		"05": "May", "06": "June", "07": "July", "08": "August",
@@ -416,8 +431,17 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 	
 	// Build enhanced summary
 	var summaryParts []string
-	summaryParts = append(summaryParts, fmt.Sprintf("In %d, %s experienced %d fire detections across %d distinct fire groups.", 
-		year, parkName, totalFires, totalGroups))
+	periodDesc := fmt.Sprintf("%d", fromYear)
+	if fromYear != toYear {
+		periodDesc = fmt.Sprintf("%d-%d", fromYear, toYear)
+	}
+	if yearCount > 1 {
+		summaryParts = append(summaryParts, fmt.Sprintf("From %s, %s experienced %d fire detections across %d fire groups over %d years.",
+			periodDesc, parkName, totalFires, totalGroups, yearCount))
+	} else {
+		summaryParts = append(summaryParts, fmt.Sprintf("In %s, %s experienced %d fire detections across %d distinct fire groups.",
+			periodDesc, parkName, totalFires, totalGroups))
+	}
 	if stoppedInside > 0 {
 		summaryParts = append(summaryParts, fmt.Sprintf("%d group(s) (%.0f%%) were stopped inside the park, suggesting effective ranger intervention.", 
 			stoppedInside, narrative.ResponseRate))
@@ -432,6 +456,14 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		summaryParts = append(summaryParts, fmt.Sprintf("Fire groups burned inside the park for an average of %.1f days.", avgDaysBurning))
 	}
 	narrative.Summary = strings.Join(summaryParts, " ")
+	
+	// Query trajectories from the most recent year in range for detailed stories
+	var trajJSON sql.NullString
+	s.DB.QueryRow(`
+		SELECT trajectories_json FROM park_group_infractions 
+		WHERE park_id = ? AND year >= ? AND year <= ? AND trajectories_json IS NOT NULL
+		ORDER BY year DESC LIMIT 1
+	`, internalID, fromYear, toYear).Scan(&trajJSON)
 	
 	// Parse trajectories and build detailed stories
 	if trajJSON.Valid && trajJSON.String != "" {
@@ -516,10 +548,10 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 	}
 	
 	// Generate hotspot analysis from fire_detections (works without trajectory JSON)
-	narrative.Hotspots = s.analyzeFireHotspots(internalID, year, totalFires)
+	narrative.Hotspots = s.analyzeFireHotspots(internalID, displayYear, totalFires)
 	
 	// Generate multi-year trend analysis
-	narrative.Trend = s.analyzeFireTrend(internalID, year)
+	narrative.Trend = s.analyzeFireTrend(internalID, displayYear)
 	
 	// If no trajectory-based narratives, generate hotspot-based narratives
 	if len(narrative.Narratives) == 0 && len(narrative.Hotspots) > 0 {
