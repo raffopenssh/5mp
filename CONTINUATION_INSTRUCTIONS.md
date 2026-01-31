@@ -201,3 +201,30 @@ sqlite3 db.sqlite3.new "PRAGMA integrity_check;"
 | NGO Managers | Regional focus, funding allocation, intervention priorities |
 | Park Rangers | Patrol planning, fire response, threat assessment |
 | Researchers | Data export, trend analysis, publication support |
+
+---
+
+## Latest Updates (2026-01-31 Session 2)
+
+### Time-Filtered Narratives ✓
+- Fire and deforestation narratives now accept `year`, `from`, `to` parameters
+- UI popup data syncs with time slider selection
+- Example: `/api/parks/COD_Virunga/fire-narrative?year=2020` returns 2020 data
+
+### Patrol Upload Tested ✓
+- GPX upload working with authenticated user
+- Test credentials: test@example.com / testpass123
+- Patrol data stored in effort_data table (135 records, 1558 km)
+- Patrol intensity visible on map when time range includes 2024
+
+### API Parameter Reference
+```bash
+# Fire narrative with year filter
+curl "http://localhost:8000/api/parks/COD_Virunga/fire-narrative?pwd=ngi2026&year=2020"
+
+# Deforestation with date range
+curl "http://localhost:8000/api/parks/COD_Virunga/deforestation-narrative?pwd=ngi2026&from=2015-01-01&to=2020-12-31"
+
+# Grid effort data (for map)
+curl "http://localhost:8000/api/grid?pwd=ngi2026&year=2024"
+```
