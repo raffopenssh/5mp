@@ -735,6 +735,15 @@
         </div>
     </div>
 
+    <!-- Share Button -->
+    <button class="info-btn" style="right: 45px;" onclick="shareCurrentView()" title="Share this view">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+            <polyline points="16 6 12 2 8 6"></polyline>
+            <line x1="12" y1="2" x2="12" y2="15"></line>
+        </svg>
+    </button>
+    
     <!-- Info Button (5MP Manifest) -->
     <button class="info-btn" onclick="showModal('manifest')" title="About 5MP">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1183,6 +1192,12 @@
 
             
             map.on('click', 'grid-cells', function(e) {
+                // Check if there's a PA under the grid cell - if so, let PA click handler win
+                const paFeatures = map.queryRenderedFeatures(e.point, { layers: ['areas-fill'] });
+                if (paFeatures.length > 0) {
+                    return; // Let PA click through
+                }
+                
                 e.originalEvent.stopPropagation();
                 if (e.features.length > 0) {
                     const props = e.features[0].properties;
@@ -1203,8 +1218,15 @@
             });
 
             
-            // Click handler for clusters - zoom in to expand
+            // Click handler for clusters - zoom in to expand, but let PA clicks through
             map.on('click', 'grid-clusters', function(e) {
+                // Check if there's a PA under the cluster - if so, let PA click handler win
+                const paFeatures = map.queryRenderedFeatures(e.point, { layers: ['areas-fill'] });
+                if (paFeatures.length > 0) {
+                    // Don't handle cluster click - let PA click through
+                    return;
+                }
+                
                 e.originalEvent.stopPropagation();
                 const features = map.queryRenderedFeatures(e.point, { layers: ['grid-clusters'] });
                 if (features.length > 0) {
@@ -3734,5 +3756,114 @@
         var el = document.getElementById('page-views-footer');
         if (el) el.textContent = (views >= 1000 ? views.toLocaleString() : views) + ' views';
     })();
+    
+    // Share current view - creates URL with state parameters
+    function shareCurrentView() {
+        const params = new URLSearchParams();
+        
+        // Add password if present
+        const pwd = new URLSearchParams(window.location.search).get('pwd');
+        if (pwd) params.set('pwd', pwd);
+        
+        // Add map center and zoom
+        if (typeof map !== 'undefined') {
+            const center = map.getCenter();
+            params.set('lat', center.lat.toFixed(4));
+            params.set('lng', center.lng.toFixed(4));
+            params.set('z', map.getZoom().toFixed(1));
+        }
+        
+        // Add time range
+        if (dateFrom) params.set('from', dateFrom);
+        if (dateTo) params.set('to', dateTo);
+        
+        // Add selected PA if any
+        if (typeof selectedPAId !== 'undefined' && selectedPAId) {
+            params.set('pa', selectedPAId);
+        }
+        
+        // Add country filter if not "all"
+        const countrySelect = document.getElementById('country-filter');
+        if (countrySelect && countrySelect.value && countrySelect.value !== '') {
+            params.set('country', countrySelect.value);
+        }
+        
+        // Add movement type filters
+        const activeTypes = [];
+        document.querySelectorAll('.movement-toggle.active').forEach(el => {
+            activeTypes.push(el.textContent.trim().toLowerCase());
+        });
+        if (activeTypes.length > 0 && activeTypes.length < 3) {
+            params.set('types', activeTypes.join(','));
+        }
+        
+        const url = window.location.origin + window.location.pathname + '?' + params.toString();
+        
+        // Copy to clipboard
+        navigator.clipboard.writeText(url).then(() => {
+            showToast('Link copied to clipboard!');
+        }).catch(() => {
+            // Fallback for older browsers
+            prompt('Copy this link:', url);
+        });
+    }
+    
+    // Restore state from URL parameters on load
+    function restoreStateFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        
+        // Restore map position
+        const lat = parseFloat(params.get('lat'));
+        const lng = parseFloat(params.get('lng'));
+        const zoom = parseFloat(params.get('z'));
+        if (!isNaN(lat) && !isNaN(lng) && typeof map !== 'undefined') {
+            map.setCenter([lng, lat]);
+            if (!isNaN(zoom)) map.setZoom(zoom);
+        }
+        
+        // Restore time range
+        const from = params.get('from');
+        const to = params.get('to');
+        if (from && to && typeof setTimeSliderRange === 'function') {
+            setTimeSliderRange(from, to);
+        }
+        
+        // Restore country filter
+        const country = params.get('country');
+        if (country) {
+            const countrySelect = document.getElementById('country-filter');
+            if (countrySelect) {
+                countrySelect.value = country;
+                countrySelect.dispatchEvent(new Event('change'));
+            }
+        }
+        
+        // Restore PA selection
+        const paId = params.get('pa');
+        if (paId && typeof selectSearchResult === 'function') {
+            setTimeout(() => selectSearchResult({id: paId, loaded: true}), 1000);
+        }
+        
+        // Restore movement types
+        const types = params.get('types');
+        if (types) {
+            const activeTypes = types.split(',');
+            document.querySelectorAll('.movement-toggle').forEach(el => {
+                const type = el.textContent.trim().toLowerCase();
+                if (activeTypes.includes(type)) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+        }
+    }
+    
+    // Initialize state restoration when map is ready
+    if (typeof map !== 'undefined') {
+        map.on('load', restoreStateFromURL);
+    } else {
+        setTimeout(restoreStateFromURL, 2000);
+    }
     </script>
 </body></html>
