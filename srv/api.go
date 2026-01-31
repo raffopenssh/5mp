@@ -380,7 +380,11 @@ func (s *Server) HandleAPIRegister(w http.ResponseWriter, r *http.Request) {
 // HandleAPILogout handles JSON logout requests.
 func (s *Server) HandleAPILogout(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie(auth.SessionCookieName); err == nil {
-		s.Auth.Logout(r.Context(), cookie.Value)
+		if err := s.Auth.Logout(r.Context(), cookie.Value); err != nil {
+			// Session deletion failed, but we still clear the cookie
+			// The error is already logged by Auth.Logout
+			slog.Warn("API logout session deletion failed, continuing with cookie clear")
+		}
 	}
 	auth.ClearSessionCookie(w)
 	w.Header().Set("Content-Type", "application/json")

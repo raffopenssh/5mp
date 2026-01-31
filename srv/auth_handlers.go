@@ -65,7 +65,11 @@ func (s *Server) HandleLogin(w http.ResponseWriter, r *http.Request) {
 // HandleLogout clears the session and redirects to login.
 func (s *Server) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie(auth.SessionCookieName); err == nil {
-		s.Auth.Logout(r.Context(), cookie.Value)
+		if err := s.Auth.Logout(r.Context(), cookie.Value); err != nil {
+			// Session deletion failed, but we still clear the cookie
+			// The error is already logged by Auth.Logout
+			slog.Warn("logout session deletion failed, continuing with cookie clear")
+		}
 	}
 	auth.ClearSessionCookie(w)
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
