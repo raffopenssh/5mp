@@ -453,12 +453,89 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Get conservation summary data
+	var totalFires, prevFires int
+	var totalDeforestation, prevDeforestation float64
+	var totalSettlements int
+
+	// Fire detections in selected time period
+	if fromStr != "" && toStr != "" {
+		s.DB.QueryRow(`
+			SELECT COUNT(*) FROM fire_detections 
+			WHERE acq_date >= ? AND acq_date <= ?
+		`, fromStr, toStr).Scan(&totalFires)
+
+		// Get previous period fires for trend calculation
+		fromTime, _ := time.Parse("2006-01-02", fromStr)
+		toTime, _ := time.Parse("2006-01-02", toStr)
+		duration := toTime.Sub(fromTime)
+		prevFrom := fromTime.Add(-duration).Format("2006-01-02")
+		prevTo := fromTime.Add(-24 * time.Hour).Format("2006-01-02")
+		s.DB.QueryRow(`
+			SELECT COUNT(*) FROM fire_detections 
+			WHERE acq_date >= ? AND acq_date <= ?
+		`, prevFrom, prevTo).Scan(&prevFires)
+	} else {
+		// Default: current year
+		s.DB.QueryRow(`
+			SELECT COUNT(*) FROM fire_detections 
+			WHERE CAST(strftime('%Y', acq_date) AS INTEGER) = ?
+		`, now.Year()).Scan(&totalFires)
+		// Previous year for trend
+		s.DB.QueryRow(`
+			SELECT COUNT(*) FROM fire_detections 
+			WHERE CAST(strftime('%Y', acq_date) AS INTEGER) = ?
+		`, now.Year()-1).Scan(&prevFires)
+	}
+
+	// Deforestation totals in selected years
+	s.DB.QueryRow(`
+		SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
+		WHERE year >= ? AND year <= ?
+	`, fromYear, toYear).Scan(&totalDeforestation)
+
+	// Previous period deforestation for trend
+	yearSpan := toYear - fromYear + 1
+	s.DB.QueryRow(`
+		SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
+		WHERE year >= ? AND year < ?
+	`, fromYear-yearSpan, fromYear).Scan(&prevDeforestation)
+
+	// Total settlements across all parks
+	s.DB.QueryRow(`SELECT COUNT(*) FROM park_settlements`).Scan(&totalSettlements)
+
+	// Calculate trends
+	fireTrend := "stable"
+	if prevFires > 0 {
+		change := float64(totalFires-prevFires) / float64(prevFires) * 100
+		if change > 10 {
+			fireTrend = "up"
+		} else if change < -10 {
+			fireTrend = "down"
+		}
+	}
+
+	deforestTrend := "stable"
+	if prevDeforestation > 0 {
+		change := (totalDeforestation - prevDeforestation) / prevDeforestation * 100
+		if change > 10 {
+			deforestTrend = "worsening"
+		} else if change < -10 {
+			deforestTrend = "improving"
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "public, max-age=30")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"active_pixels":     activePixels,
-		"total_distance_km": totalDistanceKm,
-		"total_patrols":     totalUploads,
+		"active_pixels":       activePixels,
+		"total_distance_km":   totalDistanceKm,
+		"total_patrols":       totalUploads,
+		"total_fires":         totalFires,
+		"fire_trend":          fireTrend,
+		"total_deforestation": totalDeforestation,
+		"deforest_trend":      deforestTrend,
+		"total_settlements":   totalSettlements,
 	})
 }
 
