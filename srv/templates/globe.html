@@ -2600,26 +2600,29 @@
                 }
                 const resp = await fetch(url);
                 const data = await resp.json();
-                if (data.status === 'complete' && data.total_area_km2 > 0) {
+                const totalLoss = data.total_loss_km2 || data.total_area_km2 || 0;
+                const yearsCount = data.yearly_stories?.length || data.years_analyzed || 0;
+                if (totalLoss > 0) {
                     el.innerHTML = `
                         <div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Total forest loss</span>
-                            <span class="pa-popup-mini-stat-value">${data.total_area_km2.toFixed(2)} km²</span>
+                            <span class="pa-popup-mini-stat-value">${totalLoss.toFixed(2)} km²</span>
                         </div>
                         <div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Years analyzed</span>
-                            <span class="pa-popup-mini-stat-value">${data.years_analyzed || '--'}</span>
+                            <span class="pa-popup-mini-stat-value">${yearsCount}</span>
                         </div>
                         ${data.worst_year ? `<div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Worst year</span>
-                            <span class="pa-popup-mini-stat-value">${data.worst_year} (${data.worst_year_km2?.toFixed(2)} km²)</span>
+                            <span class="pa-popup-mini-stat-value">${data.worst_year}</span>
                         </div>` : ''}
-                        ${data.recent_trend ? `<div style="margin-top: 8px; font-size: 10px; color: #888;">${data.recent_trend}</div>` : ''}
+                        ${data.trend_direction ? `<div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Trend</span>
+                            <span class="pa-popup-mini-stat-value ${data.trend_direction === 'improving' ? 'good' : data.trend_direction === 'worsening' ? 'bad' : ''}">${data.trend_direction}</span>
+                        </div>` : ''}
                     `;
-                } else if (data.status === 'complete') {
-                    el.innerHTML = '<div class="pa-popup-section-empty">No deforestation detected</div>';
                 } else {
-                    el.innerHTML = '<div class="pa-popup-section-empty">Deforestation data pending</div>';
+                    el.innerHTML = '<div class="pa-popup-section-empty">No deforestation detected</div>';
                 }
             } catch (e) {
                 el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
