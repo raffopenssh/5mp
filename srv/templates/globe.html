@@ -3516,8 +3516,9 @@
         const SLIDER_END_DATE = new Date(); // Today
         const TOTAL_MONTHS = monthsBetween(SLIDER_START_DATE, SLIDER_END_DATE);
         
-        let sliderStartValue = TOTAL_MONTHS - 12; // Default: last 12 months
-        let sliderEndValue = TOTAL_MONTHS;
+        // Default: Jan 2023 to today (36 months from Jan 2020 = Jan 2023)
+        let sliderStartValue = 36; // Jan 2023
+        let sliderEndValue = TOTAL_MONTHS; // Today
         
         function monthsBetween(d1, d2) {
             return (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
