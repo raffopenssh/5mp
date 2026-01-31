@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -24,6 +25,8 @@ var (
 	ErrInvalidCredentials = errors.New("invalid email or password")
 	ErrUserNotApproved    = errors.New("account pending approval")
 	ErrUserExists         = errors.New("user already exists")
+	ErrInvalidSession     = errors.New("invalid or expired session")
+	ErrSessionStorage     = errors.New("session storage error")
 )
 
 // User represents an authenticated user.
@@ -59,13 +62,27 @@ func CheckPassword(password, hash string) bool {
 	return err == nil
 }
 
+// SessionIDLength is the expected length of a session ID in bytes (before hex encoding).
+const SessionIDLength = 32
+
 // generateSessionID creates a random session ID.
 func generateSessionID() (string, error) {
-	b := make([]byte, 32)
+	b := make([]byte, SessionIDLength)
 	if _, err := rand.Read(b); err != nil {
+		slog.Error("failed to generate session ID", "error", err)
 		return "", err
 	}
 	return hex.EncodeToString(b), nil
+}
+
+// isValidSessionID checks if a session ID has the expected format.
+// This provides early validation before hitting the database.
+func isValidSessionID(sessionID string) bool {
+	if len(sessionID) != SessionIDLength*2 { // hex encoding doubles the length
+		return false
+	}
+	_, err := hex.DecodeString(sessionID)
+	return err == nil
 }
 
 // generateUserID creates a random user ID.
@@ -124,6 +141,9 @@ func (m *Manager) Login(ctx context.Context, email, password string) (string, *U
 
 	user, err := q.GetUserByEmail(ctx, email)
 	if err != nil {
+		if err != sql.ErrNoRows {
+			slog.Error("database error during login", "email", email, "error", err)
+		}
 		return "", nil, ErrInvalidCredentials
 	}
 
@@ -138,7 +158,8 @@ func (m *Manager) Login(ctx context.Context, email, password string) (string, *U
 	// Create session
 	sessionID, err := generateSessionID()
 	if err != nil {
-		return "", nil, err
+		slog.Error("failed to generate session ID during login", "user_id", user.ID, "error", err)
+		return "", nil, ErrSessionStorage
 	}
 
 	now := time.Now()
@@ -149,9 +170,11 @@ func (m *Manager) Login(ctx context.Context, email, password string) (string, *U
 		ExpiresAt: now.Add(SessionDuration),
 	})
 	if err != nil {
-		return "", nil, err
+		slog.Error("failed to create session", "user_id", user.ID, "error", err)
+		return "", nil, ErrSessionStorage
 	}
 
+	slog.Info("user logged in", "user_id", user.ID, "email", user.Email)
 	return sessionID, &User{
 		ID:    user.ID,
 		Email: user.Email,
@@ -161,18 +184,43 @@ func (m *Manager) Login(ctx context.Context, email, password string) (string, *U
 }
 
 // Logout invalidates a session.
+// Returns nil if the session was deleted or didn't exist.
+// Returns an error only if there was a database problem.
 func (m *Manager) Logout(ctx context.Context, sessionID string) error {
+	if !isValidSessionID(sessionID) {
+		// Invalid session ID format - nothing to delete
+		return nil
+	}
+
 	q := dbgen.New(m.db)
-	return q.DeleteSession(ctx, sessionID)
+	err := q.DeleteSession(ctx, sessionID)
+	if err != nil {
+		slog.Error("failed to delete session during logout", "error", err)
+		return err
+	}
+	return nil
 }
 
 // GetUserFromSession retrieves the user for a session ID.
+// Returns ErrInvalidSession if the session doesn't exist or is expired.
+// Returns ErrSessionStorage if there was a database error.
 func (m *Manager) GetUserFromSession(ctx context.Context, sessionID string) (*User, error) {
+	// Validate session ID format before hitting the database
+	if !isValidSessionID(sessionID) {
+		return nil, ErrInvalidSession
+	}
+
 	q := dbgen.New(m.db)
 
 	sess, err := q.GetSession(ctx, sessionID)
 	if err != nil {
-		return nil, err
+		if err == sql.ErrNoRows {
+			// Session not found or expired - this is expected behavior
+			return nil, ErrInvalidSession
+		}
+		// Unexpected database error - log it
+		slog.Error("database error retrieving session", "error", err)
+		return nil, ErrSessionStorage
 	}
 
 	return &User{
@@ -184,14 +232,19 @@ func (m *Manager) GetUserFromSession(ctx context.Context, sessionID string) (*Us
 }
 
 // GetUserFromRequest extracts the user from request cookies.
+// Returns nil if no valid session is found.
+// Database errors are logged but still return nil (graceful degradation).
 func (m *Manager) GetUserFromRequest(r *http.Request) *User {
 	cookie, err := r.Cookie(SessionCookieName)
 	if err != nil {
+		// No session cookie - expected for unauthenticated users
 		return nil
 	}
 
 	user, err := m.GetUserFromSession(r.Context(), cookie.Value)
 	if err != nil {
+		// ErrInvalidSession is expected for expired/invalid sessions
+		// ErrSessionStorage is already logged by GetUserFromSession
 		return nil
 	}
 
@@ -225,7 +278,14 @@ func ClearSessionCookie(w http.ResponseWriter) {
 }
 
 // CleanupExpiredSessions removes expired sessions from the database.
+// This should be called periodically (e.g., via a background goroutine).
 func (m *Manager) CleanupExpiredSessions(ctx context.Context) error {
 	q := dbgen.New(m.db)
-	return q.DeleteExpiredSessions(ctx)
+	err := q.DeleteExpiredSessions(ctx)
+	if err != nil {
+		slog.Error("failed to cleanup expired sessions", "error", err)
+		return err
+	}
+	slog.Debug("cleaned up expired sessions")
+	return nil
 }
