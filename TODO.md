@@ -8,11 +8,11 @@
 ## HIGH PRIORITY (Core functionality)
 
 - [x] ~~**P1: Share link icon**~~ - Done
-- [ ] **P1: Share link state** - URL should encode all state (filters, searches, selected parks, view)
+- [x] ~~**P1: Share link state**~~ - Done: URL encodes lat/lng/zoom, time range, bbox, parks, country, movement types, popup
 - [x] ~~**P1: Combine searches**~~ - Done: unified search for parks/countries/regions
 - [x] ~~**P1: Search autocomplete**~~ - Done
 - [x] ~~**P1: Search sets filter**~~ - Done: country selection sets filter
-- [ ] **P1: Stats card adaptation** - Stats should adapt to current map area and bounding box, not just time slider
+- [x] ~~**P1: Stats card adaptation**~~ - Done: Stats update based on visible map bounds when zoom > 4
 
 ## MEDIUM PRIORITY (UX improvements)
 
@@ -48,7 +48,7 @@ GPX test files in `data/` directory:
 - [x] Firefox 146 - tooltips work  
 - [x] DuckDuckGo Android - tooltips work
 - [x] Chrome - tooltips work
-- [ ] Share link preserves state
+- [x] Share link preserves state
 - [x] ~~Login/logout flow works~~ - Hidden
 - [x] Search finds parks and countries
 - [ ] CSV download works

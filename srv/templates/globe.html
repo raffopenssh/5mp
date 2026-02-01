@@ -1262,6 +1262,18 @@
             map.on('mouseenter', 'grid-clusters', function() { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', 'grid-clusters', function() { map.getCanvas().style.cursor = ''; });
 
+            // Update stats when map view changes (debounced)
+            let statsUpdateTimeout = null;
+            map.on('moveend', function() {
+                // Only update stats based on visible area if no explicit bbox is set
+                if (!currentBbox) {
+                    if (statsUpdateTimeout) clearTimeout(statsUpdateTimeout);
+                    statsUpdateTimeout = setTimeout(function() {
+                        loadStats();
+                    }, 500);
+                }
+            });
+
             // Note: Legend is now in HTML, not dynamically created (removed duplicate)
         });
 
@@ -1580,7 +1592,23 @@
                 var params = [];
                 if (dateFrom) params.push('from=' + dateFrom);
                 if (dateTo) params.push('to=' + dateTo);
-                if (currentBbox) params.push('bbox=' + currentBbox.join(','));
+                
+                // Use explicit bbox if set, otherwise use visible map bounds
+                var bboxToUse = currentBbox;
+                if (!bboxToUse && typeof map !== 'undefined' && map.loaded()) {
+                    var bounds = map.getBounds();
+                    // Only use map bounds if zoomed in enough (zoom > 4)
+                    if (map.getZoom() > 4) {
+                        bboxToUse = [
+                            bounds.getWest(),
+                            bounds.getSouth(),
+                            bounds.getEast(),
+                            bounds.getNorth()
+                        ];
+                    }
+                }
+                if (bboxToUse) params.push('bbox=' + bboxToUse.join(','));
+                
                 // Add movement type filter
                 var types = getActiveMovementTypes();
                 if (types.length < 3 && types.length > 0) {
@@ -4251,24 +4279,41 @@
         if (dateFrom) params.set('from', dateFrom);
         if (dateTo) params.set('to', dateTo);
         
-        // Add selected PA if any
-        if (typeof selectedPAId !== 'undefined' && selectedPAId) {
-            params.set('pa', selectedPAId);
+        // Add bounding box if set
+        if (currentBbox && currentBbox.length === 4) {
+            params.set('bbox', currentBbox.map(v => v.toFixed(4)).join(','));
         }
         
-        // Add country filter if not "all"
-        const countrySelect = document.getElementById('country-filter');
-        if (countrySelect && countrySelect.value && countrySelect.value !== '') {
-            params.set('country', countrySelect.value);
+        // Add selected parks (up to 10 to keep URL manageable)
+        if (selectedPAIds && selectedPAIds.size > 0) {
+            const paIds = Array.from(selectedPAIds).slice(0, 10);
+            params.set('parks', paIds.join(','));
         }
         
-        // Add movement type filters
+        // Add country filter
+        if (currentCountryFilter && currentCountryFilter !== '') {
+            params.set('country', currentCountryFilter);
+        }
+        
+        // Add movement type filters (only if not all selected)
         const activeTypes = [];
         document.querySelectorAll('.movement-toggle.active').forEach(el => {
             activeTypes.push(el.textContent.trim().toLowerCase());
         });
         if (activeTypes.length > 0 && activeTypes.length < 3) {
             params.set('types', activeTypes.join(','));
+        }
+        
+        // Add open popup PA if any
+        if (currentPAPopup && currentPAPopup._lngLat) {
+            // Find the PA at popup location
+            const popupFeatures = map.queryRenderedFeatures(
+                map.project(currentPAPopup._lngLat), 
+                { layers: ['areas-fill'] }
+            );
+            if (popupFeatures.length > 0 && popupFeatures[0].properties.id) {
+                params.set('popup', popupFeatures[0].properties.id);
+            }
         }
         
         const url = window.location.origin + window.location.pathname + '?' + params.toString();
@@ -4302,20 +4347,37 @@
             setTimeSliderRange(from, to);
         }
         
-        // Restore country filter
-        const country = params.get('country');
-        if (country) {
-            const countrySelect = document.getElementById('country-filter');
-            if (countrySelect) {
-                countrySelect.value = country;
-                countrySelect.dispatchEvent(new Event('change'));
+        // Restore bounding box
+        const bbox = params.get('bbox');
+        if (bbox) {
+            const coords = bbox.split(',').map(parseFloat);
+            if (coords.length === 4 && coords.every(c => !isNaN(c))) {
+                currentBbox = coords;
+                // Update bbox UI
+                const bboxFilter = document.getElementById('active-filter-bbox');
+                const activeFilters = document.getElementById('active-filters');
+                if (bboxFilter) bboxFilter.style.display = 'flex';
+                if (activeFilters) activeFilters.style.display = 'block';
+                // Fit map to bbox
+                map.fitBounds([[coords[0], coords[1]], [coords[2], coords[3]]], { padding: 50 });
             }
         }
         
-        // Restore PA selection
-        const paId = params.get('pa');
-        if (paId && typeof selectSearchResult === 'function') {
-            setTimeout(() => selectSearchResult({id: paId, loaded: true}), 1000);
+        // Restore country filter
+        const country = params.get('country');
+        if (country && typeof selectCountry === 'function') {
+            currentCountryFilter = country;
+            selectCountry(country);
+        }
+        
+        // Restore selected parks
+        const parks = params.get('parks');
+        if (parks) {
+            const parkIds = parks.split(',');
+            parkIds.forEach(id => {
+                if (id) selectedPAIds.add(id);
+            });
+            updatePAHighlighting();
         }
         
         // Restore movement types
@@ -4326,11 +4388,38 @@
                 const type = el.textContent.trim().toLowerCase();
                 if (activeTypes.includes(type)) {
                     el.classList.add('active');
+                    movementTypes[type] = true;
                 } else {
                     el.classList.remove('active');
+                    movementTypes[type] = false;
                 }
             });
         }
+        
+        // Restore popup (delayed to ensure data is loaded)
+        const popupPaId = params.get('popup');
+        if (popupPaId) {
+            setTimeout(() => {
+                // Find the PA and show popup
+                const features = map.querySourceFeatures('areas', {
+                    filter: ['==', ['get', 'id'], popupPaId]
+                });
+                if (features.length > 0) {
+                    const props = features[0].properties;
+                    const center = features[0].properties.center;
+                    if (center) {
+                        const coords = JSON.parse(center);
+                        showPAPopup(props, { lng: coords[0], lat: coords[1] });
+                    }
+                }
+            }, 2000);
+        }
+        
+        // Reload data with restored filters
+        setTimeout(() => {
+            reloadGridData();
+            loadStats();
+        }, 500);
     }
     
     // Initialize state restoration when map is ready

@@ -405,6 +405,19 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
 	typeFilter := r.URL.Query().Get("type")
+	bboxStr := r.URL.Query().Get("bbox")
+
+	// Parse bbox if provided (minLng,minLat,maxLng,maxLat)
+	var bbox []float64
+	if bboxStr != "" {
+		parts := strings.Split(bboxStr, ",")
+		if len(parts) == 4 {
+			bbox = make([]float64, 4)
+			for i, p := range parts {
+				bbox[i], _ = strconv.ParseFloat(strings.TrimSpace(p), 64)
+			}
+		}
+	}
 
 	// Default to current year if no dates provided
 	now := time.Now()
@@ -458,12 +471,21 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	var totalDeforestation, prevDeforestation float64
 	var totalSettlements int
 
-	// Fire detections in selected time period
+	// Fire detections in selected time period (with optional bbox filter)
 	if fromStr != "" && toStr != "" {
-		s.DB.QueryRow(`
-			SELECT COUNT(*) FROM fire_detections 
-			WHERE acq_date >= ? AND acq_date <= ?
-		`, fromStr, toStr).Scan(&totalFires)
+		if len(bbox) == 4 {
+			s.DB.QueryRow(`
+				SELECT COUNT(*) FROM fire_detections 
+				WHERE acq_date >= ? AND acq_date <= ?
+				AND longitude >= ? AND longitude <= ?
+				AND latitude >= ? AND latitude <= ?
+			`, fromStr, toStr, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&totalFires)
+		} else {
+			s.DB.QueryRow(`
+				SELECT COUNT(*) FROM fire_detections 
+				WHERE acq_date >= ? AND acq_date <= ?
+			`, fromStr, toStr).Scan(&totalFires)
+		}
 
 		// Get previous period fires for trend calculation
 		fromTime, _ := time.Parse("2006-01-02", fromStr)
@@ -471,10 +493,19 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 		duration := toTime.Sub(fromTime)
 		prevFrom := fromTime.Add(-duration).Format("2006-01-02")
 		prevTo := fromTime.Add(-24 * time.Hour).Format("2006-01-02")
-		s.DB.QueryRow(`
-			SELECT COUNT(*) FROM fire_detections 
-			WHERE acq_date >= ? AND acq_date <= ?
-		`, prevFrom, prevTo).Scan(&prevFires)
+		if len(bbox) == 4 {
+			s.DB.QueryRow(`
+				SELECT COUNT(*) FROM fire_detections 
+				WHERE acq_date >= ? AND acq_date <= ?
+				AND longitude >= ? AND longitude <= ?
+				AND latitude >= ? AND latitude <= ?
+			`, prevFrom, prevTo, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&prevFires)
+		} else {
+			s.DB.QueryRow(`
+				SELECT COUNT(*) FROM fire_detections 
+				WHERE acq_date >= ? AND acq_date <= ?
+			`, prevFrom, prevTo).Scan(&prevFires)
+		}
 	} else {
 		// Default: current year
 		s.DB.QueryRow(`
