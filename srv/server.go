@@ -100,8 +100,8 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /register", s.HandleRegister)
 	
 	// Protected routes (require auth)
-	mux.HandleFunc("GET /upload", s.RequireAuth(s.HandleUploadPage))
-	mux.HandleFunc("POST /upload", s.RequireAuth(s.HandleUpload))
+	mux.HandleFunc("GET /upload", s.HandleUploadPage)
+	mux.HandleFunc("POST /upload", s.HandleUpload)
 	
 	// Admin routes (require admin role)
 	mux.HandleFunc("GET /admin", s.RequireAdmin(s.HandleAdminPage))

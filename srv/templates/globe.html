@@ -2570,32 +2570,84 @@
             const results = document.getElementById('search-results');
             
             if (areas.length === 0) {
-                results.innerHTML = '<div class="search-no-results">No protected areas found</div>';
+                results.innerHTML = '<div class="search-no-results">No results found</div>';
                 return;
             }
             
             results.innerHTML = areas.map(area => {
+                const areaType = area.type || 'pa';
                 const isLoaded = area.loaded !== false;
-                const itemClass = isLoaded ? 'search-result-item' : 'search-result-item unloaded';
-                const badgeClass = isLoaded ? 'loaded-badge loaded' : 'loaded-badge unloaded';
-                const badgeText = isLoaded ? 'loaded' : 'not loaded';
-                return `
-                <div class="${itemClass}" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
-                    <div class="search-result-name">
-                        <span>${escapeHtml(area.name)}</span>
-                        <span class="${badgeClass}">${badgeText}</span>
+                
+                // Different styling for countries vs parks
+                if (areaType === 'country') {
+                    return `
+                    <div class="search-result-item" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
+                        <div class="search-result-name">
+                            <span>🌍 ${escapeHtml(area.name)}</span>
+                            <span class="loaded-badge" style="background: rgba(59,130,246,0.2); color: #3b82f6;">country</span>
+                        </div>
+                        <div class="search-result-country">Click to filter by country</div>
                     </div>
-                    <div class="search-result-country">${escapeHtml(area.country || 'Unknown')}${area.designation ? ' • ' + escapeHtml(area.designation) : ''}</div>
-                </div>
-            `;
+                `;
+                } else if (areaType === 'region') {
+                    return `
+                    <div class="search-result-item" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
+                        <div class="search-result-name">
+                            <span>📍 ${escapeHtml(area.name)}</span>
+                            <span class="loaded-badge" style="background: rgba(168,85,247,0.2); color: #a855f7;">region</span>
+                        </div>
+                        <div class="search-result-country">${escapeHtml(area.country || '')}</div>
+                    </div>
+                `;
+                } else {
+                    const itemClass = isLoaded ? 'search-result-item' : 'search-result-item unloaded';
+                    const badgeClass = isLoaded ? 'loaded-badge loaded' : 'loaded-badge unloaded';
+                    const badgeText = isLoaded ? 'loaded' : 'not loaded';
+                    return `
+                    <div class="${itemClass}" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
+                        <div class="search-result-name">
+                            <span>${escapeHtml(area.name)}</span>
+                            <span class="${badgeClass}">${badgeText}</span>
+                        </div>
+                        <div class="search-result-country">${escapeHtml(area.country || 'Unknown')}${area.designation ? ' • ' + escapeHtml(area.designation) : ''}</div>
+                    </div>
+                `;
+                }
             }).join('');
         }
 
         function selectSearchResult(area) {
             hideSearchResults();
-            document.getElementById('search-input').value = area.name;
+            document.getElementById('search-input').value = '';
             
+            const areaType = area.type || 'pa';
             const isLoaded = area.loaded !== false;
+            
+            // Handle country selection - set as filter
+            if (areaType === 'country') {
+                setCountryFilter(area.name, area.code);
+                // Fly to country bounds
+                if (area.bbox && area.bbox.length === 4) {
+                    map.fitBounds([
+                        [area.bbox[0], area.bbox[1]], 
+                        [area.bbox[2], area.bbox[3]]  
+                    ], { padding: 50, duration: 1500 });
+                }
+                closePanel('search');
+                return;
+            }
+            
+            // Handle region selection - set bbox filter
+            if (areaType === 'region') {
+                if (area.bbox && area.bbox.length === 4) {
+                    map.fitBounds([
+                        [area.bbox[0], area.bbox[1]], 
+                        [area.bbox[2], area.bbox[3]]  
+                    ], { padding: 50, duration: 1500 });
+                }
+                closePanel('search');
+                return;
+            }
             
             // Fly to the area (if we have coordinates)
             let targetCenter = null;
@@ -2620,6 +2672,27 @@
             } else if (!isLoaded) {
                 // Show "not loaded" popup for unloaded PAs
                 showUnloadedPAPopup(area, targetCenter);
+            }
+            closePanel('search');
+        }
+        
+        // Set country filter from search
+        function setCountryFilter(countryName, countryCode) {
+            const input = document.getElementById('country-search');
+            if (input) input.value = countryName;
+            
+            // Update country selected display
+            const selectedDiv = document.getElementById('country-selected');
+            const selectedName = document.getElementById('country-selected-name');
+            if (selectedDiv && selectedName) {
+                selectedName.textContent = countryName;
+                selectedDiv.style.display = 'flex';
+                input.style.display = 'none';
+            }
+            
+            // Trigger filter update
+            if (typeof filterByCountry === 'function') {
+                filterByCountry(countryName);
             }
         }
         

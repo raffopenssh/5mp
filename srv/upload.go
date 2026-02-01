@@ -48,20 +48,16 @@ type uploadPageData struct {
 }
 
 // HandleUpload handles POST requests for GPX file uploads.
-// Requires authentication via session cookie.
+// Allows anonymous uploads (uses anonymous user if not authenticated).
 func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
-	// Get user from session (middleware already verified auth)
+	// Get user from session (optional - allow anonymous uploads)
 	user := s.Auth.GetUserFromRequest(r)
-	if user == nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(UploadResponse{
-			Error: "authentication required",
-		})
-		return
+	var userID string = "anonymous"
+	var userEmail string = "anonymous"
+	if user != nil {
+		userID = user.ID
+		userEmail = user.Email
 	}
-	userID := user.ID
-	userEmail := user.Email
 
 	// Limit request body size
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
