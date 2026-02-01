@@ -3055,10 +3055,14 @@
                         return `${Math.round(m2).toLocaleString()} m²`;
                     };
                     
-                    // Format settlement as one sentence
+                    // Format settlement with place-based location
                     const formatSettlement = (s) => {
-                        const location = s.direction ? `${s.direction} sector` : `${s.lat.toFixed(2)}°, ${s.lon.toFixed(2)}°`;
-                        return `<div style="font-size: 10px; color: #bbb; margin-bottom: 4px;">• ${s.name} at ${location} with ${formatArea(s.area_m2)} built-up area.</div>`;
+                        let location = '';
+                        if (s.direction && s.nearest_boundary_km && s.nearest_boundary_km < 50) {
+                            location = ` (${s.nearest_boundary_km.toFixed(1)} km ${s.direction})`;
+                        }
+                        const name = s.name && s.name !== 'Unnamed settlement' ? s.name : `${s.lat.toFixed(3)}°, ${s.lon.toFixed(3)}°`;
+                        return `<div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px;">${formatArea(s.area_m2)} near ${name}${location}</div>`;
                     };
                     
                     // Get settlements - show top 10 initially
@@ -3077,6 +3081,8 @@
                             <span class="pa-popup-mini-stat-label">Human-wildlife conflict risk</span>
                             <span class="pa-popup-mini-stat-value${riskClass}">${riskIcon} ${data.conflict_risk || 'unknown'}</span>
                         </div>
+                        
+                        ${data.summary ? `<div style="margin-top: 8px; font-size: 10px; color: #aaa; line-height: 1.4;">${data.summary.split('\n\n')[0]}</div>` : ''}
                         
                         ${initial.length > 0 ? `
                         <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
@@ -3122,7 +3128,7 @@
             
             const moreHtml = remainingStories.map(y => `
                 <div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px;">
-                    <span style="color: #f59e0b; font-weight: 500;">${y.year}:</span> ${y.area_km2.toFixed(2)} km² lost${y.nearby_places && y.nearby_places.length > 0 ? ` near ${y.nearby_places[0]}` : ''}
+                    ${y.narrative ? y.narrative : `<span style="color: #f59e0b; font-weight: 500;">${y.year}:</span> ${y.area_km2.toFixed(2)} km² lost${y.nearby_places && y.nearby_places.length > 0 ? ` near ${y.nearby_places[0]}` : ''}`}
                 </div>
             `).join('');
             
@@ -3180,11 +3186,11 @@
                         
                         ${yearlyStories.length > 0 ? `
                         <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-                            <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Deforestation by year:</div>
+                            <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Deforestation events (${yearlyStories.length} years):</div>
                             <div id="deforest-stories-${paId}">
                                 ${yearlyStories.slice(0, 10).map(y => `
                                     <div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px;">
-                                        <span style="color: #f59e0b; font-weight: 500;">${y.year}:</span> ${y.area_km2.toFixed(2)} km² lost${y.nearby_places && y.nearby_places.length > 0 ? ` near ${y.nearby_places[0]}` : ''}
+                                        ${y.narrative ? y.narrative : `<span style="color: #f59e0b; font-weight: 500;">${y.year}:</span> ${y.area_km2.toFixed(2)} km² lost${y.nearby_places && y.nearby_places.length > 0 ? ` near ${y.nearby_places[0]}` : ''}`}
                                     </div>
                                 `).join('')}
                             </div>
