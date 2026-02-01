@@ -893,14 +893,14 @@
                     <li style="margin-bottom: 6px;">Response metrics: groups stopped inside (possible ranger contact) vs transited through</li>
                 </ul>
 
-                <h4 style="color: #888; margin: 16px 0 8px; font-size: 14px;">▸ Roadless Areas <span style="font-size: 11px; background: #333; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">coming soon</span></h4>
+                <h4 style="color: #888; margin: 16px 0 8px; font-size: 14px;">▸ Roadless Areas</h4>
                 <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px; color: #888;">
                     <li style="margin-bottom: 6px;">OpenStreetMap road data</li>
-                    <li style="margin-bottom: 6px;">Roadless = area >1 km from any road</li>
+                    <li style="margin-bottom: 6px;">Roadless = area >15 km from any road</li>
                     <li style="margin-bottom: 6px;">Based on: "A global map of roadless areas and their conservation status" (Science, 2016)</li>
                 </ul>
 
-                <h4 style="color: #888; margin: 16px 0 8px; font-size: 14px;">▸ Human Settlement (GHSL) <span style="font-size: 11px; background: #333; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">coming soon</span></h4>
+                <h4 style="color: #888; margin: 16px 0 8px; font-size: 14px;">▸ Human Settlement (GHSL)</h4>
                 <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px; color: #888;">
                     <li style="margin-bottom: 6px;">Global Human Settlement Layer (EU JRC)</li>
                     <li style="margin-bottom: 6px;">Built-up surface area within/near PA</li>
@@ -1684,7 +1684,101 @@
 
         // Export parks data as CSV
         function exportParksCSV() {
-            window.location.href = '/api/export/parks?format=csv';
+            if (!map || !map.getSource('areas')) {
+                alert('Map data not loaded yet. Please wait and try again.');
+                return;
+            }
+            
+            // Query all features from the areas source
+            var features = map.querySourceFeatures('areas');
+            
+            // Deduplicate by ID (tiles may have duplicates)
+            var uniqueParks = new Map();
+            features.forEach(function(f) {
+                var props = f.properties;
+                if (!props) return;
+                
+                var id = props.id || props.wdpa_id || props.wdpaid;
+                if (!id) return;
+                
+                // Apply country filter if active
+                if (currentCountryFilter !== '' && props.country !== currentCountryFilter) {
+                    return;
+                }
+                
+                // Apply bbox filter if active
+                if (currentBbox) {
+                    var geom = f.geometry;
+                    if (!geom || !geom.coordinates) return;
+                    var bounds = getGeometryBounds(geom);
+                    if (!bounds || !bboxesIntersect(currentBbox, bounds)) {
+                        return;
+                    }
+                }
+                
+                if (!uniqueParks.has(id)) {
+                    uniqueParks.set(id, {
+                        wdpa_id: props.wdpa_id || props.wdpaid || '',
+                        name: props.name || '',
+                        country: props.country || '',
+                        area_km2: props.area_km2 || props.area || ''
+                    });
+                }
+            });
+            
+            if (uniqueParks.size === 0) {
+                alert('No parks found to export. Try adjusting your filters or zoom level.');
+                return;
+            }
+            
+            // Build CSV content
+            var csvRows = [];
+            csvRows.push('wdpa_id,name,country,area_km2');
+            
+            uniqueParks.forEach(function(park) {
+                var row = [
+                    csvEscape(park.wdpa_id),
+                    csvEscape(park.name),
+                    csvEscape(park.country),
+                    csvEscape(park.area_km2)
+                ];
+                csvRows.push(row.join(','));
+            });
+            
+            var csvContent = csvRows.join('\n');
+            
+            // Generate filename with filter info
+            var dateStr = new Date().toISOString().split('T')[0];
+            var filterSuffix = 'all';
+            if (currentCountryFilter !== '') {
+                // Sanitize country name for filename
+                filterSuffix = currentCountryFilter.replace(/[^a-zA-Z0-9]/g, '_');
+            } else if (currentBbox) {
+                filterSuffix = 'bbox';
+            }
+            var filename = '5mp_parks_' + filterSuffix + '_' + dateStr + '.csv';
+            
+            // Download the CSV
+            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        }
+        
+        // Helper function to escape CSV values
+        function csvEscape(value) {
+            if (value === null || value === undefined) return '';
+            var str = String(value);
+            // If contains comma, quote, or newline, wrap in quotes and escape internal quotes
+            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                return '"' + str.replace(/"/g, '""') + '"';
+            }
+            return str;
         }
 
         var mapLoaded = false;
@@ -3251,7 +3345,7 @@
                     const pctClass = pct >= 80 ? ' good' : pct >= 50 ? ' warning' : ' bad';
                     el.innerHTML = `
                         <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Roadless area</span>
+                            <span class="pa-popup-mini-stat-label" title="Percentage of area more than 15km from any road">Roadless area</span>
                             <span class="pa-popup-mini-stat-value${pctClass}">${pct.toFixed(1)}%</span>
                         </div>
                         <div class="pa-popup-bar"><div class="pa-popup-bar-fill${pct >= 80 ? ' good' : pct >= 50 ? ' warning' : ' bad'}" style="width: ${pct}%;"></div></div>
@@ -3443,8 +3537,8 @@
                         <div style="font-size: 12px; color: #888; margin-bottom: 8px;">○ ROADLESS AREAS</div>
                         <div class="fire-stats-grid">
                             <div class="fire-stat-card">
-                                <div class="fire-stat-label">Roadless</div>
-                                <div class="fire-stat-value ${roadlessClass}">${r.roadless_percentage.toFixed(1)}%</div>
+                                <div class="fire-stat-label" title="Percentage of area more than 15km from any road">Roadless</div>
+                                <div class="fire-stat-value ${roadlessClass}" title="% of area >15km from roads">${r.roadless_percentage.toFixed(1)}%</div>
                                 <div class="fire-stat-bar">
                                     <div class="fire-stat-bar-fill ${roadlessClass}" style="width: ${r.roadless_percentage}%;"></div>
                                 </div>

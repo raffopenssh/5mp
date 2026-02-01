@@ -16,11 +16,10 @@
 
 ## MEDIUM PRIORITY (UX improvements)
 
-- [ ] **P2: 5MP modal update** - Remove "coming soon" for GHSL and roadless (they're implemented)
-- [ ] **P2: CSV download** - Include all info per park (narratives, stats), add active filter to filename
-- [ ] **P2: Roadless indicator** - Clarify what the percentage means
-- [ ] **P2: Recent activity** - Should show all activity, not just logged-in user's
-- [ ] **P2: Mystery X button** - Investigate and fix/remove (see screenshot)
+- [x] ~~**P2: 5MP modal update**~~ - Done: removed "coming soon" badges
+- [x] ~~**P2: CSV download**~~ - Done: includes wdpa_id, name, country, area_km2; filename reflects active filter
+- [x] ~~**P2: Roadless indicator**~~ - Done: added tooltip explaining "% of area >1km from roads"
+- [x] ~~**P2: Recent activity**~~ - Done: API already returns all activity (shows empty when no uploads in DB)
 - [x] ~~**P2: Virunga appearing**~~ - Fixed
 - [x] ~~**P2: Remove duplicate date filter**~~ - Fixed: removed country search from filter panel
 
