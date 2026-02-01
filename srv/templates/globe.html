@@ -17,7 +17,7 @@
         .logo-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
         .logo-icon svg { width: 28px; height: 28px; }
         .logo-subtitle { font-size: 11px; font-weight: 400; color: #888; margin-top: 2px; }
-        .auth-buttons { display: flex; gap: 12px; align-items: center; }
+        .auth-buttons { display: flex; gap: 8px; align-items: center; }
         .user-info { color: #22c55e; font-size: 14px; }
 
         .btn { padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; text-decoration: none; }
@@ -367,7 +367,9 @@
         .pa-popup-section.open .pa-popup-section-toggle { transform: rotate(180deg); }
         .pa-popup-section-content { display: none; padding: 8px 10px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); }
         .pa-popup-section.open .pa-popup-section-content { display: block; }
-        .pa-popup-section-loading { font-size: 10px; color: #666; }
+        .pa-popup-section-loading { font-size: 10px; color: #666; display: flex; align-items: center; gap: 8px; }
+        .pa-popup-section-loading::before { content: ''; width: 14px; height: 14px; border: 2px solid #ddd; border-top-color: #4CAF50; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .pa-popup-section-empty { font-size: 10px; color: #555; font-style: italic; }
         .pa-popup-mini-stat { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; }
         .pa-popup-mini-stat-label { color: #666; }
@@ -505,10 +507,14 @@
         </div>
         
         <div class="auth-buttons">
-            
-            <button class="btn btn-secondary" onclick="showModal('login')">Login</button>
-            <button class="btn btn-primary" onclick="showModal('register')">Register</button>
-            
+            <button class="btn btn-primary" onclick="showModal('upload')" title="Upload GPX patrol tracks">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Upload GPX
+            </button>
         </div>
     </header>
 
@@ -2874,7 +2880,27 @@
                     const rateClass = avgRate >= 60 ? ' good' : avgRate >= 40 ? ' warning' : ' bad';
                     
                     // Get a few sample narratives to display
-                    const sampleNarratives = (data.narratives || []).slice(0, 3);
+                    const allNarratives = data.narratives || [];
+                    const initialNarratives = allNarratives.slice(0, 10);
+                    const remainingNarratives = allNarratives.slice(10);
+                    const narrativeContainerId = `fire-narratives-${paId}`;
+                    const loadMoreBtnId = `fire-load-more-${paId}`;
+                    
+                    // Helper to render a single narrative as one concise sentence
+                    const renderNarrative = (n) => {
+                        const outcomeColor = n.outcome === 'STOPPED_INSIDE' ? '#22c55e' : '#f59e0b';
+                        // Use narrative if available, otherwise build a concise one-sentence summary
+                        let text = n.narrative;
+                        if (!text) {
+                            const outcome = n.outcome.toLowerCase().replace(/_/g, ' ');
+                            text = `${n.origin_desc}: ${outcome}.`;
+                        }
+                        // Ensure it's one sentence - truncate if too long
+                        if (text.length > 120) {
+                            text = text.substring(0, 117) + '...';
+                        }
+                        return `<div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px;"><span style="color: ${outcomeColor};">●</span> ${text}</div>`;
+                    };
                     
                     el.innerHTML = `
                         <div class="pa-popup-mini-stat">
@@ -2893,17 +2919,32 @@
                         
                         ${data.summary ? `<div style="margin-top: 8px; font-size: 10px; color: #aaa; line-height: 1.4;">${data.summary}</div>` : ''}
                         
-                        ${sampleNarratives.length > 0 ? `
+                        ${initialNarratives.length > 0 ? `
                         <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-                            <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Recent fire group activity:</div>
-                            ${sampleNarratives.map(n => `
-                                <div style="font-size: 10px; color: #bbb; margin-bottom: 8px; padding: 6px; background: rgba(0,0,0,0.2); border-radius: 4px; line-height: 1.4;">
-                                    <span style="color: ${n.outcome === 'STOPPED_INSIDE' ? '#22c55e' : '#f59e0b'};">●</span>
-                                    ${n.narrative || (n.origin_desc + ' - ' + n.outcome.toLowerCase().replace('_', ' '))}
-                                </div>
-                            `).join('')}
+                            <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Fire group details (${allNarratives.length} total):</div>
+                            <div id="${narrativeContainerId}">
+                                ${initialNarratives.map(n => renderNarrative(n)).join('')}
+                            </div>
+                            ${remainingNarratives.length > 0 ? `
+                            <button id="${loadMoreBtnId}" style="margin-top: 6px; padding: 4px 8px; font-size: 9px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: #aaa; cursor: pointer; width: 100%;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                                Show more (${remainingNarratives.length} remaining)
+                            </button>` : ''}
                         </div>` : ''}
                     `;
+                    
+                    // Attach click handler for "Show more" button
+                    if (remainingNarratives.length > 0) {
+                        const loadMoreBtn = document.getElementById(loadMoreBtnId);
+                        if (loadMoreBtn) {
+                            loadMoreBtn.addEventListener('click', () => {
+                                const container = document.getElementById(narrativeContainerId);
+                                if (container) {
+                                    container.innerHTML += remainingNarratives.map(n => renderNarrative(n)).join('');
+                                }
+                                loadMoreBtn.remove();
+                            });
+                        }
+                    }
                 } else {
                     el.innerHTML = '<div class="pa-popup-section-empty">No fire activity recorded</div>';
                 }
@@ -2926,37 +2967,62 @@
                     const riskIcon = data.conflict_risk === 'critical' ? '⚠️' : 
                                     data.conflict_risk === 'high' ? '⚠' : '●';
                     
+                    // Format area for display
+                    const formatArea = (m2) => {
+                        if (m2 >= 1000000) return `${(m2/1000000).toFixed(1)} km²`;
+                        if (m2 >= 10000) return `${(m2/10000).toFixed(1)} ha`;
+                        return `${Math.round(m2).toLocaleString()} m²`;
+                    };
+                    
+                    // Format settlement as one sentence
+                    const formatSettlement = (s) => {
+                        const location = s.direction ? `${s.direction} sector` : `${s.lat.toFixed(2)}°, ${s.lon.toFixed(2)}°`;
+                        return `<div style="font-size: 10px; color: #bbb; margin-bottom: 4px;">• ${s.name} at ${location} with ${formatArea(s.area_m2)} built-up area.</div>`;
+                    };
+                    
+                    // Get settlements - show top 10 initially
+                    const settlements = data.largest_settlements || [];
+                    const initial = settlements.slice(0, 10);
+                    const remaining = settlements.slice(10);
+                    const containerId = `settlements-list-${paId}`;
+                    const btnId = `settlements-more-btn-${paId}`;
+                    
                     el.innerHTML = `
                         <div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Settlements detected</span>
                             <span class="pa-popup-mini-stat-value">${formatNumber(data.settlement_count)}</span>
                         </div>
                         <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Population estimate</span>
-                            <span class="pa-popup-mini-stat-value">${formatNumber(data.total_population)}</span>
-                        </div>
-                        <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Density</span>
-                            <span class="pa-popup-mini-stat-value">${data.population_density_per_km2?.toFixed(1) || '--'} /km²</span>
-                        </div>
-                        <div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Human-wildlife conflict risk</span>
                             <span class="pa-popup-mini-stat-value${riskClass}">${riskIcon} ${data.conflict_risk || 'unknown'}</span>
                         </div>
                         
-                        ${data.summary ? `<div style="margin-top: 10px; font-size: 10px; color: #aaa; line-height: 1.5;">${data.summary}</div>` : ''}
-                        
-                        ${data.regional_breakdown && data.regional_breakdown.length > 0 ? `
+                        ${initial.length > 0 ? `
                         <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-                            <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Settlement distribution by region:</div>
-                            ${data.regional_breakdown.map(r => `
-                                <div style="font-size: 10px; color: #bbb; margin-bottom: 4px; display: flex; justify-content: space-between;">
-                                    <span>${r.region}</span>
-                                    <span>${r.settlement_count} settlements (${formatNumber(r.population)} people)</span>
-                                </div>
-                            `).join('')}
+                            <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Settlements by built-up area:</div>
+                            <div id="${containerId}">
+                                ${initial.map(s => formatSettlement(s)).join('')}
+                            </div>
+                            ${remaining.length > 0 ? `
+                            <button id="${btnId}" style="margin-top: 6px; padding: 4px 8px; font-size: 9px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: #aaa; cursor: pointer; width: 100%;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                                Show more (${remaining.length} remaining)
+                            </button>` : ''}
                         </div>` : ''}
                     `;
+                    
+                    // Attach click handler for "Show more" button
+                    if (remaining.length > 0) {
+                        const btn = document.getElementById(btnId);
+                        if (btn) {
+                            btn.addEventListener('click', () => {
+                                const container = document.getElementById(containerId);
+                                if (container) {
+                                    container.innerHTML += remaining.map(s => formatSettlement(s)).join('');
+                                }
+                                btn.remove();
+                            });
+                        }
+                    }
                 } else if (data.status === 'complete') {
                     el.innerHTML = '<div class="pa-popup-section-empty" style="color: #22c55e;">✓ Pristine wilderness - no settlements detected</div>';
                 } else {
@@ -2966,6 +3032,21 @@
                 console.error('Settlement data fetch error:', e);
                 el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
             }
+        }
+        
+        function showMoreDeforestStories(paId, remainingStories) {
+            const container = document.getElementById(`deforest-stories-${paId}`);
+            const btn = document.getElementById(`deforest-more-btn-${paId}`);
+            if (!container) return;
+            
+            const moreHtml = remainingStories.map(y => `
+                <div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                    <span style="color: #f59e0b; font-weight: 500;">${y.year}:</span> ${y.area_km2.toFixed(2)} km² lost${y.nearby_places && y.nearby_places.length > 0 ? ` near ${y.nearby_places[0]}` : ''}
+                </div>
+            `).join('');
+            
+            container.innerHTML += moreHtml;
+            if (btn) btn.remove();
         }
         
         async function fetchPopupDeforestData(paId) {
@@ -3019,13 +3100,19 @@
                         ${yearlyStories.length > 0 ? `
                         <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
                             <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Deforestation by year:</div>
-                            ${yearlyStories.slice(0, 3).map(y => `
-                                <div style="font-size: 10px; color: #bbb; margin-bottom: 8px; padding: 6px; background: rgba(0,0,0,0.2); border-radius: 4px; line-height: 1.4;">
-                                    <div style="color: #f59e0b; font-weight: 500;">${y.year}: ${y.area_km2.toFixed(2)} km²</div>
-                                    <div style="margin-top: 4px;">${y.narrative}</div>
-                                    ${y.nearby_places && y.nearby_places.length > 0 ? `<div style="margin-top: 4px; font-size: 9px; color: #888;">Near: ${y.nearby_places.slice(0, 2).join(', ')}</div>` : ''}
-                                </div>
-                            `).join('')}
+                            <div id="deforest-stories-${paId}">
+                                ${yearlyStories.slice(0, 10).map(y => `
+                                    <div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                                        <span style="color: #f59e0b; font-weight: 500;">${y.year}:</span> ${y.area_km2.toFixed(2)} km² lost${y.nearby_places && y.nearby_places.length > 0 ? ` near ${y.nearby_places[0]}` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ${yearlyStories.length > 10 ? `
+                            <button onclick="showMoreDeforestStories('${paId}', ${JSON.stringify(yearlyStories.slice(10)).replace(/"/g, '&quot;')})" 
+                                    id="deforest-more-btn-${paId}"
+                                    style="margin-top: 6px; font-size: 9px; color: #f59e0b; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); padding: 4px 8px; border-radius: 4px; cursor: pointer; width: 100%;">
+                                Show ${yearlyStories.length - 10} more years
+                            </button>` : ''}
                         </div>` : ''}
                     `;
                 } else {

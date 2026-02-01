@@ -139,7 +139,7 @@ type SettlementNarrative struct {
 // SettlementDetail describes a single settlement
 type SettlementDetail struct {
 	Name              string  `json:"name"`
-	Population        int64   `json:"population"`
+	AreaM2            float64 `json:"area_m2"`
 	Lat               float64 `json:"lat"`
 	Lon               float64 `json:"lon"`
 	Direction         string  `json:"direction"`
@@ -830,14 +830,13 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	largestRows, err := s.DB.Query(`
 		SELECT 
 			COALESCE(nearest_place, 'Unnamed settlement') as name,
-			CAST(COALESCE(population_est, 0) AS INTEGER) as population,
+			COALESCE(area_m2, 0) as area_m2,
 			lat, lon,
 			COALESCE(direction, '') as direction,
 			COALESCE(distance_km, 0) as distance_km
 		FROM park_settlements
 		WHERE park_id = ?
-		ORDER BY population_est DESC
-		LIMIT 10
+		ORDER BY area_m2 DESC
 	`, internalID)
 	
 	if err == nil {
@@ -845,7 +844,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		for largestRows.Next() {
 			var sd SettlementDetail
 			var distKm float64
-			if err := largestRows.Scan(&sd.Name, &sd.Population, &sd.Lat, &sd.Lon, &sd.Direction, &distKm); err == nil {
+			if err := largestRows.Scan(&sd.Name, &sd.AreaM2, &sd.Lat, &sd.Lon, &sd.Direction, &distKm); err == nil {
 				sd.NearestBoundaryKm = distKm
 				narrative.LargestSettlements = append(narrative.LargestSettlements, sd)
 			}
@@ -924,64 +923,30 @@ func generatePristineNarrative(parkName string, areaKm2 float64) string {
 	return narrative.String()
 }
 
-// generateSettlementNarrative creates comprehensive narrative for populated parks
+// formatArea formats area in appropriate units (m², ha, km²)
+func formatArea(m2 float64) string {
+	if m2 >= 1000000 {
+		return fmt.Sprintf("%.1f km²", m2/1000000)
+	}
+	if m2 >= 10000 {
+		return fmt.Sprintf("%.1f ha", m2/10000)
+	}
+	return fmt.Sprintf("%.0f m²", m2)
+}
+
+// generateSettlementNarrative creates a concise narrative for populated parks
 func generateSettlementNarrative(parkName string, count int, totalPop int64, density float64, risk string, 
 	largest []SettlementDetail, regions []RegionSettlement) string {
-	var narrative strings.Builder
 	
-	// Opening summary
-	narrative.WriteString(fmt.Sprintf("%s contains %d identified settlements with an estimated total population of %s people", 
-		parkName, count, formatPopulation(totalPop)))
-	
-	if density > 0 {
-		narrative.WriteString(fmt.Sprintf(" (density: %.1f people/km²)", density))
-	}
-	narrative.WriteString(". ")
-	
-	// Risk assessment
-	switch risk {
-	case "critical":
-		narrative.WriteString("⚠️ CRITICAL: Human-wildlife conflict risk is severe. Immediate community engagement and buffer zone management required. ")
-	case "high":
-		narrative.WriteString("⚠️ HIGH ALERT: Significant human-wildlife conflict potential exists. Proactive community outreach and wildlife corridor protection recommended. ")
-	case "moderate":
-		narrative.WriteString("Human-wildlife conflict risk is moderate. Regular community liaison and monitoring programs advised. ")
-	case "low":
-		narrative.WriteString("Human presence is relatively low, but vigilance for encroachment is still recommended. ")
+	// Calculate total built-up area
+	var totalArea float64
+	for _, s := range largest {
+		totalArea += s.AreaM2
 	}
 	
-	// Regional distribution
-	if len(regions) > 0 {
-		var highestPop int64
-		var highestRegion string
-		for _, r := range regions {
-			if r.Population > highestPop {
-				highestPop = r.Population
-				highestRegion = r.Region
-			}
-		}
-		if highestRegion != "" {
-			narrative.WriteString(fmt.Sprintf("Population concentration is highest in the %s sector. ", highestRegion))
-		}
-	}
-	
-	// Key settlements
-	if len(largest) > 0 {
-		top3 := largest
-		if len(top3) > 3 {
-			top3 = top3[:3]
-		}
-		names := make([]string, 0, len(top3))
-		for _, s := range top3 {
-			names = append(names, fmt.Sprintf("%s (~%s)", s.Name, formatPopulation(s.Population)))
-		}
-		narrative.WriteString(fmt.Sprintf("Priority engagement communities: %s. ", strings.Join(names, ", ")))
-	}
-	
-	// Conservation recommendation
-	narrative.WriteString("Community-based conservation programs and human-wildlife conflict mitigation measures are essential for sustainable coexistence.")
-	
-	return narrative.String()
+	// Simple summary: count and total built-up area
+	return fmt.Sprintf("%s contains %d settlements with %s total built-up area.", 
+		parkName, count, formatArea(totalArea))
 }
 
 // formatPopulation formats population numbers with K/M suffixes
