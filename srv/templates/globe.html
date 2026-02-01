@@ -2721,8 +2721,9 @@
             const country = props.country || 'Unknown';
             const areaKm2 = props.area_km2 || props.area;
             const wdpaId = props.wdpa_id || props.wdpaid;
-            const paId = wdpaId || props.id;
-            const isSelected = selectedParks.some(p => p.id === (wdpaId || name));
+            // Use internal ID (e.g., 'COD_Virunga') for API calls, not WDPA ID
+            const paId = props.id || wdpaId;
+            const isSelected = selectedParks.some(p => p.id === (props.id || wdpaId || name));
             
             const areaDisplay = areaKm2 ? formatNumber(areaKm2) + ' km²' : '--';
             
@@ -2852,32 +2853,51 @@
             const el = document.getElementById(`fire-content-${paId}`);
             if (!el) return;
             try {
-                // Use time filter year, or extract from dateFrom, or default to most recent
-                let year = dateTo ? new Date(dateTo).getFullYear() : new Date().getFullYear();
-                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/infractions?year=${year}`);
+                // Use fire-narrative endpoint with time slider range for richer data
+                let url = `/api/parks/${encodeURIComponent(paId)}/fire-narrative`;
+                const params = [];
+                if (dateFrom) params.push('from=' + dateFrom);
+                if (dateTo) params.push('to=' + dateTo);
+                if (params.length > 0) url += '?' + params.join('&');
+                
+                const resp = await fetch(url);
                 const data = await resp.json();
-                if (data.total_groups > 0) {
-                    const rate = Math.round(data.response_rate || 0);
-                    const rateClass = rate >= 60 ? '' : rate >= 40 ? ' warning' : ' bad';
+                
+                // Get date range label
+                const rangeLabel = dateFrom && dateTo ? 
+                    `${new Date(dateFrom).getFullYear()}-${new Date(dateTo).getFullYear()}` : 
+                    'All time';
+                
+                if (data.total_fires > 0 || (data.trend && data.trend.years && data.trend.years.length > 0)) {
+                    const trendData = data.trend || {};
+                    const avgRate = Math.round(trendData.avg_response_rate || 0);
+                    const rateClass = avgRate >= 60 ? ' good' : avgRate >= 40 ? ' warning' : ' bad';
+                    const totalGroups = trendData.years ? trendData.years.reduce((sum, y) => sum + (y.total_groups || 0), 0) : 0;
+                    
                     el.innerHTML = `
                         <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Fire groups (${year})</span>
-                            <span class="pa-popup-mini-stat-value${data.total_groups > 10 ? ' bad' : ' warning'}">${data.total_groups}</span>
+                            <span class="pa-popup-mini-stat-label">Fire detections (${rangeLabel})</span>
+                            <span class="pa-popup-mini-stat-value">${formatNumber(data.total_fires || 0)}</span>
                         </div>
-                        <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Response rate</span>
-                            <span class="pa-popup-mini-stat-value${rateClass}">${rate}%</span>
+                        ${totalGroups > 0 ? `<div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Fire groups tracked</span>
+                            <span class="pa-popup-mini-stat-value${totalGroups > 50 ? ' bad' : totalGroups > 20 ? ' warning' : ''}">${totalGroups}</span>
+                        </div>` : ''}
+                        ${avgRate > 0 ? `<div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Avg response rate</span>
+                            <span class="pa-popup-mini-stat-value${rateClass}">${avgRate}%</span>
                         </div>
-                        <div class="pa-popup-bar"><div class="pa-popup-bar-fill${rate >= 60 ? ' good' : rate >= 40 ? ' warning' : ' bad'}" style="width: ${rate}%;"></div></div>
-                        <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Avg days inside</span>
-                            <span class="pa-popup-mini-stat-value">${data.avg_days_inside ? data.avg_days_inside.toFixed(1) : '--'}</span>
-                        </div>
+                        <div class="pa-popup-bar"><div class="pa-popup-bar-fill${avgRate >= 60 ? ' good' : avgRate >= 40 ? ' warning' : ' bad'}" style="width: ${avgRate}%;"></div></div>` : ''}
+                        ${trendData.trend_direction ? `<div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Trend</span>
+                            <span class="pa-popup-mini-stat-value">${trendData.trend_direction}</span>
+                        </div>` : ''}
                     `;
                 } else {
                     el.innerHTML = '<div class="pa-popup-section-empty">No fire activity recorded</div>';
                 }
             } catch (e) {
+                console.error('Fire data fetch error:', e);
                 el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
             }
         }
@@ -2886,29 +2906,38 @@
             const el = document.getElementById(`ghsl-content-${paId}`);
             if (!el) return;
             try {
-                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/stats`);
+                // Use settlement-narrative endpoint for rich data
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/settlement-narrative`);
                 const data = await resp.json();
-                if (data.settlement) {
-                    const s = data.settlement;
+                if (data.status === 'complete' && data.settlement_count > 0) {
+                    const riskClass = data.conflict_risk === 'critical' ? ' bad' : 
+                                     data.conflict_risk === 'high' ? ' warning' : '';
                     el.innerHTML = `
-                        <div style="font-size: 9px; color: #666; margin-bottom: 6px;">⏸ Static data (not time-filtered)</div>
                         <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Built-up area</span>
-                            <span class="pa-popup-mini-stat-value">${s.built_up_km2.toFixed(2)} km²</span>
+                            <span class="pa-popup-mini-stat-label">Settlements</span>
+                            <span class="pa-popup-mini-stat-value">${formatNumber(data.settlement_count)}</span>
                         </div>
                         <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Settlement count</span>
-                            <span class="pa-popup-mini-stat-value">${s.settlement_count || '--'}</span>
-                        </div>
-                        ${s.population_est ? `<div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Population est.</span>
-                            <span class="pa-popup-mini-stat-value">${formatNumber(s.population_est)}</span>
+                            <span class="pa-popup-mini-stat-value">${formatNumber(data.total_population)}</span>
+                        </div>
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Conflict risk</span>
+                            <span class="pa-popup-mini-stat-value${riskClass}">${data.conflict_risk || 'unknown'}</span>
+                        </div>
+                        ${data.regional_breakdown && data.regional_breakdown.length > 0 ? `
+                        <div style="margin-top: 8px; font-size: 10px; color: #888;">
+                            Highest density: ${data.regional_breakdown[0].region} (${formatNumber(data.regional_breakdown[0].population)} people)
                         </div>` : ''}
+                        <div style="margin-top: 8px; font-size: 10px; color: #aaa; line-height: 1.4;">${data.summary.substring(0, 200)}${data.summary.length > 200 ? '...' : ''}</div>
                     `;
+                } else if (data.status === 'complete') {
+                    el.innerHTML = '<div class="pa-popup-section-empty" style="color: #22c55e;">✓ Pristine wilderness - no settlements detected</div>';
                 } else {
                     el.innerHTML = '<div class="pa-popup-section-empty">No settlement data</div>';
                 }
             } catch (e) {
+                console.error('Settlement data fetch error:', e);
                 el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
             }
         }
@@ -2928,29 +2957,43 @@
                 const data = await resp.json();
                 const totalLoss = data.total_loss_km2 || data.total_area_km2 || 0;
                 const yearsCount = data.yearly_stories?.length || data.years_analyzed || 0;
+                
+                // Get date range label
+                const rangeLabel = dateFrom && dateTo ? 
+                    `${new Date(dateFrom).getFullYear()}-${new Date(dateTo).getFullYear()}` : 
+                    'All time';
+                
                 if (totalLoss > 0) {
+                    const trendClass = data.trend_direction === 'improving' ? ' good' : 
+                                      data.trend_direction === 'worsening' ? ' bad' : '';
                     el.innerHTML = `
                         <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Total forest loss</span>
-                            <span class="pa-popup-mini-stat-value">${totalLoss.toFixed(2)} km²</span>
+                            <span class="pa-popup-mini-stat-label">Forest loss (${rangeLabel})</span>
+                            <span class="pa-popup-mini-stat-value bad">${totalLoss.toFixed(2)} km²</span>
                         </div>
                         <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Years analyzed</span>
+                            <span class="pa-popup-mini-stat-label">Years with data</span>
                             <span class="pa-popup-mini-stat-value">${yearsCount}</span>
                         </div>
                         ${data.worst_year ? `<div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Worst year</span>
                             <span class="pa-popup-mini-stat-value">${data.worst_year}</span>
                         </div>` : ''}
-                        ${data.trend_direction ? `<div class="pa-popup-mini-stat">
+                        ${data.trend_direction && data.trend_direction !== 'insufficient_data' ? `<div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Trend</span>
-                            <span class="pa-popup-mini-stat-value ${data.trend_direction === 'improving' ? 'good' : data.trend_direction === 'worsening' ? 'bad' : ''}">${data.trend_direction}</span>
+                            <span class="pa-popup-mini-stat-value${trendClass}">${data.trend_direction}</span>
                         </div>` : ''}
+                        ${data.yearly_stories && data.yearly_stories[0] ? `
+                        <div style="margin-top: 8px; font-size: 10px; color: #aaa; line-height: 1.4;">
+                            ${data.yearly_stories[0].narrative}
+                        </div>` : ''}
+                        ${data.summary ? `<div style="margin-top: 6px; font-size: 9px; color: #888;">${data.summary.substring(0, 150)}${data.summary.length > 150 ? '...' : ''}</div>` : ''}
                     `;
                 } else {
-                    el.innerHTML = '<div class="pa-popup-section-empty">No deforestation detected</div>';
+                    el.innerHTML = '<div class="pa-popup-section-empty" style="color: #22c55e;">✓ No deforestation detected in this period</div>';
                 }
             } catch (e) {
+                console.error('Deforestation data fetch error:', e);
                 el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
             }
         }
