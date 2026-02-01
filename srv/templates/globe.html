@@ -704,7 +704,7 @@
         </div>
         <div class="search-panel-content">
             <div class="search-input-wrapper">
-                <input type="text" class="search-input" id="search-input" placeholder="Search protected areas..." autocomplete="off" onkeyup="handleSearchInput(event)" onfocus="showSearchResults()">
+                <input type="text" class="search-input" id="search-input" placeholder="Search protected areas..." autocomplete="off" oninput="handleSearchInput(event)" onfocus="showSearchResults()">
                 <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display: none;">×</button>
             </div>
             <div class="search-results" id="search-results"></div>
