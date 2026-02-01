@@ -665,7 +665,14 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	var yearlyAreas []struct {
 		year int
 		area float64
+		lat  float64
+		lon  float64
 	}
+	
+	// Track geographic shift over time for trend analysis
+	var earlyYearsLat, earlyYearsLon float64
+	var recentYearsLat, recentYearsLon float64
+	var earlyCount, recentCount int
 	
 	for rows.Next() {
 		var year int
@@ -681,7 +688,9 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		yearlyAreas = append(yearlyAreas, struct {
 			year int
 			area float64
-		}{year, area})
+			lat  float64
+			lon  float64
+		}{year, area, lat, lon})
 		
 		totalLoss += area
 		if area > worstLoss {
@@ -720,14 +729,31 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 			}
 		}
 		
-		// Build narrative with varied pattern description
-		locationDesc := s.describeLocation(internalID, lat, lon)
-		patternDesc := describePatternVaried(actualPattern, area, year)
-		
-		story.Narrative = fmt.Sprintf("In %d, %.2f km² of forest was lost %s. %s",
-			year, area, locationDesc, patternDesc)
+		// Build rich narrative description
+		story.Narrative = s.buildDeforestationNarrative(internalID, year, area, lat, lon, actualPattern, settlements, rivers)
 		
 		narrative.YearlyStory = append(narrative.YearlyStory, story)
+	}
+	
+	// Analyze geographic shift if we have enough data
+	if len(yearlyAreas) >= 4 {
+		midpoint := len(yearlyAreas) / 2
+		for i := 0; i < midpoint; i++ {
+			earlyYearsLat += yearlyAreas[i].lat
+			earlyYearsLon += yearlyAreas[i].lon
+			earlyCount++
+		}
+		for i := midpoint; i < len(yearlyAreas); i++ {
+			recentYearsLat += yearlyAreas[i].lat
+			recentYearsLon += yearlyAreas[i].lon
+			recentCount++
+		}
+		if earlyCount > 0 && recentCount > 0 {
+			earlyYearsLat /= float64(earlyCount)
+			earlyYearsLon /= float64(earlyCount)
+			recentYearsLat /= float64(recentCount)
+			recentYearsLon /= float64(recentCount)
+		}
 	}
 	
 	// Reverse to show most recent first
@@ -739,19 +765,23 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	narrative.WorstYear = worstYear
 	
 	// Calculate 5-year rolling average trend
+	simpleYearlyAreas := make([]struct{ year int; area float64 }, len(yearlyAreas))
+	for i, ya := range yearlyAreas {
+		simpleYearlyAreas[i] = struct{ year int; area float64 }{ya.year, ya.area}
+	}
 	narrative.TrendDirection, narrative.TrendPercentChange, 
-		narrative.FiveYearAvgEarly, narrative.FiveYearAvgRecent = calculateTrend(yearlyAreas)
+		narrative.FiveYearAvgEarly, narrative.FiveYearAvgRecent = calculateTrend(simpleYearlyAreas)
 	
 	// Fetch worst hotspots from clusters table
 	narrative.Hotspots = s.fetchHotspots(internalID, 5)
 	
-	// Build summary with trend information
+	// Build summary with trend and geographic shift information
 	if totalLoss == 0 {
 		narrative.Summary = fmt.Sprintf("No significant deforestation events recorded for %s.", parkName)
 	} else {
-		trendDesc := describeTrend(narrative.TrendDirection, narrative.TrendPercentChange)
-		narrative.Summary = fmt.Sprintf("%s has experienced %.2f km² of forest loss across %d recorded years. The worst year was %d with %.2f km² lost. %s",
-			parkName, totalLoss, len(narrative.YearlyStory), worstYear, worstLoss, trendDesc)
+		narrative.Summary = s.buildDeforestationSummary(parkName, totalLoss, len(narrative.YearlyStory), 
+			worstYear, worstLoss, narrative.TrendDirection, narrative.TrendPercentChange,
+			earlyYearsLat, earlyYearsLon, recentYearsLat, recentYearsLon, earlyCount, recentCount, internalID)
 	}
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -934,19 +964,207 @@ func formatArea(m2 float64) string {
 	return fmt.Sprintf("%.0f m²", m2)
 }
 
-// generateSettlementNarrative creates a concise narrative for populated parks
-func generateSettlementNarrative(parkName string, count int, totalPop int64, density float64, risk string, 
+// generateSettlementNarrative creates a rich, story-like narrative for populated parks
+func generateSettlementNarrative(parkName string, count int, totalPop int64, density float64, risk string,
 	largest []SettlementDetail, regions []RegionSettlement) string {
-	
+
+	var narrative strings.Builder
+
 	// Calculate total built-up area
 	var totalArea float64
 	for _, s := range largest {
 		totalArea += s.AreaM2
 	}
-	
-	// Simple summary: count and total built-up area
-	return fmt.Sprintf("%s contains %d settlements with %s total built-up area.", 
-		parkName, count, formatArea(totalArea))
+
+	// Opening: Overall settlement footprint
+	narrative.WriteString(fmt.Sprintf("%s shows %s of built-up area across %d detected settlements. ",
+		parkName, formatArea(totalArea), count))
+
+	// Describe risk level with context
+	switch risk {
+	case "critical":
+		narrative.WriteString("Human presence is at critical levels, with settlements deeply embedded within the protected area. ")
+	case "high":
+		narrative.WriteString("Settlement pressure is high, indicating significant human-wildlife interface zones. ")
+	case "moderate":
+		narrative.WriteString("Moderate settlement activity suggests localized pressure points requiring monitoring. ")
+	case "low":
+		narrative.WriteString("Settlement presence is relatively limited, though vigilance is warranted. ")
+	}
+
+	// Regional distribution analysis
+	if len(regions) > 0 {
+		// Find dominant region
+		dominantRegion := regions[0]
+		var totalRegionSettlements int
+		for _, r := range regions {
+			totalRegionSettlements += r.SettlementCount
+		}
+
+		if totalRegionSettlements > 0 {
+			percent := float64(dominantRegion.SettlementCount) * 100 / float64(totalRegionSettlements)
+			if percent > 50 {
+				narrative.WriteString(fmt.Sprintf("Settlements are concentrated in the %s sector, accounting for %.0f%% of all built-up areas. ",
+					strings.ToLower(dominantRegion.Region), percent))
+				// Encroachment direction inference
+				narrative.WriteString(fmt.Sprintf("This pattern suggests encroachment pressure advancing from the %s. ",
+					strings.ToLower(dominantRegion.Region)))
+			} else if len(regions) >= 2 {
+				// Multiple regions have settlements
+				narrative.WriteString(fmt.Sprintf("Settlement activity spans multiple zones, with the %s and %s sectors showing the highest activity. ",
+					strings.ToLower(regions[0].Region), strings.ToLower(regions[1].Region)))
+			}
+		}
+	}
+
+	// Describe major settlements with location context
+	if len(largest) > 0 {
+		narrative.WriteString("\n\nKey settlements: ")
+
+		// Describe top 3-5 settlements
+		maxToDescribe := 5
+		if len(largest) < maxToDescribe {
+			maxToDescribe = len(largest)
+		}
+
+		for i := 0; i < maxToDescribe; i++ {
+			s := largest[i]
+			if i > 0 {
+				narrative.WriteString(" ")
+			}
+
+			// Build rich description for each settlement
+			desc := describeSettlementLocation(s)
+			narrative.WriteString(desc)
+		}
+	}
+
+	// Encroachment pattern summary
+	if len(regions) > 0 && len(largest) > 0 {
+		narrative.WriteString("\n\n")
+		narrative.WriteString(generateEncroachmentSummary(regions, largest))
+	}
+
+	return narrative.String()
+}
+
+// describeSettlementLocation creates a rich description for a single settlement
+func describeSettlementLocation(s SettlementDetail) string {
+	var desc strings.Builder
+
+	// Format area appropriately
+	areaStr := formatArea(s.AreaM2)
+
+	// Build location description
+	if s.Name != "" && s.Name != "Unnamed settlement" {
+		if s.Direction != "" && s.NearestBoundaryKm > 0 {
+			// "18.5 km² of built-up area detected near Oicha (0.5 km NNW)"
+			desc.WriteString(fmt.Sprintf("%s of built-up area near %s (%.1f km %s).",
+				areaStr, s.Name, s.NearestBoundaryKm, s.Direction))
+		} else {
+			desc.WriteString(fmt.Sprintf("%s of built-up area near %s.", areaStr, s.Name))
+		}
+	} else {
+		// No place name - use coordinates and direction
+		if s.Direction != "" {
+			desc.WriteString(fmt.Sprintf("%s of built-up area in the %s sector.",
+				areaStr, strings.ToLower(s.Direction)))
+		} else {
+			// Determine quadrant from coordinates
+			desc.WriteString(fmt.Sprintf("%s of built-up area detected.", areaStr))
+		}
+	}
+
+	return desc.String()
+}
+
+// generateEncroachmentSummary analyzes settlement patterns to describe encroachment
+func generateEncroachmentSummary(regions []RegionSettlement, settlements []SettlementDetail) string {
+	var summary strings.Builder
+
+	// Analyze which boundary is most impacted
+	if len(regions) == 0 {
+		return ""
+	}
+
+	// Count settlements by general direction
+	northCount := 0
+	southCount := 0
+	eastCount := 0
+	westCount := 0
+
+	for _, r := range regions {
+		switch r.Region {
+		case "Northeast":
+			northCount += r.SettlementCount
+			eastCount += r.SettlementCount
+		case "Northwest":
+			northCount += r.SettlementCount
+			westCount += r.SettlementCount
+		case "Southeast":
+			southCount += r.SettlementCount
+			eastCount += r.SettlementCount
+		case "Southwest":
+			southCount += r.SettlementCount
+			westCount += r.SettlementCount
+		}
+	}
+
+	// Determine primary pressure direction
+	maxCount := northCount
+	primaryDir := "northern"
+	if southCount > maxCount {
+		maxCount = southCount
+		primaryDir = "southern"
+	}
+	if eastCount > maxCount {
+		maxCount = eastCount
+		primaryDir = "eastern"
+	}
+	if westCount > maxCount {
+		primaryDir = "western"
+	}
+
+	// Find named places near settlements for context
+	var namedPlaces []string
+	for _, s := range settlements {
+		if s.Name != "" && s.Name != "Unnamed settlement" {
+			// Avoid duplicates
+			found := false
+			for _, p := range namedPlaces {
+				if p == s.Name {
+					found = true
+					break
+				}
+			}
+			if !found && len(namedPlaces) < 3 {
+				namedPlaces = append(namedPlaces, s.Name)
+			}
+		}
+	}
+
+	summary.WriteString(fmt.Sprintf("Primary encroachment pressure originates from the %s boundary", primaryDir))
+
+	if len(namedPlaces) > 0 {
+		if len(namedPlaces) == 1 {
+			summary.WriteString(fmt.Sprintf(", particularly near %s", namedPlaces[0]))
+		} else if len(namedPlaces) == 2 {
+			summary.WriteString(fmt.Sprintf(", particularly in the vicinity of %s and %s", namedPlaces[0], namedPlaces[1]))
+		} else {
+			summary.WriteString(fmt.Sprintf(", particularly near %s, %s, and %s", namedPlaces[0], namedPlaces[1], namedPlaces[2]))
+		}
+	}
+
+	summary.WriteString(". ")
+
+	// Conservation recommendation based on pattern
+	if maxCount > 5 {
+		summary.WriteString(fmt.Sprintf("The %s sector should be prioritized for buffer zone enforcement and community engagement programs.", primaryDir))
+	} else {
+		summary.WriteString("Continued monitoring of settlement expansion patterns is recommended.")
+	}
+
+	return summary.String()
 }
 
 // formatPopulation formats population numbers with K/M suffixes
@@ -1405,4 +1623,97 @@ func (s *Server) analyzeFireTrend(parkID string, currentYear int) *FireTrendAnal
 	}
 	
 	return trend
+}
+
+// buildDeforestationNarrative creates a rich, location-based narrative for a deforestation event
+func (s *Server) buildDeforestationNarrative(parkID string, year int, areaKm2, lat, lon float64, pattern string, settlements, rivers []OSMPlace) string {
+	var narr strings.Builder
+	
+	// Determine magnitude
+	var magnitude string
+	switch {
+	case areaKm2 > 20:
+		magnitude = "severe"
+	case areaKm2 > 10:
+		magnitude = "substantial"
+	case areaKm2 > 5:
+		magnitude = "significant"
+	case areaKm2 > 2:
+		magnitude = "moderate"
+	default:
+		magnitude = "localized"
+	}
+	
+	// Get location description
+	locationDesc := s.describeLocation(parkID, lat, lon)
+	if locationDesc == "" || strings.HasPrefix(locationDesc, "at coordinates") {
+		locationDesc = fmt.Sprintf("in the park interior")
+	}
+	
+	// Build narrative
+	narr.WriteString(fmt.Sprintf("In %d, %s forest loss (%.2f km²) occurred %s", year, magnitude, areaKm2, locationDesc))
+	
+	// Add nearest settlement context
+	if len(settlements) > 0 && settlements[0].Distance < 15 {
+		narr.WriteString(fmt.Sprintf(", near %s", settlements[0].Name))
+	}
+	narr.WriteString(". ")
+	
+	// Describe pattern
+	switch pattern {
+	case "edge", "boundary":
+		narr.WriteString("Clearing pattern suggests agricultural expansion along the park boundary.")
+	case "scattered", "dispersed":
+		narr.WriteString("Dispersed clearing indicates small-scale agriculture or selective logging.")
+	case "linear", "road":
+		narr.WriteString("Linear pattern follows infrastructure corridors.")
+	case "cluster", "concentrated":
+		narr.WriteString("Concentrated clearing may indicate settlement expansion.")
+	case "minor":
+		narr.WriteString("Minimal disturbance, possibly natural or subsistence activity.")
+	default:
+		if areaKm2 > 10 {
+			narr.WriteString("Significant loss requiring investigation.")
+		}
+	}
+	
+	// Add river context
+	for _, r := range rivers {
+		if r.Distance < 10 {
+			narr.WriteString(fmt.Sprintf(" Activity near %s.", r.Name))
+			break
+		}
+	}
+	
+	return narr.String()
+}
+
+// buildDeforestationSummary creates overall summary with geographic shift analysis
+func (s *Server) buildDeforestationSummary(parkName string, totalLoss float64, yearCount, worstYear int, worstLoss float64, trendDir string, trendPct, earlyLat, earlyLon, recentLat, recentLon float64, earlyCount, recentCount int, parkID string) string {
+	var summary strings.Builder
+	
+	summary.WriteString(fmt.Sprintf("%s has experienced %.2f km² of forest loss across %d recorded years. ", parkName, totalLoss, yearCount))
+	summary.WriteString(fmt.Sprintf("Worst year: %d with %.2f km² lost. ", worstYear, worstLoss))
+	
+	// Trend
+	switch trendDir {
+	case "increasing":
+		summary.WriteString(fmt.Sprintf("⚠️ Deforestation INCREASING (+%.0f%%). ", trendPct))
+	case "decreasing":
+		summary.WriteString(fmt.Sprintf("✓ Deforestation DECREASING (-%.0f%%). ", trendPct))
+	case "stable":
+		summary.WriteString("Rates stable. ")
+	}
+	
+	// Geographic shift
+	if earlyCount > 0 && recentCount > 0 {
+		distKm := haversineDistance(earlyLat, earlyLon, recentLat, recentLon)
+		if distKm > 5 {
+			bearing := bearingTo(earlyLat, earlyLon, recentLat, recentLon)
+			shiftDir := bearingToCardinal(bearing)
+			summary.WriteString(fmt.Sprintf("Pressure has shifted %sward.", strings.ToLower(shiftDir)))
+		}
+	}
+	
+	return summary.String()
 }
