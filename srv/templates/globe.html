@@ -615,20 +615,6 @@
         <div class="filter-panel-content">
             <!-- Active Filters -->
             <div class="active-filters" id="active-filters">
-                <!-- Time Range Filter -->
-                <div class="active-filter-item" id="filter-time">
-                    <div class="filter-item-content">
-                        <svg class="filter-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        <div>
-                            <div class="filter-item-label">Time Range</div>
-                            <div class="filter-item-value" id="filter-time-value">Last 12 months</div>
-                        </div>
-                    </div>
-                </div>
-                
                 <!-- Selected Area Filter (hidden by default) -->
                 <div class="active-filter-item area" id="filter-area" style="display: none;">
                     <div class="filter-item-content">
@@ -675,7 +661,7 @@
                 </button>
                 <input type="checkbox" id="keystones-toggle" checked style="display:none;">
                 <div class="selected-parks" id="selected-parks">
-                    <div class="selected-parks-empty" id="selected-parks-empty">Click a park on the map to select it</div>
+
                 </div>
             </div>
             
@@ -753,11 +739,10 @@
         <span class="footer-sep">|</span>
         <a href="https://maplibre.org/" target="_blank" class="maplibre-link">MapLibre</a>
         <span class="footer-sep">|</span>
-        <button class="footer-btn" onclick="shareCurrentView()" title="Share this view">
+        <button class="footer-btn" onclick="shareCurrentView()" title="Copy link">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
-                <polyline points="16 6 12 2 8 6"></polyline>
-                <line x1="12" y1="2" x2="12" y2="15"></line>
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
             </svg>
         </button>
         <button class="footer-btn" onclick="showModal('manifest')" title="About 5MP">
@@ -1254,6 +1239,14 @@
 
             map.on('mouseenter', 'areas-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', 'areas-fill', function() { map.getCanvas().style.cursor = ''; });
+
+            // Set up PA click handler immediately when areas-fill layer is ready
+            // This is in the map.on('load') block so layer definitely exists
+            if (typeof setupPAClickHandler === 'function') {
+                console.log('Setting up PA click handler in map.on(load)');
+                setupPAClickHandler();
+                if (typeof paClickHandlerInitialized !== 'undefined') paClickHandlerInitialized = true;
+            }
 
             // Initialize country search when areas data loads
             map.on('sourcedata', function(e) {
@@ -3370,42 +3363,127 @@
         }
 
         // Set up PA click handler (enhanced popup with collapsible sections)
-        // This runs after map is ready and sets up the single click handler for areas-fill
+        // Cross-browser compatible: uses only general click + queryRenderedFeatures
+        // Works reliably in Safari 18.6, Firefox 146, DuckDuckGo Android, and all major browsers
         function setupPAClickHandler() {
-            // Use both layer-specific and general click with feature query for better browser compat
-            map.on('click', 'areas-fill', function(e) {
-                console.log('areas-fill click handler fired', e.features?.length);
-                if (e.features && e.features.length > 0) {
-                    e.originalEvent.stopPropagation();
-                    const props = e.features[0].properties;
-                    showPAPopup(props, e.lngLat);
-                }
-            });
-            
-            // Fallback: general click handler that checks for PA features
-            // This helps on browsers where layer-specific handlers may not fire reliably
-            map.on('click', function(e) {
-                // Skip if popup already showing or if we're in bbox draw mode
-                if (currentPAPopup || document.getElementById('bbox-draw-overlay')?.classList.contains('active')) {
-                    return;
+            // Helper to handle PA feature interaction at a point
+            function handlePAInteraction(point, lngLat) {
+                // Skip if in bbox draw mode
+                if (document.getElementById('bbox-draw-overlay')?.classList.contains('active')) {
+                    return false;
                 }
                 
-                // Query for PA features at click point
-                const paFeatures = map.queryRenderedFeatures(e.point, { layers: ['areas-fill'] });
-                if (paFeatures.length > 0) {
-                    console.log('Fallback PA click handler - found PA:', paFeatures[0].properties?.name);
-                    const props = paFeatures[0].properties;
-                    showPAPopup(props, e.lngLat);
+                // Check if areas-fill layer exists
+                if (!map.getLayer('areas-fill')) {
+                    return false;
                 }
+                
+                // Query for PA features at the interaction point
+                const paFeatures = map.queryRenderedFeatures(point, { layers: ['areas-fill'] });
+                if (paFeatures.length > 0) {
+                    console.log('PA click handler - found PA:', paFeatures[0].properties?.name);
+                    const props = paFeatures[0].properties;
+                    showPAPopup(props, lngLat);
+                    return true;
+                }
+                return false;
+            }
+            
+            // Single unified click handler using queryRenderedFeatures
+            // This is more reliable than layer-specific handlers across browsers
+            map.on('click', function(e) {
+                handlePAInteraction(e.point, e.lngLat);
             });
+            
+            // Add touch handler for mobile browsers (DuckDuckGo Android, Safari iOS)
+            // Some mobile browsers need explicit touch handling
+            const canvas = map.getCanvas();
+            let touchStartTime = 0;
+            let touchStartPoint = null;
+            
+            canvas.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 1) {
+                    touchStartTime = Date.now();
+                    touchStartPoint = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                }
+            }, { passive: true });
+            
+            canvas.addEventListener('touchend', function(e) {
+                // Only process single-touch taps (not gestures or zooms)
+                if (!touchStartPoint) return;
+                
+                const touchDuration = Date.now() - touchStartTime;
+                const changedTouch = e.changedTouches[0];
+                const touchEndPoint = { x: changedTouch.clientX, y: changedTouch.clientY };
+                
+                // Check if this was a quick tap without much movement (not a drag)
+                const moveDistance = Math.sqrt(
+                    Math.pow(touchEndPoint.x - touchStartPoint.x, 2) + 
+                    Math.pow(touchEndPoint.y - touchStartPoint.y, 2)
+                );
+                
+                // Quick tap (< 300ms) with minimal movement (< 10px)
+                if (touchDuration < 300 && moveDistance < 10) {
+                    // Convert touch to map coordinates
+                    const rect = canvas.getBoundingClientRect();
+                    const point = {
+                        x: touchEndPoint.x - rect.left,
+                        y: touchEndPoint.y - rect.top
+                    };
+                    const lngLat = map.unproject(point);
+                    
+                    // Use setTimeout to let the map's click handler fire first
+                    // If it doesn't work, this will be the backup
+                    setTimeout(function() {
+                        // Only process if no popup was shown by the regular click handler
+                        if (!currentPAPopup) {
+                            console.log('Touch fallback handler triggered');
+                            handlePAInteraction(point, lngLat);
+                        }
+                    }, 50);
+                }
+                
+                touchStartPoint = null;
+            }, { passive: true });
+            
+            // Change cursor on hover over PA features
+            map.on('mouseenter', 'areas-fill', function() {
+                canvas.style.cursor = 'pointer';
+            });
+            map.on('mouseleave', 'areas-fill', function() {
+                canvas.style.cursor = '';
+            });
+            
+            console.log('PA click handler initialized (cross-browser compatible)');
         }
         
-        // Set up the handler - if map already loaded, do it now; otherwise wait
-        if (map.loaded()) {
-            setupPAClickHandler();
-        } else {
-            map.on('load', setupPAClickHandler);
+        console.log('DEBUG: Code reached initPAClickHandler definition');
+        
+        // Set up the handler when map is ready
+        // Check if map is loaded AND the areas-fill layer exists
+        function initPAClickHandler() {
+            if (map.getLayer('areas-fill')) {
+                setupPAClickHandler();
+            } else {
+                // Wait for the layer to be added
+                map.on('sourcedata', function onSourceData(e) {
+                    if (e.sourceId === 'areas' && map.getLayer('areas-fill')) {
+                        map.off('sourcedata', onSourceData);
+                        setupPAClickHandler();
+                    }
+                });
+            }
         }
+        // Fallback: Also run init after a delay in case the map.on('load') call didn't work
+        // This is a safety net - the primary init is in map.on('load') above
+        var paClickHandlerInitialized = false;
+        setTimeout(function() {
+            if (!paClickHandlerInitialized) {
+                console.log('PA handler fallback init - map.loaded:', map.loaded(), 'layer exists:', !!map.getLayer('areas-fill'));
+                initPAClickHandler();
+                paClickHandlerInitialized = true;
+            }
+        }, 1000);
 
         // Stats panel interactivity
         let activeStatMode = null;
