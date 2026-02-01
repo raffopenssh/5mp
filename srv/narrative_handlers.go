@@ -964,7 +964,7 @@ func formatArea(m2 float64) string {
 	return fmt.Sprintf("%.0f m²", m2)
 }
 
-// generateSettlementNarrative creates a rich, story-like narrative for populated parks
+// generateSettlementNarrative creates a rich, story-like narrative using OSM place references
 func generateSettlementNarrative(parkName string, count int, totalPop int64, density float64, risk string,
 	largest []SettlementDetail, regions []RegionSettlement) string {
 
@@ -980,48 +980,42 @@ func generateSettlementNarrative(parkName string, count int, totalPop int64, den
 	narrative.WriteString(fmt.Sprintf("%s shows %s of built-up area across %d detected settlements. ",
 		parkName, formatArea(totalArea), count))
 
-	// Describe risk level with context
-	switch risk {
-	case "critical":
-		narrative.WriteString("Human presence is at critical levels, with settlements deeply embedded within the protected area. ")
-	case "high":
-		narrative.WriteString("Settlement pressure is high, indicating significant human-wildlife interface zones. ")
-	case "moderate":
-		narrative.WriteString("Moderate settlement activity suggests localized pressure points requiring monitoring. ")
-	case "low":
-		narrative.WriteString("Settlement presence is relatively limited, though vigilance is warranted. ")
-	}
+	// Assess and describe the settlement pattern
+	pattern := assessSettlementPattern(largest)
+	narrative.WriteString(describeSettlementPattern(pattern, count))
 
-	// Regional distribution analysis
-	if len(regions) > 0 {
-		// Find dominant region
-		dominantRegion := regions[0]
-		var totalRegionSettlements int
-		for _, r := range regions {
-			totalRegionSettlements += r.SettlementCount
+	// Describe distribution using place names (like fire/deforestation narratives)
+	if len(largest) >= 3 {
+		// Find the geographic center of largest settlements
+		var sumLat, sumLon float64
+		for i := 0; i < 3 && i < len(largest); i++ {
+			sumLat += largest[i].Lat
+			sumLon += largest[i].Lon
 		}
-
-		if totalRegionSettlements > 0 {
-			percent := float64(dominantRegion.SettlementCount) * 100 / float64(totalRegionSettlements)
-			if percent > 50 {
-				narrative.WriteString(fmt.Sprintf("Settlements are concentrated in the %s sector, accounting for %.0f%% of all built-up areas. ",
-					strings.ToLower(dominantRegion.Region), percent))
-				// Encroachment direction inference
-				narrative.WriteString(fmt.Sprintf("This pattern suggests encroachment pressure advancing from the %s. ",
-					strings.ToLower(dominantRegion.Region)))
-			} else if len(regions) >= 2 {
-				// Multiple regions have settlements
-				narrative.WriteString(fmt.Sprintf("Settlement activity spans multiple zones, with the %s and %s sectors showing the highest activity. ",
-					strings.ToLower(regions[0].Region), strings.ToLower(regions[1].Region)))
+		centerLat := sumLat / 3
+		centerLon := sumLon / 3
+		
+		// Use largest settlement's place name as reference
+		if largest[0].Name != "" && largest[0].Name != "Unnamed settlement" {
+			narrative.WriteString(fmt.Sprintf("Settlement activity is concentrated near %s. ", largest[0].Name))
+			
+			// Describe spread from this center
+			if len(largest) >= 2 && largest[1].Name != "" {
+				bearing := bearingTo(largest[0].Lat, largest[0].Lon, largest[1].Lat, largest[1].Lon)
+				dir := bearingToCardinal(bearing)
+				dist := haversineDistance(largest[0].Lat, largest[0].Lon, largest[1].Lat, largest[1].Lon)
+				narrative.WriteString(fmt.Sprintf("Additional pressure extends %.0f km %s toward %s. ",
+					dist, strings.ToLower(dir), largest[1].Name))
 			}
+		} else {
+			// Fall back to coordinate-based description
+			narrative.WriteString(fmt.Sprintf("Settlement activity centered around %.2f°, %.2f°. ", centerLat, centerLon))
 		}
 	}
 
-	// Describe major settlements with location context
+	// List key settlements with rich location descriptions
 	if len(largest) > 0 {
-		narrative.WriteString("\n\nKey settlements: ")
-
-		// Describe top 3-5 settlements
+		narrative.WriteString("\n\nKey built-up areas: ")
 		maxToDescribe := 5
 		if len(largest) < maxToDescribe {
 			maxToDescribe = len(largest)
@@ -1032,140 +1026,190 @@ func generateSettlementNarrative(parkName string, count int, totalPop int64, den
 			if i > 0 {
 				narrative.WriteString(" ")
 			}
-
-			// Build rich description for each settlement
-			desc := describeSettlementLocation(s)
-			narrative.WriteString(desc)
+			narrative.WriteString(describeSettlementWithPattern(s, i+1))
 		}
 	}
 
-	// Encroachment pattern summary
-	if len(regions) > 0 && len(largest) > 0 {
+	// Encroachment analysis using place-based references
+	if len(largest) >= 2 {
 		narrative.WriteString("\n\n")
-		narrative.WriteString(generateEncroachmentSummary(regions, largest))
+		narrative.WriteString(generatePlaceBasedEncroachment(largest))
 	}
 
 	return narrative.String()
 }
 
-// describeSettlementLocation creates a rich description for a single settlement
-func describeSettlementLocation(s SettlementDetail) string {
-	var desc strings.Builder
-
-	// Format area appropriately
-	areaStr := formatArea(s.AreaM2)
-
-	// Build location description
-	if s.Name != "" && s.Name != "Unnamed settlement" {
-		if s.Direction != "" && s.NearestBoundaryKm > 0 {
-			// "18.5 km² of built-up area detected near Oicha (0.5 km NNW)"
-			desc.WriteString(fmt.Sprintf("%s of built-up area near %s (%.1f km %s).",
-				areaStr, s.Name, s.NearestBoundaryKm, s.Direction))
-		} else {
-			desc.WriteString(fmt.Sprintf("%s of built-up area near %s.", areaStr, s.Name))
-		}
-	} else {
-		// No place name - use coordinates and direction
-		if s.Direction != "" {
-			desc.WriteString(fmt.Sprintf("%s of built-up area in the %s sector.",
-				areaStr, strings.ToLower(s.Direction)))
-		} else {
-			// Determine quadrant from coordinates
-			desc.WriteString(fmt.Sprintf("%s of built-up area detected.", areaStr))
+// assessSettlementPattern determines the spatial pattern of settlements
+func assessSettlementPattern(settlements []SettlementDetail) string {
+	if len(settlements) == 0 {
+		return "none"
+	}
+	if len(settlements) == 1 {
+		return "isolated"
+	}
+	
+	// Calculate spread and clustering
+	var totalDist float64
+	var pairCount int
+	for i := 0; i < len(settlements) && i < 10; i++ {
+		for j := i + 1; j < len(settlements) && j < 10; j++ {
+			dist := haversineDistance(settlements[i].Lat, settlements[i].Lon,
+				settlements[j].Lat, settlements[j].Lon)
+			totalDist += dist
+			pairCount++
 		}
 	}
-
-	return desc.String()
+	
+	if pairCount == 0 {
+		return "isolated"
+	}
+	
+	avgDist := totalDist / float64(pairCount)
+	
+	// Check for linear pattern (settlements along a line/road)
+	if len(settlements) >= 3 {
+		if isLinearPattern(settlements[:min(10, len(settlements))]) {
+			return "linear"
+		}
+	}
+	
+	// Classify based on average distance
+	switch {
+	case avgDist < 5:
+		return "clustered"
+	case avgDist < 15:
+		return "scattered"
+	default:
+		return "dispersed"
+	}
 }
 
-// generateEncroachmentSummary analyzes settlement patterns to describe encroachment
-func generateEncroachmentSummary(regions []RegionSettlement, settlements []SettlementDetail) string {
-	var summary strings.Builder
+// isLinearPattern checks if settlements follow a linear pattern (e.g., along a road)
+func isLinearPattern(settlements []SettlementDetail) bool {
+	if len(settlements) < 3 {
+		return false
+	}
+	// Simple check: see if bearings between consecutive settlements are similar
+	var bearings []float64
+	for i := 0; i < len(settlements)-1; i++ {
+		b := bearingTo(settlements[i].Lat, settlements[i].Lon,
+			settlements[i+1].Lat, settlements[i+1].Lon)
+		bearings = append(bearings, b)
+	}
+	
+	// Check variance in bearings
+	if len(bearings) < 2 {
+		return false
+	}
+	var sum float64
+	for _, b := range bearings {
+		sum += b
+	}
+	avg := sum / float64(len(bearings))
+	
+	var variance float64
+	for _, b := range bearings {
+		diff := b - avg
+		// Handle wrap-around at 360
+		if diff > 180 {
+			diff -= 360
+		}
+		if diff < -180 {
+			diff += 360
+		}
+		variance += diff * diff
+	}
+	variance /= float64(len(bearings))
+	
+	// Low variance suggests linear pattern
+	return variance < 2500 // ~50 degree standard deviation
+}
 
-	// Analyze which boundary is most impacted
-	if len(regions) == 0 {
+// describeSettlementPattern returns a description of the settlement pattern
+func describeSettlementPattern(pattern string, count int) string {
+	switch pattern {
+	case "clustered":
+		return "Settlements form a dense cluster, suggesting a major population center or urban expansion. "
+	case "linear":
+		return "Settlements follow a linear pattern, likely along a road or river corridor. "
+	case "scattered":
+		return "Scattered settlement pattern indicates dispersed agricultural or pastoral communities. "
+	case "dispersed":
+		return "Widely dispersed settlements suggest isolated homesteads or temporary camps. "
+	case "isolated":
+		return "Single isolated settlement detected. "
+	default:
+		if count > 50 {
+			return "Extensive settlement activity detected across multiple areas. "
+		}
 		return ""
 	}
+}
 
-	// Count settlements by general direction
-	northCount := 0
-	southCount := 0
-	eastCount := 0
-	westCount := 0
+// describeSettlementWithPattern creates a location description for a single settlement
+func describeSettlementWithPattern(s SettlementDetail, rank int) string {
+	areaStr := formatArea(s.AreaM2)
+	
+	if s.Name != "" && s.Name != "Unnamed settlement" {
+		if s.Direction != "" && s.NearestBoundaryKm > 0 && s.NearestBoundaryKm < 50 {
+			return fmt.Sprintf("%s near %s (%.1f km %s).", areaStr, s.Name, s.NearestBoundaryKm, s.Direction)
+		}
+		return fmt.Sprintf("%s near %s.", areaStr, s.Name)
+	}
+	return fmt.Sprintf("%s detected at %.3f°, %.3f°.", areaStr, s.Lat, s.Lon)
+}
 
-	for _, r := range regions {
-		switch r.Region {
-		case "Northeast":
-			northCount += r.SettlementCount
-			eastCount += r.SettlementCount
-		case "Northwest":
-			northCount += r.SettlementCount
-			westCount += r.SettlementCount
-		case "Southeast":
-			southCount += r.SettlementCount
-			eastCount += r.SettlementCount
-		case "Southwest":
-			southCount += r.SettlementCount
-			westCount += r.SettlementCount
+// generatePlaceBasedEncroachment creates encroachment summary using place names
+func generatePlaceBasedEncroachment(settlements []SettlementDetail) string {
+	if len(settlements) < 2 {
+		return ""
+	}
+	
+	var summary strings.Builder
+	
+	// Find the largest settlement as primary reference
+	primary := settlements[0]
+	
+	// Collect place names for context
+	var placeNames []string
+	for i := 0; i < len(settlements) && i < 5; i++ {
+		if settlements[i].Name != "" && settlements[i].Name != "Unnamed settlement" {
+			placeNames = append(placeNames, settlements[i].Name)
 		}
 	}
-
-	// Determine primary pressure direction
-	maxCount := northCount
-	primaryDir := "northern"
-	if southCount > maxCount {
-		maxCount = southCount
-		primaryDir = "southern"
+	
+	if len(placeNames) == 0 {
+		return "Settlement pressure detected but no named places identified for reference."
 	}
-	if eastCount > maxCount {
-		maxCount = eastCount
-		primaryDir = "eastern"
-	}
-	if westCount > maxCount {
-		primaryDir = "western"
-	}
-
-	// Find named places near settlements for context
-	var namedPlaces []string
+	
+	// Determine encroachment direction from settlement positions
+	var avgLat, avgLon float64
 	for _, s := range settlements {
-		if s.Name != "" && s.Name != "Unnamed settlement" {
-			// Avoid duplicates
-			found := false
-			for _, p := range namedPlaces {
-				if p == s.Name {
-					found = true
-					break
-				}
-			}
-			if !found && len(namedPlaces) < 3 {
-				namedPlaces = append(namedPlaces, s.Name)
-			}
-		}
+		avgLat += s.Lat
+		avgLon += s.Lon
 	}
-
-	summary.WriteString(fmt.Sprintf("Primary encroachment pressure originates from the %s boundary", primaryDir))
-
-	if len(namedPlaces) > 0 {
-		if len(namedPlaces) == 1 {
-			summary.WriteString(fmt.Sprintf(", particularly near %s", namedPlaces[0]))
-		} else if len(namedPlaces) == 2 {
-			summary.WriteString(fmt.Sprintf(", particularly in the vicinity of %s and %s", namedPlaces[0], namedPlaces[1]))
-		} else {
-			summary.WriteString(fmt.Sprintf(", particularly near %s, %s, and %s", namedPlaces[0], namedPlaces[1], namedPlaces[2]))
-		}
-	}
-
-	summary.WriteString(". ")
-
-	// Conservation recommendation based on pattern
-	if maxCount > 5 {
-		summary.WriteString(fmt.Sprintf("The %s sector should be prioritized for buffer zone enforcement and community engagement programs.", primaryDir))
+	avgLat /= float64(len(settlements))
+	avgLon /= float64(len(settlements))
+	
+	// Direction from center to largest settlement indicates pressure direction
+	bearing := bearingTo(avgLat, avgLon, primary.Lat, primary.Lon)
+	pressureDir := bearingToCardinal(bearing)
+	
+	if len(placeNames) == 1 {
+		summary.WriteString(fmt.Sprintf("Primary encroachment pressure originates from the %s, near %s.",
+			strings.ToLower(pressureDir), placeNames[0]))
+	} else if len(placeNames) == 2 {
+		summary.WriteString(fmt.Sprintf("Encroachment pressure concentrated near %s and %s, advancing from the %s.",
+			placeNames[0], placeNames[1], strings.ToLower(pressureDir)))
 	} else {
-		summary.WriteString("Continued monitoring of settlement expansion patterns is recommended.")
+		summary.WriteString(fmt.Sprintf("Encroachment pressure originates from the %s boundary, particularly near %s, %s, and %s.",
+			strings.ToLower(pressureDir), placeNames[0], placeNames[1], placeNames[2]))
 	}
-
+	
 	return summary.String()
 }
+
+
 
 // formatPopulation formats population numbers with K/M suffixes
 func formatPopulation(pop int64) string {
