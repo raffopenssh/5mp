@@ -862,8 +862,8 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 			COALESCE(nearest_place, 'Unnamed settlement') as name,
 			COALESCE(area_m2, 0) as area_m2,
 			lat, lon,
-			COALESCE(direction, '') as direction,
-			COALESCE(distance_km, 0) as distance_km
+			COALESCE(direction_from_place, '') as direction,
+			COALESCE(distance_to_place_km, 0) as distance_km
 		FROM park_settlements
 		WHERE park_id = ?
 		ORDER BY area_m2 DESC
@@ -1242,6 +1242,236 @@ func describePatternVaried(pattern string, areaKm2 float64, year int) string {
 		}
 		return "Further analysis needed to determine the cause of forest loss."
 	}
+}
+
+// buildDeforestationNarrative creates a rich, location-based narrative for a single year's deforestation
+func (s *Server) buildDeforestationNarrative(parkID string, year int, area, lat, lon float64, pattern string, settlements, rivers []OSMPlace) string {
+	var narr strings.Builder
+	
+	// Determine magnitude description
+	var magnitude string
+	switch {
+	case area > 20:
+		magnitude = "severe"
+	case area > 10:
+		magnitude = "substantial"
+	case area > 5:
+		magnitude = "significant"
+	case area > 2:
+		magnitude = "moderate"
+	default:
+		magnitude = "localized"
+	}
+	
+	// Determine sector based on coordinates relative to park center
+	sector := s.describeParkSector(parkID, lat, lon)
+	
+	// Find the closest settlement for primary location reference
+	var primaryPlace string
+	var primaryDist float64
+	for _, p := range settlements {
+		if p.Distance < 30 {
+			primaryPlace = p.Name
+			primaryDist = p.Distance
+			break
+		}
+	}
+	
+	// Find nearby river for geographic context
+	var riverContext string
+	for _, r := range rivers {
+		if r.Distance < 15 {
+			if r.Distance < 3 {
+				riverContext = fmt.Sprintf("along the %s", r.Name)
+			} else {
+				riverContext = fmt.Sprintf("near the %s", r.Name)
+			}
+			break
+		}
+	}
+	
+	// Build opening sentence with location
+	if primaryPlace != "" && primaryDist < 5 {
+		narr.WriteString(fmt.Sprintf("In %d, %s forest loss (%.2f km²) was concentrated near %s",
+			year, magnitude, area, primaryPlace))
+	} else if primaryPlace != "" {
+		bearing := bearingTo(lat, lon, settlements[0].Lat, settlements[0].Lon)
+		direction := bearingToCardinal(bearing)
+		// Reverse direction since we want "X of settlement"
+		reverseDir := reverseCardinal(direction)
+		narr.WriteString(fmt.Sprintf("In %d, %s forest loss (%.2f km²) occurred %.0f km %s of %s",
+			year, magnitude, area, primaryDist, reverseDir, primaryPlace))
+	} else if sector != "" {
+		narr.WriteString(fmt.Sprintf("In %d, %s forest loss (%.2f km²) was detected in the %s",
+			year, magnitude, area, sector))
+	} else {
+		narr.WriteString(fmt.Sprintf("In %d, %.2f km² of forest was lost", year, area))
+	}
+	
+	// Add river context
+	if riverContext != "" {
+		narr.WriteString(fmt.Sprintf(", %s", riverContext))
+	}
+	narr.WriteString(". ")
+	
+	// Add pattern-specific description with geographic context
+	switch pattern {
+	case "scattered":
+		if len(settlements) > 1 {
+			narr.WriteString(fmt.Sprintf("The scattered clearing pattern suggests smallholder agricultural expansion, "+
+				"with multiple small plots appearing between %s and surrounding communities.", primaryPlace))
+		} else {
+			narr.WriteString("Dispersed clearing indicates gradual encroachment from multiple entry points, "+
+				"typical of subsistence farming expansion.")
+		}
+	case "cluster":
+		if primaryPlace != "" {
+			narr.WriteString(fmt.Sprintf("The concentrated loss pattern near %s suggests organized clearing, "+
+				"possibly for commercial agriculture or settlement expansion.", primaryPlace))
+		} else {
+			narr.WriteString("Clustered deforestation indicates a single major clearing operation, "+
+				"possibly mining activity or commercial land conversion.")
+		}
+	case "strip":
+		if riverContext != "" {
+			narr.WriteString(fmt.Sprintf("Linear clearing %s suggests road construction or logging track development "+
+				"following the river corridor.", riverContext))
+		} else if primaryPlace != "" {
+			narr.WriteString(fmt.Sprintf("The strip pattern indicates infrastructure development, "+
+				"likely a road or logging track extending toward %s.", primaryPlace))
+		} else {
+			narr.WriteString("Linear clearing pattern indicates road construction or logging access routes.")
+		}
+	case "edge":
+		if primaryPlace != "" {
+			narr.WriteString(fmt.Sprintf("Forest loss concentrated along park boundaries near %s "+
+				"reflects agricultural pressure from surrounding communities.", primaryPlace))
+		} else {
+			narr.WriteString("Edge-focused clearing indicates encroachment from communities adjacent to the protected area.")
+		}
+	default:
+		if area > 5 {
+			narr.WriteString("The significant extent of clearing warrants investigation to determine drivers.")
+		}
+	}
+	
+	return narr.String()
+}
+
+// buildDeforestationSummary creates a comprehensive summary with geographic shift analysis
+func (s *Server) buildDeforestationSummary(parkName string, totalLoss float64, yearCount int,
+	worstYear int, worstLoss float64, trendDir string, trendPct float64,
+	earlyLat, earlyLon, recentLat, recentLon float64, earlyCount, recentCount int, parkID string) string {
+	
+	var parts []string
+	
+	// Opening statement
+	parts = append(parts, fmt.Sprintf("%s has experienced %.2f km² of cumulative forest loss across %d recorded years.",
+		parkName, totalLoss, yearCount))
+	
+	// Worst year with location context
+	if worstYear > 0 {
+		parts = append(parts, fmt.Sprintf("The most severe year was %d with %.2f km² lost.", worstYear, worstLoss))
+	}
+	
+	// Trend description
+	trendDesc := describeTrend(trendDir, trendPct)
+	if trendDesc != "" {
+		parts = append(parts, trendDesc)
+	}
+	
+	// Geographic shift analysis
+	if earlyCount > 0 && recentCount > 0 {
+		// Calculate distance and direction of shift
+		distKm := haversineDistance(earlyLat, earlyLon, recentLat, recentLon)
+		if distKm > 5 { // Only mention if shift is significant (>5km)
+			bearing := bearingTo(earlyLat, earlyLon, recentLat, recentLon)
+			direction := bearingToCardinal(bearing)
+			
+			// Try to describe the shift in terms of places
+			earlyDesc := s.describeLocation(parkID, earlyLat, earlyLon)
+			recentDesc := s.describeLocation(parkID, recentLat, recentLon)
+			
+			if !strings.HasPrefix(earlyDesc, "at coordinates") && !strings.HasPrefix(recentDesc, "at coordinates") {
+				parts = append(parts, fmt.Sprintf("Deforestation pressure has shifted %sward, "+
+					"from areas %s toward %s.", strings.ToLower(direction), earlyDesc, recentDesc))
+			} else {
+				sector := s.describeParkSector(parkID, recentLat, recentLon)
+				if sector != "" {
+					parts = append(parts, fmt.Sprintf("Deforestation activity has shifted %sward toward the %s over the observation period.",
+						strings.ToLower(direction), sector))
+				}
+			}
+		}
+	}
+	
+	return strings.Join(parts, " ")
+}
+
+// describeParkSector returns a description of which part of the park a coordinate is in
+func (s *Server) describeParkSector(parkID string, lat, lon float64) string {
+	// Get park center by calculating from geometry bounding box
+	var centerLat, centerLon float64
+	var found bool
+	
+	if s.AreaStore != nil {
+		for _, area := range s.AreaStore.Areas {
+			if area.ID == parkID || area.WDPAID == parkID {
+				// Calculate center from geometry bounding box
+				latMin, latMax, lonMin, lonMax := area.GetBoundingBox()
+				centerLat = (latMin + latMax) / 2
+				centerLon = (lonMin + lonMax) / 2
+				found = true
+				break
+			}
+		}
+	}
+	
+	if !found {
+		return ""
+	}
+	
+	// Determine which sector based on position relative to center
+	latDiff := lat - centerLat
+	lonDiff := lon - centerLon
+	
+	var ns, ew string
+	if latDiff > 0.05 {
+		ns = "northern"
+	} else if latDiff < -0.05 {
+		ns = "southern"
+	} else {
+		ns = "central"
+	}
+	
+	if lonDiff > 0.05 {
+		ew = "eastern"
+	} else if lonDiff < -0.05 {
+		ew = "western"
+	}
+	
+	if ns == "central" && ew == "" {
+		return "central sector"
+	} else if ns == "central" {
+		return ew + " sector"
+	} else if ew == "" {
+		return ns + " sector"
+	}
+	return ns + ew + " sector"
+}
+
+// reverseCardinal returns the opposite cardinal direction
+func reverseCardinal(dir string) string {
+	reverse := map[string]string{
+		"N": "S", "S": "N", "E": "W", "W": "E",
+		"NE": "SW", "NW": "SE", "SE": "NW", "SW": "NE",
+		"NNE": "SSW", "ENE": "WSW", "ESE": "WNW", "SSE": "NNW",
+		"SSW": "NNE", "WSW": "ENE", "WNW": "ESE", "NNW": "SSE",
+	}
+	if r, ok := reverse[dir]; ok {
+		return r
+	}
+	return dir
 }
 
 // calculateTrend computes the 5-year rolling average trend
@@ -1623,97 +1853,4 @@ func (s *Server) analyzeFireTrend(parkID string, currentYear int) *FireTrendAnal
 	}
 	
 	return trend
-}
-
-// buildDeforestationNarrative creates a rich, location-based narrative for a deforestation event
-func (s *Server) buildDeforestationNarrative(parkID string, year int, areaKm2, lat, lon float64, pattern string, settlements, rivers []OSMPlace) string {
-	var narr strings.Builder
-	
-	// Determine magnitude
-	var magnitude string
-	switch {
-	case areaKm2 > 20:
-		magnitude = "severe"
-	case areaKm2 > 10:
-		magnitude = "substantial"
-	case areaKm2 > 5:
-		magnitude = "significant"
-	case areaKm2 > 2:
-		magnitude = "moderate"
-	default:
-		magnitude = "localized"
-	}
-	
-	// Get location description
-	locationDesc := s.describeLocation(parkID, lat, lon)
-	if locationDesc == "" || strings.HasPrefix(locationDesc, "at coordinates") {
-		locationDesc = fmt.Sprintf("in the park interior")
-	}
-	
-	// Build narrative
-	narr.WriteString(fmt.Sprintf("In %d, %s forest loss (%.2f km²) occurred %s", year, magnitude, areaKm2, locationDesc))
-	
-	// Add nearest settlement context
-	if len(settlements) > 0 && settlements[0].Distance < 15 {
-		narr.WriteString(fmt.Sprintf(", near %s", settlements[0].Name))
-	}
-	narr.WriteString(". ")
-	
-	// Describe pattern
-	switch pattern {
-	case "edge", "boundary":
-		narr.WriteString("Clearing pattern suggests agricultural expansion along the park boundary.")
-	case "scattered", "dispersed":
-		narr.WriteString("Dispersed clearing indicates small-scale agriculture or selective logging.")
-	case "linear", "road":
-		narr.WriteString("Linear pattern follows infrastructure corridors.")
-	case "cluster", "concentrated":
-		narr.WriteString("Concentrated clearing may indicate settlement expansion.")
-	case "minor":
-		narr.WriteString("Minimal disturbance, possibly natural or subsistence activity.")
-	default:
-		if areaKm2 > 10 {
-			narr.WriteString("Significant loss requiring investigation.")
-		}
-	}
-	
-	// Add river context
-	for _, r := range rivers {
-		if r.Distance < 10 {
-			narr.WriteString(fmt.Sprintf(" Activity near %s.", r.Name))
-			break
-		}
-	}
-	
-	return narr.String()
-}
-
-// buildDeforestationSummary creates overall summary with geographic shift analysis
-func (s *Server) buildDeforestationSummary(parkName string, totalLoss float64, yearCount, worstYear int, worstLoss float64, trendDir string, trendPct, earlyLat, earlyLon, recentLat, recentLon float64, earlyCount, recentCount int, parkID string) string {
-	var summary strings.Builder
-	
-	summary.WriteString(fmt.Sprintf("%s has experienced %.2f km² of forest loss across %d recorded years. ", parkName, totalLoss, yearCount))
-	summary.WriteString(fmt.Sprintf("Worst year: %d with %.2f km² lost. ", worstYear, worstLoss))
-	
-	// Trend
-	switch trendDir {
-	case "increasing":
-		summary.WriteString(fmt.Sprintf("⚠️ Deforestation INCREASING (+%.0f%%). ", trendPct))
-	case "decreasing":
-		summary.WriteString(fmt.Sprintf("✓ Deforestation DECREASING (-%.0f%%). ", trendPct))
-	case "stable":
-		summary.WriteString("Rates stable. ")
-	}
-	
-	// Geographic shift
-	if earlyCount > 0 && recentCount > 0 {
-		distKm := haversineDistance(earlyLat, earlyLon, recentLat, recentLon)
-		if distKm > 5 {
-			bearing := bearingTo(earlyLat, earlyLon, recentLat, recentLon)
-			shiftDir := bearingToCardinal(bearing)
-			summary.WriteString(fmt.Sprintf("Pressure has shifted %sward.", strings.ToLower(shiftDir)))
-		}
-	}
-	
-	return summary.String()
 }
