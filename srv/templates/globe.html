@@ -12,7 +12,7 @@
         button, .btn, [onclick] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
         input, textarea { font-size: 16px; /* Prevents iOS zoom on focus */ }
         
-        .header { position: fixed; top: 0; left: 0; right: 0; height: 44px; background: rgba(18,18,18,0.95); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: flex-end; padding: 0 20px; z-index: 1000; backdrop-filter: blur(10px); }
+
         .logo { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; color: #fff; }
         .logo-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
         .logo-icon svg { width: 28px; height: 28px; }
@@ -26,7 +26,7 @@
         .btn-primary { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; }
         .btn-primary:hover { background: linear-gradient(135deg, #16a34a, #15803d); }
 
-        #map { position: absolute; top: 44px; left: 0; right: 0; bottom: 0; z-index: 1; }
+        #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
         .modal-overlay.active { display: flex; }
@@ -73,7 +73,7 @@
             50% { opacity: 0.7; }
         }
 
-        .stats-panel { position: fixed; top: 54px; right: 10px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 16px; z-index: 100; font-size: 12px; min-width: 140px; }
+        .stats-panel { position: fixed; top: 10px; right: 10px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 16px; z-index: 100; font-size: 12px; min-width: 140px; }
         .stats-panel h3 { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
         .stats-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding: 6px 8px; margin: 0 -8px 6px -8px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; position: relative; }
         .stats-item:last-child { margin-bottom: 0; }
@@ -213,19 +213,27 @@
 
          
          
-        .map-toolbar { position: fixed; top: 54px; left: 10px; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; gap: 8px; z-index: 150; }
+        .map-toolbar { position: fixed; top: 10px; left: 10px; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; gap: 8px; z-index: 150; }
         .toolbar-btn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center; -webkit-transition: all 0.2s; transition: all 0.2s; padding: 0; }
         .toolbar-btn:hover { background: rgba(30,30,30,0.95); border-color: rgba(255,255,255,0.2); }
         .toolbar-btn svg { width: 20px; height: 20px; color: #a0a0a0; }
         .toolbar-btn:hover svg { color: #22c55e; }
         .toolbar-btn.active { background: rgba(34,197,94,0.15); border-color: #22c55e; }
         .toolbar-btn.active svg { color: #22c55e; }
+        .toolbar-btn.primary { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); border-color: #22c55e; }
+        .toolbar-btn.primary svg { color: #fff; }
+        .toolbar-btn.primary:hover { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); border-color: #16a34a; }
+        .toolbar-btn.primary:hover svg { color: #fff; }
+        /* Upload hint tooltip */
+        .upload-hint { position: absolute; left: 54px; top: 50%; transform: translateY(-50%) translateX(-10px); background: rgba(34,197,94,0.95); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; white-space: nowrap; z-index: 250; opacity: 0; transition: all 0.3s ease; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .upload-hint::before { content: ''; position: absolute; left: -6px; top: 50%; transform: translateY(-50%); border: 6px solid transparent; border-right-color: rgba(34,197,94,0.95); border-left: none; }
+        .upload-hint.show { opacity: 1; transform: translateY(-50%) translateX(0); }
         .toolbar-btn:focus { outline: none; border-color: #22c55e; }
         .toolbar-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
         .toolbar-separator { height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0; }
 
          
-        .filter-panel { position: fixed; top: 54px; left: 62px; width: 260px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-320px); transform: translateX(-320px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 80px); overflow-y: auto; }
+        .filter-panel { position: fixed; top: 10px; left: 62px; width: 260px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-320px); transform: translateX(-320px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 40px); overflow-y: auto; }
         .filter-panel.open { -webkit-transform: translateX(0); transform: translateX(0); opacity: 1; pointer-events: auto; }
         .filter-panel-header { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
         .filter-panel-title { font-size: 14px; font-weight: 600; color: #fff; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; gap: 8px; }
@@ -281,7 +289,7 @@
         .bbox-draw-hint.active { display: block; }
 
          /* Search Panel */
-        .search-panel { position: fixed; top: 54px; left: 62px; width: 280px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-340px); transform: translateX(-340px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 80px); overflow-y: auto; }
+        .search-panel { position: fixed; top: 10px; left: 62px; width: 280px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-340px); transform: translateX(-340px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 40px); overflow-y: auto; }
         .search-panel.open { -webkit-transform: translateX(0); transform: translateX(0); opacity: 1; pointer-events: auto; }
         .search-panel-header { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
         .search-panel-title { font-size: 14px; font-weight: 600; color: #fff; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; gap: 8px; }
@@ -409,7 +417,7 @@
 
          
         @media (max-width: 768px) {
-            .header { padding: 0 12px; height: 52px; }
+
             .logo-subtitle { display: none; }
             .logo-icon { width: 28px; height: 28px; }
             
@@ -418,6 +426,7 @@
             .toolbar-btn { width: 40px; height: 40px; min-width: 40px; min-height: 40px; }
             .toolbar-separator { display: none; }
             .notification-wrapper { display: flex; }
+            .upload-hint { display: none; }
             
             /* Panels slide up from bottom */
             .filter-panel { top: auto; bottom: 140px; left: 10px; width: calc(100vw - 20px); max-width: none; -webkit-transform: translateY(400px); transform: translateY(400px); max-height: 50vh; }
@@ -426,7 +435,7 @@
             .search-panel.open { -webkit-transform: translateY(0); transform: translateY(0); }
             
             /* Stats panel - compact grid at top */
-            .stats-panel { top: 58px; bottom: auto; right: 10px; left: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 8px; padding: 8px 12px; min-width: auto; }
+            .stats-panel { top: 10px; bottom: auto; right: 10px; left: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 8px; padding: 8px 12px; min-width: auto; }
             .stats-header { display: none; }
             .stats-divider { display: none; }
             .stats-item { text-align: center; padding: 4px 0; margin: 0; }
@@ -492,18 +501,7 @@
     </style>
 </head>
 <body>
-    <header class="header" style="height: 44px; justify-content: flex-end;">
-        <div class="auth-buttons">
-            <button class="btn btn-primary" onclick="showModal('upload')" title="Upload GPX patrol tracks">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-                Upload GPX
-            </button>
-        </div>
-    </header>
+
 
 
 
@@ -541,8 +539,19 @@
 
     
     <div class="map-toolbar" id="map-toolbar">
-        
-        <button class="toolbar-btn active" id="filter-toggle" onclick="toggleFilterPanel()" title="Filters">
+        <!-- Upload GPX Button - Primary action -->
+        <div style="position: relative;">
+            <button class="toolbar-btn primary" id="upload-btn" onclick="showModal('upload')" title="Upload GPX patrol tracks">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+            </button>
+            <div class="upload-hint" id="upload-hint">Upload GPX tracks</div>
+        </div>
+        <div class="toolbar-separator"></div>
+        <button class="toolbar-btn" id="filter-toggle" onclick="toggleFilterPanel()" title="Filters">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
             </svg>
@@ -605,7 +614,7 @@
     <div class="bbox-draw-hint" id="bbox-draw-hint">Click and drag to select area. Press ESC to cancel.</div>
 
     
-    <div class="filter-panel open" id="filter-panel">
+    <div class="filter-panel" id="filter-panel">
         <div class="filter-panel-header">
             <div class="filter-panel-title">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -4348,6 +4357,21 @@
         localStorage.setItem(key, views);
         var el = document.getElementById('page-views-footer');
         if (el) el.textContent = (views >= 1000 ? views.toLocaleString() : views) + ' views';
+        
+        // Show upload hint on first visit
+        var hintKey = '5mp_upload_hint_shown';
+        if (!localStorage.getItem(hintKey)) {
+            setTimeout(function() {
+                var hint = document.getElementById('upload-hint');
+                if (hint) {
+                    hint.classList.add('show');
+                    setTimeout(function() {
+                        hint.classList.remove('show');
+                        localStorage.setItem(hintKey, '1');
+                    }, 4000);
+                }
+            }, 1500);
+        }
     })();
     
     // Share current view - creates URL with state parameters
