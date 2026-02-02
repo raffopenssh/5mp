@@ -73,7 +73,7 @@
             50% { opacity: 0.7; }
         }
 
-        .stats-panel { position: fixed; top: 66px; right: 10px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 16px; z-index: 100; font-size: 12px; min-width: 140px; }
+        .stats-panel { position: fixed; top: 10px; right: 10px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 16px; z-index: 100; font-size: 12px; min-width: 140px; }
         .stats-panel h3 { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
         .stats-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding: 6px 8px; margin: 0 -8px 6px -8px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; position: relative; }
         .stats-item:last-child { margin-bottom: 0; }
@@ -126,11 +126,19 @@
 
         /* Compact Keystones Toggle */
         .keystones-compact-toggle { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #888; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .keystones-compact-toggle:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+        .keystones-compact-toggle.active { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
+        .bbox-select-btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #888; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .bbox-select-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); color: #fff; }
+        .bbox-select-btn.active { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #60a5fa; }
+        .country-tag { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: #aaa; font-size: 11px; cursor: pointer; transition: all 0.15s; }
+        .country-tag:hover { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
+        .country-tag.active { background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.4); color: #22c55e; }
+        .park-tag { display: inline-flex; align-items: center; padding: 3px 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #888; font-size: 10px; cursor: pointer; transition: all 0.15s; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .park-tag:hover { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.2); color: #22c55e; }
         .export-btn { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 12px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; color: #60a5fa; font-size: 13px; cursor: pointer; transition: all 0.2s; }
         .export-btn:hover { background: rgba(59,130,246,0.25); border-color: rgba(59,130,246,0.5); }
         .export-btn svg { flex-shrink: 0; }
-        .keystones-compact-toggle:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
-        .keystones-compact-toggle.active { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
 
         /* Notification Button and Dropdown */
         .notification-btn { position: relative; }
@@ -212,7 +220,7 @@
 
          
          
-        .map-toolbar { position: fixed; top: 66px; left: 10px; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; gap: 8px; z-index: 150; }
+        .map-toolbar { position: fixed; top: 10px; left: 10px; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; gap: 8px; z-index: 150; }
         .toolbar-btn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center; -webkit-transition: all 0.2s; transition: all 0.2s; padding: 0; }
         .toolbar-btn:hover { background: rgba(30,30,30,0.95); border-color: rgba(255,255,255,0.2); }
         .toolbar-btn svg { width: 20px; height: 20px; color: #a0a0a0; }
@@ -222,9 +230,18 @@
         .toolbar-btn:focus { outline: none; border-color: #22c55e; }
         .toolbar-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
         .toolbar-separator { height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0; }
+        /* Globe reset button */
+        .toolbar-btn#globe-reset svg { color: #22c55e; }
+        /* Upload button - prominent */
+        .toolbar-btn.upload-btn { background: rgba(34,197,94,0.2); border-color: #22c55e; position: relative; }
+        .toolbar-btn.upload-btn svg { color: #22c55e; }
+        .toolbar-btn.upload-btn:hover { background: rgba(34,197,94,0.35); }
+        .toolbar-btn.upload-btn.hint::after { content: 'Upload GPX'; position: absolute; left: 52px; top: 50%; transform: translateY(-50%); background: #22c55e; color: #000; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; animation: hintPulse 2s ease-in-out infinite; }
+        .toolbar-btn.upload-btn.hint::before { content: ''; position: absolute; left: 46px; top: 50%; transform: translateY(-50%); border: 6px solid transparent; border-right-color: #22c55e; }
+        @keyframes hintPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
          
-        .filter-panel { position: fixed; top: 66px; left: 62px; width: 260px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-320px); transform: translateX(-320px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 80px); overflow-y: auto; }
+        .filter-panel { position: fixed; top: 10px; left: 62px; width: 260px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-320px); transform: translateX(-320px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 30px); overflow-y: auto; }
         .filter-panel.open { -webkit-transform: translateX(0); transform: translateX(0); opacity: 1; pointer-events: auto; }
         .filter-panel-header { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
         .filter-panel-title { font-size: 14px; font-weight: 600; color: #fff; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; gap: 8px; }
@@ -280,7 +297,7 @@
         .bbox-draw-hint.active { display: block; }
 
          /* Search Panel */
-        .search-panel { position: fixed; top: 66px; left: 62px; width: 280px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-340px); transform: translateX(-340px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 80px); overflow-y: auto; }
+        .search-panel { position: fixed; top: 10px; left: 62px; width: 260px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-320px); transform: translateX(-320px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 30px); overflow-y: auto; }
         .search-panel.open { -webkit-transform: translateX(0); transform: translateX(0); opacity: 1; pointer-events: auto; }
         .search-panel-header { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
         .search-panel-title { font-size: 14px; font-weight: 600; color: #fff; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; gap: 8px; }
@@ -489,30 +506,7 @@
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="logo" onclick="if(typeof map !== 'undefined') map.flyTo({center: [20, 0], zoom: 3, duration: 1500})" style="cursor: pointer;" title="Reset view to Africa">
-            <div class="logo-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <ellipse cx="12" cy="12" rx="4" ry="10"></ellipse>
-                    <path d="M2 12h20"></path>
-                    <path d="M4.5 6.5h15"></path>
-                    <path d="M4.5 17.5h15"></path>
-                </svg>
-            </div>
-        </div>
-        
-        <div class="auth-buttons">
-            <button class="btn btn-primary" onclick="showModal('upload')" title="Upload GPX patrol tracks">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-                Upload GPX
-            </button>
-        </div>
-    </header>
+    <!-- Minimal header removed - toolbar handles all navigation -->
 
 
 
@@ -550,6 +544,25 @@
 
     
     <div class="map-toolbar" id="map-toolbar">
+        <!-- Globe reset button -->
+        <button class="toolbar-btn" id="globe-reset" onclick="resetMapView()" title="Reset view to Africa">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <ellipse cx="12" cy="12" rx="4" ry="10"></ellipse>
+                <path d="M2 12h20"></path>
+            </svg>
+        </button>
+        
+        <!-- Upload button - prominent -->
+        <button class="toolbar-btn upload-btn" id="toolbar-upload" onclick="showModal('upload')" title="Upload GPX patrol tracks">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+        </button>
+        
+        <div class="toolbar-separator"></div>
         
         <button class="toolbar-btn active" id="filter-toggle" onclick="toggleFilterPanel()" title="Filters">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -564,14 +577,6 @@
             </svg>
         </button>
         
-        <button class="toolbar-btn" id="bbox-toggle" onclick="startBboxSelection()" title="Select Area">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-            </svg>
-        </button>
         <div class="toolbar-separator"></div>
         <button class="toolbar-btn notification-btn" id="notification-toggle" onclick="toggleNotificationDropdown()" title="Recent Activity">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -610,36 +615,17 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                 </svg>
-                Active Filters
+                Filters
             </div>
             <button class="filter-panel-close" onclick="toggleFilterPanel()">×</button>
         </div>
         <div class="filter-panel-content">
-            <!-- Active Filters -->
-            <div class="active-filters" id="active-filters">
-                <!-- Selected Area Filter (hidden by default) -->
-                <div class="active-filter-item area" id="filter-area" style="display: none;">
-                    <div class="filter-item-content">
-                        <svg class="filter-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        </svg>
-                        <div>
-                            <div class="filter-item-label">Selected Area</div>
-                            <div class="filter-item-value" id="filter-area-value">Custom region</div>
-                        </div>
-                    </div>
-                    <button class="filter-item-clear" onclick="clearBbox()" title="Clear">×</button>
-                </div>
-            </div>
-            
-            <!-- Country Search with Bbox -->
+            <!-- Countries from selected parks -->
             <div class="filter-section" id="country-filter-section">
-                <div class="filter-section-label">Country</div>
-                <div class="country-selected" id="country-selected" style="display: none;">
-                    <span class="country-selected-name" id="country-selected-name"></span>
-                    <button class="country-selected-clear" onclick="clearCountryFilter()" title="Clear">×</button>
+                <div class="filter-section-label">Countries</div>
+                <div class="country-tags" id="country-tags" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <!-- Populated by JS based on selected parks -->
                 </div>
-                <div id="country-none" style="font-size: 12px; color: #666;">Use search to filter by country</div>
             </div>
 
             <!-- Movement Type Toggles -->
@@ -652,28 +638,48 @@
                 </div>
             </div>
             
-            <!-- Selected Parks -->
+            <!-- Selected Parks with bbox and 162 toggle -->
             <div class="filter-section">
                 <div class="filter-section-label">Selected Parks</div>
-                <button class="keystones-compact-toggle active" id="keystones-toggle-btn" onclick="toggleKeystonesBtn()" title="Toggle 162 Keystones visibility">
-                    <span style="font-size: 14px;">▣</span> <span>162</span>
-                </button>
-                <input type="checkbox" id="keystones-toggle" checked style="display:none;">
-                <div class="selected-parks" id="selected-parks">
-
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+                    <button class="keystones-compact-toggle active" id="keystones-toggle-btn" onclick="toggleKeystonesBtn()" title="Show all 162 keystones">
+                        <span style="font-size: 12px;">▣</span> <span id="keystones-count">162</span>
+                    </button>
+                    <button class="bbox-select-btn" id="bbox-select-btn" onclick="startBboxSelection()" title="Select area on map">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                        </svg>
+                        <span>Select Area</span>
+                    </button>
                 </div>
+                <!-- Selected area info -->
+                <div class="active-filter-item area" id="filter-area" style="display: none; margin-bottom: 10px;">
+                    <div class="filter-item-content">
+                        <svg class="filter-item-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        </svg>
+                        <span class="filter-item-value" id="filter-area-value" style="font-size: 11px;">Custom region</span>
+                    </div>
+                    <button class="filter-item-clear" onclick="clearBbox()" title="Clear">×</button>
+                </div>
+                <input type="checkbox" id="keystones-toggle" checked style="display:none;">
+                <!-- Park tags when not showing all 162 -->
+                <div class="selected-parks" id="selected-parks" style="display: flex; flex-wrap: wrap; gap: 4px; max-height: 120px; overflow-y: auto;"></div>
             </div>
             
             <!-- Export Section -->
             <div class="filter-section">
-                <div class="filter-section-label">Export Data</div>
+                <div class="filter-section-label">Export</div>
                 <button class="export-btn" onclick="exportParksCSV()" title="Export park data as CSV">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                     </svg>
-                    Export Parks CSV
+                    Export CSV
                 </button>
             </div>
             
@@ -687,27 +693,16 @@
     </div>
 
     <!-- Search Panel -->
+    <!-- Simplified Search Panel -->
     <div class="search-panel" id="search-panel">
-        <div class="search-panel-header">
-            <div class="search-panel-title">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search Protected Areas
+        <div class="search-panel-content" style="padding: 12px;">
+            <div class="search-input-wrapper" style="position: relative;">
+                <input type="text" class="search-input" id="search-input" placeholder="Search parks..." autocomplete="off" oninput="handleSearchInput(event)" style="padding-right: 32px;">
+                <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #666; font-size: 18px; cursor: pointer;">×</button>
             </div>
-            <button class="search-panel-close" onclick="toggleSearch()">×</button>
-        </div>
-        <div class="search-panel-content">
-            <div class="search-input-wrapper">
-                <input type="text" class="search-input" id="search-input" placeholder="Search protected areas..." autocomplete="off" oninput="handleSearchInput(event)" onfocus="showSearchResults()">
-                <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display: none;">×</button>
-            </div>
-            <div class="search-results" id="search-results"></div>
+            <div class="search-results" id="search-results" style="max-height: 300px; overflow-y: auto;"></div>
         </div>
     </div>
-
-    <button class="fab " onclick="showModal('upload')" title="Upload Data">+</button>
 
     <!-- Time Slider -->
     <div class="time-slider-container" id="time-slider-container">
@@ -1251,6 +1246,7 @@
             map.on('sourcedata', function(e) {
                 if (e.sourceId === 'areas' && e.isSourceLoaded) {
                     initCountrySearch();
+                    updateCountryTags();
                 }
             });
             map.on('mouseenter', 'grid-cells', function() { map.getCanvas().style.cursor = 'pointer'; });
@@ -1271,6 +1267,13 @@
             });
 
             // Note: Legend is now in HTML, not dynamically created (removed duplicate)
+            
+            // Initialize UI elements
+            setTimeout(function() {
+                showUploadHint();
+                updateCountryTags();
+                updateParkTags();
+            }, 1000);
         });
 
         function showModal(name) { document.getElementById(`modal-${name}`).classList.add('active'); }
@@ -1659,6 +1662,91 @@
         // Initial stats load will happen after initDateRange sets dates
         // loadStats(); // Moved to after initDateRange
 
+        // Reset map view to Africa
+        function resetMapView() {
+            if (typeof map !== 'undefined') {
+                map.flyTo({center: [20, 0], zoom: 3, duration: 1500});
+            }
+        }
+
+        // Update country tags based on visible/selected parks
+        function updateCountryTags() {
+            const container = document.getElementById('country-tags');
+            if (!container) return;
+            
+            // Get unique countries from map source
+            const countries = new Set();
+            if (map && map.getSource('areas')) {
+                try {
+                    const features = map.querySourceFeatures('areas');
+                    features.forEach(f => {
+                        if (f.properties && f.properties.country) {
+                            countries.add(f.properties.country);
+                        }
+                    });
+                } catch (e) {
+                    console.log('Could not query areas source');
+                }
+            }
+            
+            // Build country tags
+            const countryArr = Array.from(countries).sort();
+            if (countryArr.length === 0) {
+                container.innerHTML = '<span style="color: #666; font-size: 11px;">Loading...</span>';
+                return;
+            }
+            
+            container.innerHTML = countryArr.map(c => 
+                `<span class="country-tag" onclick="filterByCountry('${c}')" title="Filter to ${c}">${c}</span>`
+            ).join('');
+        }
+
+        // Filter parks by country
+        function filterByCountry(country) {
+            // Toggle active state
+            const tags = document.querySelectorAll('.country-tag');
+            tags.forEach(t => {
+                if (t.textContent === country) {
+                    t.classList.toggle('active');
+                } else {
+                    t.classList.remove('active');
+                }
+            });
+            // TODO: Implement actual country filtering
+        }
+
+        // Update park tags in filter panel
+        function updateParkTags() {
+            const container = document.getElementById('selected-parks');
+            if (!container) return;
+            
+            const isKeystonesActive = document.getElementById('keystones-toggle-btn')?.classList.contains('active');
+            
+            if (isKeystonesActive) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            // Show selected parks as tags when not showing all 162
+            // For now, show a message
+            container.innerHTML = '<span style="color: #666; font-size: 11px;">Use bbox to select parks</span>';
+        }
+
+        // Show upload hint on first visit
+        function showUploadHint() {
+            const hasSeenHint = localStorage.getItem('5mp_upload_hint_seen');
+            if (!hasSeenHint) {
+                const uploadBtn = document.getElementById('toolbar-upload');
+                if (uploadBtn) {
+                    uploadBtn.classList.add('hint');
+                    setTimeout(() => {
+                        uploadBtn.classList.remove('hint');
+                        localStorage.setItem('5mp_upload_hint_seen', 'true');
+                    }, 5000);
+                }
+            }
+        }
+
         function toggleFilterPanel() {
             filterPanelOpen = !filterPanelOpen;
             var panel = document.getElementById('filter-panel');
@@ -1832,7 +1920,8 @@
             bboxStartPoint = null;
             document.getElementById('bbox-draw-overlay').classList.add('active');
             document.getElementById('bbox-draw-hint').classList.add('active');
-            document.getElementById('bbox-toggle').classList.add('active');
+            var bboxBtn = document.getElementById('bbox-select-btn');
+            if (bboxBtn) bboxBtn.classList.add('active');
             map.getCanvas().style.cursor = 'crosshair';
         }
 
@@ -1841,7 +1930,8 @@
             bboxStartPoint = null;
             document.getElementById('bbox-draw-overlay').classList.remove('active');
             document.getElementById('bbox-draw-hint').classList.remove('active');
-            document.getElementById('bbox-toggle').classList.remove('active');
+            var bboxBtn2 = document.getElementById('bbox-select-btn');
+            if (bboxBtn2) bboxBtn2.classList.remove('active');
             map.getCanvas().style.cursor = '';
             
             var rect = document.querySelector('.bbox-draw-rect');
@@ -2026,10 +2116,33 @@
             checkbox.checked = keystonesEnabled;
             if (keystonesEnabled) {
                 btn.classList.add('active');
+                document.getElementById('keystones-count').textContent = '162';
             } else {
                 btn.classList.remove('active');
+                // Show count of selected parks in bbox if any
+                var count = currentBbox ? countParksInBbox() : 0;
+                document.getElementById('keystones-count').textContent = count > 0 ? count : '0';
             }
             updatePAHighlighting();
+            updateParkTags();
+        }
+        
+        function countParksInBbox() {
+            if (!currentBbox || !window.keystonesData) return 0;
+            var count = 0;
+            window.keystonesData.features.forEach(function(f) {
+                if (f.geometry && f.geometry.coordinates) {
+                    var coords = f.geometry.coordinates[0][0];
+                    if (coords) {
+                        var lng = coords[0], lat = coords[1];
+                        if (lng >= currentBbox[0] && lng <= currentBbox[2] &&
+                            lat >= currentBbox[1] && lat <= currentBbox[3]) {
+                            count++;
+                        }
+                    }
+                }
+            });
+            return count;
         }
 
         // Country search functions
