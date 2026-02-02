@@ -134,8 +134,10 @@
         .country-tag { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: #aaa; font-size: 11px; cursor: pointer; transition: all 0.15s; }
         .country-tag:hover { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
         .country-tag.active { background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.4); color: #22c55e; }
-        .park-tag { display: inline-flex; align-items: center; padding: 3px 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #888; font-size: 10px; cursor: pointer; transition: all 0.15s; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .park-tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #888; font-size: 10px; cursor: pointer; transition: all 0.15s; }
         .park-tag:hover { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.2); color: #22c55e; }
+        .park-tag-code { font-weight: 600; color: #22c55e; font-size: 9px; }
+        .park-tag-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80px; }
         .export-btn { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 12px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; color: #60a5fa; font-size: 13px; cursor: pointer; transition: all 0.2s; }
         .export-btn:hover { background: rgba(59,130,246,0.25); border-color: rgba(59,130,246,0.5); }
         .export-btn svg { flex-shrink: 0; }
@@ -1727,9 +1729,56 @@
                 return;
             }
             
-            // Show selected parks as tags when not showing all 162
-            // For now, show a message
-            container.innerHTML = '<span style="color: #666; font-size: 11px;">Use bbox to select parks</span>';
+            // Show selected parks as tags when bbox is active
+            if (currentBbox) {
+                const parks = getParksInBbox();
+                const count = parks.length;
+                
+                // Update the count in the toggle button
+                document.getElementById('keystones-count').textContent = count;
+                
+                if (count === 0) {
+                    container.innerHTML = '<span style="color: #666; font-size: 11px;">No parks in selected area</span>';
+                    return;
+                }
+                
+                // Display parks as tags (max 20, with scroll for more)
+                const maxDisplay = 20;
+                const displayParks = parks.slice(0, maxDisplay);
+                
+                container.innerHTML = displayParks.map(p => `
+                    <span class="park-tag" data-id="${p.id}" onclick="flyToPark('${p.id}')" title="${p.name}">
+                        <span class="park-tag-code">${p.country_code}</span>
+                        <span class="park-tag-name">${truncateName(p.name, 18)}</span>
+                    </span>
+                `).join('') + (parks.length > maxDisplay ? `
+                    <span style="color: #666; font-size: 10px; padding: 2px 4px;">+${parks.length - maxDisplay} more</span>
+                ` : '');
+            } else {
+                // No bbox selected
+                document.getElementById('keystones-count').textContent = '0';
+                container.innerHTML = '<span style="color: #666; font-size: 11px;">Select area or enable 162 keystones</span>';
+            }
+        }
+        
+        function truncateName(name, maxLen) {
+            if (!name) return '';
+            if (name.length <= maxLen) return name;
+            return name.substring(0, maxLen - 1) + '…';
+        }
+        
+        function flyToPark(parkId) {
+            if (!map || !map.getSource('areas')) return;
+            
+            const features = map.querySourceFeatures('areas');
+            const park = features.find(f => f.properties && f.properties.id == parkId);
+            
+            if (park && park.geometry) {
+                const bounds = getGeometryBounds(park.geometry);
+                if (bounds) {
+                    map.fitBounds(bounds, { padding: 50, maxZoom: 10 });
+                }
+            }
         }
 
         // Show upload hint on first visit
@@ -1956,6 +2005,10 @@
             // Auto-select PAs that intersect the bbox
             selectPAsInBbox(minLng, minLat, maxLng, maxLat);
             
+            // Update park highlighting and tags
+            updatePAHighlighting();
+            updateParkTags();
+            
             drawBboxOnMap();
             reloadGridData();
         }
@@ -2128,21 +2181,79 @@
         }
         
         function countParksInBbox() {
-            if (!currentBbox || !window.keystonesData) return 0;
-            var count = 0;
-            window.keystonesData.features.forEach(function(f) {
-                if (f.geometry && f.geometry.coordinates) {
-                    var coords = f.geometry.coordinates[0][0];
-                    if (coords) {
-                        var lng = coords[0], lat = coords[1];
-                        if (lng >= currentBbox[0] && lng <= currentBbox[2] &&
-                            lat >= currentBbox[1] && lat <= currentBbox[3]) {
-                            count++;
-                        }
-                    }
+            if (!currentBbox || !map || !map.getSource('areas')) return 0;
+            
+            // Query all features from the areas source
+            var features = map.querySourceFeatures('areas');
+            var uniqueParks = new Set();
+            
+            features.forEach(function(f) {
+                if (!f.properties || uniqueParks.has(f.properties.id)) return;
+                
+                var geom = f.geometry;
+                if (!geom || !geom.coordinates) return;
+                
+                // Get centroid for point-in-bbox check
+                var bounds = getGeometryBounds(geom);
+                if (!bounds) return;
+                
+                var centerLng = (bounds[0] + bounds[2]) / 2;
+                var centerLat = (bounds[1] + bounds[3]) / 2;
+                
+                // Check if center is in bbox
+                if (centerLng >= currentBbox[0] && centerLng <= currentBbox[2] &&
+                    centerLat >= currentBbox[1] && centerLat <= currentBbox[3]) {
+                    uniqueParks.add(f.properties.id);
                 }
             });
-            return count;
+            return uniqueParks.size;
+        }
+        
+        function getParksInBbox() {
+            if (!currentBbox || !map || !map.getSource('areas')) return [];
+            
+            var features = map.querySourceFeatures('areas');
+            var uniqueParks = new Map();
+            
+            features.forEach(function(f) {
+                if (!f.properties || uniqueParks.has(f.properties.id)) return;
+                
+                var geom = f.geometry;
+                if (!geom || !geom.coordinates) return;
+                
+                var bounds = getGeometryBounds(geom);
+                if (!bounds) return;
+                
+                var centerLng = (bounds[0] + bounds[2]) / 2;
+                var centerLat = (bounds[1] + bounds[3]) / 2;
+                
+                if (centerLng >= currentBbox[0] && centerLng <= currentBbox[2] &&
+                    centerLat >= currentBbox[1] && centerLat <= currentBbox[3]) {
+                    uniqueParks.set(f.properties.id, {
+                        id: f.properties.id,
+                        name: f.properties.name || 'Unknown',
+                        country: f.properties.country || '',
+                        country_code: getCountryCode(f.properties.country)
+                    });
+                }
+            });
+            return Array.from(uniqueParks.values());
+        }
+        
+        function getCountryCode(country) {
+            const codes = {
+                'Algeria': 'DZ', 'Angola': 'AO', 'Benin': 'BJ', 'Botswana': 'BW',
+                'Cameroon': 'CM', 'Central African Republic': 'CF', 'Chad': 'TD',
+                'Côte d\'Ivoire': 'CI', 'Democratic Republic of the Congo': 'CD',
+                'Equatorial Guinea': 'GQ', 'Ethiopia': 'ET', 'Gabon': 'GA',
+                'Ghana': 'GH', 'Kenya': 'KE', 'Lesotho': 'LS', 'Liberia': 'LR',
+                'Malawi': 'MW', 'Mali': 'ML', 'Mozambique': 'MZ', 'Namibia': 'NA',
+                'Niger': 'NE', 'Nigeria': 'NG', 'Republic of the Congo': 'CG',
+                'Rwanda': 'RW', 'Senegal': 'SN', 'South Africa': 'ZA',
+                'South Sudan': 'SS', 'Sudan': 'SD', 'Tanzania': 'TZ',
+                'Togo': 'TG', 'Uganda': 'UG', 'Zambia': 'ZM', 'Zimbabwe': 'ZW'
+            };
+            return codes[country] || '';
         }
 
         // Country search functions
