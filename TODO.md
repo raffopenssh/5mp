@@ -31,7 +31,8 @@
 
 - [x] Remove "Click a park to select" text - Done (already removed)
 - [ ] 162 toggle behavior - With bbox, deselect 162, show bbox park count
-- [ ] Parks as tags with country codes, allow deselect
+- [x] Parks as tags with country codes, allow deselect - Done (country tags show counts, park tags show country codes)
+- [x] Country filter section removed - Countries now shown as tags from selected parks
 - [ ] Refactor panels - Move bbox selector to Selected Parks
 - [x] Remove title text - Done: Globe icon resets map view to Africa
 

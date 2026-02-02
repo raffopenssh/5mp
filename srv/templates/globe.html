@@ -257,10 +257,7 @@
         .country-search-item { padding: 10px 12px; cursor: pointer; font-size: 13px; color: #e0e0e0; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.15s; }
         .country-search-item:last-child { border-bottom: none; }
         .country-search-item:hover { background: rgba(34,197,94,0.15); }
-        .country-selected { display: flex; align-items: center; justify-content: space-between; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); border-radius: 6px; padding: 8px 10px; margin-top: 8px; font-size: 12px; }
-        .country-selected-name { color: #22c55e; font-weight: 500; }
-        .country-selected-clear { background: none; border: none; color: #666; cursor: pointer; font-size: 16px; padding: 0 4px; line-height: 1; }
-        .country-selected-clear:hover { color: #fff; }
+
 
 
 
@@ -336,15 +333,22 @@
         .filter-item-clear:hover { color: #fff; }
 
         /* Selected Parks */
-        .selected-parks { margin-top: 12px; }
-        .selected-parks-empty { font-size: 11px; color: #555; text-align: center; padding: 12px; }
-        .selected-park-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.15); border-radius: 6px; margin-bottom: 6px; cursor: pointer; transition: all 0.2s; }
-        .selected-park-item:hover { background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.3); }
-        .selected-park-item:last-child { margin-bottom: 0; }
-        .selected-park-icon { width: 16px; height: 16px; color: #a855f7; flex-shrink: 0; }
-        .selected-park-name { flex: 1; font-size: 12px; color: #e0e0e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .selected-park-remove { background: none; border: none; color: #666; cursor: pointer; font-size: 14px; padding: 2px; line-height: 1; }
-        .selected-park-remove:hover { color: #ef4444; }
+        .selected-countries { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+        .country-tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.25); border-radius: 4px; font-size: 10px; color: #86efac; }
+        .country-tag-count { color: #22c55e; font-weight: 600; }
+        .selected-parks { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .selected-parks-empty { font-size: 10px; color: #555; padding: 8px 0; width: 100%; }
+        .park-tag { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.25); border-radius: 4px; font-size: 11px; color: #d8b4fe; cursor: pointer; transition: all 0.2s; max-width: 100%; }
+        .park-tag:hover { background: rgba(168,85,247,0.2); border-color: rgba(168,85,247,0.4); }
+        .park-tag-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+        .park-tag-country { color: #888; font-size: 9px; flex-shrink: 0; }
+        .park-tag-remove { background: none; border: none; color: #888; cursor: pointer; font-size: 12px; padding: 0 0 0 2px; line-height: 1; flex-shrink: 0; }
+        .park-tag-remove:hover { color: #ef4444; }
+        .parks-selector { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+        .bbox-select-btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 8px; background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); border-radius: 4px; color: #60a5fa; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+        .bbox-select-btn:hover { background: rgba(59,130,246,0.2); border-color: rgba(59,130,246,0.4); }
+        .bbox-select-btn.active { background: rgba(59,130,246,0.25); border-color: #60a5fa; }
+        .bbox-select-btn svg { width: 12px; height: 12px; }
 
         /* PA Popup Tooltip (map popup style) */
         .maplibregl-popup-content { background: rgba(18,18,18,0.95) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 8px !important; padding: 0 !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; min-width: 220px; max-width: 280px; }
@@ -572,14 +576,7 @@
             </svg>
         </button>
         
-        <button class="toolbar-btn" id="bbox-toggle" onclick="startBboxSelection()" title="Select Area">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-            </svg>
-        </button>
+
         <div class="toolbar-separator"></div>
         <div class="notification-wrapper">
             <button class="toolbar-btn notification-btn" id="notification-toggle" onclick="toggleNotificationDropdown()" title="Recent Activity">
@@ -650,16 +647,6 @@
                 </div>
             </div>
             
-            <!-- Country Search with Bbox -->
-            <div class="filter-section" id="country-filter-section">
-                <div class="filter-section-label">Country</div>
-                <div class="country-selected" id="country-selected" style="display: none;">
-                    <span class="country-selected-name" id="country-selected-name"></span>
-                    <button class="country-selected-clear" onclick="clearCountryFilter()" title="Clear">×</button>
-                </div>
-                <div id="country-none" style="font-size: 12px; color: #666;">Use search to filter by country</div>
-            </div>
-
             <!-- Movement Type Toggles -->
             <div class="filter-section">
                 <div class="filter-section-label">Movement Type</div>
@@ -673,13 +660,18 @@
             <!-- Selected Parks -->
             <div class="filter-section">
                 <div class="filter-section-label">Selected Parks</div>
-                <button class="keystones-compact-toggle active" id="keystones-toggle-btn" onclick="toggleKeystonesBtn()" title="Toggle 162 Keystones visibility">
-                    <span style="font-size: 14px;">▣</span> <span>162</span>
-                </button>
-                <input type="checkbox" id="keystones-toggle" checked style="display:none;">
-                <div class="selected-parks" id="selected-parks">
-
+                <div class="parks-selector">
+                    <button class="keystones-compact-toggle active" id="keystones-toggle-btn" onclick="toggleKeystonesBtn()" title="Toggle 162 Keystones visibility">
+                        <span style="font-size: 12px;">▣</span> <span id="keystones-count">162</span>
+                    </button>
+                    <button class="bbox-select-btn" id="bbox-select-btn" onclick="startBboxSelection()" title="Draw area to select parks">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
+                        Select area
+                    </button>
                 </div>
+                <input type="checkbox" id="keystones-toggle" checked style="display:none;">
+                <div class="selected-countries" id="selected-countries"></div>
+                <div class="selected-parks" id="selected-parks"></div>
             </div>
             
             <!-- Export Section -->
@@ -1850,7 +1842,8 @@
             bboxStartPoint = null;
             document.getElementById('bbox-draw-overlay').classList.add('active');
             document.getElementById('bbox-draw-hint').classList.add('active');
-            document.getElementById('bbox-toggle').classList.add('active');
+            var bboxBtn = document.getElementById('bbox-select-btn');
+            if (bboxBtn) bboxBtn.classList.add('active');
             map.getCanvas().style.cursor = 'crosshair';
         }
 
@@ -1859,7 +1852,8 @@
             bboxStartPoint = null;
             document.getElementById('bbox-draw-overlay').classList.remove('active');
             document.getElementById('bbox-draw-hint').classList.remove('active');
-            document.getElementById('bbox-toggle').classList.remove('active');
+            var bboxBtn = document.getElementById('bbox-select-btn');
+            if (bboxBtn) bboxBtn.classList.remove('active');
             map.getCanvas().style.cursor = '';
             
             var rect = document.querySelector('.bbox-draw-rect');
@@ -1868,6 +1862,13 @@
 
         function setBbox(minLng, minLat, maxLng, maxLat) {
             currentBbox = [minLng, minLat, maxLng, maxLat];
+            
+            // Deselect the 162 keystones toggle when bbox is drawn
+            keystonesEnabled = false;
+            var checkbox = document.getElementById('keystones-toggle');
+            if (checkbox) checkbox.checked = false;
+            var btn = document.getElementById('keystones-toggle-btn');
+            if (btn) btn.classList.remove('active');
             
             // Update filter panel display
             var filterArea = document.getElementById('filter-area');
@@ -1898,14 +1899,14 @@
             
             // Query all features from the areas source
             var features = map.querySourceFeatures('areas');
+            var seenIds = new Set(); // Avoid duplicates from tile boundaries
             
             features.forEach(function(feature) {
                 var props = feature.properties;
                 var paId = props.id || props.wdpa_id;
-                if (!paId) return;
+                if (!paId || seenIds.has(paId)) return;
                 
                 // Check if feature intersects bbox
-                // Get feature bounds from geometry
                 var geom = feature.geometry;
                 if (!geom || !geom.coordinates) return;
                 
@@ -1917,15 +1918,23 @@
                     [minLng, minLat, maxLng, maxLat],
                     featureBounds
                 )) {
+                    seenIds.add(paId);
                     selectedPAIds.add(paId);
                     selectedParks.push({
                         id: paId,
                         name: props.name || 'Unknown',
+                        country: props.country || '',
                         bbox: featureBounds,
                         center: [(featureBounds[0] + featureBounds[2]) / 2, (featureBounds[1] + featureBounds[3]) / 2]
                     });
                 }
             });
+            
+            // Update the count in keystones button to show selected count
+            var countEl = document.getElementById('keystones-count');
+            if (countEl && selectedParks.length > 0) {
+                countEl.textContent = selectedParks.length;
+            }
             
             // Update map highlighting and display
             updatePAHighlighting();
@@ -2137,16 +2146,12 @@
         function selectCountry(country) {
             currentCountryFilter = country;
             
-            // Hide input, show selected
+            // Close any search UI
             var input = document.getElementById('country-search');
             var results = document.getElementById('country-search-results');
-            var selected = document.getElementById('country-selected');
-            var selectedName = document.getElementById('country-selected-name');
             
             if (input) input.style.display = 'none';
             if (results) results.classList.remove('open');
-            if (selected) selected.style.display = 'flex';
-            if (selectedName) selectedName.textContent = country;
             
             // Get bbox and apply it
             var bbox = countryBboxCache[country];
@@ -2180,13 +2185,10 @@
             currentBbox = null;
             
             var input = document.getElementById('country-search');
-            var selected = document.getElementById('country-selected');
-            
             if (input) {
                 input.style.display = 'block';
                 input.value = '';
             }
-            if (selected) selected.style.display = 'none';
             
             // Clear bbox filter UI
             var activeFilters = document.getElementById('active-filters');
@@ -2275,6 +2277,15 @@
             if (filterArea) {
                 filterArea.style.display = 'none';
             }
+            
+            // Re-enable the 162 keystones toggle
+            keystonesEnabled = true;
+            var checkbox = document.getElementById('keystones-toggle');
+            if (checkbox) checkbox.checked = true;
+            var btn = document.getElementById('keystones-toggle-btn');
+            if (btn) btn.classList.add('active');
+            var countEl = document.getElementById('keystones-count');
+            if (countEl) countEl.textContent = '162';
             
             // Clear PA selection
             selectedPAIds.clear();
@@ -2811,16 +2822,6 @@
         
         // Set country filter from search
         function setCountryFilter(countryName, countryCode) {
-            // Update country selected display
-            const selectedDiv = document.getElementById('country-selected');
-            const selectedName = document.getElementById('country-selected-name');
-            const noneDiv = document.getElementById('country-none');
-            if (selectedDiv && selectedName) {
-                selectedName.textContent = countryName;
-                selectedDiv.style.display = 'flex';
-                if (noneDiv) noneDiv.style.display = 'none';
-            }
-            
             // Trigger filter update
             if (typeof filterByCountry === 'function') {
                 filterByCountry(countryName);
@@ -2829,11 +2830,6 @@
         
         // Clear country filter
         function clearCountryFilter() {
-            const selectedDiv = document.getElementById('country-selected');
-            const noneDiv = document.getElementById('country-none');
-            if (selectedDiv) selectedDiv.style.display = 'none';
-            if (noneDiv) noneDiv.style.display = 'block';
-            
             // Clear filter
             if (typeof clearCountrySearch === 'function') {
                 clearCountrySearch();
@@ -3712,35 +3708,80 @@
         
         function updateSelectedParksDisplay() {
             const container = document.getElementById('selected-parks');
-            const emptyMsg = document.getElementById('selected-parks-empty');
+            const countriesContainer = document.getElementById('selected-countries');
+            if (!container) return;
+            
+            // Clear existing tags
+            container.innerHTML = '';
+            if (countriesContainer) countriesContainer.innerHTML = '';
             
             if (selectedParks.length === 0) {
-                if (emptyMsg) emptyMsg.style.display = 'block';
-                // Remove park items but keep empty message
-                const items = container.querySelectorAll('.selected-park-item');
-                items.forEach(item => item.remove());
+                container.innerHTML = '<div class="selected-parks-empty">Draw an area or click parks to select</div>';
                 return;
             }
             
-            if (emptyMsg) emptyMsg.style.display = 'none';
+            // Get country code from country name
+            const getCountryCode = (country) => {
+                const codes = {
+                    'Tanzania': 'TZ', 'Kenya': 'KE', 'Uganda': 'UG', 'Rwanda': 'RW', 'Burundi': 'BI',
+                    'Democratic Republic of the Congo': 'CD', 'Congo': 'CG', 'Zambia': 'ZM', 'Zimbabwe': 'ZW',
+                    'Botswana': 'BW', 'South Africa': 'ZA', 'Namibia': 'NA', 'Mozambique': 'MZ', 'Malawi': 'MW',
+                    'Ethiopia': 'ET', 'South Sudan': 'SS', 'Sudan': 'SD', 'Cameroon': 'CM', 'Gabon': 'GA',
+                    'Central African Republic': 'CF', 'Chad': 'TD', 'Nigeria': 'NG', 'Ghana': 'GH', 'Mali': 'ML',
+                    'Senegal': 'SN', 'Burkina Faso': 'BF', 'Niger': 'NE', 'Angola': 'AO', 'Madagascar': 'MG',
+                    'Eritrea': 'ER', 'Somalia': 'SO', 'Lesotho': 'LS', 'Eswatini': 'SZ', 'Benin': 'BJ',
+                    'Togo': 'TG', "C\u00f4te d'Ivoire": 'CI', 'Liberia': 'LR', 'Sierra Leone': 'SL', 'Guinea': 'GN',
+                    'Guinea-Bissau': 'GW', 'Gambia': 'GM', 'Mauritania': 'MR', 'Equatorial Guinea': 'GQ'
+                };
+                return codes[country] || '';
+            };
             
-            // Remove existing items
-            const items = container.querySelectorAll('.selected-park-item');
-            items.forEach(item => item.remove());
+            // Build country counts from selected parks
+            if (countriesContainer) {
+                const countryCounts = {};
+                selectedParks.forEach(park => {
+                    if (park.country) {
+                        countryCounts[park.country] = (countryCounts[park.country] || 0) + 1;
+                    }
+                });
+                
+                // Sort by count descending
+                const sortedCountries = Object.entries(countryCounts).sort((a, b) => b[1] - a[1]);
+                
+                sortedCountries.forEach(([country, count]) => {
+                    const code = getCountryCode(country);
+                    const tag = document.createElement('div');
+                    tag.className = 'country-tag';
+                    tag.innerHTML = `<span class="country-tag-count">${count}</span> ${code || country}`;
+                    tag.title = country;
+                    countriesContainer.appendChild(tag);
+                });
+            }
             
-            // Add park items
-            selectedParks.forEach(park => {
-                const item = document.createElement('div');
-                item.className = 'selected-park-item';
-                item.innerHTML = `
-                    <svg class="selected-park-icon" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
-                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    <span class="selected-park-name" onclick="flyToSelectedPark('${park.id}')">${escapeHtml(park.name)}</span>
-                    <button class="selected-park-remove" onclick="removeSelectedPark('${park.id}')" title="Remove">×</button>
+            // Add park tags (limit display to 20 to avoid overflow)
+            const displayParks = selectedParks.slice(0, 20);
+            displayParks.forEach(park => {
+                const tag = document.createElement('div');
+                tag.className = 'park-tag';
+                const countryCode = getCountryCode(park.country);
+                tag.innerHTML = `
+                    <span class="park-tag-name" onclick="flyToSelectedPark('${park.id}')" title="${escapeHtml(park.name)}">${escapeHtml(park.name)}</span>
+                    ${countryCode ? `<span class="park-tag-country">${countryCode}</span>` : ''}
+                    <button class="park-tag-remove" onclick="removeSelectedPark('${park.id}')" title="Remove">×</button>
                 `;
-                container.appendChild(item);
+                container.appendChild(tag);
             });
+            
+            // Show count if more parks than displayed
+            if (selectedParks.length > 20) {
+                const more = document.createElement('div');
+                more.className = 'park-tag';
+                more.style.background = 'rgba(255,255,255,0.1)';
+                more.style.borderColor = 'rgba(255,255,255,0.2)';
+                more.style.color = '#888';
+                more.textContent = `+${selectedParks.length - 20} more`;
+                container.appendChild(more);
+            }
         }
         
         // Update time filter display when slider changes
