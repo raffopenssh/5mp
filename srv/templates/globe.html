@@ -12,7 +12,7 @@
         button, .btn, [onclick] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
         input, textarea { font-size: 16px; /* Prevents iOS zoom on focus */ }
         
-        .header { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: rgba(18,18,18,0.95); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; backdrop-filter: blur(10px); }
+        .header { position: fixed; top: 0; left: 0; right: 0; height: 44px; background: rgba(18,18,18,0.95); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: flex-end; padding: 0 20px; z-index: 1000; backdrop-filter: blur(10px); }
         .logo { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; color: #fff; }
         .logo-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
         .logo-icon svg { width: 28px; height: 28px; }
@@ -26,7 +26,7 @@
         .btn-primary { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; }
         .btn-primary:hover { background: linear-gradient(135deg, #16a34a, #15803d); }
 
-        #map { position: absolute; top: 56px; left: 0; right: 0; bottom: 0; z-index: 1; }
+        #map { position: absolute; top: 44px; left: 0; right: 0; bottom: 0; z-index: 1; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
         .modal-overlay.active { display: flex; }
@@ -73,7 +73,7 @@
             50% { opacity: 0.7; }
         }
 
-        .stats-panel { position: fixed; top: 66px; right: 10px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 16px; z-index: 100; font-size: 12px; min-width: 140px; }
+        .stats-panel { position: fixed; top: 54px; right: 10px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 16px; z-index: 100; font-size: 12px; min-width: 140px; }
         .stats-panel h3 { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
         .stats-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding: 6px 8px; margin: 0 -8px 6px -8px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; position: relative; }
         .stats-item:last-child { margin-bottom: 0; }
@@ -108,8 +108,8 @@
         .page-views { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10px; color: #555; text-align: center; }
 
         /* Movement type toggles (in filter panel) */
-        .movement-toggles { display: flex; gap: 6px; }
-        .movement-toggle { flex: 1; padding: 8px 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #888; font-size: 14px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .movement-toggles { display: flex; gap: 4px; }
+        .movement-toggle { flex: 1; padding: 6px 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; font-size: 12px; cursor: pointer; transition: all 0.2s; text-align: center; }
         .movement-toggle:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
         .movement-toggle.active { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #22c55e; }
         .movement-toggle-label { font-size: 9px; display: block; margin-top: 2px; color: inherit; opacity: 0.8; }
@@ -125,8 +125,8 @@
         .toggle-switch input:checked + .toggle-switch-slider:before { transform: translateX(16px); background: #22c55e; }
 
         /* Compact Keystones Toggle */
-        .keystones-compact-toggle { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #888; font-size: 12px; cursor: pointer; transition: all 0.2s; }
-        .export-btn { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 12px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; color: #60a5fa; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .keystones-compact-toggle { display: inline-flex; align-items: center; gap: 4px; padding: 5px 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; color: #888; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+        .export-btn { display: flex; align-items: center; gap: 6px; width: 100%; padding: 8px 10px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 4px; color: #60a5fa; font-size: 12px; cursor: pointer; transition: all 0.2s; }
         .export-btn:hover { background: rgba(59,130,246,0.25); border-color: rgba(59,130,246,0.5); }
         .export-btn svg { flex-shrink: 0; }
         .keystones-compact-toggle:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
@@ -134,6 +134,7 @@
 
         /* Notification Button and Dropdown */
         .notification-btn { position: relative; }
+        .notification-wrapper { position: relative; }
         .notification-badge { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: badge-pulse 2s ease-out infinite; }
         .notification-badge.hidden { display: none; }
         @keyframes badge-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 4px rgba(34,197,94,0); } }
@@ -212,7 +213,7 @@
 
          
          
-        .map-toolbar { position: fixed; top: 66px; left: 10px; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; gap: 8px; z-index: 150; }
+        .map-toolbar { position: fixed; top: 54px; left: 10px; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; gap: 8px; z-index: 150; }
         .toolbar-btn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center; -webkit-transition: all 0.2s; transition: all 0.2s; padding: 0; }
         .toolbar-btn:hover { background: rgba(30,30,30,0.95); border-color: rgba(255,255,255,0.2); }
         .toolbar-btn svg { width: 20px; height: 20px; color: #a0a0a0; }
@@ -224,18 +225,18 @@
         .toolbar-separator { height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0; }
 
          
-        .filter-panel { position: fixed; top: 66px; left: 62px; width: 260px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-320px); transform: translateX(-320px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 80px); overflow-y: auto; }
+        .filter-panel { position: fixed; top: 54px; left: 62px; width: 260px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-320px); transform: translateX(-320px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 80px); overflow-y: auto; }
         .filter-panel.open { -webkit-transform: translateX(0); transform: translateX(0); opacity: 1; pointer-events: auto; }
-        .filter-panel-header { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .filter-panel-header { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
         .filter-panel-title { font-size: 14px; font-weight: 600; color: #fff; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; gap: 8px; }
         .filter-panel-title svg { width: 16px; height: 16px; color: #22c55e; }
         .filter-panel-close { background: none; border: none; color: #666; font-size: 20px; cursor: pointer; padding: 4px; line-height: 1; }
         .filter-panel-close:hover { color: #fff; }
-        .filter-panel-content { padding: 16px; }
+        .filter-panel-content { padding: 12px; }
 
-        .filter-section { margin-bottom: 20px; }
+        .filter-section { margin-bottom: 14px; }
         .filter-section:last-child { margin-bottom: 0; }
-        .filter-section-label { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .filter-section-label { font-size: 10px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
 
         /* Country search */
         .country-search-wrapper { position: relative; }
@@ -273,14 +274,14 @@
         .activity-empty { padding: 12px 0; text-align: center; font-size: 11px; color: #555; }
 
          
-        .bbox-draw-overlay { position: fixed; top: 56px; left: 0; right: 0; bottom: 0; z-index: 200; cursor: crosshair; display: none; }
+        .bbox-draw-overlay { position: fixed; top: 44px; left: 0; right: 0; bottom: 0; z-index: 200; cursor: crosshair; display: none; }
         .bbox-draw-overlay.active { display: block; }
         .bbox-draw-rect { position: absolute; border: 2px dashed #60a5fa; background: rgba(59,130,246,0.1); pointer-events: none; }
         .bbox-draw-hint { position: fixed; top: 70px; left: 50%; -webkit-transform: translateX(-50%); transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; padding: 10px 16px; font-size: 13px; color: #60a5fa; z-index: 210; display: none; }
         .bbox-draw-hint.active { display: block; }
 
          /* Search Panel */
-        .search-panel { position: fixed; top: 66px; left: 62px; width: 280px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-340px); transform: translateX(-340px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 80px); overflow-y: auto; }
+        .search-panel { position: fixed; top: 54px; left: 62px; width: 280px; max-width: calc(100vw - 80px); background: rgba(18,18,18,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 140; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transform: translateX(-340px); transform: translateX(-340px); opacity: 0; -webkit-transition: all 0.3s ease; transition: all 0.3s ease; pointer-events: none; max-height: calc(100vh - 80px); overflow-y: auto; }
         .search-panel.open { -webkit-transform: translateX(0); transform: translateX(0); opacity: 1; pointer-events: auto; }
         .search-panel-header { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
         .search-panel-title { font-size: 14px; font-weight: 600; color: #fff; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; gap: 8px; }
@@ -415,6 +416,8 @@
             /* Toolbar moves to bottom horizontal layout */
             .map-toolbar { top: auto; bottom: 80px; left: 10px; -webkit-flex-direction: row; flex-direction: row; gap: 6px; }
             .toolbar-btn { width: 40px; height: 40px; min-width: 40px; min-height: 40px; }
+            .toolbar-separator { display: none; }
+            .notification-wrapper { display: flex; }
             
             /* Panels slide up from bottom */
             .filter-panel { top: auto; bottom: 140px; left: 10px; width: calc(100vw - 20px); max-width: none; -webkit-transform: translateY(400px); transform: translateY(400px); max-height: 50vh; }
@@ -489,19 +492,7 @@
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="logo" onclick="if(typeof map !== 'undefined') map.flyTo({center: [20, 0], zoom: 3, duration: 1500})" style="cursor: pointer;" title="Reset view to Africa">
-            <div class="logo-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <ellipse cx="12" cy="12" rx="4" ry="10"></ellipse>
-                    <path d="M2 12h20"></path>
-                    <path d="M4.5 6.5h15"></path>
-                    <path d="M4.5 17.5h15"></path>
-                </svg>
-            </div>
-        </div>
-        
+    <header class="header" style="height: 44px; justify-content: flex-end;">
         <div class="auth-buttons">
             <button class="btn btn-primary" onclick="showModal('upload')" title="Upload GPX patrol tracks">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
@@ -573,13 +564,14 @@
             </svg>
         </button>
         <div class="toolbar-separator"></div>
-        <button class="toolbar-btn notification-btn" id="notification-toggle" onclick="toggleNotificationDropdown()" title="Recent Activity">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <span class="notification-badge hidden" id="notification-badge"></span>
-            
+        <div class="notification-wrapper">
+            <button class="toolbar-btn notification-btn" id="notification-toggle" onclick="toggleNotificationDropdown()" title="Recent Activity">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span class="notification-badge hidden" id="notification-badge"></span>
+            </button>
             <!-- Notification Dropdown -->
             <div class="notification-dropdown" id="notification-dropdown">
                 <div class="notification-header">
@@ -596,6 +588,15 @@
                     <div class="notification-empty">Loading...</div>
                 </div>
             </div>
+        </div>
+        
+        <!-- Globe Reset Button -->
+        <button class="toolbar-btn" id="globe-reset" onclick="if(typeof map !== 'undefined') map.flyTo({center: [20, 0], zoom: 3, duration: 1500})" title="Reset view to Africa">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <ellipse cx="12" cy="12" rx="4" ry="10"></ellipse>
+                <path d="M2 12h20"></path>
+            </svg>
         </button>
     </div>
 
