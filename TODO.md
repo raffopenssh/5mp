@@ -1,54 +1,67 @@
 # 5MP Globe - UI Stabilization Sprint
 
-## CRITICAL (Must fix for demo)
+## COMPLETED
 
-- [x] ~~**P0: Park tooltip not working**~~ - Fixed
-- [x] ~~**P0: Login broken**~~ - Login hidden, anonymous uploads enabled
+### Critical (P0)
+- [x] Park tooltip working across browsers (Safari, Firefox, Chrome, DuckDuckGo Android)
+- [x] Anonymous GPX uploads (login hidden)
 
-## HIGH PRIORITY (Core functionality)
+### High Priority (P1)
+- [x] Share link icon and state preservation
+- [x] Unified search for parks/countries/regions with autocomplete
+- [x] Search sets country filter
+- [x] Stats adapt to visible map bounds
 
-- [x] ~~**P1: Share link icon**~~ - Done
-- [x] ~~**P1: Share link state**~~ - Done: URL encodes lat/lng/zoom, time range, bbox, parks, country, movement types, popup
-- [x] ~~**P1: Combine searches**~~ - Done: unified search for parks/countries/regions
-- [x] ~~**P1: Search autocomplete**~~ - Done
-- [x] ~~**P1: Search sets filter**~~ - Done: country selection sets filter
-- [x] ~~**P1: Stats card adaptation**~~ - Done: Stats update based on visible map bounds when zoom > 4
+### Medium Priority (P2)
+- [x] 5MP modal updated (removed "coming soon")
+- [x] CSV download with filter in filename
+- [x] Roadless indicator tooltip
+- [x] Duplicate filters removed
 
-## MEDIUM PRIORITY (UX improvements)
+### Narratives
+- [x] Fire trajectories with OSM place references
+- [x] Deforestation narratives with location context and pattern descriptions
+- [x] Settlement narratives with place-based references and pattern assessment
+- [x] Top 10 display with "load more" for all narrative types
+- [x] Collapsible popup sections
 
-- [x] ~~**P2: 5MP modal update**~~ - Done: removed "coming soon" badges
-- [x] ~~**P2: CSV download**~~ - Done: includes wdpa_id, name, country, area_km2; filename reflects active filter
-- [x] ~~**P2: Roadless indicator**~~ - Done: added tooltip explaining "% of area >1km from roads"
-- [x] ~~**P2: Recent activity**~~ - Done: API already returns all activity (shows empty when no uploads in DB)
-- [x] ~~**P2: Virunga appearing**~~ - Fixed
-- [x] ~~**P2: Remove duplicate date filter**~~ - Fixed: removed country search from filter panel
+---
 
-## UI SIMPLIFICATION
+## REMAINING (P3 - UI Simplification)
 
-- [ ] **P3: Remove "Click a park to select"** text
-- [ ] **P3: 162 toggle behavior** - With bbox, deselect 162, show bbox park count instead
-- [ ] **P3: Parks as tags** - Show parks as tags (not lines), with country codes, allow deselect
-- [ ] **P3: Refactor panels** - Move bbox selector to Selected Parks; keep only Filter, Search, Notifications on top
-- [ ] **P3: Remove title text** - Keep globe icon as reset/home button
-- [x] ~~**P3: Simplify auth**~~ - Done: GPX upload button, no login required
-- [x] ~~**P3: Auto-approve signups**~~ - Done
+- [ ] Remove "Click a park to select" text
+- [ ] 162 toggle behavior - With bbox, deselect 162, show bbox park count
+- [ ] Parks as tags with country codes, allow deselect
+- [ ] Refactor panels - Move bbox selector to Selected Parks
+- [ ] Remove title text - Keep globe icon as reset/home button
+
+---
+
+## KNOWN ISSUES
+
+- Settlement display uses old format ("X at Y sector") instead of new format ("X km² near Y") on some deployments - may need cache clear
+- Deforestation/settlement classification is basic (scattered/clustered/linear) - does not distinguish farms/logging/charcoal/mines
+
+---
+
+## Data Download
+
+Database available at: `/static/downloads/5mp_data.sqlite3`
 
 ---
 
 ## Test Data
 
 GPX test files in `data/` directory:
-- test_patrol_1.gpx through test_patrol_7.gpx (new)
-- test_patrol_virunga.gpx, virunga_patrol.gpx (existing)
+- test_patrol_1.gpx through test_patrol_7.gpx
+- test_patrol_virunga.gpx, virunga_patrol.gpx
 
 ## Testing Checklist
 
 - [x] Safari 18.6 - tooltips work
 - [x] Firefox 146 - tooltips work  
-- [x] DuckDuckGo Android - tooltips work
 - [x] Chrome - tooltips work
 - [x] Share link preserves state
-- [x] ~~Login/logout flow works~~ - Hidden
 - [x] Search finds parks and countries
 - [ ] CSV download works
 - [ ] GPX upload works with test files
