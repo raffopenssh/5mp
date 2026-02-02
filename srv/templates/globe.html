@@ -622,29 +622,19 @@
             <button class="filter-panel-close" onclick="toggleFilterPanel()">×</button>
         </div>
         <div class="filter-panel-content">
-            <!-- Countries from selected parks -->
+            <!-- Selected Countries -->
             <div class="filter-section" id="country-filter-section">
-                <div class="filter-section-label">Countries</div>
-                <div class="country-tags" id="country-tags" style="display: flex; flex-wrap: wrap; gap: 6px;">
-                    <!-- Populated by JS based on selected parks -->
-                </div>
-            </div>
-
-            <!-- Movement Type Toggles -->
-            <div class="filter-section">
-                <div class="filter-section-label">Movement Type</div>
-                <div class="movement-toggles">
-                    <button class="movement-toggle active" id="toggle-foot" onclick="toggleMovementType('foot')" title="Foot patrols">Foot</button>
-                    <button class="movement-toggle active" id="toggle-vehicle" onclick="toggleMovementType('vehicle')" title="Vehicle patrols">Vehicle</button>
-                    <button class="movement-toggle active" id="toggle-aerial" onclick="toggleMovementType('aerial')" title="Aerial patrols">Aerial</button>
+                <div class="filter-section-label">Selected Countries</div>
+                <div class="selected-countries" id="selected-countries" style="display: flex; flex-wrap: wrap; gap: 4px; max-height: 80px; overflow-y: auto;">
+                    <span style="color: #666; font-size: 11px;">None selected</span>
                 </div>
             </div>
             
-            <!-- Selected Parks with bbox and 162 toggle -->
+            <!-- Selected Parks -->
             <div class="filter-section">
                 <div class="filter-section-label">Selected Parks</div>
                 <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
-                    <button class="keystones-compact-toggle active" id="keystones-toggle-btn" onclick="toggleKeystonesBtn()" title="Show all 162 keystones">
+                    <button class="keystones-compact-toggle" id="keystones-toggle-btn" onclick="toggleKeystonesBtn()" title="Select all 162 keystones">
                         <span style="font-size: 12px;">▣</span> <span id="keystones-count">162</span>
                     </button>
                     <button class="bbox-select-btn" id="bbox-select-btn" onclick="startBboxSelection()" title="Select area on map">
@@ -667,9 +657,21 @@
                     </div>
                     <button class="filter-item-clear" onclick="clearBbox()" title="Clear">×</button>
                 </div>
-                <input type="checkbox" id="keystones-toggle" checked style="display:none;">
-                <!-- Park tags when not showing all 162 -->
-                <div class="selected-parks" id="selected-parks" style="display: flex; flex-wrap: wrap; gap: 4px; max-height: 120px; overflow-y: auto;"></div>
+                <input type="checkbox" id="keystones-toggle" style="display:none;">
+                <!-- Park tags -->
+                <div class="selected-parks" id="selected-parks" style="display: flex; flex-wrap: wrap; gap: 4px; max-height: 120px; overflow-y: auto;">
+                    <span style="color: #666; font-size: 11px;">Click 162 or Select Area</span>
+                </div>
+            </div>
+            
+            <!-- Movement Type Toggles -->
+            <div class="filter-section">
+                <div class="filter-section-label">Movement Type</div>
+                <div class="movement-toggles">
+                    <button class="movement-toggle active" id="toggle-foot" onclick="toggleMovementType('foot')" title="Foot patrols">Foot</button>
+                    <button class="movement-toggle active" id="toggle-vehicle" onclick="toggleMovementType('vehicle')" title="Vehicle patrols">Vehicle</button>
+                    <button class="movement-toggle active" id="toggle-aerial" onclick="toggleMovementType('aerial')" title="Aerial patrols">Aerial</button>
+                </div>
             </div>
             
             <!-- Export Section -->
@@ -1273,8 +1275,8 @@
             // Initialize UI elements
             setTimeout(function() {
                 showUploadHint();
-                updateCountryTags();
                 updateParkTags();
+                updateSelectedCountries();
             }, 1000);
         });
 
@@ -1671,50 +1673,79 @@
             }
         }
 
-        // Update country tags based on visible/selected parks
-        function updateCountryTags() {
-            const container = document.getElementById('country-tags');
+        // Track selected countries
+        var selectedCountries = new Set();
+
+        // Update selected countries display based on selected parks
+        function updateSelectedCountries() {
+            const container = document.getElementById('selected-countries');
             if (!container) return;
             
-            // Get unique countries from map source
+            // Get countries from selected parks
             const countries = new Set();
-            if (map && map.getSource('areas')) {
-                try {
-                    const features = map.querySourceFeatures('areas');
-                    features.forEach(f => {
-                        if (f.properties && f.properties.country) {
-                            countries.add(f.properties.country);
-                        }
-                    });
-                } catch (e) {
-                    console.log('Could not query areas source');
+            
+            if (keystonesEnabled) {
+                // Get all countries when 162 is selected
+                if (map && map.getSource('areas')) {
+                    try {
+                        const features = map.querySourceFeatures('areas');
+                        features.forEach(f => {
+                            if (f.properties && f.properties.country) {
+                                countries.add(f.properties.country);
+                            }
+                        });
+                    } catch (e) {}
                 }
+            } else if (currentBbox) {
+                // Get countries from parks in bbox
+                const parks = getParksInBbox();
+                parks.forEach(p => {
+                    if (p.country) countries.add(p.country);
+                });
             }
             
-            // Build country tags
-            const countryArr = Array.from(countries).sort();
-            if (countryArr.length === 0) {
-                container.innerHTML = '<span style="color: #666; font-size: 11px;">Loading...</span>';
+            selectedCountries = countries;
+            
+            if (countries.size === 0) {
+                container.innerHTML = '<span style="color: #666; font-size: 11px;">None selected</span>';
                 return;
             }
             
-            container.innerHTML = countryArr.map(c => 
-                `<span class="country-tag" onclick="filterByCountry('${c}')" title="Filter to ${c}">${c}</span>`
-            ).join('');
+            // Display as compact tags with country codes
+            const countryArr = Array.from(countries).sort();
+            container.innerHTML = countryArr.map(c => {
+                const code = getCountryCode(c);
+                return `<span class="park-tag" title="${c}"><span class="park-tag-code">${code}</span><span class="park-tag-name">${c}</span></span>`;
+            }).join('');
         }
 
-        // Filter parks by country
+        // Filter parks by country (clicking a country tag)
         function filterByCountry(country) {
-            // Toggle active state
-            const tags = document.querySelectorAll('.country-tag');
-            tags.forEach(t => {
-                if (t.textContent === country) {
-                    t.classList.toggle('active');
-                } else {
-                    t.classList.remove('active');
+            // For now, just fly to the country's parks
+            if (!map || !map.getSource('areas')) return;
+            
+            const features = map.querySourceFeatures('areas');
+            let bounds = null;
+            
+            features.forEach(f => {
+                if (f.properties && f.properties.country === country) {
+                    const b = getGeometryBounds(f.geometry);
+                    if (b) {
+                        if (!bounds) {
+                            bounds = [...b];
+                        } else {
+                            bounds[0] = Math.min(bounds[0], b[0]);
+                            bounds[1] = Math.min(bounds[1], b[1]);
+                            bounds[2] = Math.max(bounds[2], b[2]);
+                            bounds[3] = Math.max(bounds[3], b[3]);
+                        }
+                    }
                 }
             });
-            // TODO: Implement actual country filtering
+            
+            if (bounds) {
+                map.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 50 });
+            }
         }
 
         // Update park tags in filter panel
@@ -1725,7 +1756,25 @@
             const isKeystonesActive = document.getElementById('keystones-toggle-btn')?.classList.contains('active');
             
             if (isKeystonesActive) {
-                container.innerHTML = '';
+                // Show all 162 parks as tags
+                const parks = getAllParks();
+                const count = parks.length;
+                
+                // Display parks as tags (max 30, with scroll for more)
+                const maxDisplay = 30;
+                const displayParks = parks.slice(0, maxDisplay);
+                
+                container.innerHTML = displayParks.map(p => `
+                    <span class="park-tag" data-id="${p.id}" onclick="flyToPark('${p.id}')" title="${p.name}">
+                        <span class="park-tag-code">${p.country_code}</span>
+                        <span class="park-tag-name">${truncateName(p.name, 15)}</span>
+                    </span>
+                `).join('') + (parks.length > maxDisplay ? `
+                    <span style="color: #666; font-size: 10px; padding: 2px 4px;">+${parks.length - maxDisplay} more</span>
+                ` : '');
+                
+                // Update countries
+                updateSelectedCountries();
                 return;
             }
             
@@ -1739,26 +1788,55 @@
                 
                 if (count === 0) {
                     container.innerHTML = '<span style="color: #666; font-size: 11px;">No parks in selected area</span>';
+                    updateSelectedCountries();
                     return;
                 }
                 
-                // Display parks as tags (max 20, with scroll for more)
-                const maxDisplay = 20;
+                // Display parks as tags (max 30, with scroll for more)
+                const maxDisplay = 30;
                 const displayParks = parks.slice(0, maxDisplay);
                 
                 container.innerHTML = displayParks.map(p => `
                     <span class="park-tag" data-id="${p.id}" onclick="flyToPark('${p.id}')" title="${p.name}">
                         <span class="park-tag-code">${p.country_code}</span>
-                        <span class="park-tag-name">${truncateName(p.name, 18)}</span>
+                        <span class="park-tag-name">${truncateName(p.name, 15)}</span>
                     </span>
                 `).join('') + (parks.length > maxDisplay ? `
                     <span style="color: #666; font-size: 10px; padding: 2px 4px;">+${parks.length - maxDisplay} more</span>
                 ` : '');
+                
+                // Update countries
+                updateSelectedCountries();
             } else {
-                // No bbox selected
+                // No bbox selected and 162 is off
                 document.getElementById('keystones-count').textContent = '0';
-                container.innerHTML = '<span style="color: #666; font-size: 11px;">Select area or enable 162 keystones</span>';
+                container.innerHTML = '<span style="color: #666; font-size: 11px;">Click 162 or Select Area</span>';
+                updateSelectedCountries();
             }
+        }
+        
+        // Get all parks
+        function getAllParks() {
+            if (!map || !map.getSource('areas')) return [];
+            
+            const features = map.querySourceFeatures('areas');
+            const uniqueParks = new Map();
+            
+            features.forEach(function(f) {
+                if (!f.properties || uniqueParks.has(f.properties.id)) return;
+                uniqueParks.set(f.properties.id, {
+                    id: f.properties.id,
+                    name: f.properties.name || 'Unknown',
+                    country: f.properties.country || '',
+                    country_code: getCountryCode(f.properties.country)
+                });
+            });
+            
+            return Array.from(uniqueParks.values()).sort((a, b) => {
+                // Sort by country code then name
+                if (a.country_code !== b.country_code) return a.country_code.localeCompare(b.country_code);
+                return a.name.localeCompare(b.name);
+            });
         }
         
         function truncateName(name, maxLen) {
@@ -2151,8 +2229,8 @@
             reloadGridData();
         }
 
-        // Keystones toggle state
-        var keystonesEnabled = true;
+        // Keystones toggle state - start with OFF so parks aren't highlighted by default
+        var keystonesEnabled = false;
 
         function toggleKeystones(enabled) {
             keystonesEnabled = enabled;
