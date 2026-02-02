@@ -30,9 +30,9 @@
 ## REMAINING (P3 - UI Simplification)
 
 - [x] Remove "Click a park to select" text - Done (already removed)
-- [ ] 162 toggle behavior - With bbox, deselect 162, show bbox park count
-- [ ] Parks as tags with country codes, allow deselect
-- [ ] Refactor panels - Move bbox selector to Selected Parks
+- [x] 162 toggle behavior - With bbox, deselect 162, show bbox park count
+- [x] Parks as tags with country codes (click to fly to park)
+- [x] Refactor panels - Move bbox selector to Selected Parks (done in previous commit)
 - [x] Remove title text - Done: Globe icon resets map view to Africa
 
 ---
