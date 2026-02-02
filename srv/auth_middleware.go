@@ -36,6 +36,19 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 				next.ServeHTTP(w, r)
 				return
 			}
+			// For POST requests, serve directly (don't redirect, would lose form data)
+			if r.Method == "POST" {
+				http.SetCookie(w, &http.Cookie{
+					Name:     "access_pwd",
+					Value:    pwd,
+					Path:     "/",
+					MaxAge:   86400 * 30, // 30 days
+					HttpOnly: true,
+					SameSite: http.SameSiteLaxMode,
+				})
+				next.ServeHTTP(w, r)
+				return
+			}
 			// Set cookie for future requests
 			http.SetCookie(w, &http.Cookie{
 				Name:     "access_pwd",

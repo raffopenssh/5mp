@@ -1311,14 +1311,12 @@ func (s *Server) buildDeforestationNarrative(parkID string, year int, area, lat,
 	sector := s.describeParkSector(parkID, lat, lon)
 	
 	// Find the closest settlement for primary location reference
+	// Use nearest settlement regardless of distance - for remote parks the nearest may be 50+ km away
 	var primaryPlace string
 	var primaryDist float64
-	for _, p := range settlements {
-		if p.Distance < 30 {
-			primaryPlace = p.Name
-			primaryDist = p.Distance
-			break
-		}
+	if len(settlements) > 0 {
+		primaryPlace = settlements[0].Name
+		primaryDist = settlements[0].Distance
 	}
 	
 	// Find nearby river for geographic context
