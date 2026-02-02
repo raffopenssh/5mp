@@ -44,7 +44,7 @@
     },
     {
       "code": "BFA",
-      "name": "BurkinaFaso",
+      "name": "Burkina Faso",
       "bbox": [
         -5.5189,
         9.4011,
@@ -72,7 +72,7 @@
     },
     {
       "code": "CAF",
-      "name": "CentralAfricanRepublic",
+      "name": "Central African Republic",
       "bbox": [
         14.4177,
         2.2205,
@@ -86,7 +86,7 @@
     },
     {
       "code": "CIV",
-      "name": "C\u00f4ted'Ivoire",
+      "name": "C\u00f4te d'Ivoire",
       "bbox": [
         -8.5993,
         4.3618,
@@ -114,7 +114,7 @@
     },
     {
       "code": "COD",
-      "name": "DemocraticRepublicoftheCongo",
+      "name": "Democratic Republic of the Congo",
       "bbox": [
         12.2015,
         -13.4525,
@@ -128,7 +128,7 @@
     },
     {
       "code": "COG",
-      "name": "RepublicoftheCongo",
+      "name": "Republic of the Congo",
       "bbox": [
         11.201,
         -5.0307,
@@ -156,7 +156,7 @@
     },
     {
       "code": "CPV",
-      "name": "CaboVerde",
+      "name": "Cabo Verde",
       "bbox": [
         -25.3618,
         14.8018,
@@ -310,7 +310,7 @@
     },
     {
       "code": "GNQ",
-      "name": "EquatorialGuinea",
+      "name": "Equatorial Guinea",
       "bbox": [
         5.6164,
         -1.4676,
@@ -562,7 +562,7 @@
     },
     {
       "code": "SLE",
-      "name": "SierraLeone",
+      "name": "Sierra Leone",
       "bbox": [
         -13.3035,
         6.9176,
@@ -590,7 +590,7 @@
     },
     {
       "code": "SSD",
-      "name": "SouthSudan",
+      "name": "South Sudan",
       "bbox": [
         24.1519,
         3.481,
@@ -604,7 +604,7 @@
     },
     {
       "code": "STP",
-      "name": "S\u00e3oTom\u00e9andPr\u00edncipe",
+      "name": "S\u00e3o Tom\u00e9 and Pr\u00edncipe",
       "bbox": [
         6.4599,
         -0.0135,
@@ -716,7 +716,7 @@
     },
     {
       "code": "ZAF",
-      "name": "SouthAfrica",
+      "name": "South Africa",
       "bbox": [
         16.4519,
         -34.8351,
@@ -1561,7 +1561,7 @@
       "id": "BFA.1_1",
       "name": "BoucleduMouhoun",
       "country_code": "BFA",
-      "country": "BurkinaFaso",
+      "country": "Burkina Faso",
       "type": "Region",
       "bbox": [
         -4.6502,
@@ -1578,7 +1578,7 @@
       "id": "BFA.2_1",
       "name": "Cascades",
       "country_code": "BFA",
-      "country": "BurkinaFaso",
+      "country": "Burkina Faso",
       "type": "Region",
       "bbox": [
         -5.5189,
@@ -1595,7 +1595,7 @@
       "id": "BFA.7_1",
       "name": "Centre",
       "country_code": "BFA",
-      "country": "BurkinaFaso",
+      "country": "Burkina Faso",
       "type": "Region",
       "bbox": [
         -1.8269,
@@ -1612,7 +1612,7 @@
       "id": "BFA.3_1",
       "name": "Centre-Est",
       "country_code": "BFA",
-      "country": "BurkinaFaso",
+      "country": "Burkina Faso",
       "type": "Region",
       "bbox": [
         -0.9023,
@@ -1629,7 +1629,7 @@
       "id": "BFA.4_1",
       "name": "Centre-Nord",
       "country_code": "BFA",
-      "country": "BurkinaFaso",
+      "country": "Burkina Faso",
       "type": "Region",
       "bbox": [
         -1.9052,
@@ -1646,7 +1646,7 @@
       "id": "BFA.5_1",
       "name": "Centre-Ouest",
       "country_code": "BFA",
-      "country": "BurkinaFaso",
+      "country": "Burkina Faso",
       "type": "Region",
       "bbox": [
         -2.9289,
@@ -1663,7 +1663,7 @@
       "id": "BFA.6_1",
       "name": "Centre-Sud",
       "country_code": "BFA",
-      "country": "BurkinaFaso",
+      "country": "Burkina Faso",
       "type": "Region",
       "bbox": [
         -2.0514,
@@ -1680,7 +1680,7 @@
       "id": "BFA.8_1",
       "name": "Est",
       "country_code": "BFA",
-      "country": "BurkinaFaso",
+      "country": "Burkina Faso",
       "type": "Region",
       "bbox": [
         -0.3906,
@@ -1697,7 +1697,7 @@
       "id": "BFA.9_1",
       "name": "Haut-Bassins",
       "country_code": "BFA",
-      "country": "BurkinaFaso",
+      "country": "Burkina Faso",
       "type": "Region",
       "bbox": [
         -5.4965,
@@ -1714,7 +1714,7 @@
       "id": "BFA.10_1",
       "name": "Nord",
       "country_code": "BFA",
-      "country": "BurkinaFaso",
+      "country": "Burkina Faso",
       "type": "Region",
       "bbox": [
         -2.9537,
@@ -1731,7 +1731,7 @@
       "id": "BFA.11_1",
       "name": "Plateau-Central",
       "country_code": "BFA",
-      "country": "BurkinaFaso",
+      "country": "Burkina Faso",
       "type": "Region",
       "bbox": [
         -2.083,
@@ -1748,7 +1748,7 @@
       "id": "BFA.12_1",
       "name": "Sahel",
       "country_code": "BFA",
-      "country": "BurkinaFaso",
+      "country": "Burkina Faso",
       "type": "Region",
       "bbox": [
         -2.1058,
@@ -1765,7 +1765,7 @@
       "id": "BFA.13_1",
       "name": "Sud-Ouest",
       "country_code": "BFA",
-      "country": "BurkinaFaso",
+      "country": "Burkina Faso",
       "type": "Region",
       "bbox": [
         -4.0,
@@ -2054,7 +2054,7 @@
       "id": "CAF.1_1",
       "name": "Bamingui-Bangoran",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         18.8625,
@@ -2071,7 +2071,7 @@
       "id": "CAF.2_1",
       "name": "Bangui",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "AutonomousCommune",
       "bbox": [
         18.5461,
@@ -2088,7 +2088,7 @@
       "id": "CAF.3_1",
       "name": "Basse-Kotto",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         20.4525,
@@ -2105,7 +2105,7 @@
       "id": "CAF.4_1",
       "name": "Haut-Mbomou",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         24.2607,
@@ -2122,7 +2122,7 @@
       "id": "CAF.5_1",
       "name": "Haute-Kotto",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         21.1017,
@@ -2139,7 +2139,7 @@
       "id": "CAF.6_1",
       "name": "K\u00e9mo",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         18.6078,
@@ -2156,7 +2156,7 @@
       "id": "CAF.7_1",
       "name": "Lobaye",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         16.7374,
@@ -2173,7 +2173,7 @@
       "id": "CAF.8_1",
       "name": "Mamb\u00e9r\u00e9-Kad\u00e9\u00ef",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         14.6761,
@@ -2190,7 +2190,7 @@
       "id": "CAF.9_1",
       "name": "Mbomou",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         21.7372,
@@ -2207,7 +2207,7 @@
       "id": "CAF.10_1",
       "name": "Nana-Gr\u00e9bizi",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "EconomicPrefecture",
       "bbox": [
         18.6494,
@@ -2224,7 +2224,7 @@
       "id": "CAF.11_1",
       "name": "Nana-Mamb\u00e9r\u00e9",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         14.4177,
@@ -2241,7 +2241,7 @@
       "id": "CAF.12_1",
       "name": "Ombella-M'Poko",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         16.4894,
@@ -2258,7 +2258,7 @@
       "id": "CAF.13_1",
       "name": "Ouaka",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         19.465,
@@ -2275,7 +2275,7 @@
       "id": "CAF.15_1",
       "name": "Ouham",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         16.6764,
@@ -2292,7 +2292,7 @@
       "id": "CAF.14_1",
       "name": "Ouham-Pend\u00e9",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         14.937,
@@ -2309,7 +2309,7 @@
       "id": "CAF.16_1",
       "name": "Sangha-Mba\u00e9r\u00e9",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "EconomicPrefecture",
       "bbox": [
         15.2815,
@@ -2326,7 +2326,7 @@
       "id": "CAF.17_1",
       "name": "Vakaga",
       "country_code": "CAF",
-      "country": "CentralAfricanRepublic",
+      "country": "Central African Republic",
       "type": "Prefecture",
       "bbox": [
         20.8045,
@@ -2343,7 +2343,7 @@
       "id": "CIV.1_1",
       "name": "Abidjan",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "Autonomousdistrict",
       "bbox": [
         -4.421,
@@ -2360,7 +2360,7 @@
       "id": "CIV.2_1",
       "name": "Bas-Sassandra",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "District",
       "bbox": [
         -7.5969,
@@ -2377,7 +2377,7 @@
       "id": "CIV.3_1",
       "name": "Como\u00e9",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "District",
       "bbox": [
         -3.8546,
@@ -2394,7 +2394,7 @@
       "id": "CIV.4_1",
       "name": "Dengu\u00e9l\u00e9",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "District",
       "bbox": [
         -8.1668,
@@ -2411,7 +2411,7 @@
       "id": "CIV.5_1",
       "name": "G\u00f4h-Djiboua",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "District",
       "bbox": [
         -6.4359,
@@ -2428,7 +2428,7 @@
       "id": "CIV.6_1",
       "name": "Lacs",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "District",
       "bbox": [
         -5.6688,
@@ -2445,7 +2445,7 @@
       "id": "CIV.7_1",
       "name": "Lagunes",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "District",
       "bbox": [
         -5.4578,
@@ -2462,7 +2462,7 @@
       "id": "CIV.8_1",
       "name": "Montagnes",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "District",
       "bbox": [
         -8.5993,
@@ -2479,7 +2479,7 @@
       "id": "CIV.9_1",
       "name": "Sassandra-Marahou\u00e9",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "District",
       "bbox": [
         -7.0913,
@@ -2496,7 +2496,7 @@
       "id": "CIV.10_1",
       "name": "Savanes",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "District",
       "bbox": [
         -6.9591,
@@ -2513,7 +2513,7 @@
       "id": "CIV.11_1",
       "name": "Vall\u00e9eduBandama",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "District",
       "bbox": [
         -5.734,
@@ -2530,7 +2530,7 @@
       "id": "CIV.12_1",
       "name": "Woroba",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "District",
       "bbox": [
         -8.2488,
@@ -2547,7 +2547,7 @@
       "id": "CIV.13_1",
       "name": "Yamoussoukro",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "Autonomousdistrict",
       "bbox": [
         -5.5281,
@@ -2564,7 +2564,7 @@
       "id": "CIV.14_1",
       "name": "Zanzan",
       "country_code": "CIV",
-      "country": "C\u00f4ted'Ivoire",
+      "country": "C\u00f4te d'Ivoire",
       "type": "District",
       "bbox": [
         -4.3114,
@@ -2751,7 +2751,7 @@
       "id": "COD.1_1",
       "name": "Bas-Uele",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         22.4452,
@@ -2768,7 +2768,7 @@
       "id": "COD.2_1",
       "name": "\u00c9quateur",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         16.5042,
@@ -2785,7 +2785,7 @@
       "id": "COD.3_1",
       "name": "Haut-Katanga",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         25.4872,
@@ -2802,7 +2802,7 @@
       "id": "COD.4_1",
       "name": "Haut-Lomami",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         23.6401,
@@ -2819,7 +2819,7 @@
       "id": "COD.5_1",
       "name": "Haut-Uele",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         26.8932,
@@ -2836,7 +2836,7 @@
       "id": "COD.6_1",
       "name": "Ituri",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         27.447,
@@ -2853,7 +2853,7 @@
       "id": "COD.9_1",
       "name": "Kasa\u00ef",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         19.6801,
@@ -2870,7 +2870,7 @@
       "id": "COD.7_1",
       "name": "Kasa\u00ef-Central",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         21.4005,
@@ -2887,7 +2887,7 @@
       "id": "COD.8_1",
       "name": "Kasa\u00ef-Oriental",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         22.9486,
@@ -2904,7 +2904,7 @@
       "id": "COD.10_1",
       "name": "Kinshasa",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         15.137,
@@ -2921,7 +2921,7 @@
       "id": "COD.11_1",
       "name": "Kongo-Central",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         12.2015,
@@ -2938,7 +2938,7 @@
       "id": "COD.12_1",
       "name": "Kwango",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         16.1394,
@@ -2955,7 +2955,7 @@
       "id": "COD.13_1",
       "name": "Kwilu",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         16.4779,
@@ -2972,7 +2972,7 @@
       "id": "COD.14_1",
       "name": "Lomami",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         23.02,
@@ -2989,7 +2989,7 @@
       "id": "COD.15_1",
       "name": "Lualaba",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         21.7453,
@@ -3006,7 +3006,7 @@
       "id": "COD.16_1",
       "name": "Mai-Ndombe",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         15.9019,
@@ -3023,7 +3023,7 @@
       "id": "COD.17_1",
       "name": "Maniema",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         24.5984,
@@ -3040,7 +3040,7 @@
       "id": "COD.18_1",
       "name": "Mongala",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         19.2085,
@@ -3057,7 +3057,7 @@
       "id": "COD.19_1",
       "name": "Nord-Kivu",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         27.2271,
@@ -3074,7 +3074,7 @@
       "id": "COD.20_1",
       "name": "Nord-Ubangi",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         19.014,
@@ -3091,7 +3091,7 @@
       "id": "COD.21_1",
       "name": "Sankuru",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         21.831,
@@ -3108,7 +3108,7 @@
       "id": "COD.22_1",
       "name": "Sud-Kivu",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         26.8106,
@@ -3125,7 +3125,7 @@
       "id": "COD.23_1",
       "name": "Sud-Ubangi",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         18.0653,
@@ -3142,7 +3142,7 @@
       "id": "COD.24_1",
       "name": "Tanganyika",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         25.9303,
@@ -3159,7 +3159,7 @@
       "id": "COD.25_1",
       "name": "Tshopo",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         22.2473,
@@ -3176,7 +3176,7 @@
       "id": "COD.26_1",
       "name": "Tshuapa",
       "country_code": "COD",
-      "country": "DemocraticRepublicoftheCongo",
+      "country": "Democratic Republic of the Congo",
       "type": "Province",
       "bbox": [
         19.4334,
@@ -3193,7 +3193,7 @@
       "id": "COG.1_1",
       "name": "Bouenza",
       "country_code": "COG",
-      "country": "RepublicoftheCongo",
+      "country": "Republic of the Congo",
       "type": "Region",
       "bbox": [
         12.5947,
@@ -3210,7 +3210,7 @@
       "id": "COG.2_1",
       "name": "Brazzaville",
       "country_code": "COG",
-      "country": "RepublicoftheCongo",
+      "country": "Republic of the Congo",
       "type": "Region",
       "bbox": [
         15.213,
@@ -3227,7 +3227,7 @@
       "id": "COG.4_1",
       "name": "Cuvette",
       "country_code": "COG",
-      "country": "RepublicoftheCongo",
+      "country": "Republic of the Congo",
       "type": "Region",
       "bbox": [
         14.3719,
@@ -3244,7 +3244,7 @@
       "id": "COG.3_1",
       "name": "Cuvette-Ouest",
       "country_code": "COG",
-      "country": "RepublicoftheCongo",
+      "country": "Republic of the Congo",
       "type": "Region",
       "bbox": [
         13.8856,
@@ -3261,7 +3261,7 @@
       "id": "COG.5_1",
       "name": "Kouilou",
       "country_code": "COG",
-      "country": "RepublicoftheCongo",
+      "country": "Republic of the Congo",
       "type": "Region",
       "bbox": [
         11.201,
@@ -3278,7 +3278,7 @@
       "id": "COG.6_1",
       "name": "L\u00e9koumou",
       "country_code": "COG",
-      "country": "RepublicoftheCongo",
+      "country": "Republic of the Congo",
       "type": "Region",
       "bbox": [
         12.5989,
@@ -3295,7 +3295,7 @@
       "id": "COG.7_1",
       "name": "Likouala",
       "country_code": "COG",
-      "country": "RepublicoftheCongo",
+      "country": "Republic of the Congo",
       "type": "Region",
       "bbox": [
         16.4528,
@@ -3312,7 +3312,7 @@
       "id": "COG.8_1",
       "name": "Niari",
       "country_code": "COG",
-      "country": "RepublicoftheCongo",
+      "country": "Republic of the Congo",
       "type": "Region",
       "bbox": [
         11.6071,
@@ -3329,7 +3329,7 @@
       "id": "COG.9_1",
       "name": "Plateaux",
       "country_code": "COG",
-      "country": "RepublicoftheCongo",
+      "country": "Republic of the Congo",
       "type": "Region",
       "bbox": [
         14.1113,
@@ -3346,7 +3346,7 @@
       "id": "COG.10_1",
       "name": "PointeNoire",
       "country_code": "COG",
-      "country": "RepublicoftheCongo",
+      "country": "Republic of the Congo",
       "type": "Region",
       "bbox": [
         11.8235,
@@ -3363,7 +3363,7 @@
       "id": "COG.11_1",
       "name": "Pool",
       "country_code": "COG",
-      "country": "RepublicoftheCongo",
+      "country": "Republic of the Congo",
       "type": "Region",
       "bbox": [
         13.8623,
@@ -3380,7 +3380,7 @@
       "id": "COG.12_1",
       "name": "Sangha",
       "country_code": "COG",
-      "country": "RepublicoftheCongo",
+      "country": "Republic of the Congo",
       "type": "Region",
       "bbox": [
         13.1309,
@@ -3448,7 +3448,7 @@
       "id": "CPV.1_1",
       "name": "BoaVista",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -22.966,
@@ -3465,7 +3465,7 @@
       "id": "CPV.2_1",
       "name": "Brava",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -24.7496,
@@ -3482,7 +3482,7 @@
       "id": "CPV.3_1",
       "name": "Maio",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -23.2335,
@@ -3499,7 +3499,7 @@
       "id": "CPV.4_1",
       "name": "Mosteiros",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -24.4011,
@@ -3516,7 +3516,7 @@
       "id": "CPV.5_1",
       "name": "Pa\u00fal",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -25.0666,
@@ -3533,7 +3533,7 @@
       "id": "CPV.6_1",
       "name": "PortoNovo",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -25.3618,
@@ -3550,7 +3550,7 @@
       "id": "CPV.7_1",
       "name": "Praia",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -23.5872,
@@ -3567,7 +3567,7 @@
       "id": "CPV.8_1",
       "name": "RibeiraBrava",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -24.3623,
@@ -3584,7 +3584,7 @@
       "id": "CPV.9_1",
       "name": "RibeiraGrande",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -25.2299,
@@ -3601,7 +3601,7 @@
       "id": "CPV.10_1",
       "name": "RibeiraGrandedeSantiago",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -23.7121,
@@ -3618,7 +3618,7 @@
       "id": "CPV.11_1",
       "name": "Sal",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -22.9946,
@@ -3635,7 +3635,7 @@
       "id": "CPV.12_1",
       "name": "SantaCatarina",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -23.7818,
@@ -3652,7 +3652,7 @@
       "id": "CPV.13_1",
       "name": "SantaCatarinadoFogo",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -24.3822,
@@ -3669,7 +3669,7 @@
       "id": "CPV.14_1",
       "name": "SantaCruz",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -23.6304,
@@ -3686,7 +3686,7 @@
       "id": "CPV.15_1",
       "name": "S\u00e3oDomingos",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -23.6271,
@@ -3703,7 +3703,7 @@
       "id": "CPV.16_1",
       "name": "S\u00e3oFilipe",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -24.5049,
@@ -3720,7 +3720,7 @@
       "id": "CPV.17_1",
       "name": "S\u00e3oLouren\u00e7odos\u00d3rg\u00e3os",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -23.6425,
@@ -3737,7 +3737,7 @@
       "id": "CPV.18_1",
       "name": "S\u00e3oMiguel",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -23.6936,
@@ -3754,7 +3754,7 @@
       "id": "CPV.19_1",
       "name": "S\u00e3oSalvadordoMundo",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -23.668,
@@ -3771,7 +3771,7 @@
       "id": "CPV.20_1",
       "name": "S\u00e3oVicente",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -25.086,
@@ -3788,7 +3788,7 @@
       "id": "CPV.21_1",
       "name": "Tarrafal",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -23.7749,
@@ -3805,7 +3805,7 @@
       "id": "CPV.22_1",
       "name": "TarrafaldeS\u00e3oNicolau",
       "country_code": "CPV",
-      "country": "CaboVerde",
+      "country": "Cabo Verde",
       "type": "County",
       "bbox": [
         -24.4274,
@@ -6304,7 +6304,7 @@
       "id": "GNQ.1_1",
       "name": "Annob\u00f3n",
       "country_code": "GNQ",
-      "country": "EquatorialGuinea",
+      "country": "Equatorial Guinea",
       "type": "Province",
       "bbox": [
         5.6164,
@@ -6321,7 +6321,7 @@
       "id": "GNQ.2_1",
       "name": "BiokoNorte",
       "country_code": "GNQ",
-      "country": "EquatorialGuinea",
+      "country": "Equatorial Guinea",
       "type": "Province",
       "bbox": [
         8.6104,
@@ -6338,7 +6338,7 @@
       "id": "GNQ.3_1",
       "name": "BiokoSur",
       "country_code": "GNQ",
-      "country": "EquatorialGuinea",
+      "country": "Equatorial Guinea",
       "type": "Province",
       "bbox": [
         8.414,
@@ -6355,7 +6355,7 @@
       "id": "GNQ.4_1",
       "name": "CentroSur",
       "country_code": "GNQ",
-      "country": "EquatorialGuinea",
+      "country": "Equatorial Guinea",
       "type": "Province",
       "bbox": [
         9.9079,
@@ -6372,7 +6372,7 @@
       "id": "GNQ.5_1",
       "name": "Ki\u00e9-Ntem",
       "country_code": "GNQ",
-      "country": "EquatorialGuinea",
+      "country": "Equatorial Guinea",
       "type": "Province",
       "bbox": [
         10.3945,
@@ -6389,7 +6389,7 @@
       "id": "GNQ.6_1",
       "name": "Litoral",
       "country_code": "GNQ",
-      "country": "EquatorialGuinea",
+      "country": "Equatorial Guinea",
       "type": "Province",
       "bbox": [
         9.3026,
@@ -6406,7 +6406,7 @@
       "id": "GNQ.7_1",
       "name": "Wele-Nzas",
       "country_code": "GNQ",
-      "country": "EquatorialGuinea",
+      "country": "Equatorial Guinea",
       "type": "Province",
       "bbox": [
         10.5183,
@@ -11234,7 +11234,7 @@
       "id": "SLE.1_1",
       "name": "Eastern",
       "country_code": "SLE",
-      "country": "SierraLeone",
+      "country": "Sierra Leone",
       "type": "Province",
       "bbox": [
         -11.5914,
@@ -11251,7 +11251,7 @@
       "id": "SLE.2_1",
       "name": "Northern",
       "country_code": "SLE",
-      "country": "SierraLeone",
+      "country": "Sierra Leone",
       "type": "Province",
       "bbox": [
         -13.3035,
@@ -11268,7 +11268,7 @@
       "id": "SLE.3_1",
       "name": "Southern",
       "country_code": "SLE",
-      "country": "SierraLeone",
+      "country": "Sierra Leone",
       "type": "Province",
       "bbox": [
         -13.0715,
@@ -11285,7 +11285,7 @@
       "id": "SLE.4_1",
       "name": "Western",
       "country_code": "SLE",
-      "country": "SierraLeone",
+      "country": "Sierra Leone",
       "type": "Province",
       "bbox": [
         -13.2985,
@@ -11608,7 +11608,7 @@
       "id": "SSD.1_1",
       "name": "CentralEquatoria",
       "country_code": "SSD",
-      "country": "SouthSudan",
+      "country": "South Sudan",
       "type": "State",
       "bbox": [
         29.7931,
@@ -11625,7 +11625,7 @@
       "id": "SSD.2_1",
       "name": "EasternEquatoria",
       "country_code": "SSD",
-      "country": "SouthSudan",
+      "country": "South Sudan",
       "type": "State",
       "bbox": [
         31.7212,
@@ -11642,7 +11642,7 @@
       "id": "SSD.3_1",
       "name": "Jungoli",
       "country_code": "SSD",
-      "country": "SouthSudan",
+      "country": "South Sudan",
       "type": "State",
       "bbox": [
         30.189,
@@ -11659,7 +11659,7 @@
       "id": "SSD.4_1",
       "name": "Lakes",
       "country_code": "SSD",
-      "country": "SouthSudan",
+      "country": "South Sudan",
       "type": "State",
       "bbox": [
         28.4638,
@@ -11676,7 +11676,7 @@
       "id": "SSD.5_1",
       "name": "NorthBahr-al-Ghazal",
       "country_code": "SSD",
-      "country": "SouthSudan",
+      "country": "South Sudan",
       "type": "State",
       "bbox": [
         26.1354,
@@ -11693,7 +11693,7 @@
       "id": "SSD.6_1",
       "name": "Unity",
       "country_code": "SSD",
-      "country": "SouthSudan",
+      "country": "South Sudan",
       "type": "State",
       "bbox": [
         28.702,
@@ -11710,7 +11710,7 @@
       "id": "SSD.7_1",
       "name": "UpperNile",
       "country_code": "SSD",
-      "country": "SouthSudan",
+      "country": "South Sudan",
       "type": "State",
       "bbox": [
         30.7607,
@@ -11727,7 +11727,7 @@
       "id": "SSD.8_1",
       "name": "Warap",
       "country_code": "SSD",
-      "country": "SouthSudan",
+      "country": "South Sudan",
       "type": "State",
       "bbox": [
         27.4924,
@@ -11744,7 +11744,7 @@
       "id": "SSD.9_1",
       "name": "WestBahr-al-Ghazal",
       "country_code": "SSD",
-      "country": "SouthSudan",
+      "country": "South Sudan",
       "type": "State",
       "bbox": [
         24.1519,
@@ -11761,7 +11761,7 @@
       "id": "SSD.10_1",
       "name": "WestEquatoria",
       "country_code": "SSD",
-      "country": "SouthSudan",
+      "country": "South Sudan",
       "type": "State",
       "bbox": [
         26.2866,
@@ -11778,7 +11778,7 @@
       "id": "STP.1_1",
       "name": "Pr\u00edncipe",
       "country_code": "STP",
-      "country": "S\u00e3oTom\u00e9andPr\u00edncipe",
+      "country": "S\u00e3o Tom\u00e9 and Pr\u00edncipe",
       "type": "Municipality",
       "bbox": [
         7.281,
@@ -11795,7 +11795,7 @@
       "id": "STP.2_1",
       "name": "S\u00e3oTom\u00e9",
       "country_code": "STP",
-      "country": "S\u00e3oTom\u00e9andPr\u00edncipe",
+      "country": "S\u00e3o Tom\u00e9 and Pr\u00edncipe",
       "type": "Municipality",
       "bbox": [
         6.4599,
@@ -14719,7 +14719,7 @@
       "id": "ZAF.1_1",
       "name": "EasternCape",
       "country_code": "ZAF",
-      "country": "SouthAfrica",
+      "country": "South Africa",
       "type": "Province",
       "bbox": [
         22.7357,
@@ -14736,7 +14736,7 @@
       "id": "ZAF.2_1",
       "name": "FreeState",
       "country_code": "ZAF",
-      "country": "SouthAfrica",
+      "country": "South Africa",
       "type": "Province",
       "bbox": [
         24.3466,
@@ -14753,7 +14753,7 @@
       "id": "ZAF.3_1",
       "name": "Gauteng",
       "country_code": "ZAF",
-      "country": "SouthAfrica",
+      "country": "South Africa",
       "type": "Province",
       "bbox": [
         27.1563,
@@ -14770,7 +14770,7 @@
       "id": "ZAF.4_1",
       "name": "KwaZulu-Natal",
       "country_code": "ZAF",
-      "country": "SouthAfrica",
+      "country": "South Africa",
       "type": "Province",
       "bbox": [
         28.8735,
@@ -14787,7 +14787,7 @@
       "id": "ZAF.5_1",
       "name": "Limpopo",
       "country_code": "ZAF",
-      "country": "SouthAfrica",
+      "country": "South Africa",
       "type": "Province",
       "bbox": [
         26.4075,
@@ -14804,7 +14804,7 @@
       "id": "ZAF.6_1",
       "name": "Mpumalanga",
       "country_code": "ZAF",
-      "country": "SouthAfrica",
+      "country": "South Africa",
       "type": "Province",
       "bbox": [
         28.2435,
@@ -14821,7 +14821,7 @@
       "id": "ZAF.7_1",
       "name": "NorthWest",
       "country_code": "ZAF",
-      "country": "SouthAfrica",
+      "country": "South Africa",
       "type": "Province",
       "bbox": [
         22.6291,
@@ -14838,7 +14838,7 @@
       "id": "ZAF.8_1",
       "name": "NorthernCape",
       "country_code": "ZAF",
-      "country": "SouthAfrica",
+      "country": "South Africa",
       "type": "Province",
       "bbox": [
         16.4519,
@@ -14855,7 +14855,7 @@
       "id": "ZAF.9_1",
       "name": "WesternCape",
       "country_code": "ZAF",
-      "country": "SouthAfrica",
+      "country": "South Africa",
       "type": "Province",
       "bbox": [
         17.7585,
