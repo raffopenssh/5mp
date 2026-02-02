@@ -25,20 +25,53 @@ The application is functional with:
 - Collapsible popup sections
 - Increased popup height for narrative visibility
 
-## Known Limitations
+## Enhanced Narratives (Feb 2026)
 
-### Classification
-Current pattern detection is basic:
-- **Deforestation**: scattered, cluster, strip, minor
-  - Does NOT distinguish: farms vs clear-cut vs charcoal vs road-clearing
-- **Settlements**: clustered, linear, scattered, dispersed, isolated
-  - Does NOT distinguish: hamlets vs farms vs mines
+See `docs/ENHANCED_NARRATIVES_PROPOSAL.md` for full plan.
 
-### To improve classification would need:
-1. Distance to roads analysis (charcoal typically <5km walk)
-2. Shape analysis (circular=charcoal, linear=road)
-3. Cross-reference with OSM industrial/mining data
-4. Size thresholds for hamlet/farm/mine
+### New Classification System
+
+**Settlements** (via `scripts/classify_features.py`):
+- `roadside_settlement`: <500m from road
+- `hamlet`: 5+ nearby settlements, >2km from roads
+- `artisanal_mining_camp`: near river + deforestation
+- `agricultural_compound`: small, isolated
+- `fishing_camp`: near river, no deforestation
+- `unclassified`: default
+
+**Deforestation** (via `scripts/classify_features.py`):
+- `road_clearing`: linear, parallel to road <500m
+- `agricultural_expansion`: near settlements <5km
+- `charcoal_production`: 2-10km from road
+- `artisanal_mining`: near river <1km
+- `natural_disturbance`: far from everything
+- `unclassified`: default
+
+### New Tables
+
+- `feature_geometries`: Centralized GeoJSON for map display
+  - fire_trajectory, settlement, deforestation, road
+  - bbox for spatial queries
+  - start_date/end_date for time slider
+
+### Processing Scripts
+
+```bash
+# Extract GeoJSON from existing data
+python scripts/extract_geometries.py --all-types --all
+
+# Classify features using spatial cross-reference
+python scripts/classify_features.py --all-types --all
+
+# Add population from GHSL POP data
+python scripts/ghsl_pop_processor.py --zip data/ghsl_pop_2030.zip --all
+```
+
+### VM Distribution
+
+- **fivemp-testing**: Development, API changes
+- **five-mp-conservation-effort**: Heavy processing (GHSL, classification)
+- **five-megapixel-conservation**: Production (don't modify until validated)
 
 ## Database
 

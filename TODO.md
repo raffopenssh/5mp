@@ -37,10 +37,35 @@
 
 ---
 
+## ENHANCED NARRATIVES (In Progress)
+
+See `docs/ENHANCED_NARRATIVES_PROPOSAL.md` for full details.
+
+### Phase 1: Schema & Processing (Week 1)
+- [x] Create feature_geometries table
+- [x] Write extract_geometries.py script
+- [x] Write classify_features.py script  
+- [x] Write ghsl_pop_processor.py script
+- [ ] Download GHSL POP data to processing VM
+- [ ] Run extraction for all parks
+- [ ] Run classification for all parks
+
+### Phase 2: API Changes (Week 2)
+- [ ] New /api/park/{id}/features endpoint
+- [ ] Stats-only narrative format
+- [ ] Date range filtering
+
+### Phase 3: Frontend (Week 3)
+- [ ] Date-based time slider (not just years)
+- [ ] Feature click → map highlight
+- [ ] Layer toggles for feature types
+
+---
+
 ## KNOWN ISSUES
 
 - Settlement display uses old format ("X at Y sector") instead of new format ("X km² near Y") on some deployments - may need cache clear
-- Deforestation/settlement classification is basic (scattered/clustered/linear) - does not distinguish farms/logging/charcoal/mines
+- ~~Deforestation/settlement classification is basic~~ → Now has pattern detection (see ENHANCED_NARRATIVES_PROPOSAL.md)
 
 ---
 
