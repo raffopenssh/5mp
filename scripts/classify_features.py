@@ -6,19 +6,36 @@ Classifies features based on proximity to:
 - Rivers/streams (from osm_places where place_type IN ('river', 'stream'))
 - Other settlements
 - Deforestation clusters
+- Park boundaries
 
 Settlement Classifications:
-- hamlet: 5+ nearby settlements, >2km from roads
+- village: large (>50 buildings equivalent), named, road access
+- hamlet: 5+ nearby settlements, >2km from roads  
 - roadside_settlement: <500m from road, linear arrangement
-- agricultural_compound: small area, isolated
+- park_infrastructure: inside park, small, near known facilities
+- logging_camp: near forest edge, near track/tertiary road
+- sawmill_compound: large footprint, near road, rectangular
+- agricultural_compound: small area, isolated, near cleared land
+- pastoral_camp: near grassland, circular arrangement
 - artisanal_mining_camp: near river + deforestation
+- fishing_camp: near river/lake, small
+- charcoal_camp: near forest edge, 2-10km from road
 - unclassified: default
 
 Deforestation Classifications:
-- road_clearing: linear, parallel to road
-- agricultural_expansion: near settlements
-- charcoal_production: circular, 2-10km from road
-- artisanal_mining: near river
+- road_clearing: linear, parallel to road <200m
+- agricultural_expansion: near settlements <5km, incremental
+- smallholder_farming: small patches <0.5km², scattered
+- industrial_logging: large rectangular blocks >1km²
+- selective_logging: scattered gaps, near logging roads
+- forestry_plantation: regular geometric shape
+- charcoal_production: circular 0.1-0.5km², 2-10km from road
+- slash_and_burn: irregular, fire scars, near settlements
+- artisanal_mining: near river <1km
+- infrastructure_clearing: linear/geometric, near roads
+- management_firebreak: linear, along boundary
+- natural_disturbance: far from everything
+- riverbank_erosion: along river, narrow strip
 - unclassified: default
 
 Usage:
@@ -164,69 +181,142 @@ def min_distance_to_deforestation(lat, lon, deforestation):
 
 
 def classify_settlement(settlement_id, lat, lon, area_m2, roads, rivers, settlements, deforestation):
-    """Classify a single settlement based on spatial context."""
+    """Classify a single settlement based on spatial context.
+    
+    Returns: (classification, confidence, dist_to_road, dist_to_river)
+    """
     
     dist_to_road, road_type = min_distance_to_roads(lat, lon, roads)
     dist_to_river = min_distance_to_rivers(lat, lon, rivers)
     nearby_count = count_nearby_settlements(lat, lon, settlements, 2000, settlement_id)
+    nearby_count_5km = count_nearby_settlements(lat, lon, settlements, 5000, settlement_id)
     dist_to_deforestation = min_distance_to_deforestation(lat, lon, deforestation)
     
     # Classification rules (in priority order)
     
-    # 1. Roadside settlement: close to road
+    # 1. Village: large settlement with road access
+    if area_m2 > 50000 and dist_to_road < 1000:
+        return 'village', 0.90, dist_to_road, dist_to_river
+    
+    # 2. Sawmill compound: large footprint, near road
+    if area_m2 > 5000 and dist_to_road < 500 and road_type in ('tertiary', 'track', 'unclassified'):
+        return 'sawmill_compound', 0.65, dist_to_road, dist_to_river
+    
+    # 3. Roadside settlement: close to road, linear
     if dist_to_road < 500:
         return 'roadside_settlement', 0.85, dist_to_road, dist_to_river
     
-    # 2. Hamlet: many nearby settlements, away from roads
+    # 4. Logging camp: near track/tertiary road, medium distance
+    if 500 < dist_to_road < 2000 and road_type in ('tertiary', 'track', 'unclassified'):
+        if dist_to_deforestation < 3000:
+            return 'logging_camp', 0.60, dist_to_road, dist_to_river
+    
+    # 5. Hamlet: many nearby settlements, away from roads
     if nearby_count >= 5 and dist_to_road > 2000:
         return 'hamlet', 0.80, dist_to_road, dist_to_river
     
-    # 3. Artisanal mining camp: near river AND near deforestation
+    # 6. Charcoal camp: 2-10km from road, near forest (deforestation)
+    if 2000 < dist_to_road < 10000 and dist_to_deforestation < 2000:
+        if area_m2 < 5000:  # Small temporary structures
+            return 'charcoal_camp', 0.55, dist_to_road, dist_to_river
+    
+    # 7. Artisanal mining camp: near river AND near deforestation
     if dist_to_river < 1000 and dist_to_deforestation < 2000:
         return 'artisanal_mining_camp', 0.50, dist_to_road, dist_to_river
     
-    # 4. Agricultural compound: small, isolated
-    if area_m2 < 10000 and dist_to_road > 5000 and nearby_count < 2:
-        return 'agricultural_compound', 0.60, dist_to_road, dist_to_river
-    
-    # 5. Fishing camp: near river, no deforestation nearby
+    # 8. Fishing camp: near river, no deforestation nearby
     if dist_to_river < 500 and dist_to_deforestation > 5000:
-        return 'fishing_camp', 0.45, dist_to_road, dist_to_river
+        return 'fishing_camp', 0.55, dist_to_road, dist_to_river
+    
+    # 9. Pastoral camp: isolated, not near rivers or deforestation
+    if nearby_count < 2 and dist_to_river > 2000 and dist_to_deforestation > 5000:
+        if area_m2 < 10000:
+            return 'pastoral_camp', 0.45, dist_to_road, dist_to_river
+    
+    # 10. Agricultural compound: small, isolated, near some cleared land
+    if area_m2 < 10000 and dist_to_road > 5000 and nearby_count < 2:
+        if dist_to_deforestation < 5000:
+            return 'agricultural_compound', 0.60, dist_to_road, dist_to_river
+    
+    # 11. Park infrastructure: small, very isolated (likely ranger post)
+    if area_m2 < 2000 and nearby_count_5km == 0 and dist_to_road > 10000:
+        return 'park_infrastructure', 0.40, dist_to_road, dist_to_river
     
     return 'unclassified', 0.0, dist_to_road, dist_to_river
 
 
 def classify_deforestation_cluster(cluster_id, lat, lon, area_km2, pattern_type, 
                                    roads, rivers, settlements):
-    """Classify a single deforestation cluster based on spatial context."""
+    """Classify a single deforestation cluster based on spatial context.
     
-    dist_to_road, _ = min_distance_to_roads(lat, lon, roads)
+    Returns: (classification, confidence, dist_to_road, dist_to_settlement, dist_to_river)
+    """
+    
+    dist_to_road, road_type = min_distance_to_roads(lat, lon, roads)
     dist_to_river = min_distance_to_rivers(lat, lon, rivers)
     dist_to_settlement = float('inf')
     if settlements:
         dist_to_settlement = min(haversine_distance(lat, lon, s[1], s[2]) for s in settlements)
     
-    # Classification rules
+    # Convert area to numeric for comparisons
+    area = area_km2 or 0
     
-    # 1. Road clearing: linear pattern, close to road
-    if pattern_type == 'strip' and dist_to_road < 500:
-        return 'road_clearing', 0.85, dist_to_road, dist_to_settlement, dist_to_river
+    # Classification rules (in priority order)
     
-    # 2. Agricultural expansion: near settlements
-    if dist_to_settlement < 5000:
+    # 1. Road clearing: linear pattern, very close to road
+    if pattern_type == 'strip' and dist_to_road < 200:
+        return 'road_clearing', 0.90, dist_to_road, dist_to_settlement, dist_to_river
+    
+    # 2. Infrastructure clearing: geometric, near road, moderate size
+    if pattern_type in ('strip', 'cluster') and dist_to_road < 500 and 0.01 < area < 0.5:
+        return 'infrastructure_clearing', 0.75, dist_to_road, dist_to_settlement, dist_to_river
+    
+    # 3. Industrial logging: large rectangular blocks
+    if area > 1.0 and pattern_type == 'cluster':
+        if dist_to_road < 5000:  # Need road access for trucks
+            return 'industrial_logging', 0.80, dist_to_road, dist_to_settlement, dist_to_river
+    
+    # 4. Selective logging: scattered pattern, near logging roads
+    if pattern_type == 'scattered' and dist_to_road < 3000:
+        if road_type in ('track', 'tertiary', 'unclassified'):
+            return 'selective_logging', 0.65, dist_to_road, dist_to_settlement, dist_to_river
+    
+    # 5. Riverbank erosion: very close to river, narrow
+    if dist_to_river < 200 and area < 0.1:
+        return 'riverbank_erosion', 0.60, dist_to_road, dist_to_settlement, dist_to_river
+    
+    # 6. Artisanal mining: near river, irregular
+    if dist_to_river < 1000 and pattern_type in ('scattered', 'cluster'):
+        return 'artisanal_mining', 0.55, dist_to_road, dist_to_settlement, dist_to_river
+    
+    # 7. Smallholder farming: small patches near villages
+    if area < 0.5 and dist_to_settlement < 3000:
+        return 'smallholder_farming', 0.80, dist_to_road, dist_to_settlement, dist_to_river
+    
+    # 8. Slash and burn: near settlements, scattered pattern
+    if dist_to_settlement < 5000 and pattern_type == 'scattered':
+        return 'slash_and_burn', 0.70, dist_to_road, dist_to_settlement, dist_to_river
+    
+    # 9. Agricultural expansion: near settlements, larger areas
+    if dist_to_settlement < 5000 and area > 0.5:
         return 'agricultural_expansion', 0.75, dist_to_road, dist_to_settlement, dist_to_river
     
-    # 3. Charcoal production: medium distance from road, not near river
+    # 10. Charcoal production: medium distance from road, clustered
     if 2000 < dist_to_road < 10000 and dist_to_river > 2000:
-        return 'charcoal_production', 0.55, dist_to_road, dist_to_settlement, dist_to_river
+        if 0.1 < area < 0.5 and pattern_type == 'cluster':
+            return 'charcoal_production', 0.60, dist_to_road, dist_to_settlement, dist_to_river
     
-    # 4. Artisanal mining: near river
-    if dist_to_river < 1000:
-        return 'artisanal_mining', 0.50, dist_to_road, dist_to_settlement, dist_to_river
+    # 11. Management firebreak: linear, could be anywhere
+    if pattern_type == 'strip' and area < 0.1:
+        return 'management_firebreak', 0.50, dist_to_road, dist_to_settlement, dist_to_river
     
-    # 5. Natural disturbance: far from everything
+    # 12. Natural disturbance: far from everything
     if dist_to_road > 10000 and dist_to_settlement > 10000:
-        return 'natural_disturbance', 0.40, dist_to_road, dist_to_settlement, dist_to_river
+        return 'natural_disturbance', 0.45, dist_to_road, dist_to_settlement, dist_to_river
+    
+    # 13. Forestry plantation: regular shape, road access (harder to detect without shape analysis)
+    if pattern_type == 'cluster' and dist_to_road < 2000 and 0.5 < area < 5.0:
+        return 'forestry_plantation', 0.40, dist_to_road, dist_to_settlement, dist_to_river
     
     return 'unclassified', 0.0, dist_to_road, dist_to_settlement, dist_to_river
 

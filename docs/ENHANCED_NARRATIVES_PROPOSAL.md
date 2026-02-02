@@ -47,12 +47,17 @@ Upgrade the 5MP narrative system to:
 
 | Pattern | Detection Criteria | Confidence |
 |---------|-------------------|------------|
-| **hamlet** | 5-50 buildings, >2km from roads, near village/hamlet in OSM | High |
-| **roadside_settlement** | <500m from road, linear arrangement | High |
-| **park_infrastructure** | Inside park, <1km from HQ/gate in OSM, small footprint | Medium |
-| **agricultural_compound** | 1-5 buildings, >5km from settlements, rectangular pattern | Medium |
-| **artisanal_mining_camp** | Near river/stream, <2km from deforestation cluster, temporary pattern | Low |
-| **fishing_camp** | <500m from river/lake, seasonal occupation pattern | Low |
+| **hamlet** | 5-50 buildings, >2km from roads, clustered with other settlements | High |
+| **village** | >50 buildings, named in OSM, road access | High |
+| **roadside_settlement** | <500m from road, linear arrangement along road | High |
+| **park_infrastructure** | Inside park, <1km from HQ/gate/ranger in OSM, small footprint (<2000m²) | High |
+| **logging_camp** | Near forest edge, <2km from track/tertiary road, temporary structures | Medium |
+| **sawmill_compound** | Large footprint (>5000m²), near road, rectangular layout | Medium |
+| **agricultural_compound** | 1-5 buildings, >5km from other settlements, near cleared land | Medium |
+| **pastoral_camp** | Seasonal, near grassland/savanna, circular arrangement | Medium |
+| **artisanal_mining_camp** | Near river/stream, <2km from deforestation, irregular layout | Low |
+| **fishing_camp** | <500m from river/lake, small footprint, seasonal | Low |
+| **charcoal_camp** | Near forest edge, 2-10km from road, temporary structures | Low |
 | **unclassified** | Default | - |
 
 ### 2.2 Deforestation Classifications
@@ -60,12 +65,19 @@ Upgrade the 5MP narrative system to:
 | Pattern | Detection Criteria | Confidence |
 |---------|-------------------|------------|
 | **road_clearing** | Linear, aspect ratio >5:1, parallel to road within 200m | High |
-| **agricultural_expansion** | Near settlement (<5km), incremental year-over-year growth | High |
-| **logging_concession** | Large rectangular blocks, systematic pattern | Medium |
-| **charcoal_production** | Circular/irregular, 2-10km from road, near settlements | Medium |
-| **artisanal_mining** | Near river, irregular shape, associated with sediment | Low |
-| **management_firebreak** | Linear, along park boundary, recurring pattern | Medium |
-| **natural_disturbance** | No roads/settlements nearby, irregular shape | Low |
+| **agricultural_expansion** | Near settlement (<5km), incremental year-over-year growth, irregular edges | High |
+| **smallholder_farming** | Small patches (<0.5km²), scattered, near villages | High |
+| **industrial_logging** | Large rectangular blocks (>1km²), systematic grid pattern, access roads | High |
+| **selective_logging** | Scattered gaps in canopy, near logging roads, feathered edges | Medium |
+| **forestry_plantation** | Regular geometric shape, uniform clearing, replanting evidence | Medium |
+| **charcoal_production** | Circular/irregular (0.1-0.5km²), 2-10km from road, clustered kilns | Medium |
+| **slash_and_burn** | Irregular patches, fire scars visible, near settlements, seasonal | Medium |
+| **artisanal_mining** | Near river (<1km), irregular shape, sediment plumes, expanding | Low |
+| **infrastructure_clearing** | Linear or geometric, near roads/settlements, permanent | Medium |
+| **management_firebreak** | Linear strip, along park boundary, maintained annually | Medium |
+| **natural_disturbance** | No roads/settlements nearby (>10km), irregular shape, no regrowth pattern | Low |
+| **riverbank_erosion** | Along river, narrow strip, natural progression | Low |
+| **unclassified** | Default | - |
 
 ### 2.3 Fire Classifications
 
@@ -117,10 +129,18 @@ ALTER TABLE park_settlements ADD COLUMN distance_to_road_m REAL;
 ALTER TABLE park_settlements ADD COLUMN nearest_road_type TEXT;
 ALTER TABLE park_settlements ADD COLUMN distance_to_river_m REAL;
 ALTER TABLE park_settlements ADD COLUMN nearby_deforestation_km2 REAL;
-ALTER TABLE park_settlements ADD COLUMN footprint_geojson TEXT;  -- Polygon from GHSL
+ALTER TABLE park_settlements ADD COLUMN footprint_geojson TEXT;  -- Polygon from GHSL raster
 ALTER TABLE park_settlements ADD COLUMN population_2020 INTEGER;
 ALTER TABLE park_settlements ADD COLUMN population_2030 INTEGER;
 ```
+
+**Note on Polygons:** Settlement footprints are extracted from GHSL BUILT_S raster by:
+1. Reading the built-up surface values around the centroid
+2. Thresholding to binary (built-up vs not)
+3. Vectorizing connected pixels to polygon
+4. Simplifying polygon for storage efficiency
+
+This is done in `scripts/ghsl_polygon_extractor.py` (to be created).
 
 ### 3.3 Alter `deforestation_clusters`
 
@@ -134,6 +154,15 @@ ALTER TABLE deforestation_clusters ADD COLUMN polygon_geojson TEXT;  -- Actual d
 ALTER TABLE deforestation_clusters ADD COLUMN start_date TEXT;  -- Estimated start (year-01-01 or finer)
 ALTER TABLE deforestation_clusters ADD COLUMN end_date TEXT;
 ```
+
+**Note on Polygons:** Deforestation polygons are extracted from Hansen lossyear raster by:
+1. Reading the loss year values for the park
+2. Filtering to specific year
+3. Clustering connected pixels (already done in deforestation_analyzer)
+4. Vectorizing each cluster to polygon
+5. Storing simplified polygon GeoJSON
+
+This is done in `scripts/deforestation_polygon_extractor.py` (to be created).
 
 ### 3.4 Alter `park_group_infractions`
 
@@ -572,22 +601,66 @@ sqlite3 db.sqlite3 < park_settlements.sql
 
 ---
 
-## Appendix A: Classification Decision Tree
+## Appendix A: Classification Decision Trees
+
+### Settlement Classification
 
 ```
-Settlement Classification:
-├── Distance to road < 500m?
-│   ├── Yes → Linear arrangement? → roadside_settlement (0.9)
-│   └── No → Continue
-├── Nearby settlements >= 5 within 2km?
-│   ├── Yes → hamlet (0.85)
-│   └── No → Continue  
-├── Distance to river < 500m AND near deforestation?
-│   ├── Yes → artisanal_mining_camp (0.5)
-│   └── No → Continue
-├── Area < 5000m² AND distance to road > 5km?
-│   ├── Yes → agricultural_compound (0.6)
-│   └── No → unclassified (0.0)
+├── Area > 50,000m² AND road < 1km?
+│   └── Yes → village (0.90)
+├── Area > 5,000m² AND road < 500m AND road_type = track/tertiary?
+│   └── Yes → sawmill_compound (0.65)
+├── Road < 500m?
+│   └── Yes → roadside_settlement (0.85)
+├── Road 500m-2km AND road_type = track/tertiary AND deforestation < 3km?
+│   └── Yes → logging_camp (0.60)
+├── Nearby settlements >= 5 AND road > 2km?
+│   └── Yes → hamlet (0.80)
+├── Road 2-10km AND deforestation < 2km AND area < 5,000m²?
+│   └── Yes → charcoal_camp (0.55)
+├── River < 1km AND deforestation < 2km?
+│   └── Yes → artisanal_mining_camp (0.50)
+├── River < 500m AND deforestation > 5km?
+│   └── Yes → fishing_camp (0.55)
+├── Isolated AND river > 2km AND deforestation > 5km AND area < 10,000m²?
+│   └── Yes → pastoral_camp (0.45)
+├── Area < 10,000m² AND road > 5km AND isolated AND deforestation < 5km?
+│   └── Yes → agricultural_compound (0.60)
+├── Area < 2,000m² AND no neighbors in 5km AND road > 10km?
+│   └── Yes → park_infrastructure (0.40)
+└── Otherwise → unclassified (0.0)
+```
+
+### Deforestation Classification
+
+```
+├── Pattern = strip AND road < 200m?
+│   └── Yes → road_clearing (0.90)
+├── Pattern = strip/cluster AND road < 500m AND 0.01 < area < 0.5km²?
+│   └── Yes → infrastructure_clearing (0.75)
+├── Area > 1km² AND pattern = cluster AND road < 5km?
+│   └── Yes → industrial_logging (0.80)
+├── Pattern = scattered AND road < 3km AND road_type = track/tertiary?
+│   └── Yes → selective_logging (0.65)
+├── River < 200m AND area < 0.1km²?
+│   └── Yes → riverbank_erosion (0.60)
+├── River < 1km AND pattern = scattered/cluster?
+│   └── Yes → artisanal_mining (0.55)
+├── Area < 0.5km² AND settlement < 3km?
+│   └── Yes → smallholder_farming (0.80)
+├── Settlement < 5km AND pattern = scattered?
+│   └── Yes → slash_and_burn (0.70)
+├── Settlement < 5km AND area > 0.5km²?
+│   └── Yes → agricultural_expansion (0.75)
+├── Road 2-10km AND river > 2km AND 0.1 < area < 0.5km² AND pattern = cluster?
+│   └── Yes → charcoal_production (0.60)
+├── Pattern = strip AND area < 0.1km²?
+│   └── Yes → management_firebreak (0.50)
+├── Road > 10km AND settlement > 10km?
+│   └── Yes → natural_disturbance (0.45)
+├── Pattern = cluster AND road < 2km AND 0.5 < area < 5km²?
+│   └── Yes → forestry_plantation (0.40)
+└── Otherwise → unclassified (0.0)
 ```
 
 ---
