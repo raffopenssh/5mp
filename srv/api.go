@@ -345,13 +345,12 @@ func (s *Server) HandleAPILogout(w http.ResponseWriter, r *http.Request) {
 //   - bbox: bounding box (minLng,minLat,maxLng,maxLat) - not yet implemented
 func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	q := dbgen.New(s.DB)
 
 	// Parse date range
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
-	_ = r.URL.Query().Get("type") // typeFilter - reserved for future movement type filtering
 	bboxStr := r.URL.Query().Get("bbox")
+	// Note: type filter not yet implemented for stats - would need movement type aggregation
 
 	// Parse bbox if provided (minLng,minLat,maxLng,maxLat)
 	var bbox []float64
@@ -383,69 +382,29 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	// Aggregate stats across requested years
 	var activePixels, totalUploads int64
 	var totalDistanceKm float64
-	seenPixels := make(map[string]bool)
+	// Build patrol stats query with optional bbox filter
+	statsQuery := `
+		SELECT 
+			COUNT(DISTINCT e.grid_cell_id) as active_pixels,
+			COALESCE(SUM(e.total_distance_km), 0) as total_distance_km,
+			COALESCE(SUM(e.unique_uploads), 0) as total_uploads
+		FROM effort_data e
+		JOIN grid_cells g ON e.grid_cell_id = g.id
+		WHERE e.year BETWEEN ? AND ?
+		  AND e.day IS NULL
+		  AND e.movement_type = 'all'
+	`
+	args := []interface{}{fromYear, toYear}
 
-	for year := fromYear; year <= toYear; year++ {
-		var effortRows []dbgen.GetEffortDataByYearRow
-		var err error
+	if len(bbox) == 4 {
+		statsQuery += ` AND g.lat_center >= ? AND g.lat_center <= ?
+		               AND g.lon_center >= ? AND g.lon_center <= ?`
+		args = append(args, bbox[1], bbox[3], bbox[0], bbox[2])
+	}
 
-		// Use bbox-filtered query if bbox is provided
-		if len(bbox) == 4 {
-			bboxRows, bboxErr := q.GetEffortDataByBounds(ctx, dbgen.GetEffortDataByBoundsParams{
-				LatCenter:    bbox[1], // minLat
-				LatCenter_2:  bbox[3], // maxLat
-				LonCenter:    bbox[0], // minLng
-				LonCenter_2:  bbox[2], // maxLng
-				Year:         year,
-				Year_2:       year,
-				Column7:      nil, // month (NULL)
-				Month:        0,
-				Column9:      nil, // movement_type (NULL = all)
-				MovementType: "all",
-			})
-			if bboxErr == nil {
-				// Convert to common format
-				for _, row := range bboxRows {
-					// Skip if bbox filtering and cell is outside bounds
-					if row.LatCenter < bbox[1] || row.LatCenter > bbox[3] ||
-						row.LonCenter < bbox[0] || row.LonCenter > bbox[2] {
-						continue
-					}
-
-					// Only count "all" type to avoid double counting
-					if row.MovementType != "all" {
-						continue
-					}
-
-					if !seenPixels[row.GridCellID] {
-						seenPixels[row.GridCellID] = true
-						activePixels++
-					}
-					totalDistanceKm += row.TotalDistanceKm
-					totalUploads += row.UniqueUploads
-				}
-			}
-			continue
-		}
-
-		effortRows, err = q.GetEffortDataByYear(ctx, year)
-		if err != nil {
-			continue
-		}
-
-		for _, row := range effortRows {
-			// Only count "all" type to avoid double counting
-			if row.MovementType != "all" {
-				continue
-			}
-
-			if !seenPixels[row.GridCellID] {
-				seenPixels[row.GridCellID] = true
-				activePixels++
-			}
-			totalDistanceKm += row.TotalDistanceKm
-			totalUploads += row.UniqueUploads
-		}
+	err := s.DB.QueryRowContext(ctx, statsQuery, args...).Scan(&activePixels, &totalDistanceKm, &totalUploads)
+	if err != nil {
+		slog.Error("Failed to query patrol stats", "error", err)
 	}
 
 	// Get conservation summary data
@@ -501,21 +460,44 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 		`, now.Year()-1).Scan(&prevFires)
 	}
 
-	// Deforestation totals in selected years
-	s.DB.QueryRow(`
-		SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
-		WHERE year >= ? AND year <= ?
-	`, fromYear, toYear).Scan(&totalDeforestation)
+	// Deforestation totals in selected years (with optional bbox filter)
+	if len(bbox) == 4 {
+		s.DB.QueryRow(`
+			SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
+			WHERE year >= ? AND year <= ?
+			AND lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?
+		`, fromYear, toYear, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&totalDeforestation)
+	} else {
+		s.DB.QueryRow(`
+			SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
+			WHERE year >= ? AND year <= ?
+		`, fromYear, toYear).Scan(&totalDeforestation)
+	}
 
 	// Previous period deforestation for trend
 	yearSpan := toYear - fromYear + 1
-	s.DB.QueryRow(`
-		SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
-		WHERE year >= ? AND year < ?
-	`, fromYear-yearSpan, fromYear).Scan(&prevDeforestation)
+	if len(bbox) == 4 {
+		s.DB.QueryRow(`
+			SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
+			WHERE year >= ? AND year < ?
+			AND lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?
+		`, fromYear-yearSpan, fromYear, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&prevDeforestation)
+	} else {
+		s.DB.QueryRow(`
+			SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
+			WHERE year >= ? AND year < ?
+		`, fromYear-yearSpan, fromYear).Scan(&prevDeforestation)
+	}
 
-	// Total settlements across all parks
-	s.DB.QueryRow(`SELECT COUNT(*) FROM park_settlements`).Scan(&totalSettlements)
+	// Total settlements (with optional bbox filter)
+	if len(bbox) == 4 {
+		s.DB.QueryRow(`
+			SELECT COUNT(*) FROM park_settlements
+			WHERE lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?
+		`, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&totalSettlements)
+	} else {
+		s.DB.QueryRow(`SELECT COUNT(*) FROM park_settlements`).Scan(&totalSettlements)
+	}
 
 	// Calculate trends
 	fireTrend := "stable"
