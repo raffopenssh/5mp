@@ -1384,3 +1384,60 @@ func lonDir(lon float64) string {
 	}
 	return "W"
 }
+
+// HandleAPIGPXUploadLogs returns GPX upload processing logs for admin panel
+// GET /api/admin/gpx-logs
+func (s *Server) HandleAPIGPXUploadLogs(w http.ResponseWriter, r *http.Request) {
+	// Parse pagination
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+	parkID := r.URL.Query().Get("park_id")
+	
+	limit := int64(50)
+	offset := int64(0)
+	if l, err := strconv.ParseInt(limitStr, 10, 64); err == nil && l > 0 && l <= 200 {
+		limit = l
+	}
+	if o, err := strconv.ParseInt(offsetStr, 10, 64); err == nil && o >= 0 {
+		offset = o
+	}
+	
+	q := dbgen.New(s.DB)
+	ctx := r.Context()
+	
+	var logsResult interface{}
+	var err error
+	
+	if parkID != "" {
+		logsResult, err = q.ListGPXUploadLogsByPark(ctx, dbgen.ListGPXUploadLogsByParkParams{
+			ProtectedAreaID: &parkID,
+			Limit:           limit,
+			Offset:          offset,
+		})
+	} else {
+		logsResult, err = q.ListGPXUploadLogs(ctx, dbgen.ListGPXUploadLogsParams{
+			Limit:  limit,
+			Offset: offset,
+		})
+	}
+	
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	
+	// Get summary stats for last 30 days
+	thirtyDaysAgo := time.Now().AddDate(0, 0, -30)
+	stats, _ := q.GetGPXUploadLogStats(ctx, thirtyDaysAgo)
+	
+	response := struct {
+		Logs  interface{}                    `json:"logs"`
+		Stats *dbgen.GetGPXUploadLogStatsRow `json:"stats,omitempty"`
+	}{
+		Logs:  logsResult,
+		Stats: &stats,
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}

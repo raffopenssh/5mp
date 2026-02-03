@@ -27,6 +27,23 @@ type UploadResponse struct {
 	TotalDistanceKm float64          `json:"total_distance_km"`
 	Segments        []SegmentSummary `json:"segments"`
 	Error           string           `json:"error,omitempty"`
+	
+	// Validation results
+	Validation      *UploadValidationSummary `json:"validation,omitempty"`
+}
+
+// UploadValidationSummary provides user-friendly validation feedback
+type UploadValidationSummary struct {
+	IsValid           bool     `json:"is_valid"`
+	ProtectedArea     string   `json:"protected_area,omitempty"`
+	PatrolKm          float64  `json:"patrol_km"`
+	RoadKm            float64  `json:"road_km"`
+	BoundaryKm        float64  `json:"boundary_km"`
+	ExcludedKm        float64  `json:"excluded_km"`
+	StaticSegments    int      `json:"static_segments"`
+	ExcludedSegments  int      `json:"excluded_segments"`
+	Warnings          []string `json:"warnings,omitempty"`
+	Errors            []string `json:"errors,omitempty"`
 }
 
 // SegmentSummary represents a processed segment in the upload response.
@@ -89,6 +106,7 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 		totalDistanceKm float64
 		allSegments     []SegmentSummary
 		filesProcessed  int
+		lastValidation  *UploadValidationSummary
 	)
 
 	ctx := r.Context()
@@ -172,12 +190,33 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 
-		// Persist upload to database
+		// Validate and persist upload to database
 		if s.DB != nil {
-			if err := s.persistUpload(ctx, userID, userEmail, filename, segments); err != nil {
+			validationResult, err := s.persistUploadWithValidation(ctx, userID, userEmail, filename, gpxData, segments)
+			if err != nil {
 				slog.Warn("failed to persist upload", "error", err, "filename", filename)
 			} else {
-				slog.Info("persisted upload", "filename", filename, "segments", len(segments))
+				slog.Info("persisted upload", "filename", filename, "segments", len(segments), "valid", validationResult.IsValid)
+				// Aggregate validation results
+				if lastValidation == nil {
+					lastValidation = &UploadValidationSummary{
+						IsValid: validationResult.IsValid,
+					}
+				}
+				lastValidation.PatrolKm += validationResult.PatrolKm
+				lastValidation.RoadKm += validationResult.RoadKm
+				lastValidation.BoundaryKm += validationResult.BoundaryKm
+				lastValidation.ExcludedKm += validationResult.ExcludedKm
+				lastValidation.StaticSegments += validationResult.StaticSegments
+				lastValidation.ExcludedSegments += validationResult.ExcludedSegments
+				if validationResult.ProtectedAreaName != "" {
+					lastValidation.ProtectedArea = validationResult.ProtectedAreaName
+				}
+				lastValidation.Warnings = append(lastValidation.Warnings, validationResult.ValidationWarnings...)
+				lastValidation.Errors = append(lastValidation.Errors, validationResult.ValidationErrors...)
+				if !validationResult.IsValid {
+					lastValidation.IsValid = false
+				}
 			}
 		}
 		return nil
@@ -249,6 +288,7 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 		TotalPoints:     totalPoints,
 		TotalDistanceKm: totalDistanceKm,
 		Segments:        allSegments,
+		Validation:      lastValidation,
 	})
 }
 
@@ -677,4 +717,111 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 	}
 	
 	return nil
+}
+
+// persistUploadWithValidation validates, classifies, and persists GPX upload data
+// Returns the validation result for user feedback
+func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEmail, filename string, gpxData *gpx.GPXData, segments []gpx.Segment) (*GPXValidationResult, error) {
+	// Run validation and classification
+	validationResult := ValidateAndClassifyGPX(gpxData)
+	
+	// Find protected area from first point
+	if len(segments) > 0 && len(segments[0].Points) > 0 && s.AreaStore != nil {
+		pt := segments[0].Points[0]
+		if area := s.AreaStore.FindArea(pt.Lat, pt.Lon); area != nil {
+			validationResult.ProtectedAreaID = area.ID
+			validationResult.ProtectedAreaName = area.Name
+		}
+	}
+	
+	q := dbgen.New(s.DB)
+	
+	// Determine processing status
+	processingStatus := "completed"
+	var rejectionReason *string
+	if !validationResult.IsValid {
+		processingStatus = "rejected"
+		if len(validationResult.ValidationErrors) > 0 {
+			reason := validationResult.ValidationErrors[0]
+			rejectionReason = &reason
+		}
+	} else if validationResult.PatrolKm == 0 {
+		processingStatus = "partial"
+	}
+	
+	// Convert arrays to JSON
+	errorsJSON, _ := json.Marshal(validationResult.ValidationErrors)
+	warningsJSON, _ := json.Marshal(validationResult.ValidationWarnings)
+	segmentsJSON, _ := json.Marshal(validationResult.ClassifiedSegments)
+	
+	// Count segments by type
+	patrolSegments := 0
+	for _, seg := range validationResult.ClassifiedSegments {
+		if seg.Classification == "patrol" {
+			patrolSegments++
+		}
+	}
+	
+	// Get upload_id (may be nil if we haven't persisted the upload yet)
+	var uploadID *int64
+	
+	// Log the upload processing
+	_, err := q.CreateGPXUploadLog(ctx, dbgen.CreateGPXUploadLogParams{
+		UploadID:              uploadID,
+		UserID:                userID,
+		UserEmail:             &userEmail,
+		Filename:              filename,
+		UploadTime:            time.Now(),
+		IsValid:               validationResult.IsValid,
+		TotalPoints:           int64(validationResult.TotalPoints),
+		ValidationErrors:      strPtr(string(errorsJSON)),
+		ValidationWarnings:    strPtr(string(warningsJSON)),
+		ProtectedAreaID:       strPtr(validationResult.ProtectedAreaID),
+		ProtectedAreaName:     strPtr(validationResult.ProtectedAreaName),
+		PatrolKm:              validationResult.PatrolKm,
+		RoadKm:                validationResult.RoadKm,
+		BoundaryKm:            validationResult.BoundaryKm,
+		ExcludedKm:            validationResult.ExcludedKm,
+		TotalSegments:         int64(len(validationResult.ClassifiedSegments)),
+		PatrolSegments:        int64(patrolSegments),
+		StaticSegments:        int64(validationResult.StaticSegments),
+		ExcludedSegments:      int64(validationResult.ExcludedSegments),
+		ClassifiedSegmentsJson: strPtr(string(segmentsJSON)),
+		ProcessingStatus:      &processingStatus,
+		RejectionReason:       rejectionReason,
+	})
+	if err != nil {
+		slog.Warn("failed to create gpx upload log", "error", err)
+	}
+	
+	// If valid, also persist to the original upload tables (but only patrol segments)
+	if validationResult.IsValid && validationResult.PatrolKm > 0 {
+		// Filter to only patrol segments
+		var patrolOnlySegments []gpx.Segment
+		for _, seg := range segments {
+			// Find if this segment was classified as patrol
+			for _, classified := range validationResult.ClassifiedSegments {
+				if classified.Classification == "patrol" && classified.IncludeInEffort {
+					patrolOnlySegments = append(patrolOnlySegments, seg)
+					break
+				}
+			}
+		}
+		
+		if len(patrolOnlySegments) > 0 {
+			if err := s.persistUpload(ctx, userID, userEmail, filename, patrolOnlySegments); err != nil {
+				return validationResult, err
+			}
+		}
+	}
+	
+	return validationResult, nil
+}
+
+// strPtr returns a pointer to a string, or nil if empty
+func strPtr(s string) *string {
+	if s == "" || s == "null" || s == "[]" {
+		return nil
+	}
+	return &s
 }

@@ -163,6 +163,9 @@ func (s *Server) Serve(addr string) error {
 
 	// Export endpoint
 	mux.HandleFunc("GET /api/export/parks", s.HandleAPIExportParks)
+	
+	// Admin APIs
+	mux.HandleFunc("GET /api/admin/gpx-logs", s.HandleAPIGPXUploadLogs)
 
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))

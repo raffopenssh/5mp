@@ -22,6 +22,22 @@ type EffortDatum struct {
 	CoveragePercent  *float64 `json:"coverage_percent"`
 }
 
+type FeatureGeometry struct {
+	ID             int64      `json:"id"`
+	FeatureType    string     `json:"feature_type"`
+	FeatureID      string     `json:"feature_id"`
+	ParkID         string     `json:"park_id"`
+	Geojson        string     `json:"geojson"`
+	BboxMinx       *float64   `json:"bbox_minx"`
+	BboxMiny       *float64   `json:"bbox_miny"`
+	BboxMaxx       *float64   `json:"bbox_maxx"`
+	BboxMaxy       *float64   `json:"bbox_maxy"`
+	StartDate      *string    `json:"start_date"`
+	EndDate        *string    `json:"end_date"`
+	PropertiesJson *string    `json:"properties_json"`
+	CreatedAt      *time.Time `json:"created_at"`
+}
+
 type FireDailyGrid struct {
 	ID              int64    `json:"id"`
 	GridCellID      string   `json:"grid_cell_id"`
@@ -87,6 +103,32 @@ type GpxUpload struct {
 	EndTime         *time.Time `json:"end_time"`
 	TotalDistanceKm float64    `json:"total_distance_km"`
 	TotalPoints     int64      `json:"total_points"`
+}
+
+type GpxUploadLog struct {
+	ID                     int64     `json:"id"`
+	UploadID               *int64    `json:"upload_id"`
+	UserID                 string    `json:"user_id"`
+	UserEmail              *string   `json:"user_email"`
+	Filename               string    `json:"filename"`
+	UploadTime             time.Time `json:"upload_time"`
+	IsValid                bool      `json:"is_valid"`
+	TotalPoints            int64     `json:"total_points"`
+	ValidationErrors       *string   `json:"validation_errors"`
+	ValidationWarnings     *string   `json:"validation_warnings"`
+	ProtectedAreaID        *string   `json:"protected_area_id"`
+	ProtectedAreaName      *string   `json:"protected_area_name"`
+	PatrolKm               float64   `json:"patrol_km"`
+	RoadKm                 float64   `json:"road_km"`
+	BoundaryKm             float64   `json:"boundary_km"`
+	ExcludedKm             float64   `json:"excluded_km"`
+	TotalSegments          int64     `json:"total_segments"`
+	PatrolSegments         int64     `json:"patrol_segments"`
+	StaticSegments         int64     `json:"static_segments"`
+	ExcludedSegments       int64     `json:"excluded_segments"`
+	ClassifiedSegmentsJson *string   `json:"classified_segments_json"`
+	ProcessingStatus       *string   `json:"processing_status"`
+	RejectionReason        *string   `json:"rejection_reason"`
 }
 
 type GridCell struct {
