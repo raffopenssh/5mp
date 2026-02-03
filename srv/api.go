@@ -41,175 +41,119 @@ type GeoJSONGeometry struct {
 //   - year: filter by year (optional, defaults to current year)
 //   - month: filter by month (optional, 1-12)
 //   - from/to: date range (optional, format: YYYY-MM-DD)
+//   - type: movement type filter (optional, comma-separated: foot,vehicle,aerial)
+//   - bbox: bounding box filter (optional, format: minLng,minLat,maxLng,maxLat)
 func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	q := dbgen.New(s.DB)
 
-	// Parse query params - support both year/month and from/to date range
+	// Parse query params
 	yearStr := r.URL.Query().Get("year")
 	monthStr := r.URL.Query().Get("month")
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
+	typeStr := r.URL.Query().Get("type")
+	bboxStr := r.URL.Query().Get("bbox")
 
-	// Determine year range for query
-	var fromYear, toYear int64
+	// Build query params
+	params := GridQueryParams{}
 	now := time.Now()
+
+	// Determine year range
 	if fromStr != "" || toStr != "" {
-		fromYear = int64(now.Year() - 1)
-		toYear = int64(now.Year())
+		params.FromYear = int64(now.Year() - 1)
+		params.ToYear = int64(now.Year())
 		if fromStr != "" {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
-				fromYear = int64(t.Year())
+				params.FromYear = int64(t.Year())
 			}
 		}
 		if toStr != "" {
 			if t, err := time.Parse("2006-01-02", toStr); err == nil {
-				toYear = int64(t.Year())
+				params.ToYear = int64(t.Year())
 			}
 		}
 	} else if yearStr != "" {
 		if y, err := strconv.ParseInt(yearStr, 10, 64); err == nil {
-			fromYear = y
-			toYear = y
+			params.FromYear = y
+			params.ToYear = y
 		}
 	} else {
-		// Default to current year
-		fromYear = int64(now.Year())
-		toYear = int64(now.Year())
+		params.FromYear = int64(now.Year())
+		params.ToYear = int64(now.Year())
 	}
 
-	var features []GeoJSONFeature
-
-	// Special case: single month query (no month counting needed)
+	// Parse month
 	if monthStr != "" {
-		month, parseErr := strconv.ParseInt(monthStr, 10, 64)
-		if parseErr != nil || month < 1 || month > 12 {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{"error": "invalid month parameter"})
-			return
+		if month, err := strconv.ParseInt(monthStr, 10, 64); err == nil && month >= 1 && month <= 12 {
+			params.Month = &month
 		}
-		// Query each year and aggregate
-		aggregated := make(map[string]*struct {
-			LatCenter       float64
-			LonCenter       float64
-			TotalDistance   float64
-			TotalPoints     int64
-			UniqueUploads   int64
-			MovementType    string
-			CoveragePercent *float64
-		})
-		for year := fromYear; year <= toYear; year++ {
-			rows, err := q.GetEffortDataByYearMonth(ctx, dbgen.GetEffortDataByYearMonthParams{
-				Year:  year,
-				Month: month,
-			})
-			if err != nil {
-				continue
+	}
+
+	// Parse movement types
+	if typeStr != "" {
+		for _, t := range strings.Split(typeStr, ",") {
+			t = strings.TrimSpace(t)
+			// Map 'aerial' to 'aircraft' (database uses 'aircraft')
+			if t == "aerial" {
+				t = "aircraft"
 			}
-			for _, row := range rows {
-				if agg, exists := aggregated[row.GridCellID]; exists {
-					agg.TotalDistance += row.TotalDistanceKm
-					agg.TotalPoints += row.TotalPoints
-					agg.UniqueUploads += row.UniqueUploads
-					if row.CoveragePercent != nil && (agg.CoveragePercent == nil || *row.CoveragePercent > *agg.CoveragePercent) {
-						agg.CoveragePercent = row.CoveragePercent
-					}
+			if t == "foot" || t == "vehicle" || t == "aircraft" {
+				params.MovementTypes = append(params.MovementTypes, t)
+			}
+		}
+	}
+
+	// Parse bounding box
+	if bboxStr != "" {
+		parts := strings.Split(bboxStr, ",")
+		if len(parts) == 4 {
+			var bbox [4]float64
+			valid := true
+			for i, p := range parts {
+				if v, err := strconv.ParseFloat(strings.TrimSpace(p), 64); err == nil {
+					bbox[i] = v
 				} else {
-					aggregated[row.GridCellID] = &struct {
-						LatCenter       float64
-						LonCenter       float64
-						TotalDistance   float64
-						TotalPoints     int64
-						UniqueUploads   int64
-						MovementType    string
-						CoveragePercent *float64
-					}{
-						LatCenter:       row.LatCenter,
-						LonCenter:       row.LonCenter,
-						TotalDistance:   row.TotalDistanceKm,
-						TotalPoints:     row.TotalPoints,
-						UniqueUploads:   row.UniqueUploads,
-						MovementType:    row.MovementType,
-						CoveragePercent: row.CoveragePercent,
-					}
+					valid = false
+					break
 				}
 			}
-		}
-		features = make([]GeoJSONFeature, 0, len(aggregated))
-		for gridCellID, agg := range aggregated {
-			// For single month, use 1 dry or rainy month based on which season
-			var dryMonths, rainyMonths int64
-			if month >= 11 || month <= 4 { // Nov-Apr = dry season
-				dryMonths = 1
-			} else {
-				rainyMonths = 1
+			if valid {
+				params.BBox = &bbox
 			}
-			feature := buildGridFeature(
-				gridCellID,
-				agg.LatCenter,
-				agg.LonCenter,
-				agg.TotalDistance,
-				agg.TotalPoints,
-				agg.UniqueUploads,
-				agg.MovementType,
-				agg.CoveragePercent,
-				dryMonths,
-				rainyMonths,
-			)
-			features = append(features, feature)
 		}
-	} else {
-		// Use the optimized SQL query that calculates month counts
-		rows, err := q.GetEffortDataWithMonthCounts(ctx, dbgen.GetEffortDataWithMonthCountsParams{
-			Year:   fromYear,
-			Year_2: toYear,
-		})
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(map[string]string{"error": "database error"})
-			return
-		}
+	}
 
-		features = make([]GeoJSONFeature, 0, len(rows))
-		for _, row := range rows {
-			// Convert nullable fields from SQL
-			var totalDistance float64
-			if row.TotalDistanceKm != nil {
-				totalDistance = *row.TotalDistanceKm
-			}
-			var totalPoints int64
-			if row.TotalPoints != nil {
-				totalPoints = int64(*row.TotalPoints)
-			}
-			var uniqueUploads int64
-			if row.UniqueUploads != nil {
-				if v, ok := row.UniqueUploads.(int64); ok {
-					uniqueUploads = v
-				}
-			}
-			var coveragePercent *float64
-			if row.CoveragePercent != nil {
-				if v, ok := row.CoveragePercent.(float64); ok {
-					coveragePercent = &v
-				}
-			}
+	// Execute query
+	rows, err := s.QueryGridData(ctx, params)
+	if err != nil {
+		slog.Error("Failed to query grid data", "error", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "database error"})
+		return
+	}
 
-			feature := buildGridFeature(
-				row.GridCellID,
-				row.LatCenter,
-				row.LonCenter,
-				totalDistance,
-				totalPoints,
-				uniqueUploads,
-				"all", // movement_type is always 'all' in this query
-				coveragePercent,
-				row.DryMonths,
-				row.RainyMonths,
-			)
-			features = append(features, feature)
-		}
+	// Build features
+	features := make([]GeoJSONFeature, 0, len(rows))
+	movementTypeStr := "all"
+	if len(params.MovementTypes) > 0 {
+		movementTypeStr = strings.Join(params.MovementTypes, ",")
+	}
+
+	for _, row := range rows {
+		feature := buildGridFeature(
+			row.GridCellID,
+			row.LatCenter,
+			row.LonCenter,
+			row.TotalDistanceKm,
+			row.TotalPoints,
+			row.UniqueUploads,
+			movementTypeStr,
+			row.CoveragePercent,
+			row.DryMonths,
+			row.RainyMonths,
+		)
+		features = append(features, feature)
 	}
 
 	fc := GeoJSONFeatureCollection{
