@@ -1,0 +1,14 @@
+[Unit]
+Description=Daily FIRMS NRT Fire Data Download
+After=network.target
+
+[Service]
+Type=oneshot
+User=exedev
+WorkingDirectory=/home/exedev/5mp
+ExecStart=/home/exedev/5mp/scripts/fire_nrt/cron_daily.sh
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

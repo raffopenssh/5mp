@@ -1,0 +1,14 @@
+[Unit]
+Description=FIRMS Fire Data Backfill (2025-2026)
+After=network.target
+
+[Service]
+Type=oneshot
+User=exedev
+WorkingDirectory=/home/exedev/5mp
+ExecStart=/home/exedev/5mp/scripts/fire_nrt/cron_backfill.sh
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
