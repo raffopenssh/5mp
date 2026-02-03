@@ -324,6 +324,21 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 	
+	// Check for stats-only format
+	if r.URL.Query().Get("format") == "stats" {
+		// Also support start/end as aliases for from/to
+		startDate := r.URL.Query().Get("start")
+		endDate := r.URL.Query().Get("end")
+		if startDate == "" {
+			startDate = r.URL.Query().Get("from")
+		}
+		if endDate == "" {
+			endDate = r.URL.Query().Get("to")
+		}
+		s.handleFireNarrativeStats(w, internalID, parkName, startDate, endDate)
+		return
+	}
+	
 	// Parse time filter parameters - support multi-year ranges
 	yearStr := r.URL.Query().Get("year")
 	fromStr := r.URL.Query().Get("from")
@@ -641,6 +656,27 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		}
 	}
 	
+	// Check for stats-only format
+	if r.URL.Query().Get("format") == "stats" {
+		// Also support start/end as aliases for from/to
+		startStr := r.URL.Query().Get("start")
+		endStr := r.URL.Query().Get("end")
+		startYr := fromYear
+		endYr := toYear
+		if startStr != "" {
+			if y, err := strconv.Atoi(startStr); err == nil {
+				startYr = y
+			}
+		}
+		if endStr != "" {
+			if y, err := strconv.Atoi(endStr); err == nil {
+				endYr = y
+			}
+		}
+		s.handleDeforestationNarrativeStats(w, internalID, parkName, startYr, endYr)
+		return
+	}
+	
 	narrative := DeforestationNarrative{
 		ParkID:   internalID,
 		ParkName: parkName,
@@ -810,6 +846,12 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 				break
 			}
 		}
+	}
+	
+	// Check for stats-only format
+	if r.URL.Query().Get("format") == "stats" {
+		s.handleSettlementNarrativeStats(w, internalID, parkName)
+		return
 	}
 	
 	narrative := SettlementNarrative{
@@ -1897,4 +1939,606 @@ func (s *Server) analyzeFireTrend(parkID string, currentYear int) *FireTrendAnal
 	}
 	
 	return trend
+}
+
+// ============================================================================
+// Stats-only Response Types for Enhanced API
+// ============================================================================
+
+// FireNarrativeStats represents the stats-only format for fire narratives
+type FireNarrativeStats struct {
+	ParkID   string         `json:"park_id"`
+	ParkName string         `json:"park_name"`
+	Stats    FireStatsData  `json:"stats"`
+	Features []FireFeature  `json:"features"`
+}
+
+// FireStatsData contains aggregate fire statistics
+type FireStatsData struct {
+	TotalTrajectories int               `json:"total_trajectories"`
+	TotalFires        int               `json:"total_fires"`
+	StoppedInside     int               `json:"stopped_inside"`
+	Transited         int               `json:"transited"`
+	ResponseRate      float64           `json:"response_rate"`
+	AvgDaysBurning    float64           `json:"avg_days_burning"`
+	PeakMonth         string            `json:"peak_month,omitempty"`
+	YearRange         string            `json:"year_range"`
+	ByOutcome         map[string]int    `json:"by_outcome"`
+	ByYear            map[int]int       `json:"by_year,omitempty"`
+}
+
+// FireFeature represents a single fire trajectory with geojson reference
+type FireFeature struct {
+	ID           string  `json:"id"`
+	GeoJSONID    int64   `json:"geojson_id"`
+	Year         int     `json:"year"`
+	GroupNum     int     `json:"group_num"`
+	Outcome      string  `json:"outcome"`
+	FiresInside  int     `json:"fires_inside"`
+	DaysInside   int     `json:"days_inside"`
+	EntryDate    string  `json:"entry_date"`
+	LastInside   string  `json:"last_inside"`
+	OriginLat    float64 `json:"origin_lat"`
+	OriginLon    float64 `json:"origin_lon"`
+	DestLat      float64 `json:"dest_lat"`
+	DestLon      float64 `json:"dest_lon"`
+}
+
+// SettlementNarrativeStats represents the stats-only format for settlements
+type SettlementNarrativeStats struct {
+	ParkID   string              `json:"park_id"`
+	ParkName string              `json:"park_name"`
+	Stats    SettlementStatsData `json:"stats"`
+	Features []SettlementFeature `json:"features"`
+}
+
+// SettlementStatsData contains aggregate settlement statistics
+type SettlementStatsData struct {
+	SettlementCount  int            `json:"settlement_count"`
+	TotalAreaKm2     float64        `json:"total_area_km2"`
+	Population2030   int64          `json:"population_2030"`
+	PopulationEst    int64          `json:"population_est"`
+	ByClassification map[string]int `json:"by_classification"`
+	AvgAreaM2        float64        `json:"avg_area_m2,omitempty"`
+	AvgDistToRoadM   float64        `json:"avg_distance_to_road_m,omitempty"`
+}
+
+// SettlementFeature represents a single settlement with geojson reference
+type SettlementFeature struct {
+	ID             string  `json:"id"`
+	GeoJSONID      int64   `json:"geojson_id"`
+	Classification string  `json:"classification"`
+	AreaM2         float64 `json:"area_m2"`
+	PopulationEst  int64   `json:"population_est"`
+	Population2030 int64   `json:"population_2030"`
+	Lat            float64 `json:"lat"`
+	Lon            float64 `json:"lon"`
+	NearestPlace   string  `json:"nearest_place,omitempty"`
+	DistToRoadM    float64 `json:"distance_to_road_m,omitempty"`
+}
+
+// DeforestationNarrativeStats represents the stats-only format for deforestation
+type DeforestationNarrativeStats struct {
+	ParkID   string                  `json:"park_id"`
+	ParkName string                  `json:"park_name"`
+	Stats    DeforestationStatsData  `json:"stats"`
+	Features []DeforestationFeature  `json:"features"`
+}
+
+// DeforestationStatsData contains aggregate deforestation statistics
+type DeforestationStatsData struct {
+	TotalEvents      int               `json:"total_events"`
+	TotalAreaKm2     float64           `json:"total_area_km2"`
+	YearRange        string            `json:"year_range"`
+	WorstYear        int               `json:"worst_year,omitempty"`
+	WorstYearAreaKm2 float64           `json:"worst_year_area_km2,omitempty"`
+	TrendDirection   string            `json:"trend_direction"`
+	ByClassification map[string]int    `json:"by_classification"`
+	ByYear           map[int]float64   `json:"by_year,omitempty"`
+}
+
+// DeforestationFeature represents a single deforestation event with geojson reference
+type DeforestationFeature struct {
+	ID                  string  `json:"id"`
+	GeoJSONID           int64   `json:"geojson_id"`
+	Year                int     `json:"year"`
+	Classification      string  `json:"classification"`
+	AreaKm2             float64 `json:"area_km2"`
+	Lat                 float64 `json:"lat"`
+	Lon                 float64 `json:"lon"`
+	PatternType         string  `json:"pattern_type,omitempty"`
+	DistanceToRoadM     float64 `json:"distance_to_road_m,omitempty"`
+	DistanceToSettleM   float64 `json:"distance_to_settlement_m,omitempty"`
+}
+
+// handleFireNarrativeStats returns stats-only format for fire narrative
+func (s *Server) handleFireNarrativeStats(w http.ResponseWriter, parkID, parkName string, startDate, endDate string) {
+	// Parse year range from dates
+	fromYear := 2000
+	toYear := time.Now().Year()
+	
+	if startDate != "" {
+		if t, err := time.Parse("2006-01-02", startDate); err == nil {
+			fromYear = t.Year()
+		} else if y, err := strconv.Atoi(startDate); err == nil {
+			fromYear = y
+		}
+	}
+	if endDate != "" {
+		if t, err := time.Parse("2006-01-02", endDate); err == nil {
+			toYear = t.Year()
+		} else if y, err := strconv.Atoi(endDate); err == nil {
+			toYear = y
+		}
+	}
+	
+	response := FireNarrativeStats{
+		ParkID:   parkID,
+		ParkName: parkName,
+		Stats: FireStatsData{
+			ByOutcome: make(map[string]int),
+			ByYear:    make(map[int]int),
+		},
+		Features: []FireFeature{},
+	}
+	
+	// Set year range string
+	if fromYear == toYear {
+		response.Stats.YearRange = fmt.Sprintf("%d", fromYear)
+	} else {
+		response.Stats.YearRange = fmt.Sprintf("%d-%d", fromYear, toYear)
+	}
+	
+	// Get aggregate stats from park_group_infractions
+	var totalGroups, stoppedInside, transited int
+	var avgDays float64
+	err := s.DB.QueryRow(`
+		SELECT 
+			COALESCE(SUM(total_groups), 0),
+			COALESCE(SUM(groups_stopped_inside), 0),
+			COALESCE(SUM(groups_transited), 0),
+			COALESCE(AVG(avg_days_burning), 0)
+		FROM park_group_infractions 
+		WHERE park_id = ? AND year >= ? AND year <= ?
+	`, parkID, fromYear, toYear).Scan(&totalGroups, &stoppedInside, &transited, &avgDays)
+	
+	if err != nil && err != sql.ErrNoRows {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	
+	response.Stats.TotalTrajectories = totalGroups
+	response.Stats.StoppedInside = stoppedInside
+	response.Stats.Transited = transited
+	response.Stats.AvgDaysBurning = avgDays
+	response.Stats.ByOutcome["STOPPED_INSIDE"] = stoppedInside
+	response.Stats.ByOutcome["TRANSITED"] = transited
+	
+	if totalGroups > 0 {
+		response.Stats.ResponseRate = float64(stoppedInside) / float64(totalGroups) * 100
+	}
+	
+	// Get total fire detections
+	s.DB.QueryRow(`
+		SELECT COUNT(*) FROM fire_detections 
+		WHERE protected_area_id = ? 
+		AND acq_date >= ? AND acq_date <= ?
+	`, parkID, fmt.Sprintf("%d-01-01", fromYear), fmt.Sprintf("%d-12-31", toYear)).Scan(&response.Stats.TotalFires)
+	
+	// Get peak month
+	var peakMonth string
+	s.DB.QueryRow(`
+		SELECT strftime('%m', acq_date) as month
+		FROM fire_detections 
+		WHERE protected_area_id = ? 
+		AND acq_date >= ? AND acq_date <= ?
+		GROUP BY month ORDER BY COUNT(*) DESC LIMIT 1
+	`, parkID, fmt.Sprintf("%d-01-01", fromYear), fmt.Sprintf("%d-12-31", toYear)).Scan(&peakMonth)
+	monthNames := map[string]string{
+		"01": "January", "02": "February", "03": "March", "04": "April",
+		"05": "May", "06": "June", "07": "July", "08": "August",
+		"09": "September", "10": "October", "11": "November", "12": "December",
+	}
+	response.Stats.PeakMonth = monthNames[peakMonth]
+	
+	// Get trajectories by year
+	rows, err := s.DB.Query(`
+		SELECT year, total_groups FROM park_group_infractions 
+		WHERE park_id = ? AND year >= ? AND year <= ?
+	`, parkID, fromYear, toYear)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var year, groups int
+			if rows.Scan(&year, &groups) == nil {
+				response.Stats.ByYear[year] = groups
+			}
+		}
+	}
+	
+	// Get fire trajectory features with geojson_id
+	startDateStr := fmt.Sprintf("%d-01-01", fromYear)
+	endDateStr := fmt.Sprintf("%d-12-31", toYear)
+	
+	featureRows, err := s.DB.Query(`
+		SELECT fg.id, fg.feature_id, fg.start_date, fg.end_date, fg.properties_json,
+		       fg.bbox_minx, fg.bbox_miny, fg.bbox_maxx, fg.bbox_maxy
+		FROM feature_geometries fg
+		WHERE fg.park_id = ? 
+		  AND fg.feature_type = 'fire_trajectory'
+		  AND fg.start_date >= ? AND fg.end_date <= ?
+		ORDER BY fg.start_date DESC
+		LIMIT 500
+	`, parkID, startDateStr, endDateStr)
+	
+	if err == nil {
+		defer featureRows.Close()
+		for featureRows.Next() {
+			var geojsonID int64
+			var featureID, startD, endD string
+			var propsJSON sql.NullString
+			var minX, minY, maxX, maxY float64
+			
+			if featureRows.Scan(&geojsonID, &featureID, &startD, &endD, &propsJSON, &minX, &minY, &maxX, &maxY) != nil {
+				continue
+			}
+			
+			feature := FireFeature{
+				ID:        featureID,
+				GeoJSONID: geojsonID,
+				OriginLat: maxY, // Approximate from bbox
+				OriginLon: minX,
+				DestLat:   minY,
+				DestLon:   maxX,
+			}
+			
+			// Parse properties JSON
+			if propsJSON.Valid {
+				var props map[string]interface{}
+				if json.Unmarshal([]byte(propsJSON.String), &props) == nil {
+					if v, ok := props["year"].(float64); ok {
+						feature.Year = int(v)
+					}
+					if v, ok := props["group_num"].(float64); ok {
+						feature.GroupNum = int(v)
+					}
+					if v, ok := props["outcome"].(string); ok {
+						feature.Outcome = v
+					}
+					if v, ok := props["fires_inside"].(float64); ok {
+						feature.FiresInside = int(v)
+					}
+					if v, ok := props["days_inside"].(float64); ok {
+						feature.DaysInside = int(v)
+					}
+					if v, ok := props["entry_date"].(string); ok {
+						feature.EntryDate = v
+					}
+					if v, ok := props["last_inside"].(string); ok {
+						feature.LastInside = v
+					}
+				}
+			}
+			
+			response.Features = append(response.Features, feature)
+		}
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// handleSettlementNarrativeStats returns stats-only format for settlement narrative
+func (s *Server) handleSettlementNarrativeStats(w http.ResponseWriter, parkID, parkName string) {
+	response := SettlementNarrativeStats{
+		ParkID:   parkID,
+		ParkName: parkName,
+		Stats: SettlementStatsData{
+			ByClassification: make(map[string]int),
+		},
+		Features: []SettlementFeature{},
+	}
+	
+	// Get aggregate stats
+	var count int
+	var totalArea, avgArea sql.NullFloat64
+	var popEst, pop2030 sql.NullInt64
+	var avgDistRoad sql.NullFloat64
+	
+	err := s.DB.QueryRow(`
+		SELECT 
+			COUNT(*),
+			COALESCE(SUM(area_m2), 0) / 1000000.0,
+			COALESCE(AVG(area_m2), 0),
+			COALESCE(SUM(population_est), 0),
+			COALESCE(SUM(population_2030), 0),
+			AVG(distance_to_road_m)
+		FROM park_settlements
+		WHERE park_id = ?
+	`, parkID).Scan(&count, &totalArea, &avgArea, &popEst, &pop2030, &avgDistRoad)
+	
+	if err != nil && err != sql.ErrNoRows {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	
+	response.Stats.SettlementCount = count
+	if totalArea.Valid {
+		response.Stats.TotalAreaKm2 = totalArea.Float64
+	}
+	if avgArea.Valid {
+		response.Stats.AvgAreaM2 = avgArea.Float64
+	}
+	if popEst.Valid {
+		response.Stats.PopulationEst = popEst.Int64
+	}
+	if pop2030.Valid {
+		response.Stats.Population2030 = pop2030.Int64
+	}
+	if avgDistRoad.Valid {
+		response.Stats.AvgDistToRoadM = avgDistRoad.Float64
+	}
+	
+	// Get classification breakdown
+	classRows, err := s.DB.Query(`
+		SELECT COALESCE(classification, 'unclassified'), COUNT(*)
+		FROM park_settlements
+		WHERE park_id = ?
+		GROUP BY classification
+	`, parkID)
+	if err == nil {
+		defer classRows.Close()
+		for classRows.Next() {
+			var class string
+			var cnt int
+			if classRows.Scan(&class, &cnt) == nil {
+				response.Stats.ByClassification[class] = cnt
+			}
+		}
+	}
+	
+	// Get settlement features with geojson_id
+	featureRows, err := s.DB.Query(`
+		SELECT 
+			s.id, fg.id as geojson_id,
+			COALESCE(s.classification, 'unclassified'),
+			COALESCE(s.area_m2, 0),
+			COALESCE(s.population_est, 0),
+			COALESCE(s.population_2030, 0),
+			s.lat, s.lon,
+			s.nearest_place,
+			s.distance_to_road_m
+		FROM park_settlements s
+		LEFT JOIN feature_geometries fg ON fg.feature_id = 'settlement_' || s.id AND fg.feature_type = 'settlement'
+		WHERE s.park_id = ?
+		ORDER BY s.area_m2 DESC
+		LIMIT 500
+	`, parkID)
+	
+	if err == nil {
+		defer featureRows.Close()
+		for featureRows.Next() {
+			var id int64
+			var geojsonID sql.NullInt64
+			var class string
+			var area float64
+			var popEst, pop2030 int64
+			var lat, lon float64
+			var nearestPlace sql.NullString
+			var distRoad sql.NullFloat64
+			
+			if featureRows.Scan(&id, &geojsonID, &class, &area, &popEst, &pop2030, &lat, &lon, &nearestPlace, &distRoad) != nil {
+				continue
+			}
+			
+			feature := SettlementFeature{
+				ID:             fmt.Sprintf("settlement_%d", id),
+				Classification: class,
+				AreaM2:         area,
+				PopulationEst:  popEst,
+				Population2030: pop2030,
+				Lat:            lat,
+				Lon:            lon,
+			}
+			
+			if geojsonID.Valid {
+				feature.GeoJSONID = geojsonID.Int64
+			}
+			if nearestPlace.Valid {
+				feature.NearestPlace = nearestPlace.String
+			}
+			if distRoad.Valid {
+				feature.DistToRoadM = distRoad.Float64
+			}
+			
+			response.Features = append(response.Features, feature)
+		}
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// handleDeforestationNarrativeStats returns stats-only format for deforestation narrative
+func (s *Server) handleDeforestationNarrativeStats(w http.ResponseWriter, parkID, parkName string, startYear, endYear int) {
+	response := DeforestationNarrativeStats{
+		ParkID:   parkID,
+		ParkName: parkName,
+		Stats: DeforestationStatsData{
+			ByClassification: make(map[string]int),
+			ByYear:           make(map[int]float64),
+		},
+		Features: []DeforestationFeature{},
+	}
+	
+	// Set year range string
+	if startYear == endYear {
+		response.Stats.YearRange = fmt.Sprintf("%d", startYear)
+	} else {
+		response.Stats.YearRange = fmt.Sprintf("%d-%d", startYear, endYear)
+	}
+	
+	// Get aggregate stats from deforestation_events
+	var totalEvents int
+	var totalArea float64
+	var worstYear sql.NullInt64
+	var worstYearArea sql.NullFloat64
+	
+	err := s.DB.QueryRow(`
+		SELECT 
+			COUNT(*),
+			COALESCE(SUM(area_km2), 0)
+		FROM deforestation_events
+		WHERE park_id = ? AND year >= ? AND year <= ?
+	`, parkID, startYear, endYear).Scan(&totalEvents, &totalArea)
+	
+	if err != nil && err != sql.ErrNoRows {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	
+	response.Stats.TotalEvents = totalEvents
+	response.Stats.TotalAreaKm2 = totalArea
+	
+	// Get worst year
+	s.DB.QueryRow(`
+		SELECT year, area_km2 FROM deforestation_events
+		WHERE park_id = ? AND year >= ? AND year <= ?
+		ORDER BY area_km2 DESC LIMIT 1
+	`, parkID, startYear, endYear).Scan(&worstYear, &worstYearArea)
+	
+	if worstYear.Valid {
+		response.Stats.WorstYear = int(worstYear.Int64)
+	}
+	if worstYearArea.Valid {
+		response.Stats.WorstYearAreaKm2 = worstYearArea.Float64
+	}
+	
+	// Calculate trend (compare first half vs second half)
+	midYear := (startYear + endYear) / 2
+	var firstHalfArea, secondHalfArea float64
+	s.DB.QueryRow(`SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
+		WHERE park_id = ? AND year >= ? AND year <= ?`, parkID, startYear, midYear).Scan(&firstHalfArea)
+	s.DB.QueryRow(`SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
+		WHERE park_id = ? AND year > ? AND year <= ?`, parkID, midYear, endYear).Scan(&secondHalfArea)
+	
+	if firstHalfArea > 0 {
+		change := (secondHalfArea - firstHalfArea) / firstHalfArea * 100
+		if change > 10 {
+			response.Stats.TrendDirection = "worsening"
+		} else if change < -10 {
+			response.Stats.TrendDirection = "improving"
+		} else {
+			response.Stats.TrendDirection = "stable"
+		}
+	} else {
+		response.Stats.TrendDirection = "insufficient_data"
+	}
+	
+	// Get area by year
+	yearRows, err := s.DB.Query(`
+		SELECT year, area_km2 FROM deforestation_events
+		WHERE park_id = ? AND year >= ? AND year <= ?
+		ORDER BY year
+	`, parkID, startYear, endYear)
+	if err == nil {
+		defer yearRows.Close()
+		for yearRows.Next() {
+			var year int
+			var area float64
+			if yearRows.Scan(&year, &area) == nil {
+				response.Stats.ByYear[year] = area
+			}
+		}
+	}
+	
+	// Get classification breakdown from clusters
+	classRows, err := s.DB.Query(`
+		SELECT COALESCE(classification, 'unclassified'), COUNT(*)
+		FROM deforestation_clusters
+		WHERE park_id = ? AND year >= ? AND year <= ?
+		GROUP BY classification
+	`, parkID, startYear, endYear)
+	if err == nil {
+		defer classRows.Close()
+		for classRows.Next() {
+			var class string
+			var cnt int
+			if classRows.Scan(&class, &cnt) == nil {
+				response.Stats.ByClassification[class] = cnt
+			}
+		}
+	}
+	
+	// Get deforestation features with geojson_id
+	featureRows, err := s.DB.Query(`
+		SELECT 
+			fg.id, fg.feature_id, fg.start_date, fg.properties_json,
+			COALESCE(dc.classification, 'unclassified'),
+			dc.distance_to_road_m,
+			dc.distance_to_settlement_m
+		FROM feature_geometries fg
+		LEFT JOIN deforestation_events de ON fg.feature_id = 'deforestation_' || de.id
+		LEFT JOIN deforestation_clusters dc ON dc.park_id = de.park_id AND dc.year = de.year
+		WHERE fg.park_id = ? 
+		  AND fg.feature_type = 'deforestation'
+		  AND fg.start_date >= ? AND fg.end_date <= ?
+		ORDER BY fg.start_date DESC
+		LIMIT 500
+	`, parkID, fmt.Sprintf("%d-01-01", startYear), fmt.Sprintf("%d-12-31", endYear))
+	
+	if err == nil {
+		defer featureRows.Close()
+		for featureRows.Next() {
+			var geojsonID int64
+			var featureID, startD string
+			var propsJSON sql.NullString
+			var class string
+			var distRoad, distSettle sql.NullFloat64
+			
+			if featureRows.Scan(&geojsonID, &featureID, &startD, &propsJSON, &class, &distRoad, &distSettle) != nil {
+				continue
+			}
+			
+			feature := DeforestationFeature{
+				ID:             featureID,
+				GeoJSONID:      geojsonID,
+				Classification: class,
+			}
+			
+			if distRoad.Valid {
+				feature.DistanceToRoadM = distRoad.Float64
+			}
+			if distSettle.Valid {
+				feature.DistanceToSettleM = distSettle.Float64
+			}
+			
+			// Parse properties JSON
+			if propsJSON.Valid {
+				var props map[string]interface{}
+				if json.Unmarshal([]byte(propsJSON.String), &props) == nil {
+					if v, ok := props["year"].(float64); ok {
+						feature.Year = int(v)
+					}
+					if v, ok := props["area_km2"].(float64); ok {
+						feature.AreaKm2 = v
+					}
+					if v, ok := props["pattern_type"].(string); ok {
+						feature.PatternType = v
+					}
+					if v, ok := props["lat"].(float64); ok {
+						feature.Lat = v
+					}
+					if v, ok := props["lon"].(float64); ok {
+						feature.Lon = v
+					}
+				}
+			}
+			
+			response.Features = append(response.Features, feature)
+		}
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
