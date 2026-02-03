@@ -136,6 +136,8 @@
         .notification-btn { position: relative; }
         .notification-wrapper { position: relative; }
         .notification-badge { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: badge-pulse 2s ease-out infinite; }
+        .star-count-badge { position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px; background: #fbbf24; border-radius: 8px; font-size: 10px; font-weight: 600; color: #000; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+        .star-count-badge.hidden { display: none; }
         .notification-badge.hidden { display: none; }
         @keyframes badge-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 4px rgba(34,197,94,0); } }
         .notification-dropdown { position: absolute; top: 100%; left: 0; margin-top: 8px; width: 300px; background: rgba(18,18,18,0.98); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 200; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); display: none; overflow: hidden; }
@@ -154,6 +156,67 @@
         .notification-location { font-size: 13px; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .notification-details { font-size: 11px; color: #888; margin-top: 2px; }
         .notification-empty { padding: 24px; text-align: center; color: #666; font-size: 13px; }
+
+        /* Star button styles */
+        .star-btn { background: none; border: none; cursor: pointer; padding: 4px; color: #666; transition: all 0.2s; font-size: 14px; line-height: 1; }
+        .star-btn:hover { color: #fbbf24; transform: scale(1.1); }
+        .star-btn.starred { color: #fbbf24; }
+        .star-btn.starred:hover { color: #f59e0b; }
+        .star-inline { display: inline-flex; align-items: center; margin-left: 6px; vertical-align: middle; }
+
+        /* Star modal styles */
+        .star-modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+        .star-modal.active { display: flex; align-items: center; justify-content: center; }
+        .star-modal-content { width: 90%; max-width: 800px; max-height: 85vh; background: rgba(18,18,18,0.98); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+        .star-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.2); }
+        .star-modal-title { font-size: 16px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+        .star-modal-title svg { width: 18px; height: 18px; color: #fbbf24; }
+        .star-modal-close { background: none; border: none; color: #666; cursor: pointer; font-size: 24px; line-height: 1; padding: 4px; }
+        .star-modal-close:hover { color: #fff; }
+        .star-modal-body { flex: 1; overflow-y: auto; padding: 20px; }
+        .star-modal-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.2); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .star-report-meta { font-size: 11px; color: #666; }
+        .star-report-actions { display: flex; gap: 8px; }
+        .star-report-btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .star-report-btn.secondary { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e0e0; }
+        .star-report-btn.secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .star-report-btn.primary { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); border: none; color: #000; font-weight: 500; }
+        .star-report-btn.primary:hover { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+
+        /* Starred items list */
+        .starred-section { margin-bottom: 20px; }
+        .starred-section:last-child { margin-bottom: 0; }
+        .starred-section-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 12px; }
+        .starred-section-title { font-size: 13px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 6px; }
+        .starred-section-count { font-size: 11px; color: #666; background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 10px; }
+        .starred-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; margin-bottom: 8px; overflow: hidden; transition: all 0.2s; }
+        .starred-item:hover { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); }
+        .starred-item-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; cursor: pointer; }
+        .starred-item-info { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+        .starred-item-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+        .starred-item-icon.park { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .starred-item-icon.country { background: rgba(96,165,250,0.15); color: #60a5fa; }
+        .starred-item-icon.bbox { background: rgba(168,85,247,0.15); color: #a855f7; }
+        .starred-item-icon.notification { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .starred-item-icon.narrative { background: rgba(251,146,60,0.15); color: #fb923c; }
+        .starred-item-name { font-size: 13px; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .starred-item-meta { font-size: 11px; color: #888; margin-top: 2px; }
+        .starred-item-actions { display: flex; align-items: center; gap: 8px; }
+        .starred-item-expand { background: none; border: none; color: #666; cursor: pointer; padding: 4px; font-size: 12px; transition: transform 0.2s; }
+        .starred-item-expand.expanded { transform: rotate(180deg); }
+        .starred-item-remove { background: none; border: none; color: #666; cursor: pointer; padding: 4px; font-size: 14px; }
+        .starred-item-remove:hover { color: #ef4444; }
+        .starred-item-details { padding: 0 14px 14px 14px; display: none; border-top: 1px solid rgba(255,255,255,0.06); margin-top: 0; padding-top: 12px; }
+        .starred-item-details.open { display: block; }
+        .starred-item-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 12px; }
+        .starred-stat { background: rgba(0,0,0,0.2); padding: 10px 12px; border-radius: 6px; }
+        .starred-stat-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+        .starred-stat-value { font-size: 16px; color: #22c55e; font-weight: 600; margin-top: 2px; }
+        .starred-item-chart { height: 80px; margin-top: 12px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px; }
+        .starred-empty { text-align: center; padding: 40px 20px; color: #666; }
+        .starred-empty svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.3; }
+        .starred-empty-text { font-size: 14px; margin-bottom: 4px; }
+        .starred-empty-hint { font-size: 12px; color: #555; }
 
         /* Activity highlight marker on map */
         .activity-marker { width: 24px; height: 24px; background: rgba(34,197,94,0.3); border: 2px solid #22c55e; border-radius: 50%; position: relative; }
@@ -362,6 +425,10 @@
         .bbox-clear-btn { display: none; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #888; flex: 0 0 auto; width: 32px; padding: 6px; }
         .bbox-clear-btn.visible { display: inline-flex; }
         .bbox-clear-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); color: #aaa; }
+        .bbox-star-btn { display: none; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #888; flex: 0 0 auto; width: 32px; padding: 6px; font-size: 14px; }
+        .bbox-star-btn.visible { display: inline-flex; }
+        .bbox-star-btn:hover { background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.3); color: #fbbf24; }
+        .bbox-star-btn.starred { color: #fbbf24; }
         .parks-selector { display: flex; gap: 4px; }
 
         /* PA Popup Tooltip (map popup style) */
@@ -388,6 +455,7 @@
         .pa-popup-section { margin-top: 8px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
         .pa-popup-section-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: rgba(255,255,255,0.03); cursor: pointer; transition: background 0.2s; }
         .pa-popup-section-header:hover { background: rgba(255,255,255,0.06); }
+        .pa-popup-section-star { margin-left: auto; margin-right: 8px; }
         .pa-popup-section-title { font-size: 10px; color: #888; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
         .pa-popup-section-icon { font-size: 12px; }
         .pa-popup-section-toggle { font-size: 10px; color: #555; transition: transform 0.2s; }
@@ -638,6 +706,14 @@
                 <path d="M2 12h20"></path>
             </svg>
         </button>
+        
+        <!-- Starred Items Button -->
+        <button class="toolbar-btn" id="toolbar-stars" onclick="toggleStarModal()" title="Starred items">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span class="star-count-badge hidden" id="star-count-badge">0</span>
+        </button>
     </div>
 
     
@@ -696,6 +772,9 @@
                     </button>
                     <button class="bbox-select-btn bbox-clear-btn" id="bbox-clear-btn" onclick="clearBboxSelection()" title="Clear selection">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    <button class="bbox-select-btn bbox-star-btn" id="bbox-star-btn" onclick="starCurrentBbox()" title="Star this area" style="display: none;">
+                        <span id="bbox-star-icon">☆</span>
                     </button>
                 </div>
                 <input type="checkbox" id="keystones-toggle" checked style="display:none;">
@@ -992,6 +1071,15 @@
         let currentPAPopup = null;
         let selectedParks = [];
         let selectedPAIds = new Set();  // Track PA IDs selected via bbox or clicks
+        
+        // Starred items state
+        let starredItems = {
+            parks: [],      // {id, name, country, bbox, starredAt}
+            countries: [],  // {name, bbox, starredAt}
+            bboxes: [],     // {bbox, name, starredAt}
+            notifications: [], // {index, location, type, date, starredAt}
+            narratives: []  // {parkId, parkName, type, title, content, starredAt}
+        };
 
         
         map.on('load', function() {
@@ -1888,9 +1976,14 @@
             var btn = document.getElementById('keystones-toggle-btn');
             if (btn) btn.classList.remove('active');
             
-            // Show clear button
+            // Show clear button and star button
             var clearBtn = document.getElementById('bbox-clear-btn');
             if (clearBtn) clearBtn.classList.add('visible');
+            var starBtn = document.getElementById('bbox-star-btn');
+            if (starBtn) {
+                starBtn.classList.add('visible');
+                updateBboxStarButton();
+            }
             
             // End bbox selection mode
             document.body.classList.remove('bbox-selecting');
@@ -2565,11 +2658,13 @@
                 else if (distance) details = distance;
                 else if (date) details = date;
                 
+                const notifData = { index, location, type: activity.type, date, lat: activity.lat, lng: activity.lng };
+                
                 return `
                     <div class="notification-item" onclick="handleNotificationClick(${index})">
                         <div class="notification-icon">${typeIcon}</div>
                         <div class="notification-content">
-                            <div class="notification-location">${escapeHtml(location)}</div>
+                            <div class="notification-location">${escapeHtml(location)} ${createStarButton('notifications', notifData, 'small')}</div>
                             <div class="notification-details">${details}</div>
                         </div>
                     </div>
@@ -2787,10 +2882,12 @@
                 
                 // Different styling for countries vs parks
                 if (areaType === 'country') {
+                    const countryData = { name: area.name, bbox: area.bbox, parkCount: area.parkCount };
                     return `
                     <div class="search-result-item" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
                         <div class="search-result-name">
                             <span style="color: #888;">○</span> ${escapeHtml(area.name)}
+                            ${createStarButton('countries', countryData, 'small')}
                             <span class="loaded-badge" style="background: rgba(136,136,136,0.2); color: #888;">country</span>
                         </div>
                         <div class="search-result-country">Click to filter by country</div>
@@ -2810,10 +2907,12 @@
                     const itemClass = isLoaded ? 'search-result-item' : 'search-result-item unloaded';
                     const badgeClass = isLoaded ? 'loaded-badge loaded' : 'loaded-badge unloaded';
                     const badgeText = isLoaded ? 'loaded' : 'not loaded';
+                    const parkData = { id: area.id, name: area.name, country: area.country, bbox: area.bbox, center: area.center };
                     return `
                     <div class="${itemClass}" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
                         <div class="search-result-name">
                             <span>${escapeHtml(area.name)}</span>
+                            ${isLoaded ? createStarButton('parks', parkData, 'small') : ''}
                             <span class="${badgeClass}">${badgeText}</span>
                         </div>
                         <div class="search-result-country">${escapeHtml(area.country || 'Unknown')}${area.designation ? ' • ' + escapeHtml(area.designation) : ''}</div>
@@ -3047,6 +3146,7 @@
                     <div class="pa-popup-section" id="fire-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◈</span> Fire Activity</div>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'fire', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="fire-content-${paId}">
@@ -3058,6 +3158,7 @@
                     <div class="pa-popup-section" id="ghsl-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◻</span> Settlements</div>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'settlement', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="ghsl-content-${paId}">
@@ -3069,6 +3170,7 @@
                     <div class="pa-popup-section" id="deforest-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">▲</span> Deforestation</div>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'deforestation', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="deforest-content-${paId}">
@@ -3080,6 +3182,7 @@
                     <div class="pa-popup-section" id="road-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">═</span> Roads</div>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'road', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="road-content-${paId}">
@@ -4507,6 +4610,499 @@
         }
     })();
     
+    // ========== STARRING SYSTEM ==========
+    
+    function toggleStarModal() {
+        const modal = document.getElementById('star-modal');
+        const isOpen = modal.classList.contains('active');
+        
+        if (isOpen) {
+            modal.classList.remove('active');
+        } else {
+            modal.classList.add('active');
+            renderStarredItems();
+            updateStarReportMeta();
+        }
+    }
+    
+    function updateStarBadge() {
+        const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0);
+        const badge = document.getElementById('star-count-badge');
+        const btn = document.getElementById('toolbar-stars');
+        
+        if (total > 0) {
+            badge.textContent = total;
+            badge.classList.remove('hidden');
+            btn.classList.add('active');
+        } else {
+            badge.classList.add('hidden');
+            btn.classList.remove('active');
+        }
+    }
+    
+    function isStarred(type, id) {
+        const items = starredItems[type] || [];
+        return items.some(item => {
+            if (type === 'parks') return item.id === id;
+            if (type === 'countries') return item.name === id;
+            if (type === 'bboxes') return item.bbox && item.bbox.join(',') === id;
+            if (type === 'notifications') return item.index === id;
+            if (type === 'narratives') return item.parkId + '_' + item.type === id;
+            return false;
+        });
+    }
+    
+    function toggleStar(type, data, event) {
+        if (event) event.stopPropagation();
+        
+        const items = starredItems[type];
+        let existingIndex = -1;
+        
+        if (type === 'parks') {
+            existingIndex = items.findIndex(i => i.id === data.id);
+        } else if (type === 'countries') {
+            existingIndex = items.findIndex(i => i.name === data.name);
+        } else if (type === 'bboxes') {
+            existingIndex = items.findIndex(i => i.bbox && i.bbox.join(',') === data.bbox.join(','));
+        } else if (type === 'notifications') {
+            existingIndex = items.findIndex(i => i.index === data.index);
+        } else if (type === 'narratives') {
+            existingIndex = items.findIndex(i => i.parkId === data.parkId && i.type === data.type);
+        }
+        
+        if (existingIndex >= 0) {
+            items.splice(existingIndex, 1);
+        } else {
+            data.starredAt = new Date().toISOString();
+            items.push(data);
+        }
+        
+        saveStarredItems();
+        updateStarBadge();
+        
+        // Return whether item is now starred
+        return existingIndex < 0;
+    }
+    
+    function saveStarredItems() {
+        try {
+            sessionStorage.setItem('starredItems', JSON.stringify(starredItems));
+        } catch (e) {
+            console.warn('Could not save starred items:', e);
+        }
+    }
+    
+    function loadStarredItems() {
+        try {
+            const saved = sessionStorage.getItem('starredItems');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                Object.assign(starredItems, parsed);
+            }
+        } catch (e) {
+            console.warn('Could not load starred items:', e);
+        }
+        updateStarBadge();
+    }
+    
+    function clearAllStars() {
+        if (!confirm('Remove all starred items?')) return;
+        starredItems = { parks: [], countries: [], bboxes: [], notifications: [], narratives: [] };
+        saveStarredItems();
+        updateStarBadge();
+        renderStarredItems();
+    }
+    
+    function renderStarredItems() {
+        const body = document.getElementById('star-modal-body');
+        const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0);
+        
+        if (total === 0) {
+            body.innerHTML = `
+                <div class="starred-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <div class="starred-empty-text">No starred items yet</div>
+                    <div class="starred-empty-hint">Click ☆ next to parks, countries, or narratives to add them here</div>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '';
+        
+        // Parks section
+        if (starredItems.parks.length > 0) {
+            html += renderStarredSection('Parks', 'park', starredItems.parks, item => ({
+                id: item.id,
+                name: item.name,
+                meta: item.country || '',
+                icon: '▣',
+                onClick: () => flyToPark(item),
+                onRemove: () => { toggleStar('parks', item); renderStarredItems(); }
+            }));
+        }
+        
+        // Countries section
+        if (starredItems.countries.length > 0) {
+            html += renderStarredSection('Countries', 'country', starredItems.countries, item => ({
+                id: item.name,
+                name: item.name,
+                meta: item.parkCount ? item.parkCount + ' parks' : '',
+                icon: '○',
+                onClick: () => flyToCountry(item),
+                onRemove: () => { toggleStar('countries', item); renderStarredItems(); }
+            }));
+        }
+        
+        // Bounding boxes section
+        if (starredItems.bboxes.length > 0) {
+            html += renderStarredSection('Selected Areas', 'bbox', starredItems.bboxes, item => ({
+                id: item.bbox.join(','),
+                name: item.name || 'Custom Area',
+                meta: `${item.bbox[0].toFixed(2)}°, ${item.bbox[1].toFixed(2)}° to ${item.bbox[2].toFixed(2)}°, ${item.bbox[3].toFixed(2)}°`,
+                icon: '□',
+                onClick: () => flyToBbox(item.bbox),
+                onRemove: () => { toggleStar('bboxes', item); renderStarredItems(); }
+            }));
+        }
+        
+        // Notifications section
+        if (starredItems.notifications.length > 0) {
+            html += renderStarredSection('Activity Alerts', 'notification', starredItems.notifications, item => ({
+                id: item.index,
+                name: item.location || 'Unknown location',
+                meta: item.date || '',
+                icon: {'foot': '○', 'vehicle': '□', 'aircraft': '△'}[item.type] || '◇',
+                onClick: () => { if (typeof handleNotificationClick === 'function') handleNotificationClick(item.index); },
+                onRemove: () => { toggleStar('notifications', item); renderStarredItems(); }
+            }));
+        }
+        
+        // Narratives section
+        if (starredItems.narratives.length > 0) {
+            html += renderStarredSection('Narratives', 'narrative', starredItems.narratives, item => ({
+                id: item.parkId + '_' + item.type,
+                name: item.title || item.type,
+                meta: item.parkName || '',
+                icon: {'fire': '◆', 'deforestation': '▲', 'settlement': '■', 'road': '═'}[item.type] || '●',
+                onClick: () => flyToParkAndShowNarrative(item),
+                onRemove: () => { toggleStar('narratives', item); renderStarredItems(); },
+                content: item.content
+            }));
+        }
+        
+        body.innerHTML = html;
+        attachStarredItemListeners();
+    }
+    
+    function renderStarredSection(title, iconClass, items, mapFn) {
+        const mapped = items.map(mapFn);
+        return `
+            <div class="starred-section">
+                <div class="starred-section-header">
+                    <div class="starred-section-title">${title}</div>
+                    <span class="starred-section-count">${items.length}</span>
+                </div>
+                ${mapped.map((item, idx) => `
+                    <div class="starred-item" data-type="${iconClass}" data-id="${escapeHtml(String(item.id))}" data-idx="${idx}">
+                        <div class="starred-item-header">
+                            <div class="starred-item-info">
+                                <div class="starred-item-icon ${iconClass}">${item.icon}</div>
+                                <div>
+                                    <div class="starred-item-name">${escapeHtml(item.name)}</div>
+                                    ${item.meta ? `<div class="starred-item-meta">${escapeHtml(item.meta)}</div>` : ''}
+                                </div>
+                            </div>
+                            <div class="starred-item-actions">
+                                <button class="starred-item-expand" title="Show details">▼</button>
+                                <button class="starred-item-remove" title="Remove">×</button>
+                            </div>
+                        </div>
+                        <div class="starred-item-details">
+                            ${item.content ? `<div style="font-size: 12px; color: #aaa; line-height: 1.5;">${item.content}</div>` : '<div style="color: #666; font-size: 12px;">Click to view on map</div>'}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    function attachStarredItemListeners() {
+        document.querySelectorAll('.starred-item').forEach(item => {
+            const type = item.dataset.type;
+            const idx = parseInt(item.dataset.idx);
+            
+            // Click header to fly to item
+            item.querySelector('.starred-item-info').addEventListener('click', () => {
+                let itemData;
+                if (type === 'park') itemData = starredItems.parks[idx];
+                else if (type === 'country') itemData = starredItems.countries[idx];
+                else if (type === 'bbox') itemData = starredItems.bboxes[idx];
+                else if (type === 'notification') itemData = starredItems.notifications[idx];
+                else if (type === 'narrative') itemData = starredItems.narratives[idx];
+                
+                if (itemData) {
+                    if (type === 'park') flyToPark(itemData);
+                    else if (type === 'country') flyToCountry(itemData);
+                    else if (type === 'bbox') flyToBbox(itemData.bbox);
+                    else if (type === 'narrative') flyToParkAndShowNarrative(itemData);
+                }
+                toggleStarModal();
+            });
+            
+            // Expand/collapse details
+            item.querySelector('.starred-item-expand').addEventListener('click', (e) => {
+                e.stopPropagation();
+                const details = item.querySelector('.starred-item-details');
+                const btn = item.querySelector('.starred-item-expand');
+                details.classList.toggle('open');
+                btn.classList.toggle('expanded');
+            });
+            
+            // Remove item
+            item.querySelector('.starred-item-remove').addEventListener('click', (e) => {
+                e.stopPropagation();
+                let itemData;
+                if (type === 'park') { itemData = starredItems.parks[idx]; toggleStar('parks', itemData); }
+                else if (type === 'country') { itemData = starredItems.countries[idx]; toggleStar('countries', itemData); }
+                else if (type === 'bbox') { itemData = starredItems.bboxes[idx]; toggleStar('bboxes', itemData); }
+                else if (type === 'notification') { itemData = starredItems.notifications[idx]; toggleStar('notifications', itemData); }
+                else if (type === 'narrative') { itemData = starredItems.narratives[idx]; toggleStar('narratives', itemData); }
+                renderStarredItems();
+            });
+        });
+    }
+    
+    function flyToPark(item) {
+        if (item.bbox && item.bbox.length === 4) {
+            map.fitBounds([[item.bbox[0], item.bbox[1]], [item.bbox[2], item.bbox[3]]], { padding: 50, duration: 1500 });
+        } else if (item.center) {
+            map.flyTo({ center: item.center, zoom: 10, duration: 1500 });
+        }
+    }
+    
+    function flyToCountry(item) {
+        if (item.bbox && item.bbox.length === 4) {
+            map.fitBounds([[item.bbox[0], item.bbox[1]], [item.bbox[2], item.bbox[3]]], { padding: 50, duration: 1500 });
+        }
+    }
+    
+    function flyToBbox(bbox) {
+        if (bbox && bbox.length === 4) {
+            map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], { padding: 50, duration: 1500 });
+            setBbox(bbox[0], bbox[1], bbox[2], bbox[3]);
+        }
+    }
+    
+    function flyToParkAndShowNarrative(item) {
+        // Find park and fly to it
+        const park = (window.keystoneAreas || []).find(p => p.id === item.parkId);
+        if (park) {
+            flyToPark(park);
+            // Show popup after flying
+            setTimeout(() => {
+                showPAPopup(park, { lng: park.center[0], lat: park.center[1] });
+            }, 800);
+        }
+    }
+    
+    function updateStarReportMeta() {
+        const meta = document.getElementById('star-report-meta');
+        const now = new Date();
+        const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0);
+        
+        meta.innerHTML = `
+            <div>Report: ${now.toLocaleDateString()} ${now.toLocaleTimeString()} • v0.70</div>
+            <div>Time range: ${dateFrom || 'all'} to ${dateTo || 'now'} • ${total} items</div>
+        `;
+    }
+    
+    function copyStarredLink() {
+        const params = new URLSearchParams(window.location.search);
+        
+        // Encode starred items in URL
+        if (starredItems.parks.length > 0) {
+            params.set('starred_parks', starredItems.parks.map(p => p.id).join(','));
+        }
+        if (starredItems.countries.length > 0) {
+            params.set('starred_countries', starredItems.countries.map(c => c.name).join(','));
+        }
+        if (starredItems.bboxes.length > 0) {
+            params.set('starred_bboxes', starredItems.bboxes.map(b => b.bbox.join(':')).join(','));
+        }
+        
+        const url = window.location.origin + window.location.pathname + '?' + params.toString();
+        navigator.clipboard.writeText(url).then(() => {
+            showToast('Link with starred items copied!');
+        }).catch(() => {
+            prompt('Copy this link:', url);
+        });
+    }
+    
+    function exportStarredReport() {
+        const report = generateStarredReport();
+        const blob = new Blob([report], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `5mp-report-${new Date().toISOString().slice(0,10)}.html`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Report exported!');
+    }
+    
+    function generateStarredReport() {
+        const now = new Date();
+        const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0);
+        
+        return `<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>5MP Conservation Report - ${now.toLocaleDateString()}</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 40px 20px; background: #1a1a1a; color: #e0e0e0; }
+h1 { color: #22c55e; border-bottom: 2px solid #22c55e; padding-bottom: 10px; }
+h2 { color: #fbbf24; margin-top: 30px; }
+.meta { color: #888; font-size: 14px; margin-bottom: 30px; }
+.item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.item-title { font-weight: 600; color: #fff; margin-bottom: 4px; }
+.item-meta { font-size: 13px; color: #888; }
+.item-content { font-size: 14px; color: #aaa; margin-top: 8px; line-height: 1.6; }
+.section { margin-bottom: 30px; }
+.footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; color: #666; }
+</style>
+</head><body>
+<h1>★ 5MP Conservation Report</h1>
+<div class="meta">
+    <div>Generated: ${now.toLocaleString()}</div>
+    <div>Time range: ${dateFrom || 'all time'} to ${dateTo || 'present'}</div>
+    <div>Items: ${total}</div>
+    <div>Version: 0.70</div>
+</div>
+
+${starredItems.parks.length > 0 ? `
+<div class="section">
+<h2>★ Parks (${starredItems.parks.length})</h2>
+${starredItems.parks.map(p => `
+<div class="item">
+    <div class="item-title">${escapeHtml(p.name)}</div>
+    <div class="item-meta">${escapeHtml(p.country || '')}${p.bbox ? ' • ' + p.bbox.map(v => v.toFixed(2)).join(', ') : ''}</div>
+</div>
+`).join('')}
+</div>
+` : ''}
+
+${starredItems.countries.length > 0 ? `
+<div class="section">
+<h2>★ Countries (${starredItems.countries.length})</h2>
+${starredItems.countries.map(c => `
+<div class="item">
+    <div class="item-title">${escapeHtml(c.name)}</div>
+    <div class="item-meta">${c.parkCount ? c.parkCount + ' parks' : ''}</div>
+</div>
+`).join('')}
+</div>
+` : ''}
+
+${starredItems.narratives.length > 0 ? `
+<div class="section">
+<h2>★ Narratives (${starredItems.narratives.length})</h2>
+${starredItems.narratives.map(n => `
+<div class="item">
+    <div class="item-title">${escapeHtml(n.title || n.type)}</div>
+    <div class="item-meta">${escapeHtml(n.parkName || '')}</div>
+    ${n.content ? `<div class="item-content">${n.content}</div>` : ''}
+</div>
+`).join('')}
+</div>
+` : ''}
+
+<div class="footer">
+    <p>Report generated by 5MP Globe (five-mp-conservation-effort.exe.xyz)</p>
+    <p>Data sources: VIIRS Fire, Hansen Deforestation, GHSL Settlements, OpenStreetMap</p>
+</div>
+</body></html>`;
+    }
+    
+    // Create star button HTML helper
+    function createStarButton(type, data, size = 'normal') {
+        const id = type === 'parks' ? data.id : 
+                   type === 'countries' ? data.name : 
+                   type === 'bboxes' ? data.bbox.join(',') :
+                   type === 'narratives' ? data.parkId + '_' + data.type : '';
+        const starred = isStarred(type, id);
+        const sizeClass = size === 'small' ? 'font-size: 12px;' : '';
+        return `<button class="star-btn star-inline ${starred ? 'starred' : ''}" 
+                        onclick="toggleStarBtn('${type}', ${JSON.stringify(data).replace(/"/g, '&quot;')}, this, event)" 
+                        title="${starred ? 'Remove from starred' : 'Add to starred'}"
+                        style="${sizeClass}">${starred ? '★' : '☆'}</button>`;
+    }
+    
+    function toggleStarBtn(type, data, btn, event) {
+        event.stopPropagation();
+        const isNowStarred = toggleStar(type, data);
+        btn.textContent = isNowStarred ? '★' : '☆';
+        btn.classList.toggle('starred', isNowStarred);
+        btn.title = isNowStarred ? 'Remove from starred' : 'Add to starred';
+    }
+    
+    function starCurrentBbox() {
+        if (!currentBbox || currentBbox.length !== 4) return;
+        const bboxKey = currentBbox.join(',');
+        const isNowStarred = toggleStar('bboxes', { bbox: [...currentBbox], name: 'Selected Area' });
+        updateBboxStarButton();
+        showToast(isNowStarred ? 'Area starred!' : 'Area removed from stars');
+    }
+    
+    function starNarrative(parkId, parkName, type, btn) {
+        // Get content from the section if available
+        const sectionId = type === 'fire' ? 'fire-content' : 
+                          type === 'settlement' ? 'ghsl-content' : 
+                          type === 'deforestation' ? 'deforest-content' :
+                          type === 'road' ? 'road-content' : null;
+        const sectionEl = document.getElementById(sectionId + '-' + parkId);
+        let content = '';
+        if (sectionEl) {
+            // Get text content, removing loading indicators
+            content = sectionEl.innerText.replace(/Loading.../g, '').trim().substring(0, 500);
+        }
+        
+        const titleMap = { fire: 'Fire Activity', settlement: 'Settlements', deforestation: 'Deforestation', road: 'Roads' };
+        const data = {
+            parkId,
+            parkName,
+            type,
+            title: titleMap[type] || type,
+            content
+        };
+        
+        const isNowStarred = toggleStar('narratives', data);
+        if (btn) {
+            btn.textContent = isNowStarred ? '★' : '☆';
+            btn.classList.toggle('starred', isNowStarred);
+        }
+        showToast(isNowStarred ? `${titleMap[type]} starred!` : `${titleMap[type]} removed from stars`);
+    }
+    
+    function updateBboxStarButton() {
+        const btn = document.getElementById('bbox-star-btn');
+        const icon = document.getElementById('bbox-star-icon');
+        if (!btn || !icon || !currentBbox) return;
+        
+        const bboxKey = currentBbox.join(',');
+        const starred = isStarred('bboxes', bboxKey);
+        icon.textContent = starred ? '★' : '☆';
+        btn.classList.toggle('starred', starred);
+        btn.title = starred ? 'Remove from starred' : 'Star this area';
+    }
+    
+    // Load starred items on page load
+    document.addEventListener('DOMContentLoaded', loadStarredItems);
+    
+    // ========== END STARRING SYSTEM ==========
+    
     // Share current view - creates URL with state parameters
     function shareCurrentView() {
         const params = new URLSearchParams();
@@ -4663,6 +5259,39 @@
             }, 2000);
         }
         
+        // Restore starred items from URL
+        const starredParks = params.get('starred_parks');
+        if (starredParks) {
+            starredParks.split(',').forEach(parkId => {
+                const park = (window.keystoneAreas || []).find(p => p.id === parkId);
+                if (park && !isStarred('parks', parkId)) {
+                    toggleStar('parks', { id: park.id, name: park.name, country: park.country, bbox: park.bbox, center: park.center });
+                }
+            });
+        }
+        
+        const starredCountries = params.get('starred_countries');
+        if (starredCountries) {
+            starredCountries.split(',').forEach(countryName => {
+                if (!isStarred('countries', countryName)) {
+                    toggleStar('countries', { name: countryName });
+                }
+            });
+        }
+        
+        const starredBboxes = params.get('starred_bboxes');
+        if (starredBboxes) {
+            starredBboxes.split(',').forEach(bboxStr => {
+                const bboxCoords = bboxStr.split(':').map(parseFloat);
+                if (bboxCoords.length === 4 && bboxCoords.every(c => !isNaN(c))) {
+                    const bboxKey = bboxCoords.join(',');
+                    if (!isStarred('bboxes', bboxKey)) {
+                        toggleStar('bboxes', { bbox: bboxCoords, name: 'Saved Area' });
+                    }
+                }
+            });
+        }
+        
         // Reload data with restored filters
         setTimeout(() => {
             reloadGridData();
@@ -4677,4 +5306,32 @@
         setTimeout(restoreStateFromURL, 2000);
     }
     </script>
+
+    <!-- Star Modal -->
+    <div class="star-modal" id="star-modal">
+        <div class="star-modal-content">
+            <div class="star-modal-header">
+                <div class="star-modal-title">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    Starred Items
+                </div>
+                <button class="star-modal-close" onclick="toggleStarModal()">&times;</button>
+            </div>
+            <div class="star-modal-body" id="star-modal-body">
+                <!-- Populated dynamically -->
+            </div>
+            <div class="star-modal-footer">
+                <div class="star-report-meta" id="star-report-meta">
+                    <!-- Report metadata -->
+                </div>
+                <div class="star-report-actions">
+                    <button class="star-report-btn secondary" onclick="clearAllStars()">Clear All</button>
+                    <button class="star-report-btn secondary" onclick="copyStarredLink()">Copy Link</button>
+                    <button class="star-report-btn primary" onclick="exportStarredReport()">Export Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body></html>
