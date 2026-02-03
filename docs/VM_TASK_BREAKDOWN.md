@@ -133,21 +133,31 @@ unzip -l data/ghsl_pop_2030.zip | head -20
 
 # 1. Extract fire trajectory GeoJSON (fast, uses existing data)
 python scripts/extract_geometries.py --type fire_trajectory --all
+# ✅ DONE: 50,899 fire trajectories
 
-# 2. Process GHSL population (slow, memory-intensive)
-python scripts/ghsl_pop_processor.py --all --workers 2
+# 2. Extract road GeoJSON
+python scripts/extract_geometries.py --type road --all
+# ✅ DONE: 10,854 road segments
 
-# 3. Classify settlements (needs roads + rivers)
-python scripts/classify_features.py --type settlement --all
-
-# 4. Classify deforestation (needs roads + settlements)
-python scripts/classify_features.py --type deforestation --all
-
-# 5. Extract settlement footprint GeoJSON
+# 3. Extract settlement GeoJSON
 python scripts/extract_geometries.py --type settlement --all
+# ✅ DONE: 15,066 settlements
 
-# 6. Extract deforestation polygon GeoJSON
+# 4. Extract deforestation GeoJSON
 python scripts/extract_geometries.py --type deforestation --all
+# ✅ DONE: 3,218 deforestation events
+
+# 5. Classify settlements (needs roads + rivers)
+python scripts/classify_features.py --type settlement --all
+# ✅ DONE: hamlet(4098), village(1539), sawmill_compound(100), etc.
+
+# 6. Classify deforestation (needs roads + settlements)
+python scripts/classify_features.py --type deforestation --all  
+# ✅ DONE: natural_disturbance(2690), selective_logging(644), etc.
+
+# 7. Process GHSL population (slow, memory-intensive)
+# ⏳ PENDING: Downloading GHSL POP data (5.4GB)
+python scripts/ghsl_pop_processor.py --zip data/ghsl_pop_2030_full.zip --all
 ```
 
 ### Data Sync to Testing VM
