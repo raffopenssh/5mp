@@ -1,6 +1,7 @@
 package srv
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -1026,4 +1027,211 @@ func (s *Server) HandleAPIParkInfractionSummary(w http.ResponseWriter, r *http.R
 	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
+}
+
+// HandleAPIParkFeatures returns GeoJSON features for a park
+// Supports filtering by type (fire_trajectory, settlement, deforestation, road)
+// and date range (start, end) for temporal features.
+func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+	featureType := r.URL.Query().Get("type")
+	startDate := r.URL.Query().Get("start")
+	endDate := r.URL.Query().Get("end")
+	limitStr := r.URL.Query().Get("limit")
+	
+	// Map WDPA ID to internal park_id if needed
+	internalID := parkID
+	if s.AreaStore != nil {
+		for _, area := range s.AreaStore.Areas {
+			if area.WDPAID == parkID {
+				internalID = area.ID
+				break
+			}
+		}
+	}
+	
+	// Build query
+	query := `
+		SELECT feature_type, feature_id, geojson, start_date, end_date, properties_json
+		FROM feature_geometries
+		WHERE park_id = ?
+	`
+	args := []interface{}{internalID}
+	
+	if featureType != "" {
+		query += " AND feature_type = ?"
+		args = append(args, featureType)
+	}
+	
+	if startDate != "" {
+		query += " AND (end_date IS NULL OR end_date >= ?)"
+		args = append(args, startDate)
+	}
+	
+	if endDate != "" {
+		query += " AND (start_date IS NULL OR start_date <= ?)"
+		args = append(args, endDate)
+	}
+	
+	query += " ORDER BY start_date DESC, feature_id"
+	
+	limit := 1000 // Default limit
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 10000 {
+			limit = l
+		}
+	}
+	query += fmt.Sprintf(" LIMIT %d", limit)
+	
+	rows, err := s.DB.Query(query, args...)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	
+	// Build GeoJSON FeatureCollection
+	type GeoJSONFeature struct {
+		Type       string                 `json:"type"`
+		Geometry   json.RawMessage        `json:"geometry"`
+		Properties map[string]interface{} `json:"properties"`
+	}
+	
+	type FeatureCollection struct {
+		Type     string           `json:"type"`
+		Features []GeoJSONFeature `json:"features"`
+	}
+	
+	fc := FeatureCollection{
+		Type:     "FeatureCollection",
+		Features: []GeoJSONFeature{},
+	}
+	
+	for rows.Next() {
+		var fType, fID, geojson string
+		var startDate, endDate, propsJSON sql.NullString
+		
+		if err := rows.Scan(&fType, &fID, &geojson, &startDate, &endDate, &propsJSON); err != nil {
+			continue
+		}
+		
+		// Parse properties
+		props := make(map[string]interface{})
+		if propsJSON.Valid {
+			json.Unmarshal([]byte(propsJSON.String), &props)
+		}
+		props["feature_type"] = fType
+		props["feature_id"] = fID
+		if startDate.Valid {
+			props["start_date"] = startDate.String
+		}
+		if endDate.Valid {
+			props["end_date"] = endDate.String
+		}
+		
+		fc.Features = append(fc.Features, GeoJSONFeature{
+			Type:       "Feature",
+			Geometry:   json.RawMessage(geojson),
+			Properties: props,
+		})
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(fc)
+}
+
+// HandleAPIParkFeatureStats returns summary statistics for features in a park
+func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+	
+	// Map WDPA ID to internal park_id if needed
+	internalID := parkID
+	if s.AreaStore != nil {
+		for _, area := range s.AreaStore.Areas {
+			if area.WDPAID == parkID {
+				internalID = area.ID
+				break
+			}
+		}
+	}
+	
+	type FeatureStats struct {
+		FireTrajectories    int            `json:"fire_trajectories"`
+		Settlements         int            `json:"settlements"`
+		DeforestationEvents int            `json:"deforestation_events"`
+		RoadSegments        int            `json:"road_segments"`
+		SettlementsByClass  map[string]int `json:"settlements_by_class,omitempty"`
+		DeforestByClass     map[string]int `json:"deforestation_by_class,omitempty"`
+	}
+	
+	stats := FeatureStats{
+		SettlementsByClass: make(map[string]int),
+		DeforestByClass:    make(map[string]int),
+	}
+	
+	// Count by feature type
+	rows, err := s.DB.Query(`
+		SELECT feature_type, COUNT(*) 
+		FROM feature_geometries 
+		WHERE park_id = ? 
+		GROUP BY feature_type
+	`, internalID)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var fType string
+			var count int
+			if rows.Scan(&fType, &count) == nil {
+				switch fType {
+				case "fire_trajectory":
+					stats.FireTrajectories = count
+				case "settlement":
+					stats.Settlements = count
+				case "deforestation":
+					stats.DeforestationEvents = count
+				case "road":
+					stats.RoadSegments = count
+				}
+			}
+		}
+	}
+	
+	// Settlement classifications
+	rows2, err := s.DB.Query(`
+		SELECT classification, COUNT(*) 
+		FROM park_settlements 
+		WHERE park_id = ? AND classification != 'unclassified'
+		GROUP BY classification
+	`, internalID)
+	if err == nil {
+		defer rows2.Close()
+		for rows2.Next() {
+			var class string
+			var count int
+			if rows2.Scan(&class, &count) == nil {
+				stats.SettlementsByClass[class] = count
+			}
+		}
+	}
+	
+	// Deforestation classifications
+	rows3, err := s.DB.Query(`
+		SELECT classification, COUNT(*) 
+		FROM deforestation_clusters 
+		WHERE park_id = ? AND classification != 'unclassified'
+		GROUP BY classification
+	`, internalID)
+	if err == nil {
+		defer rows3.Close()
+		for rows3.Next() {
+			var class string
+			var count int
+			if rows3.Scan(&class, &count) == nil {
+				stats.DeforestByClass[class] = count
+			}
+		}
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stats)
 }

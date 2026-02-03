@@ -148,6 +148,8 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/parks/{id}/publications/count", s.HandleAPIPublicationCount)
 	mux.HandleFunc("GET /api/parks/{id}/data-status", s.HandleAPIParkDataStatus)
 	mux.HandleFunc("GET /api/parks/{id}/infractions", s.HandleAPIParkInfractionSummary)
+	mux.HandleFunc("GET /api/parks/{id}/features", s.HandleAPIParkFeatures)
+	mux.HandleFunc("GET /api/parks/{id}/feature-stats", s.HandleAPIParkFeatureStats)
 	mux.HandleFunc("GET /api/parks/{id}/publications", s.HandleAPIPublications)
 	mux.HandleFunc("GET /api/parks/{id}/checklist", s.HandleAPIGetParkChecklist)
 	mux.HandleFunc("GET /api/parks/{id}/stats", s.HandleAPIParkStats)
