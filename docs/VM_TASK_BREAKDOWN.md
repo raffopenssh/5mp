@@ -155,9 +155,9 @@ python scripts/classify_features.py --type settlement --all
 python scripts/classify_features.py --type deforestation --all  
 # ✅ DONE: natural_disturbance(2690), selective_logging(644), etc.
 
-# 7. Process GHSL population (slow, memory-intensive)
-# ⏳ PENDING: Downloading GHSL POP data (5.4GB)
-python scripts/ghsl_pop_processor.py --zip data/ghsl_pop_2030_full.zip --all
+# 7. Process GHSL population (memory-efficient version)
+# ✅ DONE: 15,066 settlements with population data (13.6M total)
+python scripts/ghsl_pop_processor_v2.py --zip data/ghsl_pop_2030_full.zip --all
 ```
 
 ### Data Sync to Testing VM
