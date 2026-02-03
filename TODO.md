@@ -25,6 +25,21 @@
 - [x] Top 10 display with "load more" for all narrative types
 - [x] Collapsible popup sections
 
+### Starring / Report Builder
+- [x] Star button in toolbar with item count badge
+- [x] Star parks from search results and popup header
+- [x] Star countries from search results
+- [x] Star bounding box selections
+- [x] Star notifications
+- [x] Star narrative sections (fire, settlements, deforestation, roads)
+- [x] Star modal showing all starred items by category
+- [x] Collapsible item details with content preview
+- [x] Copy link with starred items encoded in URL
+- [x] Export report as HTML with dark theme
+- [x] Report includes metadata (date, version, time range, item count)
+- [x] Session storage persistence for starred items
+- [x] Starred items restored from URL on page load
+
 ---
 
 ## REMAINING (P3 - UI Simplification)
