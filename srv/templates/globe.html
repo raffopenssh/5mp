@@ -2396,9 +2396,11 @@
                 filterArea.style.display = 'none';
             }
             
-            // Hide clear button
+            // Hide clear and star buttons
             var clearBtn = document.getElementById('bbox-clear-btn');
             if (clearBtn) clearBtn.classList.remove('visible');
+            var starBtn = document.getElementById('bbox-star-btn');
+            if (starBtn) starBtn.classList.remove('visible');
             
             // Re-enable the 162 keystones toggle
             keystonesEnabled = true;
@@ -3132,7 +3134,10 @@
             const popupContent = `
                 <div class="pa-popup" style="min-width: 260px;">
                     <div class="pa-popup-header">
-                        <div class="pa-popup-name">${escapeHtml(name)}</div>
+                        <div class="pa-popup-name" style="display: flex; align-items: center; justify-content: space-between;">
+                            <span>${escapeHtml(name)}</span>
+                            ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
+                        </div>
                         <div class="pa-popup-country">
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
