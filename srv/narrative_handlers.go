@@ -2470,69 +2470,56 @@ func (s *Server) handleDeforestationNarrativeStats(w http.ResponseWriter, parkID
 		}
 	}
 	
-	// Get deforestation features with geojson_id
+	// Get deforestation features with geojson_id - query from deforestation_events for proper lat/lon
 	featureRows, err := s.DB.Query(`
-		SELECT 
-			fg.id, fg.feature_id, fg.start_date, fg.properties_json,
+		SELECT DISTINCT
+			fg.id, fg.feature_id, de.year, de.area_km2, de.pattern_type,
+			de.lat, de.lon,
 			COALESCE(dc.classification, 'unclassified'),
 			dc.distance_to_road_m,
 			dc.distance_to_settlement_m
-		FROM feature_geometries fg
-		LEFT JOIN deforestation_events de ON fg.feature_id = 'deforestation_' || de.id
-		LEFT JOIN deforestation_clusters dc ON dc.park_id = de.park_id AND dc.year = de.year
-		WHERE fg.park_id = ? 
-		  AND fg.feature_type = 'deforestation'
-		  AND fg.start_date >= ? AND fg.end_date <= ?
-		ORDER BY fg.start_date DESC
+		FROM deforestation_events de
+		JOIN feature_geometries fg ON fg.feature_id = 'deforestation_' || de.id
+		LEFT JOIN deforestation_clusters dc ON dc.park_id = de.park_id AND dc.year = de.year AND dc.cluster_id = 1
+		WHERE de.park_id = ? 
+		  AND de.year >= ? AND de.year <= ?
+		ORDER BY de.year DESC
 		LIMIT 500
-	`, parkID, fmt.Sprintf("%d-01-01", startYear), fmt.Sprintf("%d-12-31", endYear))
+	`, parkID, startYear, endYear)
 	
 	if err == nil {
 		defer featureRows.Close()
 		for featureRows.Next() {
 			var geojsonID int64
-			var featureID, startD string
-			var propsJSON sql.NullString
+			var featureID string
+			var year int
+			var areaKm2, lat, lon float64
+			var patternType sql.NullString
 			var class string
 			var distRoad, distSettle sql.NullFloat64
 			
-			if featureRows.Scan(&geojsonID, &featureID, &startD, &propsJSON, &class, &distRoad, &distSettle) != nil {
+			if featureRows.Scan(&geojsonID, &featureID, &year, &areaKm2, &patternType, &lat, &lon, &class, &distRoad, &distSettle) != nil {
 				continue
 			}
 			
 			feature := DeforestationFeature{
 				ID:             featureID,
 				GeoJSONID:      geojsonID,
+				Year:           year,
+				AreaKm2:        areaKm2,
+				Lat:            lat,
+				Lon:            lon,
 				Classification: class,
 			}
 			
+			if patternType.Valid {
+				feature.PatternType = patternType.String
+			}
 			if distRoad.Valid {
 				feature.DistanceToRoadM = distRoad.Float64
 			}
 			if distSettle.Valid {
 				feature.DistanceToSettleM = distSettle.Float64
-			}
-			
-			// Parse properties JSON
-			if propsJSON.Valid {
-				var props map[string]interface{}
-				if json.Unmarshal([]byte(propsJSON.String), &props) == nil {
-					if v, ok := props["year"].(float64); ok {
-						feature.Year = int(v)
-					}
-					if v, ok := props["area_km2"].(float64); ok {
-						feature.AreaKm2 = v
-					}
-					if v, ok := props["pattern_type"].(string); ok {
-						feature.PatternType = v
-					}
-					if v, ok := props["lat"].(float64); ok {
-						feature.Lat = v
-					}
-					if v, ok := props["lon"].(float64); ok {
-						feature.Lon = v
-					}
-				}
 			}
 			
 			response.Features = append(response.Features, feature)
