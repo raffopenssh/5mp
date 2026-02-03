@@ -125,7 +125,7 @@
         .toggle-switch input:checked + .toggle-switch-slider:before { transform: translateX(16px); background: #22c55e; }
 
         /* Compact Keystones Toggle */
-        .keystones-compact-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; font-size: 12px; cursor: pointer; transition: all 0.2s; flex: 1; }
+        .keystones-compact-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; font-size: 12px; cursor: pointer; transition: all 0.2s; flex: 1; min-height: 32px; }
         .export-btn { display: flex; align-items: center; gap: 6px; width: 100%; padding: 8px 10px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 4px; color: #60a5fa; font-size: 12px; cursor: pointer; transition: all 0.2s; }
         .export-btn:hover { background: rgba(59,130,246,0.25); border-color: rgba(59,130,246,0.5); }
         .export-btn svg { flex-shrink: 0; }
@@ -355,7 +355,7 @@
         .park-tag-remove { background: none; border: none; color: #888; cursor: pointer; font-size: 12px; padding: 0 0 0 2px; line-height: 1; flex-shrink: 0; }
         .park-tag-remove:hover { color: #ef4444; }
         .parks-selector { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-        .bbox-select-btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 4px; background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); border-radius: 4px; color: #60a5fa; font-size: 12px; cursor: pointer; transition: all 0.2s; flex: 1; }
+        .bbox-select-btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); border-radius: 4px; color: #60a5fa; font-size: 12px; cursor: pointer; transition: all 0.2s; flex: 1; min-height: 32px; }
         .bbox-select-btn:hover { background: rgba(59,130,246,0.2); border-color: rgba(59,130,246,0.4); }
         .bbox-select-btn.active { background: rgba(59,130,246,0.25); border-color: #60a5fa; }
         .bbox-select-btn svg { width: 12px; height: 12px; }
@@ -692,7 +692,7 @@
                     </button>
                     <button class="bbox-select-btn" id="bbox-select-btn" onclick="startBboxSelection()" title="Draw area to select parks">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
-                        Area
+                        Select area
                     </button>
                     <button class="bbox-select-btn bbox-clear-btn" id="bbox-clear-btn" onclick="clearBboxSelection()" title="Clear selection">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
