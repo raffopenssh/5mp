@@ -2743,10 +2743,37 @@
             if (index >= 0 && index < latestActivities.length) {
                 const activity = latestActivities[index];
                 if (activity.lat && activity.lon) {
-                    zoomToActivity(activity);
+                    zoomToActivityWithHighlight(activity);
                     closeNotificationDropdown();
                 }
             }
+        }
+
+        function zoomToActivityWithHighlight(activity) {
+            // Remove existing marker
+            removeActivityMarker();
+            
+            // Calculate grid cell ID from coordinates (0.1 degree cells)
+            const cellSize = 0.1;
+            const latCell = Math.floor(activity.lat / cellSize) * cellSize;
+            const lonCell = Math.floor(activity.lon / cellSize) * cellSize;
+            const gridCellId = latCell.toFixed(1) + '_' + lonCell.toFixed(1);
+            
+            // Highlight the grid cell (same as GPX upload)
+            highlightUploadedPixels([gridCellId], null);
+            
+            // Fly to location
+            map.flyTo({
+                center: [activity.lon, activity.lat],
+                zoom: 10,
+                duration: 1500,
+                essential: true
+            });
+            
+            // Show toast with activity info
+            const locationText = activity.location || 'Unknown location';
+            const distanceText = activity.distance ? activity.distance.toFixed(1) + ' km' : '';
+            showToast(locationText + (distanceText ? ' • ' + distanceText : ''), 'success');
         }
 
         function zoomToActivity(activity) {
