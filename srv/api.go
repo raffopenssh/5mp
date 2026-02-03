@@ -405,7 +405,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	// Parse date range
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
-	typeFilter := r.URL.Query().Get("type")
+	_ = r.URL.Query().Get("type") // typeFilter - reserved for future movement type filtering
 	bboxStr := r.URL.Query().Get("bbox")
 
 	// Parse bbox if provided (minLng,minLat,maxLng,maxLat)
@@ -441,18 +441,54 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	seenPixels := make(map[string]bool)
 
 	for year := fromYear; year <= toYear; year++ {
-		rows, err := q.GetEffortDataByYear(ctx, year)
+		var effortRows []dbgen.GetEffortDataByYearRow
+		var err error
+
+		// Use bbox-filtered query if bbox is provided
+		if len(bbox) == 4 {
+			bboxRows, bboxErr := q.GetEffortDataByBounds(ctx, dbgen.GetEffortDataByBoundsParams{
+				LatCenter:    bbox[1], // minLat
+				LatCenter_2:  bbox[3], // maxLat
+				LonCenter:    bbox[0], // minLng
+				LonCenter_2:  bbox[2], // maxLng
+				Year:         year,
+				Year_2:       year,
+				Column7:      nil, // month (NULL)
+				Month:        0,
+				Column9:      nil, // movement_type (NULL = all)
+				MovementType: "all",
+			})
+			if bboxErr == nil {
+				// Convert to common format
+				for _, row := range bboxRows {
+					// Skip if bbox filtering and cell is outside bounds
+					if row.LatCenter < bbox[1] || row.LatCenter > bbox[3] ||
+						row.LonCenter < bbox[0] || row.LonCenter > bbox[2] {
+						continue
+					}
+
+					// Only count "all" type to avoid double counting
+					if row.MovementType != "all" {
+						continue
+					}
+
+					if !seenPixels[row.GridCellID] {
+						seenPixels[row.GridCellID] = true
+						activePixels++
+					}
+					totalDistanceKm += row.TotalDistanceKm
+					totalUploads += row.UniqueUploads
+				}
+			}
+			continue
+		}
+
+		effortRows, err = q.GetEffortDataByYear(ctx, year)
 		if err != nil {
 			continue
 		}
 
-		for _, row := range rows {
-			// Apply movement type filter
-			if typeFilter != "" && row.MovementType != "all" {
-				if !strings.Contains(typeFilter, row.MovementType) {
-					continue
-				}
-			}
+		for _, row := range effortRows {
 			// Only count "all" type to avoid double counting
 			if row.MovementType != "all" {
 				continue
@@ -715,6 +751,31 @@ func (s *Server) HandleAPIActivity(w http.ResponseWriter, r *http.Request) {
 			// Try to find which PA the coordinates fall within
 			if area := s.AreaStore.FindArea(*u.CentroidLat, *u.CentroidLon); area != nil {
 				location = area.Name
+			}
+		}
+		// If location is still unknown but we have coordinates, try to find a meaningful name
+		if location == "Unknown" && u.CentroidLat != nil && u.CentroidLon != nil {
+			var placeName, countryName string
+			var hasPlace, hasCountry bool
+
+			// Try to find the nearest OSM place within 50km
+			placeName, hasPlace = s.findNearestOSMPlace(*u.CentroidLat, *u.CentroidLon, 50.0)
+
+			// Try to find the country
+			countryName, hasCountry = s.findCountryByPoint(*u.CentroidLat, *u.CentroidLon)
+
+			// Format the location string
+			if hasPlace && hasCountry {
+				location = fmt.Sprintf("Near %s, %s", placeName, countryName)
+			} else if hasPlace {
+				location = fmt.Sprintf("Near %s", placeName)
+			} else if hasCountry {
+				location = countryName
+			} else {
+				// Show coordinates for locations outside known areas
+				location = fmt.Sprintf("%.2f°%s, %.2f°%s",
+					absFloat(*u.CentroidLat), latDir(*u.CentroidLat),
+					absFloat(*u.CentroidLon), lonDir(*u.CentroidLon))
 			}
 		}
 		activity := map[string]interface{}{
@@ -1234,4 +1295,92 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stats)
+}
+
+// findNearestOSMPlace finds the nearest OSM place to the given coordinates within maxDistKm.
+// This searches globally across all parks in the osm_places table.
+func (s *Server) findNearestOSMPlace(lat, lon, maxDistKm float64) (name string, found bool) {
+	// Convert km to approximate degrees (1 degree ~= 111km)
+	maxDistDeg := maxDistKm / 111.0
+
+	// Query osm_places within a bounding box
+	rows, err := s.DB.Query(`
+		SELECT name, lat, lon
+		FROM osm_places
+		WHERE lat BETWEEN ? AND ?
+		  AND lon BETWEEN ? AND ?
+		  AND name != ''
+		LIMIT 100
+	`, lat-maxDistDeg, lat+maxDistDeg, lon-maxDistDeg, lon+maxDistDeg)
+	if err != nil {
+		return "", false
+	}
+	defer rows.Close()
+
+	var bestName string
+	var bestDist float64 = maxDistKm + 1
+
+	for rows.Next() {
+		var placeName string
+		var placeLat, placeLon float64
+		if err := rows.Scan(&placeName, &placeLat, &placeLon); err != nil {
+			continue
+		}
+
+		// Calculate distance using Haversine formula
+		dist := haversineDistance(lat, lon, placeLat, placeLon)
+		if dist < bestDist {
+			bestDist = dist
+			bestName = placeName
+		}
+	}
+
+	if bestName != "" && bestDist <= maxDistKm {
+		return bestName, true
+	}
+	return "", false
+}
+
+// findCountryByPoint finds the country that contains the given coordinates.
+// Uses GADMStore's bounding boxes for a rough check.
+func (s *Server) findCountryByPoint(lat, lon float64) (countryName string, found bool) {
+	if s.GADMStore == nil {
+		return "", false
+	}
+
+	// Check each country's bounding box
+	for _, c := range s.GADMStore.Countries {
+		if len(c.BBox) >= 4 {
+			// BBox format: [minLon, minLat, maxLon, maxLat]
+			minLon, minLat := c.BBox[0], c.BBox[1]
+			maxLon, maxLat := c.BBox[2], c.BBox[3]
+			if lat >= minLat && lat <= maxLat && lon >= minLon && lon <= maxLon {
+				return c.Name, true
+			}
+		}
+	}
+	return "", false
+}
+
+
+// Helper functions for coordinate formatting
+func absFloat(f float64) float64 {
+	if f < 0 {
+		return -f
+	}
+	return f
+}
+
+func latDir(lat float64) string {
+	if lat >= 0 {
+		return "N"
+	}
+	return "S"
+}
+
+func lonDir(lon float64) string {
+	if lon >= 0 {
+		return "E"
+	}
+	return "W"
 }

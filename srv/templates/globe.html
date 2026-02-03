@@ -125,11 +125,11 @@
         .toggle-switch input:checked + .toggle-switch-slider:before { transform: translateX(16px); background: #22c55e; }
 
         /* Compact Keystones Toggle */
-        .keystones-compact-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; font-size: 12px; cursor: pointer; transition: all 0.2s; flex: 1; min-height: 32px; }
+        .keystones-compact-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.25); border-radius: 4px; color: #4ade80; font-size: 12px; cursor: pointer; transition: all 0.2s; flex: 1; min-height: 32px; }
         .export-btn { display: flex; align-items: center; gap: 6px; width: 100%; padding: 8px 10px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 4px; color: #60a5fa; font-size: 12px; cursor: pointer; transition: all 0.2s; }
         .export-btn:hover { background: rgba(59,130,246,0.25); border-color: rgba(59,130,246,0.5); }
         .export-btn svg { flex-shrink: 0; }
-        .keystones-compact-toggle:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+        .keystones-compact-toggle:hover { background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.4); }
         .keystones-compact-toggle.active { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
 
         /* Notification Button and Dropdown */
@@ -359,9 +359,9 @@
         .bbox-select-btn:hover { background: rgba(59,130,246,0.2); border-color: rgba(59,130,246,0.4); }
         .bbox-select-btn.active { background: rgba(59,130,246,0.25); border-color: #60a5fa; }
         .bbox-select-btn svg { width: 12px; height: 12px; }
-        .bbox-clear-btn { display: none; background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.25); color: #ef4444; flex: 0 0 auto; width: 32px; }
+        .bbox-clear-btn { display: none; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #888; flex: 0 0 auto; width: 32px; padding: 6px; }
         .bbox-clear-btn.visible { display: inline-flex; }
-        .bbox-clear-btn:hover { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4); }
+        .bbox-clear-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); color: #aaa; }
         .parks-selector { display: flex; gap: 4px; }
 
         /* PA Popup Tooltip (map popup style) */
@@ -631,7 +631,7 @@
         </div>
         
         <!-- Globe Reset Button -->
-        <button class="toolbar-btn" id="globe-reset" onclick="if(typeof map !== 'undefined') map.flyTo({center: [20, 0], zoom: 3, duration: 1500})" title="Reset view to Africa">
+        <button class="toolbar-btn" id="globe-reset" onclick="resetGlobeView()" title="Reset view to Africa">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <ellipse cx="12" cy="12" rx="4" ry="10"></ellipse>
@@ -2328,7 +2328,17 @@
         
         function clearBboxSelection() {
             clearBbox();
+            clearCountryFilter();
             // Reset view to Africa
+            map.flyTo({center: [20, 0], zoom: 3, duration: 1500});
+        }
+        
+        function resetGlobeView() {
+            // Clear bbox and country filter, reset to default view
+            if (currentBbox) {
+                clearBbox();
+            }
+            clearCountryFilter();
             map.flyTo({center: [20, 0], zoom: 3, duration: 1500});
         }
 
@@ -2831,8 +2841,12 @@
             const areaType = area.type || 'pa';
             const isLoaded = area.loaded !== false;
             
-            // Handle country selection - set bbox filter and zoom
+            // Handle country selection - set bbox and country filter, then zoom
             if (areaType === 'country') {
+                // Set country filter to only show parks in this country
+                currentCountryFilter = area.name;
+                applyCountryFilter();
+                
                 if (area.bbox && area.bbox.length === 4) {
                     // Set bbox filter (this updates stats and filters data)
                     setBbox(area.bbox[0], area.bbox[1], area.bbox[2], area.bbox[3]);
