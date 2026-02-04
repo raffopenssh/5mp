@@ -1441,3 +1441,219 @@ func (s *Server) HandleAPIGPXUploadLogs(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+// HandleAPILearningResults returns GPX learning results for admin panel
+// GET /api/admin/learning-results
+func (s *Server) HandleAPILearningResults(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	parkID := r.URL.Query().Get("park_id")
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	limit := int64(50)
+	if l, err := strconv.ParseInt(limitStr, 10, 64); err == nil && l > 0 && l <= 100 {
+		limit = l
+	}
+	offset := int64(0)
+	if o, err := strconv.ParseInt(offsetStr, 10, 64); err == nil && o >= 0 {
+		offset = o
+	}
+
+	var results []dbgen.GpxLearningResult
+	var err error
+
+	if parkID != "" {
+		results, err = q.GetLearningResultsByPark(ctx, dbgen.GetLearningResultsByParkParams{
+			ParkID: parkID,
+			Limit:  limit,
+		})
+	} else {
+		results, err = q.GetAllLearningResults(ctx, dbgen.GetAllLearningResultsParams{
+			Limit:  limit,
+			Offset: offset,
+		})
+	}
+
+	if err != nil {
+		http.Error(w, "Failed to get learning results", http.StatusInternalServerError)
+		return
+	}
+
+	// Get aggregate stats
+	var stats struct {
+		TotalResults     int     `json:"total_results"`
+		TotalNewRoads    int     `json:"total_new_roads"`
+		TotalNewRoadsKm  float64 `json:"total_new_roads_km"`
+		TotalNewPlaces   int     `json:"total_new_places"`
+		TotalNewAirstrips int    `json:"total_new_airstrips"`
+	}
+
+	for _, r := range results {
+		stats.TotalResults++
+		if r.NewRoadsFound != nil {
+			stats.TotalNewRoads += int(*r.NewRoadsFound)
+		}
+		if r.NewRoadsKm != nil {
+			stats.TotalNewRoadsKm += *r.NewRoadsKm
+		}
+		if r.NewPlacesFound != nil {
+			stats.TotalNewPlaces += int(*r.NewPlacesFound)
+		}
+		if r.NewAirstripsFound != nil {
+			stats.TotalNewAirstrips += int(*r.NewAirstripsFound)
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"results": results,
+		"stats":   stats,
+	})
+}
+
+// HandleAPILearnedFeatures returns pending/approved learned features for a park
+// GET /api/admin/learned-features?park_id=xxx&type=roads|places|airstrips
+func (s *Server) HandleAPILearnedFeatures(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	parkID := r.URL.Query().Get("park_id")
+	featureType := r.URL.Query().Get("type")
+
+	if parkID == "" {
+		http.Error(w, "park_id required", http.StatusBadRequest)
+		return
+	}
+
+	response := make(map[string]interface{})
+
+	switch featureType {
+	case "roads":
+		roads, err := q.GetLearnedRoadsByPark(ctx, parkID)
+		if err == nil {
+			response["roads"] = roads
+		}
+	case "places":
+		places, err := q.GetLearnedPlacesByPark(ctx, parkID)
+		if err == nil {
+			response["places"] = places
+		}
+	case "airstrips":
+		airstrips, err := q.GetLearnedAirstripsByPark(ctx, parkID)
+		if err == nil {
+			response["airstrips"] = airstrips
+		}
+	default:
+		// Return all types
+		roads, _ := q.GetLearnedRoadsByPark(ctx, parkID)
+		places, _ := q.GetLearnedPlacesByPark(ctx, parkID)
+		airstrips, _ := q.GetLearnedAirstripsByPark(ctx, parkID)
+		stats, _ := q.GetVehicleStatsByPark(ctx, parkID)
+		
+		response["roads"] = roads
+		response["places"] = places
+		response["airstrips"] = airstrips
+		response["vehicle_stats"] = stats
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// HandleAPIApproveLearnedFeature approves a learned feature
+// POST /api/admin/approve-feature
+func (s *Server) HandleAPIApproveLearnedFeature(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	var req struct {
+		Type string `json:"type"` // road, place, airstrip
+		ID   int64  `json:"id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	user := s.Auth.GetUserFromRequest(r)
+	approvedBy := "admin"
+	if user != nil && user.Email != "" {
+		approvedBy = user.Email
+	}
+
+	var err error
+	switch req.Type {
+	case "road":
+		err = q.ApproveLearnedRoad(ctx, dbgen.ApproveLearnedRoadParams{
+			ApprovedBy: &approvedBy,
+			ID:         req.ID,
+		})
+	case "place":
+		err = q.ApproveLearnedPlace(ctx, dbgen.ApproveLearnedPlaceParams{
+			ApprovedBy: &approvedBy,
+			ID:         req.ID,
+		})
+	case "airstrip":
+		err = q.ApproveLearnedAirstrip(ctx, dbgen.ApproveLearnedAirstripParams{
+			ApprovedBy: &approvedBy,
+			ID:         req.ID,
+		})
+	default:
+		http.Error(w, "Invalid type", http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, "Failed to approve feature", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "approved"})
+}
+
+// HandleAPIRejectLearnedFeature rejects a learned feature
+// POST /api/admin/reject-feature
+func (s *Server) HandleAPIRejectLearnedFeature(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	var req struct {
+		Type string `json:"type"`
+		ID   int64  `json:"id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	user := s.Auth.GetUserFromRequest(r)
+	rejectedBy := "admin"
+	if user != nil && user.Email != "" {
+		rejectedBy = user.Email
+	}
+
+	var err error
+	switch req.Type {
+	case "road":
+		err = q.RejectLearnedRoad(ctx, dbgen.RejectLearnedRoadParams{
+			ApprovedBy: &rejectedBy,
+			ID:         req.ID,
+		})
+	default:
+		http.Error(w, "Invalid type - only roads support rejection", http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, "Failed to reject feature", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "rejected"})
+}

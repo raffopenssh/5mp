@@ -815,6 +815,17 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		}
 	}
 	
+	// Queue for background learning if we have a park and valid data
+	if validationResult.ProtectedAreaID != "" && len(validationResult.ClassifiedSegments) > 0 {
+		_, err := q.QueueGPXLearning(ctx, dbgen.QueueGPXLearningParams{
+			UploadID: uploadID,
+			ParkID:   strPtr(validationResult.ProtectedAreaID),
+		})
+		if err != nil {
+			slog.Debug("failed to queue gpx learning", "error", err)
+		}
+	}
+	
 	return validationResult, nil
 }
 

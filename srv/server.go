@@ -24,6 +24,7 @@ type Server struct {
 	Auth         *auth.Manager
 	LegalStore   *LegalStore
 	GADMStore    *GADMStore
+	GPXLearner   *GPXLearner
 }
 
 type pageData struct {
@@ -43,6 +44,11 @@ func New(dbPath, hostname string) (*Server, error) {
 		return nil, err
 	}
 	srv.Auth = auth.NewManager(srv.DB)
+	
+	// Start the GPX learner background processor
+	srv.GPXLearner = NewGPXLearner(srv.DB)
+	srv.GPXLearner.Start()
+	
 	return srv, nil
 }
 
@@ -166,6 +172,10 @@ func (s *Server) Serve(addr string) error {
 	
 	// Admin APIs
 	mux.HandleFunc("GET /api/admin/gpx-logs", s.HandleAPIGPXUploadLogs)
+	mux.HandleFunc("GET /api/admin/learning-results", s.HandleAPILearningResults)
+	mux.HandleFunc("GET /api/admin/learned-features", s.HandleAPILearnedFeatures)
+	mux.HandleFunc("POST /api/admin/approve-feature", s.RequireAdmin(s.HandleAPIApproveLearnedFeature))
+	mux.HandleFunc("POST /api/admin/reject-feature", s.RequireAdmin(s.HandleAPIRejectLearnedFeature))
 
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
