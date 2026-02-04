@@ -4,6 +4,8 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -18,7 +20,7 @@ import (
 	"srv.exe.dev/srv/gpx"
 )
 
-const maxUploadSize = 100 << 20 // 100MB (increased for zip files)
+const maxUploadSize = 200 << 20 // 200MB (increased for large patrol data files)
 
 // UploadResponse is the JSON response for file uploads.
 type UploadResponse struct {
@@ -101,6 +103,46 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
+
+	// Calculate combined hash of all uploaded files for deduplication
+	hasher := sha256.New()
+	var fileContents [][]byte
+	for _, fileHeader := range files {
+		file, err := fileHeader.Open()
+		if err != nil {
+			continue
+		}
+		content, err := io.ReadAll(file)
+		file.Close()
+		if err != nil {
+			continue
+		}
+		hasher.Write(content)
+		fileContents = append(fileContents, content)
+	}
+	fileHash := hex.EncodeToString(hasher.Sum(nil))
+
+	// Check for duplicate upload
+	q := dbgen.New(s.DB)
+	existing, err := q.GetGPXUploadByHash(ctx, &fileHash)
+	if err == nil && existing.ID > 0 {
+		// Duplicate found - return info about previous upload
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "duplicate_upload",
+			"message": "This file has already been uploaded",
+			"previous_upload": map[string]interface{}{
+				"id":          existing.ID,
+				"filename":    existing.Filename,
+				"upload_date": existing.UploadDate,
+				"distance_km": existing.TotalDistanceKm,
+			},
+		})
+		return
+	}
+
 	var (
 		totalPoints     int
 		totalDistanceKm float64
@@ -108,8 +150,6 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 		filesProcessed  int
 		lastValidation  *UploadValidationSummary
 	)
-
-	ctx := r.Context()
 
 	// Helper to process a single GPX file
 	processGPX := func(filename string, reader io.Reader) error {
@@ -129,6 +169,9 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 
 		// Split into segments
 		segments := gpx.SplitIntoSegments(gpxData, 0)
+
+		// Remove straight-line gaps caused by GPS signal loss
+		segments = gpx.RemoveStraightLineGaps(segments)
 
 		// Process each segment (skip segments with < 2 points or 0 distance)
 		for _, seg := range segments {
@@ -192,7 +235,7 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 
 		// Validate and persist upload to database
 		if s.DB != nil {
-			validationResult, err := s.persistUploadWithValidation(ctx, userID, userEmail, filename, gpxData, segments)
+			validationResult, err := s.persistUploadWithValidation(ctx, userID, userEmail, filename, fileHash, gpxData, segments)
 			if err != nil {
 				slog.Warn("failed to persist upload", "error", err, "filename", filename)
 			} else {
@@ -322,7 +365,7 @@ const (
 // - gpx_uploads record for metadata
 // - track_points (sampled if > maxTrackPointsPerUpload)
 // - effort_data grid cell aggregates
-func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename string, segments []gpx.Segment) error {
+func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename, fileHash string, segments []gpx.Segment) error {
 	if len(segments) == 0 {
 		return nil
 	}
@@ -375,16 +418,19 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename 
 	}
 
 	// Create gpx_uploads record
+	processingStatus := "complete"
 	uploadID, err := q.CreateGPXUpload(ctx, dbgen.CreateGPXUploadParams{
-		UserID:          userID,
-		Filename:        filename,
-		MovementType:    movementType,
-		ProtectedAreaID: nil, // TODO: could be computed from area store
-		UploadDate:      time.Now(),
-		StartTime:       startTime,
-		EndTime:         endTime,
-		TotalDistanceKm: totalDistanceKm,
-		TotalPoints:     int64(totalPoints),
+		UserID:           userID,
+		Filename:         filename,
+		MovementType:     movementType,
+		ProtectedAreaID:  nil, // TODO: could be computed from area store
+		UploadDate:       time.Now(),
+		StartTime:        startTime,
+		EndTime:          endTime,
+		TotalDistanceKm:  totalDistanceKm,
+		TotalPoints:      int64(totalPoints),
+		FileHash:         &fileHash,
+		ProcessingStatus: &processingStatus,
 	})
 	if err != nil {
 		return fmt.Errorf("create gpx upload: %w", err)
@@ -721,7 +767,7 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 
 // persistUploadWithValidation validates, classifies, and persists GPX upload data
 // Returns the validation result for user feedback
-func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEmail, filename string, gpxData *gpx.GPXData, segments []gpx.Segment) (*GPXValidationResult, error) {
+func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEmail, filename, fileHash string, gpxData *gpx.GPXData, segments []gpx.Segment) (*GPXValidationResult, error) {
 	// Run validation and classification
 	validationResult := ValidateAndClassifyGPX(gpxData)
 	
@@ -809,7 +855,7 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		}
 		
 		if len(patrolOnlySegments) > 0 {
-			if err := s.persistUpload(ctx, userID, userEmail, filename, patrolOnlySegments); err != nil {
+			if err := s.persistUpload(ctx, userID, userEmail, filename, fileHash, patrolOnlySegments); err != nil {
 				return validationResult, err
 			}
 		}

@@ -312,3 +312,94 @@ func haversineDistance(p1, p2 Point) float64 {
 func degreesToRadians(deg float64) float64 {
 	return deg * math.Pi / 180
 }
+
+// RemoveStraightLineGaps detects and removes segments that appear as straight lines
+// due to GPS signal loss. These are characterized by:
+// - Large time gaps (>5 minutes)
+// - High speed during the gap (>200 km/h - teleportation)
+// - Very few points covering long distances
+// Returns cleaned segments with gap points removed.
+func RemoveStraightLineGaps(segments []Segment) []Segment {
+	var result []Segment
+
+	for _, seg := range segments {
+		cleaned := removeGapsFromSegment(seg)
+		result = append(result, cleaned...)
+	}
+
+	return result
+}
+
+// removeGapsFromSegment finds and splits a segment at gap points
+func removeGapsFromSegment(seg Segment) []Segment {
+	if len(seg.Points) < 3 {
+		return []Segment{seg}
+	}
+
+	var result []Segment
+	var currentPoints []Point
+
+	for i := 0; i < len(seg.Points); i++ {
+		pt := seg.Points[i]
+
+		if i == 0 {
+			currentPoints = append(currentPoints, pt)
+			continue
+		}
+
+		prevPt := seg.Points[i-1]
+
+		// Check for gap characteristics
+		isGap := false
+
+		// Time gap check (>5 minutes)
+		if pt.Time != nil && prevPt.Time != nil {
+			timeGap := pt.Time.Sub(*prevPt.Time)
+			if timeGap > 5*time.Minute {
+				// Calculate instantaneous speed during the gap
+				dist := haversineDistance(prevPt, pt)
+				hours := timeGap.Hours()
+				if hours > 0 {
+					speed := dist / hours
+					// If speed > 200 km/h during a gap, it's likely GPS loss
+					if speed > 200 {
+						isGap = true
+					}
+				}
+			}
+		}
+
+		// Also check for unrealistically long distance jumps (>10km in single point)
+		dist := haversineDistance(prevPt, pt)
+		if dist > 10 {
+			// Check if there's a time gap too
+			if pt.Time != nil && prevPt.Time != nil {
+				timeGap := pt.Time.Sub(*prevPt.Time)
+				if timeGap > 1*time.Minute {
+					isGap = true
+				}
+			}
+		}
+
+		if isGap {
+			// End current segment and start new one
+			if len(currentPoints) >= 2 {
+				result = append(result, buildSegment(currentPoints))
+			}
+			currentPoints = []Point{pt}
+		} else {
+			currentPoints = append(currentPoints, pt)
+		}
+	}
+
+	// Don't forget the last segment
+	if len(currentPoints) >= 2 {
+		result = append(result, buildSegment(currentPoints))
+	}
+
+	if len(result) == 0 {
+		return []Segment{seg} // Return original if nothing survived
+	}
+
+	return result
+}

@@ -110,6 +110,25 @@ type FireDetection struct {
 	ProtectedAreaID *string  `json:"protected_area_id"`
 }
 
+type FireGroupAlert struct {
+	ID                int64      `json:"id"`
+	ParkID            string     `json:"park_id"`
+	GroupName         string     `json:"group_name"`
+	AlertType         string     `json:"alert_type"`
+	FirstDetectedAt   time.Time  `json:"first_detected_at"`
+	LastUpdatedAt     time.Time  `json:"last_updated_at"`
+	LeftAt            *time.Time `json:"left_at"`
+	FireCount         *int64     `json:"fire_count"`
+	DaysActive        *int64     `json:"days_active"`
+	CentroidLat       *float64   `json:"centroid_lat"`
+	CentroidLon       *float64   `json:"centroid_lon"`
+	LatestLat         *float64   `json:"latest_lat"`
+	LatestLon         *float64   `json:"latest_lon"`
+	MovementDirection *string    `json:"movement_direction"`
+	IsDismissed       *bool      `json:"is_dismissed"`
+	CreatedAt         *time.Time `json:"created_at"`
+}
+
 type GhslDatum struct {
 	ID              int64    `json:"id"`
 	ParkID          string   `json:"park_id"`
@@ -153,16 +172,19 @@ type GpxLearningResult struct {
 }
 
 type GpxUpload struct {
-	ID              int64      `json:"id"`
-	UserID          string     `json:"user_id"`
-	Filename        string     `json:"filename"`
-	MovementType    string     `json:"movement_type"`
-	ProtectedAreaID *string    `json:"protected_area_id"`
-	UploadDate      time.Time  `json:"upload_date"`
-	StartTime       *time.Time `json:"start_time"`
-	EndTime         *time.Time `json:"end_time"`
-	TotalDistanceKm float64    `json:"total_distance_km"`
-	TotalPoints     int64      `json:"total_points"`
+	ID               int64      `json:"id"`
+	UserID           string     `json:"user_id"`
+	Filename         string     `json:"filename"`
+	MovementType     string     `json:"movement_type"`
+	ProtectedAreaID  *string    `json:"protected_area_id"`
+	UploadDate       time.Time  `json:"upload_date"`
+	StartTime        *time.Time `json:"start_time"`
+	EndTime          *time.Time `json:"end_time"`
+	TotalDistanceKm  float64    `json:"total_distance_km"`
+	TotalPoints      int64      `json:"total_points"`
+	FileHash         *string    `json:"file_hash"`
+	ProcessingStatus *string    `json:"processing_status"`
+	ErrorMessage     *string    `json:"error_message"`
 }
 
 type GpxUploadLog struct {
@@ -218,7 +240,6 @@ type LearnedAirstrip struct {
 	ApproachJson  *string    `json:"approach_json"`
 	CreatedAt     *time.Time `json:"created_at"`
 	UpdatedAt     *time.Time `json:"updated_at"`
-	Version       *int64     `json:"version"`
 }
 
 type LearnedAirstripsHistory struct {
@@ -255,7 +276,6 @@ type LearnedPlace struct {
 	ApprovedAt         *time.Time `json:"approved_at"`
 	CreatedAt          *time.Time `json:"created_at"`
 	UpdatedAt          *time.Time `json:"updated_at"`
-	Version            *int64     `json:"version"`
 }
 
 type LearnedPlacesHistory struct {
@@ -288,7 +308,6 @@ type LearnedRoad struct {
 	ApprovedAt    *time.Time `json:"approved_at"`
 	CreatedAt     *time.Time `json:"created_at"`
 	UpdatedAt     *time.Time `json:"updated_at"`
-	Version       *int64     `json:"version"`
 }
 
 type LearnedRoadsHistory struct {

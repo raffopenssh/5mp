@@ -288,7 +288,7 @@ func (q *Queries) FailLearningJob(ctx context.Context, arg FailLearningJobParams
 }
 
 const findNearbyAirstrips = `-- name: FindNearbyAirstrips :many
-SELECT id, park_id, lat, lon, heading_deg, length_m, aircraft_type, landing_count, takeoff_count, confidence_pct, status, approved_by, approved_at, approach_json, created_at, updated_at, version FROM learned_airstrips WHERE park_id = ? AND ABS(lat - ?) < 0.01 AND ABS(lon - ?) < 0.01
+SELECT id, park_id, lat, lon, heading_deg, length_m, aircraft_type, landing_count, takeoff_count, confidence_pct, status, approved_by, approved_at, approach_json, created_at, updated_at FROM learned_airstrips WHERE park_id = ? AND ABS(lat - ?) < 0.01 AND ABS(lon - ?) < 0.01
 `
 
 type FindNearbyAirstripsParams struct {
@@ -323,7 +323,6 @@ func (q *Queries) FindNearbyAirstrips(ctx context.Context, arg FindNearbyAirstri
 			&i.ApproachJson,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.Version,
 		); err != nil {
 			return nil, err
 		}
@@ -339,7 +338,7 @@ func (q *Queries) FindNearbyAirstrips(ctx context.Context, arg FindNearbyAirstri
 }
 
 const findNearbyPlaces = `-- name: FindNearbyPlaces :many
-SELECT id, park_id, lat, lon, place_type, name, visit_count, avg_duration_minutes, confidence_pct, status, approved_by, approved_at, created_at, updated_at, version FROM learned_places WHERE park_id = ? AND ABS(lat - ?) < 0.005 AND ABS(lon - ?) < 0.005
+SELECT id, park_id, lat, lon, place_type, name, visit_count, avg_duration_minutes, confidence_pct, status, approved_by, approved_at, created_at, updated_at FROM learned_places WHERE park_id = ? AND ABS(lat - ?) < 0.005 AND ABS(lon - ?) < 0.005
 `
 
 type FindNearbyPlacesParams struct {
@@ -372,7 +371,6 @@ func (q *Queries) FindNearbyPlaces(ctx context.Context, arg FindNearbyPlacesPara
 			&i.ApprovedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.Version,
 		); err != nil {
 			return nil, err
 		}
@@ -525,7 +523,7 @@ func (q *Queries) GetAllLearningResults(ctx context.Context, arg GetAllLearningR
 }
 
 const getLearnedAirstripsByPark = `-- name: GetLearnedAirstripsByPark :many
-SELECT id, park_id, lat, lon, heading_deg, length_m, aircraft_type, landing_count, takeoff_count, confidence_pct, status, approved_by, approved_at, approach_json, created_at, updated_at, version FROM learned_airstrips WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
+SELECT id, park_id, lat, lon, heading_deg, length_m, aircraft_type, landing_count, takeoff_count, confidence_pct, status, approved_by, approved_at, approach_json, created_at, updated_at FROM learned_airstrips WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
 `
 
 func (q *Queries) GetLearnedAirstripsByPark(ctx context.Context, parkID string) ([]LearnedAirstrip, error) {
@@ -554,7 +552,6 @@ func (q *Queries) GetLearnedAirstripsByPark(ctx context.Context, parkID string) 
 			&i.ApproachJson,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.Version,
 		); err != nil {
 			return nil, err
 		}
@@ -606,7 +603,7 @@ func (q *Queries) GetLearnedFeatureStats(ctx context.Context, parkID string) (Ge
 }
 
 const getLearnedPlacesByPark = `-- name: GetLearnedPlacesByPark :many
-SELECT id, park_id, lat, lon, place_type, name, visit_count, avg_duration_minutes, confidence_pct, status, approved_by, approved_at, created_at, updated_at, version FROM learned_places WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
+SELECT id, park_id, lat, lon, place_type, name, visit_count, avg_duration_minutes, confidence_pct, status, approved_by, approved_at, created_at, updated_at FROM learned_places WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
 `
 
 func (q *Queries) GetLearnedPlacesByPark(ctx context.Context, parkID string) ([]LearnedPlace, error) {
@@ -633,7 +630,6 @@ func (q *Queries) GetLearnedPlacesByPark(ctx context.Context, parkID string) ([]
 			&i.ApprovedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.Version,
 		); err != nil {
 			return nil, err
 		}
@@ -649,7 +645,7 @@ func (q *Queries) GetLearnedPlacesByPark(ctx context.Context, parkID string) ([]
 }
 
 const getLearnedRoadsByPark = `-- name: GetLearnedRoadsByPark :many
-SELECT id, park_id, geojson, length_m, match_count, confidence_pct, status, approved_by, approved_at, created_at, updated_at, version FROM learned_roads WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
+SELECT id, park_id, geojson, length_m, match_count, confidence_pct, status, approved_by, approved_at, created_at, updated_at FROM learned_roads WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
 `
 
 func (q *Queries) GetLearnedRoadsByPark(ctx context.Context, parkID string) ([]LearnedRoad, error) {
@@ -673,7 +669,6 @@ func (q *Queries) GetLearnedRoadsByPark(ctx context.Context, parkID string) ([]L
 			&i.ApprovedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.Version,
 		); err != nil {
 			return nil, err
 		}

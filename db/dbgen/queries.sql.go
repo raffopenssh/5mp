@@ -22,21 +22,23 @@ func (q *Queries) CountActivePixels(ctx context.Context, year int64) (int64, err
 }
 
 const createGPXUpload = `-- name: CreateGPXUpload :one
-INSERT INTO gpx_uploads (user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO gpx_uploads (user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points, file_hash, processing_status)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 RETURNING id
 `
 
 type CreateGPXUploadParams struct {
-	UserID          string     `json:"user_id"`
-	Filename        string     `json:"filename"`
-	MovementType    string     `json:"movement_type"`
-	ProtectedAreaID *string    `json:"protected_area_id"`
-	UploadDate      time.Time  `json:"upload_date"`
-	StartTime       *time.Time `json:"start_time"`
-	EndTime         *time.Time `json:"end_time"`
-	TotalDistanceKm float64    `json:"total_distance_km"`
-	TotalPoints     int64      `json:"total_points"`
+	UserID           string     `json:"user_id"`
+	Filename         string     `json:"filename"`
+	MovementType     string     `json:"movement_type"`
+	ProtectedAreaID  *string    `json:"protected_area_id"`
+	UploadDate       time.Time  `json:"upload_date"`
+	StartTime        *time.Time `json:"start_time"`
+	EndTime          *time.Time `json:"end_time"`
+	TotalDistanceKm  float64    `json:"total_distance_km"`
+	TotalPoints      int64      `json:"total_points"`
+	FileHash         *string    `json:"file_hash"`
+	ProcessingStatus *string    `json:"processing_status"`
 }
 
 func (q *Queries) CreateGPXUpload(ctx context.Context, arg CreateGPXUploadParams) (int64, error) {
@@ -50,6 +52,8 @@ func (q *Queries) CreateGPXUpload(ctx context.Context, arg CreateGPXUploadParams
 		arg.EndTime,
 		arg.TotalDistanceKm,
 		arg.TotalPoints,
+		arg.FileHash,
+		arg.ProcessingStatus,
 	)
 	var id int64
 	err := row.Scan(&id)
@@ -529,7 +533,7 @@ func (q *Queries) GetEffortDataWithMonthCounts(ctx context.Context, arg GetEffor
 }
 
 const getGPXUpload = `-- name: GetGPXUpload :one
-SELECT id, user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points FROM gpx_uploads WHERE id = ?
+SELECT id, user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points, file_hash, processing_status, error_message FROM gpx_uploads WHERE id = ?
 `
 
 func (q *Queries) GetGPXUpload(ctx context.Context, id int64) (GpxUpload, error) {
@@ -546,6 +550,34 @@ func (q *Queries) GetGPXUpload(ctx context.Context, id int64) (GpxUpload, error)
 		&i.EndTime,
 		&i.TotalDistanceKm,
 		&i.TotalPoints,
+		&i.FileHash,
+		&i.ProcessingStatus,
+		&i.ErrorMessage,
+	)
+	return i, err
+}
+
+const getGPXUploadByHash = `-- name: GetGPXUploadByHash :one
+SELECT id, user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points, file_hash, processing_status, error_message FROM gpx_uploads WHERE file_hash = ?
+`
+
+func (q *Queries) GetGPXUploadByHash(ctx context.Context, fileHash *string) (GpxUpload, error) {
+	row := q.db.QueryRowContext(ctx, getGPXUploadByHash, fileHash)
+	var i GpxUpload
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Filename,
+		&i.MovementType,
+		&i.ProtectedAreaID,
+		&i.UploadDate,
+		&i.StartTime,
+		&i.EndTime,
+		&i.TotalDistanceKm,
+		&i.TotalPoints,
+		&i.FileHash,
+		&i.ProcessingStatus,
+		&i.ErrorMessage,
 	)
 	return i, err
 }
@@ -1021,7 +1053,7 @@ func (q *Queries) InsertParkDocumentExtended(ctx context.Context, arg InsertPark
 }
 
 const listAllGPXUploads = `-- name: ListAllGPXUploads :many
-SELECT id, user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points FROM gpx_uploads ORDER BY upload_date DESC LIMIT ? OFFSET ?
+SELECT id, user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points, file_hash, processing_status, error_message FROM gpx_uploads ORDER BY upload_date DESC LIMIT ? OFFSET ?
 `
 
 type ListAllGPXUploadsParams struct {
@@ -1049,6 +1081,9 @@ func (q *Queries) ListAllGPXUploads(ctx context.Context, arg ListAllGPXUploadsPa
 			&i.EndTime,
 			&i.TotalDistanceKm,
 			&i.TotalPoints,
+			&i.FileHash,
+			&i.ProcessingStatus,
+			&i.ErrorMessage,
 		); err != nil {
 			return nil, err
 		}
@@ -1140,7 +1175,7 @@ func (q *Queries) ListApprovedUsers(ctx context.Context) ([]User, error) {
 }
 
 const listGPXUploadsByUser = `-- name: ListGPXUploadsByUser :many
-SELECT id, user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points FROM gpx_uploads WHERE user_id = ? ORDER BY upload_date DESC
+SELECT id, user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points, file_hash, processing_status, error_message FROM gpx_uploads WHERE user_id = ? ORDER BY upload_date DESC
 `
 
 func (q *Queries) ListGPXUploadsByUser(ctx context.Context, userID string) ([]GpxUpload, error) {
@@ -1163,6 +1198,9 @@ func (q *Queries) ListGPXUploadsByUser(ctx context.Context, userID string) ([]Gp
 			&i.EndTime,
 			&i.TotalDistanceKm,
 			&i.TotalPoints,
+			&i.FileHash,
+			&i.ProcessingStatus,
+			&i.ErrorMessage,
 		); err != nil {
 			return nil, err
 		}
@@ -1305,6 +1343,21 @@ func (q *Queries) UpdateEffortCoverage(ctx context.Context, arg UpdateEffortCove
 		arg.Month,
 		arg.MovementType,
 	)
+	return err
+}
+
+const updateGPXUploadStatus = `-- name: UpdateGPXUploadStatus :exec
+UPDATE gpx_uploads SET processing_status = ?, error_message = ? WHERE id = ?
+`
+
+type UpdateGPXUploadStatusParams struct {
+	ProcessingStatus *string `json:"processing_status"`
+	ErrorMessage     *string `json:"error_message"`
+	ID               int64   `json:"id"`
+}
+
+func (q *Queries) UpdateGPXUploadStatus(ctx context.Context, arg UpdateGPXUploadStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateGPXUploadStatus, arg.ProcessingStatus, arg.ErrorMessage, arg.ID)
 	return err
 }
 

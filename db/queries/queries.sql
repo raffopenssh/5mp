@@ -21,9 +21,15 @@ SELECT * FROM users WHERE role IN ('approved', 'admin') ORDER BY created_at DESC
 SELECT * FROM users ORDER BY created_at DESC;
 
 -- name: CreateGPXUpload :one
-INSERT INTO gpx_uploads (user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO gpx_uploads (user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points, file_hash, processing_status)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 RETURNING id;
+
+-- name: GetGPXUploadByHash :one
+SELECT * FROM gpx_uploads WHERE file_hash = ?;
+
+-- name: UpdateGPXUploadStatus :exec
+UPDATE gpx_uploads SET processing_status = ?, error_message = ? WHERE id = ?;
 
 -- name: GetGPXUpload :one
 SELECT * FROM gpx_uploads WHERE id = ?;
