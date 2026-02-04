@@ -8,6 +8,32 @@ import (
 	"time"
 )
 
+type AircraftPattern struct {
+	ID           int64      `json:"id"`
+	ParkID       string     `json:"park_id"`
+	UploadID     *int64     `json:"upload_id"`
+	PatternType  string     `json:"pattern_type"`
+	AircraftType *string    `json:"aircraft_type"`
+	StartLat     *float64   `json:"start_lat"`
+	StartLon     *float64   `json:"start_lon"`
+	EndLat       *float64   `json:"end_lat"`
+	EndLon       *float64   `json:"end_lon"`
+	Geojson      *string    `json:"geojson"`
+	AvgSpeedKmh  *float64   `json:"avg_speed_kmh"`
+	CreatedAt    *time.Time `json:"created_at"`
+}
+
+type DatasetVersion struct {
+	ID          int64      `json:"id"`
+	ParkID      string     `json:"park_id"`
+	DatasetType string     `json:"dataset_type"`
+	Version     int64      `json:"version"`
+	DataJson    string     `json:"data_json"`
+	CreatedBy   *string    `json:"created_by"`
+	CreatedAt   *time.Time `json:"created_at"`
+	IsActive    *int64     `json:"is_active"`
+}
+
 type EffortDatum struct {
 	ID               int64    `json:"id"`
 	GridCellID       string   `json:"grid_cell_id"`
@@ -92,6 +118,40 @@ type GhslDatum struct {
 	AnalyzedAt      *string  `json:"analyzed_at"`
 }
 
+type GpxLearningQueue struct {
+	ID           int64      `json:"id"`
+	UploadID     *int64     `json:"upload_id"`
+	ParkID       *string    `json:"park_id"`
+	Status       *string    `json:"status"`
+	ErrorMessage *string    `json:"error_message"`
+	CreatedAt    *time.Time `json:"created_at"`
+	StartedAt    *time.Time `json:"started_at"`
+	CompletedAt  *time.Time `json:"completed_at"`
+}
+
+type GpxLearningResult struct {
+	ID                    int64      `json:"id"`
+	UploadID              *int64     `json:"upload_id"`
+	ParkID                string     `json:"park_id"`
+	ParkName              *string    `json:"park_name"`
+	VehicleMedianSpeedKmh *float64   `json:"vehicle_median_speed_kmh"`
+	VehicleMaxSpeedKmh    *float64   `json:"vehicle_max_speed_kmh"`
+	FootMedianSpeedKmh    *float64   `json:"foot_median_speed_kmh"`
+	FootMaxSpeedKmh       *float64   `json:"foot_max_speed_kmh"`
+	FootMcpAreaKm2        *float64   `json:"foot_mcp_area_km2"`
+	NewRoadsFound         *int64     `json:"new_roads_found"`
+	NewRoadsKm            *float64   `json:"new_roads_km"`
+	RoadConfidencePct     *float64   `json:"road_confidence_pct"`
+	NewAirstripsFound     *int64     `json:"new_airstrips_found"`
+	AirstripConfidencePct *float64   `json:"airstrip_confidence_pct"`
+	NewPlacesFound        *int64     `json:"new_places_found"`
+	PlaceTypesJson        *string    `json:"place_types_json"`
+	PlaceConfidencePct    *float64   `json:"place_confidence_pct"`
+	SummaryText           *string    `json:"summary_text"`
+	DiscoveriesJson       *string    `json:"discoveries_json"`
+	CreatedAt             *time.Time `json:"created_at"`
+}
+
 type GpxUpload struct {
 	ID              int64      `json:"id"`
 	UserID          string     `json:"user_id"`
@@ -139,6 +199,56 @@ type GridCell struct {
 	LatMax    float64 `json:"lat_max"`
 	LonMin    float64 `json:"lon_min"`
 	LonMax    float64 `json:"lon_max"`
+}
+
+type LearnedAirstrip struct {
+	ID            int64      `json:"id"`
+	ParkID        string     `json:"park_id"`
+	Lat           float64    `json:"lat"`
+	Lon           float64    `json:"lon"`
+	HeadingDeg    *float64   `json:"heading_deg"`
+	LengthM       *float64   `json:"length_m"`
+	AircraftType  *string    `json:"aircraft_type"`
+	LandingCount  *int64     `json:"landing_count"`
+	TakeoffCount  *int64     `json:"takeoff_count"`
+	ConfidencePct *float64   `json:"confidence_pct"`
+	Status        *string    `json:"status"`
+	ApprovedBy    *string    `json:"approved_by"`
+	ApprovedAt    *time.Time `json:"approved_at"`
+	ApproachJson  *string    `json:"approach_json"`
+	CreatedAt     *time.Time `json:"created_at"`
+	UpdatedAt     *time.Time `json:"updated_at"`
+}
+
+type LearnedPlace struct {
+	ID                 int64      `json:"id"`
+	ParkID             string     `json:"park_id"`
+	Lat                float64    `json:"lat"`
+	Lon                float64    `json:"lon"`
+	PlaceType          *string    `json:"place_type"`
+	Name               *string    `json:"name"`
+	VisitCount         *int64     `json:"visit_count"`
+	AvgDurationMinutes *float64   `json:"avg_duration_minutes"`
+	ConfidencePct      *float64   `json:"confidence_pct"`
+	Status             *string    `json:"status"`
+	ApprovedBy         *string    `json:"approved_by"`
+	ApprovedAt         *time.Time `json:"approved_at"`
+	CreatedAt          *time.Time `json:"created_at"`
+	UpdatedAt          *time.Time `json:"updated_at"`
+}
+
+type LearnedRoad struct {
+	ID            int64      `json:"id"`
+	ParkID        string     `json:"park_id"`
+	Geojson       string     `json:"geojson"`
+	LengthM       *float64   `json:"length_m"`
+	MatchCount    *int64     `json:"match_count"`
+	ConfidencePct *float64   `json:"confidence_pct"`
+	Status        *string    `json:"status"`
+	ApprovedBy    *string    `json:"approved_by"`
+	ApprovedAt    *time.Time `json:"approved_at"`
+	CreatedAt     *time.Time `json:"created_at"`
+	UpdatedAt     *time.Time `json:"updated_at"`
 }
 
 type Migration struct {
@@ -228,6 +338,30 @@ type ParkGroupInfraction struct {
 	AnalyzedAt          *string  `json:"analyzed_at"`
 }
 
+type ParkPatrolMcp struct {
+	ID           int64      `json:"id"`
+	ParkID       string     `json:"park_id"`
+	Mcp90Geojson *string    `json:"mcp_90_geojson"`
+	McpAreaKm2   *float64   `json:"mcp_area_km2"`
+	CentroidLat  *float64   `json:"centroid_lat"`
+	CentroidLon  *float64   `json:"centroid_lon"`
+	PointCount   *int64     `json:"point_count"`
+	UpdatedAt    *time.Time `json:"updated_at"`
+}
+
+type ParkVehicleStat struct {
+	ID              int64      `json:"id"`
+	ParkID          string     `json:"park_id"`
+	MovementType    string     `json:"movement_type"`
+	TotalDistanceKm *float64   `json:"total_distance_km"`
+	TotalTimeHours  *float64   `json:"total_time_hours"`
+	MedianSpeedKmh  *float64   `json:"median_speed_kmh"`
+	MaxSpeedKmh     *float64   `json:"max_speed_kmh"`
+	P90SpeedKmh     *float64   `json:"p90_speed_kmh"`
+	SampleCount     *int64     `json:"sample_count"`
+	UpdatedAt       *time.Time `json:"updated_at"`
+}
+
 type Session struct {
 	ID        string    `json:"id"`
 	UserID    string    `json:"user_id"`
@@ -264,6 +398,16 @@ type User struct {
 	ApprovedAt       *time.Time `json:"approved_at"`
 	ApprovedBy       *string    `json:"approved_by"`
 	PasswordHash     string     `json:"password_hash"`
+}
+
+type VehicleTrack struct {
+	ID           int64      `json:"id"`
+	ParkID       string     `json:"park_id"`
+	UploadID     *int64     `json:"upload_id"`
+	Geojson      string     `json:"geojson"`
+	LengthM      *float64   `json:"length_m"`
+	MovementType *string    `json:"movement_type"`
+	CreatedAt    *time.Time `json:"created_at"`
 }
 
 type Visitor struct {

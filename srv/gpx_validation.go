@@ -35,14 +35,18 @@ type GPXValidationResult struct {
 
 // ClassifiedSegment represents a classified portion of a GPX track
 type ClassifiedSegment struct {
-	Classification  string  `json:"classification"` // patrol, boundary, road, poi, static, auto_generated
-	StartIndex      int     `json:"start_index"`
-	EndIndex        int     `json:"end_index"`
-	DistanceKm      float64 `json:"distance_km"`
-	Duration        string  `json:"duration,omitempty"`
-	Reason          string  `json:"reason"`
-	IncludeInEffort bool    `json:"include_in_effort"`
-	GeoJSON         string  `json:"geojson,omitempty"`
+	Classification  string        `json:"classification"` // patrol, boundary, road, poi, static, auto_generated
+	MovementType    string        `json:"movement_type,omitempty"` // foot, vehicle, aircraft
+	StartIndex      int           `json:"start_index"`
+	EndIndex        int           `json:"end_index"`
+	DistanceKm      float64       `json:"distance_km"`
+	Duration        time.Duration `json:"-"`
+	DurationStr     string        `json:"duration,omitempty"`
+	AvgSpeedKmh     float64       `json:"avg_speed_kmh,omitempty"`
+	Reason          string        `json:"reason"`
+	IncludeInEffort bool          `json:"include_in_effort"`
+	GeoJSON         string        `json:"geojson,omitempty"`
+	Points          []gpx.Point   `json:"-"` // For internal processing
 }
 
 // MinimumWaypoints is the minimum required waypoints for a valid GPX file
@@ -148,7 +152,8 @@ func ValidateAndClassifyGPX(data *gpx.GPXData) *GPXValidationResult {
 			}
 			if len(seg) > 0 && seg[0].Time != nil && seg[len(seg)-1].Time != nil {
 				duration := seg[len(seg)-1].Time.Sub(*seg[0].Time)
-				classified.Duration = formatDuration(duration)
+				classified.Duration = duration
+				classified.DurationStr = formatDuration(duration)
 			}
 			result.ClassifiedSegments = append(result.ClassifiedSegments, classified)
 			result.PatrolKm += classified.DistanceKm
@@ -256,15 +261,16 @@ func detectStaticSegments(points []gpx.Point) []ClassifiedSegment {
 				duration := points[i-1].Time.Sub(staticStartTime)
 				if duration > 30*time.Minute {
 					seg := ClassifiedSegment{
-						Classification:  "static",
-						StartIndex:      staticStart,
-						EndIndex:        i - 1,
-						DistanceKm:      0,
-						Duration:        formatDuration(duration),
-						Reason:          fmt.Sprintf("Stationary for %s", formatDuration(duration)),
-						IncludeInEffort: false,
-					}
-					staticSegs = append(staticSegs, seg)
+					Classification:  "static",
+					StartIndex:      staticStart,
+					EndIndex:        i - 1,
+					DistanceKm:      0,
+					Duration:        duration,
+					DurationStr:     formatDuration(duration),
+					Reason:          fmt.Sprintf("Stationary for %s", formatDuration(duration)),
+					IncludeInEffort: false,
+				}
+				staticSegs = append(staticSegs, seg)
 				}
 			}
 			staticStart = -1
@@ -281,7 +287,8 @@ func detectStaticSegments(points []gpx.Point) []ClassifiedSegment {
 				StartIndex:      staticStart,
 				EndIndex:        len(points) - 1,
 				DistanceKm:      0,
-				Duration:        formatDuration(duration),
+				Duration:        duration,
+				DurationStr:     formatDuration(duration),
 				Reason:          fmt.Sprintf("Stationary for %s", formatDuration(duration)),
 				IncludeInEffort: false,
 			}
