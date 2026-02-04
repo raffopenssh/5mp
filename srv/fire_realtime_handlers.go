@@ -717,3 +717,270 @@ func generateFireNarrativeRT(parkName string, allGroups, activeGroups, groupsIns
 
 	return strings.Join(parts, "\n")
 }
+
+// FireGroupAlert represents an alert for fire group activity in a park.
+type FireGroupAlert struct {
+	ID                int64      `json:"id"`
+	ParkID            string     `json:"park_id"`
+	ParkName          string     `json:"park_name,omitempty"`
+	GroupName         string     `json:"group_name"`
+	AlertType         string     `json:"alert_type"`
+	FirstDetectedAt   time.Time  `json:"first_detected_at"`
+	LastUpdatedAt     time.Time  `json:"last_updated_at"`
+	LeftAt            *time.Time `json:"left_at,omitempty"`
+	FireCount         int        `json:"fire_count"`
+	DaysActive        int        `json:"days_active"`
+	CentroidLat       float64    `json:"centroid_lat"`
+	CentroidLon       float64    `json:"centroid_lon"`
+	LatestLat         float64    `json:"latest_lat"`
+	LatestLon         float64    `json:"latest_lon"`
+	MovementDirection string     `json:"movement_direction,omitempty"`
+	Message           string     `json:"message,omitempty"`
+}
+
+// HandleAPIFireAlerts returns recent fire group alerts for notifications.
+func (s *Server) HandleAPIFireAlerts(w http.ResponseWriter, r *http.Request) {
+	limitStr := r.URL.Query().Get("limit")
+	limit := 20
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 100 {
+			limit = l
+		}
+	}
+
+	query := `
+		SELECT id, park_id, group_name, alert_type, first_detected_at, last_updated_at,
+		       left_at, fire_count, days_active, centroid_lat, centroid_lon,
+		       latest_lat, latest_lon, movement_direction
+		FROM fire_group_alerts
+		WHERE is_dismissed = FALSE
+		  AND (left_at IS NULL OR left_at > datetime('now', '-1 day'))
+		ORDER BY CASE WHEN left_at IS NULL THEN 0 ELSE 1 END, last_updated_at DESC
+		LIMIT ?
+	`
+
+	rows, err := s.DB.Query(query, limit)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	alerts := make([]FireGroupAlert, 0)
+	for rows.Next() {
+		var a FireGroupAlert
+		var leftAt, direction *string
+		err := rows.Scan(&a.ID, &a.ParkID, &a.GroupName, &a.AlertType,
+			&a.FirstDetectedAt, &a.LastUpdatedAt, &leftAt,
+			&a.FireCount, &a.DaysActive, &a.CentroidLat, &a.CentroidLon,
+			&a.LatestLat, &a.LatestLon, &direction)
+		if err != nil {
+			continue
+		}
+		if leftAt != nil {
+			t, _ := time.Parse("2006-01-02 15:04:05", *leftAt)
+			a.LeftAt = &t
+		}
+		if direction != nil {
+			a.MovementDirection = *direction
+		}
+
+		if s.AreaStore != nil {
+			for _, area := range s.AreaStore.Areas {
+				if area.ID == a.ParkID {
+					a.ParkName = area.Name
+					break
+				}
+			}
+		}
+		if a.ParkName == "" {
+			a.ParkName = a.ParkID
+		}
+
+		switch a.AlertType {
+		case "entered":
+			a.Message = fmt.Sprintf("🔥 Fire group %s entered %s", a.GroupName, a.ParkName)
+		case "active_inside":
+			if a.DaysActive == 1 {
+				a.Message = fmt.Sprintf("🔥 Fire group %s active in %s (%d fires)", a.GroupName, a.ParkName, a.FireCount)
+			} else {
+				a.Message = fmt.Sprintf("🔥 Fire group %s active in %s for %d days (%d fires)", a.GroupName, a.ParkName, a.DaysActive, a.FireCount)
+			}
+		case "left":
+			a.Message = fmt.Sprintf("✓ Fire group %s left %s", a.GroupName, a.ParkName)
+		default:
+			a.Message = fmt.Sprintf("Fire group %s in %s", a.GroupName, a.ParkName)
+		}
+		alerts = append(alerts, a)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(alerts)
+}
+
+// UpdateFireGroupAlerts analyzes parks with recent fire activity and updates alerts.
+func (s *Server) UpdateFireGroupAlerts() error {
+	parksQuery := `SELECT DISTINCT protected_area_id FROM fire_detections 
+		WHERE acq_date >= date('now', '-28 days') AND protected_area_id IS NOT NULL`
+	rows, err := s.DB.Query(parksQuery)
+	if err != nil {
+		return fmt.Errorf("failed to get parks: %w", err)
+	}
+
+	var parks []string
+	for rows.Next() {
+		var parkID string
+		if rows.Scan(&parkID) == nil {
+			parks = append(parks, parkID)
+		}
+	}
+	rows.Close()
+
+	for _, parkID := range parks {
+		s.updateParkFireAlerts(parkID)
+	}
+
+	s.DB.Exec(`DELETE FROM fire_group_alerts WHERE left_at IS NOT NULL AND left_at < datetime('now', '-1 day')`)
+	return nil
+}
+
+func (s *Server) updateParkFireAlerts(parkID string) {
+	now := time.Now()
+	startDate := now.AddDate(0, 0, -28)
+
+	rows, err := s.DB.Query(`SELECT latitude, longitude, acq_date FROM fire_detections
+		WHERE protected_area_id = ? AND acq_date >= ? ORDER BY acq_date`,
+		parkID, startDate.Format("2006-01-02"))
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	var fires []firePoint
+	for rows.Next() {
+		var f firePoint
+		if rows.Scan(&f.lat, &f.lon, &f.date) == nil {
+			fires = append(fires, f)
+		}
+	}
+
+	if len(fires) < 5 {
+		return
+	}
+
+	clusters := detectDailyClustersRT(fires)
+	trajectories := trackClustersRT(clusters)
+
+	var minLat, maxLat, minLon, maxLon float64 = -90, 90, -180, 180
+	if s.AreaStore != nil {
+		for i := range s.AreaStore.Areas {
+			if s.AreaStore.Areas[i].ID == parkID {
+				minLat, maxLat, minLon, maxLon = s.AreaStore.Areas[i].GetBoundingBox()
+				break
+			}
+		}
+	}
+
+	existingRows, _ := s.DB.Query(`SELECT id, group_name FROM fire_group_alerts WHERE park_id = ? AND left_at IS NULL`, parkID)
+	existingAlerts := make(map[string]int64)
+	if existingRows != nil {
+		for existingRows.Next() {
+			var id int64
+			var name string
+			if existingRows.Scan(&id, &name) == nil {
+				existingAlerts[name] = id
+			}
+		}
+		existingRows.Close()
+	}
+
+	activeGroups := make(map[string]bool)
+
+	for i, traj := range trajectories {
+		if len(traj) < 2 {
+			continue
+		}
+
+		name := getGroupName(i)
+		last := traj[len(traj)-1]
+
+		isInside := last.Lat >= minLat && last.Lat <= maxLat && last.Lon >= minLon && last.Lon <= maxLon
+		lastDate, _ := time.Parse("2006-01-02", last.Date)
+		isActive := time.Since(lastDate) < 72*time.Hour
+
+		if !isInside || !isActive {
+			continue
+		}
+
+		activeGroups[name] = true
+		first := traj[0]
+
+		var sumLat, sumLon float64
+		var totalFires int
+		for _, c := range traj {
+			sumLat += c.Lat * float64(c.Fires)
+			sumLon += c.Lon * float64(c.Fires)
+			totalFires += c.Fires
+		}
+		centroidLat := sumLat / float64(totalFires)
+		centroidLon := sumLon / float64(totalFires)
+
+		netSouth := (first.Lat - last.Lat) * 111
+		netEast := (last.Lon - first.Lon) * 111 * math.Cos(centroidLat*math.Pi/180)
+		direction := "stationary"
+		if math.Abs(netSouth) > 5 || math.Abs(netEast) > 5 {
+			if math.Abs(netSouth) > math.Abs(netEast) {
+				if netSouth > 0 {
+					direction = "south"
+				} else {
+					direction = "north"
+				}
+			} else {
+				if netEast > 0 {
+					direction = "east"
+				} else {
+					direction = "west"
+				}
+			}
+		}
+
+		existingID, exists := existingAlerts[name]
+		firstDate, _ := time.Parse("2006-01-02", first.Date)
+
+		if !exists {
+			s.DB.Exec(`INSERT INTO fire_group_alerts 
+				(park_id, group_name, alert_type, first_detected_at, last_updated_at,
+				 fire_count, days_active, centroid_lat, centroid_lon, latest_lat, latest_lon, movement_direction)
+				VALUES (?, ?, 'entered', ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				parkID, name, firstDate, now, totalFires, len(traj), centroidLat, centroidLon, last.Lat, last.Lon, direction)
+		} else {
+			alertType := "active_inside"
+			if len(traj) <= 1 {
+				alertType = "entered"
+			}
+			s.DB.Exec(`UPDATE fire_group_alerts SET alert_type = ?, last_updated_at = ?, fire_count = ?, days_active = ?,
+				latest_lat = ?, latest_lon = ?, movement_direction = ? WHERE id = ?`,
+				alertType, now, totalFires, len(traj), last.Lat, last.Lon, direction, existingID)
+		}
+	}
+
+	for name, id := range existingAlerts {
+		if !activeGroups[name] {
+			s.DB.Exec(`UPDATE fire_group_alerts SET alert_type = 'left', left_at = ?, last_updated_at = ? WHERE id = ?`, now, now, id)
+		}
+	}
+}
+
+// HandleAPIUpdateFireAlerts is an admin endpoint to trigger alert updates.
+func (s *Server) HandleAPIUpdateFireAlerts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if err := s.UpdateFireGroupAlerts(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
