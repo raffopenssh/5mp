@@ -1440,6 +1440,86 @@ func (s *Server) HandleAPILearningResults(w http.ResponseWriter, r *http.Request
 	})
 }
 
+// HandleAPIPendingApprovals returns all pending features across all parks
+// GET /api/admin/pending-approvals
+func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Request) {
+	limitStr := r.URL.Query().Get("limit")
+	limit := 100
+	if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 500 {
+		limit = l
+	}
+	
+	type PendingFeature struct {
+		Type          string   `json:"type"`
+		ID            int64    `json:"id"`
+		ParkID        string   `json:"park_id"`
+		ConfidencePct *float64 `json:"confidence_pct"`
+		Details       string   `json:"details"`
+		CreatedAt     string   `json:"created_at"`
+	}
+	
+	var features []PendingFeature
+	
+	// Get pending roads
+	rows, err := s.DB.Query(`
+		SELECT 'road' as type, id, park_id, confidence_pct, 
+		       COALESCE(printf('%.1f km, %d matches', length_m/1000.0, match_count), 'Unknown'),
+		       datetime(created_at) as created_at
+		FROM learned_roads WHERE status = 'pending'
+		UNION ALL
+		SELECT 'airstrip' as type, id, park_id, confidence_pct,
+		       COALESCE(printf('%s, %d landings', aircraft_type, landing_count), 'Unknown'),
+		       datetime(created_at) as created_at
+		FROM learned_airstrips WHERE status = 'pending'
+		UNION ALL
+		SELECT 'place' as type, id, park_id, confidence_pct,
+		       COALESCE(printf('%s, %d visits', place_type, visit_count), 'Unknown'),
+		       datetime(created_at) as created_at
+		FROM learned_places WHERE status = 'pending'
+		ORDER BY confidence_pct DESC
+		LIMIT ?
+	`, limit)
+	
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	
+	for rows.Next() {
+		var f PendingFeature
+		if err := rows.Scan(&f.Type, &f.ID, &f.ParkID, &f.ConfidencePct, &f.Details, &f.CreatedAt); err != nil {
+			continue
+		}
+		features = append(features, f)
+	}
+	
+	// Get stats
+	var stats struct {
+		PendingRoads     int `json:"pending_roads"`
+		PendingPlaces    int `json:"pending_places"`
+		PendingAirstrips int `json:"pending_airstrips"`
+		HighConfidence   int `json:"high_confidence"`
+	}
+	
+	s.DB.QueryRow(`SELECT COUNT(*) FROM learned_roads WHERE status = 'pending'`).Scan(&stats.PendingRoads)
+	s.DB.QueryRow(`SELECT COUNT(*) FROM learned_places WHERE status = 'pending'`).Scan(&stats.PendingPlaces)
+	s.DB.QueryRow(`SELECT COUNT(*) FROM learned_airstrips WHERE status = 'pending'`).Scan(&stats.PendingAirstrips)
+	s.DB.QueryRow(`
+		SELECT COUNT(*) FROM (
+			SELECT 1 FROM learned_roads WHERE status = 'pending' AND confidence_pct > 75
+			UNION ALL SELECT 1 FROM learned_places WHERE status = 'pending' AND confidence_pct > 75
+			UNION ALL SELECT 1 FROM learned_airstrips WHERE status = 'pending' AND confidence_pct > 75
+		)
+	`).Scan(&stats.HighConfidence)
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"features": features,
+		"stats":    stats,
+	})
+}
+
 // HandleAPILearnedFeatures returns pending/approved learned features for a park
 // GET /api/admin/learned-features?park_id=xxx&type=roads|places|airstrips
 func (s *Server) HandleAPILearnedFeatures(w http.ResponseWriter, r *http.Request) {

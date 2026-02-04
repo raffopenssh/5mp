@@ -174,6 +174,7 @@ func (s *Server) Serve(addr string) error {
 	// Admin APIs
 	mux.HandleFunc("GET /api/admin/gpx-logs", s.HandleAPIGPXUploadLogs)
 	mux.HandleFunc("GET /api/admin/learning-results", s.HandleAPILearningResults)
+	mux.HandleFunc("GET /api/admin/pending-approvals", s.HandleAPIPendingApprovals)
 	mux.HandleFunc("GET /api/admin/learned-features", s.HandleAPILearnedFeatures)
 	mux.HandleFunc("GET /api/admin/feature-history", s.HandleAPIFeatureHistory)
 	mux.HandleFunc("POST /api/admin/rollback-feature", s.HandleAPIRollbackFeature)
