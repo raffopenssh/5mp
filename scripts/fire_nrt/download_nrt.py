@@ -109,7 +109,7 @@ def get_park_bbox(park_id: str) -> Optional[Tuple[float, float, float, float]]:
             # Fallback to coordinates if no geometry
             coords = park.get('coordinates')
             if coords:
-                lon, lat = coords[0], coords[1]
+                lon, lat = coords.get("lon", 0), coords.get("lat", 0)
                 return (lon - 0.5, lat - 0.5, lon + 0.5, lat + 0.5)
     
     logger.warning(f"Park {park_id} not found in keystones data")
