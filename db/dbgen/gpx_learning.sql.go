@@ -10,45 +10,45 @@ import (
 	"time"
 )
 
-const approveLearnedAirstrip = `-- name: ApproveLearnedAirstrip :exec
+const approveAirstrip = `-- name: ApproveAirstrip :exec
 UPDATE learned_airstrips SET status = 'approved', approved_by = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ?
 `
 
-type ApproveLearnedAirstripParams struct {
+type ApproveAirstripParams struct {
 	ApprovedBy *string `json:"approved_by"`
 	ID         int64   `json:"id"`
 }
 
-func (q *Queries) ApproveLearnedAirstrip(ctx context.Context, arg ApproveLearnedAirstripParams) error {
-	_, err := q.db.ExecContext(ctx, approveLearnedAirstrip, arg.ApprovedBy, arg.ID)
+func (q *Queries) ApproveAirstrip(ctx context.Context, arg ApproveAirstripParams) error {
+	_, err := q.db.ExecContext(ctx, approveAirstrip, arg.ApprovedBy, arg.ID)
 	return err
 }
 
-const approveLearnedPlace = `-- name: ApproveLearnedPlace :exec
+const approvePlace = `-- name: ApprovePlace :exec
 UPDATE learned_places SET status = 'approved', approved_by = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ?
 `
 
-type ApproveLearnedPlaceParams struct {
+type ApprovePlaceParams struct {
 	ApprovedBy *string `json:"approved_by"`
 	ID         int64   `json:"id"`
 }
 
-func (q *Queries) ApproveLearnedPlace(ctx context.Context, arg ApproveLearnedPlaceParams) error {
-	_, err := q.db.ExecContext(ctx, approveLearnedPlace, arg.ApprovedBy, arg.ID)
+func (q *Queries) ApprovePlace(ctx context.Context, arg ApprovePlaceParams) error {
+	_, err := q.db.ExecContext(ctx, approvePlace, arg.ApprovedBy, arg.ID)
 	return err
 }
 
-const approveLearnedRoad = `-- name: ApproveLearnedRoad :exec
+const approveRoad = `-- name: ApproveRoad :exec
 UPDATE learned_roads SET status = 'approved', approved_by = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ?
 `
 
-type ApproveLearnedRoadParams struct {
+type ApproveRoadParams struct {
 	ApprovedBy *string `json:"approved_by"`
 	ID         int64   `json:"id"`
 }
 
-func (q *Queries) ApproveLearnedRoad(ctx context.Context, arg ApproveLearnedRoadParams) error {
-	_, err := q.db.ExecContext(ctx, approveLearnedRoad, arg.ApprovedBy, arg.ID)
+func (q *Queries) ApproveRoad(ctx context.Context, arg ApproveRoadParams) error {
+	_, err := q.db.ExecContext(ctx, approveRoad, arg.ApprovedBy, arg.ID)
 	return err
 }
 
@@ -288,7 +288,7 @@ func (q *Queries) FailLearningJob(ctx context.Context, arg FailLearningJobParams
 }
 
 const findNearbyAirstrips = `-- name: FindNearbyAirstrips :many
-SELECT id, park_id, lat, lon, heading_deg, length_m, aircraft_type, landing_count, takeoff_count, confidence_pct, status, approved_by, approved_at, approach_json, created_at, updated_at FROM learned_airstrips WHERE park_id = ? AND ABS(lat - ?) < 0.01 AND ABS(lon - ?) < 0.01
+SELECT id, park_id, lat, lon, heading_deg, length_m, aircraft_type, landing_count, takeoff_count, confidence_pct, status, approved_by, approved_at, approach_json, created_at, updated_at, version FROM learned_airstrips WHERE park_id = ? AND ABS(lat - ?) < 0.01 AND ABS(lon - ?) < 0.01
 `
 
 type FindNearbyAirstripsParams struct {
@@ -323,6 +323,7 @@ func (q *Queries) FindNearbyAirstrips(ctx context.Context, arg FindNearbyAirstri
 			&i.ApproachJson,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Version,
 		); err != nil {
 			return nil, err
 		}
@@ -338,7 +339,7 @@ func (q *Queries) FindNearbyAirstrips(ctx context.Context, arg FindNearbyAirstri
 }
 
 const findNearbyPlaces = `-- name: FindNearbyPlaces :many
-SELECT id, park_id, lat, lon, place_type, name, visit_count, avg_duration_minutes, confidence_pct, status, approved_by, approved_at, created_at, updated_at FROM learned_places WHERE park_id = ? AND ABS(lat - ?) < 0.005 AND ABS(lon - ?) < 0.005
+SELECT id, park_id, lat, lon, place_type, name, visit_count, avg_duration_minutes, confidence_pct, status, approved_by, approved_at, created_at, updated_at, version FROM learned_places WHERE park_id = ? AND ABS(lat - ?) < 0.005 AND ABS(lon - ?) < 0.005
 `
 
 type FindNearbyPlacesParams struct {
@@ -371,6 +372,7 @@ func (q *Queries) FindNearbyPlaces(ctx context.Context, arg FindNearbyPlacesPara
 			&i.ApprovedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Version,
 		); err != nil {
 			return nil, err
 		}
@@ -411,6 +413,50 @@ func (q *Queries) FindNearbyVehicleTracks(ctx context.Context, parkID string) ([
 			&i.ParkID,
 			&i.Geojson,
 			&i.LengthM,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAirstripHistory = `-- name: GetAirstripHistory :many
+SELECT history_id, original_id, park_id, lat, lon, heading_deg, length_m, aircraft_type, landing_count, confidence, is_approved, is_rejected, version, "action", action_by, action_at FROM learned_airstrips_history WHERE original_id = ? ORDER BY history_id DESC
+`
+
+func (q *Queries) GetAirstripHistory(ctx context.Context, originalID int64) ([]LearnedAirstripsHistory, error) {
+	rows, err := q.db.QueryContext(ctx, getAirstripHistory, originalID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LearnedAirstripsHistory{}
+	for rows.Next() {
+		var i LearnedAirstripsHistory
+		if err := rows.Scan(
+			&i.HistoryID,
+			&i.OriginalID,
+			&i.ParkID,
+			&i.Lat,
+			&i.Lon,
+			&i.HeadingDeg,
+			&i.LengthM,
+			&i.AircraftType,
+			&i.LandingCount,
+			&i.Confidence,
+			&i.IsApproved,
+			&i.IsRejected,
+			&i.Version,
+			&i.Action,
+			&i.ActionBy,
+			&i.ActionAt,
 		); err != nil {
 			return nil, err
 		}
@@ -479,7 +525,7 @@ func (q *Queries) GetAllLearningResults(ctx context.Context, arg GetAllLearningR
 }
 
 const getLearnedAirstripsByPark = `-- name: GetLearnedAirstripsByPark :many
-SELECT id, park_id, lat, lon, heading_deg, length_m, aircraft_type, landing_count, takeoff_count, confidence_pct, status, approved_by, approved_at, approach_json, created_at, updated_at FROM learned_airstrips WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
+SELECT id, park_id, lat, lon, heading_deg, length_m, aircraft_type, landing_count, takeoff_count, confidence_pct, status, approved_by, approved_at, approach_json, created_at, updated_at, version FROM learned_airstrips WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
 `
 
 func (q *Queries) GetLearnedAirstripsByPark(ctx context.Context, parkID string) ([]LearnedAirstrip, error) {
@@ -508,6 +554,7 @@ func (q *Queries) GetLearnedAirstripsByPark(ctx context.Context, parkID string) 
 			&i.ApproachJson,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Version,
 		); err != nil {
 			return nil, err
 		}
@@ -522,8 +569,44 @@ func (q *Queries) GetLearnedAirstripsByPark(ctx context.Context, parkID string) 
 	return items, nil
 }
 
+const getLearnedFeatureStats = `-- name: GetLearnedFeatureStats :one
+SELECT 
+    (SELECT COUNT(*) FROM learned_roads WHERE learned_roads.park_id = ?1 AND status = 'approved') as approved_roads,
+    (SELECT COUNT(*) FROM learned_roads WHERE learned_roads.park_id = ?1 AND status = 'pending') as pending_roads,
+    (SELECT COUNT(*) FROM learned_airstrips WHERE learned_airstrips.park_id = ?1 AND status = 'approved') as approved_airstrips,
+    (SELECT COUNT(*) FROM learned_airstrips WHERE learned_airstrips.park_id = ?1 AND status = 'pending') as pending_airstrips,
+    (SELECT COUNT(*) FROM learned_places WHERE learned_places.park_id = ?1 AND status = 'approved') as approved_places,
+    (SELECT COUNT(*) FROM learned_places WHERE learned_places.park_id = ?1 AND status = 'pending') as pending_places,
+    (SELECT COALESCE(SUM(length_m), 0) / 1000.0 FROM learned_roads WHERE learned_roads.park_id = ?1 AND status = 'approved') as total_road_km
+`
+
+type GetLearnedFeatureStatsRow struct {
+	ApprovedRoads     int64 `json:"approved_roads"`
+	PendingRoads      int64 `json:"pending_roads"`
+	ApprovedAirstrips int64 `json:"approved_airstrips"`
+	PendingAirstrips  int64 `json:"pending_airstrips"`
+	ApprovedPlaces    int64 `json:"approved_places"`
+	PendingPlaces     int64 `json:"pending_places"`
+	TotalRoadKm       int64 `json:"total_road_km"`
+}
+
+func (q *Queries) GetLearnedFeatureStats(ctx context.Context, parkID string) (GetLearnedFeatureStatsRow, error) {
+	row := q.db.QueryRowContext(ctx, getLearnedFeatureStats, parkID)
+	var i GetLearnedFeatureStatsRow
+	err := row.Scan(
+		&i.ApprovedRoads,
+		&i.PendingRoads,
+		&i.ApprovedAirstrips,
+		&i.PendingAirstrips,
+		&i.ApprovedPlaces,
+		&i.PendingPlaces,
+		&i.TotalRoadKm,
+	)
+	return i, err
+}
+
 const getLearnedPlacesByPark = `-- name: GetLearnedPlacesByPark :many
-SELECT id, park_id, lat, lon, place_type, name, visit_count, avg_duration_minutes, confidence_pct, status, approved_by, approved_at, created_at, updated_at FROM learned_places WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
+SELECT id, park_id, lat, lon, place_type, name, visit_count, avg_duration_minutes, confidence_pct, status, approved_by, approved_at, created_at, updated_at, version FROM learned_places WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
 `
 
 func (q *Queries) GetLearnedPlacesByPark(ctx context.Context, parkID string) ([]LearnedPlace, error) {
@@ -550,6 +633,7 @@ func (q *Queries) GetLearnedPlacesByPark(ctx context.Context, parkID string) ([]
 			&i.ApprovedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Version,
 		); err != nil {
 			return nil, err
 		}
@@ -565,7 +649,7 @@ func (q *Queries) GetLearnedPlacesByPark(ctx context.Context, parkID string) ([]
 }
 
 const getLearnedRoadsByPark = `-- name: GetLearnedRoadsByPark :many
-SELECT id, park_id, geojson, length_m, match_count, confidence_pct, status, approved_by, approved_at, created_at, updated_at FROM learned_roads WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
+SELECT id, park_id, geojson, length_m, match_count, confidence_pct, status, approved_by, approved_at, created_at, updated_at, version FROM learned_roads WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
 `
 
 func (q *Queries) GetLearnedRoadsByPark(ctx context.Context, parkID string) ([]LearnedRoad, error) {
@@ -589,6 +673,7 @@ func (q *Queries) GetLearnedRoadsByPark(ctx context.Context, parkID string) ([]L
 			&i.ApprovedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Version,
 		); err != nil {
 			return nil, err
 		}
@@ -654,6 +739,125 @@ func (q *Queries) GetLearningResultsByPark(ctx context.Context, arg GetLearningR
 		return nil, err
 	}
 	return items, nil
+}
+
+const getLearningResultsWithUploadInfo = `-- name: GetLearningResultsWithUploadInfo :many
+SELECT 
+    lr.id, lr.upload_id, lr.park_id, lr.park_name, lr.vehicle_median_speed_kmh, lr.vehicle_max_speed_kmh, lr.foot_median_speed_kmh, lr.foot_max_speed_kmh, lr.foot_mcp_area_km2, lr.new_roads_found, lr.new_roads_km, lr.road_confidence_pct, lr.new_airstrips_found, lr.airstrip_confidence_pct, lr.new_places_found, lr.place_types_json, lr.place_confidence_pct, lr.summary_text, lr.discoveries_json, lr.created_at,
+    ul.filename,
+    ul.protected_area_name
+FROM gpx_learning_results lr
+LEFT JOIN gpx_upload_logs ul ON lr.upload_id = ul.upload_id
+WHERE (? = '' OR lr.park_id = ?)
+ORDER BY lr.processed_at DESC
+LIMIT ? OFFSET ?
+`
+
+type GetLearningResultsWithUploadInfoParams struct {
+	Column1 interface{} `json:"column_1"`
+	ParkID  string      `json:"park_id"`
+	Limit   int64       `json:"limit"`
+	Offset  int64       `json:"offset"`
+}
+
+type GetLearningResultsWithUploadInfoRow struct {
+	ID                    int64      `json:"id"`
+	UploadID              *int64     `json:"upload_id"`
+	ParkID                string     `json:"park_id"`
+	ParkName              *string    `json:"park_name"`
+	VehicleMedianSpeedKmh *float64   `json:"vehicle_median_speed_kmh"`
+	VehicleMaxSpeedKmh    *float64   `json:"vehicle_max_speed_kmh"`
+	FootMedianSpeedKmh    *float64   `json:"foot_median_speed_kmh"`
+	FootMaxSpeedKmh       *float64   `json:"foot_max_speed_kmh"`
+	FootMcpAreaKm2        *float64   `json:"foot_mcp_area_km2"`
+	NewRoadsFound         *int64     `json:"new_roads_found"`
+	NewRoadsKm            *float64   `json:"new_roads_km"`
+	RoadConfidencePct     *float64   `json:"road_confidence_pct"`
+	NewAirstripsFound     *int64     `json:"new_airstrips_found"`
+	AirstripConfidencePct *float64   `json:"airstrip_confidence_pct"`
+	NewPlacesFound        *int64     `json:"new_places_found"`
+	PlaceTypesJson        *string    `json:"place_types_json"`
+	PlaceConfidencePct    *float64   `json:"place_confidence_pct"`
+	SummaryText           *string    `json:"summary_text"`
+	DiscoveriesJson       *string    `json:"discoveries_json"`
+	CreatedAt             *time.Time `json:"created_at"`
+	Filename              *string    `json:"filename"`
+	ProtectedAreaName     *string    `json:"protected_area_name"`
+}
+
+func (q *Queries) GetLearningResultsWithUploadInfo(ctx context.Context, arg GetLearningResultsWithUploadInfoParams) ([]GetLearningResultsWithUploadInfoRow, error) {
+	rows, err := q.db.QueryContext(ctx, getLearningResultsWithUploadInfo,
+		arg.Column1,
+		arg.ParkID,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetLearningResultsWithUploadInfoRow{}
+	for rows.Next() {
+		var i GetLearningResultsWithUploadInfoRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UploadID,
+			&i.ParkID,
+			&i.ParkName,
+			&i.VehicleMedianSpeedKmh,
+			&i.VehicleMaxSpeedKmh,
+			&i.FootMedianSpeedKmh,
+			&i.FootMaxSpeedKmh,
+			&i.FootMcpAreaKm2,
+			&i.NewRoadsFound,
+			&i.NewRoadsKm,
+			&i.RoadConfidencePct,
+			&i.NewAirstripsFound,
+			&i.AirstripConfidencePct,
+			&i.NewPlacesFound,
+			&i.PlaceTypesJson,
+			&i.PlaceConfidencePct,
+			&i.SummaryText,
+			&i.DiscoveriesJson,
+			&i.CreatedAt,
+			&i.Filename,
+			&i.ProtectedAreaName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPatrolMCP = `-- name: GetPatrolMCP :one
+SELECT mcp_90_geojson, mcp_area_km2, point_count, updated_at
+FROM park_patrol_mcp WHERE park_id = ?
+`
+
+type GetPatrolMCPRow struct {
+	Mcp90Geojson *string    `json:"mcp_90_geojson"`
+	McpAreaKm2   *float64   `json:"mcp_area_km2"`
+	PointCount   *int64     `json:"point_count"`
+	UpdatedAt    *time.Time `json:"updated_at"`
+}
+
+func (q *Queries) GetPatrolMCP(ctx context.Context, parkID string) (GetPatrolMCPRow, error) {
+	row := q.db.QueryRowContext(ctx, getPatrolMCP, parkID)
+	var i GetPatrolMCPRow
+	err := row.Scan(
+		&i.Mcp90Geojson,
+		&i.McpAreaKm2,
+		&i.PointCount,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const getPendingApprovals = `-- name: GetPendingApprovals :many
@@ -738,6 +942,90 @@ func (q *Queries) GetPendingLearningJobs(ctx context.Context, limit int64) ([]Gp
 	return items, nil
 }
 
+const getPlaceHistory = `-- name: GetPlaceHistory :many
+SELECT history_id, original_id, park_id, lat, lon, place_type, visit_count, avg_duration_minutes, confidence, is_approved, is_rejected, version, "action", action_by, action_at FROM learned_places_history WHERE original_id = ? ORDER BY history_id DESC
+`
+
+func (q *Queries) GetPlaceHistory(ctx context.Context, originalID int64) ([]LearnedPlacesHistory, error) {
+	rows, err := q.db.QueryContext(ctx, getPlaceHistory, originalID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LearnedPlacesHistory{}
+	for rows.Next() {
+		var i LearnedPlacesHistory
+		if err := rows.Scan(
+			&i.HistoryID,
+			&i.OriginalID,
+			&i.ParkID,
+			&i.Lat,
+			&i.Lon,
+			&i.PlaceType,
+			&i.VisitCount,
+			&i.AvgDurationMinutes,
+			&i.Confidence,
+			&i.IsApproved,
+			&i.IsRejected,
+			&i.Version,
+			&i.Action,
+			&i.ActionBy,
+			&i.ActionAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRoadHistory = `-- name: GetRoadHistory :many
+SELECT history_id, original_id, park_id, geojson, distance_km, match_count, confidence, is_approved, is_rejected, version, "action", action_by, action_at FROM learned_roads_history WHERE original_id = ? ORDER BY history_id DESC
+`
+
+func (q *Queries) GetRoadHistory(ctx context.Context, originalID int64) ([]LearnedRoadsHistory, error) {
+	rows, err := q.db.QueryContext(ctx, getRoadHistory, originalID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LearnedRoadsHistory{}
+	for rows.Next() {
+		var i LearnedRoadsHistory
+		if err := rows.Scan(
+			&i.HistoryID,
+			&i.OriginalID,
+			&i.ParkID,
+			&i.Geojson,
+			&i.DistanceKm,
+			&i.MatchCount,
+			&i.Confidence,
+			&i.IsApproved,
+			&i.IsRejected,
+			&i.Version,
+			&i.Action,
+			&i.ActionBy,
+			&i.ActionAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getVehicleStatsByPark = `-- name: GetVehicleStatsByPark :many
 SELECT id, park_id, movement_type, total_distance_km, total_time_hours, median_speed_kmh, max_speed_kmh, p90_speed_kmh, sample_count, updated_at FROM park_vehicle_stats WHERE park_id = ?
 `
@@ -803,17 +1091,192 @@ func (q *Queries) QueueGPXLearning(ctx context.Context, arg QueueGPXLearningPara
 	return i, err
 }
 
-const rejectLearnedRoad = `-- name: RejectLearnedRoad :exec
-UPDATE learned_roads SET status = 'rejected', approved_by = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ?
+const recordAirstripHistory = `-- name: RecordAirstripHistory :exec
+INSERT INTO learned_airstrips_history (original_id, park_id, lat, lon, heading_deg, length_m, aircraft_type, landing_count, confidence, is_approved, is_rejected, version, action, action_by)
+SELECT la.id, la.park_id, la.lat, la.lon, la.heading_deg, la.length_m, la.aircraft_type, la.landing_count, la.confidence_pct,
+       CASE WHEN la.status = 'approved' THEN 1 ELSE 0 END,
+       CASE WHEN la.status = 'rejected' THEN 1 ELSE 0 END,
+       COALESCE((SELECT MAX(version) FROM learned_airstrips_history WHERE original_id = la.id), 0) + 1,
+       ?, ?
+FROM learned_airstrips la WHERE la.id = ?
 `
 
-type RejectLearnedRoadParams struct {
+type RecordAirstripHistoryParams struct {
+	Action   string  `json:"action"`
+	ActionBy *string `json:"action_by"`
+	ID       int64   `json:"id"`
+}
+
+func (q *Queries) RecordAirstripHistory(ctx context.Context, arg RecordAirstripHistoryParams) error {
+	_, err := q.db.ExecContext(ctx, recordAirstripHistory, arg.Action, arg.ActionBy, arg.ID)
+	return err
+}
+
+const recordPlaceHistory = `-- name: RecordPlaceHistory :exec
+INSERT INTO learned_places_history (original_id, park_id, lat, lon, place_type, visit_count, avg_duration_minutes, confidence, is_approved, is_rejected, version, action, action_by)
+SELECT lp.id, lp.park_id, lp.lat, lp.lon, lp.place_type, lp.visit_count, lp.avg_duration_minutes, lp.confidence_pct,
+       CASE WHEN lp.status = 'approved' THEN 1 ELSE 0 END,
+       CASE WHEN lp.status = 'rejected' THEN 1 ELSE 0 END,
+       COALESCE((SELECT MAX(version) FROM learned_places_history WHERE original_id = lp.id), 0) + 1,
+       ?, ?
+FROM learned_places lp WHERE lp.id = ?
+`
+
+type RecordPlaceHistoryParams struct {
+	Action   string  `json:"action"`
+	ActionBy *string `json:"action_by"`
+	ID       int64   `json:"id"`
+}
+
+func (q *Queries) RecordPlaceHistory(ctx context.Context, arg RecordPlaceHistoryParams) error {
+	_, err := q.db.ExecContext(ctx, recordPlaceHistory, arg.Action, arg.ActionBy, arg.ID)
+	return err
+}
+
+const recordRoadHistory = `-- name: RecordRoadHistory :exec
+INSERT INTO learned_roads_history (original_id, park_id, geojson, distance_km, match_count, confidence, is_approved, is_rejected, version, action, action_by)
+SELECT lr.id, lr.park_id, lr.geojson, lr.length_m, lr.match_count, lr.confidence_pct, 
+       CASE WHEN lr.status = 'approved' THEN 1 ELSE 0 END, 
+       CASE WHEN lr.status = 'rejected' THEN 1 ELSE 0 END, 
+       COALESCE((SELECT MAX(version) FROM learned_roads_history WHERE original_id = lr.id), 0) + 1,
+       ?, ?
+FROM learned_roads lr WHERE lr.id = ?
+`
+
+type RecordRoadHistoryParams struct {
+	Action   string  `json:"action"`
+	ActionBy *string `json:"action_by"`
+	ID       int64   `json:"id"`
+}
+
+func (q *Queries) RecordRoadHistory(ctx context.Context, arg RecordRoadHistoryParams) error {
+	_, err := q.db.ExecContext(ctx, recordRoadHistory, arg.Action, arg.ActionBy, arg.ID)
+	return err
+}
+
+const rejectAirstrip = `-- name: RejectAirstrip :exec
+UPDATE learned_airstrips SET status = 'rejected', approved_by = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ?
+`
+
+type RejectAirstripParams struct {
 	ApprovedBy *string `json:"approved_by"`
 	ID         int64   `json:"id"`
 }
 
-func (q *Queries) RejectLearnedRoad(ctx context.Context, arg RejectLearnedRoadParams) error {
-	_, err := q.db.ExecContext(ctx, rejectLearnedRoad, arg.ApprovedBy, arg.ID)
+func (q *Queries) RejectAirstrip(ctx context.Context, arg RejectAirstripParams) error {
+	_, err := q.db.ExecContext(ctx, rejectAirstrip, arg.ApprovedBy, arg.ID)
+	return err
+}
+
+const rejectPlace = `-- name: RejectPlace :exec
+UPDATE learned_places SET status = 'rejected', approved_by = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ?
+`
+
+type RejectPlaceParams struct {
+	ApprovedBy *string `json:"approved_by"`
+	ID         int64   `json:"id"`
+}
+
+func (q *Queries) RejectPlace(ctx context.Context, arg RejectPlaceParams) error {
+	_, err := q.db.ExecContext(ctx, rejectPlace, arg.ApprovedBy, arg.ID)
+	return err
+}
+
+const rejectRoad = `-- name: RejectRoad :exec
+UPDATE learned_roads SET status = 'rejected', approved_by = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ?
+`
+
+type RejectRoadParams struct {
+	ApprovedBy *string `json:"approved_by"`
+	ID         int64   `json:"id"`
+}
+
+func (q *Queries) RejectRoad(ctx context.Context, arg RejectRoadParams) error {
+	_, err := q.db.ExecContext(ctx, rejectRoad, arg.ApprovedBy, arg.ID)
+	return err
+}
+
+const rollbackAirstrip = `-- name: RollbackAirstrip :exec
+UPDATE learned_airstrips SET
+    heading_deg = ?,
+    length_m = ?,
+    confidence_pct = ?,
+    status = ?,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = ?
+`
+
+type RollbackAirstripParams struct {
+	HeadingDeg    *float64 `json:"heading_deg"`
+	LengthM       *float64 `json:"length_m"`
+	ConfidencePct *float64 `json:"confidence_pct"`
+	Status        *string  `json:"status"`
+	ID            int64    `json:"id"`
+}
+
+func (q *Queries) RollbackAirstrip(ctx context.Context, arg RollbackAirstripParams) error {
+	_, err := q.db.ExecContext(ctx, rollbackAirstrip,
+		arg.HeadingDeg,
+		arg.LengthM,
+		arg.ConfidencePct,
+		arg.Status,
+		arg.ID,
+	)
+	return err
+}
+
+const rollbackPlace = `-- name: RollbackPlace :exec
+UPDATE learned_places SET
+    place_type = ?,
+    confidence_pct = ?,
+    status = ?,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = ?
+`
+
+type RollbackPlaceParams struct {
+	PlaceType     *string  `json:"place_type"`
+	ConfidencePct *float64 `json:"confidence_pct"`
+	Status        *string  `json:"status"`
+	ID            int64    `json:"id"`
+}
+
+func (q *Queries) RollbackPlace(ctx context.Context, arg RollbackPlaceParams) error {
+	_, err := q.db.ExecContext(ctx, rollbackPlace,
+		arg.PlaceType,
+		arg.ConfidencePct,
+		arg.Status,
+		arg.ID,
+	)
+	return err
+}
+
+const rollbackRoad = `-- name: RollbackRoad :exec
+UPDATE learned_roads SET
+    geojson = ?,
+    length_m = ?,
+    confidence_pct = ?,
+    status = ?,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = ?
+`
+
+type RollbackRoadParams struct {
+	Geojson       string   `json:"geojson"`
+	LengthM       *float64 `json:"length_m"`
+	ConfidencePct *float64 `json:"confidence_pct"`
+	Status        *string  `json:"status"`
+	ID            int64    `json:"id"`
+}
+
+func (q *Queries) RollbackRoad(ctx context.Context, arg RollbackRoadParams) error {
+	_, err := q.db.ExecContext(ctx, rollbackRoad,
+		arg.Geojson,
+		arg.LengthM,
+		arg.ConfidencePct,
+		arg.Status,
+		arg.ID,
+	)
 	return err
 }
 
@@ -888,6 +1351,33 @@ type UpdatePlaceStatsParams struct {
 
 func (q *Queries) UpdatePlaceStats(ctx context.Context, arg UpdatePlaceStatsParams) error {
 	_, err := q.db.ExecContext(ctx, updatePlaceStats, arg.AvgDurationMinutes, arg.ConfidencePct, arg.ID)
+	return err
+}
+
+const upsertPatrolMCP = `-- name: UpsertPatrolMCP :exec
+INSERT INTO park_patrol_mcp (park_id, mcp_90_geojson, mcp_area_km2, point_count, updated_at)
+VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+ON CONFLICT(park_id) DO UPDATE SET 
+    mcp_90_geojson = excluded.mcp_90_geojson,
+    mcp_area_km2 = excluded.mcp_area_km2,
+    point_count = excluded.point_count,
+    updated_at = CURRENT_TIMESTAMP
+`
+
+type UpsertPatrolMCPParams struct {
+	ParkID       string   `json:"park_id"`
+	Mcp90Geojson *string  `json:"mcp_90_geojson"`
+	McpAreaKm2   *float64 `json:"mcp_area_km2"`
+	PointCount   *int64   `json:"point_count"`
+}
+
+func (q *Queries) UpsertPatrolMCP(ctx context.Context, arg UpsertPatrolMCPParams) error {
+	_, err := q.db.ExecContext(ctx, upsertPatrolMCP,
+		arg.ParkID,
+		arg.Mcp90Geojson,
+		arg.McpAreaKm2,
+		arg.PointCount,
+	)
 	return err
 }
 

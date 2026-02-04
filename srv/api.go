@@ -1584,20 +1584,36 @@ func (s *Server) HandleAPIApproveLearnedFeature(w http.ResponseWriter, r *http.R
 		approvedBy = user.Email
 	}
 
+	// Record history before changing state
 	var err error
 	switch req.Type {
 	case "road":
-		err = q.ApproveLearnedRoad(ctx, dbgen.ApproveLearnedRoadParams{
+		q.RecordRoadHistory(ctx, dbgen.RecordRoadHistoryParams{
+			Action:   "approve",
+			ActionBy: &approvedBy,
+			ID:       req.ID,
+		})
+		err = q.ApproveRoad(ctx, dbgen.ApproveRoadParams{
 			ApprovedBy: &approvedBy,
 			ID:         req.ID,
 		})
 	case "place":
-		err = q.ApproveLearnedPlace(ctx, dbgen.ApproveLearnedPlaceParams{
+		q.RecordPlaceHistory(ctx, dbgen.RecordPlaceHistoryParams{
+			Action:   "approve",
+			ActionBy: &approvedBy,
+			ID:       req.ID,
+		})
+		err = q.ApprovePlace(ctx, dbgen.ApprovePlaceParams{
 			ApprovedBy: &approvedBy,
 			ID:         req.ID,
 		})
 	case "airstrip":
-		err = q.ApproveLearnedAirstrip(ctx, dbgen.ApproveLearnedAirstripParams{
+		q.RecordAirstripHistory(ctx, dbgen.RecordAirstripHistoryParams{
+			Action:   "approve",
+			ActionBy: &approvedBy,
+			ID:       req.ID,
+		})
+		err = q.ApproveAirstrip(ctx, dbgen.ApproveAirstripParams{
 			ApprovedBy: &approvedBy,
 			ID:         req.ID,
 		})
@@ -1637,15 +1653,41 @@ func (s *Server) HandleAPIRejectLearnedFeature(w http.ResponseWriter, r *http.Re
 		rejectedBy = user.Email
 	}
 
+	// Record history before rejection
 	var err error
 	switch req.Type {
 	case "road":
-		err = q.RejectLearnedRoad(ctx, dbgen.RejectLearnedRoadParams{
+		q.RecordRoadHistory(ctx, dbgen.RecordRoadHistoryParams{
+			Action:   "reject",
+			ActionBy: &rejectedBy,
+			ID:       req.ID,
+		})
+		err = q.RejectRoad(ctx, dbgen.RejectRoadParams{
+			ApprovedBy: &rejectedBy,
+			ID:         req.ID,
+		})
+	case "place":
+		q.RecordPlaceHistory(ctx, dbgen.RecordPlaceHistoryParams{
+			Action:   "reject",
+			ActionBy: &rejectedBy,
+			ID:       req.ID,
+		})
+		err = q.RejectPlace(ctx, dbgen.RejectPlaceParams{
+			ApprovedBy: &rejectedBy,
+			ID:         req.ID,
+		})
+	case "airstrip":
+		q.RecordAirstripHistory(ctx, dbgen.RecordAirstripHistoryParams{
+			Action:   "reject",
+			ActionBy: &rejectedBy,
+			ID:       req.ID,
+		})
+		err = q.RejectAirstrip(ctx, dbgen.RejectAirstripParams{
 			ApprovedBy: &rejectedBy,
 			ID:         req.ID,
 		})
 	default:
-		http.Error(w, "Invalid type - only roads support rejection", http.StatusBadRequest)
+		http.Error(w, "Invalid type", http.StatusBadRequest)
 		return
 	}
 
@@ -1657,3 +1699,206 @@ func (s *Server) HandleAPIRejectLearnedFeature(w http.ResponseWriter, r *http.Re
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "rejected"})
 }
+
+// HandleAPIPatrolMCP returns the 90% MCP for patrol coverage
+// GET /api/parks/{id}/patrol-mcp
+func (s *Server) HandleAPIPatrolMCP(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+	if parkID == "" {
+		http.Error(w, "Missing park ID", http.StatusBadRequest)
+		return
+	}
+
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	mcp, err := q.GetPatrolMCP(ctx, parkID)
+	if err != nil {
+		// Return empty MCP if none exists
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"park_id": parkID,
+			"mcp_geojson": nil,
+			"mcp_area_km2": 0,
+			"point_count": 0,
+			"message": "No patrol data available for MCP calculation",
+		})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"park_id":      parkID,
+		"mcp_geojson":  mcp.Mcp90Geojson,
+		"mcp_area_km2": mcp.McpAreaKm2,
+		"point_count":  mcp.PointCount,
+		"updated_at":   mcp.UpdatedAt,
+	})
+}
+
+// HandleAPIFeatureHistory returns the history of changes for a learned feature
+// GET /api/admin/feature-history?type={road|airstrip|place}&id={id}
+func (s *Server) HandleAPIFeatureHistory(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	featureType := r.URL.Query().Get("type")
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	var history interface{}
+
+	switch featureType {
+	case "road":
+		history, err = q.GetRoadHistory(ctx, id)
+	case "airstrip":
+		history, err = q.GetAirstripHistory(ctx, id)
+	case "place":
+		history, err = q.GetPlaceHistory(ctx, id)
+	default:
+		http.Error(w, "Invalid type", http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, "Failed to get history", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"type":    featureType,
+		"id":      id,
+		"history": history,
+	})
+}
+
+// HandleAPIRollbackFeature rolls back a feature to a previous version
+// POST /api/admin/rollback-feature
+func (s *Server) HandleAPIRollbackFeature(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	var req struct {
+		Type      string `json:"type"`
+		ID        int64  `json:"id"`
+		HistoryID int64  `json:"history_id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	user := s.Auth.GetUserFromRequest(r)
+	actionBy := "admin"
+	if user != nil && user.Email != "" {
+		actionBy = user.Email
+	}
+
+	var err error
+	switch req.Type {
+	case "road":
+		// Get the history entry
+		history, histErr := q.GetRoadHistory(ctx, req.ID)
+		if histErr != nil || len(history) == 0 {
+			http.Error(w, "History not found", http.StatusNotFound)
+			return
+		}
+		
+		// Find the specific history entry
+		var target *dbgen.LearnedRoadsHistory
+		for _, h := range history {
+			if h.HistoryID == req.HistoryID {
+				target = &h
+				break
+			}
+		}
+		if target == nil {
+			http.Error(w, "History entry not found", http.StatusNotFound)
+			return
+		}
+		
+		// Record the rollback action
+		q.RecordRoadHistory(ctx, dbgen.RecordRoadHistoryParams{
+			Action:   "rollback",
+			ActionBy: &actionBy,
+			ID:       req.ID,
+		})
+		
+		// Restore values
+		status := "pending"
+		if target.IsApproved != nil && *target.IsApproved == 1 {
+			status = "approved"
+		} else if target.IsRejected != nil && *target.IsRejected == 1 {
+			status = "rejected"
+		}
+		
+		err = q.RollbackRoad(ctx, dbgen.RollbackRoadParams{
+			Geojson:       target.Geojson,
+			LengthM:       target.DistanceKm,
+			ConfidencePct: target.Confidence,
+			Status:        &status,
+			ID:            req.ID,
+		})
+
+	default:
+		http.Error(w, "Rollback only supported for roads currently", http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		slog.Error("rollback failed", "error", err)
+		http.Error(w, "Failed to rollback feature", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "rolled_back"})
+}
+
+// HandleAPILearnedFeatureStats returns statistics for learned features by park
+// GET /api/parks/{id}/learned-stats
+func (s *Server) HandleAPILearnedFeatureStats(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+	if parkID == "" {
+		http.Error(w, "Missing park ID", http.StatusBadRequest)
+		return
+	}
+
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	stats, err := q.GetLearnedFeatureStats(ctx, parkID)
+	if err != nil {
+		http.Error(w, "Failed to get stats", http.StatusInternalServerError)
+		return
+	}
+
+	// Get vehicle stats too
+	vehicleStats, _ := q.GetVehicleStatsByPark(ctx, parkID)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"park_id": parkID,
+		"roads": map[string]interface{}{
+			"approved": stats.ApprovedRoads,
+			"pending":  stats.PendingRoads,
+			"total_km": stats.TotalRoadKm,
+		},
+		"airstrips": map[string]interface{}{
+			"approved": stats.ApprovedAirstrips,
+			"pending":  stats.PendingAirstrips,
+		},
+		"places": map[string]interface{}{
+			"approved": stats.ApprovedPlaces,
+			"pending":  stats.PendingPlaces,
+		},
+		"vehicle_stats": vehicleStats,
+	})
+}
+

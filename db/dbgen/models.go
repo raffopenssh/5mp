@@ -218,6 +218,26 @@ type LearnedAirstrip struct {
 	ApproachJson  *string    `json:"approach_json"`
 	CreatedAt     *time.Time `json:"created_at"`
 	UpdatedAt     *time.Time `json:"updated_at"`
+	Version       *int64     `json:"version"`
+}
+
+type LearnedAirstripsHistory struct {
+	HistoryID    int64      `json:"history_id"`
+	OriginalID   int64      `json:"original_id"`
+	ParkID       string     `json:"park_id"`
+	Lat          float64    `json:"lat"`
+	Lon          float64    `json:"lon"`
+	HeadingDeg   *float64   `json:"heading_deg"`
+	LengthM      *float64   `json:"length_m"`
+	AircraftType *string    `json:"aircraft_type"`
+	LandingCount *int64     `json:"landing_count"`
+	Confidence   *float64   `json:"confidence"`
+	IsApproved   *int64     `json:"is_approved"`
+	IsRejected   *int64     `json:"is_rejected"`
+	Version      int64      `json:"version"`
+	Action       string     `json:"action"`
+	ActionBy     *string    `json:"action_by"`
+	ActionAt     *time.Time `json:"action_at"`
 }
 
 type LearnedPlace struct {
@@ -235,6 +255,25 @@ type LearnedPlace struct {
 	ApprovedAt         *time.Time `json:"approved_at"`
 	CreatedAt          *time.Time `json:"created_at"`
 	UpdatedAt          *time.Time `json:"updated_at"`
+	Version            *int64     `json:"version"`
+}
+
+type LearnedPlacesHistory struct {
+	HistoryID          int64      `json:"history_id"`
+	OriginalID         int64      `json:"original_id"`
+	ParkID             string     `json:"park_id"`
+	Lat                float64    `json:"lat"`
+	Lon                float64    `json:"lon"`
+	PlaceType          *string    `json:"place_type"`
+	VisitCount         *int64     `json:"visit_count"`
+	AvgDurationMinutes *float64   `json:"avg_duration_minutes"`
+	Confidence         *float64   `json:"confidence"`
+	IsApproved         *int64     `json:"is_approved"`
+	IsRejected         *int64     `json:"is_rejected"`
+	Version            int64      `json:"version"`
+	Action             string     `json:"action"`
+	ActionBy           *string    `json:"action_by"`
+	ActionAt           *time.Time `json:"action_at"`
 }
 
 type LearnedRoad struct {
@@ -249,6 +288,23 @@ type LearnedRoad struct {
 	ApprovedAt    *time.Time `json:"approved_at"`
 	CreatedAt     *time.Time `json:"created_at"`
 	UpdatedAt     *time.Time `json:"updated_at"`
+	Version       *int64     `json:"version"`
+}
+
+type LearnedRoadsHistory struct {
+	HistoryID  int64      `json:"history_id"`
+	OriginalID int64      `json:"original_id"`
+	ParkID     string     `json:"park_id"`
+	Geojson    string     `json:"geojson"`
+	DistanceKm *float64   `json:"distance_km"`
+	MatchCount *int64     `json:"match_count"`
+	Confidence *float64   `json:"confidence"`
+	IsApproved *int64     `json:"is_approved"`
+	IsRejected *int64     `json:"is_rejected"`
+	Version    int64      `json:"version"`
+	Action     string     `json:"action"`
+	ActionBy   *string    `json:"action_by"`
+	ActionAt   *time.Time `json:"action_at"`
 }
 
 type Migration struct {
