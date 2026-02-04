@@ -171,6 +171,9 @@
         .star-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.2); }
         .star-modal-title { font-size: 16px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
         .star-modal-title svg { width: 18px; height: 18px; color: #fbbf24; }
+        .star-modal-actions { display: flex; align-items: center; gap: 8px; }
+        .star-modal-action-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #888; cursor: pointer; padding: 6px 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .star-modal-action-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); }
         .star-modal-close { background: none; border: none; color: #666; cursor: pointer; font-size: 24px; line-height: 1; padding: 4px; }
         .star-modal-close:hover { color: #fff; }
         .star-modal-body { flex: 1; overflow-y: auto; padding: 20px; }
@@ -189,6 +192,8 @@
         .starred-section-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 12px; }
         .starred-section-title { font-size: 13px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 6px; }
         .starred-section-count { font-size: 11px; color: #666; background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 10px; }
+        .starred-section-desc { font-size: 11px; color: #666; margin-top: 2px; font-style: italic; }
+        .starred-item-hint { font-size: 10px; color: #22c55e; margin-top: 2px; opacity: 0.8; }
         .starred-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; margin-bottom: 8px; overflow: hidden; transition: all 0.2s; }
         .starred-item:hover { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); }
         .starred-item-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; cursor: pointer; }
@@ -4783,16 +4788,17 @@
         
         let html = '';
         
-        // Parks section
+        // Parks section - includes ALL nested data
         if (starredItems.parks.length > 0) {
             html += renderStarredSection('Parks', 'park', starredItems.parks, item => ({
                 id: item.id,
                 name: item.name,
                 meta: item.country || '',
                 icon: '▣',
+                hint: 'Includes: fire, deforestation, settlements, patrol activity',
                 onClick: () => flyToPark(item),
                 onRemove: () => { toggleStar('parks', item); renderStarredItems(); }
-            }));
+            }), 'Full park subscription — all narratives & stats');
         }
         
         // Countries section
@@ -4807,16 +4813,17 @@
             }));
         }
         
-        // Bounding boxes section
+        // Bounding boxes section - includes ALL parks in area
         if (starredItems.bboxes.length > 0) {
-            html += renderStarredSection('Selected Areas', 'bbox', starredItems.bboxes, item => ({
+            html += renderStarredSection('Monitored Areas', 'bbox', starredItems.bboxes, item => ({
                 id: item.bbox.join(','),
                 name: item.name || 'Custom Area',
                 meta: `${item.bbox[0].toFixed(2)}°, ${item.bbox[1].toFixed(2)}° to ${item.bbox[2].toFixed(2)}°, ${item.bbox[3].toFixed(2)}°`,
                 icon: '□',
+                hint: 'Includes: all parks in area with full data',
                 onClick: () => flyToBbox(item.bbox),
                 onRemove: () => { toggleStar('bboxes', item); renderStarredItems(); }
-            }));
+            }), 'Regional subscription — all parks & their data');
         }
         
         // Notifications section
@@ -4831,9 +4838,9 @@
             }));
         }
         
-        // Narratives section
+        // Narratives section - specific narrative only
         if (starredItems.narratives.length > 0) {
-            html += renderStarredSection('Narratives', 'narrative', starredItems.narratives, item => ({
+            html += renderStarredSection('Specific Narratives', 'narrative', starredItems.narratives, item => ({
                 id: item.parkId + '_' + item.type,
                 name: item.title || item.type,
                 meta: item.parkName || '',
@@ -4841,19 +4848,22 @@
                 onClick: () => flyToParkAndShowNarrative(item),
                 onRemove: () => { toggleStar('narratives', item); renderStarredItems(); },
                 content: item.content
-            }));
+            }), 'Single narrative type for specific park');
         }
         
         body.innerHTML = html;
         attachStarredItemListeners();
     }
     
-    function renderStarredSection(title, iconClass, items, mapFn) {
+    function renderStarredSection(title, iconClass, items, mapFn, description = '') {
         const mapped = items.map(mapFn);
         return `
             <div class="starred-section">
                 <div class="starred-section-header">
-                    <div class="starred-section-title">${title}</div>
+                    <div>
+                        <div class="starred-section-title">${title}</div>
+                        ${description ? `<div class="starred-section-desc">${description}</div>` : ''}
+                    </div>
                     <span class="starred-section-count">${items.length}</span>
                 </div>
                 ${mapped.map((item, idx) => `
@@ -4864,6 +4874,7 @@
                                 <div>
                                     <div class="starred-item-name">${escapeHtml(item.name)}</div>
                                     ${item.meta ? `<div class="starred-item-meta">${escapeHtml(item.meta)}</div>` : ''}
+                                    ${item.hint ? `<div class="starred-item-hint">${item.hint}</div>` : ''}
                                 </div>
                             </div>
                             <div class="starred-item-actions">
@@ -4992,87 +5003,241 @@
         });
     }
     
-    function exportStarredReport() {
-        const report = generateStarredReport();
-        const blob = new Blob([report], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `5mp-report-${new Date().toISOString().slice(0,10)}.html`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showToast('Report exported!');
+    // Export starred report with full nested data
+    async function exportStarredReport() {
+        showToast('Generating report with full data...');
+        
+        try {
+            const report = await generateStarredReportAsync();
+            const blob = new Blob([report], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `5mp-report-${new Date().toISOString().slice(0,10)}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Report exported!');
+        } catch (err) {
+            console.error('Report generation error:', err);
+            showToast('Error generating report');
+        }
     }
     
-    function generateStarredReport() {
+    // Fetch all nested data for a park
+    async function fetchParkFullData(parkId) {
+        const pwd = new URLSearchParams(window.location.search).get('pwd');
+        const pwdParam = pwd ? `?pwd=${pwd}` : '';
+        
+        const [fire, deforestation, settlement, stats] = await Promise.all([
+            fetch(`/api/parks/${parkId}/fire-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/deforestation-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/settlement-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/stats${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null)
+        ]);
+        
+        return { fire, deforestation, settlement, stats };
+    }
+    
+    // Generate full report with nested data
+    async function generateStarredReportAsync() {
         const now = new Date();
         const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0);
+        
+        // Fetch full data for all starred parks
+        const parkDataMap = new Map();
+        for (const park of starredItems.parks) {
+            if (park.id) {
+                parkDataMap.set(park.id, await fetchParkFullData(park.id));
+            }
+        }
+        
+        // For bboxes, get parks in bbox and fetch their data
+        const bboxParksData = [];
+        for (const bbox of starredItems.bboxes) {
+            if (bbox.bbox) {
+                // Find parks in this bbox from loaded data
+                const parksInBbox = [];
+                if (typeof map !== 'undefined' && map.getSource('protected-areas')) {
+                    const features = map.querySourceFeatures('protected-areas', { sourceLayer: 'protected-areas' });
+                    for (const f of features) {
+                        const center = f.properties.center ? JSON.parse(f.properties.center) : null;
+                        if (center && center[0] >= bbox.bbox[0] && center[0] <= bbox.bbox[2] && 
+                            center[1] >= bbox.bbox[1] && center[1] <= bbox.bbox[3]) {
+                            const parkId = f.properties.id || f.properties.wdpa_id;
+                            if (parkId && !parkDataMap.has(parkId)) {
+                                parkDataMap.set(parkId, await fetchParkFullData(parkId));
+                            }
+                            parksInBbox.push({ ...f.properties, fullData: parkDataMap.get(parkId) });
+                        }
+                    }
+                }
+                bboxParksData.push({ bbox: bbox, parks: parksInBbox });
+            }
+        }
+        
+        // Fetch data for narrative-only stars
+        for (const narr of starredItems.narratives) {
+            if (narr.parkId && !parkDataMap.has(narr.parkId)) {
+                parkDataMap.set(narr.parkId, await fetchParkFullData(narr.parkId));
+            }
+        }
+        
+        return generateReportHTML(now, total, parkDataMap, bboxParksData);
+    }
+    
+    function generateReportHTML(now, total, parkDataMap, bboxParksData) {
+        const formatNumber = n => n ? n.toLocaleString() : '0';
+        
+        // Generate park section with full nested data
+        function renderParkFull(park, fullData) {
+            const fire = fullData?.fire;
+            const deforest = fullData?.deforestation;
+            const settle = fullData?.settlement;
+            const stats = fullData?.stats;
+            
+            return `
+<div class="park-item">
+    <div class="park-header">
+        <div class="park-name">${escapeHtml(park.name || park.pa_name || 'Unknown')}</div>
+        <div class="park-meta">${escapeHtml(park.country || '')}${park.area_km2 ? ' • ' + formatNumber(Math.round(park.area_km2)) + ' km²' : ''}</div>
+    </div>
+    
+    ${fire && fire.total_detections > 0 ? `
+    <div class="narrative-section fire">
+        <div class="narrative-title">◆ Fire Activity</div>
+        <div class="narrative-stats">
+            <span>Total detections: ${formatNumber(fire.total_detections)}</span>
+            <span>Groups entered: ${formatNumber(fire.groups_entered || 0)}</span>
+            <span>Response rate: ${Math.round(fire.response_rate || 0)}%</span>
+        </div>
+        ${fire.narrative ? `<div class="narrative-text">${fire.narrative}</div>` : ''}
+    </div>` : ''}
+    
+    ${deforest && deforest.total_area_km2 > 0 ? `
+    <div class="narrative-section deforestation">
+        <div class="narrative-title">▲ Deforestation</div>
+        <div class="narrative-stats">
+            <span>Total area: ${deforest.total_area_km2?.toFixed(2) || 0} km²</span>
+            <span>Events: ${formatNumber(deforest.event_count || 0)}</span>
+        </div>
+        ${deforest.narrative ? `<div class="narrative-text">${deforest.narrative}</div>` : ''}
+    </div>` : ''}
+    
+    ${settle && settle.total_settlements > 0 ? `
+    <div class="narrative-section settlements">
+        <div class="narrative-title">■ Settlements</div>
+        <div class="narrative-stats">
+            <span>Total: ${formatNumber(settle.total_settlements)}</span>
+            <span>Population estimate: ${formatNumber(settle.total_population || 0)}</span>
+        </div>
+        ${settle.narrative ? `<div class="narrative-text">${settle.narrative}</div>` : ''}
+    </div>` : ''}
+    
+    ${stats ? `
+    <div class="narrative-section patrol">
+        <div class="narrative-title">○ Patrol Activity</div>
+        <div class="narrative-stats">
+            <span>Active pixels: ${formatNumber(stats.active_pixels || 0)}</span>
+            <span>Total distance: ${formatNumber(Math.round(stats.total_distance_km || 0))} km</span>
+            <span>Patrols: ${formatNumber(stats.patrol_count || 0)}</span>
+        </div>
+    </div>` : ''}
+</div>`;
+        }
         
         return `<!DOCTYPE html>
 <html><head>
 <meta charset="UTF-8">
 <title>5MP Conservation Report - ${now.toLocaleDateString()}</title>
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 40px 20px; background: #1a1a1a; color: #e0e0e0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 1000px; margin: 0 auto; padding: 40px 20px; background: #1a1a1a; color: #e0e0e0; }
 h1 { color: #22c55e; border-bottom: 2px solid #22c55e; padding-bottom: 10px; }
-h2 { color: #fbbf24; margin-top: 30px; }
-.meta { color: #888; font-size: 14px; margin-bottom: 30px; }
-.item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
-.item-title { font-weight: 600; color: #fff; margin-bottom: 4px; }
-.item-meta { font-size: 13px; color: #888; }
-.item-content { font-size: 14px; color: #aaa; margin-top: 8px; line-height: 1.6; }
+h2 { color: #fbbf24; margin-top: 30px; font-size: 18px; }
+h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; }
+.meta { color: #888; font-size: 14px; margin-bottom: 30px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+.meta div { margin: 4px 0; }
+.park-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.park-header { margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.park-name { font-size: 18px; font-weight: 600; color: #22c55e; margin-bottom: 4px; }
+.park-meta { font-size: 13px; color: #888; }
+.narrative-section { margin: 16px 0; padding: 12px 16px; background: rgba(0,0,0,0.2); border-radius: 8px; border-left: 3px solid; }
+.narrative-section.fire { border-color: #ef4444; }
+.narrative-section.deforestation { border-color: #f59e0b; }
+.narrative-section.settlements { border-color: #8b5cf6; }
+.narrative-section.patrol { border-color: #22c55e; }
+.narrative-title { font-weight: 600; color: #fff; margin-bottom: 8px; }
+.narrative-stats { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #aaa; margin-bottom: 8px; }
+.narrative-text { font-size: 14px; color: #ccc; line-height: 1.6; }
+.bbox-section { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+.bbox-header { font-size: 16px; font-weight: 600; color: #60a5fa; margin-bottom: 16px; }
 .section { margin-bottom: 30px; }
 .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; color: #666; }
+.toc { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 16px 20px; margin-bottom: 30px; }
+.toc-title { font-weight: 600; color: #fbbf24; margin-bottom: 12px; }
+.toc-item { color: #888; font-size: 13px; margin: 6px 0; }
+.toc-item a { color: #60a5fa; text-decoration: none; }
+.toc-item a:hover { text-decoration: underline; }
 </style>
 </head><body>
-<h1>★ 5MP Conservation Report</h1>
+<h1>★ 5MP Conservation Monitoring Report</h1>
 <div class="meta">
-    <div>Generated: ${now.toLocaleString()}</div>
-    <div>Time range: ${dateFrom || 'all time'} to ${dateTo || 'present'}</div>
-    <div>Items: ${total}</div>
-    <div>Version: 0.70</div>
+    <div><strong>Generated:</strong> ${now.toLocaleString()}</div>
+    <div><strong>Time range:</strong> ${dateFrom || 'Jan 2023'} to ${dateTo || 'present'}</div>
+    <div><strong>Total items:</strong> ${total} (${starredItems.parks.length} parks, ${starredItems.bboxes.length} areas, ${starredItems.narratives.length} narratives)</div>
+    <div><strong>Version:</strong> 0.70</div>
+</div>
+
+<div class="toc">
+    <div class="toc-title">Contents</div>
+    ${starredItems.parks.length > 0 ? `<div class="toc-item">★ ${starredItems.parks.length} Starred Parks</div>` : ''}
+    ${starredItems.bboxes.length > 0 ? `<div class="toc-item">□ ${starredItems.bboxes.length} Monitored Areas</div>` : ''}
+    ${starredItems.narratives.length > 0 ? `<div class="toc-item">◆ ${starredItems.narratives.length} Specific Narratives</div>` : ''}
 </div>
 
 ${starredItems.parks.length > 0 ? `
 <div class="section">
-<h2>★ Parks (${starredItems.parks.length})</h2>
-${starredItems.parks.map(p => `
-<div class="item">
-    <div class="item-title">${escapeHtml(p.name)}</div>
-    <div class="item-meta">${escapeHtml(p.country || '')}${p.bbox ? ' • ' + p.bbox.map(v => v.toFixed(2)).join(', ') : ''}</div>
-</div>
-`).join('')}
-</div>
-` : ''}
+<h2>★ Starred Parks (${starredItems.parks.length})</h2>
+${starredItems.parks.map(p => renderParkFull(p, parkDataMap.get(p.id))).join('')}
+</div>` : ''}
 
-${starredItems.countries.length > 0 ? `
+${bboxParksData.length > 0 ? `
 <div class="section">
-<h2>★ Countries (${starredItems.countries.length})</h2>
-${starredItems.countries.map(c => `
-<div class="item">
-    <div class="item-title">${escapeHtml(c.name)}</div>
-    <div class="item-meta">${c.parkCount ? c.parkCount + ' parks' : ''}</div>
-</div>
-`).join('')}
-</div>
-` : ''}
+<h2>□ Monitored Areas</h2>
+${bboxParksData.map((bd, i) => `
+<div class="bbox-section">
+    <div class="bbox-header">Area ${i+1}: ${bd.bbox.name || 'Custom Region'}</div>
+    <div style="font-size: 12px; color: #888; margin-bottom: 16px;">Coordinates: ${bd.bbox.bbox.map(v => v.toFixed(3)).join(', ')} • ${bd.parks.length} parks</div>
+    ${bd.parks.map(p => renderParkFull(p, p.fullData)).join('')}
+</div>`).join('')}
+</div>` : ''}
 
 ${starredItems.narratives.length > 0 ? `
 <div class="section">
-<h2>★ Narratives (${starredItems.narratives.length})</h2>
-${starredItems.narratives.map(n => `
-<div class="item">
-    <div class="item-title">${escapeHtml(n.title || n.type)}</div>
-    <div class="item-meta">${escapeHtml(n.parkName || '')}</div>
-    ${n.content ? `<div class="item-content">${n.content}</div>` : ''}
-</div>
-`).join('')}
-</div>
-` : ''}
+<h2>◆ Specific Narratives (${starredItems.narratives.length})</h2>
+${starredItems.narratives.map(n => {
+    const fullData = parkDataMap.get(n.parkId);
+    const data = n.type === 'fire' ? fullData?.fire : 
+                 n.type === 'deforestation' ? fullData?.deforestation :
+                 n.type === 'settlement' ? fullData?.settlement : null;
+    return `
+<div class="park-item">
+    <div class="park-header">
+        <div class="park-name">${escapeHtml(n.parkName || 'Unknown Park')}</div>
+        <div class="park-meta">${escapeHtml(n.type)} narrative</div>
+    </div>
+    ${data ? `
+    <div class="narrative-section ${n.type === 'fire' ? 'fire' : n.type === 'deforestation' ? 'deforestation' : 'settlements'}">
+        <div class="narrative-title">${n.type === 'fire' ? '◆ Fire Activity' : n.type === 'deforestation' ? '▲ Deforestation' : '■ Settlements'}</div>
+        ${data.narrative ? `<div class="narrative-text">${data.narrative}</div>` : '<div class="narrative-text">No narrative data available</div>'}
+    </div>` : '<div style="color:#666">Data not available</div>'}
+</div>`;
+}).join('')}
+</div>` : ''}
 
 <div class="footer">
-    <p>Report generated by 5MP Globe (five-mp-conservation-effort.exe.xyz)</p>
-    <p>Data sources: VIIRS Fire, Hansen Deforestation, GHSL Settlements, OpenStreetMap</p>
+    <p><strong>Report generated by</strong> 5MP Globe Conservation Monitoring System</p>
+    <p><strong>Data sources:</strong> VIIRS Fire Detections, Hansen/GFW Deforestation, GHSL Settlements, OpenStreetMap</p>
+    <p><strong>URL:</strong> <a href="https://five-mp-conservation-effort.exe.xyz:8000/" style="color:#60a5fa">five-mp-conservation-effort.exe.xyz</a></p>
 </div>
 </body></html>`;
     }
@@ -5409,7 +5574,22 @@ ${starredItems.narratives.map(n => `
                     </svg>
                     Starred Items
                 </div>
-                <button class="star-modal-close" onclick="toggleStarModal()">&times;</button>
+                <div class="star-modal-actions">
+                    <button class="star-modal-action-btn" onclick="copyStarredLink()" title="Copy share link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        </svg>
+                    </button>
+                    <button class="star-modal-action-btn" onclick="generateRssFeed()" title="Get RSS feed">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 11a9 9 0 0 1 9 9"></path>
+                            <path d="M4 4a16 16 0 0 1 16 16"></path>
+                            <circle cx="5" cy="19" r="1"></circle>
+                        </svg>
+                    </button>
+                    <button class="star-modal-close" onclick="toggleStarModal()">&times;</button>
+                </div>
             </div>
             <div class="star-modal-body" id="star-modal-body">
                 <!-- Populated dynamically -->
