@@ -2,6 +2,7 @@ package srv
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -1902,3 +1903,173 @@ func (s *Server) HandleAPILearnedFeatureStats(w http.ResponseWriter, r *http.Req
 	})
 }
 
+
+// StarredItems represents the structure of starred items from the client
+type StarredItems struct {
+	Parks       []map[string]interface{} `json:"parks"`
+	Countries   []map[string]interface{} `json:"countries"`
+	Bboxes      []map[string]interface{} `json:"bboxes"`
+	Narratives  []map[string]interface{} `json:"narratives"`
+	Activities  []map[string]interface{} `json:"activities"`
+}
+
+// HandleAPIFeed generates an RSS feed for starred items
+// GET /api/feed?stars=<base64-encoded-starred-items>&format=rss
+func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
+	starsParam := r.URL.Query().Get("stars")
+	if starsParam == "" {
+		http.Error(w, "Missing stars parameter", http.StatusBadRequest)
+		return
+	}
+
+	// Decode base64 starred items
+	decoded, err := base64.StdEncoding.DecodeString(starsParam)
+	if err != nil {
+		http.Error(w, "Invalid stars encoding", http.StatusBadRequest)
+		return
+	}
+
+	var starred StarredItems
+	if err := json.Unmarshal(decoded, &starred); err != nil {
+		http.Error(w, "Invalid stars format", http.StatusBadRequest)
+		return
+	}
+
+	// Build RSS feed
+	now := time.Now().UTC()
+	baseURL := "https://" + r.Host
+	pwd := r.URL.Query().Get("pwd")
+	if pwd != "" {
+		baseURL += "?pwd=" + pwd
+	}
+
+	items := []string{}
+
+	// Add park items
+	for _, park := range starred.Parks {
+		name, _ := park["name"].(string)
+		id, _ := park["id"].(string)
+		country, _ := park["country"].(string)
+		
+		if name == "" {
+			continue
+		}
+
+		link := baseURL
+		if id != "" {
+			if pwd != "" {
+				link = baseURL + "&popup=" + id
+			} else {
+				link = baseURL + "?popup=" + id
+			}
+		}
+
+		items = append(items, fmt.Sprintf(`
+		<item>
+			<title>%s - %s</title>
+			<link>%s</link>
+			<description>Conservation monitoring for %s in %s</description>
+			<pubDate>%s</pubDate>
+			<guid>park-%s</guid>
+		</item>`, 
+			escapeXML(name), escapeXML(country),
+			escapeXML(link),
+			escapeXML(name), escapeXML(country),
+			now.Format(time.RFC1123Z),
+			escapeXML(id)))
+	}
+
+	// Add narrative items
+	for _, narr := range starred.Narratives {
+		parkName, _ := narr["parkName"].(string)
+		parkId, _ := narr["parkId"].(string)
+		narrType, _ := narr["type"].(string)
+		
+		if parkName == "" || narrType == "" {
+			continue
+		}
+
+		title := fmt.Sprintf("%s - %s", parkName, narrType)
+		
+		link := baseURL
+		if parkId != "" {
+			if pwd != "" {
+				link = baseURL + "&popup=" + parkId
+			} else {
+				link = baseURL + "?popup=" + parkId
+			}
+		}
+
+		items = append(items, fmt.Sprintf(`
+		<item>
+			<title>%s</title>
+			<link>%s</link>
+			<description>%s narrative for %s</description>
+			<pubDate>%s</pubDate>
+			<guid>narrative-%s-%s</guid>
+		</item>`,
+			escapeXML(title),
+			escapeXML(link),
+			escapeXML(narrType), escapeXML(parkName),
+			now.Format(time.RFC1123Z),
+			escapeXML(parkId), escapeXML(narrType)))
+	}
+
+	// Add bbox items
+	for i, bbox := range starred.Bboxes {
+		coords, _ := bbox["coords"].([]interface{})
+		if len(coords) != 4 {
+			continue
+		}
+		
+		bboxStr := fmt.Sprintf("%.2f,%.2f,%.2f,%.2f", coords[0], coords[1], coords[2], coords[3])
+		
+		link := baseURL
+		if pwd != "" {
+			link = baseURL + "&bbox=" + bboxStr
+		} else {
+			link = baseURL + "?bbox=" + bboxStr
+		}
+
+		items = append(items, fmt.Sprintf(`
+		<item>
+			<title>Custom Area %d</title>
+			<link>%s</link>
+			<description>Monitoring area: %s</description>
+			<pubDate>%s</pubDate>
+			<guid>bbox-%s</guid>
+		</item>`,
+			i+1,
+			escapeXML(link),
+			escapeXML(bboxStr),
+			now.Format(time.RFC1123Z),
+			escapeXML(bboxStr)))
+	}
+
+	rss := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>5MP Conservation Monitoring</title>
+		<link>%s</link>
+		<description>Updates for your starred conservation areas</description>
+		<lastBuildDate>%s</lastBuildDate>
+		<atom:link href="%s/api/feed?stars=%s" rel="self" type="application/rss+xml"/>%s
+	</channel>
+</rss>`,
+		baseURL,
+		now.Format(time.RFC1123Z),
+		baseURL, starsParam,
+		strings.Join(items, ""))
+
+	w.Header().Set("Content-Type", "application/rss+xml; charset=utf-8")
+	w.Write([]byte(rss))
+}
+
+func escapeXML(s string) string {
+	s = strings.ReplaceAll(s, "&", "&amp;")
+	s = strings.ReplaceAll(s, "<", "&lt;")
+	s = strings.ReplaceAll(s, ">", "&gt;")
+	s = strings.ReplaceAll(s, "\"", "&quot;")
+	s = strings.ReplaceAll(s, "'", "&apos;")
+	return s
+}

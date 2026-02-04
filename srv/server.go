@@ -181,6 +181,9 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/admin/approve-feature", s.RequireAdmin(s.HandleAPIApproveLearnedFeature))
 	mux.HandleFunc("POST /api/admin/reject-feature", s.RequireAdmin(s.HandleAPIRejectLearnedFeature))
 
+	// RSS Feed for starred items
+	mux.HandleFunc("GET /api/feed", s.HandleAPIFeed)
+
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
 	
