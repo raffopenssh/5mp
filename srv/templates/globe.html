@@ -374,6 +374,28 @@
             .feature-info-grid { grid-template-columns: 1fr; }
         }
         /* ===== End GPX Admin Panel Styles ===== */
+        
+        /* ===== Pinned GeoJSON Layers ===== */
+        .pin-toggle { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; margin-left: 6px; transition: all 0.2s; }
+        .pin-toggle:hover { background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.4); }
+        .pin-toggle.pinned { background: rgba(34,197,94,0.3); border-color: #22c55e; color: #22c55e; }
+        .pin-toggle svg { width: 12px; height: 12px; }
+        
+        .pinned-indicator { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 10px 16px; z-index: 300; font-size: 12px; color: #ccc; display: none; align-items: center; gap: 12px; max-width: 90vw; backdrop-filter: blur(8px); cursor: pointer; transition: all 0.2s; }
+        .pinned-indicator:hover { background: rgba(30,30,30,0.98); border-color: #22c55e; }
+        .pinned-indicator.active { display: flex; }
+        .pinned-indicator-icon { color: #22c55e; display: flex; align-items: center; }
+        .pinned-indicator-icon svg { width: 16px; height: 16px; }
+        .pinned-indicator-text { flex: 1; }
+        .pinned-indicator-items { display: flex; flex-wrap: wrap; gap: 8px; }
+        .pinned-item { background: rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 4px; font-size: 11px; display: flex; align-items: center; gap: 4px; }
+        .pinned-item.fire { border-left: 2px solid #ef4444; }
+        .pinned-item.settlement { border-left: 2px solid #fbbf24; }
+        .pinned-item.deforestation { border-left: 2px solid #a855f7; }
+        .pinned-item.road { border-left: 2px solid #60a5fa; }
+        .pinned-indicator-close { color: #666; font-size: 14px; padding: 2px 6px; }
+        .pinned-indicator-close:hover { color: #fff; }
+        /* ===== End Pinned GeoJSON Styles ===== */
          
          
         .map-toolbar { position: fixed; top: 10px; left: 10px; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; gap: 8px; z-index: 150; }
@@ -3306,6 +3328,7 @@
                     <div class="pa-popup-section" id="fire-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◈</span> Fire Activity</div>
+                            ${createPinToggle(paId, name, 'fire')}
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'fire', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
@@ -3318,6 +3341,7 @@
                     <div class="pa-popup-section" id="ghsl-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◻</span> Settlements</div>
+                            ${createPinToggle(paId, name, 'settlement')}
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'settlement', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
@@ -3330,6 +3354,7 @@
                     <div class="pa-popup-section" id="deforest-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">▲</span> Deforestation</div>
+                            ${createPinToggle(paId, name, 'deforestation')}
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'deforestation', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
@@ -3342,6 +3367,7 @@
                     <div class="pa-popup-section" id="road-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">═</span> Roads</div>
+                            ${createPinToggle(paId, name, 'road')}
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'road', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
@@ -5466,6 +5492,257 @@ ${starredItems.narratives.map(n => {
     
     // ========== ADMIN PANEL ==========
     
+    // ===== Pinned GeoJSON Layers =====
+    let pinnedLayers = {}; // { 'parkId_type': { parkId, parkName, type, features, layerId } }
+    
+    function getPinKey(parkId, type) {
+        return `${parkId}_${type}`;
+    }
+    
+    function isPinned(parkId, type) {
+        return !!pinnedLayers[getPinKey(parkId, type)];
+    }
+    
+    async function togglePinLayer(parkId, parkName, type, btn) {
+        const key = getPinKey(parkId, type);
+        
+        if (pinnedLayers[key]) {
+            // Unpin - remove layer
+            removePinnedLayer(key);
+            if (btn) btn.classList.remove('pinned');
+        } else {
+            // Pin - fetch and add layer
+            if (btn) btn.classList.add('pinned');
+            await addPinnedLayer(parkId, parkName, type);
+        }
+        
+        updatePinnedIndicator();
+        savePinnedToURL();
+    }
+    
+    async function addPinnedLayer(parkId, parkName, type) {
+        const key = getPinKey(parkId, type);
+        const layerId = `pinned-${key}`;
+        const sourceId = `pinned-source-${key}`;
+        
+        try {
+            // Map type to API feature_type
+            const featureType = {
+                'fire': 'fire_trajectory',
+                'settlement': 'settlement',
+                'deforestation': 'deforestation',
+                'road': 'road'
+            }[type] || type;
+            
+            const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&limit=500&pwd=${window.accessPwd || ''}`);
+            if (!response.ok) throw new Error('Failed to fetch features');
+            
+            const geojson = await response.json();
+            
+            if (!geojson.features || geojson.features.length === 0) {
+                showNotification(`No ${type} features found for ${parkName}`, 'warning');
+                return;
+            }
+            
+            // Add source and layer to map
+            if (map.getSource(sourceId)) map.removeSource(sourceId);
+            
+            map.addSource(sourceId, { type: 'geojson', data: geojson });
+            
+            // Style based on type
+            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa' };
+            const color = colors[type] || '#22c55e';
+            
+            // Check geometry type from first feature
+            const geomType = geojson.features[0]?.geometry?.type || 'Point';
+            
+            if (geomType === 'Point' || geomType === 'MultiPoint') {
+                map.addLayer({
+                    id: layerId,
+                    type: 'circle',
+                    source: sourceId,
+                    paint: {
+                        'circle-radius': 6,
+                        'circle-color': color,
+                        'circle-opacity': 0.8,
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#fff',
+                        'circle-stroke-opacity': 0.5
+                    }
+                });
+            } else if (geomType === 'LineString' || geomType === 'MultiLineString') {
+                map.addLayer({
+                    id: layerId,
+                    type: 'line',
+                    source: sourceId,
+                    paint: {
+                        'line-color': color,
+                        'line-width': 3,
+                        'line-opacity': 0.8
+                    }
+                });
+            } else {
+                map.addLayer({
+                    id: layerId,
+                    type: 'fill',
+                    source: sourceId,
+                    paint: {
+                        'fill-color': color,
+                        'fill-opacity': 0.4,
+                        'fill-outline-color': color
+                    }
+                });
+            }
+            
+            // Add hover effect
+            map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
+            map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
+            
+            // Add click handler for feature details
+            map.on('click', layerId, (e) => {
+                if (e.features && e.features.length > 0) {
+                    const props = e.features[0].properties;
+                    showPinnedFeaturePopup(props, e.lngLat, type, parkName);
+                }
+            });
+            
+            // Store reference
+            pinnedLayers[key] = {
+                parkId,
+                parkName,
+                type,
+                featureCount: geojson.features.length,
+                layerId,
+                sourceId
+            };
+            
+            showNotification(`Pinned ${geojson.features.length} ${type} features from ${parkName}`, 'success');
+            
+        } catch (error) {
+            console.error('Error adding pinned layer:', error);
+            showNotification(`Failed to load ${type} features`, 'error');
+        }
+    }
+    
+    function removePinnedLayer(key) {
+        const layer = pinnedLayers[key];
+        if (!layer) return;
+        
+        if (map.getLayer(layer.layerId)) map.removeLayer(layer.layerId);
+        if (map.getSource(layer.sourceId)) map.removeSource(layer.sourceId);
+        
+        delete pinnedLayers[key];
+    }
+    
+    function clearAllPinnedLayers() {
+        Object.keys(pinnedLayers).forEach(key => removePinnedLayer(key));
+        pinnedLayers = {};
+        updatePinnedIndicator();
+        savePinnedToURL();
+        
+        // Update all pin toggle buttons
+        document.querySelectorAll('.pin-toggle.pinned').forEach(btn => btn.classList.remove('pinned'));
+    }
+    
+    function updatePinnedIndicator() {
+        const indicator = document.getElementById('pinned-indicator');
+        const itemsContainer = document.getElementById('pinned-items');
+        const keys = Object.keys(pinnedLayers);
+        
+        if (keys.length === 0) {
+            indicator.classList.remove('active');
+            return;
+        }
+        
+        indicator.classList.add('active');
+        
+        const items = keys.map(key => {
+            const layer = pinnedLayers[key];
+            const count = layer.featureCount;
+            return `<span class="pinned-item ${layer.type}">${layer.parkName} ${layer.type} (${count})</span>`;
+        }).join('');
+        
+        itemsContainer.innerHTML = items;
+    }
+    
+    function showPinnedFeaturePopup(props, lngLat, type, parkName) {
+        const typeLabels = { fire: 'Fire Trajectory', settlement: 'Settlement', deforestation: 'Deforestation', road: 'Road' };
+        
+        let details = '';
+        if (type === 'fire' && props.outcome) {
+            details = `<div><strong>Outcome:</strong> ${props.outcome}</div>`;
+            if (props.fires_inside) details += `<div><strong>Fires Inside:</strong> ${props.fires_inside}</div>`;
+            if (props.days_inside) details += `<div><strong>Days:</strong> ${props.days_inside}</div>`;
+        } else if (type === 'settlement') {
+            if (props.population_est) details += `<div><strong>Population:</strong> ${formatNumber(props.population_est)}</div>`;
+            if (props.area_m2) details += `<div><strong>Area:</strong> ${(props.area_m2/1000000).toFixed(3)} km²</div>`;
+        } else if (type === 'deforestation') {
+            if (props.area_km2) details += `<div><strong>Area:</strong> ${props.area_km2.toFixed(2)} km²</div>`;
+            if (props.year) details += `<div><strong>Year:</strong> ${props.year}</div>`;
+            if (props.pattern_type) details += `<div><strong>Pattern:</strong> ${props.pattern_type}</div>`;
+        }
+        
+        const html = `
+            <div style="font-size:12px;">
+                <div style="font-weight:600;color:#22c55e;margin-bottom:6px;">${typeLabels[type] || type}</div>
+                <div style="color:#888;font-size:11px;margin-bottom:8px;">${parkName}</div>
+                ${details || '<div style="color:#666;">No additional details</div>'}
+            </div>
+        `;
+        
+        new maplibregl.Popup({ closeButton: true, maxWidth: '250px' })
+            .setLngLat(lngLat)
+            .setHTML(html)
+            .addTo(map);
+    }
+    
+    function savePinnedToURL() {
+        const url = new URL(window.location);
+        const keys = Object.keys(pinnedLayers);
+        
+        if (keys.length > 0) {
+            // Format: parkId:type,parkId:type
+            const pinned = keys.map(key => {
+                const layer = pinnedLayers[key];
+                return `${layer.parkId}:${layer.type}`;
+            }).join(',');
+            url.searchParams.set('pinned', pinned);
+        } else {
+            url.searchParams.delete('pinned');
+        }
+        
+        window.history.replaceState({}, '', url);
+    }
+    
+    function restorePinnedFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        const pinned = params.get('pinned');
+        
+        if (!pinned) return;
+        
+        pinned.split(',').forEach(item => {
+            const [parkId, type] = item.split(':');
+            if (parkId && type) {
+                // Find park name from keystones
+                const park = (window.keystoneAreas || []).find(p => p.id === parkId);
+                const parkName = park ? park.name : parkId;
+                addPinnedLayer(parkId, parkName, type);
+            }
+        });
+        
+        setTimeout(updatePinnedIndicator, 1000);
+    }
+    
+    function createPinToggle(parkId, parkName, type) {
+        const pinned = isPinned(parkId, type);
+        return `<button class="pin-toggle${pinned ? ' pinned' : ''}" onclick="event.stopPropagation(); togglePinLayer('${parkId}', '${escapeHtml(parkName)}', '${type}', this)" title="Pin ${type} to map">
+            <svg viewBox="0 0 24 24" fill="${pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            </svg>
+        </button>`;
+    }
+    // ===== End Pinned GeoJSON Layers =====
+    
     let adminSelectedItems = [];
     let adminCurrentTab = 'uploads';
     let adminDataCache = {};
@@ -6084,6 +6361,9 @@ ${starredItems.narratives.map(n => {
             reloadGridData();
             loadStats();
         }, 500);
+        
+        // Restore pinned layers from URL
+        setTimeout(restorePinnedFromURL, 1500);
     }
     
     // Initialize state restoration when map is ready
@@ -6095,6 +6375,18 @@ ${starredItems.narratives.map(n => {
     </script>
 
     <!-- Star Modal -->
+    <!-- Pinned GeoJSON Indicator -->
+    <div class="pinned-indicator" id="pinned-indicator" onclick="clearAllPinnedLayers()">
+        <div class="pinned-indicator-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        </div>
+        <div class="pinned-indicator-text">
+            <span>Currently Pinned:</span>
+            <div class="pinned-indicator-items" id="pinned-items"></div>
+        </div>
+        <span class="pinned-indicator-close" title="Click to clear all">&times;</span>
+    </div>
+
     <!-- GPX Admin Panel -->
     <div class="admin-panel" id="admin-panel">
         <div class="admin-panel-container">
