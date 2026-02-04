@@ -135,7 +135,7 @@
         /* Notification Button and Dropdown */
         .notification-btn { position: relative; }
         .notification-wrapper { position: relative; }
-        .notification-badge { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: badge-pulse 2s ease-out infinite; }
+        .notification-badge { position: absolute; top: 6px; right: 6px; min-width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: badge-pulse 2s ease-out infinite; }
         .star-count-badge { position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px; background: #fbbf24; border-radius: 8px; font-size: 10px; font-weight: 600; color: #000; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
         .star-count-badge.hidden { display: none; }
         .notification-badge.hidden { display: none; }
@@ -152,6 +152,18 @@
         .notification-item:hover { background: rgba(255,255,255,0.05); }
         .notification-item:last-child { border-bottom: none; }
         .notification-icon { width: 28px; height: 28px; background: rgba(34,197,94,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; }
+        .notification-icon.fire { background: rgba(239,68,68,0.2); color: #f87171; }
+        .notification-icon.fire-active { background: rgba(239,68,68,0.3); animation: fire-pulse 1.5s ease-in-out infinite; }
+        @keyframes fire-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 50% { box-shadow: 0 0 8px 4px rgba(239,68,68,0.2); } }
+        .fire-alert-box { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; padding: 8px; margin-bottom: 8px; }
+        .fire-alert-title { font-size: 10px; font-weight: 600; color: #f87171; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+        .fire-alert-group { font-size: 10px; color: #bbb; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .fire-alert-group:last-child { border-bottom: none; }
+        .fire-group-name { font-weight: 500; color: #fff; }
+        .fire-group-status { font-size: 9px; padding: 2px 6px; border-radius: 3px; }
+        .fire-group-status.active { background: rgba(239,68,68,0.2); color: #f87171; }
+        .fire-group-status.inside { background: rgba(251,191,36,0.2); color: #fbbf24; }
+        .notification-direction { font-size: 10px; color: #888; margin-left: 4px; }
         .notification-content { flex: 1; min-width: 0; }
         .notification-location { font-size: 13px; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .notification-details { font-size: 11px; color: #888; margin-top: 2px; }
@@ -2762,6 +2774,7 @@
 
         // Notification Dropdown functionality
         let latestActivities = [];
+        let fireAlerts = [];
         let activityMarker = null;
         let notificationDropdownOpen = false;
         let hasNewNotifications = true;
@@ -2777,63 +2790,146 @@
 
         async function loadNotifications() {
             try {
-                const res = await fetch('/api/activity');
-                if (!res.ok) throw new Error('Failed to load');
+                // Fetch both GPX activity and fire alerts in parallel
+                const [activityRes, fireRes] = await Promise.all([
+                    fetch('/api/activity'),
+                    fetch('/api/fire-alerts?limit=10')
+                ]);
                 
-                const data = await res.json();
-                latestActivities = (Array.isArray(data) ? data : (data.activities || [])).filter(a => a.lat && a.lon);
+                // Process GPX activity
+                if (activityRes.ok) {
+                    const data = await activityRes.json();
+                    latestActivities = (Array.isArray(data) ? data : (data.activities || [])).filter(a => a.lat && a.lon);
+                }
                 
-                // Use sample data if no real data with coordinates
-                if (latestActivities.length === 0) {
-                    latestActivities = sampleActivities;
+                // Process fire alerts
+                if (fireRes.ok) {
+                    fireAlerts = await fireRes.json();
+                    // Mark as fire alerts for rendering
+                    fireAlerts = fireAlerts.map(a => ({
+                        ...a,
+                        _type: 'fire',
+                        lat: a.latest_lat || a.centroid_lat,
+                        lon: a.latest_lon || a.centroid_lon
+                    }));
                 }
                 
                 updateNotificationList();
                 showNotificationBadge();
             } catch (err) {
                 console.error('Notifications load error:', err);
-                // Fall back to sample data on error
-                latestActivities = sampleActivities;
                 updateNotificationList();
-                showNotificationBadge();
             }
         }
+
 
         function updateNotificationList() {
             const listEl = document.getElementById('notification-list');
             
-            if (latestActivities.length === 0) {
+            // Merge fire alerts and GPX activity, fire alerts first (more urgent)
+            const allItems = [];
+            
+            // Add fire alerts first (sorted by urgency: active_inside > entered > left)
+            const sortOrder = { 'active_inside': 0, 'entered': 1, 'left': 2 };
+            const sortedFires = [...fireAlerts].sort((a, b) => 
+                (sortOrder[a.alert_type] || 3) - (sortOrder[b.alert_type] || 3)
+            );
+            sortedFires.forEach((alert, i) => {
+                allItems.push({ ...alert, _index: i, _source: 'fire' });
+            });
+            
+            // Add GPX activity
+            latestActivities.forEach((activity, i) => {
+                allItems.push({ ...activity, _index: i, _source: 'activity' });
+            });
+            
+            if (allItems.length === 0) {
                 listEl.innerHTML = '<div class="notification-empty">No recent activity</div>';
                 return;
             }
             
-            listEl.innerHTML = latestActivities.slice(0, 10).map((activity, index) => {
-                const location = activity.location || 'Unknown location';
-                const distance = activity.distance ? activity.distance.toFixed(1) + ' km' : '';
-                const date = activity.date || '';
-                const typeIcon = {'foot': '○', 'vehicle': '□', 'aircraft': '△'}[activity.type] || '◇';
-                
-                let details = '';
-                if (distance && date) details = `${distance} • ${date}`;
-                else if (distance) details = distance;
-                else if (date) details = date;
-                
-                const notifData = { index, location, type: activity.type, date, lat: activity.lat, lng: activity.lng };
-                
-                return `
-                    <div class="notification-item" onclick="handleNotificationClick(${index})">
-                        <div class="notification-icon">${typeIcon}</div>
-                        <div class="notification-content">
-                            <div class="notification-location">${escapeHtml(location)} ${createStarButton('notifications', notifData, 'small')}</div>
-                            <div class="notification-details">${details}</div>
+            listEl.innerHTML = allItems.slice(0, 12).map((item, displayIndex) => {
+                if (item._source === 'fire') {
+                    // Fire alert rendering
+                    const isActive = item.alert_type === 'active_inside' || item.alert_type === 'entered';
+                    const iconClass = isActive ? 'notification-icon fire fire-active' : 'notification-icon fire';
+                    const directionArrow = getDirectionArrow(item.movement_direction);
+                    
+                    return `
+                        <div class="notification-item" onclick="handleFireAlertClick(${item._index})">
+                            <div class="${iconClass}">🔥</div>
+                            <div class="notification-content">
+                                <div class="notification-location">${escapeHtml(item.park_name || item.park_id)} ${directionArrow}</div>
+                                <div class="notification-details">${escapeHtml(item.message || formatFireAlertMessage(item))}</div>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                } else {
+                    // GPX activity rendering
+                    const location = item.location || 'Unknown location';
+                    const distance = item.distance ? item.distance.toFixed(1) + ' km' : '';
+                    const date = item.date || '';
+                    const typeIcon = {'foot': '○', 'vehicle': '□', 'aircraft': '△'}[item.type] || '◇';
+                    
+                    let details = '';
+                    if (distance && date) details = `${distance} • ${date}`;
+                    else if (distance) details = distance;
+                    else if (date) details = date;
+                    
+                    const notifData = { index: item._index, location, type: item.type, date, lat: item.lat, lng: item.lon };
+                    
+                    return `
+                        <div class="notification-item" onclick="handleNotificationClick(${item._index})">
+                            <div class="notification-icon">${typeIcon}</div>
+                            <div class="notification-content">
+                                <div class="notification-location">${escapeHtml(location)} ${createStarButton('notifications', notifData, 'small')}</div>
+                                <div class="notification-details">${details}</div>
+                            </div>
+                        </div>
+                    `;
+                }
             }).join('');
+        }
+        
+        function getDirectionArrow(direction) {
+            if (!direction) return '';
+            const arrows = {
+                'north': '↑', 'northeast': '↗', 'east': '→', 'southeast': '↘',
+                'south': '↓', 'southwest': '↙', 'west': '←', 'northwest': '↖'
+            };
+            return `<span class="notification-direction">${arrows[direction.toLowerCase()] || ''}</span>`;
+        }
+        
+        function formatFireAlertMessage(alert) {
+            const days = alert.days_active || 1;
+            const fires = alert.fire_count || 0;
+            switch (alert.alert_type) {
+                case 'entered': return `Group ${alert.group_name} entered (${fires} fires)`;
+                case 'active_inside': return `Active ${days}d (${fires} fires)`;
+                case 'left': return `Group ${alert.group_name} left`;
+                default: return `${fires} fires detected`;
+            }
+        }
+        
+        function handleFireAlertClick(index) {
+            if (index >= 0 && index < fireAlerts.length) {
+                const alert = fireAlerts[index];
+                if (alert.lat && alert.lon) {
+                    zoomToActivityWithHighlight({
+                        lat: alert.lat,
+                        lon: alert.lon,
+                        type: 'fire',
+                        location: alert.park_name
+                    });
+                    closeNotificationDropdown();
+                }
+            }
         }
 
         function showNotificationBadge() {
-            if (hasNewNotifications && latestActivities.length > 0) {
+            const activeFireCount = fireAlerts.filter(a => a.alert_type === "active_inside" || a.alert_type === "entered").length;
+            const hasItems = latestActivities.length > 0 || activeFireCount > 0;
+            if (hasNewNotifications && hasItems) {
                 document.getElementById('notification-badge').classList.remove('hidden');
             }
         }
@@ -3462,6 +3558,14 @@
                 
                 const resp = await fetch(url);
                 const data = await resp.json();
+
+                // Also fetch real-time fire groups
+                let realtimeData = null;
+                try {
+                    const rtResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/fire-realtime?days=28`);
+                    if (rtResp.ok) realtimeData = await rtResp.json();
+                } catch (e) { console.log('Fire realtime not available'); }
+
                 
                 // Get date range label
                 const rangeLabel = dateFrom && dateTo ? 
@@ -3494,9 +3598,18 @@
                             text = text.substring(0, 117) + '...';
                         }
                         return `<div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px;"><span style="color: ${outcomeColor};">●</span> ${text}</div>`;
+                    // Render active fire groups alert
+                    const renderActiveGroups = () => {
+                        if (!realtimeData || realtimeData.groups_inside_count === 0) return "";
+                        const activeInside = realtimeData.groups.filter(g => g.is_inside && g.is_active);
+                        if (activeInside.length === 0) return "";
+                        return `<div class="fire-alert-box"><div class="fire-alert-title">🔥 Active Fire Groups Inside</div>${activeInside.map(g => `<div class="fire-alert-group"><span class="fire-group-name">${g.name}</span><span class="fire-group-status active inside">${g.days_active}d • ${g.fire_count} fires</span></div>`).join("")}</div>`;
+                    };
+
                     };
                     
                     el.innerHTML = `
+                        ${renderActiveGroups()}
                         <div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Fire detections (${rangeLabel})</span>
                             <span class="pa-popup-mini-stat-value">${formatNumber(data.total_fires || 0)}</span>
