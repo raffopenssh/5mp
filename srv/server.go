@@ -182,6 +182,10 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/parks/{id}/learned-stats", s.HandleAPILearnedFeatureStats)
 	mux.HandleFunc("POST /api/admin/approve-feature", s.RequireAdmin(s.HandleAPIApproveLearnedFeature))
 	mux.HandleFunc("POST /api/admin/reject-feature", s.RequireAdmin(s.HandleAPIRejectLearnedFeature))
+	mux.HandleFunc("POST /api/admin/bulk-approve", s.RequireAdmin(s.HandleAPIBulkApprove))
+	mux.HandleFunc("POST /api/admin/bulk-reject", s.RequireAdmin(s.HandleAPIBulkReject))
+	mux.HandleFunc("POST /api/admin/delete-upload", s.RequireAdmin(s.HandleAPIDeleteUpload))
+	mux.HandleFunc("POST /api/admin/hide-notification", s.RequireAdmin(s.HandleAPIHideNotification))
 
 	// RSS Feed for starred items
 	mux.HandleFunc("GET /api/feed", s.HandleAPIFeed)

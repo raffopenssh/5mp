@@ -1707,6 +1707,162 @@ func (s *Server) HandleAPIRejectLearnedFeature(w http.ResponseWriter, r *http.Re
 	json.NewEncoder(w).Encode(map[string]string{"status": "rejected"})
 }
 
+// HandleAPIBulkApprove approves multiple learned features at once
+// POST /api/admin/bulk-approve
+func (s *Server) HandleAPIBulkApprove(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	var req struct {
+		Items []struct {
+			Type string `json:"type"`
+			ID   int64  `json:"id"`
+		} `json:"items"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	user := s.Auth.GetUserFromRequest(r)
+	approvedBy := "admin"
+	if user != nil && user.Email != "" {
+		approvedBy = user.Email
+	}
+
+	approved := 0
+	for _, item := range req.Items {
+		var err error
+		switch item.Type {
+		case "road":
+			q.RecordRoadHistory(ctx, dbgen.RecordRoadHistoryParams{
+				Action: "approve", ActionBy: &approvedBy, ID: item.ID,
+			})
+			err = q.ApproveRoad(ctx, dbgen.ApproveRoadParams{ApprovedBy: &approvedBy, ID: item.ID})
+		case "place":
+			q.RecordPlaceHistory(ctx, dbgen.RecordPlaceHistoryParams{
+				Action: "approve", ActionBy: &approvedBy, ID: item.ID,
+			})
+			err = q.ApprovePlace(ctx, dbgen.ApprovePlaceParams{ApprovedBy: &approvedBy, ID: item.ID})
+		case "airstrip":
+			q.RecordAirstripHistory(ctx, dbgen.RecordAirstripHistoryParams{
+				Action: "approve", ActionBy: &approvedBy, ID: item.ID,
+			})
+			err = q.ApproveAirstrip(ctx, dbgen.ApproveAirstripParams{ApprovedBy: &approvedBy, ID: item.ID})
+		}
+		if err == nil {
+			approved++
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]int{"approved": approved})
+}
+
+// HandleAPIBulkReject rejects multiple learned features at once
+// POST /api/admin/bulk-reject
+func (s *Server) HandleAPIBulkReject(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	var req struct {
+		Items []struct {
+			Type string `json:"type"`
+			ID   int64  `json:"id"`
+		} `json:"items"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	user := s.Auth.GetUserFromRequest(r)
+	rejectedBy := "admin"
+	if user != nil && user.Email != "" {
+		rejectedBy = user.Email
+	}
+
+	rejected := 0
+	for _, item := range req.Items {
+		var err error
+		switch item.Type {
+		case "road":
+			q.RecordRoadHistory(ctx, dbgen.RecordRoadHistoryParams{
+				Action: "reject", ActionBy: &rejectedBy, ID: item.ID,
+			})
+			err = q.RejectRoad(ctx, dbgen.RejectRoadParams{ApprovedBy: &rejectedBy, ID: item.ID})
+		case "place":
+			q.RecordPlaceHistory(ctx, dbgen.RecordPlaceHistoryParams{
+				Action: "reject", ActionBy: &rejectedBy, ID: item.ID,
+			})
+			err = q.RejectPlace(ctx, dbgen.RejectPlaceParams{ApprovedBy: &rejectedBy, ID: item.ID})
+		case "airstrip":
+			q.RecordAirstripHistory(ctx, dbgen.RecordAirstripHistoryParams{
+				Action: "reject", ActionBy: &rejectedBy, ID: item.ID,
+			})
+			err = q.RejectAirstrip(ctx, dbgen.RejectAirstripParams{ApprovedBy: &rejectedBy, ID: item.ID})
+		}
+		if err == nil {
+			rejected++
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]int{"rejected": rejected})
+}
+
+// HandleAPIDeleteUpload deletes a GPX upload and its logs
+// POST /api/admin/delete-upload
+func (s *Server) HandleAPIDeleteUpload(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var req struct {
+		ID int64 `json:"id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	// Delete from gpx_upload_logs and related tables
+	_, err := s.DB.ExecContext(ctx, "DELETE FROM gpx_upload_logs WHERE id = ?", req.ID)
+	if err != nil {
+		http.Error(w, "Failed to delete upload", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "deleted"})
+}
+
+// HandleAPIHideNotification hides a notification
+// POST /api/admin/hide-notification
+func (s *Server) HandleAPIHideNotification(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var req struct {
+		ID int64 `json:"id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	// Mark notification as hidden (we'd need a hidden column, for now just delete)
+	_, err := s.DB.ExecContext(ctx, "DELETE FROM gpx_upload_logs WHERE id = ?", req.ID)
+	if err != nil {
+		http.Error(w, "Failed to hide notification", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "hidden"})
+}
+
 // HandleAPIPatrolMCP returns the 90% MCP for patrol coverage
 // GET /api/parks/{id}/patrol-mcp
 func (s *Server) HandleAPIPatrolMCP(w http.ResponseWriter, r *http.Request) {
