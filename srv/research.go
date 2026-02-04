@@ -126,11 +126,52 @@ func (s *Server) runResearchSync(ctx context.Context) {
 	}
 }
 
+// Country name translations for better search coverage
+var countryNameTranslations = map[string][]string{
+	"Democratic Republic of the Congo": {"République démocratique du Congo", "Congo-Kinshasa", "DRC", "RDC"},
+	"Republic of the Congo":            {"République du Congo", "Congo-Brazzaville"},
+	"Central African Republic":         {"République centrafricaine", "Centrafrique", "RCA"},
+	"Ivory Coast":                      {"Côte d'Ivoire"},
+	"Cameroon":                         {"Cameroun"},
+	"Senegal":                          {"Sénégal"},
+	"Chad":                             {"Tchad"},
+	"Niger":                            {"Niger"},
+	"Burkina Faso":                     {"Burkina Faso"},
+	"Mali":                             {"Mali"},
+	"Gabon":                            {"Gabon"},
+	"Equatorial Guinea":                {"Guinée équatoriale", "Guinea Ecuatorial"},
+	"Guinea":                           {"Guinée"},
+	"Guinea-Bissau":                    {"Guinée-Bissau", "Guiné-Bissau"},
+	"Mozambique":                       {"Moçambique"},
+	"Angola":                           {"Angola"},
+	"Rwanda":                           {"Rwanda"},
+	"Burundi":                          {"Burundi"},
+	"Tanzania":                         {"Tanzanie"},
+	"Kenya":                            {"Kenya"},
+	"Uganda":                           {"Uganda", "Ouganda"},
+	"Ethiopia":                         {"Éthiopie", "Etiópia"},
+	"South Africa":                     {"Afrique du Sud", "África do Sul", "Sudáfrica"},
+	"Namibia":                          {"Namibie", "Namíbia"},
+	"Botswana":                         {"Botswana"},
+	"Zimbabwe":                         {"Zimbabwe"},
+	"Zambia":                           {"Zambie", "Zâmbia"},
+	"Malawi":                           {"Malawi", "Malauí"},
+	"Madagascar":                       {"Madagascar"},
+}
+
 // fetchPublicationsForPA fetches research papers for a protected area.
 func (s *Server) fetchPublicationsForPA(ctx context.Context, paID, name, country string) (int, error) {
-	// Use quoted name for exact phrase matching, combined with conservation terms
-	// This ensures we get papers that actually mention the park name
+	// Build search queries with park name and country variants
+	// Use quoted name for exact phrase matching
 	quotedName := `"` + name + `"`
+	
+	// Also try with country name in different languages
+	countryVariants := []string{country}
+	if alts, ok := countryNameTranslations[country]; ok {
+		countryVariants = append(countryVariants, alts...)
+	}
+	
+	// Build search query: park name OR (park name + country variants)
 	searchQuery := url.QueryEscape(quotedName)
 	apiURL := fmt.Sprintf(
 		"https://api.openalex.org/works?search=%s&filter=type:article&per_page=50&sort=cited_by_count:desc",

@@ -339,7 +339,8 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
             <h1>5MP.globe</h1>
         </div>
         <div class="subtitle">Conservation Tracker</div>
-        <p>This is a testing version.<br>Please enter the access password to continue.</p>
+        <p>Real-time fire detection, deforestation monitoring, and patrol tracking for 162 African keystone protected areas. Generate custom reports for regional managers, governments, and donors.</p>
+        <p style="margin-top:12px;font-size:12px;color:#666;"><strong style="color:#fbbf24;">Alpha Version</strong> — Enter access password to continue</p>
         <form method="GET">
             <div class="form-group">
                 <input type="password" name="pwd" placeholder="Enter password" autofocus required>
