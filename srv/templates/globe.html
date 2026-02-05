@@ -1325,6 +1325,7 @@
                 id: "areas-fire-glow",
                 type: "line",
                 source: "areas",
+                layout: { visibility: "none" },  // Hidden for alpha - re-enable later
                 filter: ["in", ["get", "id"], ["literal", []]],  // Initially empty, updated by loadFireActiveParks
                 paint: {
                     "line-color": "#ef4444",
