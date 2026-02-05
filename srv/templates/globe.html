@@ -182,6 +182,7 @@
         .notification-icon.fire { background: rgba(239,68,68,0.2); color: #f87171; }
         .notification-icon.fire-active { background: rgba(239,68,68,0.3); animation: fire-pulse 1.5s ease-in-out infinite; }
         @keyframes fire-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 50% { box-shadow: 0 0 8px 4px rgba(239,68,68,0.2); } }
+        .fire-active-park { animation: park-fire-pulse 2s ease-in-out infinite; }
         .fire-alert-box { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; padding: 8px; margin-bottom: 8px; }
         .fire-alert-title { font-size: 10px; font-weight: 600; color: #f87171; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
         .fire-alert-group { font-size: 10px; color: #bbb; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
@@ -1307,6 +1308,20 @@
                 paint: {
                     'line-color': '#22c55e',
                     'line-width': 1
+                }
+            });
+
+            // Fire-active parks layer - red glow for parks with active fire groups
+            map.addLayer({
+                id: "areas-fire-glow",
+                type: "line",
+                source: "areas",
+                filter: ["in", ["get", "id"], ["literal", []]],  // Initially empty, updated by loadFireActiveParks
+                paint: {
+                    "line-color": "#ef4444",
+                    "line-width": 4,
+                    "line-opacity": 0.8,
+                    "line-blur": 2
                 }
             });
 
@@ -2810,6 +2825,36 @@
             { location: 'Great Barrier Reef', distance: 5.3, date: 'Jan 26', type: 'vehicle', lat: -18.2871, lon: 147.6992 }
         ];
 
+
+        // Track parks with active fire groups inside
+        let fireActiveParks = new Set();
+
+        async function loadFireActiveParks() {
+            try {
+                const res = await fetch('/api/fire-alerts?limit=100');
+                if (!res.ok) return;
+                const alerts = await res.json();
+
+                // Get parks with active inside groups
+                fireActiveParks.clear();
+                alerts.forEach(a => {
+                    if ((a.alert_type === 'active_inside' || a.alert_type === 'entered') && a.park_id) {
+                        fireActiveParks.add(a.park_id);
+                    }
+                });
+
+                // Update the map layer filter
+                if (map && map.getLayer && map.getLayer('areas-fire-glow')) {
+                    const parkIds = Array.from(fireActiveParks);
+                    map.setFilter('areas-fire-glow', ['in', ['get', 'id'], ['literal', parkIds]]);
+                }
+
+                console.log('Fire-active parks:', fireActiveParks.size);
+            } catch (err) {
+                console.error('Failed to load fire-active parks:', err);
+            }
+        }
+
         async function loadNotifications() {
             try {
                 // Fetch both GPX activity and fire alerts in parallel
@@ -3089,6 +3134,7 @@
         map.on('load', function() {
             // Small delay to let other things initialize
             setTimeout(loadNotifications, 1000);
+            setTimeout(loadFireActiveParks, 1500);
         });
 
         

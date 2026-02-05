@@ -260,10 +260,11 @@ Current coverage:
 
 ## Integration Checklist for UI
 
-- [ ] Add fire alerts to notification dropdown (merge with GPX activity)
-- [ ] Show fire group alerts with 🔥 icon and movement direction
-- [ ] Badge showing count of active fire groups inside parks
-- [ ] Click alert → zoom to location + highlight grid cell
-- [ ] Park popup shows fire-realtime data when available
+- [x] Add fire alerts to notification dropdown (merge with GPX activity)
+- [x] Show fire group alerts with 🔥 icon and movement direction
+- [x] Badge showing count of active fire groups inside parks
+- [x] Click alert → zoom to location + highlight grid cell
+- [x] Park popup shows fire-realtime data when available
 - [ ] Fire group trajectories on map (optional visualization)
+- [ ] Visual indicator on map for parks with active inside-groups (e.g., red glow on park boundary)
 
