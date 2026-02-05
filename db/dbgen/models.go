@@ -424,6 +424,24 @@ type ParkPatrolMcp struct {
 	UpdatedAt    *time.Time `json:"updated_at"`
 }
 
+type ParkSettlement struct {
+	ID                 int64      `json:"id"`
+	ParkID             string     `json:"park_id"`
+	Lat                float64    `json:"lat"`
+	Lon                float64    `json:"lon"`
+	AreaM2             *float64   `json:"area_m2"`
+	PopulationEst      *int64     `json:"population_est"`
+	HouseholdsEst      *int64     `json:"households_est"`
+	NearestPlace       *string    `json:"nearest_place"`
+	DistanceToPlaceKm  *float64   `json:"distance_to_place_km"`
+	DirectionFromPlace *string    `json:"direction_from_place"`
+	SettlementType     *string    `json:"settlement_type"`
+	InBuffer           *int64     `json:"in_buffer"`
+	TileRow            *int64     `json:"tile_row"`
+	TileCol            *int64     `json:"tile_col"`
+	DetectedAt         *time.Time `json:"detected_at"`
+}
+
 type ParkVehicleStat struct {
 	ID              int64      `json:"id"`
 	ParkID          string     `json:"park_id"`
@@ -442,6 +460,39 @@ type Session struct {
 	UserID    string    `json:"user_id"`
 	CreatedAt time.Time `json:"created_at"`
 	ExpiresAt time.Time `json:"expires_at"`
+}
+
+type SettlementIntensity struct {
+	ID                   int64      `json:"id"`
+	SettlementID         int64      `json:"settlement_id"`
+	ParkID               string     `json:"park_id"`
+	Year                 int64      `json:"year"`
+	Month                *int64     `json:"month"`
+	TotalVisits          int64      `json:"total_visits"`
+	TotalDurationMinutes float64    `json:"total_duration_minutes"`
+	UniqueUploads        int64      `json:"unique_uploads"`
+	FootVisits           *int64     `json:"foot_visits"`
+	VehicleVisits        *int64     `json:"vehicle_visits"`
+	AircraftVisits       *int64     `json:"aircraft_visits"`
+	IsLikelyBase         *int64     `json:"is_likely_base"`
+	UpdatedAt            *time.Time `json:"updated_at"`
+}
+
+type SettlementVisit struct {
+	ID              int64      `json:"id"`
+	SettlementID    int64      `json:"settlement_id"`
+	UploadID        *int64     `json:"upload_id"`
+	ParkID          string     `json:"park_id"`
+	VisitDate       time.Time  `json:"visit_date"`
+	VisitStart      *time.Time `json:"visit_start"`
+	VisitEnd        *time.Time `json:"visit_end"`
+	DurationMinutes float64    `json:"duration_minutes"`
+	MovementType    string     `json:"movement_type"`
+	ArrivingFrom    *string    `json:"arriving_from"`
+	DepartingTo     *string    `json:"departing_to"`
+	Year            int64      `json:"year"`
+	Month           int64      `json:"month"`
+	CreatedAt       *time.Time `json:"created_at"`
 }
 
 type SubcellVisit struct {

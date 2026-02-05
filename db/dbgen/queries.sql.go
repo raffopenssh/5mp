@@ -83,6 +83,62 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) er
 	return err
 }
 
+const createSettlementVisit = `-- name: CreateSettlementVisit :one
+INSERT INTO settlement_visits (settlement_id, upload_id, park_id, visit_date, visit_start, visit_end, duration_minutes, movement_type, arriving_from, departing_to, year, month)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+RETURNING id, settlement_id, upload_id, park_id, visit_date, visit_start, visit_end, duration_minutes, movement_type, arriving_from, departing_to, year, month, created_at
+`
+
+type CreateSettlementVisitParams struct {
+	SettlementID    int64      `json:"settlement_id"`
+	UploadID        *int64     `json:"upload_id"`
+	ParkID          string     `json:"park_id"`
+	VisitDate       time.Time  `json:"visit_date"`
+	VisitStart      *time.Time `json:"visit_start"`
+	VisitEnd        *time.Time `json:"visit_end"`
+	DurationMinutes float64    `json:"duration_minutes"`
+	MovementType    string     `json:"movement_type"`
+	ArrivingFrom    *string    `json:"arriving_from"`
+	DepartingTo     *string    `json:"departing_to"`
+	Year            int64      `json:"year"`
+	Month           int64      `json:"month"`
+}
+
+func (q *Queries) CreateSettlementVisit(ctx context.Context, arg CreateSettlementVisitParams) (SettlementVisit, error) {
+	row := q.db.QueryRowContext(ctx, createSettlementVisit,
+		arg.SettlementID,
+		arg.UploadID,
+		arg.ParkID,
+		arg.VisitDate,
+		arg.VisitStart,
+		arg.VisitEnd,
+		arg.DurationMinutes,
+		arg.MovementType,
+		arg.ArrivingFrom,
+		arg.DepartingTo,
+		arg.Year,
+		arg.Month,
+	)
+	var i SettlementVisit
+	err := row.Scan(
+		&i.ID,
+		&i.SettlementID,
+		&i.UploadID,
+		&i.ParkID,
+		&i.VisitDate,
+		&i.VisitStart,
+		&i.VisitEnd,
+		&i.DurationMinutes,
+		&i.MovementType,
+		&i.ArrivingFrom,
+		&i.DepartingTo,
+		&i.Year,
+		&i.Month,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createTrackPoint = `-- name: CreateTrackPoint :exec
 INSERT INTO track_points (upload_id, lat, lon, elevation, timestamp, grid_cell_id)
 VALUES (?, ?, ?, ?, ?, ?)
@@ -162,6 +218,45 @@ DELETE FROM sessions WHERE user_id = ?
 func (q *Queries) DeleteUserSessions(ctx context.Context, userID string) error {
 	_, err := q.db.ExecContext(ctx, deleteUserSessions, userID)
 	return err
+}
+
+const findNearestSettlement = `-- name: FindNearestSettlement :one
+SELECT id, park_id, lat, lon, nearest_place,
+       ((?1 - lat) * (?1 - lat) + (?2 - lon) * (?2 - lon)) as dist_sq
+FROM park_settlements
+WHERE park_id = ?3
+  AND ABS(lat - ?1) < 0.01 AND ABS(lon - ?2) < 0.01
+ORDER BY dist_sq
+LIMIT 1
+`
+
+type FindNearestSettlementParams struct {
+	Lat    float64 `json:"lat"`
+	Lon    float64 `json:"lon"`
+	ParkID string  `json:"park_id"`
+}
+
+type FindNearestSettlementRow struct {
+	ID           int64       `json:"id"`
+	ParkID       string      `json:"park_id"`
+	Lat          float64     `json:"lat"`
+	Lon          float64     `json:"lon"`
+	NearestPlace *string     `json:"nearest_place"`
+	DistSq       interface{} `json:"dist_sq"`
+}
+
+func (q *Queries) FindNearestSettlement(ctx context.Context, arg FindNearestSettlementParams) (FindNearestSettlementRow, error) {
+	row := q.db.QueryRowContext(ctx, findNearestSettlement, arg.Lat, arg.Lon, arg.ParkID)
+	var i FindNearestSettlementRow
+	err := row.Scan(
+		&i.ID,
+		&i.ParkID,
+		&i.Lat,
+		&i.Lon,
+		&i.NearestPlace,
+		&i.DistSq,
+	)
+	return i, err
 }
 
 const getAllParkDocuments = `-- name: GetAllParkDocuments :many
@@ -670,6 +765,75 @@ func (q *Queries) GetOrCreateGridCell(ctx context.Context, arg GetOrCreateGridCe
 	return i, err
 }
 
+const getParkBases = `-- name: GetParkBases :many
+SELECT si.id, si.settlement_id, si.park_id, si.year, si.month, si.total_visits, si.total_duration_minutes, si.unique_uploads, si.foot_visits, si.vehicle_visits, si.aircraft_visits, si.is_likely_base, si.updated_at, ps.lat, ps.lon, ps.nearest_place, ps.area_m2
+FROM settlement_intensity si
+JOIN park_settlements ps ON si.settlement_id = ps.id
+WHERE si.park_id = ? AND si.is_likely_base = 1
+ORDER BY si.total_duration_minutes DESC
+`
+
+type GetParkBasesRow struct {
+	ID                   int64      `json:"id"`
+	SettlementID         int64      `json:"settlement_id"`
+	ParkID               string     `json:"park_id"`
+	Year                 int64      `json:"year"`
+	Month                *int64     `json:"month"`
+	TotalVisits          int64      `json:"total_visits"`
+	TotalDurationMinutes float64    `json:"total_duration_minutes"`
+	UniqueUploads        int64      `json:"unique_uploads"`
+	FootVisits           *int64     `json:"foot_visits"`
+	VehicleVisits        *int64     `json:"vehicle_visits"`
+	AircraftVisits       *int64     `json:"aircraft_visits"`
+	IsLikelyBase         *int64     `json:"is_likely_base"`
+	UpdatedAt            *time.Time `json:"updated_at"`
+	Lat                  float64    `json:"lat"`
+	Lon                  float64    `json:"lon"`
+	NearestPlace         *string    `json:"nearest_place"`
+	AreaM2               *float64   `json:"area_m2"`
+}
+
+func (q *Queries) GetParkBases(ctx context.Context, parkID string) ([]GetParkBasesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getParkBases, parkID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetParkBasesRow{}
+	for rows.Next() {
+		var i GetParkBasesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.SettlementID,
+			&i.ParkID,
+			&i.Year,
+			&i.Month,
+			&i.TotalVisits,
+			&i.TotalDurationMinutes,
+			&i.UniqueUploads,
+			&i.FootVisits,
+			&i.VehicleVisits,
+			&i.AircraftVisits,
+			&i.IsLikelyBase,
+			&i.UpdatedAt,
+			&i.Lat,
+			&i.Lon,
+			&i.NearestPlace,
+			&i.AreaM2,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getParkChecklistItems = `-- name: GetParkChecklistItems :many
 
 SELECT id, pa_id, item_id, status, notes, document_url, updated_by, updated_at FROM park_checklist WHERE pa_id = ? ORDER BY item_id
@@ -829,6 +993,191 @@ func (q *Queries) GetSession(ctx context.Context, id string) (GetSessionRow, err
 		&i.Role,
 	)
 	return i, err
+}
+
+const getSettlementById = `-- name: GetSettlementById :one
+SELECT id, park_id, lat, lon, area_m2, population_est, households_est, nearest_place, distance_to_place_km, direction_from_place, settlement_type, in_buffer, tile_row, tile_col, detected_at FROM park_settlements WHERE id = ?
+`
+
+func (q *Queries) GetSettlementById(ctx context.Context, id int64) (ParkSettlement, error) {
+	row := q.db.QueryRowContext(ctx, getSettlementById, id)
+	var i ParkSettlement
+	err := row.Scan(
+		&i.ID,
+		&i.ParkID,
+		&i.Lat,
+		&i.Lon,
+		&i.AreaM2,
+		&i.PopulationEst,
+		&i.HouseholdsEst,
+		&i.NearestPlace,
+		&i.DistanceToPlaceKm,
+		&i.DirectionFromPlace,
+		&i.SettlementType,
+		&i.InBuffer,
+		&i.TileRow,
+		&i.TileCol,
+		&i.DetectedAt,
+	)
+	return i, err
+}
+
+const getSettlementIntensityByPark = `-- name: GetSettlementIntensityByPark :many
+SELECT si.id, si.settlement_id, si.park_id, si.year, si.month, si.total_visits, si.total_duration_minutes, si.unique_uploads, si.foot_visits, si.vehicle_visits, si.aircraft_visits, si.is_likely_base, si.updated_at, ps.lat, ps.lon, ps.nearest_place, ps.area_m2, ps.population_est
+FROM settlement_intensity si
+JOIN park_settlements ps ON si.settlement_id = ps.id
+WHERE si.park_id = ? AND si.year >= ? AND si.year <= ?
+ORDER BY si.total_duration_minutes DESC
+`
+
+type GetSettlementIntensityByParkParams struct {
+	ParkID string `json:"park_id"`
+	Year   int64  `json:"year"`
+	Year_2 int64  `json:"year_2"`
+}
+
+type GetSettlementIntensityByParkRow struct {
+	ID                   int64      `json:"id"`
+	SettlementID         int64      `json:"settlement_id"`
+	ParkID               string     `json:"park_id"`
+	Year                 int64      `json:"year"`
+	Month                *int64     `json:"month"`
+	TotalVisits          int64      `json:"total_visits"`
+	TotalDurationMinutes float64    `json:"total_duration_minutes"`
+	UniqueUploads        int64      `json:"unique_uploads"`
+	FootVisits           *int64     `json:"foot_visits"`
+	VehicleVisits        *int64     `json:"vehicle_visits"`
+	AircraftVisits       *int64     `json:"aircraft_visits"`
+	IsLikelyBase         *int64     `json:"is_likely_base"`
+	UpdatedAt            *time.Time `json:"updated_at"`
+	Lat                  float64    `json:"lat"`
+	Lon                  float64    `json:"lon"`
+	NearestPlace         *string    `json:"nearest_place"`
+	AreaM2               *float64   `json:"area_m2"`
+	PopulationEst        *int64     `json:"population_est"`
+}
+
+func (q *Queries) GetSettlementIntensityByPark(ctx context.Context, arg GetSettlementIntensityByParkParams) ([]GetSettlementIntensityByParkRow, error) {
+	rows, err := q.db.QueryContext(ctx, getSettlementIntensityByPark, arg.ParkID, arg.Year, arg.Year_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetSettlementIntensityByParkRow{}
+	for rows.Next() {
+		var i GetSettlementIntensityByParkRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.SettlementID,
+			&i.ParkID,
+			&i.Year,
+			&i.Month,
+			&i.TotalVisits,
+			&i.TotalDurationMinutes,
+			&i.UniqueUploads,
+			&i.FootVisits,
+			&i.VehicleVisits,
+			&i.AircraftVisits,
+			&i.IsLikelyBase,
+			&i.UpdatedAt,
+			&i.Lat,
+			&i.Lon,
+			&i.NearestPlace,
+			&i.AreaM2,
+			&i.PopulationEst,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSettlementVisitsByPark = `-- name: GetSettlementVisitsByPark :many
+SELECT sv.id, sv.settlement_id, sv.upload_id, sv.park_id, sv.visit_date, sv.visit_start, sv.visit_end, sv.duration_minutes, sv.movement_type, sv.arriving_from, sv.departing_to, sv.year, sv.month, sv.created_at, ps.lat, ps.lon, ps.nearest_place
+FROM settlement_visits sv
+JOIN park_settlements ps ON sv.settlement_id = ps.id
+WHERE sv.park_id = ? AND sv.year = ? AND (sv.month = ? OR ? IS NULL)
+ORDER BY sv.visit_date DESC
+`
+
+type GetSettlementVisitsByParkParams struct {
+	ParkID  string      `json:"park_id"`
+	Year    int64       `json:"year"`
+	Month   int64       `json:"month"`
+	Column4 interface{} `json:"column_4"`
+}
+
+type GetSettlementVisitsByParkRow struct {
+	ID              int64      `json:"id"`
+	SettlementID    int64      `json:"settlement_id"`
+	UploadID        *int64     `json:"upload_id"`
+	ParkID          string     `json:"park_id"`
+	VisitDate       time.Time  `json:"visit_date"`
+	VisitStart      *time.Time `json:"visit_start"`
+	VisitEnd        *time.Time `json:"visit_end"`
+	DurationMinutes float64    `json:"duration_minutes"`
+	MovementType    string     `json:"movement_type"`
+	ArrivingFrom    *string    `json:"arriving_from"`
+	DepartingTo     *string    `json:"departing_to"`
+	Year            int64      `json:"year"`
+	Month           int64      `json:"month"`
+	CreatedAt       *time.Time `json:"created_at"`
+	Lat             float64    `json:"lat"`
+	Lon             float64    `json:"lon"`
+	NearestPlace    *string    `json:"nearest_place"`
+}
+
+func (q *Queries) GetSettlementVisitsByPark(ctx context.Context, arg GetSettlementVisitsByParkParams) ([]GetSettlementVisitsByParkRow, error) {
+	rows, err := q.db.QueryContext(ctx, getSettlementVisitsByPark,
+		arg.ParkID,
+		arg.Year,
+		arg.Month,
+		arg.Column4,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetSettlementVisitsByParkRow{}
+	for rows.Next() {
+		var i GetSettlementVisitsByParkRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.SettlementID,
+			&i.UploadID,
+			&i.ParkID,
+			&i.VisitDate,
+			&i.VisitStart,
+			&i.VisitEnd,
+			&i.DurationMinutes,
+			&i.MovementType,
+			&i.ArrivingFrom,
+			&i.DepartingTo,
+			&i.Year,
+			&i.Month,
+			&i.CreatedAt,
+			&i.Lat,
+			&i.Lon,
+			&i.NearestPlace,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getSubcellCoverageByDateRange = `-- name: GetSubcellCoverageByDateRange :one
@@ -1460,6 +1809,51 @@ func (q *Queries) UpsertEffortData(ctx context.Context, arg UpsertEffortDataPara
 		arg.TotalPoints,
 		arg.UniqueUploads,
 		arg.ProtectedAreaIds,
+	)
+	return err
+}
+
+const upsertSettlementIntensity = `-- name: UpsertSettlementIntensity :exec
+INSERT INTO settlement_intensity (settlement_id, park_id, year, month, total_visits, total_duration_minutes, unique_uploads, foot_visits, vehicle_visits, aircraft_visits, is_likely_base)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(settlement_id, year, month) DO UPDATE SET
+    total_visits = total_visits + excluded.total_visits,
+    total_duration_minutes = total_duration_minutes + excluded.total_duration_minutes,
+    unique_uploads = unique_uploads + 1,
+    foot_visits = foot_visits + excluded.foot_visits,
+    vehicle_visits = vehicle_visits + excluded.vehicle_visits,
+    aircraft_visits = aircraft_visits + excluded.aircraft_visits,
+    is_likely_base = CASE WHEN total_visits + excluded.total_visits >= 10 THEN 1 ELSE 0 END,
+    updated_at = CURRENT_TIMESTAMP
+`
+
+type UpsertSettlementIntensityParams struct {
+	SettlementID         int64   `json:"settlement_id"`
+	ParkID               string  `json:"park_id"`
+	Year                 int64   `json:"year"`
+	Month                *int64  `json:"month"`
+	TotalVisits          int64   `json:"total_visits"`
+	TotalDurationMinutes float64 `json:"total_duration_minutes"`
+	UniqueUploads        int64   `json:"unique_uploads"`
+	FootVisits           *int64  `json:"foot_visits"`
+	VehicleVisits        *int64  `json:"vehicle_visits"`
+	AircraftVisits       *int64  `json:"aircraft_visits"`
+	IsLikelyBase         *int64  `json:"is_likely_base"`
+}
+
+func (q *Queries) UpsertSettlementIntensity(ctx context.Context, arg UpsertSettlementIntensityParams) error {
+	_, err := q.db.ExecContext(ctx, upsertSettlementIntensity,
+		arg.SettlementID,
+		arg.ParkID,
+		arg.Year,
+		arg.Month,
+		arg.TotalVisits,
+		arg.TotalDurationMinutes,
+		arg.UniqueUploads,
+		arg.FootVisits,
+		arg.VehicleVisits,
+		arg.AircraftVisits,
+		arg.IsLikelyBase,
 	)
 	return err
 }

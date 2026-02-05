@@ -53,3 +53,26 @@ CREATE INDEX IF NOT EXISTS idx_fg_bbox ON feature_geometries(bbox_minx, bbox_min
 --   bbox_geojson TEXT
 --   start_date TEXT
 --   end_date TEXT
+
+-- Park settlements table (may already exist from data import)
+CREATE TABLE IF NOT EXISTS park_settlements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    park_id TEXT NOT NULL,
+    lat REAL NOT NULL,
+    lon REAL NOT NULL,
+    area_m2 REAL DEFAULT 0,
+    population_est INTEGER DEFAULT 0,
+    households_est INTEGER DEFAULT 0,
+    nearest_place TEXT,
+    distance_to_place_km REAL,
+    direction_from_place TEXT,
+    settlement_type TEXT CHECK(settlement_type IN ('temporary', 'permanent')),
+    in_buffer INTEGER DEFAULT 0,
+    tile_row INTEGER,
+    tile_col INTEGER,
+    detected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(park_id, lat, lon)
+);
+
+CREATE INDEX IF NOT EXISTS idx_settlements_park ON park_settlements(park_id);
+CREATE INDEX IF NOT EXISTS idx_settlements_location ON park_settlements(lat, lon);

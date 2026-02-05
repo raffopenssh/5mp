@@ -46,6 +46,18 @@ type UploadValidationSummary struct {
 	ExcludedSegments  int      `json:"excluded_segments"`
 	Warnings          []string `json:"warnings,omitempty"`
 	Errors            []string `json:"errors,omitempty"`
+	
+	// GPX Message statistics
+	Messages          *MessageSummary `json:"messages,omitempty"`
+}
+
+// MessageSummary provides statistics about classified GPX messages.
+type MessageSummary struct {
+	TotalMessages   int            `json:"total_messages"`
+	ByCategory      map[string]int `json:"by_category"`
+	EmergencyCount  int            `json:"emergency_count"`
+	WildlifeCount   int            `json:"wildlife_count"`
+	PoacherCount    int            `json:"poacher_count"`
 }
 
 // SegmentSummary represents a processed segment in the upload response.
@@ -502,6 +514,13 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		// Don't fail the whole upload - learning and basic data is more important
 	}
 
+	// Track settlement visits (non-fatal)
+	if parkID != nil {
+		if err := s.trackSettlementVisits(ctx, q, segments, uploadID, *parkID); err != nil {
+			slog.Warn("failed to track settlement visits", "uploadID", uploadID, "error", err)
+		}
+	}
+
 	return nil
 }
 
@@ -734,8 +753,11 @@ func subcellIDForPoint(lat, lon float64) string {
 // Uses the actual point timestamps for day-level granularity
 func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segments []gpx.Segment, defaultYear, defaultMonth int64) error {
 	// Track visited subcells per grid cell per day
-	// Key: "gridCellID:subcellID:date" -> true
-	visitedSubcells := make(map[string]bool)
+	// Key: "gridCellID:subcellID:date" -> {lat, lon}
+	type subcellInfo struct {
+		lat, lon float64
+	}
+	visitedSubcells := make(map[string]subcellInfo)
 	
 	defaultDate := time.Date(int(defaultYear), time.Month(defaultMonth), 1, 0, 0, 0, 0, time.UTC)
 	
@@ -751,7 +773,37 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 			}
 			
 			key := fmt.Sprintf("%s:%s:%s", gridCellID, subcellID, visitDate.Format("2006-01-02"))
-			visitedSubcells[key] = true
+			visitedSubcells[key] = subcellInfo{lat: pt.Lat, lon: pt.Lon}
+		}
+	}
+	
+	// Collect unique grid cells that need to be created
+	gridCellsNeeded := make(map[string]subcellInfo)
+	for key, info := range visitedSubcells {
+		parts := strings.Split(key, ":")
+		if len(parts) < 1 {
+			continue
+		}
+		gridCellID := parts[0]
+		gridCellsNeeded[gridCellID] = info
+	}
+	
+	// Ensure all grid cells exist before inserting subcell visits
+	for gridCellID, info := range gridCellsNeeded {
+		latCenter, lonCenter := gridCellCenter(info.lat, info.lon)
+		latMin, latMax, lonMin, lonMax := gridCellBounds(info.lat, info.lon)
+		
+		_, err := q.GetOrCreateGridCell(ctx, dbgen.GetOrCreateGridCellParams{
+			ID:        gridCellID,
+			LatCenter: latCenter,
+			LonCenter: lonCenter,
+			LatMin:    latMin,
+			LatMax:    latMax,
+			LonMin:    lonMin,
+			LonMax:    lonMax,
+		})
+		if err != nil {
+			return fmt.Errorf("ensure grid cell %s exists: %w", gridCellID, err)
 		}
 	}
 	
@@ -899,4 +951,154 @@ func strPtr(s string) *string {
 		return nil
 	}
 	return &s
+}
+
+// trackSettlementVisits detects when GPS tracks pass through or near settlements
+// and records the visit duration for intensity mapping
+func (s *Server) trackSettlementVisits(ctx context.Context, q *dbgen.Queries, segments []gpx.Segment, uploadID int64, parkID string) error {
+	// Settlement detection radius in degrees (~500m at equator)
+	const settlementRadius = 0.005
+	
+	// Minimum duration to count as a "visit" (5 minutes)
+	const minVisitMinutes = 5.0
+	
+	// Track visits by settlement ID to aggregate
+	type visit struct {
+		SettlementID  int64
+		StartTime     *time.Time
+		EndTime       *time.Time
+		MovementType  string
+		Points        int
+	}
+	
+	visits := make(map[int64]*visit)
+	
+	for _, seg := range segments {
+		if len(seg.Points) < 2 {
+			continue
+		}
+		
+		movementType := seg.MovementType
+		if movementType == "" {
+			movementType = "foot"
+		}
+		
+		for _, pt := range seg.Points {
+			// Find nearest settlement
+			settlement, err := q.FindNearestSettlement(ctx, dbgen.FindNearestSettlementParams{
+				Lat:    pt.Lat,
+				Lon:    pt.Lon,
+				ParkID: parkID,
+			})
+			if err != nil {
+				continue // No settlement nearby
+			}
+			
+			// Check if within radius
+			latDiff := pt.Lat - settlement.Lat
+			lonDiff := pt.Lon - settlement.Lon
+			distSq := latDiff*latDiff + lonDiff*lonDiff
+			
+			if distSq > settlementRadius*settlementRadius {
+				continue // Not close enough
+			}
+			
+			// Track visit
+			v, ok := visits[settlement.ID]
+			if !ok {
+				v = &visit{
+					SettlementID: settlement.ID,
+					MovementType: movementType,
+				}
+				visits[settlement.ID] = v
+			}
+			
+			if pt.Time != nil {
+				if v.StartTime == nil || pt.Time.Before(*v.StartTime) {
+					v.StartTime = pt.Time
+				}
+				if v.EndTime == nil || pt.Time.After(*v.EndTime) {
+					v.EndTime = pt.Time
+				}
+			}
+			v.Points++
+		}
+	}
+	
+	// Record visits
+	now := time.Now()
+	for settlementID, v := range visits {
+		var durationMinutes float64
+		var visitDate time.Time
+		var year, month int
+		
+		if v.StartTime != nil && v.EndTime != nil {
+			durationMinutes = v.EndTime.Sub(*v.StartTime).Minutes()
+			visitDate = *v.StartTime
+			year = v.StartTime.Year()
+			month = int(v.StartTime.Month())
+		} else {
+			// No timestamps, estimate from point count (assume 1 point per 10 seconds)
+			durationMinutes = float64(v.Points) * 10 / 60
+			visitDate = now
+			year = now.Year()
+			month = int(now.Month())
+		}
+		
+		if durationMinutes < minVisitMinutes {
+			continue // Too short to count as visit
+		}
+		
+		// Create visit record
+		_, err := q.CreateSettlementVisit(ctx, dbgen.CreateSettlementVisitParams{
+			SettlementID:    settlementID,
+			UploadID:        &uploadID,
+			ParkID:          parkID,
+			VisitDate:       visitDate,
+			VisitStart:      v.StartTime,
+			VisitEnd:        v.EndTime,
+			DurationMinutes: durationMinutes,
+			MovementType:    v.MovementType,
+			Year:            int64(year),
+			Month:           int64(month),
+		})
+		if err != nil {
+			slog.Warn("failed to create settlement visit", "settlementID", settlementID, "error", err)
+			continue
+		}
+		
+		// Update intensity aggregation
+		footVisits := int64(0)
+		vehicleVisits := int64(0)
+		aircraftVisits := int64(0)
+		switch v.MovementType {
+		case "foot":
+			footVisits = 1
+		case "vehicle":
+			vehicleVisits = 1
+		case "aircraft":
+			aircraftVisits = 1
+		}
+		
+		monthVal := int64(month)
+		zero := int64(0)
+		err = q.UpsertSettlementIntensity(ctx, dbgen.UpsertSettlementIntensityParams{
+			SettlementID:         settlementID,
+			ParkID:               parkID,
+			Year:                 int64(year),
+			Month:                &monthVal,
+			TotalVisits:          1,
+			TotalDurationMinutes: durationMinutes,
+			UniqueUploads:        1,
+			FootVisits:           &footVisits,
+			VehicleVisits:        &vehicleVisits,
+			AircraftVisits:       &aircraftVisits,
+			IsLikelyBase:         &zero,
+		})
+		if err != nil {
+			slog.Warn("failed to update settlement intensity", "settlementID", settlementID, "error", err)
+		}
+	}
+	
+	return nil
 }

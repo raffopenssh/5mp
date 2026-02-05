@@ -246,3 +246,56 @@ ORDER BY category, year DESC, uploaded_at DESC;
 -- name: InsertParkDocumentExtended :exec
 INSERT INTO park_documents (pa_id, category, item_id, title, description, file_url, file_type, uploaded_by, year, summary)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+
+
+-- name: CreateSettlementVisit :one
+INSERT INTO settlement_visits (settlement_id, upload_id, park_id, visit_date, visit_start, visit_end, duration_minutes, movement_type, arriving_from, departing_to, year, month)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+RETURNING *;
+
+-- name: GetSettlementVisitsByPark :many
+SELECT sv.*, ps.lat, ps.lon, ps.nearest_place
+FROM settlement_visits sv
+JOIN park_settlements ps ON sv.settlement_id = ps.id
+WHERE sv.park_id = ? AND sv.year = ? AND (sv.month = ? OR ? IS NULL)
+ORDER BY sv.visit_date DESC;
+
+-- name: UpsertSettlementIntensity :exec
+INSERT INTO settlement_intensity (settlement_id, park_id, year, month, total_visits, total_duration_minutes, unique_uploads, foot_visits, vehicle_visits, aircraft_visits, is_likely_base)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(settlement_id, year, month) DO UPDATE SET
+    total_visits = total_visits + excluded.total_visits,
+    total_duration_minutes = total_duration_minutes + excluded.total_duration_minutes,
+    unique_uploads = unique_uploads + 1,
+    foot_visits = foot_visits + excluded.foot_visits,
+    vehicle_visits = vehicle_visits + excluded.vehicle_visits,
+    aircraft_visits = aircraft_visits + excluded.aircraft_visits,
+    is_likely_base = CASE WHEN total_visits + excluded.total_visits >= 10 THEN 1 ELSE 0 END,
+    updated_at = CURRENT_TIMESTAMP;
+
+-- name: GetSettlementIntensityByPark :many
+SELECT si.*, ps.lat, ps.lon, ps.nearest_place, ps.area_m2, ps.population_est
+FROM settlement_intensity si
+JOIN park_settlements ps ON si.settlement_id = ps.id
+WHERE si.park_id = ? AND si.year >= ? AND si.year <= ?
+ORDER BY si.total_duration_minutes DESC;
+
+-- name: GetParkBases :many
+SELECT si.*, ps.lat, ps.lon, ps.nearest_place, ps.area_m2
+FROM settlement_intensity si
+JOIN park_settlements ps ON si.settlement_id = ps.id
+WHERE si.park_id = ? AND si.is_likely_base = 1
+ORDER BY si.total_duration_minutes DESC;
+
+-- name: GetSettlementById :one
+SELECT * FROM park_settlements WHERE id = ?;
+
+-- name: FindNearestSettlement :one
+SELECT id, park_id, lat, lon, nearest_place,
+       ((?1 - lat) * (?1 - lat) + (?2 - lon) * (?2 - lon)) as dist_sq
+FROM park_settlements
+WHERE park_id = ?3
+  AND ABS(lat - ?1) < 0.01 AND ABS(lon - ?2) < 0.01
+ORDER BY dist_sq
+LIMIT 1;

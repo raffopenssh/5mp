@@ -17,6 +17,16 @@ import (
 	"srv.exe.dev/srv/gpx"
 )
 
+// Auto-approval thresholds for learned features
+const (
+	// AutoApprovalConfidenceThreshold is the minimum confidence (%) to auto-approve
+	AutoApprovalConfidenceThreshold = 90.0
+	// AutoApprovalMinTraversals is the minimum number of times a road must be traversed
+	AutoApprovalMinTraversals = 5
+	// AutoApprovalMinLandings is the minimum landings/takeoffs for airstrip auto-approval
+	AutoApprovalMinLandings = 5
+)
+
 // ptr helpers for sqlc nullable types
 func ptrFloat64(v float64) *float64 { return &v }
 func ptrInt64(v int64) *int64       { return &v }
@@ -365,18 +375,26 @@ func (l *GPXLearner) processRoadSegment(ctx context.Context, parkID string, uplo
 	if matched {
 		// Increment match count
 		var matchCount int64
-		l.db.QueryRowContext(ctx, "SELECT match_count FROM learned_roads WHERE id = ?", matchID).Scan(&matchCount)
-		confidence := math.Min(float64(matchCount+1)*25.0, 95.0) // 25% per match, max 95%
+		var existingGeojson string
+		var lengthM float64
+		l.db.QueryRowContext(ctx, "SELECT match_count, geojson, COALESCE(length_m, 0) FROM learned_roads WHERE id = ?", matchID).Scan(&matchCount, &existingGeojson, &lengthM)
+		newMatchCount := matchCount + 1
+		confidence := math.Min(float64(newMatchCount)*25.0, 95.0) // 25% per match, max 95%
 
 		l.queries.UpdateLearnedRoadMatch(ctx, dbgen.UpdateLearnedRoadMatchParams{
 			ConfidencePct: ptrFloat64(confidence),
 			ID:            matchID,
 		})
 
-		if matchCount+1 >= 2 {
+		if newMatchCount >= 2 {
 			result.NewRoads++
 			result.NewRoadsKm += seg.DistanceKm
 			result.RoadConfidence = confidence
+		}
+
+		// Check for auto-approval: high confidence AND frequently traversed
+		if confidence >= AutoApprovalConfidenceThreshold && newMatchCount >= AutoApprovalMinTraversals {
+			l.autoApproveRoad(ctx, parkID, matchID, existingGeojson, lengthM, newMatchCount, confidence)
 		}
 	} else {
 		// Store as new potential road
@@ -434,6 +452,10 @@ func (l *GPXLearner) processApproach(ctx context.Context, parkID string, uploadI
 		if airstrip.LandingCount != nil {
 			landingCount = *airstrip.LandingCount + 1
 		}
+		takeoffCount := int64(0)
+		if airstrip.TakeoffCount != nil {
+			takeoffCount = *airstrip.TakeoffCount
+		}
 		confidence := math.Min(float64(landingCount)*20.0, 90.0)
 
 		l.queries.UpdateAirstripStats(ctx, dbgen.UpdateAirstripStatsParams{
@@ -442,6 +464,13 @@ func (l *GPXLearner) processApproach(ctx context.Context, parkID string, uploadI
 			ConfidencePct: ptrFloat64(confidence),
 			ID:            airstrip.ID,
 		})
+
+		// Check for auto-approval: high confidence AND frequent use
+		totalUse := landingCount + takeoffCount
+		if confidence >= AutoApprovalConfidenceThreshold && totalUse >= AutoApprovalMinLandings {
+			l.autoApproveAirstrip(ctx, parkID, airstrip.ID, airstrip.Lat, airstrip.Lon,
+				airstrip.HeadingDeg, airstrip.LengthM, aircraftType, totalUse, confidence)
+		}
 	} else {
 		// Create new potential airstrip
 		approachJSON, _ := json.Marshal(approach)
@@ -964,6 +993,132 @@ func percentile(data []float64, p float64) float64 {
 	return sorted[idx]
 }
 
+// autoApproveRoad inserts a high-confidence road into feature_geometries
+func (l *GPXLearner) autoApproveRoad(ctx context.Context, parkID string, roadID int64, geojson string, lengthM float64, matchCount int64, confidence float64) {
+	featureID := fmt.Sprintf("learned_road_%d", roadID)
+
+	// Build properties JSON with approval info
+	properties := map[string]interface{}{
+		"approval_status": "auto_approved",
+		"source":          "gpx_learner",
+		"learned_road_id": roadID,
+		"match_count":     matchCount,
+		"confidence_pct":  confidence,
+		"length_m":        lengthM,
+	}
+	propertiesJSON, _ := json.Marshal(properties)
+
+	// Calculate bounding box from GeoJSON
+	minX, minY, maxX, maxY := l.calculateBBox(geojson)
+
+	err := l.queries.InsertAutoApprovedFeature(ctx, dbgen.InsertAutoApprovedFeatureParams{
+		FeatureType:    "road",
+		FeatureID:      featureID,
+		ParkID:         parkID,
+		Geojson:        geojson,
+		BboxMinx:       ptrFloat64(minX),
+		BboxMiny:       ptrFloat64(minY),
+		BboxMaxx:       ptrFloat64(maxX),
+		BboxMaxy:       ptrFloat64(maxY),
+		PropertiesJson: ptrString(string(propertiesJSON)),
+	})
+	if err != nil {
+		slog.Error("failed to auto-approve road", "road_id", roadID, "error", err)
+		return
+	}
+
+	// Update the learned_roads status to auto_approved
+	_, err = l.db.ExecContext(ctx, "UPDATE learned_roads SET status = 'auto_approved' WHERE id = ?", roadID)
+	if err != nil {
+		slog.Error("failed to update learned_road status", "road_id", roadID, "error", err)
+	}
+
+	slog.Info("auto-approved road", "road_id", roadID, "park_id", parkID, "confidence", confidence, "match_count", matchCount)
+}
+
+// autoApproveAirstrip inserts a high-confidence airstrip into feature_geometries
+func (l *GPXLearner) autoApproveAirstrip(ctx context.Context, parkID string, airstripID int64, lat, lon float64, headingDeg, lengthM *float64, aircraftType string, totalUse int64, confidence float64) {
+	featureID := fmt.Sprintf("learned_airstrip_%d", airstripID)
+
+	// Create point GeoJSON for the airstrip location
+	geojson, _ := json.Marshal(map[string]interface{}{
+		"type":        "Point",
+		"coordinates": []float64{lon, lat},
+	})
+
+	// Build properties JSON with approval info
+	properties := map[string]interface{}{
+		"approval_status":    "auto_approved",
+		"source":             "gpx_learner",
+		"learned_airstrip_id": airstripID,
+		"total_use":          totalUse,
+		"confidence_pct":     confidence,
+		"aircraft_type":      aircraftType,
+	}
+	if headingDeg != nil {
+		properties["heading_deg"] = *headingDeg
+	}
+	if lengthM != nil {
+		properties["length_m"] = *lengthM
+	}
+	propertiesJSON, _ := json.Marshal(properties)
+
+	err := l.queries.InsertAutoApprovedFeature(ctx, dbgen.InsertAutoApprovedFeatureParams{
+		FeatureType:    "airstrip",
+		FeatureID:      featureID,
+		ParkID:         parkID,
+		Geojson:        string(geojson),
+		BboxMinx:       ptrFloat64(lon),
+		BboxMiny:       ptrFloat64(lat),
+		BboxMaxx:       ptrFloat64(lon),
+		BboxMaxy:       ptrFloat64(lat),
+		PropertiesJson: ptrString(string(propertiesJSON)),
+	})
+	if err != nil {
+		slog.Error("failed to auto-approve airstrip", "airstrip_id", airstripID, "error", err)
+		return
+	}
+
+	// Update the learned_airstrips status to auto_approved
+	_, err = l.db.ExecContext(ctx, "UPDATE learned_airstrips SET status = 'auto_approved' WHERE id = ?", airstripID)
+	if err != nil {
+		slog.Error("failed to update learned_airstrip status", "airstrip_id", airstripID, "error", err)
+	}
+
+	slog.Info("auto-approved airstrip", "airstrip_id", airstripID, "park_id", parkID, "confidence", confidence, "total_use", totalUse)
+}
+
+// calculateBBox extracts bounding box from GeoJSON LineString
+func (l *GPXLearner) calculateBBox(geojson string) (minX, minY, maxX, maxY float64) {
+	var gj struct {
+		Coordinates [][]float64 `json:"coordinates"`
+	}
+	if err := json.Unmarshal([]byte(geojson), &gj); err != nil || len(gj.Coordinates) == 0 {
+		return 0, 0, 0, 0
+	}
+
+	minX, minY = gj.Coordinates[0][0], gj.Coordinates[0][1]
+	maxX, maxY = minX, minY
+
+	for _, coord := range gj.Coordinates {
+		if len(coord) >= 2 {
+			if coord[0] < minX {
+				minX = coord[0]
+			}
+			if coord[0] > maxX {
+				maxX = coord[0]
+			}
+			if coord[1] < minY {
+				minY = coord[1]
+			}
+			if coord[1] > maxY {
+				maxY = coord[1]
+			}
+		}
+	}
+	return
+}
+
 // calculateMCP90 calculates the 90% Minimum Convex Polygon area
 func calculateMCP90(points []gpx.Point) float64 {
 	if len(points) < 3 {
@@ -1033,4 +1188,453 @@ func calculateMCP90(points []gpx.Point) float64 {
 
 	// Convert from m² to km²
 	return area / 1e6
+}
+
+// =============================================================================
+// Cross-Track Analysis Functions
+// =============================================================================
+
+// GridCell represents a cell in the spatial grid for road detection
+type GridCell struct {
+	Row, Col   int
+	Lat, Lon   float64 // Center of cell
+	TrackCount int     // Number of different tracks passing through
+	TrackIDs   map[int64]bool
+}
+
+// GridKey creates a unique key for a grid cell
+func gridKey(row, col int) string {
+	return fmt.Sprintf("%d_%d", row, col)
+}
+
+// CrossTrackAnalyzer performs cross-track analysis for road/base/airstrip detection
+type CrossTrackAnalyzer struct {
+	cellSize    float64 // Cell size in meters (default 10m)
+	minLat      float64
+	minLon      float64
+	maxLat      float64
+	maxLon      float64
+	latPerMeter float64
+	lonPerMeter float64
+	grid        map[string]*GridCell
+}
+
+// NewCrossTrackAnalyzer creates a new analyzer with given cell size
+func NewCrossTrackAnalyzer(cellSizeMeters float64) *CrossTrackAnalyzer {
+	return &CrossTrackAnalyzer{
+		cellSize: cellSizeMeters,
+		grid:     make(map[string]*GridCell),
+	}
+}
+
+// latLonToMeters converts lat/lon degrees to approximate meters at a given latitude
+func (a *CrossTrackAnalyzer) initBounds(segments []ClassifiedSegment) {
+	if len(segments) == 0 {
+		return
+	}
+
+	a.minLat, a.maxLat = 90.0, -90.0
+	a.minLon, a.maxLon = 180.0, -180.0
+
+	for _, seg := range segments {
+		for _, pt := range seg.Points {
+			if pt.Lat < a.minLat {
+				a.minLat = pt.Lat
+			}
+			if pt.Lat > a.maxLat {
+				a.maxLat = pt.Lat
+			}
+			if pt.Lon < a.minLon {
+				a.minLon = pt.Lon
+			}
+			if pt.Lon > a.maxLon {
+				a.maxLon = pt.Lon
+			}
+		}
+	}
+
+	// Calculate degrees per meter at center latitude
+	centerLat := (a.minLat + a.maxLat) / 2
+	a.latPerMeter = 1.0 / 110540.0 // ~110.54 km per degree latitude
+	a.lonPerMeter = 1.0 / (111320.0 * math.Cos(centerLat*math.Pi/180.0))
+}
+
+// pointToCell converts a lat/lon point to grid cell coordinates
+func (a *CrossTrackAnalyzer) pointToCell(lat, lon float64) (int, int) {
+	latOffset := (lat - a.minLat) / (a.latPerMeter * a.cellSize)
+	lonOffset := (lon - a.minLon) / (a.lonPerMeter * a.cellSize)
+	return int(latOffset), int(lonOffset)
+}
+
+// cellToLatLon converts grid cell to center lat/lon
+func (a *CrossTrackAnalyzer) cellToLatLon(row, col int) (float64, float64) {
+	lat := a.minLat + (float64(row)+0.5)*a.latPerMeter*a.cellSize
+	lon := a.minLon + (float64(col)+0.5)*a.lonPerMeter*a.cellSize
+	return lat, lon
+}
+
+// DetectedRoad represents a road detected from cross-track analysis
+type DetectedRoad struct {
+	Points      [][]float64 // [[lon, lat], ...]
+	LengthM     float64
+	TrackCount  int // Number of different tracks that used this road
+	Confidence  float64
+}
+
+// DetectedAirstrip represents an airstrip detected from track patterns
+type DetectedAirstrip struct {
+	Lat, Lon     float64
+	HeadingDeg   float64
+	LengthM      float64
+	AircraftType string
+	Confidence   float64
+	PatternType  string // "takeoff" or "landing"
+}
+
+// DetectedBase represents a base/camp detected from track endpoints
+type DetectedBase struct {
+	Lat, Lon       float64
+	TrackCount     int     // Number of tracks starting/ending here
+	AvgDurationMin float64 // Average stop duration
+	PlaceType      string  // "base", "camp", "gate"
+	Confidence     float64
+}
+
+// detectRoadsFromTracks analyzes multiple tracks to find frequently-used paths
+// Uses a grid-based approach: cells with 5+ track passes are likely roads
+func (a *CrossTrackAnalyzer) detectRoadsFromTracks(segments []ClassifiedSegment) []DetectedRoad {
+	if len(segments) == 0 {
+		return nil
+	}
+
+	a.initBounds(segments)
+	a.grid = make(map[string]*GridCell)
+
+	// Process each segment and mark cells
+	for trackID, seg := range segments {
+		if seg.MovementType != "vehicle" && seg.AvgSpeedKmh < 8 {
+			continue // Skip non-vehicle segments
+		}
+
+		for _, pt := range seg.Points {
+			row, col := a.pointToCell(pt.Lat, pt.Lon)
+			key := gridKey(row, col)
+
+			cell, exists := a.grid[key]
+			if !exists {
+				lat, lon := a.cellToLatLon(row, col)
+				cell = &GridCell{
+					Row:      row,
+					Col:      col,
+					Lat:      lat,
+					Lon:      lon,
+					TrackIDs: make(map[int64]bool),
+				}
+				a.grid[key] = cell
+			}
+
+			if !cell.TrackIDs[int64(trackID)] {
+				cell.TrackIDs[int64(trackID)] = true
+				cell.TrackCount++
+			}
+		}
+	}
+
+	// Find high-traffic cells (5+ tracks)
+	const minTrackCount = 5
+	highTrafficCells := make([]*GridCell, 0)
+	for _, cell := range a.grid {
+		if cell.TrackCount >= minTrackCount {
+			highTrafficCells = append(highTrafficCells, cell)
+		}
+	}
+
+	if len(highTrafficCells) == 0 {
+		return nil
+	}
+
+	// Build connected road segments from high-traffic cells
+	return a.buildRoadSegments(highTrafficCells, minTrackCount)
+}
+
+// buildRoadSegments connects adjacent high-traffic cells into road linestrings
+func (a *CrossTrackAnalyzer) buildRoadSegments(cells []*GridCell, minTrackCount int) []DetectedRoad {
+	if len(cells) == 0 {
+		return nil
+	}
+
+	// Create a map for quick lookup
+	cellMap := make(map[string]*GridCell)
+	for _, cell := range cells {
+		cellMap[gridKey(cell.Row, cell.Col)] = cell
+	}
+
+	visited := make(map[string]bool)
+	var roads []DetectedRoad
+
+	// 8-directional neighbors
+	dirs := []struct{ dr, dc int }{
+		{-1, -1}, {-1, 0}, {-1, 1},
+		{0, -1}, {0, 1},
+		{1, -1}, {1, 0}, {1, 1},
+	}
+
+	// DFS to find connected components
+	for _, startCell := range cells {
+		startKey := gridKey(startCell.Row, startCell.Col)
+		if visited[startKey] {
+			continue
+		}
+
+		// BFS to collect connected cells
+		var component []*GridCell
+		queue := []*GridCell{startCell}
+		visited[startKey] = true
+
+		for len(queue) > 0 {
+			cell := queue[0]
+			queue = queue[1:]
+			component = append(component, cell)
+
+			for _, d := range dirs {
+				nr, nc := cell.Row+d.dr, cell.Col+d.dc
+				nKey := gridKey(nr, nc)
+				if !visited[nKey] {
+					if neighbor, ok := cellMap[nKey]; ok {
+						visited[nKey] = true
+						queue = append(queue, neighbor)
+					}
+				}
+			}
+		}
+
+		// Convert component to road if large enough
+		if len(component) >= 3 {
+			road := a.componentToRoad(component)
+			if road.LengthM >= 50 { // Minimum 50m
+				roads = append(roads, road)
+			}
+		}
+	}
+
+	return roads
+}
+
+// componentToRoad converts a connected component of cells to a road
+func (a *CrossTrackAnalyzer) componentToRoad(cells []*GridCell) DetectedRoad {
+	// Sort cells to form a reasonable path (by column, then row)
+	sort.Slice(cells, func(i, j int) bool {
+		if cells[i].Col != cells[j].Col {
+			return cells[i].Col < cells[j].Col
+		}
+		return cells[i].Row < cells[j].Row
+	})
+
+	// Build linestring from cell centers
+	var points [][]float64
+	var totalLength float64
+	var totalTrackCount int
+
+	for i, cell := range cells {
+		points = append(points, []float64{cell.Lon, cell.Lat})
+		totalTrackCount += cell.TrackCount
+
+		if i > 0 {
+			dist := haversineDistance(cells[i-1].Lat, cells[i-1].Lon, cell.Lat, cell.Lon)
+			totalLength += dist
+		}
+	}
+
+	avgTrackCount := totalTrackCount / len(cells)
+	confidence := math.Min(float64(avgTrackCount)*10.0, 95.0) // 10% per track, max 95%
+
+	return DetectedRoad{
+		Points:     points,
+		LengthM:    totalLength,
+		TrackCount: avgTrackCount,
+		Confidence: confidence,
+	}
+}
+
+// detectAirstrips finds airstrips from straight segments with abrupt movement changes
+// Looks for: straight segments > 500m with vehicle movement ending/starting abruptly
+func detectAirstrips(segments []ClassifiedSegment) []DetectedAirstrip {
+	var airstrips []DetectedAirstrip
+
+	for _, seg := range segments {
+		if len(seg.Points) < 10 {
+			continue
+		}
+
+		// Look for straight segments > 500m
+		straightSegs := findStraightSegments(seg.Points, 500.0, 15.0) // 500m min, 15° max deviation
+
+		for _, ss := range straightSegs {
+			// Check for abrupt speed changes at ends
+			startAbrupt := isAbruptStart(seg.Points, ss.startIdx)
+			endAbrupt := isAbruptEnd(seg.Points, ss.endIdx)
+
+			if startAbrupt || endAbrupt {
+				airstrip := DetectedAirstrip{
+					LengthM:    ss.length,
+					HeadingDeg: ss.heading,
+					Confidence: 30.0,
+				}
+
+				if startAbrupt {
+					airstrip.PatternType = "takeoff"
+					airstrip.Lat = seg.Points[ss.startIdx].Lat
+					airstrip.Lon = seg.Points[ss.startIdx].Lon
+					airstrip.Confidence += 20.0
+				}
+				if endAbrupt {
+					airstrip.PatternType = "landing"
+					airstrip.Lat = seg.Points[ss.endIdx].Lat
+					airstrip.Lon = seg.Points[ss.endIdx].Lon
+					airstrip.Confidence += 20.0
+				}
+
+				// Classify aircraft type from speed
+				if seg.AvgSpeedKmh > 150 {
+					airstrip.AircraftType = "fixed_wing"
+				} else if seg.AvgSpeedKmh > 50 {
+					airstrip.AircraftType = "mixed"
+				} else {
+					airstrip.AircraftType = "rotor_wing"
+				}
+
+				airstrips = append(airstrips, airstrip)
+			}
+		}
+	}
+
+	return airstrips
+}
+
+// straightSegment represents a detected straight portion of a track
+type straightSegment struct {
+	startIdx int
+	endIdx   int
+	length   float64
+	heading  float64
+}
+
+// findStraightSegments finds portions of track that are relatively straight
+func findStraightSegments(points []gpx.Point, minLengthM, maxDeviationDeg float64) []straightSegment {
+	var result []straightSegment
+	if len(points) < 3 {
+		return result
+	}
+
+	startIdx := 0
+	for startIdx < len(points)-2 {
+		// Calculate initial heading
+		initialHeading := calculateBearing(
+			points[startIdx].Lat, points[startIdx].Lon,
+			points[startIdx+1].Lat, points[startIdx+1].Lon,
+		)
+
+		endIdx := startIdx + 1
+		totalLength := 0.0
+
+		// Extend while heading stays within deviation
+		for endIdx < len(points)-1 {
+			nextHeading := calculateBearing(
+				points[endIdx].Lat, points[endIdx].Lon,
+				points[endIdx+1].Lat, points[endIdx+1].Lon,
+			)
+
+			headingDiff := math.Abs(normalizeAngle(nextHeading - initialHeading))
+			if headingDiff > maxDeviationDeg {
+				break
+			}
+
+			dist := haversineDistance(
+				points[endIdx].Lat, points[endIdx].Lon,
+				points[endIdx+1].Lat, points[endIdx+1].Lon,
+			)
+			totalLength += dist
+			endIdx++
+		}
+
+		if totalLength >= minLengthM {
+			result = append(result, straightSegment{
+				startIdx: startIdx,
+				endIdx:   endIdx,
+				length:   totalLength,
+				heading:  initialHeading,
+			})
+			startIdx = endIdx
+		} else {
+			startIdx++
+		}
+	}
+
+	return result
+}
+
+
+// normalizeAngle normalizes an angle to -180 to 180
+func normalizeAngle(angle float64) float64 {
+	for angle > 180 {
+		angle -= 360
+	}
+	for angle < -180 {
+		angle += 360
+	}
+	return angle
+}
+
+// isAbruptStart checks if track starts abruptly (likely takeoff)
+func isAbruptStart(points []gpx.Point, idx int) bool {
+	if idx < 0 || idx >= len(points)-3 {
+		return false
+	}
+
+	// Check if this is near the start of the track
+	if idx > 5 {
+		return false
+	}
+
+	// Check for rapid speed increase in first few points
+	if points[idx].Time == nil || points[idx+2].Time == nil {
+		return false
+	}
+
+	dt := points[idx+2].Time.Sub(*points[idx].Time).Hours()
+	if dt <= 0 {
+		return false
+	}
+
+	dist := haversineDistance(points[idx].Lat, points[idx].Lon, points[idx+2].Lat, points[idx+2].Lon)
+	speed := (dist / 1000) / dt
+
+	return speed > 80 // > 80 km/h suggests vehicle accelerating for takeoff
+}
+
+// isAbruptEnd checks if track ends abruptly (likely landing)
+func isAbruptEnd(points []gpx.Point, idx int) bool {
+	if idx < 3 || idx >= len(points) {
+		return false
+	}
+
+	// Check if this is near the end of the track
+	if idx < len(points)-5 {
+		return false
+	}
+
+	// Check for rapid speed decrease in last few points
+	if points[idx-2].Time == nil || points[idx].Time == nil {
+		return false
+	}
+
+	dt := points[idx].Time.Sub(*points[idx-2].Time).Hours()
+	if dt <= 0 {
+		return false
+	}
+
+	dist := haversineDistance(points[idx-2].Lat, points[idx-2].Lon, points[idx].Lat, points[idx].Lon)
+	speed := (dist / 1000) / dt
+
+	return speed > 80 // > 80 km/h suggests aircraft decelerating after landing
 }

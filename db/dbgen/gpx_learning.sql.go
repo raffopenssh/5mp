@@ -522,6 +522,50 @@ func (q *Queries) GetAllLearningResults(ctx context.Context, arg GetAllLearningR
 	return items, nil
 }
 
+const getAutoApprovedFeatures = `-- name: GetAutoApprovedFeatures :many
+SELECT id, feature_type, feature_id, park_id, geojson, bbox_minx, bbox_miny, bbox_maxx, bbox_maxy, start_date, end_date, properties_json, created_at FROM feature_geometries 
+WHERE park_id = ? 
+  AND json_extract(properties_json, '$.approval_status') = 'auto_approved'
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetAutoApprovedFeatures(ctx context.Context, parkID string) ([]FeatureGeometry, error) {
+	rows, err := q.db.QueryContext(ctx, getAutoApprovedFeatures, parkID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FeatureGeometry{}
+	for rows.Next() {
+		var i FeatureGeometry
+		if err := rows.Scan(
+			&i.ID,
+			&i.FeatureType,
+			&i.FeatureID,
+			&i.ParkID,
+			&i.Geojson,
+			&i.BboxMinx,
+			&i.BboxMiny,
+			&i.BboxMaxx,
+			&i.BboxMaxy,
+			&i.StartDate,
+			&i.EndDate,
+			&i.PropertiesJson,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getLearnedAirstripsByPark = `-- name: GetLearnedAirstripsByPark :many
 SELECT id, park_id, lat, lon, heading_deg, length_m, aircraft_type, landing_count, takeoff_count, confidence_pct, status, approved_by, approved_at, approach_json, created_at, updated_at FROM learned_airstrips WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
 `
@@ -1057,6 +1101,45 @@ func (q *Queries) GetVehicleStatsByPark(ctx context.Context, parkID string) ([]P
 		return nil, err
 	}
 	return items, nil
+}
+
+const insertAutoApprovedFeature = `-- name: InsertAutoApprovedFeature :exec
+INSERT INTO feature_geometries (feature_type, feature_id, park_id, geojson, bbox_minx, bbox_miny, bbox_maxx, bbox_maxy, properties_json)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(feature_type, feature_id) DO UPDATE SET
+    geojson = excluded.geojson,
+    bbox_minx = excluded.bbox_minx,
+    bbox_miny = excluded.bbox_miny,
+    bbox_maxx = excluded.bbox_maxx,
+    bbox_maxy = excluded.bbox_maxy,
+    properties_json = excluded.properties_json
+`
+
+type InsertAutoApprovedFeatureParams struct {
+	FeatureType    string   `json:"feature_type"`
+	FeatureID      string   `json:"feature_id"`
+	ParkID         string   `json:"park_id"`
+	Geojson        string   `json:"geojson"`
+	BboxMinx       *float64 `json:"bbox_minx"`
+	BboxMiny       *float64 `json:"bbox_miny"`
+	BboxMaxx       *float64 `json:"bbox_maxx"`
+	BboxMaxy       *float64 `json:"bbox_maxy"`
+	PropertiesJson *string  `json:"properties_json"`
+}
+
+func (q *Queries) InsertAutoApprovedFeature(ctx context.Context, arg InsertAutoApprovedFeatureParams) error {
+	_, err := q.db.ExecContext(ctx, insertAutoApprovedFeature,
+		arg.FeatureType,
+		arg.FeatureID,
+		arg.ParkID,
+		arg.Geojson,
+		arg.BboxMinx,
+		arg.BboxMiny,
+		arg.BboxMaxx,
+		arg.BboxMaxy,
+		arg.PropertiesJson,
+	)
+	return err
 }
 
 const queueGPXLearning = `-- name: QueueGPXLearning :one
