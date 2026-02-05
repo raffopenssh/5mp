@@ -5742,7 +5742,7 @@ ${starredItems.narratives.map(n => {
             const geojson = await response.json();
             
             if (!geojson.features || geojson.features.length === 0) {
-                showNotification(`No ${type} features found for ${parkName}`, 'warning');
+                showToast(`No ${type} features found for ${parkName}`, 'warning');
                 return;
             }
             
@@ -5754,6 +5754,16 @@ ${starredItems.narratives.map(n => {
             // Style based on type
             const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa' };
             const color = colors[type] || '#22c55e';
+            
+            // Store reference early so we can add arrowLayerId
+            pinnedLayers[key] = {
+                parkId,
+                parkName,
+                type,
+                featureCount: geojson.features.length,
+                layerId,
+                sourceId
+            };
             
             // Check geometry type from first feature
             const geomType = geojson.features[0]?.geometry?.type || 'Point';
@@ -5834,21 +5844,11 @@ ${starredItems.narratives.map(n => {
                 }
             });
             
-            // Store reference
-            pinnedLayers[key] = {
-                parkId,
-                parkName,
-                type,
-                featureCount: geojson.features.length,
-                layerId,
-                sourceId
-            };
-            
-            showNotification(`Pinned ${geojson.features.length} ${type} features from ${parkName}`, 'success');
+            showToast(`Pinned ${geojson.features.length} ${type} features from ${parkName}`, 'success');
             
         } catch (error) {
             console.error('Error adding pinned layer:', error);
-            showNotification(`Failed to load ${type} features`, 'error');
+            showToast(`Failed to load ${type} features`, 'error');
         }
     }
     
