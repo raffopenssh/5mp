@@ -60,8 +60,6 @@
 
 ## 📋 Remaining Tasks
 
-
-
 ### Data Quality
 - [ ] Deforestation classification improvements (farms vs logging vs charcoal)
 - [ ] Settlement classification (hamlets vs farms vs mines)
@@ -69,21 +67,6 @@
 ### Admin
 - [ ] Admin dashboard for monitoring
 - [ ] User management
-
-## 📊 Data Coverage
-
-### Fire Data (2018-2026)
-- All 162 parks
-- ~5M total records
-- NRT updates daily
-
-### Deforestation (2018-2023)
-- ~140 parks with measurable loss
-- Annual resolution
-
-### Settlements
-- 161 parks (1 has no GHSL data)
-- 7 pristine parks (0 settlements)
 
 ---
 
