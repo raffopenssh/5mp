@@ -60,9 +60,7 @@
 
 ## 📋 Remaining Tasks
 
-### UI Refinements (P3)
-- [ ] 162 toggle behavior with bbox
-- [ ] Refactor panels - Move bbox selector to Selected Parks
+
 
 ### Data Quality
 - [ ] Deforestation classification improvements (farms vs logging vs charcoal)
@@ -70,17 +68,7 @@
 
 ### Admin
 - [ ] Admin dashboard for monitoring
-- [ ] Upload approval workflow
 - [ ] User management
-
----
-
-## 🐛 Known Issues
-
-1. **Settlement display format** - Some deployments show old format, may need cache clear
-2. **Classification limitations** - Basic pattern detection only
-
----
 
 ## 📊 Data Coverage
 
