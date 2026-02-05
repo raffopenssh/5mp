@@ -266,5 +266,5 @@ Current coverage:
 - [x] Click alert → zoom to location + highlight grid cell
 - [x] Park popup shows fire-realtime data when available
 - [ ] Fire group trajectories on map (optional visualization)
-- [ ] Visual indicator on map for parks with active inside-groups (e.g., red glow on park boundary)
+- [x] Visual indicator on map for parks with active inside-groups (e.g., red glow on park boundary)
 
