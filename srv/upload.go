@@ -479,11 +479,6 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		}
 	}
 
-	// Update effort_data grid cells
-	if err := s.updateEffortData(ctx, q, segments, uploadID); err != nil {
-		return fmt.Errorf("update effort data: %w", err)
-	}
-
 	// Queue for learning - find park ID from first segment's location
 	var parkID *string
 	if len(segments) > 0 && len(segments[0].Points) > 0 && s.AreaStore != nil {
@@ -499,6 +494,12 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 	if err != nil {
 		slog.Warn("failed to queue upload for learning", "uploadID", uploadID, "error", err)
 		// Don't fail the upload just because learning queue failed
+	}
+
+	// Update effort_data grid cells (non-fatal error - continue even if this fails)
+	if err := s.updateEffortData(ctx, q, segments, uploadID); err != nil {
+		slog.Warn("failed to update effort data", "uploadID", uploadID, "error", err)
+		// Don't fail the whole upload - learning and basic data is more important
 	}
 
 	return nil
