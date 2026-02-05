@@ -123,12 +123,12 @@
         .stats-trend.stable { color: #666; }
         .stats-trend.improving { color: #22c55e; }
         .stats-trend.worsening { color: #ef4444; }
-        .stats-item.fire .stats-value { color: #f97316; }
-        .stats-item.fire:hover .stats-value { color: #fb923c; }
+        .stats-item.fire .stats-value { color: #ef4444; }
+        .stats-item.fire:hover .stats-value { color: #f87171; }
         .stats-item.deforest .stats-value { color: #eab308; }
         .stats-item.deforest:hover .stats-value { color: #facc15; }
-        .stats-item.settlement .stats-value { color: #a855f7; }
-        .stats-item.settlement:hover .stats-value { color: #c084fc; }
+        .stats-item.settlement .stats-value { color: #fbbf24; }
+        .stats-item.settlement:hover .stats-value { color: #fcd34d; }
         @keyframes stats-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         .stats-item.pulsing { animation: stats-pulse 0.6s ease-in-out; }
         .maplibregl-ctrl-attrib a { color: #666 !important; }
@@ -422,8 +422,15 @@
         .pin-toggle:hover { background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.4); }
         .pin-toggle.pinned { background: rgba(34,197,94,0.3); border-color: #22c55e; color: #22c55e; }
         .pin-toggle svg { width: 12px; height: 12px; }
+        .pa-popup-section-icon.loading { animation: icon-pulse 1.5s ease-in-out infinite; }
+        .pa-popup-section-icon.pinned { color: #22c55e; }
+        .pa-popup-section-icon.toggleable { cursor: pointer; transition: all 0.2s; }
+        .pa-popup-section-icon.toggleable:hover { color: #22c55e; transform: scale(1.2); }
+        @keyframes icon-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .pa-popup-section.loading { animation: section-pulse 1.5s ease-in-out infinite; }
+        @keyframes section-pulse { 0%, 100% { background: rgba(255,255,255,0.03); } 50% { background: rgba(255,255,255,0.08); } }
         
-        .pinned-indicator { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 10px 16px; z-index: 300; font-size: 12px; color: #ccc; display: none; align-items: center; gap: 12px; max-width: 90vw; backdrop-filter: blur(8px); cursor: pointer; transition: all 0.2s; }
+        .pinned-indicator { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 10px 16px; z-index: 300; font-size: 12px; color: #ccc; display: none; align-items: center; gap: 12px; max-width: 90vw; backdrop-filter: blur(8px); cursor: pointer; transition: all 0.2s; }
         .pinned-indicator:hover { background: rgba(30,30,30,0.98); border-color: #22c55e; }
         .pinned-indicator.active { display: flex; }
         .pinned-indicator-icon { color: #22c55e; display: flex; align-items: center; }
@@ -437,6 +444,8 @@
         .pinned-item.road { border-left: 2px solid #60a5fa; }
         .pinned-indicator-close { color: #666; font-size: 14px; padding: 2px 6px; }
         .pinned-indicator-close:hover { color: #fff; }
+        .pinned-indicator .clear-hint { font-size: 10px; color: #666; margin-left: 8px; cursor: pointer; }
+        .pinned-indicator .clear-hint:hover { color: #ef4444; }
         /* ===== End Pinned GeoJSON Styles ===== */
          
          
@@ -630,8 +639,8 @@
         .pa-popup-section.open .pa-popup-section-toggle { transform: rotate(180deg); }
         .pa-popup-section-content { display: none; padding: 8px 10px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); }
         .pa-popup-section.open .pa-popup-section-content { display: block; }
-        .pa-popup-section-loading { font-size: 10px; color: #666; display: flex; align-items: center; gap: 8px; }
-        .pa-popup-section-loading::before { content: ''; width: 14px; height: 14px; border: 2px solid #ddd; border-top-color: #4CAF50; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .pa-popup-section-loading { font-size: 10px; color: #666; display: flex; align-items: center; gap: 8px; animation: text-pulse 1.2s ease-in-out infinite; }
+        @keyframes text-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         @keyframes spin { to { transform: rotate(360deg); } }
         .pa-popup-section-empty { font-size: 10px; color: #555; font-style: italic; }
         .pa-popup-mini-stat { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; }
@@ -3499,8 +3508,8 @@
                     <!-- Fire Section -->
                     <div class="pa-popup-section" id="fire-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◈</span> Fire Activity</div>
-                            ${createPinToggle(paId, name, 'fire')}
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="fire" onclick="event.stopPropagation(); togglePinFromIcon(this)">◈</span> Fire Activity</div>
+                            
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'fire', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
@@ -3512,8 +3521,8 @@
                     <!-- Settlements Section -->
                     <div class="pa-popup-section" id="ghsl-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◻</span> Settlements</div>
-                            ${createPinToggle(paId, name, 'settlement')}
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="settlement" onclick="event.stopPropagation(); togglePinFromIcon(this)">◻</span> Settlements</div>
+                            
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'settlement', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
@@ -3525,8 +3534,8 @@
                     <!-- Deforestation Section -->
                     <div class="pa-popup-section" id="deforest-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">▲</span> Deforestation</div>
-                            ${createPinToggle(paId, name, 'deforestation')}
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="deforestation" onclick="event.stopPropagation(); togglePinFromIcon(this)">▲</span> Deforestation</div>
+                            
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'deforestation', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
@@ -3538,8 +3547,8 @@
                     <!-- Roadless Section -->
                     <div class="pa-popup-section" id="road-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">═</span> Roads</div>
-                            ${createPinToggle(paId, name, 'road')}
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="road" onclick="event.stopPropagation(); togglePinFromIcon(this)">═</span> Roads & Places</div>
+                            
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'road', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
@@ -3646,11 +3655,12 @@
                             const outcome = n.outcome.toLowerCase().replace(/_/g, ' ');
                             text = `${n.origin_desc}: ${outcome}.`;
                         }
-                        // Ensure it's one sentence - truncate if too long
+                        // Ensure it's one sentence - truncate if too long, add title for full text on hover
+                        const fullText = text;
                         if (text.length > 120) {
                             text = text.substring(0, 117) + '...';
                         }
-                        return `<div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px;"><span style="color: ${outcomeColor};">●</span> ${text}</div>`;
+                        return `<div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: default;" title="${fullText.replace(/"/g, '&quot;')}"><span style="color: ${outcomeColor};">●</span> ${text}</div>`;
                     // Render active fire groups alert
                     const renderActiveGroups = () => {
                         if (!realtimeData || realtimeData.groups_inside_count === 0) return "";
@@ -5717,7 +5727,16 @@ ${starredItems.narratives.map(n => {
                 'road': 'road'
             }[type] || type;
             
-            const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&limit=500&pwd=${window.accessPwd || ''}`);
+            // Get date range from time slider for time-filtered features
+            let dateParams = '';
+            if (type === 'fire' || type === 'deforestation') {
+                const startDateEl = document.getElementById('date-from');
+                const endDateEl = document.getElementById('date-to');
+                if (startDateEl && endDateEl && startDateEl.value && endDateEl.value) {
+                    dateParams = `&start=${startDateEl.value}&end=${endDateEl.value}`;
+                }
+            }
+            const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=500&pwd=${window.accessPwd || ''}`);
             if (!response.ok) throw new Error('Failed to fetch features');
             
             const geojson = await response.json();
@@ -5854,8 +5873,10 @@ ${starredItems.narratives.map(n => {
         updatePinnedIndicator();
         savePinnedToURL();
         
-        // Update all pin toggle buttons
+        // Update all pin toggle buttons and icon states
         document.querySelectorAll('.pin-toggle.pinned').forEach(btn => btn.classList.remove('pinned'));
+        document.querySelectorAll('.pa-popup-section-icon.pinned').forEach(icon => icon.classList.remove('pinned'));
+        showToast('All pinned layers cleared', 'info');
     }
     
     function updatePinnedIndicator() {
@@ -5956,6 +5977,52 @@ ${starredItems.narratives.map(n => {
         </button>`;
     }
     // ===== End Pinned GeoJSON Layers =====
+
+    // Toggle pin from section icon click
+    async function togglePinFromIcon(iconEl) {
+        const parkId = iconEl.dataset.parkId;
+        const parkName = iconEl.dataset.parkName;
+        const type = iconEl.dataset.type;
+        
+        if (!parkId || !type) return;
+        
+        const key = getPinKey(parkId, type);
+        const isPinnedNow = isPinned(parkId, type);
+        
+        if (isPinnedNow) {
+            // Unpin
+            removePinnedLayer(key);
+            iconEl.classList.remove('pinned');
+            updatePinnedIndicator();
+        } else {
+            // Pin - add loading state
+            iconEl.classList.add('loading');
+            try {
+                await addPinnedLayer(parkId, parkName, type);
+                iconEl.classList.add('pinned');
+                iconEl.classList.remove('loading');
+                updatePinnedIndicator();
+            } catch (e) {
+                iconEl.classList.remove('loading');
+                console.error('Failed to pin layer:', e);
+                showToast('Failed to load data', 'error');
+            }
+        }
+    }
+    
+    // Update icon state when popup opens
+    function updateIconPinStates(parkId) {
+        document.querySelectorAll('.pa-popup-section-icon.toggleable').forEach(icon => {
+            if (icon.dataset.parkId === parkId) {
+                const type = icon.dataset.type;
+                if (isPinned(parkId, type)) {
+                    icon.classList.add('pinned');
+                } else {
+                    icon.classList.remove('pinned');
+                }
+            }
+        });
+    }
     
     let adminSelectedItems = [];
     let adminCurrentTab = 'uploads';
@@ -6597,15 +6664,16 @@ ${starredItems.narratives.map(n => {
 
     <!-- Star Modal -->
     <!-- Pinned GeoJSON Indicator -->
-    <div class="pinned-indicator" id="pinned-indicator" onclick="clearAllPinnedLayers()">
+    <div class="pinned-indicator" id="pinned-indicator">
         <div class="pinned-indicator-icon">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
         </div>
         <div class="pinned-indicator-text">
             <span>Currently Pinned:</span>
             <div class="pinned-indicator-items" id="pinned-items"></div>
+            <span class="clear-hint" onclick="event.stopPropagation(); clearAllPinnedLayers();">(click to clear all)</span>
         </div>
-        <span class="pinned-indicator-close" title="Click to clear all">&times;</span>
+        <span class="pinned-indicator-close" onclick="event.stopPropagation(); clearAllPinnedLayers();" title="Clear all pinned">&times;</span>
     </div>
 
     <!-- GPX Admin Panel -->
