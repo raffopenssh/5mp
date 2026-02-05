@@ -46,18 +46,6 @@ type UploadValidationSummary struct {
 	ExcludedSegments  int      `json:"excluded_segments"`
 	Warnings          []string `json:"warnings,omitempty"`
 	Errors            []string `json:"errors,omitempty"`
-	
-	// GPX Message statistics
-	Messages          *MessageSummary `json:"messages,omitempty"`
-}
-
-// MessageSummary provides statistics about classified GPX messages.
-type MessageSummary struct {
-	TotalMessages   int            `json:"total_messages"`
-	ByCategory      map[string]int `json:"by_category"`
-	EmergencyCount  int            `json:"emergency_count"`
-	WildlifeCount   int            `json:"wildlife_count"`
-	PoacherCount    int            `json:"poacher_count"`
 }
 
 // SegmentSummary represents a processed segment in the upload response.

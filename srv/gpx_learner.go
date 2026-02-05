@@ -1638,3 +1638,270 @@ func isAbruptEnd(points []gpx.Point, idx int) bool {
 
 	return speed > 80 // > 80 km/h suggests aircraft decelerating after landing
 }
+
+// detectBases finds likely bases/camps from track start/end clustering
+// Also checks settlement_intensity for is_likely_base settlements
+func detectBases(segments []ClassifiedSegment) []DetectedBase {
+	var bases []DetectedBase
+
+	// Collect all track start and end points
+	type endpoint struct {
+		lat, lon   float64
+		isStart    bool
+		durationMin float64
+	}
+
+	var endpoints []endpoint
+
+	for _, seg := range segments {
+		if len(seg.Points) < 2 {
+			continue
+		}
+
+		// Skip aircraft - they start/end at airstrips, not bases
+		if seg.MovementType == "aircraft" {
+			continue
+		}
+
+		// Track start point
+		endpoints = append(endpoints, endpoint{
+			lat:     seg.Points[0].Lat,
+			lon:     seg.Points[0].Lon,
+			isStart: true,
+		})
+
+		// Track end point
+		lastIdx := len(seg.Points) - 1
+		endpoints = append(endpoints, endpoint{
+			lat:         seg.Points[lastIdx].Lat,
+			lon:         seg.Points[lastIdx].Lon,
+			isStart:     false,
+			durationMin: seg.Duration.Minutes(),
+		})
+	}
+
+	if len(endpoints) < 2 {
+		return bases
+	}
+
+	// Cluster endpoints using simple distance-based clustering
+	// Two endpoints within 100m are in the same cluster
+	const clusterRadius = 100.0 // meters
+
+	clustered := make([]bool, len(endpoints))
+	for i := 0; i < len(endpoints); i++ {
+		if clustered[i] {
+			continue
+		}
+
+		// Start a new cluster
+		cluster := []endpoint{endpoints[i]}
+		clustered[i] = true
+
+		// Find all nearby endpoints
+		for j := i + 1; j < len(endpoints); j++ {
+			if clustered[j] {
+				continue
+			}
+
+			dist := haversineDistance(endpoints[i].lat, endpoints[i].lon,
+				endpoints[j].lat, endpoints[j].lon)
+			if dist <= clusterRadius {
+				cluster = append(cluster, endpoints[j])
+				clustered[j] = true
+			}
+		}
+
+		// Only consider clusters with 3+ endpoints (frequent use)
+		if len(cluster) >= 3 {
+			// Calculate cluster center
+			var sumLat, sumLon, sumDuration float64
+			for _, ep := range cluster {
+				sumLat += ep.lat
+				sumLon += ep.lon
+				sumDuration += ep.durationMin
+			}
+
+			avgDuration := sumDuration / float64(len(cluster))
+			
+			// Classify based on visit count and duration
+			placeType := "camp"
+			if len(cluster) >= 10 && avgDuration > 60 {
+				placeType = "base"
+			} else if len(cluster) >= 5 {
+				placeType = "outpost"
+			}
+
+			confidence := math.Min(float64(len(cluster))*10.0, 90.0)
+
+			bases = append(bases, DetectedBase{
+				Lat:            sumLat / float64(len(cluster)),
+				Lon:            sumLon / float64(len(cluster)),
+				TrackCount:     len(cluster),
+				AvgDurationMin: avgDuration,
+				PlaceType:      placeType,
+				Confidence:     confidence,
+			})
+		}
+	}
+
+	return bases
+}
+
+// CrossTrackAnalysisResult contains results from cross-track analysis
+type CrossTrackAnalysisResult struct {
+	Roads     []DetectedRoad
+	Airstrips []DetectedAirstrip
+	Bases     []DetectedBase
+}
+
+// RunCrossTrackAnalysis performs comprehensive cross-track analysis
+// This analyzes multiple tracks together to find roads, airstrips, and bases
+func RunCrossTrackAnalysis(segments []ClassifiedSegment, cellSizeMeters float64) *CrossTrackAnalysisResult {
+	if cellSizeMeters <= 0 {
+		cellSizeMeters = 10.0 // Default 10m grid cells
+	}
+
+	result := &CrossTrackAnalysisResult{}
+
+	// Detect roads using grid analysis
+	analyzer := NewCrossTrackAnalyzer(cellSizeMeters)
+	result.Roads = analyzer.detectRoadsFromTracks(segments)
+
+	// Detect airstrips from straight segments
+	result.Airstrips = detectAirstrips(segments)
+
+	// Detect bases from track endpoints
+	result.Bases = detectBases(segments)
+
+	return result
+}
+
+// processCrossTrackAnalysis integrates cross-track analysis into the learning job
+func (l *GPXLearner) processCrossTrackAnalysis(ctx context.Context, parkID string, uploadID int64, segments []ClassifiedSegment, result *LearningResult) {
+	// Run the cross-track analysis
+	analysis := RunCrossTrackAnalysis(segments, 10.0)
+
+	// Store detected roads
+	for _, road := range analysis.Roads {
+		if road.LengthM < 100 { // Skip very short segments
+			continue
+		}
+
+		geojson, _ := json.Marshal(map[string]interface{}{
+			"type":        "LineString",
+			"coordinates": road.Points,
+		})
+
+		_, err := l.queries.CreateLearnedRoad(ctx, dbgen.CreateLearnedRoadParams{
+			ParkID:        parkID,
+			Geojson:       string(geojson),
+			LengthM:       ptrFloat64(road.LengthM),
+			MatchCount:    ptrInt64(int64(road.TrackCount)),
+			ConfidencePct: ptrFloat64(road.Confidence),
+		})
+		if err == nil {
+			result.NewRoads++
+			result.NewRoadsKm += road.LengthM / 1000.0
+			if road.Confidence > result.RoadConfidence {
+				result.RoadConfidence = road.Confidence
+			}
+		}
+	}
+
+	// Store detected airstrips
+	for _, airstrip := range analysis.Airstrips {
+		// Check for existing nearby airstrips first
+		existing, err := l.queries.FindNearbyAirstrips(ctx, dbgen.FindNearbyAirstripsParams{
+			ParkID: parkID,
+			Lat:    airstrip.Lat,
+			Lon:    airstrip.Lon,
+		})
+
+		if err == nil && len(existing) > 0 {
+			// Update existing
+			as := existing[0]
+			landingCount := int64(0)
+			takeoffCount := int64(0)
+			if airstrip.PatternType == "landing" {
+				landingCount = 1
+			} else {
+				takeoffCount = 1
+			}
+			newConfidence := math.Min(*as.ConfidencePct+10.0, 95.0)
+			l.queries.UpdateAirstripStats(ctx, dbgen.UpdateAirstripStatsParams{
+				LandingCount:  ptrInt64(landingCount),
+				TakeoffCount:  ptrInt64(takeoffCount),
+				ConfidencePct: ptrFloat64(newConfidence),
+				ID:            as.ID,
+			})
+		} else {
+			// Create new
+			landingCount := int64(0)
+			takeoffCount := int64(0)
+			if airstrip.PatternType == "landing" {
+				landingCount = 1
+			} else {
+				takeoffCount = 1
+			}
+
+			_, err := l.queries.CreateLearnedAirstrip(ctx, dbgen.CreateLearnedAirstripParams{
+				ParkID:        parkID,
+				Lat:           airstrip.Lat,
+				Lon:           airstrip.Lon,
+				HeadingDeg:    ptrFloat64(airstrip.HeadingDeg),
+				LengthM:       ptrFloat64(airstrip.LengthM),
+				AircraftType:  ptrString(airstrip.AircraftType),
+				LandingCount:  ptrInt64(landingCount),
+				TakeoffCount:  ptrInt64(takeoffCount),
+				ConfidencePct: ptrFloat64(airstrip.Confidence),
+				ApproachJson:  nil,
+			})
+			if err == nil {
+				result.NewAirstrips++
+				if airstrip.Confidence > result.AirstripConfidence {
+					result.AirstripConfidence = airstrip.Confidence
+				}
+			}
+		}
+	}
+
+	// Store detected bases
+	for _, base := range analysis.Bases {
+		// Check for existing nearby places
+		existing, err := l.queries.FindNearbyPlaces(ctx, dbgen.FindNearbyPlacesParams{
+			ParkID: parkID,
+			Lat:    base.Lat,
+			Lon:    base.Lon,
+		})
+
+		if err == nil && len(existing) > 0 {
+			// Update existing place
+			place := existing[0]
+			newConfidence := math.Min(*place.ConfidencePct+15.0, 95.0)
+			l.queries.UpdatePlaceStats(ctx, dbgen.UpdatePlaceStatsParams{
+				AvgDurationMinutes: ptrFloat64(base.AvgDurationMin),
+				ConfidencePct:      ptrFloat64(newConfidence),
+				ID:                 place.ID,
+			})
+		} else {
+			// Create new place
+			_, err := l.queries.CreateLearnedPlace(ctx, dbgen.CreateLearnedPlaceParams{
+				ParkID:             parkID,
+				Lat:                base.Lat,
+				Lon:                base.Lon,
+				PlaceType:          ptrString(base.PlaceType),
+				VisitCount:         ptrInt64(int64(base.TrackCount)),
+				AvgDurationMinutes: ptrFloat64(base.AvgDurationMin),
+				ConfidencePct:      ptrFloat64(base.Confidence),
+			})
+			if err == nil {
+				result.NewPlaces++
+				result.PlaceTypes[base.PlaceType]++
+				if base.Confidence > result.PlaceConfidence {
+					result.PlaceConfidence = base.Confidence
+				}
+			}
+		}
+	}
+}

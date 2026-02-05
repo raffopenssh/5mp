@@ -219,3 +219,20 @@ UNION ALL
 SELECT 'place' as type, id, park_id, confidence_pct, created_at FROM learned_places WHERE status = 'pending'
 ORDER BY created_at DESC LIMIT ?;
 
+
+-- name: InsertAutoApprovedFeature :exec
+INSERT INTO feature_geometries (feature_type, feature_id, park_id, geojson, bbox_minx, bbox_miny, bbox_maxx, bbox_maxy, properties_json)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(feature_type, feature_id) DO UPDATE SET
+    geojson = excluded.geojson,
+    bbox_minx = excluded.bbox_minx,
+    bbox_miny = excluded.bbox_miny,
+    bbox_maxx = excluded.bbox_maxx,
+    bbox_maxy = excluded.bbox_maxy,
+    properties_json = excluded.properties_json;
+
+-- name: GetAutoApprovedFeatures :many
+SELECT * FROM feature_geometries 
+WHERE park_id = ? 
+  AND json_extract(properties_json, '$.approval_status') = 'auto_approved'
+ORDER BY created_at DESC;

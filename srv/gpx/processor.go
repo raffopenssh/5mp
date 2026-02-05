@@ -34,15 +34,36 @@ type Track struct {
 
 // GPXData represents the parsed GPX file data.
 type GPXData struct {
-	Tracks []Track
-	Name   string
+	Tracks    []Track
+	Waypoints []Waypoint
+	Name      string
+}
+
+// Waypoint represents a GPX waypoint, commonly used for InReach messages.
+type Waypoint struct {
+	Lat       float64
+	Lon       float64
+	Elevation *float64
+	Time      *time.Time
+	Name      string
+	Desc      string // Message content from InReach devices
 }
 
 // GPX XML structures for parsing
 type gpxFile struct {
-	XMLName  xml.Name   `xml:"gpx"`
-	Metadata gpxMeta    `xml:"metadata"`
-	Tracks   []gpxTrack `xml:"trk"`
+	XMLName   xml.Name      `xml:"gpx"`
+	Metadata  gpxMeta       `xml:"metadata"`
+	Tracks    []gpxTrack    `xml:"trk"`
+	Waypoints []gpxWaypoint `xml:"wpt"`
+}
+
+type gpxWaypoint struct {
+	Lat       float64  `xml:"lat,attr"`
+	Lon       float64  `xml:"lon,attr"`
+	Elevation *float64 `xml:"ele"`
+	Time      string   `xml:"time"`
+	Name      string   `xml:"name"`
+	Desc      string   `xml:"desc"`
 }
 
 type gpxMeta struct {
@@ -77,8 +98,37 @@ func ParseGPX(r io.Reader) (*GPXData, error) {
 	}
 
 	data := &GPXData{
-		Name:   gpx.Metadata.Name,
-		Tracks: make([]Track, 0, len(gpx.Tracks)),
+		Name:      gpx.Metadata.Name,
+		Tracks:    make([]Track, 0, len(gpx.Tracks)),
+		Waypoints: make([]Waypoint, 0, len(gpx.Waypoints)),
+	}
+
+	// Parse waypoints (common for InReach messages)
+	for _, wpt := range gpx.Waypoints {
+		waypoint := Waypoint{
+			Lat:       wpt.Lat,
+			Lon:       wpt.Lon,
+			Elevation: wpt.Elevation,
+			Name:      wpt.Name,
+			Desc:      wpt.Desc,
+		}
+
+		if wpt.Time != "" {
+			// Try multiple time formats
+			for _, format := range []string{
+				time.RFC3339,
+				time.RFC3339Nano,
+				"2006-01-02T15:04:05Z",
+				"2006-01-02T15:04:05",
+			} {
+				if t, err := time.Parse(format, wpt.Time); err == nil {
+					waypoint.Time = &t
+					break
+				}
+			}
+		}
+
+		data.Waypoints = append(data.Waypoints, waypoint)
 	}
 
 	for _, trk := range gpx.Tracks {
