@@ -484,6 +484,23 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		return fmt.Errorf("update effort data: %w", err)
 	}
 
+	// Queue for learning - find park ID from first segment's location
+	var parkID *string
+	if len(segments) > 0 && len(segments[0].Points) > 0 && s.AreaStore != nil {
+		pt := segments[0].Points[0]
+		if area := s.AreaStore.FindArea(pt.Lat, pt.Lon); area != nil {
+			parkID = &area.ID
+		}
+	}
+	_, err = q.QueueGPXLearning(ctx, dbgen.QueueGPXLearningParams{
+		UploadID: &uploadID,
+		ParkID:   parkID,
+	})
+	if err != nil {
+		slog.Warn("failed to queue upload for learning", "uploadID", uploadID, "error", err)
+		// Don't fail the upload just because learning queue failed
+	}
+
 	return nil
 }
 

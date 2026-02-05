@@ -1128,7 +1128,7 @@
                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                         <path d="M2 12h20"></path>
                     </svg>
-                    5 Megapixels of Global Conservation
+                    FIVE MEGAPIXELS CONSERVATION EFFORT
                 </h2>
                 <button class="modal-close" onclick="closeModal('manifest')">×</button>
             </div>
@@ -5425,35 +5425,52 @@
         <div class="park-meta">${escapeHtml(park.country || '')}${park.area_km2 ? ' • ' + formatNumber(Math.round(park.area_km2)) + ' km²' : ''}</div>
     </div>
     
-    ${fire && fire.total_detections > 0 ? `
+    ${fire && fire.total_fires > 0 ? `
     <div class="narrative-section fire">
         <div class="narrative-title">◆ Fire Activity</div>
         <div class="narrative-stats">
-            <span>Total detections: ${formatNumber(fire.total_detections)}</span>
-            <span>Groups entered: ${formatNumber(fire.groups_entered || 0)}</span>
+            <span>Total detections: ${formatNumber(fire.total_fires)}</span>
             <span>Response rate: ${Math.round(fire.response_rate || 0)}%</span>
+            <span>Peak month: ${fire.peak_month || 'N/A'}</span>
         </div>
-        ${fire.narrative ? `<div class="narrative-text">${fire.narrative}</div>` : ''}
+        ${fire.summary ? `<div class="narrative-text">${fire.summary}</div>` : ''}
+        ${fire.narratives && fire.narratives.length > 0 ? `
+        <div class="fire-groups">
+            <div class="fire-groups-title">Recent Fire Groups (showing first 5):</div>
+            ${fire.narratives.slice(0, 5).map(n => `<div class="fire-group-item">${n.narrative}</div>`).join('')}
+        </div>` : ''}
     </div>` : ''}
     
-    ${deforest && deforest.total_area_km2 > 0 ? `
+    ${deforest && deforest.total_loss_km2 > 0 ? `
     <div class="narrative-section deforestation">
         <div class="narrative-title">▲ Deforestation</div>
         <div class="narrative-stats">
-            <span>Total area: ${deforest.total_area_km2?.toFixed(2) || 0} km²</span>
-            <span>Events: ${formatNumber(deforest.event_count || 0)}</span>
+            <span>Total loss: ${deforest.total_loss_km2?.toFixed(2) || 0} km²</span>
+            <span>Trend: ${deforest.trend_direction || 'unknown'} (${deforest.trend_percent_change > 0 ? '+' : ''}${deforest.trend_percent_change?.toFixed(1) || 0}%)</span>
+            <span>Worst year: ${deforest.worst_year || 'N/A'}</span>
         </div>
-        ${deforest.narrative ? `<div class="narrative-text">${deforest.narrative}</div>` : ''}
+        ${deforest.summary ? `<div class="narrative-text">${deforest.summary}</div>` : ''}
+        ${deforest.hotspots && deforest.hotspots.length > 0 ? `
+        <div class="hotspots">
+            <div class="hotspots-title">Deforestation Hotspots:</div>
+            ${deforest.hotspots.slice(0, 3).map(h => `<div class="hotspot-item">${h.name || h.description}: ${h.area_km2?.toFixed(2)} km²</div>`).join('')}
+        </div>` : ''}
     </div>` : ''}
     
-    ${settle && settle.total_settlements > 0 ? `
+    ${settle && settle.settlement_count > 0 ? `
     <div class="narrative-section settlements">
         <div class="narrative-title">■ Settlements</div>
         <div class="narrative-stats">
-            <span>Total: ${formatNumber(settle.total_settlements)}</span>
-            <span>Population estimate: ${formatNumber(settle.total_population || 0)}</span>
+            <span>Settlements: ${formatNumber(settle.settlement_count)}</span>
+            <span>Population: ${formatNumber(settle.total_population || 0)}</span>
+            <span>Density: ${settle.population_density_per_km2?.toFixed(1) || 0}/km²</span>
         </div>
-        ${settle.narrative ? `<div class="narrative-text">${settle.narrative}</div>` : ''}
+        ${settle.summary ? `<div class="narrative-text">${settle.summary}</div>` : ''}
+        ${settle.largest_settlements && settle.largest_settlements.length > 0 ? `
+        <div class="settlements-list">
+            <div class="settlements-title">Largest Settlements:</div>
+            ${settle.largest_settlements.slice(0, 3).map(s => `<div class="settlement-item">${s.name || 'Unnamed'}: pop. ${formatNumber(s.population || 0)}</div>`).join('')}
+        </div>` : ''}
     </div>` : ''}
     
     ${stats ? `

@@ -345,8 +345,7 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
             <button type="submit">Continue →</button>
         </form>
         <div class="footer">
-            <span class="footer-icon">🌱</span>
-            <span>Global Conservation Effort</span>
+            <span>FIVE MEGAPIXELS</span>
         </div>
     </div>
 </body>
