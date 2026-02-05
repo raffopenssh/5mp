@@ -299,3 +299,35 @@ WHERE park_id = ?3
   AND ABS(lat - ?1) < 0.01 AND ABS(lon - ?2) < 0.01
 ORDER BY dist_sq
 LIMIT 1;
+
+-- Upload Queue queries
+-- name: QueueUpload :one
+INSERT INTO upload_queue (user_id, user_email, filename, file_hash, file_content, status)
+VALUES (?, ?, ?, ?, ?, 'pending')
+RETURNING *;
+
+-- name: GetUploadQueueItem :one
+SELECT * FROM upload_queue WHERE id = ?;
+
+-- name: GetUploadQueueByHash :one
+SELECT * FROM upload_queue WHERE file_hash = ? AND status != 'failed' LIMIT 1;
+
+-- name: GetPendingUploads :many
+SELECT id, user_id, user_email, filename, file_hash, file_content, status, created_at 
+FROM upload_queue WHERE status = 'pending' ORDER BY created_at LIMIT ?;
+
+-- name: MarkUploadProcessing :exec
+UPDATE upload_queue SET status = 'processing', started_at = CURRENT_TIMESTAMP WHERE id = ?;
+
+-- name: MarkUploadCompleted :exec
+UPDATE upload_queue SET status = 'completed', completed_at = CURRENT_TIMESTAMP, result_upload_id = ?, result_json = ? WHERE id = ?;
+
+-- name: MarkUploadFailed :exec
+UPDATE upload_queue SET status = 'failed', completed_at = CURRENT_TIMESTAMP, error_message = ? WHERE id = ?;
+
+-- name: GetUploadQueueStatus :one
+SELECT id, status, error_message, result_upload_id, result_json, created_at, completed_at
+FROM upload_queue WHERE id = ?;
+
+-- name: CleanupOldQueueItems :exec
+DELETE FROM upload_queue WHERE completed_at < datetime('now', '-7 days');
