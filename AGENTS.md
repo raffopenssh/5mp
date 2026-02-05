@@ -1,23 +1,40 @@
 # Agent Instructions - 5MP Conservation Monitoring
 
-## Project Overview
+## Quick Context
 
-A Go web application for conservation monitoring of 162 African keystone protected areas. Features an interactive 3D globe visualization with fire detection, deforestation analysis, settlement data, and legal framework information.
+Go web app for conservation monitoring of 162 African protected areas.
+Interactive 3D globe with fire detection, deforestation, settlements, patrol tracking.
 
-**Tech Stack:** Go, SQLite, HTML/CSS/JS (MapLibre GL for globe)
+**Live URL:** https://five-megapixel-conservation.exe.xyz:8000/?pwd=test2026
 
-**Live URL:** https://fivemp-testing.exe.xyz:8000/?pwd=test2026
+---
+
+## ⚠️ DATABASE PROTECTION
+
+**The database has 5M+ fire records. DO NOT:**
+- Run DELETE/DROP without confirmation
+- UPDATE without WHERE clause
+- Truncate any tables
+
+**ALWAYS:**
+- Use LIMIT when exploring
+- Back up before schema changes: `cp db.sqlite3 db.sqlite3.bak`
 
 ---
 
 ## Key Files
 
-- `cmd/srv/main.go` - Entry point
-- `srv/server.go` - HTTP server and routing
-- `srv/templates/globe.html` - Main UI (single-page app)
-- `srv/narrative_handlers.go` - Fire/deforestation/settlement narrative APIs
-- `srv/api.go` - Other API endpoints
-- `db.sqlite3` - SQLite database (~1.3GB)
+| File | Purpose |
+|------|---------|
+| `cmd/srv/main.go` | Entry point |
+| `srv/server.go` | HTTP routing |
+| `srv/templates/globe.html` | Main UI (single-page app) |
+| `srv/api.go` | API endpoints |
+| `srv/narrative_handlers.go` | Fire/deforestation/settlement narratives |
+| `srv/fire_realtime_handlers.go` | NRT fire analysis |
+| `srv/upload.go` | GPX upload handlers |
+| `srv/upload_queue.go` | Async upload processor |
+| `db.sqlite3` | SQLite database (~1.5GB) |
 
 ---
 
@@ -27,26 +44,96 @@ A Go web application for conservation monitoring of 162 African keystone protect
 make build && ./server
 ```
 
-Access at: http://localhost:8000/?pwd=test2026
+Access: http://localhost:8000/?pwd=test2026
 
 ---
 
-## Important Notes
+## Key APIs
 
-1. Database is ~1.3GB - be careful with queries
-2. Fire data has 1.7M records - use LIMIT
-3. All endpoints require `?pwd=` or session cookie
-4. Static DB download: `/static/downloads/5mp_data.sqlite3`
+```bash
+# Park stats
+curl "http://localhost:8000/api/parks/COD_Virunga/stats?pwd=test2026"
+
+# Fire realtime (groups/trajectories)
+curl "http://localhost:8000/api/parks/COD_Virunga/fire-realtime?pwd=test2026&days=28"
+
+# Fire alerts
+curl "http://localhost:8000/api/fire-alerts?pwd=test2026&limit=10"
+
+# Grid data with filters
+curl "http://localhost:8000/api/grid?pwd=test2026&type=foot,vehicle&bbox=28,-6,37,2"
+
+# Async upload
+curl -X POST "http://localhost:8000/api/upload/async?pwd=test2026" -F "gpx=@file.gpx"
+```
 
 ---
 
-## Current Sprint Status
+## Database Stats
 
-See TODO.md for completed items and remaining P3 tasks.
-See CONTINUATION.md for technical details and known limitations.
+| Table | Records | Description |
+|-------|---------|-------------|
+| fire_detections | ~5M | FIRMS satellite fires |
+| park_settlements | 15K | GHSL built-up areas |
+| deforestation_events | 300 | Hansen forest loss |
+| osm_places | 10K | Place names for narratives |
+| gpx_uploads | varies | Uploaded patrol tracks |
+| effort_data | varies | Aggregated patrol effort |
+| fire_group_alerts | varies | Active fire group alerts |
 
 ---
 
-## Test Credentials
+## Background Workers
 
-- **App Password:** test2026
+1. **Upload Queue** - Processes GPX uploads async (every 2s)
+2. **GPX Learner** - Pattern detection from uploads
+3. **Fire NRT Daily** - Downloads fire data (3am UTC)
+4. **Fire Backfill** - Historical data download (4am UTC)
+
+---
+
+## Test Parks
+
+- **COD_Virunga** - Full data coverage, good for testing
+- **CMR_Nki** - Pristine (0 settlements)
+- **TZA_Serengeti** - Well-documented
+
+---
+
+## Credentials
+
+| Type | Value |
+|------|-------|
+| App Passwords | test2026, REDACTED_PWD, REDACTED_PWD |
+| Admin | see secrets.env |
+
+---
+
+## Documentation
+
+See `docs/` directory:
+- `README.md` - Overview
+- `INSTALL.md` - Setup guide
+- `API.md` - API reference
+- `DATABASE.md` - Schema docs
+- `ARCHITECTURE.md` - System design
+- `SHELLEY_PROMPT_UI.md` - UI development
+- `SHELLEY_PROMPT_ADMIN_UI.md` - Admin panel
+
+---
+
+## Current Status
+
+See `TODO.md` for sprint status.
+
+**Working Features:**
+- Fire detection with NRT data and trajectory analysis
+- Deforestation and settlement narratives
+- GPX upload with async processing
+- Fire group alerts and notifications
+- Starring and report builder
+- Search, filters, sharing
+
+**In Progress:**
+- Fire data backfill (Jan 2025 - present)
+- UI refinements
