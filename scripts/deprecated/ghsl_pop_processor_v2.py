@@ -12,6 +12,7 @@ Usage:
 import argparse
 import sqlite3
 import math
+import sys
 from pathlib import Path
 
 try:
@@ -116,7 +117,7 @@ def process_park(conn, dataset, park_id, transformer):
         pop = get_population_at_point(dataset, s_lat, s_lon, transformer)
         
         conn.execute('''
-            UPDATE park_settlements SET population_2030 = ? WHERE id = ?
+            UPDATE park_settlements SET population_est = ? WHERE id = ?
         ''', (pop, s_id))
         
         total_pop += pop
@@ -138,15 +139,20 @@ def get_all_park_ids(conn):
 
 
 def ensure_column_exists(conn):
-    """Ensure population_2030 column exists."""
+    """Ensure population_est column exists (should already be there)."""
+    # Column population_est already exists in the schema
+    # No action needed, but we'll check
     try:
-        conn.execute('ALTER TABLE park_settlements ADD COLUMN population_2030 INTEGER')
-        conn.commit()
+        conn.execute('SELECT population_est FROM park_settlements LIMIT 1')
     except sqlite3.OperationalError:
-        pass  # Column already exists
+        conn.execute('ALTER TABLE park_settlements ADD COLUMN population_est INTEGER DEFAULT 0')
+        conn.commit()
 
 
 def main():
+    # Unbuffered output for log files
+    sys.stdout = sys.stderr = open(sys.stdout.fileno(), 'w', buffering=1)
+    
     parser = argparse.ArgumentParser(description='Process GHSL population data (memory efficient)')
     parser.add_argument('--zip', required=True, help='Path to GHSL POP ZIP file')
     parser.add_argument('--park', help='Specific park ID')

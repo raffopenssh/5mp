@@ -2,9 +2,25 @@
 
 ## Overview
 
-SQLite database with ~1.5GB of conservation data.
+SQLite database (~1.8GB) with conservation data for 162 African protected areas.
 
-**Download:** https://five-megapixel-conservation.exe.xyz:8000/static/downloads/five-megapixel-conservation_latest.sqlite3
+**Download:** https://five-megapixel-conservation.exe.xyz:8000/static/downloads/5mp_data_latest.sqlite3.gz (508 MB compressed)
+
+**Last Updated:** 2026-02-06
+
+---
+
+## Database Statistics
+
+| Table | Records | Description |
+|-------|---------|-------------|
+| fire_detections | 5,667,773 | VIIRS satellite fire detections |
+| feature_geometries | 279,749 | GeoJSON for fires/settlements/deforestation/roads |
+| park_settlements | 15,066 | Settlement centroids with population |
+| deforestation_events | 3,218 | Forest loss polygons |
+| osm_places | 10,600 | Place names for narratives |
+| osm_roadless_data | 162 | Road networks by park |
+| fire_group_alerts | 271 | Active fire group alerts |
 
 ---
 
@@ -18,15 +34,60 @@ Satellite fire detection data from NASA FIRMS (VIIRS sensor).
 | id | INTEGER | Primary key |
 | latitude | REAL | Fire location |
 | longitude | REAL | Fire location |
-| brightness | REAL | Fire intensity |
+| brightness | REAL | Fire intensity (Kelvin) |
 | acq_date | TEXT | Acquisition date (YYYY-MM-DD) |
-| acq_time | TEXT | Acquisition time |
-| confidence | TEXT | Detection confidence |
-| frp | REAL | Fire Radiative Power |
+| acq_time | TEXT | Acquisition time (HHMM) |
+| satellite | TEXT | N=Suomi NPP, 1=NOAA-20, 2=NOAA-21 |
+| confidence | TEXT | low/nominal/high |
+| frp | REAL | Fire Radiative Power (MW) |
+| daynight | TEXT | D=day, N=night |
 | protected_area_id | TEXT | Park ID if inside boundary |
 
-**Records:** ~5M (as of Feb 2026)
-**Source:** NASA FIRMS VIIRS NRT and historical
+**Records:** 5,667,773  
+**Date Range:** 2020-01-01 to present  
+**Source:** NASA FIRMS VIIRS NRT and archive
+
+### feature_geometries
+Unified GeoJSON storage for all spatial features.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key |
+| feature_type | TEXT | fire_trajectory/deforestation/settlement/road |
+| feature_id | TEXT | Unique feature reference |
+| park_id | TEXT | Protected area ID |
+| geojson | TEXT | Full GeoJSON geometry |
+| bbox_minx/miny/maxx/maxy | REAL | Bounding box |
+| start_date | TEXT | For time filtering |
+| end_date | TEXT | For time filtering |
+| properties_json | TEXT | Additional properties |
+
+**Records by type:**
+- fire_trajectory: 50,899
+- deforestation: 153,980  
+- settlement: 64,016
+- road: 10,854
+
+### park_settlements
+GHSL settlement/built-up area data with population estimates.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key |
+| park_id | TEXT | Protected area ID |
+| lat | REAL | Settlement centroid |
+| lon | REAL | Settlement centroid |
+| area_m2 | REAL | Built-up area (m²) |
+| population_est | INTEGER | GHSL 2030 population estimate |
+| households_est | INTEGER | Estimated households |
+| nearest_place | TEXT | Nearest OSM place name |
+| distance_to_place_km | REAL | Distance to nearest place |
+| direction_from_place | TEXT | Cardinal direction |
+| settlement_type | TEXT | temporary/permanent |
+| in_buffer | INTEGER | 1 if in 10km buffer zone |
+
+**Records:** 15,066  
+**Source:** GHSL GHS-BUILT-S 2018 + GHS-POP 2030
 
 ### deforestation_events
 Hansen Global Forest Change data.
@@ -39,26 +100,12 @@ Hansen Global Forest Change data.
 | area_km2 | REAL | Area lost |
 | lat | REAL | Centroid latitude |
 | lon | REAL | Centroid longitude |
+| geojson | TEXT | Polygon geometry |
 | event_type | TEXT | Classification |
+| pattern_type | TEXT | clearing/road/encroachment |
 
-**Records:** ~300
+**Records:** 3,218  
 **Source:** Hansen Global Forest Change v1.10
-
-### park_settlements
-GHSL settlement/built-up area data.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INTEGER | Primary key |
-| park_id | TEXT | Protected area ID |
-| lat | REAL | Settlement centroid |
-| lon | REAL | Settlement centroid |
-| area_m2 | REAL | Built-up area |
-| population_est | INTEGER | Estimated population |
-| households_est | INTEGER | Estimated households |
-
-**Records:** ~15,000
-**Source:** GHSL GHS-BUILT-S 2018
 
 ### osm_places
 OpenStreetMap place names for narrative context.
@@ -66,14 +113,68 @@ OpenStreetMap place names for narrative context.
 | Column | Type | Description |
 |--------|------|-------------|
 | id | INTEGER | Primary key |
+| park_id | TEXT | Protected area ID |
 | name | TEXT | Place name |
 | lat | REAL | Location |
 | lon | REAL | Location |
 | place_type | TEXT | city/town/village/hamlet |
-| population | INTEGER | If available |
+| geojson | TEXT | Point geometry (optional) |
+| osm_id | TEXT | OpenStreetMap ID |
 
-**Records:** ~10,600
+**Records:** 10,600  
 **Source:** OpenStreetMap via Overpass API
+
+### osm_roadless_data
+Road network analysis by park.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key |
+| park_id | TEXT | Protected area ID |
+| total_area_km2 | REAL | Park area |
+| roaded_area_km2 | REAL | Area within 1km of roads |
+| roadless_area_km2 | REAL | Roadless area |
+| roadless_percentage | REAL | % roadless |
+| road_length_km | REAL | Total road length |
+| road_density_km_per_km2 | REAL | Road density |
+| roads_json | TEXT | Road LineStrings GeoJSON |
+| buffer_roads_json | TEXT | Buffer zone roads |
+
+**Records:** 162 (all parks)  
+**Source:** OpenStreetMap
+
+---
+
+## Alert & Analysis Tables
+
+### fire_group_alerts
+Real-time fire group tracking alerts.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key |
+| park_id | TEXT | Protected area |
+| group_name | TEXT | NATO phonetic name (Alpha, Bravo...) |
+| alert_type | TEXT | entered/active_inside/left |
+| first_detected_at | TIMESTAMP | First detection |
+| fire_count | INTEGER | Fires in group |
+| days_active | INTEGER | Days burning |
+| movement_direction | TEXT | N/S/E/W/stationary |
+| centroid_lat/lon | REAL | Group center |
+| latest_lat/lon | REAL | Last known position |
+| is_dismissed | BOOLEAN | User dismissed |
+
+### park_group_infractions
+Historical fire pattern analysis.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| park_id | TEXT | Protected area |
+| year | INTEGER | Year |
+| total_groups | INTEGER | Fire groups detected |
+| transhumance_groups | INTEGER | Long-range movement |
+| herder_groups | INTEGER | Local herding pattern |
+| stationary_groups | INTEGER | Fixed location fires |
 
 ---
 
@@ -91,13 +192,13 @@ Uploaded GPX track files.
 | upload_date | TIMESTAMP | Upload time |
 | total_distance_km | REAL | Track distance |
 | movement_type | TEXT | foot/vehicle/aircraft |
+| park_id | TEXT | Detected park |
 
 ### effort_data
 Aggregated patrol effort by grid cell.
 
 | Column | Type | Description |
 |--------|------|-------------|
-| id | INTEGER | Primary key |
 | grid_cell_id | TEXT | Grid cell reference |
 | year | INTEGER | Year |
 | month | INTEGER | Month (1-12) |
@@ -114,37 +215,6 @@ Aggregated patrol effort by grid cell.
 | id | TEXT | Cell ID (e.g., "-0.5_29.4") |
 | lat_center | REAL | Center latitude |
 | lon_center | REAL | Center longitude |
-| lat_min/max | REAL | Boundaries |
-| lon_min/max | REAL | Boundaries |
-
----
-
-## Analysis Tables
-
-### fire_group_alerts
-Real-time fire group tracking alerts.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INTEGER | Primary key |
-| park_id | TEXT | Protected area |
-| group_name | TEXT | NATO phonetic name |
-| alert_type | TEXT | entered/active_inside/left |
-| fire_count | INTEGER | Fires in group |
-| days_active | INTEGER | Days burning |
-| movement_direction | TEXT | N/S/E/W |
-| lat/lon | REAL | Last known position |
-
-### park_group_infractions
-Historical fire infraction analysis.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| park_id | TEXT | Protected area |
-| year | INTEGER | Year |
-| total_groups | INTEGER | Fire groups detected |
-| transhumance_groups | INTEGER | Long-range movement |
-| herder_groups | INTEGER | Local herding pattern |
 
 ---
 
@@ -162,40 +232,12 @@ Async upload processing queue.
 | status | TEXT | pending/processing/completed/failed |
 | result_json | TEXT | Processing result |
 
-### gpx_learning_queue
-Pattern learning queue.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INTEGER | Primary key |
-| upload_id | INTEGER | FK to gpx_uploads |
-| park_id | TEXT | Protected area |
-| status | TEXT | pending/processing/completed/failed |
-
 ---
 
-## Data Coverage by Park
+## Parks with No Settlements (Pristine)
 
-### Fire Data (2018-2026)
-All 162 parks have fire detection data.
-
-### Deforestation (2018-2023)
-~140 parks with measurable forest loss.
-
-### Settlements
-161 parks processed (1 park has no GHSL data).
-
-### Parks with Full Coverage
-| Park ID | Fire | Deforest | Settle | Roads |
-|---------|------|----------|--------|-------|
-| COD_Virunga | ✓ | ✓ | ✓ | ✓ |
-| TZA_Serengeti | ✓ | ✓ | ✓ | ✓ |
-| KEN_Masai_Mara | ✓ | ✓ | ✓ | ✓ |
-| ... | | | | |
-
-### Pristine Parks (No Settlements)
 - CMR_Nki
-- COG_Nouabalé-Ndoki
+- COG_Nouabalé-Ndoki  
 - GAB_Monts_Birougou
 - GAB_Plateaux_Baték
 - KEN_Sibiloi
@@ -211,33 +253,25 @@ All 162 parks have fire detection data.
 | Fire (NRT) | Daily 3am UTC | Systemd timer |
 | Fire (backfill) | Daily 4am UTC | Systemd timer |
 | Deforestation | Annual | Manual script |
-| Settlements | As needed | Manual script |
+| Settlements/Pop | As needed | Manual script |
 | Place names | As needed | Manual script |
+| Roads | As needed | Manual script |
 
 ---
 
 ## Useful Queries
 
-### Fire count by park
+### Fire count by park (last 30 days)
 ```sql
 SELECT protected_area_id, COUNT(*) as fires
 FROM fire_detections
-WHERE acq_date >= '2025-01-01'
+WHERE acq_date >= date('now', '-30 days')
 GROUP BY protected_area_id
 ORDER BY fires DESC
 LIMIT 10;
 ```
 
-### Recent fire activity
-```sql
-SELECT protected_area_id, acq_date, COUNT(*) as fires
-FROM fire_detections
-WHERE acq_date >= date('now', '-7 days')
-GROUP BY protected_area_id, acq_date
-ORDER BY acq_date DESC, fires DESC;
-```
-
-### Settlement density
+### Settlement population by park
 ```sql
 SELECT park_id, COUNT(*) as settlements, SUM(population_est) as population
 FROM park_settlements
@@ -246,12 +280,27 @@ ORDER BY population DESC
 LIMIT 10;
 ```
 
-### Patrol coverage
+### Feature geometry counts
 ```sql
-SELECT grid_cell_id, SUM(total_distance_km) as km
-FROM effort_data
-WHERE year = 2025
-GROUP BY grid_cell_id
-ORDER BY km DESC
-LIMIT 20;
+SELECT feature_type, COUNT(*) as count
+FROM feature_geometries
+GROUP BY feature_type;
+```
+
+### Recent fire trajectories for a park
+```sql
+SELECT feature_id, start_date, end_date, properties_json
+FROM feature_geometries
+WHERE park_id = 'COD_Virunga' 
+  AND feature_type = 'fire_trajectory'
+  AND end_date >= date('now', '-7 days')
+ORDER BY end_date DESC;
+```
+
+### Roadless percentage ranking
+```sql
+SELECT park_id, roadless_percentage, road_density_km_per_km2
+FROM osm_roadless_data
+ORDER BY roadless_percentage DESC
+LIMIT 10;
 ```
