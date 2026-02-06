@@ -1,83 +1,78 @@
-# 5MP Globe - UI Stabilization Sprint
+# 5MP Conservation Monitoring - Project Status
 
-## COMPLETED
+## ✅ Completed Features
 
-### Critical (P0)
-- [x] Park tooltip working across browsers (Safari, Firefox, Chrome, DuckDuckGo Android)
-- [x] Anonymous GPX uploads (login hidden)
+### Core Visualization
+- [x] 3D Globe with 162 African protected areas
+- [x] Fire detection data with trajectory analysis
+- [x] Deforestation analysis with trend visualization
+- [x] Settlement/GHSL data with pattern analysis
+- [x] Patrol effort grid visualization
+- [x] Legal framework information
 
-### High Priority (P1)
-- [x] Share link icon and state preservation
-- [x] Unified search for parks/countries/regions with autocomplete
-- [x] Search sets country filter
-- [x] Stats adapt to visible map bounds
+### Fire System
+- [x] FIRMS NRT fire data integration
+- [x] Fire group trajectory detection
+- [x] Fire alerts (entered/active_inside/left)
+- [x] NATO phonetic naming for groups
+- [x] Trajectory toggle from notifications
+- [x] Fire narrative generation with OSM places
 
-### Medium Priority (P2)
-- [x] 5MP modal updated (removed "coming soon")
-- [x] CSV download with filter in filename
-- [x] Roadless indicator tooltip
-- [x] Duplicate filters removed
+### Upload System
+- [x] GPX upload (sync and async)
+- [x] Upload validation and classification
+- [x] Background processing queue
+- [x] Deduplication by file hash
+- [x] Movement type detection (foot/vehicle/aerial)
+
+### User Features
+- [x] Search (parks, countries, regions)
+- [x] Filtering (country, movement type, date range, bbox)
+- [x] Starring system for reports
+- [x] Export (CSV, HTML reports, RSS)
+- [x] Share URL with state preservation
+- [x] Anonymous uploads (no login required)
 
 ### Narratives
-- [x] Fire trajectories with OSM place references
-- [x] Deforestation narratives with location context and pattern descriptions
-- [x] Settlement narratives with place-based references and pattern assessment
-- [x] Top 10 display with "load more" for all narrative types
-- [x] Collapsible popup sections
-
-### Starring / Report Builder
-- [x] Star button in toolbar with item count badge
-- [x] Star parks from search results and popup header
-- [x] Star countries from search results
-- [x] Star bounding box selections
-- [x] Star notifications
-- [x] Star narrative sections (fire, settlements, deforestation, roads)
-- [x] Star modal showing all starred items by category
-- [x] Collapsible item details with content preview
-- [x] Copy link with starred items encoded in URL
-- [x] Export report as HTML with dark theme
-- [x] Report includes metadata (date, version, time range, item count)
-- [x] Session storage persistence for starred items
-- [x] Starred items restored from URL on page load
+- [x] Fire narratives with hotspots and trends
+- [x] Deforestation narratives with location context
+- [x] Settlement narratives with pattern analysis
+- [x] Top 10 display with "load more"
+- [x] OSM place name integration
 
 ---
 
-## REMAINING (P3 - UI Simplification)
+## 🔄 In Progress
 
-- [x] Remove "Click a park to select" text - Done (already removed)
-- [ ] 162 toggle behavior - With bbox, deselect 162, show bbox park count
-- [x] Parks as tags with country codes, allow deselect - Done (country tags show counts, park tags show country codes)
-- [x] Country filter section removed - Countries now shown as tags from selected parks
-- [ ] Refactor panels - Move bbox selector to Selected Parks
-- [x] Remove title text - Done: Globe icon resets map view to Africa
+### Fire Data Backfill
+- [x] 2025-01 through 2025-09: ~900K records
+- [ ] 2025-10 through 2025-12: In progress (~78 days remaining)
+- Automatic daily updates running
 
----
-
-## KNOWN ISSUES
-
-- Settlement display uses old format ("X at Y sector") instead of new format ("X km² near Y") on some deployments - may need cache clear
-- Deforestation/settlement classification is basic (scattered/clustered/linear) - does not distinguish farms/logging/charcoal/mines
+### Documentation
+- [x] API reference
+- [x] Database schema
+- [x] Installation guide
+- [x] Architecture docs
+- [ ] User manual for park managers
 
 ---
 
-## Data Download
+## 📋 Remaining Tasks
 
-Database available at: `/static/downloads/5mp_data.sqlite3`
+### Data Quality
+- [ ] Deforestation classification improvements (farms vs logging vs charcoal)
+- [ ] Settlement classification (hamlets vs farms vs mines)
+
+### Admin
+- [ ] Admin dashboard for monitoring
+- [ ] User management
 
 ---
 
-## Test Data
+## 🔗 Resources
 
-GPX test files in `data/` directory:
-- test_patrol_1.gpx through test_patrol_7.gpx
-- test_patrol_virunga.gpx, virunga_patrol.gpx
-
-## Testing Checklist
-
-- [x] Safari 18.6 - tooltips work
-- [x] Firefox 146 - tooltips work  
-- [x] Chrome - tooltips work
-- [x] Share link preserves state
-- [x] Search finds parks and countries
-- [ ] CSV download works
-- [ ] GPX upload works with test files
+- **Live App:** https://five-megapixel-conservation.exe.xyz:8000/?pwd=test2026
+- **DB Download:** https://five-megapixel-conservation.exe.xyz:8000/static/downloads/five-megapixel-conservation_latest.sqlite3
+- **GitHub:** https://github.com/raffopenssh/5mp
+- **Docs:** See `docs/` directory

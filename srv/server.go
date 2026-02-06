@@ -25,6 +25,7 @@ type Server struct {
 	LegalStore   *LegalStore
 	GADMStore    *GADMStore
 	GPXLearner   *GPXLearner
+	UploadQueueProcessor *UploadQueueProcessor
 }
 
 type pageData struct {
@@ -48,6 +49,10 @@ func New(dbPath, hostname string) (*Server, error) {
 	// Start the GPX learner background processor
 	srv.GPXLearner = NewGPXLearner(srv.DB)
 	srv.GPXLearner.Start()
+
+	// Start the upload queue processor
+	srv.UploadQueueProcessor = NewUploadQueueProcessor(srv.DB, srv)
+	srv.UploadQueueProcessor.Start()
 	
 	return srv, nil
 }
@@ -108,6 +113,10 @@ func (s *Server) Serve(addr string) error {
 	// Protected routes (require auth)
 	mux.HandleFunc("GET /upload", s.HandleUploadPage)
 	mux.HandleFunc("POST /upload", s.HandleUpload)
+
+	// Async upload endpoints
+	mux.HandleFunc("POST /api/upload/async", s.HandleAsyncUpload)
+	mux.HandleFunc("GET /api/upload/status/{id}", s.HandleUploadStatus)
 	
 	// Admin routes (require admin role)
 	mux.HandleFunc("GET /admin", s.RequireAdmin(s.HandleAdminPage))
