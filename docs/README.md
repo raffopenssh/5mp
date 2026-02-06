@@ -49,7 +49,7 @@ A Go web application for conservation monitoring of 162 African keystone protect
 ### Analysis
 - **Fire Trajectories** - Group movement tracking with NATO phonetic names
 - **Fire Alerts** - Real-time notifications for groups entering parks
-- **Narrative Generation** - AI-ready text descriptions using OSM place names
+- **Narrative Generation** - text descriptions using OSM place names
 - **Legal Frameworks** - Conservation law information for 19 countries
 
 ### User Features
