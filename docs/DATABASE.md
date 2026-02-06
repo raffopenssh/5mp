@@ -4,7 +4,9 @@
 
 SQLite database (~1.8GB) with conservation data for 162 African protected areas.
 
-**Download:** https://five-megapixel-conservation.exe.xyz:8000/static/downloads/5mp_data_latest.sqlite3 (1.7 GB)
+**Download:** https://five-megapixel-conservation.exe.xyz:8000/static/downloads/5mp_data_latest.sqlite3 (1.7 GB)  
+**MD5:** https://five-megapixel-conservation.exe.xyz:8000/static/downloads/5mp_data_latest.sqlite3.md5  
+**Checksum:** `4bc0e551691b2c3cea9afe02291b57f6`
 
 **Last Updated:** 2026-02-06
 
