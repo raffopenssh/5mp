@@ -513,6 +513,22 @@ type TrackPoint struct {
 	GridCellID *string    `json:"grid_cell_id"`
 }
 
+type UploadQueue struct {
+	ID             int64      `json:"id"`
+	UserID         string     `json:"user_id"`
+	UserEmail      string     `json:"user_email"`
+	Filename       string     `json:"filename"`
+	FileHash       *string    `json:"file_hash"`
+	FileContent    []byte     `json:"file_content"`
+	Status         string     `json:"status"`
+	ErrorMessage   *string    `json:"error_message"`
+	CreatedAt      *time.Time `json:"created_at"`
+	StartedAt      *time.Time `json:"started_at"`
+	CompletedAt    *time.Time `json:"completed_at"`
+	ResultUploadID *int64     `json:"result_upload_id"`
+	ResultJson     *string    `json:"result_json"`
+}
+
 type User struct {
 	ID               string     `json:"id"`
 	Email            string     `json:"email"`

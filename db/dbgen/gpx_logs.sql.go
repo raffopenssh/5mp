@@ -332,3 +332,17 @@ func (q *Queries) ListGPXUploadLogsByPark(ctx context.Context, arg ListGPXUpload
 	}
 	return items, nil
 }
+
+const updateGPXUploadLogUploadID = `-- name: UpdateGPXUploadLogUploadID :exec
+UPDATE gpx_upload_logs SET upload_id = ? WHERE id = ?
+`
+
+type UpdateGPXUploadLogUploadIDParams struct {
+	UploadID *int64 `json:"upload_id"`
+	ID       int64  `json:"id"`
+}
+
+func (q *Queries) UpdateGPXUploadLogUploadID(ctx context.Context, arg UpdateGPXUploadLogUploadIDParams) error {
+	_, err := q.db.ExecContext(ctx, updateGPXUploadLogUploadID, arg.UploadID, arg.ID)
+	return err
+}

@@ -365,9 +365,9 @@ const (
 // - gpx_uploads record for metadata
 // - track_points (sampled if > maxTrackPointsPerUpload)
 // - effort_data grid cell aggregates
-func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename, fileHash string, segments []gpx.Segment) error {
+func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename, fileHash string, segments []gpx.Segment) (int64, error) {
 	if len(segments) == 0 {
-		return nil
+		return 0, nil
 	}
 
 	q := dbgen.New(s.DB)
@@ -386,7 +386,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 			CreatedAt:        time.Now(),
 		})
 		if err != nil {
-			return fmt.Errorf("create user: %w", err)
+			return 0, fmt.Errorf("create user: %w", err)
 		}
 	}
 
@@ -433,7 +433,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		ProcessingStatus: &processingStatus,
 	})
 	if err != nil {
-		return fmt.Errorf("create gpx upload: %w", err)
+		return 0, fmt.Errorf("create gpx upload: %w", err)
 	}
 
 	// Collect all points from all segments
@@ -462,7 +462,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 			LonMax:    lonMax,
 		})
 		if err != nil {
-			return fmt.Errorf("create grid cell: %w", err)
+			return 0, fmt.Errorf("create grid cell: %w", err)
 		}
 
 		gridCellIDPtr := &gridCellID
@@ -475,7 +475,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 			GridCellID: gridCellIDPtr,
 		})
 		if err != nil {
-			return fmt.Errorf("create track point: %w", err)
+			return 0, fmt.Errorf("create track point: %w", err)
 		}
 	}
 
@@ -509,7 +509,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		}
 	}
 
-	return nil
+	return uploadID, nil
 }
 
 // samplePoints returns a subset of points, evenly distributed across the input.
@@ -866,11 +866,13 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		}
 	}
 	
-	// Get upload_id (may be nil if we haven't persisted the upload yet)
+	// Get upload_id - we'll update this after persisting
 	var uploadID *int64
+	var logID int64
+	var err error
 	
 	// Log the upload processing
-	_, err := q.CreateGPXUploadLog(ctx, dbgen.CreateGPXUploadLogParams{
+	logID, err = q.CreateGPXUploadLog(ctx, dbgen.CreateGPXUploadLogParams{
 		UploadID:              uploadID,
 		UserID:                userID,
 		UserEmail:             &userEmail,
@@ -913,8 +915,19 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		}
 		
 		if len(patrolOnlySegments) > 0 {
-			if err := s.persistUpload(ctx, userID, userEmail, filename, fileHash, patrolOnlySegments); err != nil {
+			persistID, err := s.persistUpload(ctx, userID, userEmail, filename, fileHash, patrolOnlySegments)
+			if err != nil {
 				return validationResult, err
+			}
+			if persistID > 0 {
+				uploadID = &persistID
+				// Update the log with the upload_id
+				if logID > 0 {
+					_ = q.UpdateGPXUploadLogUploadID(ctx, dbgen.UpdateGPXUploadLogUploadIDParams{
+						UploadID: uploadID,
+						ID:       logID,
+					})
+				}
 			}
 		}
 	}

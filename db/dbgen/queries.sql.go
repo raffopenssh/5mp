@@ -10,6 +10,15 @@ import (
 	"time"
 )
 
+const cleanupOldQueueItems = `-- name: CleanupOldQueueItems :exec
+DELETE FROM upload_queue WHERE completed_at < datetime('now', '-7 days')
+`
+
+func (q *Queries) CleanupOldQueueItems(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, cleanupOldQueueItems)
+	return err
+}
+
 const countActivePixels = `-- name: CountActivePixels :one
 SELECT COUNT(DISTINCT grid_cell_id) as count FROM effort_data WHERE year = ?
 `
@@ -963,6 +972,54 @@ func (q *Queries) GetParkDocumentsByCategory(ctx context.Context, arg GetParkDoc
 	return items, nil
 }
 
+const getPendingUploads = `-- name: GetPendingUploads :many
+SELECT id, user_id, user_email, filename, file_hash, file_content, status, created_at 
+FROM upload_queue WHERE status = 'pending' ORDER BY created_at LIMIT ?
+`
+
+type GetPendingUploadsRow struct {
+	ID          int64      `json:"id"`
+	UserID      string     `json:"user_id"`
+	UserEmail   string     `json:"user_email"`
+	Filename    string     `json:"filename"`
+	FileHash    *string    `json:"file_hash"`
+	FileContent []byte     `json:"file_content"`
+	Status      string     `json:"status"`
+	CreatedAt   *time.Time `json:"created_at"`
+}
+
+func (q *Queries) GetPendingUploads(ctx context.Context, limit int64) ([]GetPendingUploadsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPendingUploads, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetPendingUploadsRow{}
+	for rows.Next() {
+		var i GetPendingUploadsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.UserEmail,
+			&i.Filename,
+			&i.FileHash,
+			&i.FileContent,
+			&i.Status,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSession = `-- name: GetSession :one
 SELECT s.id, s.user_id, s.created_at, s.expires_at, u.email, u.name, u.role 
 FROM sessions s
@@ -1291,6 +1348,86 @@ func (q *Queries) GetTrackPointsByUpload(ctx context.Context, uploadID int64) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+const getUploadQueueByHash = `-- name: GetUploadQueueByHash :one
+SELECT id, user_id, user_email, filename, file_hash, file_content, status, error_message, created_at, started_at, completed_at, result_upload_id, result_json FROM upload_queue WHERE file_hash = ? AND status != 'failed' LIMIT 1
+`
+
+func (q *Queries) GetUploadQueueByHash(ctx context.Context, fileHash *string) (UploadQueue, error) {
+	row := q.db.QueryRowContext(ctx, getUploadQueueByHash, fileHash)
+	var i UploadQueue
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.UserEmail,
+		&i.Filename,
+		&i.FileHash,
+		&i.FileContent,
+		&i.Status,
+		&i.ErrorMessage,
+		&i.CreatedAt,
+		&i.StartedAt,
+		&i.CompletedAt,
+		&i.ResultUploadID,
+		&i.ResultJson,
+	)
+	return i, err
+}
+
+const getUploadQueueItem = `-- name: GetUploadQueueItem :one
+SELECT id, user_id, user_email, filename, file_hash, file_content, status, error_message, created_at, started_at, completed_at, result_upload_id, result_json FROM upload_queue WHERE id = ?
+`
+
+func (q *Queries) GetUploadQueueItem(ctx context.Context, id int64) (UploadQueue, error) {
+	row := q.db.QueryRowContext(ctx, getUploadQueueItem, id)
+	var i UploadQueue
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.UserEmail,
+		&i.Filename,
+		&i.FileHash,
+		&i.FileContent,
+		&i.Status,
+		&i.ErrorMessage,
+		&i.CreatedAt,
+		&i.StartedAt,
+		&i.CompletedAt,
+		&i.ResultUploadID,
+		&i.ResultJson,
+	)
+	return i, err
+}
+
+const getUploadQueueStatus = `-- name: GetUploadQueueStatus :one
+SELECT id, status, error_message, result_upload_id, result_json, created_at, completed_at
+FROM upload_queue WHERE id = ?
+`
+
+type GetUploadQueueStatusRow struct {
+	ID             int64      `json:"id"`
+	Status         string     `json:"status"`
+	ErrorMessage   *string    `json:"error_message"`
+	ResultUploadID *int64     `json:"result_upload_id"`
+	ResultJson     *string    `json:"result_json"`
+	CreatedAt      *time.Time `json:"created_at"`
+	CompletedAt    *time.Time `json:"completed_at"`
+}
+
+func (q *Queries) GetUploadQueueStatus(ctx context.Context, id int64) (GetUploadQueueStatusRow, error) {
+	row := q.db.QueryRowContext(ctx, getUploadQueueStatus, id)
+	var i GetUploadQueueStatusRow
+	err := row.Scan(
+		&i.ID,
+		&i.Status,
+		&i.ErrorMessage,
+		&i.ResultUploadID,
+		&i.ResultJson,
+		&i.CreatedAt,
+		&i.CompletedAt,
+	)
+	return i, err
 }
 
 const getUser = `-- name: GetUser :one
@@ -1669,6 +1806,86 @@ func (q *Queries) ListPendingUsers(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const markUploadCompleted = `-- name: MarkUploadCompleted :exec
+UPDATE upload_queue SET status = 'completed', completed_at = CURRENT_TIMESTAMP, result_upload_id = ?, result_json = ? WHERE id = ?
+`
+
+type MarkUploadCompletedParams struct {
+	ResultUploadID *int64  `json:"result_upload_id"`
+	ResultJson     *string `json:"result_json"`
+	ID             int64   `json:"id"`
+}
+
+func (q *Queries) MarkUploadCompleted(ctx context.Context, arg MarkUploadCompletedParams) error {
+	_, err := q.db.ExecContext(ctx, markUploadCompleted, arg.ResultUploadID, arg.ResultJson, arg.ID)
+	return err
+}
+
+const markUploadFailed = `-- name: MarkUploadFailed :exec
+UPDATE upload_queue SET status = 'failed', completed_at = CURRENT_TIMESTAMP, error_message = ? WHERE id = ?
+`
+
+type MarkUploadFailedParams struct {
+	ErrorMessage *string `json:"error_message"`
+	ID           int64   `json:"id"`
+}
+
+func (q *Queries) MarkUploadFailed(ctx context.Context, arg MarkUploadFailedParams) error {
+	_, err := q.db.ExecContext(ctx, markUploadFailed, arg.ErrorMessage, arg.ID)
+	return err
+}
+
+const markUploadProcessing = `-- name: MarkUploadProcessing :exec
+UPDATE upload_queue SET status = 'processing', started_at = CURRENT_TIMESTAMP WHERE id = ?
+`
+
+func (q *Queries) MarkUploadProcessing(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, markUploadProcessing, id)
+	return err
+}
+
+const queueUpload = `-- name: QueueUpload :one
+INSERT INTO upload_queue (user_id, user_email, filename, file_hash, file_content, status)
+VALUES (?, ?, ?, ?, ?, 'pending')
+RETURNING id, user_id, user_email, filename, file_hash, file_content, status, error_message, created_at, started_at, completed_at, result_upload_id, result_json
+`
+
+type QueueUploadParams struct {
+	UserID      string  `json:"user_id"`
+	UserEmail   string  `json:"user_email"`
+	Filename    string  `json:"filename"`
+	FileHash    *string `json:"file_hash"`
+	FileContent []byte  `json:"file_content"`
+}
+
+// Upload Queue queries
+func (q *Queries) QueueUpload(ctx context.Context, arg QueueUploadParams) (UploadQueue, error) {
+	row := q.db.QueryRowContext(ctx, queueUpload,
+		arg.UserID,
+		arg.UserEmail,
+		arg.Filename,
+		arg.FileHash,
+		arg.FileContent,
+	)
+	var i UploadQueue
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.UserEmail,
+		&i.Filename,
+		&i.FileHash,
+		&i.FileContent,
+		&i.Status,
+		&i.ErrorMessage,
+		&i.CreatedAt,
+		&i.StartedAt,
+		&i.CompletedAt,
+		&i.ResultUploadID,
+		&i.ResultJson,
+	)
+	return i, err
 }
 
 const updateEffortCoverage = `-- name: UpdateEffortCoverage :exec
