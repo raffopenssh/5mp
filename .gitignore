@@ -17,10 +17,15 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Large fire data files - download separately
+# Large data files - download separately
 data/fire/*.csv
 data/fire/*.zip
 data/fire/viirs-jpss1/
+data/ghsl/
+data/backfill_progress.txt
+
+# Static downloads (db copies)
+static/downloads/
 
 # Temp files
 live_globe.html
@@ -31,3 +36,4 @@ live_globe.html
 .idea/
 .vscode/
 *.swp
+srv/static/downloads/

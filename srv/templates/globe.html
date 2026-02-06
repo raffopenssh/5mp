@@ -634,6 +634,7 @@
         .pa-popup-section-header:hover { background: rgba(255,255,255,0.06); }
         .pa-popup-section-star { margin-left: auto; margin-right: 8px; }
         .pa-popup-section-title { font-size: 10px; color: #888; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+        .pa-popup-section-count { color: #22c55e; margin-left: auto; font-weight: 500; }
         .pa-popup-section-icon { font-size: 12px; }
         .pa-popup-section-toggle { font-size: 10px; color: #555; transition: transform 0.2s; }
         .pa-popup-section.open .pa-popup-section-toggle { transform: rotate(180deg); }
@@ -3539,7 +3540,7 @@
                     <!-- Fire Section -->
                     <div class="pa-popup-section" id="fire-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="fire" onclick="event.stopPropagation(); togglePinFromIcon(this)">◈</span> Fire Activity</div>
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="fire" onclick="event.stopPropagation(); togglePinFromIcon(this)">◈</span> Fire Activity<span id="fire-count-${paId}" class="pa-popup-section-count"></span></div>
                             
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'fire', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
@@ -3552,7 +3553,7 @@
                     <!-- Settlements Section -->
                     <div class="pa-popup-section" id="ghsl-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="settlement" onclick="event.stopPropagation(); togglePinFromIcon(this)">◻</span> Settlements</div>
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="settlement" onclick="event.stopPropagation(); togglePinFromIcon(this)">◻</span> Settlements<span id="settlement-count-${paId}" class="pa-popup-section-count"></span></div>
                             
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'settlement', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
@@ -3565,7 +3566,7 @@
                     <!-- Deforestation Section -->
                     <div class="pa-popup-section" id="deforest-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="deforestation" onclick="event.stopPropagation(); togglePinFromIcon(this)">▲</span> Deforestation</div>
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="deforestation" onclick="event.stopPropagation(); togglePinFromIcon(this)">▲</span> Deforestation<span id="deforest-count-${paId}" class="pa-popup-section-count"></span></div>
                             
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'deforestation', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
@@ -3578,7 +3579,7 @@
                     <!-- Roadless Section -->
                     <div class="pa-popup-section" id="road-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="road" onclick="event.stopPropagation(); togglePinFromIcon(this)">═</span> Roads & Places</div>
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="road" onclick="event.stopPropagation(); togglePinFromIcon(this)">═</span> Roads & Places<span id="road-count-${paId}" class="pa-popup-section-count"></span></div>
                             
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'road', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
@@ -3665,6 +3666,12 @@
                     `${new Date(dateFrom).getFullYear()}-${new Date(dateTo).getFullYear()}` : 
                     'All time';
                 
+                // Update count in header
+                const countEl = document.getElementById(`fire-count-${paId}`);
+                if (countEl && data.total_fires > 0) {
+                    countEl.textContent = ` • ${formatNumber(data.total_fires)}`;
+                }
+                
                 if (data.total_fires > 0 || (data.narratives && data.narratives.length > 0)) {
                     const trendData = data.trend || {};
                     const avgRate = Math.round(trendData.avg_response_rate || 0);
@@ -3692,14 +3699,14 @@
                             text = text.substring(0, 117) + '...';
                         }
                         return `<div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: default;" title="${fullText.replace(/"/g, '&quot;')}"><span style="color: ${outcomeColor};">●</span> ${text}</div>`;
+                    };
+                    
                     // Render active fire groups alert
                     const renderActiveGroups = () => {
                         if (!realtimeData || realtimeData.groups_inside_count === 0) return "";
                         const activeInside = realtimeData.groups.filter(g => g.is_inside && g.is_active);
                         if (activeInside.length === 0) return "";
                         return `<div class="fire-alert-box"><div class="fire-alert-title">🔥 Active Fire Groups Inside</div>${activeInside.map(g => `<div class="fire-alert-group"><span class="fire-group-name">${g.name}</span><span class="fire-group-status active inside">${g.days_active}d • ${g.fire_count} fires</span></div>`).join("")}</div>`;
-                    };
-
                     };
                     
                     el.innerHTML = `
@@ -3762,6 +3769,13 @@
                 // Use settlement-narrative endpoint for rich data
                 const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/settlement-narrative`);
                 const data = await resp.json();
+                
+                // Update count in header
+                const countEl = document.getElementById(`settlement-count-${paId}`);
+                if (countEl && data.settlement_count > 0) {
+                    countEl.textContent = ` • ${formatNumber(data.settlement_count)}`;
+                }
+                
                 if (data.status === 'complete' && data.settlement_count > 0) {
                     const riskClass = data.conflict_risk === 'critical' ? ' bad' : 
                                      data.conflict_risk === 'high' ? ' warning' : '';
@@ -3872,6 +3886,12 @@
                 const totalLoss = data.total_loss_km2 || data.total_area_km2 || 0;
                 const yearsCount = data.yearly_stories?.length || data.years_analyzed || 0;
                 
+                // Update count in header
+                const countEl = document.getElementById(`deforest-count-${paId}`);
+                if (countEl && totalLoss > 0) {
+                    countEl.textContent = ` • ${totalLoss.toFixed(1)} km²`;
+                }
+                
                 // Get date range label
                 const rangeLabel = dateFrom && dateTo ? 
                     `${new Date(dateFrom).getFullYear()}-${new Date(dateTo).getFullYear()}` : 
@@ -3937,6 +3957,13 @@
             try {
                 const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/stats`);
                 const data = await resp.json();
+                
+                // Update count in header
+                const countEl = document.getElementById(`road-count-${paId}`);
+                if (countEl && data.roadless && data.roadless.total_road_km > 0) {
+                    countEl.textContent = ` • ${data.roadless.roadless_percentage.toFixed(0)}% roadless`;
+                }
+                
                 if (data.roadless) {
                     const r = data.roadless;
                     const pct = r.roadless_percentage;
