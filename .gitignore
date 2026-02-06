@@ -36,3 +36,4 @@ live_globe.html
 .idea/
 .vscode/
 *.swp
+srv/static/downloads/

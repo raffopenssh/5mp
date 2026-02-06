@@ -12,8 +12,12 @@ var validPasswords = []string{"test2026", "REDACTED_PWD", "REDACTED_PWD"}
 // PasswordMiddleware checks for valid password in cookie or query param
 func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Allow static downloads without password
-		if strings.HasPrefix(r.URL.Path, "/static/downloads/") {
+		// Allow static downloads and SEO files without password
+		if strings.HasPrefix(r.URL.Path, "/static/downloads/") ||
+			r.URL.Path == "/robots.txt" ||
+			r.URL.Path == "/sitemap.xml" ||
+			r.URL.Path == "/static/robots.txt" ||
+			r.URL.Path == "/static/sitemap.xml" {
 			next.ServeHTTP(w, r)
 			return
 		}
