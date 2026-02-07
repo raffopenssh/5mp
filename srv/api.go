@@ -1038,7 +1038,13 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	
-	// Build query
+	// Handle places from osm_places table
+	if featureType == "place" {
+		s.handlePlaceFeatures(w, internalID, limitStr)
+		return
+	}
+
+	// Build query for feature_geometries table
 	query := `
 		SELECT feature_type, feature_id, geojson, start_date, end_date, properties_json
 		FROM feature_geometries
@@ -1124,6 +1130,99 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(fc)
+}
+
+// handlePlaceFeatures returns GeoJSON features for osm_places
+func (s *Server) handlePlaceFeatures(w http.ResponseWriter, parkID string, limitStr string) {
+	limit := 1000
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 10000 {
+			limit = l
+		}
+	}
+
+	rows, err := s.DB.Query(`
+		SELECT id, place_type, name, lat, lon, geojson, osm_id, osm_tags
+		FROM osm_places
+		WHERE park_id = ?
+		ORDER BY
+			CASE place_type
+				WHEN 'city' THEN 1
+				WHEN 'town' THEN 2
+				WHEN 'village' THEN 3
+				WHEN 'hamlet' THEN 4
+				ELSE 5
+			END,
+			name
+		LIMIT ?
+	`, parkID, limit)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	type GeoJSONFeature struct {
+		Type       string                 `json:"type"`
+		Geometry   json.RawMessage        `json:"geometry"`
+		Properties map[string]interface{} `json:"properties"`
+	}
+
+	type FeatureCollection struct {
+		Type     string           `json:"type"`
+		Features []GeoJSONFeature `json:"features"`
+	}
+
+	fc := FeatureCollection{
+		Type:     "FeatureCollection",
+		Features: []GeoJSONFeature{},
+	}
+
+	for rows.Next() {
+		var id int
+		var placeType, name string
+		var lat, lon float64
+		var geojson sql.NullString
+		var osmID, osmTags sql.NullString
+
+		if err := rows.Scan(&id, &placeType, &name, &lat, &lon, &geojson, &osmID, &osmTags); err != nil {
+			continue
+		}
+
+		var geometry json.RawMessage
+		if geojson.Valid && geojson.String != "" {
+			geometry = json.RawMessage(geojson.String)
+		} else {
+			geometry = json.RawMessage(fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat))
+		}
+
+		props := map[string]interface{}{
+			"feature_type": "place",
+			"feature_id":   fmt.Sprintf("place_%d", id),
+			"place_type":   placeType,
+			"name":         name,
+			"lat":          lat,
+			"lon":          lon,
+		}
+		if osmID.Valid {
+			props["osm_id"] = osmID.String
+		}
+		if osmTags.Valid && osmTags.String != "" {
+			var tags map[string]interface{}
+			if json.Unmarshal([]byte(osmTags.String), &tags) == nil {
+				props["osm_tags"] = tags
+			}
+		}
+
+		fc.Features = append(fc.Features, GeoJSONFeature{
+			Type:       "Feature",
+			Geometry:   geometry,
+			Properties: props,
+		})
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(fc)
 }
