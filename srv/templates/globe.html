@@ -5950,7 +5950,7 @@ ${starredItems.narratives.map(n => {
             map.addSource(sourceId, { type: 'geojson', data: geojson });
             
             // Style based on type
-            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa' };
+            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', place: '#10b981', infrastructure: '#f97316' };
             const color = colors[type] || '#22c55e';
             
             // Store reference early so we can add arrowLayerId
@@ -5972,7 +5972,7 @@ ${starredItems.narratives.map(n => {
                     type: 'circle',
                     source: sourceId,
                     paint: {
-                        'circle-radius': 6,
+                        'circle-radius': type === 'place' ? 5 : 6,
                         'circle-color': color,
                         'circle-opacity': 0.8,
                         'circle-stroke-width': 2,
@@ -5980,6 +5980,30 @@ ${starredItems.narratives.map(n => {
                         'circle-stroke-opacity': 0.5
                     }
                 });
+                
+                // Add labels for place features
+                if (type === 'place') {
+                    const labelLayerId = `${layerId}-label`;
+                    map.addLayer({
+                        id: labelLayerId,
+                        type: 'symbol',
+                        source: sourceId,
+                        layout: {
+                            'text-field': ['get', 'name'],
+                            'text-font': ['Open Sans Regular'],
+                            'text-size': 10,
+                            'text-offset': [0, 1.2],
+                            'text-anchor': 'top',
+                            'text-optional': true
+                        },
+                        paint: {
+                            'text-color': '#fff',
+                            'text-halo-color': '#000',
+                            'text-halo-width': 1
+                        }
+                    });
+                    pinnedLayers[key].labelLayerId = labelLayerId;
+                }
             } else if (geomType === 'LineString' || geomType === 'MultiLineString') {
                 // Add main line layer
                 map.addLayer({
@@ -6266,7 +6290,7 @@ ${starredItems.narratives.map(n => {
                 
                 const sourceId = `single-source-${key}`;
                 const layerId = `single-${key}`;
-                const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa' };
+                const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', place: '#10b981', infrastructure: '#f97316' };
                 const color = colors[type] || '#22c55e';
                 
                 map.addSource(sourceId, { type: 'geojson', data: geojson });
