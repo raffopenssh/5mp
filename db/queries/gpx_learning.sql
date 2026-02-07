@@ -89,13 +89,13 @@ SELECT * FROM gpx_learning_results ORDER BY created_at DESC LIMIT ? OFFSET ?;
 SELECT * FROM park_vehicle_stats WHERE park_id = ?;
 
 -- name: GetLearnedRoadsByPark :many
-SELECT * FROM learned_roads WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC;
+SELECT * FROM learned_roads WHERE park_id = ? AND status IN ('pending', 'approved', 'auto_approved') ORDER BY confidence_pct DESC;
 
 -- name: GetLearnedAirstripsByPark :many
-SELECT * FROM learned_airstrips WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC;
+SELECT * FROM learned_airstrips WHERE park_id = ? AND status IN ('pending', 'approved', 'auto_approved') ORDER BY confidence_pct DESC;
 
 -- name: GetLearnedPlacesByPark :many
-SELECT * FROM learned_places WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC;
+SELECT * FROM learned_places WHERE park_id = ? AND status IN ('pending', 'approved', 'auto_approved') ORDER BY confidence_pct DESC;
 
 -- name: ApproveRoad :exec
 UPDATE learned_roads SET status = 'approved', approved_by = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ?;

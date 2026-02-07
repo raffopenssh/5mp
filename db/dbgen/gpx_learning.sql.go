@@ -567,7 +567,7 @@ func (q *Queries) GetAutoApprovedFeatures(ctx context.Context, parkID string) ([
 }
 
 const getLearnedAirstripsByPark = `-- name: GetLearnedAirstripsByPark :many
-SELECT id, park_id, lat, lon, heading_deg, length_m, aircraft_type, landing_count, takeoff_count, confidence_pct, status, approved_by, approved_at, approach_json, created_at, updated_at FROM learned_airstrips WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
+SELECT id, park_id, lat, lon, heading_deg, length_m, aircraft_type, landing_count, takeoff_count, confidence_pct, status, approved_by, approved_at, approach_json, created_at, updated_at FROM learned_airstrips WHERE park_id = ? AND status IN ('pending', 'approved', 'auto_approved') ORDER BY confidence_pct DESC
 `
 
 func (q *Queries) GetLearnedAirstripsByPark(ctx context.Context, parkID string) ([]LearnedAirstrip, error) {
@@ -647,7 +647,7 @@ func (q *Queries) GetLearnedFeatureStats(ctx context.Context, parkID string) (Ge
 }
 
 const getLearnedPlacesByPark = `-- name: GetLearnedPlacesByPark :many
-SELECT id, park_id, lat, lon, place_type, name, visit_count, avg_duration_minutes, confidence_pct, status, approved_by, approved_at, created_at, updated_at FROM learned_places WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
+SELECT id, park_id, lat, lon, place_type, name, visit_count, avg_duration_minutes, confidence_pct, status, approved_by, approved_at, created_at, updated_at FROM learned_places WHERE park_id = ? AND status IN ('pending', 'approved', 'auto_approved') ORDER BY confidence_pct DESC
 `
 
 func (q *Queries) GetLearnedPlacesByPark(ctx context.Context, parkID string) ([]LearnedPlace, error) {
@@ -689,7 +689,7 @@ func (q *Queries) GetLearnedPlacesByPark(ctx context.Context, parkID string) ([]
 }
 
 const getLearnedRoadsByPark = `-- name: GetLearnedRoadsByPark :many
-SELECT id, park_id, geojson, length_m, match_count, confidence_pct, status, approved_by, approved_at, created_at, updated_at FROM learned_roads WHERE park_id = ? AND status IN ('pending', 'approved') ORDER BY confidence_pct DESC
+SELECT id, park_id, geojson, length_m, match_count, confidence_pct, status, approved_by, approved_at, created_at, updated_at FROM learned_roads WHERE park_id = ? AND status IN ('pending', 'approved', 'auto_approved') ORDER BY confidence_pct DESC
 `
 
 func (q *Queries) GetLearnedRoadsByPark(ctx context.Context, parkID string) ([]LearnedRoad, error) {

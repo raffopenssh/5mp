@@ -1,0 +1,1 @@
+-- Columns already exist, no-op migration
