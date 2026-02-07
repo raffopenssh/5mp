@@ -332,6 +332,18 @@ type Migration struct {
 	ExecutedAt      time.Time `json:"executed_at"`
 }
 
+type Notification struct {
+	ID               int64      `json:"id"`
+	ParkID           string     `json:"park_id"`
+	NotificationType string     `json:"notification_type"`
+	Title            string     `json:"title"`
+	Message          *string    `json:"message"`
+	ReferenceID      *string    `json:"reference_id"`
+	ReferenceUrl     *string    `json:"reference_url"`
+	IsRead           *int64     `json:"is_read"`
+	CreatedAt        *time.Time `json:"created_at"`
+}
+
 type OsmRoadlessDatum struct {
 	ID                 int64    `json:"id"`
 	ParkID             string   `json:"park_id"`
