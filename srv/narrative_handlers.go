@@ -728,13 +728,12 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		ParkName: parkName,
 	}
 	
-	// Query deforestation events with time filter, including geojson_id and classification
+	// Query deforestation events with time filter, including geojson_id
 	rows, err := s.DB.Query(`
 		SELECT de.year, de.area_km2, de.pattern_type, de.lat, de.lon, de.description,
-		       fg.id, COALESCE(dc.classification, '')
+		       fg.id, COALESCE(de.pattern_type, '')
 		FROM deforestation_events de
 		LEFT JOIN feature_geometries fg ON fg.feature_id = 'deforestation_' || de.id AND fg.feature_type = 'deforestation'
-		LEFT JOIN deforestation_clusters dc ON dc.park_id = de.park_id AND dc.year = de.year AND dc.cluster_id = 1
 		WHERE de.park_id = ? AND de.year >= ? AND de.year <= ?
 		ORDER BY de.year ASC
 	`, internalID, fromYear, toYear)
@@ -936,14 +935,12 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	// Get settlement statistics from park_settlements table
 	var settlementCount int
 	var totalPopulation sql.NullFloat64
-	var totalPop2030 sql.NullFloat64
 	err := s.DB.QueryRow(`
 		SELECT COUNT(*) as count,
-		       COALESCE(SUM(population_est), 0) as total_pop,
-		       COALESCE(SUM(population_2030), 0) as total_pop_2030
+		       COALESCE(SUM(population_est), 0) as total_pop
 		FROM park_settlements
 		WHERE park_id = ?
-	`, internalID).Scan(&settlementCount, &totalPopulation, &totalPop2030)
+	`, internalID).Scan(&settlementCount, &totalPopulation)
 	
 	if err != nil {
 		narrative.Status = "error"
@@ -955,9 +952,6 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	
 	narrative.SettlementCount = settlementCount
 	narrative.TotalPopulation = int64(totalPopulation.Float64)
-	if totalPop2030.Valid {
-		narrative.Population2030 = int64(totalPop2030.Float64)
-	}
 	
 	// Get polygon count from feature_geometries (for map display)
 	var polygonCount int
@@ -2591,12 +2585,11 @@ func (s *Server) handleDeforestationNarrativeStats(w http.ResponseWriter, parkID
 		SELECT DISTINCT
 			fg.id, fg.feature_id, de.year, de.area_km2, de.pattern_type,
 			de.lat, de.lon,
-			COALESCE(dc.classification, 'unclassified'),
-			dc.distance_to_road_m,
-			dc.distance_to_settlement_m
+			COALESCE(de.pattern_type, 'unclassified'),
+			0.0,
+			0.0
 		FROM deforestation_events de
 		JOIN feature_geometries fg ON fg.feature_id = 'deforestation_' || de.id
-		LEFT JOIN deforestation_clusters dc ON dc.park_id = de.park_id AND dc.year = de.year AND dc.cluster_id = 1
 		WHERE de.park_id = ? 
 		  AND de.year >= ? AND de.year <= ?
 		ORDER BY de.year DESC
