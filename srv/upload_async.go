@@ -2,7 +2,6 @@ package srv
 
 import (
 	"crypto/sha256"
-	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"io"
@@ -100,7 +99,7 @@ func (s *Server) HandleAsyncUpload(w http.ResponseWriter, r *http.Request) {
 	fileHash := hex.EncodeToString(hasher.Sum(nil))
 
 	// Check for duplicate in queue
-	existing, err := q.GetUploadQueueByHash(ctx, sql.NullString{String: fileHash, Valid: true})
+	existing, err := q.GetUploadQueueByHash(ctx, &fileHash)
 	if err == nil && existing.ID > 0 {
 		// Return existing queue item
 		w.Header().Set("Content-Type", "application/json")
@@ -135,7 +134,7 @@ func (s *Server) HandleAsyncUpload(w http.ResponseWriter, r *http.Request) {
 		UserID:      userID,
 		UserEmail:   userEmail,
 		Filename:    fileHeader.Filename,
-		FileHash:    sql.NullString{String: fileHash, Valid: true},
+		FileHash:    &fileHash,
 		FileContent: content,
 	})
 	if err != nil {
@@ -188,21 +187,21 @@ func (s *Server) HandleUploadStatus(w http.ResponseWriter, r *http.Request) {
 		CreatedAt: status.CreatedAt.String(),
 	}
 
-	if status.ErrorMessage.Valid {
-		response.ErrorMessage = status.ErrorMessage.String
+	if status.ErrorMessage != nil {
+		response.ErrorMessage = *status.ErrorMessage
 	}
 
-	if status.ResultUploadID.Valid {
-		response.UploadID = status.ResultUploadID.Int64
+	if status.ResultUploadID != nil {
+		response.UploadID = *status.ResultUploadID
 	}
 
-	if status.CompletedAt.Valid {
-		response.CompletedAt = status.CompletedAt.Time.String()
+	if status.CompletedAt != nil {
+		response.CompletedAt = status.CompletedAt.String()
 	}
 
-	if status.ResultJson.Valid {
+	if status.ResultJson != nil {
 		var result map[string]interface{}
-		if err := json.Unmarshal([]byte(status.ResultJson.String), &result); err == nil {
+		if err := json.Unmarshal([]byte(*status.ResultJson), &result); err == nil {
 			response.Result = result
 		}
 	}

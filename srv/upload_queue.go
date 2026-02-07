@@ -116,8 +116,9 @@ func (p *UploadQueueProcessor) processUpload(ctx context.Context, item dbgen.Get
 	reader := bytes.NewReader(item.FileContent)
 	gpxData, err := gpx.ParseGPX(reader)
 	if err != nil {
+		errMsg := "failed to parse GPX: " + err.Error()
 		q.MarkUploadFailed(ctx, dbgen.MarkUploadFailedParams{
-			ErrorMessage: sql.NullString{String: "failed to parse GPX: " + err.Error(), Valid: true},
+			ErrorMessage: &errMsg,
 			ID:           item.ID,
 		})
 		return
@@ -144,10 +145,7 @@ func (p *UploadQueueProcessor) processUpload(ctx context.Context, item dbgen.Get
 	}
 
 	// Persist upload using the server's method
-	var fileHash *string
-	if item.FileHash.Valid {
-		fileHash = &item.FileHash.String
-	}
+	fileHash := item.FileHash
 	
 	result, err := p.server.persistUploadWithValidation(
 		ctx,
@@ -159,8 +157,9 @@ func (p *UploadQueueProcessor) processUpload(ctx context.Context, item dbgen.Get
 		segments,
 	)
 	if err != nil {
+		errMsg := "failed to persist upload: " + err.Error()
 		q.MarkUploadFailed(ctx, dbgen.MarkUploadFailedParams{
-			ErrorMessage: sql.NullString{String: "failed to persist upload: " + err.Error(), Valid: true},
+			ErrorMessage: &errMsg,
 			ID:           item.ID,
 		})
 		return
@@ -177,9 +176,10 @@ func (p *UploadQueueProcessor) processUpload(ctx context.Context, item dbgen.Get
 	responseJSON, _ := json.Marshal(response)
 
 	// Mark as completed (no upload ID available from this method)
+	resultJsonStr := string(responseJSON)
 	q.MarkUploadCompleted(ctx, dbgen.MarkUploadCompletedParams{
-		ResultUploadID: sql.NullInt64{Valid: false},
-		ResultJson:     sql.NullString{String: string(responseJSON), Valid: true},
+		ResultUploadID: nil,
+		ResultJson:     &resultJsonStr,
 		ID:             item.ID,
 	})
 

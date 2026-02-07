@@ -93,6 +93,7 @@ type DeforestationNarrative struct {
 	Summary           string                    `json:"summary"`
 	YearlyStory       []DeforestationYearStory  `json:"yearly_stories"`
 	TotalLoss         float64                   `json:"total_loss_km2"`
+	PolygonCount      int                       `json:"polygon_count,omitempty"`
 	WorstYear         int                       `json:"worst_year"`
 	TrendDirection    string                    `json:"trend_direction"`       // "improving", "worsening", "stable"
 	TrendPercentChange float64                  `json:"trend_percent_change"`  // percentage change between periods
@@ -128,18 +129,26 @@ type SettlementNarrative struct {
 	Summary             string               `json:"summary"`
 	Status              string               `json:"status"`
 	SettlementCount     int                  `json:"settlement_count"`
+	PolygonCount        int                  `json:"polygon_count,omitempty"`
 	TotalPopulation     int64                `json:"total_population"`
+	Population2030      int64                `json:"population_2030,omitempty"`
 	PopulationDensity   float64              `json:"population_density_per_km2"`
 	ParkAreaKm2         float64              `json:"park_area_km2"`
 	ConflictRisk        string               `json:"conflict_risk"`
 	LargestSettlements  []SettlementDetail   `json:"largest_settlements"`
 	RegionalBreakdown   []RegionSettlement   `json:"regional_breakdown,omitempty"`
+	ByClassification    map[string]int       `json:"by_classification,omitempty"`
 }
 
 // SettlementDetail describes a single settlement
 type SettlementDetail struct {
+	ID                int64   `json:"id,omitempty"`
+	GeoJSONID         int64   `json:"geojson_id,omitempty"`
 	Name              string  `json:"name"`
+	Classification    string  `json:"classification,omitempty"`
 	AreaM2            float64 `json:"area_m2"`
+	PopulationEst     int64   `json:"population_est,omitempty"`
+	Population2030    int64   `json:"population_2030,omitempty"`
 	Lat               float64 `json:"lat"`
 	Lon               float64 `json:"lon"`
 	Direction         string  `json:"direction"`
@@ -800,6 +809,11 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	narrative.TotalLoss = totalLoss
 	narrative.WorstYear = worstYear
 	
+	// Get polygon count from feature_geometries (for map display)
+	var defPolygonCount int
+	s.DB.QueryRow(`SELECT COUNT(*) FROM feature_geometries WHERE park_id = ? AND feature_type = 'deforestation'`, internalID).Scan(&defPolygonCount)
+	narrative.PolygonCount = defPolygonCount
+	
 	// Calculate 5-year rolling average trend
 	simpleYearlyAreas := make([]struct{ year int; area float64 }, len(yearlyAreas))
 	for i, ya := range yearlyAreas {
@@ -880,6 +894,11 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	narrative.SettlementCount = settlementCount
 	narrative.TotalPopulation = int64(totalPopulation.Float64)
 	
+	// Get polygon count from feature_geometries (for map display)
+	var polygonCount int
+	s.DB.QueryRow(`SELECT COUNT(*) FROM feature_geometries WHERE park_id = ? AND feature_type = 'settlement'`, internalID).Scan(&polygonCount)
+	narrative.PolygonCount = polygonCount
+	
 	// Calculate population density
 	if parkAreaKm2 > 0 {
 		narrative.PopulationDensity = totalPopulation.Float64 / parkAreaKm2
@@ -901,6 +920,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	// Get largest settlements
 	largestRows, err := s.DB.Query(`
 		SELECT 
+			id,
 			COALESCE(nearest_place, 'Unnamed settlement') as name,
 			COALESCE(area_m2, 0) as area_m2,
 			lat, lon,
@@ -916,7 +936,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		for largestRows.Next() {
 			var sd SettlementDetail
 			var distKm float64
-			if err := largestRows.Scan(&sd.Name, &sd.AreaM2, &sd.Lat, &sd.Lon, &sd.Direction, &distKm); err == nil {
+			if err := largestRows.Scan(&sd.ID, &sd.Name, &sd.AreaM2, &sd.Lat, &sd.Lon, &sd.Direction, &distKm); err == nil {
 				sd.NearestBoundaryKm = distKm
 				narrative.LargestSettlements = append(narrative.LargestSettlements, sd)
 			}
