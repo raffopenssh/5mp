@@ -138,6 +138,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/logout", s.HandleAPILogout)
 	mux.HandleFunc("POST /api/upload", s.HandleAPIUpload)
 	mux.HandleFunc("GET /api/stats", s.HandleAPIStats)
+	mux.HandleFunc("GET /api/parks/export", s.HandleAPIParksExport)
 	mux.HandleFunc("GET /api/activity", s.HandleAPIActivity)
 
 	// Fire data endpoints

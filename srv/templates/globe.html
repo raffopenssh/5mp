@@ -1970,91 +1970,80 @@
         }
 
         // Export parks data as CSV
-        function exportParksCSV() {
-            if (!map || !map.getSource('areas')) {
-                alert('Map data not loaded yet. Please wait and try again.');
-                return;
-            }
+        async function exportParksCSV() {
+            showToast('Preparing CSV export...', 'info');
             
-            // Query all features from the areas source
-            var features = map.querySourceFeatures('areas');
-            
-            // Deduplicate by ID (tiles may have duplicates)
-            var uniqueParks = new Map();
-            features.forEach(function(f) {
-                var props = f.properties;
-                if (!props) return;
+            try {
+                // Fetch enriched park data from API
+                const dateFrom = document.getElementById('date-from')?.value || '';
+                const dateTo = document.getElementById('date-to')?.value || '';
+                let url = `/api/parks/export?pwd=${window.accessPwd || ''}`;
+                if (dateFrom) url += `&from=${dateFrom}`;
+                if (dateTo) url += `&to=${dateTo}`;
+                if (currentCountryFilter) url += `&country=${encodeURIComponent(currentCountryFilter)}`;
+                if (currentBbox) url += `&bbox=${currentBbox.join(',')}`;
                 
-                var id = props.id || props.wdpa_id || props.wdpaid;
-                if (!id) return;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Failed to fetch data');
+                const parks = await res.json();
                 
-                // Apply country filter if active
-                if (currentCountryFilter !== '' && props.country !== currentCountryFilter) {
+                if (!parks || parks.length === 0) {
+                    showToast('No parks found', 'warning');
                     return;
                 }
                 
-                // Apply bbox filter if active
-                if (currentBbox) {
-                    var geom = f.geometry;
-                    if (!geom || !geom.coordinates) return;
-                    var bounds = getGeometryBounds(geom);
-                    if (!bounds || !bboxesIntersect(currentBbox, bounds)) {
-                        return;
-                    }
+                // Build CSV with rich data
+                const headers = [
+                    'wdpa_id', 'name', 'country', 'area_km2',
+                    'fire_detections', 'fire_groups', 'deforestation_km2', 'deforestation_events',
+                    'settlements', 'total_population', 'roads_km', 'roadless_pct',
+                    'patrol_pixels', 'patrol_distance_km', 'patrol_intensity_median',
+                    'publications_count', 'lat', 'lon'
+                ];
+                
+                const rows = [headers.join(',')];
+                for (const p of parks) {
+                    rows.push([
+                        csvEscape(p.wdpa_id || ''),
+                        csvEscape(p.name || ''),
+                        csvEscape(p.country || ''),
+                        csvEscape(p.area_km2 || ''),
+                        csvEscape(p.fire_detections || 0),
+                        csvEscape(p.fire_groups || 0),
+                        csvEscape(p.deforestation_km2 || 0),
+                        csvEscape(p.deforestation_events || 0),
+                        csvEscape(p.settlements || 0),
+                        csvEscape(p.total_population || 0),
+                        csvEscape(p.roads_km || 0),
+                        csvEscape(p.roadless_pct || 0),
+                        csvEscape(p.patrol_pixels || 0),
+                        csvEscape(p.patrol_distance_km || 0),
+                        csvEscape(p.patrol_intensity_median || 0),
+                        csvEscape(p.publications_count || 0),
+                        csvEscape(p.lat || ''),
+                        csvEscape(p.lon || '')
+                    ].join(','));
                 }
                 
-                if (!uniqueParks.has(id)) {
-                    uniqueParks.set(id, {
-                        wdpa_id: props.wdpa_id || props.wdpaid || '',
-                        name: props.name || '',
-                        country: props.country || '',
-                        area_km2: props.area_km2 || props.area || ''
-                    });
-                }
-            });
-            
-            if (uniqueParks.size === 0) {
-                alert('No parks found to export. Try adjusting your filters or zoom level.');
-                return;
+                const csvContent = rows.join('\n');
+                const dateStr = new Date().toISOString().split('T')[0];
+                const filterSuffix = currentCountryFilter ? currentCountryFilter.replace(/[^a-zA-Z0-9]/g, '_') : (currentBbox ? 'bbox' : 'all');
+                const filename = `5mp_parks_${filterSuffix}_${dateStr}.csv`;
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+                
+                showToast(`Exported ${parks.length} parks`, 'success');
+            } catch (err) {
+                console.error('Export error:', err);
+                showToast('Export failed', 'error');
             }
-            
-            // Build CSV content
-            var csvRows = [];
-            csvRows.push('wdpa_id,name,country,area_km2');
-            
-            uniqueParks.forEach(function(park) {
-                var row = [
-                    csvEscape(park.wdpa_id),
-                    csvEscape(park.name),
-                    csvEscape(park.country),
-                    csvEscape(park.area_km2)
-                ];
-                csvRows.push(row.join(','));
-            });
-            
-            var csvContent = csvRows.join('\n');
-            
-            // Generate filename with filter info
-            var dateStr = new Date().toISOString().split('T')[0];
-            var filterSuffix = 'all';
-            if (currentCountryFilter !== '') {
-                // Sanitize country name for filename
-                filterSuffix = currentCountryFilter.replace(/[^a-zA-Z0-9]/g, '_');
-            } else if (currentBbox) {
-                filterSuffix = 'bbox';
-            }
-            var filename = '5mp_parks_' + filterSuffix + '_' + dateStr + '.csv';
-            
-            // Download the CSV
-            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            var link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
         }
         
         // Helper function to escape CSV values
