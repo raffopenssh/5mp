@@ -700,9 +700,11 @@
             /* Panels slide up from bottom */
             .filter-panel { top: auto; bottom: 140px; left: 10px; width: calc(100vw - 20px); max-width: none; -webkit-transform: translateY(400px); transform: translateY(400px); max-height: 50vh; }
             .filter-panel.open { -webkit-transform: translateY(0); transform: translateY(0); }
-            /* Search bar mobile - hide completely */
-            .search-container .search-bar { display: none !important; }
-            .search-container { display: none; }
+            /* Search bar mobile - show in toolbar area */
+            .search-container { display: flex; position: fixed; top: auto; bottom: 135px; left: 60px; right: 60px; z-index: 145; }
+            .search-container .search-bar { display: block; width: 100%; }
+            .search-container .search-bar.open { display: block; }
+            #toolbar-search { display: none; }
             
             /* Stats panel - compact 2-row grid at top */
             .stats-panel { top: 10px; bottom: auto; right: 10px; left: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 6px; padding: 6px 10px; min-width: auto; }
@@ -843,7 +845,7 @@
             </button>
             <div class="search-bar" id="search-bar">
                 <div class="search-bar-wrapper">
-                    <input type="text" class="search-bar-input" id="search-input" placeholder="Search parks..." autocomplete="off" oninput="handleSearchInput(event)">
+                    <input type="text" class="search-bar-input" id="search-input" placeholder="Search parks..." autocomplete="off" oninput="handleSearchInput(event)" onkeydown="if(event.key==='Enter')selectFirstSearchResult(event)">
                     <button class="search-bar-clear" id="search-clear" onclick="clearSearch()">&times;</button>
                     <div class="search-bar-results" id="search-results"></div>
                 </div>
@@ -1377,19 +1379,19 @@
                     'circle-radius': [
                         'interpolate', ['linear'],
                         ['coalesce', ['get', 'intensity'], 0],
-                        0, 14,      // Always show base glow
-                        0.5, 20,    // Moderate visits
-                        1.0, 32,    // Monthly visits - full glow
-                        1.5, 45     // Overglow for >2x/month
+                        0, 10,      // Reduced base glow
+                        0.5, 14,    // Moderate visits
+                        1.0, 20,    // Monthly visits
+                        1.5, 28     // Max glow
                     ],
-                    'circle-blur': 1.2,
+                    'circle-blur': 1.0,
                     'circle-opacity': [
                         'interpolate', ['linear'],
                         ['coalesce', ['get', 'intensity'], 0],
-                        0, 0.15,    // Always visible
-                        0.5, 0.3,
-                        1.0, 0.5,
-                        1.5, 0.7    // Strong overglow
+                        0, 0.1,     // Subtle base
+                        0.5, 0.2,
+                        1.0, 0.35,
+                        1.5, 0.5    // Reduced max
                     ]
                 }
             });
@@ -3167,6 +3169,12 @@
             
             searchTimeout = setTimeout(() => searchAreas(query), 200);
         }
+        
+        function selectFirstSearchResult(e) {
+            e.preventDefault();
+            const firstResult = document.querySelector('.search-result-item');
+            if (firstResult) firstResult.click();
+        }
 
         async function searchAreas(query) {
             const results = document.getElementById('search-results');
@@ -3644,7 +3652,7 @@
                         if (!realtimeData || realtimeData.groups_inside_count === 0) return "";
                         const activeInside = realtimeData.groups.filter(g => g.is_inside && g.is_active);
                         if (activeInside.length === 0) return "";
-                        return `<div class="fire-alert-box"><div class="fire-alert-title">🔥 Active Fire Groups Inside</div>${activeInside.map(g => `<div class="fire-alert-group"><span class="fire-group-name">${g.name}</span><span class="fire-group-status active inside">${g.days_active}d • ${g.fire_count} fires</span></div>`).join("")}</div>`;
+                        return `<div class="fire-alert-box"><div class="fire-alert-title">🔥 Active Fire Groups Inside</div>${activeInside.map(g => `<div class="fire-alert-group"><span class="fire-group-name">${g.name}</span><span class="fire-group-status active inside">${g.metrics?.days || g.days_inside || '?'}d • ${g.metrics?.fires || '?'} fires</span></div>`).join("")}</div>`;
                     };
                     
                     el.innerHTML = `
