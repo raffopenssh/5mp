@@ -80,7 +80,12 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 		n.ReferenceID = refID.String
 		n.ReferenceURL = refURL.String
 		n.IsRead = isRead == 1
-		n.CreatedAt, _ = time.Parse("2006-01-02 15:04:05", createdAt)
+		// Try multiple time formats
+		if t, err := time.Parse("2006-01-02 15:04:05", createdAt); err == nil {
+			n.CreatedAt = t
+		} else if t, err := time.Parse(time.RFC3339, createdAt); err == nil {
+			n.CreatedAt = t
+		}
 
 		notifications = append(notifications, n)
 	}

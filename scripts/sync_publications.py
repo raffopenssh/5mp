@@ -283,7 +283,12 @@ def sync_park(conn: sqlite3.Connection, park: Dict, notify: bool = False) -> int
     logger.info(f"  {len(relevant)} are conservation-related and mention '{name}'")
     
     new_count = 0
+    seen_ids = set()  # Track OpenAlex IDs to avoid duplicates in same batch
     for work in relevant:
+        openalex_id = work.get("id", "")
+        if openalex_id in seen_ids:
+            continue
+        seen_ids.add(openalex_id)
         is_new, pub_id = store_publication(conn, pa_id, work)
         if is_new:
             new_count += 1
