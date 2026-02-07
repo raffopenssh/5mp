@@ -1048,6 +1048,28 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		}
 	}
 	
+	// Get classification breakdown
+	classRows, err := s.DB.Query(`
+		SELECT COALESCE(classification, 'unclassified'), COUNT(*)
+		FROM park_settlements
+		WHERE park_id = ?
+		GROUP BY classification
+	`, internalID)
+	if err == nil {
+		defer classRows.Close()
+		classMap := make(map[string]int)
+		for classRows.Next() {
+			var cls string
+			var cnt int
+			if classRows.Scan(&cls, &cnt) == nil {
+				classMap[cls] = cnt
+			}
+		}
+		if len(classMap) > 0 {
+			narrative.ByClassification = classMap
+		}
+	}
+	
 	// Generate comprehensive narrative
 	narrative.Status = "complete"
 	narrative.Summary = generateSettlementNarrative(parkName, settlementCount, narrative.TotalPopulation, 
