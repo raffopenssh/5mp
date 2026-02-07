@@ -2461,3 +2461,170 @@ func (s *Server) HandleAPISettlementIntensity(w http.ResponseWriter, r *http.Req
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(fc)
 }
+
+// HandleAPIParkKML exports park data as KML for Google Earth
+func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+	if parkID == "" {
+		http.Error(w, "Park ID required", http.StatusBadRequest)
+		return
+	}
+
+	// Get park info
+	parkName := parkID
+	var boundary string
+	for _, pa := range s.AreaStore.Areas {
+		if pa.ID == parkID {
+			parkName = pa.Name
+			if pa.Geometry.Type != "" {
+				if geomBytes, err := json.Marshal(pa.Geometry); err == nil {
+					boundary = string(geomBytes)
+				}
+			}
+			break
+		}
+	}
+
+	// Build KML
+	var kml strings.Builder
+	kml.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+	kml.WriteString("<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n")
+	kml.WriteString("<Document>\n")
+	kml.WriteString(fmt.Sprintf("<name>%s - 5MP Conservation Data</name>\n", parkName))
+	kml.WriteString("<description>Fire, settlement, and deforestation data from 5MP Conservation Monitoring</description>\n")
+
+	// Define styles
+	kml.WriteString("<Style id=\"boundary\"><LineStyle><color>ff00ff00</color><width>3</width></LineStyle><PolyStyle><color>2000ff00</color></PolyStyle></Style>\n")
+	kml.WriteString("<Style id=\"fire\"><IconStyle><color>ff0000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/firedept.png</href></Icon></IconStyle><LineStyle><color>ff0000ff</color><width>2</width></LineStyle></Style>\n")
+	kml.WriteString("<Style id=\"settlement\"><IconStyle><color>ff00d7ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/homegardenbusiness.png</href></Icon></IconStyle><PolyStyle><color>5000d7ff</color></PolyStyle></Style>\n")
+	kml.WriteString("<Style id=\"deforestation\"><IconStyle><color>ffff00ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/triangle.png</href></Icon></IconStyle><PolyStyle><color>50ff00ff</color></PolyStyle></Style>\n")
+
+	// Boundary folder
+	if boundary != "" {
+		kml.WriteString("<Folder><name>Park Boundary</name>\n")
+		writeGeoJSONToKML(&kml, boundary, "boundary", parkName+" Boundary")
+		kml.WriteString("</Folder>\n")
+	}
+
+	// Settlements folder
+	kml.WriteString("<Folder><name>Settlements</name>\n")
+	settlementRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'settlement' LIMIT 1000`, parkID)
+	if settlementRows != nil {
+		defer settlementRows.Close()
+		for settlementRows.Next() {
+			var geojson, props string
+			settlementRows.Scan(&geojson, &props)
+			var propMap map[string]interface{}
+			json.Unmarshal([]byte(props), &propMap)
+			name := "Settlement"
+			if pop, ok := propMap["population_est"].(float64); ok {
+				name = fmt.Sprintf("Settlement (pop: %.0f)", pop)
+			}
+			writeGeoJSONToKML(&kml, geojson, "settlement", name)
+		}
+	}
+	kml.WriteString("</Folder>\n")
+
+	// Deforestation folder
+	kml.WriteString("<Folder><name>Deforestation</name>\n")
+	defoRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'deforestation' LIMIT 1000`, parkID)
+	if defoRows != nil {
+		defer defoRows.Close()
+		for defoRows.Next() {
+			var geojson, props string
+			defoRows.Scan(&geojson, &props)
+			var propMap map[string]interface{}
+			json.Unmarshal([]byte(props), &propMap)
+			name := "Deforestation"
+			if year, ok := propMap["year"].(float64); ok {
+				name = fmt.Sprintf("Deforestation %d", int(year))
+			}
+			writeGeoJSONToKML(&kml, geojson, "deforestation", name)
+		}
+	}
+	kml.WriteString("</Folder>\n")
+
+	// Fire trajectories folder
+	kml.WriteString("<Folder><name>Fire Trajectories</name>\n")
+	fireRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'fire_trajectory' LIMIT 500`, parkID)
+	if fireRows != nil {
+		defer fireRows.Close()
+		for fireRows.Next() {
+			var geojson, props string
+			fireRows.Scan(&geojson, &props)
+			var propMap map[string]interface{}
+			json.Unmarshal([]byte(props), &propMap)
+			name := "Fire Trajectory"
+			if gid, ok := propMap["group_id"].(float64); ok {
+				name = fmt.Sprintf("Fire Group %d", int(gid))
+			}
+			writeGeoJSONToKML(&kml, geojson, "fire", name)
+		}
+	}
+	kml.WriteString("</Folder>\n")
+
+	kml.WriteString("</Document>\n</kml>")
+
+	w.Header().Set("Content-Type", "application/vnd.google-earth.kml+xml")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s.kml"`, parkID))
+	w.Write([]byte(kml.String()))
+}
+
+// writeGeoJSONToKML converts a GeoJSON geometry to KML placemark
+func writeGeoJSONToKML(kml *strings.Builder, geojsonStr, styleID, name string) {
+	var geom map[string]interface{}
+	if err := json.Unmarshal([]byte(geojsonStr), &geom); err != nil {
+		return
+	}
+
+	geomType, _ := geom["type"].(string)
+	coords := geom["coordinates"]
+
+	kml.WriteString(fmt.Sprintf("<Placemark><name>%s</name><styleUrl>#%s</styleUrl>", name, styleID))
+
+	switch geomType {
+	case "Point":
+		if c, ok := coords.([]interface{}); ok && len(c) >= 2 {
+			kml.WriteString(fmt.Sprintf("<Point><coordinates>%v,%v,0</coordinates></Point>", c[0], c[1]))
+		}
+	case "LineString":
+		kml.WriteString("<LineString><coordinates>")
+		if c, ok := coords.([]interface{}); ok {
+			for _, pt := range c {
+				if p, ok := pt.([]interface{}); ok && len(p) >= 2 {
+					kml.WriteString(fmt.Sprintf("%v,%v,0 ", p[0], p[1]))
+				}
+			}
+		}
+		kml.WriteString("</coordinates></LineString>")
+	case "Polygon":
+		kml.WriteString("<Polygon><outerBoundaryIs><LinearRing><coordinates>")
+		if rings, ok := coords.([]interface{}); ok && len(rings) > 0 {
+			if ring, ok := rings[0].([]interface{}); ok {
+				for _, pt := range ring {
+					if p, ok := pt.([]interface{}); ok && len(p) >= 2 {
+						kml.WriteString(fmt.Sprintf("%v,%v,0 ", p[0], p[1]))
+					}
+				}
+			}
+		}
+		kml.WriteString("</coordinates></LinearRing></outerBoundaryIs></Polygon>")
+	case "MultiPolygon":
+		if polys, ok := coords.([]interface{}); ok {
+			for _, poly := range polys {
+				kml.WriteString("<Polygon><outerBoundaryIs><LinearRing><coordinates>")
+				if rings, ok := poly.([]interface{}); ok && len(rings) > 0 {
+					if ring, ok := rings[0].([]interface{}); ok {
+						for _, pt := range ring {
+							if p, ok := pt.([]interface{}); ok && len(p) >= 2 {
+								kml.WriteString(fmt.Sprintf("%v,%v,0 ", p[0], p[1]))
+							}
+						}
+					}
+				}
+				kml.WriteString("</coordinates></LinearRing></outerBoundaryIs></Polygon>")
+			}
+		}
+	}
+	kml.WriteString("</Placemark>\n")
+}
