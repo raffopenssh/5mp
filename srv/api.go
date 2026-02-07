@@ -2498,6 +2498,8 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	kml.WriteString("<Style id=\"fire\"><IconStyle><color>ff0000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/firedept.png</href></Icon></IconStyle><LineStyle><color>ff0000ff</color><width>2</width></LineStyle></Style>\n")
 	kml.WriteString("<Style id=\"settlement\"><IconStyle><color>ff00d7ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/homegardenbusiness.png</href></Icon></IconStyle><PolyStyle><color>5000d7ff</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"deforestation\"><IconStyle><color>ffff00ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/triangle.png</href></Icon></IconStyle><PolyStyle><color>50ff00ff</color></PolyStyle></Style>\n")
+	kml.WriteString("<Style id=\"road\"><LineStyle><color>ff60a5fa</color><width>2</width></LineStyle></Style>\n")
+	kml.WriteString("<Style id=\"place\"><IconStyle><color>ffffffff</color><scale>0.8</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>\n")
 
 	// Boundary folder
 	if boundary != "" {
@@ -2559,6 +2561,41 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 				name = fmt.Sprintf("Fire Group %d", int(gid))
 			}
 			writeGeoJSONToKML(&kml, geojson, "fire", name)
+		}
+	}
+	kml.WriteString("</Folder>\n")
+
+	// Roads folder
+	kml.WriteString("<Folder><name>Roads</name>\n")
+	roadRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'road' LIMIT 500`, parkID)
+	if roadRows != nil {
+		defer roadRows.Close()
+		for roadRows.Next() {
+			var geojson, props string
+			roadRows.Scan(&geojson, &props)
+			var propMap map[string]interface{}
+			json.Unmarshal([]byte(props), &propMap)
+			name := "Road"
+			if n, ok := propMap["name"].(string); ok && n != "" {
+				name = n
+			}
+			writeGeoJSONToKML(&kml, geojson, "road", name)
+		}
+	}
+	kml.WriteString("</Folder>\n")
+
+	// Places folder
+	kml.WriteString("<Folder><name>Places</name>\n")
+	placeRows, _ := s.DB.Query(`SELECT name, lat, lon, place_type FROM osm_places WHERE park_id = ? LIMIT 500`, parkID)
+	if placeRows != nil {
+		defer placeRows.Close()
+		for placeRows.Next() {
+			var name string
+			var lat, lon float64
+			var placeType string
+			placeRows.Scan(&name, &lat, &lon, &placeType)
+			pointGeoJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat)
+			writeGeoJSONToKML(&kml, pointGeoJSON, "place", fmt.Sprintf("%s (%s)", name, placeType))
 		}
 	}
 	kml.WriteString("</Folder>\n")
