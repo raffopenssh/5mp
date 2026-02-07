@@ -284,7 +284,7 @@
         @keyframes uploadHighlightPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.5; } }
 
         @media (max-width: 768px) {
-            .notification-dropdown { left: auto; right: -10px; width: calc(100vw - 40px); max-width: 300px; }
+            .notification-dropdown { left: auto; right: -10px; width: calc(100vw - 40px); max-width: 300px; bottom: 60px; top: auto; }
         }
 
         /* Time Slider - Google Timelapse Style */
@@ -430,14 +430,14 @@
         .pa-popup-section.loading { animation: section-pulse 1.5s ease-in-out infinite; }
         @keyframes section-pulse { 0%, 100% { background: rgba(255,255,255,0.03); } 50% { background: rgba(255,255,255,0.08); } }
         
-        .pinned-indicator { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 10px 16px; z-index: 300; font-size: 12px; color: #ccc; display: none; align-items: center; gap: 12px; max-width: 90vw; backdrop-filter: blur(8px); cursor: pointer; transition: all 0.2s; }
+        .pinned-indicator { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.92); border: 1px solid rgba(34,197,94,0.3); border-radius: 6px; padding: 6px 12px; z-index: 300; font-size: 11px; color: #ccc; display: none; align-items: center; gap: 8px; max-width: 70vw; backdrop-filter: blur(8px); cursor: pointer; transition: all 0.2s; }
         .pinned-indicator:hover { background: rgba(30,30,30,0.98); border-color: #22c55e; }
         .pinned-indicator.active { display: flex; }
         .pinned-indicator-icon { color: #22c55e; display: flex; align-items: center; }
-        .pinned-indicator-icon svg { width: 16px; height: 16px; }
-        .pinned-indicator-text { flex: 1; }
-        .pinned-indicator-items { display: flex; flex-wrap: wrap; gap: 8px; }
-        .pinned-item { background: rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 4px; font-size: 11px; display: flex; align-items: center; gap: 4px; }
+        .pinned-indicator-icon svg { width: 14px; height: 14px; }
+        .pinned-indicator-text { flex: 1; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .pinned-indicator-items { display: flex; flex-wrap: wrap; gap: 4px; }
+        .pinned-item { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 3px; font-size: 10px; display: inline-flex; align-items: center; gap: 3px; }
         .pinned-item.fire { border-left: 2px solid #ef4444; }
         .pinned-item.settlement { border-left: 2px solid #fbbf24; }
         .pinned-item.deforestation { border-left: 2px solid #a855f7; }
@@ -704,14 +704,14 @@
             .search-container .search-bar { display: none !important; }
             .search-container { display: none; }
             
-            /* Stats panel - compact grid at top */
-            .stats-panel { top: 10px; bottom: auto; right: 10px; left: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 8px; padding: 8px 12px; min-width: auto; }
+            /* Stats panel - compact 2-row grid at top */
+            .stats-panel { top: 10px; bottom: auto; right: 10px; left: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 6px; padding: 6px 10px; min-width: auto; }
             .stats-header { display: none; }
             .stats-divider { display: none; }
-            .stats-item { text-align: center; padding: 4px 0; margin: 0; }
-            .stats-label { font-size: 9px; }
-            .stats-value { font-size: 14px; }
-            .stats-trend { font-size: 8px; }
+            .stats-item { text-align: center; padding: 2px 0; margin: 0; overflow: hidden; }
+            .stats-label { font-size: 8px; white-space: nowrap; }
+            .stats-value { font-size: 12px; white-space: nowrap; }
+            .stats-trend { font-size: 7px; }
             
             /* Legend repositioned to avoid toolbar */
             #map-legend { bottom: 140px !important; left: 10px; max-width: calc(100vw - 80px); font-size: 11px; padding: 10px 12px; }
@@ -723,7 +723,7 @@
             .footer-attribution { bottom: 4px; right: 60px; left: auto; padding: 2px 8px; font-size: 9px; gap: 4px; background: rgba(18,18,18,0.7); }
             .footer-sep { display: none; }
             .footer-btn { display: none; }
-            .footer-btn.share-btn { display: flex; }
+            .footer-btn.share-btn, .footer-btn.info-btn { display: flex; }
             .desktop-only { display: none !important; }
             
             /* Auth buttons */
@@ -794,12 +794,8 @@
             <span class="stats-value" id="stats-pixels">15</span>
         </div>
         <div class="stats-item" id="stat-distance" onclick="handleStatClick('distance')" title="Click to show patrol intensity">
-            <span class="stats-label">Distance</span>
+            <span class="stats-label">Total Distance</span>
             <span class="stats-value" id="stats-distance">1,980.8 km</span>
-        </div>
-        <div class="stats-item" id="stat-patrols" onclick="handleStatClick('patrols')" title="Click to zoom to patrol coverage">
-            <span class="stats-label"># Missions</span>
-            <span class="stats-value" id="stats-patrols">80</span>
         </div>
         <div class="stats-divider"></div>
         <div class="stats-header">Conservation Data</div>
@@ -881,14 +877,6 @@
             </div>
         </div>
         
-        <!-- Admin Panel Button -->
-        <button class="toolbar-btn" id="toolbar-admin" onclick="toggleAdminPanel()" title="GPX Admin Panel">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 20h9"></path>
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-            </svg>
-        </button>
-        
         <!-- Globe Reset Button -->
         <button class="toolbar-btn" id="globe-reset" onclick="resetGlobeView()" title="Reset view to Africa">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -899,12 +887,20 @@
         </button>
         
         <!-- Starred Items Button -->
-        <div class="toolbar-separator"></div>
         <button class="toolbar-btn" id="toolbar-stars" onclick="toggleStarModal()" title="Starred items">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
             <span class="star-count-badge hidden" id="star-count-badge">0</span>
+        </button>
+        
+        <!-- Admin Panel Button -->
+        <div class="toolbar-separator"></div>
+        <button class="toolbar-btn" id="toolbar-admin" onclick="toggleAdminPanel()" title="GPX Admin Panel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
         </button>
     </div>
 
@@ -1037,7 +1033,7 @@
                 <circle cx="5" cy="19" r="1"></circle>
             </svg>
         </button>
-        <button class="footer-btn" onclick="showModal('manifest')" title="About 5MP">
+        <button class="footer-btn info-btn" onclick="showModal('manifest')" title="About 5MP">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
                 <path d="M12 16v-4"></path>
@@ -1248,11 +1244,6 @@
         const MAPTILER_KEY = 'dea58ea0389007e386776c4f583f4425';
         const API_HOST = 'five-mp-conservation-effort';
 
-        // Get current password from URL
-        function getPwd() {
-            return new URLSearchParams(window.location.search).get('pwd') || '';
-        }
-
         // Format numbers - only use commas for numbers >= 1000
         function formatNumber(n, decimals) {
             if (n === null || n === undefined) return '0';
@@ -1454,11 +1445,11 @@
                     'circle-color': '#4ade80',
                     'circle-radius': [
                         'interpolate', ['exponential', 2], ['zoom'],
-                        4, ['*', 0.6, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0.2, 0.1, 0.5, 0.3, 0.7, 0.5, 0.85, 1, 1]],
-                        6, ['*', 2.3, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0.2, 0.1, 0.5, 0.3, 0.7, 0.5, 0.85, 1, 1]],
-                        8, ['*', 9, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0.2, 0.1, 0.5, 0.3, 0.7, 0.5, 0.85, 1, 1]],
-                        10, ['*', 36, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0.2, 0.1, 0.5, 0.3, 0.7, 0.5, 0.85, 1, 1]],
-                        12, ['*', 144, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0.2, 0.1, 0.5, 0.3, 0.7, 0.5, 0.85, 1, 1]]
+                        4, ['*', 0.5, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0, 0.3, 0.4, 0.7, 0.8, 1, 1]],
+                        6, ['*', 2, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0, 0.3, 0.4, 0.7, 0.8, 1, 1]],
+                        8, ['*', 8, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0, 0.3, 0.4, 0.7, 0.8, 1, 1]],
+                        10, ['*', 32, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0, 0.3, 0.4, 0.7, 0.8, 1, 1]],
+                        12, ['*', 128, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0, 0.3, 0.4, 0.7, 0.8, 1, 1]]
                     ],
                     'circle-blur': 0.1,
                     'circle-opacity': [
@@ -3470,10 +3461,7 @@
                     <div class="pa-popup-header">
                         <div class="pa-popup-name" style="display: flex; align-items: center; justify-content: space-between;">
                             <span>${escapeHtml(name)}</span>
-                            <span style="display: flex; gap: 4px; align-items: center;">
-                                <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}" download="${paId}.kml" title="Download KML for Google Earth" style="text-decoration: none; font-size: 10px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 3px; color: #888;">KML</a>
-                                ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
-                            </span>
+                            ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
                         </div>
                         <div class="pa-popup-country">
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -3526,7 +3514,7 @@
                     <!-- Roadless Section -->
                     <div class="pa-popup-section" id="road-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">═</span> Roads, Places & Infrastructure<span id="road-count-${paId}" class="pa-popup-section-count"></span></div>
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="road" onclick="event.stopPropagation(); togglePinFromIcon(this)">═</span> Roads & Places<span id="road-count-${paId}" class="pa-popup-section-count"></span></div>
                             
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'road', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
@@ -3908,93 +3896,30 @@
                 const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/stats`);
                 const data = await resp.json();
                 
-                // Fetch feature stats (places, roads, airstrips, bases)
-                let fstats = { places: 0, road_segments: 0, airstrips: 0, bases: 0 };
-                try {
-                    const fstatsResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/feature-stats?pwd=${encodeURIComponent(getPwd())}`);
-                    if (fstatsResp.ok) {
-                        fstats = await fstatsResp.json();
-                    }
-                } catch (e) { /* ignore */ }
-                
-                // Fetch learned infrastructure
-                let learnedData = { airstrips: [], roads: [] };
-                try {
-                    const learnedResp = await fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(paId)}&pwd=${encodeURIComponent(getPwd())}`);
-                    if (learnedResp.ok) {
-                        learnedData = await learnedResp.json();
-                    }
-                } catch (e) { /* ignore */ }
-                
                 // Update count in header
                 const countEl = document.getElementById(`road-count-${paId}`);
-                const totalItems = (fstats.places || 0) + (fstats.road_segments || 0) + (learnedData.airstrips?.length || 0);
-                if (countEl && totalItems > 0) {
-                    countEl.textContent = ` • ${totalItems} items`;
+                if (countEl && data.roadless && data.roadless.total_road_km > 0) {
+                    countEl.textContent = ` • ${data.roadless.roadless_percentage.toFixed(0)}% roadless`;
                 }
                 
-                // Get park name for pin buttons
-                const parkName = el.closest('.pa-popup')?.querySelector('.pa-popup-name span')?.textContent || paId;
-
-                let html = '';
-                
-                // Roadless stats
                 if (data.roadless) {
                     const r = data.roadless;
                     const pct = r.roadless_percentage;
                     const pctClass = pct >= 80 ? ' good' : pct >= 50 ? ' warning' : ' bad';
-                    html += `
+                    el.innerHTML = `
                         <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Roadless area</span>
+                            <span class="pa-popup-mini-stat-label" title="Percentage of area more than 1km from any road">Roadless area</span>
                             <span class="pa-popup-mini-stat-value${pctClass}">${pct.toFixed(1)}%</span>
                         </div>
                         <div class="pa-popup-bar"><div class="pa-popup-bar-fill${pct >= 80 ? ' good' : pct >= 50 ? ' warning' : ' bad'}" style="width: ${pct}%;"></div></div>
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Road length</span>
+                            <span class="pa-popup-mini-stat-value">${r.total_road_km.toFixed(1)} km</span>
+                        </div>
                     `;
+                } else {
+                    el.innerHTML = '<div class="pa-popup-section-empty">Roadless data not yet processed</div>';
                 }
-                
-                // Pin buttons for each category
-                html += '<div class="road-pin-buttons" style="display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.08);">';
-                
-                if (fstats.road_segments > 0) {
-                    html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="road" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'road', this)" style="flex: 1; min-width: 80px;">
-                        <span class="pin-icon">═</span> Roads (${fstats.road_segments})
-                    </button>`;
-                }
-                
-                if (fstats.places > 0) {
-                    html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="place" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'place', this)" style="flex: 1; min-width: 80px;">
-                        <span class="pin-icon">●</span> Places (${fstats.places})
-                    </button>`;
-                }
-                
-                // Infrastructure section (airstrips + bases)
-                const airstripsApproved = (learnedData.airstrips || []).filter(a => a.status === 'auto_approved' || a.status === 'approved');
-                const infrastructureCount = airstripsApproved.length + (fstats.bases || 0);
-                
-                if (infrastructureCount > 0) {
-                    html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="infrastructure" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'infrastructure', this)" style="flex: 1; min-width: 80px;">
-                        <span class="pin-icon">✈</span> Infrastructure (${infrastructureCount})
-                    </button>`;
-                }
-                
-                html += '</div>';
-                
-                // Infrastructure details
-                if (airstripsApproved.length > 0) {
-                    html += `<div style="font-size: 11px; color: #888; margin-top: 8px;">✈ AIRSTRIPS (${airstripsApproved.length})</div>`;
-                    html += '<div style="font-size: 12px; margin-top: 4px;">';
-                    airstripsApproved.slice(0, 5).forEach((a, i) => {
-                        html += `<div style="padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                            Airstrip ${i+1}: ${a.landing_count || 0} landings, ${(a.length_m/1000).toFixed(1)}km runway
-                        </div>`;
-                    });
-                    if (airstripsApproved.length > 5) {
-                        html += `<div style="color: #666; font-size: 11px;">+ ${airstripsApproved.length - 5} more</div>`;
-                    }
-                    html += '</div>';
-                }
-                
-                el.innerHTML = html || '<div class="pa-popup-section-empty">No data available</div>';
             } catch (e) {
                 el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
             }
@@ -5858,30 +5783,6 @@ ${starredItems.narratives.map(n => {
         savePinnedToURL();
     }
     
-    // Toggle pin for a category (roads, places, infrastructure) from popup button
-    async function togglePinCategory(parkId, parkName, type, btn) {
-        const key = getPinKey(parkId, type);
-        
-        if (pinnedLayers[key]) {
-            // Unpin
-            removePinnedLayer(key);
-            if (btn) {
-                btn.classList.remove('pinned');
-                btn.style.background = '';
-            }
-        } else {
-            // Pin
-            if (btn) {
-                btn.classList.add('pinned');
-                btn.style.background = 'rgba(34,197,94,0.3)';
-            }
-            await addPinnedLayer(parkId, parkName, type);
-        }
-        
-        updatePinnedIndicator();
-        savePinnedToURL();
-    }
-    
     async function addPinnedLayer(parkId, parkName, type) {
         const key = getPinKey(parkId, type);
         const layerId = `pinned-${key}`;
@@ -5889,41 +5790,12 @@ ${starredItems.narratives.map(n => {
         
         try {
             // Map type to API feature_type
-            let featureType = {
+            const featureType = {
                 'fire': 'fire_trajectory',
                 'settlement': 'settlement',
                 'deforestation': 'deforestation',
-                'road': 'road',
-                'place': 'place',
-                'infrastructure': 'infrastructure'
+                'road': 'road'
             }[type] || type;
-            
-            // For infrastructure, we need to fetch airstrips from learned features
-            if (type === 'infrastructure') {
-                const learnedResp = await fetch(`/api/admin/learned-features?park_id=${parkId}&pwd=${window.accessPwd || ''}`);
-                if (learnedResp.ok) {
-                    const learned = await learnedResp.json();
-                    const airstrips = (learned.airstrips || []).filter(a => a.status === 'auto_approved' || a.status === 'approved');
-                    
-                    if (airstrips.length > 0) {
-                        const features = airstrips.map(a => ({
-                            type: 'Feature',
-                            geometry: { type: 'Point', coordinates: [a.lon, a.lat] },
-                            properties: {
-                                name: `Airstrip (${a.landing_count || 0} landings)`,
-                                type: 'airstrip',
-                                landing_count: a.landing_count || 0,
-                                length_m: a.length_m || 0
-                            }
-                        }));
-                        const geojson = { type: 'FeatureCollection', features };
-                        addInfrastructureLayer(key, layerId, sourceId, geojson, parkId, parkName);
-                        return;
-                    }
-                }
-                showToast(`No infrastructure found for ${parkName}`, 'warning');
-                return;
-            }
             
             // Get date range from time slider for time-filtered features
             let dateParams = '';
@@ -5950,8 +5822,10 @@ ${starredItems.narratives.map(n => {
             map.addSource(sourceId, { type: 'geojson', data: geojson });
             
             // Style based on type
-            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', place: '#10b981', infrastructure: '#f97316' };
+            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#888888' };
             const color = colors[type] || '#22c55e';
+            const lineWidths = { fire: 3, settlement: 3, deforestation: 3, road: 1.5 };
+            const lineWidth = lineWidths[type] || 2;
             
             // Store reference early so we can add arrowLayerId
             pinnedLayers[key] = {
@@ -5972,7 +5846,7 @@ ${starredItems.narratives.map(n => {
                     type: 'circle',
                     source: sourceId,
                     paint: {
-                        'circle-radius': type === 'place' ? 5 : 6,
+                        'circle-radius': 6,
                         'circle-color': color,
                         'circle-opacity': 0.8,
                         'circle-stroke-width': 2,
@@ -5980,30 +5854,6 @@ ${starredItems.narratives.map(n => {
                         'circle-stroke-opacity': 0.5
                     }
                 });
-                
-                // Add labels for place features
-                if (type === 'place') {
-                    const labelLayerId = `${layerId}-label`;
-                    map.addLayer({
-                        id: labelLayerId,
-                        type: 'symbol',
-                        source: sourceId,
-                        layout: {
-                            'text-field': ['get', 'name'],
-                            'text-font': ['Open Sans Regular'],
-                            'text-size': 10,
-                            'text-offset': [0, 1.2],
-                            'text-anchor': 'top',
-                            'text-optional': true
-                        },
-                        paint: {
-                            'text-color': '#fff',
-                            'text-halo-color': '#000',
-                            'text-halo-width': 1
-                        }
-                    });
-                    pinnedLayers[key].labelLayerId = labelLayerId;
-                }
             } else if (geomType === 'LineString' || geomType === 'MultiLineString') {
                 // Add main line layer
                 map.addLayer({
@@ -6012,8 +5862,8 @@ ${starredItems.narratives.map(n => {
                     source: sourceId,
                     paint: {
                         'line-color': color,
-                        'line-width': 3,
-                        'line-opacity': 0.8
+                        'line-width': lineWidth,
+                        'line-opacity': type === 'road' ? 0.6 : 0.8
                     }
                 });
                 
@@ -6042,16 +5892,28 @@ ${starredItems.narratives.map(n => {
                     pinnedLayers[key].arrowLayerId = arrowLayerId;
                 }
             } else {
+                // Add fill layer
                 map.addLayer({
                     id: layerId,
                     type: 'fill',
                     source: sourceId,
                     paint: {
                         'fill-color': color,
-                        'fill-opacity': 0.4,
-                        'fill-outline-color': color
+                        'fill-opacity': 0.3
                     }
                 });
+                // Add outline layer for better visibility
+                map.addLayer({
+                    id: `${layerId}-outline`,
+                    type: 'line',
+                    source: sourceId,
+                    paint: {
+                        'line-color': color,
+                        'line-width': 2.5,
+                        'line-opacity': 0.9
+                    }
+                });
+                pinnedLayers[key].outlineLayerId = `${layerId}-outline`;
             }
             
             // Add hover effect
@@ -6074,57 +5936,6 @@ ${starredItems.narratives.map(n => {
         }
     }
     
-    function addInfrastructureLayer(key, layerId, sourceId, geojson, parkId, parkName) {
-        if (map.getSource(sourceId)) map.removeSource(sourceId);
-        
-        map.addSource(sourceId, { type: 'geojson', data: geojson });
-        
-        map.addLayer({
-            id: layerId,
-            type: 'circle',
-            source: sourceId,
-            paint: {
-                'circle-radius': 10,
-                'circle-color': '#f97316',
-                'circle-opacity': 0.9,
-                'circle-stroke-width': 3,
-                'circle-stroke-color': '#fff'
-            }
-        });
-        
-        // Add label layer
-        const labelLayerId = `${layerId}-label`;
-        map.addLayer({
-            id: labelLayerId,
-            type: 'symbol',
-            source: sourceId,
-            layout: {
-                'text-field': ['get', 'name'],
-                'text-font': ['Open Sans Bold'],
-                'text-size': 11,
-                'text-offset': [0, 1.5],
-                'text-anchor': 'top'
-            },
-            paint: {
-                'text-color': '#fff',
-                'text-halo-color': '#000',
-                'text-halo-width': 1
-            }
-        });
-        
-        pinnedLayers[key] = {
-            parkId,
-            parkName,
-            type: 'infrastructure',
-            featureCount: geojson.features.length,
-            layerId,
-            sourceId,
-            labelLayerId
-        };
-        
-        showToast(`Pinned ${geojson.features.length} infrastructure items`);
-    }
-    
     function removePinnedLayer(key) {
         const layer = pinnedLayers[key];
         if (!layer) return;
@@ -6134,9 +5945,9 @@ ${starredItems.narratives.map(n => {
             map.removeLayer(layer.arrowLayerId);
         }
         
-        // Remove label layer if exists (for infrastructure)
-        if (layer.labelLayerId && map.getLayer(layer.labelLayerId)) {
-            map.removeLayer(layer.labelLayerId);
+        // Remove outline layer if exists (for polygons)
+        if (layer.outlineLayerId && map.getLayer(layer.outlineLayerId)) {
+            map.removeLayer(layer.outlineLayerId);
         }
         
         if (map.getLayer(layer.layerId)) map.removeLayer(layer.layerId);
@@ -6256,64 +6067,6 @@ ${starredItems.narratives.map(n => {
         </button>`;
     }
     // ===== End Pinned GeoJSON Layers =====
-
-    // Track individually pinned features (fire groups, settlements, deforestation events)
-    const singlePinnedFeatures = {}; // key: parkId_type_featureId
-
-    function isSingleFeaturePinned(parkId, type, featureId) {
-        const key = `${parkId}_${type}_${featureId}`;
-        return !!singlePinnedFeatures[key];
-    }
-
-    async function toggleSingleFeaturePin(parkId, parkName, type, featureId, iconEl) {
-        const key = `${parkId}_${type}_${featureId}`;
-        const isPinned = isSingleFeaturePinned(parkId, type, featureId);
-        
-        if (isPinned) {
-            // Remove the layer
-            const layerId = `single-${key}`;
-            const sourceId = `single-source-${key}`;
-            if (map.getLayer(layerId)) map.removeLayer(layerId);
-            if (map.getSource(sourceId)) map.removeSource(sourceId);
-            delete singlePinnedFeatures[key];
-            if (iconEl) {
-                iconEl.classList.remove('pinned');
-                iconEl.textContent = '\ud83d\udccc';
-            }
-        } else {
-            // Fetch the single feature and add to map
-            try {
-                const resp = await fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=${type}&feature_id=${encodeURIComponent(featureId)}&pwd=${encodeURIComponent(getPwd())}`);
-                if (!resp.ok) throw new Error('Feature not found');
-                const geojson = await resp.json();
-                if (!geojson.features || geojson.features.length === 0) throw new Error('No features');
-                
-                const sourceId = `single-source-${key}`;
-                const layerId = `single-${key}`;
-                const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', place: '#10b981', infrastructure: '#f97316' };
-                const color = colors[type] || '#22c55e';
-                
-                map.addSource(sourceId, { type: 'geojson', data: geojson });
-                
-                const geomType = geojson.features[0].geometry?.type || '';
-                if (geomType.includes('Point')) {
-                    map.addLayer({ id: layerId, type: 'circle', source: sourceId, paint: { 'circle-radius': 8, 'circle-color': color, 'circle-stroke-width': 2, 'circle-stroke-color': '#fff' }});
-                } else if (geomType.includes('Line')) {
-                    map.addLayer({ id: layerId, type: 'line', source: sourceId, paint: { 'line-color': color, 'line-width': 3 }});
-                } else {
-                    map.addLayer({ id: layerId, type: 'fill', source: sourceId, paint: { 'fill-color': color, 'fill-opacity': 0.5 }});
-                }
-                
-                singlePinnedFeatures[key] = { parkId, parkName, type, featureId, layerId, sourceId };
-                if (iconEl) {
-                    iconEl.classList.add('pinned');
-                    iconEl.textContent = '\ud83d\udccd';
-                }
-            } catch (e) {
-                console.error('Failed to pin feature:', e);
-            }
-        }
-    }
 
     // Toggle pin from section icon click
     async function togglePinFromIcon(iconEl) {
@@ -7001,16 +6754,12 @@ ${starredItems.narratives.map(n => {
 
     <!-- Star Modal -->
     <!-- Pinned GeoJSON Indicator -->
-    <div class="pinned-indicator" id="pinned-indicator">
+    <div class="pinned-indicator" id="pinned-indicator" onclick="clearAllPinnedLayers()" title="Click to clear all">
         <div class="pinned-indicator-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
         </div>
-        <div class="pinned-indicator-text">
-            <span>Currently Pinned:</span>
-            <div class="pinned-indicator-items" id="pinned-items"></div>
-            <span class="clear-hint" onclick="event.stopPropagation(); clearAllPinnedLayers();">(click to clear all)</span>
-        </div>
-        <span class="pinned-indicator-close" onclick="event.stopPropagation(); clearAllPinnedLayers();" title="Clear all pinned">&times;</span>
+        <div class="pinned-indicator-items" id="pinned-items"></div>
+        <span class="pinned-indicator-close" onclick="event.stopPropagation(); clearAllPinnedLayers();">&times;</span>
     </div>
 
     <!-- GPX Admin Panel -->
