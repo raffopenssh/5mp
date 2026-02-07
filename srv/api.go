@@ -2334,3 +2334,130 @@ func escapeXML(s string) string {
 	s = strings.ReplaceAll(s, "'", "&apos;")
 	return s
 }
+
+// HandleAPISettlementIntensity returns settlement visit intensity data for a park
+// GET /api/parks/{id}/settlement-intensity
+// Query params:
+//   - from_year: start year (default: current year - 1)
+//   - to_year: end year (default: current year)
+//   - include_bases: include likely base settlements (default: false)
+func (s *Server) HandleAPISettlementIntensity(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+	fromYearStr := r.URL.Query().Get("from_year")
+	toYearStr := r.URL.Query().Get("to_year")
+	includeBasesStr := r.URL.Query().Get("include_bases")
+
+	// Map WDPA ID to internal park_id if needed
+	internalID := parkID
+	if s.AreaStore != nil {
+		for _, area := range s.AreaStore.Areas {
+			if area.WDPAID == parkID {
+				internalID = area.ID
+				break
+			}
+		}
+	}
+
+	// Parse year range
+	now := time.Now()
+	fromYear := int64(now.Year() - 1)
+	toYear := int64(now.Year())
+
+	if fromYearStr != "" {
+		if y, err := strconv.ParseInt(fromYearStr, 10, 64); err == nil {
+			fromYear = y
+		}
+	}
+	if toYearStr != "" {
+		if y, err := strconv.ParseInt(toYearStr, 10, 64); err == nil {
+			toYear = y
+		}
+	}
+
+	// Parse include_bases flag
+	includeBases := false
+	if includeBasesStr == "true" || includeBasesStr == "1" {
+		includeBases = true
+	}
+
+	q := dbgen.New(s.DB)
+	rows, err := q.GetSettlementIntensityByPark(r.Context(), dbgen.GetSettlementIntensityByParkParams{
+		ParkID: internalID,
+		Year:   fromYear,
+		Year_2: toYear,
+	})
+	if err != nil {
+		slog.Error("failed to get settlement intensity", "error", err, "parkID", internalID)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// Build response - GeoJSON FeatureCollection with intensity data
+	type SettlementFeature struct {
+		Type       string                 `json:"type"`
+		Geometry   map[string]interface{} `json:"geometry"`
+		Properties map[string]interface{} `json:"properties"`
+	}
+
+	type FeatureCollection struct {
+		Type     string               `json:"type"`
+		Features []SettlementFeature  `json:"features"`
+	}
+
+	fc := FeatureCollection{
+		Type:     "FeatureCollection",
+		Features: []SettlementFeature{},
+	}
+
+	for _, row := range rows {
+		// Skip likely bases unless explicitly requested
+		isBase := row.IsLikelyBase != nil && *row.IsLikelyBase == 1
+		if isBase && !includeBases {
+			continue
+		}
+
+		feature := SettlementFeature{
+			Type: "Feature",
+			Geometry: map[string]interface{}{
+				"type":        "Point",
+				"coordinates": []float64{row.Lon, row.Lat},
+			},
+			Properties: map[string]interface{}{
+				"settlement_id":          row.SettlementID,
+				"year":                   row.Year,
+				"total_visits":           row.TotalVisits,
+				"total_duration_minutes": row.TotalDurationMinutes,
+				"unique_uploads":         row.UniqueUploads,
+				"is_likely_base":         isBase,
+			},
+		}
+
+		// Add optional fields
+		if row.FootVisits != nil {
+			feature.Properties["foot_visits"] = *row.FootVisits
+		}
+		if row.VehicleVisits != nil {
+			feature.Properties["vehicle_visits"] = *row.VehicleVisits
+		}
+		if row.AircraftVisits != nil {
+			feature.Properties["aircraft_visits"] = *row.AircraftVisits
+		}
+		if row.NearestPlace != nil {
+			feature.Properties["nearest_place"] = *row.NearestPlace
+		}
+		if row.AreaM2 != nil {
+			feature.Properties["area_m2"] = *row.AreaM2
+		}
+		if row.PopulationEst != nil {
+			feature.Properties["population_est"] = *row.PopulationEst
+		}
+		if row.Month != nil {
+			feature.Properties["month"] = *row.Month
+		}
+
+		fc.Features = append(fc.Features, feature)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(fc)
+}

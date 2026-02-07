@@ -142,13 +142,23 @@ func ValidateAndClassifyGPX(data *gpx.GPXData) *GPXValidationResult {
 			}
 
 			// Default: classify as patrol (valid for effort mapping)
+			// Determine movement type from speed
+			movementType := "foot"
+			if len(seg) >= 2 {
+				tempSeg := gpx.Segment{Points: seg}
+				tempSeg.AvgSpeedKmh = gpx.CalculateSpeed(seg)
+				movementType = gpx.ClassifyMovementType(tempSeg)
+			}
+			
 			classified := ClassifiedSegment{
 				Classification:  "patrol",
+				MovementType:    movementType,
 				StartIndex:      0,
 				EndIndex:        len(seg) - 1,
 				DistanceKm:      calculateSegmentDistance(seg),
 				Reason:          "Valid patrol track",
 				IncludeInEffort: true,
+				Points:          seg, // Store points for persistence
 			}
 			if len(seg) > 0 && seg[0].Time != nil && seg[len(seg)-1].Time != nil {
 				duration := seg[len(seg)-1].Time.Sub(*seg[0].Time)

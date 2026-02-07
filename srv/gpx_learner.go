@@ -181,12 +181,19 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	}
 
 	// Get the upload log data (which has classified segments)
+	// Try by upload_id first, then fall back to most recent log for this park
 	var analysisJSON sql.NullString
 	err := l.db.QueryRowContext(ctx,
-		"SELECT classified_segments_json FROM gpx_upload_logs WHERE upload_id = ?",
+		"SELECT classified_segments_json FROM gpx_upload_logs WHERE upload_id = ? AND classified_segments_json IS NOT NULL",
 		uploadID).Scan(&analysisJSON)
+	if (err != nil || !analysisJSON.Valid) && uploadID == 0 {
+		// Fall back to most recent log for this park
+		err = l.db.QueryRowContext(ctx,
+			"SELECT classified_segments_json FROM gpx_upload_logs WHERE protected_area_id = ? AND classified_segments_json IS NOT NULL ORDER BY id DESC LIMIT 1",
+			parkID).Scan(&analysisJSON)
+	}
 	if err != nil || !analysisJSON.Valid {
-		slog.Debug("no classified segments found", "upload_id", uploadID)
+		slog.Debug("no classified segments found", "upload_id", uploadID, "park_id", parkID)
 		return nil
 	}
 
@@ -199,6 +206,34 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	if len(segments) == 0 {
 		return nil // No segments to learn from
 	}
+
+	// Populate Points from GeoJSON for segments that have it.
+	// Points is json:"-" so it's lost during serialization.
+	for i := range segments {
+		if len(segments[i].Points) == 0 && segments[i].GeoJSON != "" {
+			segments[i].Points = pointsFromGeoJSON(segments[i].GeoJSON)
+		}
+	}
+
+	// Also load raw track points from the upload if available
+	if uploadID > 0 {
+		rawPoints := l.loadTrackPoints(ctx, uploadID)
+		if len(rawPoints) > 0 {
+			// Assign raw points to patrol segments that have no GeoJSON
+			for i := range segments {
+				if len(segments[i].Points) == 0 && segments[i].Classification == "patrol" {
+					// Use start/end index to extract points from raw data
+					start := segments[i].StartIndex
+					end := segments[i].EndIndex
+					if start >= 0 && end < len(rawPoints) && end >= start {
+						segments[i].Points = rawPoints[start : end+1]
+					}
+				}
+			}
+		}
+	}
+
+	slog.Info("learner loaded segments", "total", len(segments), "with_points", countSegmentsWithPoints(segments))
 
 	result := &LearningResult{
 		UploadID:   uploadID,
@@ -305,6 +340,11 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	// Calculate 90% MCP for foot patrols
 	if len(footPoints) > 10 {
 		result.FootMCPArea = calculateMCP90(footPoints)
+	}
+
+	// Run cross-track analysis to detect roads, airstrips, and bases
+	if len(segments) >= 2 {
+		l.processCrossTrackAnalysis(ctx, parkID, uploadID, segments, result)
 	}
 
 	// Generate summary
@@ -1904,4 +1944,78 @@ func (l *GPXLearner) processCrossTrackAnalysis(ctx context.Context, parkID strin
 			}
 		}
 	}
+}
+
+// pointsFromGeoJSON extracts gpx.Point slice from a GeoJSON geometry string.
+func pointsFromGeoJSON(geojsonStr string) []gpx.Point {
+	var geom struct {
+		Type        string          `json:"type"`
+		Coordinates json.RawMessage `json:"coordinates"`
+	}
+	if err := json.Unmarshal([]byte(geojsonStr), &geom); err != nil {
+		return nil
+	}
+
+	var coords [][]float64
+	switch geom.Type {
+	case "LineString":
+		if err := json.Unmarshal(geom.Coordinates, &coords); err != nil {
+			return nil
+		}
+	case "Point":
+		var pt []float64
+		if err := json.Unmarshal(geom.Coordinates, &pt); err != nil || len(pt) < 2 {
+			return nil
+		}
+		coords = [][]float64{pt}
+	default:
+		return nil
+	}
+
+	points := make([]gpx.Point, 0, len(coords))
+	for _, c := range coords {
+		if len(c) >= 2 {
+			pt := gpx.Point{Lat: c[1], Lon: c[0]}
+			if len(c) >= 3 {
+				elev := c[2]
+				pt.Elevation = &elev
+			}
+			points = append(points, pt)
+		}
+	}
+	return points
+}
+
+// loadTrackPoints loads sampled track points from the database for an upload.
+func (l *GPXLearner) loadTrackPoints(ctx context.Context, uploadID int64) []gpx.Point {
+	rows, err := l.db.QueryContext(ctx,
+		"SELECT lat, lon, elevation, timestamp FROM track_points WHERE upload_id = ? ORDER BY id",
+		uploadID)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	var points []gpx.Point
+	for rows.Next() {
+		var lat, lon float64
+		var elev *float64
+		var ts *time.Time
+		if err := rows.Scan(&lat, &lon, &elev, &ts); err != nil {
+			continue
+		}
+		points = append(points, gpx.Point{Lat: lat, Lon: lon, Elevation: elev, Time: ts})
+	}
+	return points
+}
+
+// countSegmentsWithPoints returns the number of segments that have Points populated.
+func countSegmentsWithPoints(segments []ClassifiedSegment) int {
+	count := 0
+	for _, seg := range segments {
+		if len(seg.Points) > 0 {
+			count++
+		}
+	}
+	return count
 }

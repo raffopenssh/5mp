@@ -900,19 +900,14 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		slog.Warn("failed to create gpx upload log", "error", err)
 	}
 	
-	// If valid, also persist to the original upload tables (but only patrol segments)
+	// If valid, persist to the original upload tables using the raw segments
+	slog.Info("upload validation", "isValid", validationResult.IsValid, "patrolKm", validationResult.PatrolKm, "segments", len(segments))
 	if validationResult.IsValid && validationResult.PatrolKm > 0 {
-		// Filter to only patrol segments
-		var patrolOnlySegments []gpx.Segment
-		for _, seg := range segments {
-			// Find if this segment was classified as patrol
-			for _, classified := range validationResult.ClassifiedSegments {
-				if classified.Classification == "patrol" && classified.IncludeInEffort {
-					patrolOnlySegments = append(patrolOnlySegments, seg)
-					break
-				}
-			}
-		}
+		// Use the raw segments for persistence - they contain the actual GPS points.
+		// The validation result classifies the GPX track segments, but Points are not
+		// stored in ClassifiedSegment (json:"-"), so we use the original segments.
+		patrolOnlySegments := segments
+		slog.Info("persisting patrol segments", "count", len(patrolOnlySegments))
 		
 		if len(patrolOnlySegments) > 0 {
 			persistID, err := s.persistUpload(ctx, userID, userEmail, filename, fileHash, patrolOnlySegments)
@@ -952,6 +947,13 @@ func strPtr(s string) *string {
 		return nil
 	}
 	return &s
+}
+
+func timePtr(t *time.Time) *time.Time {
+	if t == nil {
+		return nil
+	}
+	return t
 }
 
 // trackSettlementVisits detects when GPS tracks pass through or near settlements
@@ -1102,4 +1104,26 @@ func (s *Server) trackSettlementVisits(ctx context.Context, q *dbgen.Queries, se
 	}
 	
 	return nil
+}
+
+// isNearBase checks if a point is within threshold distance of a known park base
+func (s *Server) isNearBase(ctx context.Context, lat, lon, threshold float64) bool {
+	if s.DB == nil {
+		return false
+	}
+	
+	// Query for nearby bases (settlements with is_likely_base=1)
+	var count int
+	err := s.DB.QueryRowContext(ctx, `
+		SELECT COUNT(*) FROM settlement_intensity si
+		JOIN park_settlements ps ON si.settlement_id = ps.id
+		WHERE si.is_likely_base = 1
+		  AND ABS(ps.lat - ?) < ?
+		  AND ABS(ps.lon - ?) < ?
+	`, lat, threshold, lon, threshold).Scan(&count)
+	
+	if err != nil {
+		return false
+	}
+	return count > 0
 }

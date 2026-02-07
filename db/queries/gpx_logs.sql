@@ -49,3 +49,6 @@ WHERE upload_time >= ?;
 
 -- name: GetGPXUploadLog :one
 SELECT * FROM gpx_upload_logs WHERE id = ?;
+
+-- name: UpdateGPXUploadLogUploadID :exec
+UPDATE gpx_upload_logs SET upload_id = ? WHERE id = ?;

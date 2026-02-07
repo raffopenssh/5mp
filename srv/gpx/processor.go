@@ -175,6 +175,9 @@ func SplitIntoSegments(data *GPXData, maxDuration time.Duration) []Segment {
 		maxDuration = DefaultSegmentDuration
 	}
 
+	// Extract movement hints from waypoints (InReach messages, etc.)
+	hint := ExtractMovementHintsFromWaypoints(data.Waypoints)
+
 	var segments []Segment
 
 	for _, track := range data.Tracks {
@@ -184,7 +187,7 @@ func SplitIntoSegments(data *GPXData, maxDuration time.Duration) []Segment {
 			}
 
 			// Split this track segment into time-bounded segments
-			segs := splitByDuration(trackSeg, maxDuration)
+			segs := splitByDurationWithHint(trackSeg, maxDuration, hint)
 			segments = append(segments, segs...)
 		}
 	}
@@ -194,6 +197,11 @@ func SplitIntoSegments(data *GPXData, maxDuration time.Duration) []Segment {
 
 // splitByDuration splits a slice of points into segments based on time duration.
 func splitByDuration(points []Point, maxDuration time.Duration) []Segment {
+	return splitByDurationWithHint(points, maxDuration, MovementHint{})
+}
+
+// splitByDurationWithHint splits points into segments using optional movement hints.
+func splitByDurationWithHint(points []Point, maxDuration time.Duration, hint MovementHint) []Segment {
 	if len(points) == 0 {
 		return nil
 	}
@@ -216,8 +224,8 @@ func splitByDuration(points []Point, maxDuration time.Duration) []Segment {
 		// Use > not >= so points exactly at the boundary stay in current segment
 		if pt.Time != nil && segmentStart != nil {
 			if pt.Time.Sub(*segmentStart) > maxDuration {
-				// Finalize current segment
-				seg := buildSegment(currentPoints)
+				// Finalize current segment with movement hint
+				seg := buildSegmentWithHint(currentPoints, hint)
 				segments = append(segments, seg)
 
 				// Start new segment
@@ -235,7 +243,7 @@ func splitByDuration(points []Point, maxDuration time.Duration) []Segment {
 
 	// Don't forget the last segment
 	if len(currentPoints) > 0 {
-		seg := buildSegment(currentPoints)
+		seg := buildSegmentWithHint(currentPoints, hint)
 		segments = append(segments, seg)
 	}
 
@@ -244,6 +252,11 @@ func splitByDuration(points []Point, maxDuration time.Duration) []Segment {
 
 // buildSegment creates a Segment from a slice of points, computing all statistics.
 func buildSegment(points []Point) Segment {
+	return buildSegmentWithHint(points, MovementHint{})
+}
+
+// buildSegmentWithHint creates a Segment using optional movement hints for classification.
+func buildSegmentWithHint(points []Point, hint MovementHint) Segment {
 	seg := Segment{
 		Points: points,
 	}
@@ -265,7 +278,7 @@ func buildSegment(points []Point) Segment {
 	// Calculate distance and speed
 	seg.DistanceKm = CalculateDistance(points)
 	seg.AvgSpeedKmh = CalculateSpeed(points)
-	seg.MovementType = ClassifyMovementType(seg)
+	seg.MovementType = ClassifyMovementTypeWithHint(seg, hint)
 
 	return seg
 }
@@ -276,8 +289,54 @@ func buildSegment(points []Point) Segment {
 //   - "vehicle": 8-120 km/h (car, motorbike)
 //   - "aircraft": > 120 km/h
 func ClassifyMovementType(segment Segment) string {
+	return ClassifyMovementTypeWithHint(segment, MovementHint{})
+}
+
+// ClassifyMovementTypeWithHint determines movement type using speed and optional message hints.
+// Message hints from Garmin InReach waypoints can improve classification confidence,
+// especially in ambiguous speed ranges (e.g., slow vehicle vs fast walking).
+func ClassifyMovementTypeWithHint(segment Segment, hint MovementHint) string {
 	speed := segment.AvgSpeedKmh
 
+	// If we have a high-confidence hint, use it for ambiguous speeds
+	if hint.Type != "" && hint.Confidence >= 0.8 {
+		// Aircraft hint with speed > 50 km/h
+		if hint.Type == "aircraft" && speed > 50 {
+			return "aircraft"
+		}
+		// Vehicle hint in reasonable vehicle speed range
+		if hint.Type == "vehicle" && speed >= 5 && speed <= 150 {
+			return "vehicle"
+		}
+		// Foot hint with speed < 15 km/h (fast running)
+		if hint.Type == "foot" && speed < 15 {
+			return "foot"
+		}
+	}
+
+	// For moderate confidence hints, use them in ambiguous ranges
+	if hint.Type != "" && hint.Confidence >= 0.6 {
+		// Ambiguous zone: 5-12 km/h could be fast walk or slow vehicle
+		if speed >= 5 && speed <= 12 {
+			if hint.Type == "vehicle" {
+				return "vehicle"
+			}
+			if hint.Type == "foot" {
+				return "foot"
+			}
+		}
+		// Ambiguous zone: 80-150 km/h could be fast vehicle or slow aircraft
+		if speed >= 80 && speed <= 150 {
+			if hint.Type == "aircraft" {
+				return "aircraft"
+			}
+			if hint.Type == "vehicle" {
+				return "vehicle"
+			}
+		}
+	}
+
+	// Default speed-based classification
 	switch {
 	case speed < 8:
 		return "foot"
