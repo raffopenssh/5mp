@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"io"
 	"math"
-	"strings"
 	"time"
 )
 
@@ -50,74 +49,6 @@ type Waypoint struct {
 	Desc      string // Message content from InReach devices
 }
 
-// MovementHint provides context from waypoint messages to help classify movement type.
-type MovementHint struct {
-	Type       string  // "foot", "vehicle", "aircraft", or ""
-	Confidence float64 // 0.0 to 1.0
-	Keywords   []string
-}
-
-// ExtractMovementHintsFromWaypoints analyzes waypoint descriptions for movement hints.
-func ExtractMovementHintsFromWaypoints(waypoints []Waypoint) MovementHint {
-	hint := MovementHint{}
-	
-	vehicleKeywords := []string{"vehicle", "car", "truck", "drive", "driving", "road"}
-	aircraftKeywords := []string{"aircraft", "plane", "flight", "flying", "helicopter", "heli"}
-	footKeywords := []string{"foot", "walk", "walking", "patrol", "hike", "hiking", "trek"}
-	
-	vehicleCount := 0
-	aircraftCount := 0
-	footCount := 0
-	
-	for _, wp := range waypoints {
-		desc := strings.ToLower(wp.Desc + " " + wp.Name)
-		
-		for _, kw := range vehicleKeywords {
-			if strings.Contains(desc, kw) {
-				vehicleCount++
-				hint.Keywords = append(hint.Keywords, kw)
-			}
-		}
-		for _, kw := range aircraftKeywords {
-			if strings.Contains(desc, kw) {
-				aircraftCount++
-				hint.Keywords = append(hint.Keywords, kw)
-			}
-		}
-		for _, kw := range footKeywords {
-			if strings.Contains(desc, kw) {
-				footCount++
-				hint.Keywords = append(hint.Keywords, kw)
-			}
-		}
-	}
-	
-	// Determine dominant type
-	maxCount := vehicleCount
-	if aircraftCount > maxCount {
-		maxCount = aircraftCount
-	}
-	if footCount > maxCount {
-		maxCount = footCount
-	}
-	
-	if maxCount > 0 {
-		if vehicleCount == maxCount {
-			hint.Type = "vehicle"
-			hint.Confidence = float64(vehicleCount) / float64(vehicleCount+aircraftCount+footCount)
-		} else if aircraftCount == maxCount {
-			hint.Type = "aircraft"
-			hint.Confidence = float64(aircraftCount) / float64(vehicleCount+aircraftCount+footCount)
-		} else {
-			hint.Type = "foot"
-			hint.Confidence = float64(footCount) / float64(vehicleCount+aircraftCount+footCount)
-		}
-	}
-	
-	return hint
-}
-
-// GPX XML structures for parsing
 type gpxFile struct {
 	XMLName   xml.Name      `xml:"gpx"`
 	Metadata  gpxMeta       `xml:"metadata"`
