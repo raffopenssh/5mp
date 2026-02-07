@@ -1325,15 +1325,7 @@
             
             map.addSource('grid', {
                 type: 'geojson',
-                data: { type: 'FeatureCollection', features: [] },
-                cluster: true,
-                clusterRadius: 20,
-                clusterMaxZoom: 4,
-                clusterProperties: {
-                    'sum_intensity': ['+', ['get', 'intensity']],
-                    'sum_distance': ['+', ['coalesce', ['get', 'total_distance_km'], 0]],
-                    'sum_visits': ['+', ['coalesce', ['get', 'unique_uploads'], 0]]
-                }
+                data: { type: 'FeatureCollection', features: [] }
             });
 
             
@@ -1495,44 +1487,7 @@
                 }
             });
 
-            // Clustered circles layer (for zoomed out view)
-            map.addLayer({
-                id: 'grid-clusters',
-                type: 'circle',
-                source: 'grid',
-                filter: ['has', 'point_count'],
-                paint: {
-                    'circle-color': '#22c55e',
-                    'circle-radius': [
-                        'interpolate', ['linear'],
-                        ['get', 'point_count'],
-                        2, 12,
-                        10, 16,
-                        50, 20,
-                        100, 24
-                    ],
-                    'circle-stroke-color': '#4ade80',
-                    'circle-stroke-width': 2,
-                    'circle-blur': 0.2,
-                    'circle-opacity': 0.7
-                }
-            });
-
-            // Cluster count labels
-            map.addLayer({
-                id: 'grid-cluster-count',
-                type: 'symbol',
-                source: 'grid',
-                filter: ['has', 'point_count'],
-                layout: {
-                    'text-field': '{point_count_abbreviated}',
-                    'text-font': ['Open Sans Semibold'],
-                    'text-size': 11
-                },
-                paint: {
-                    'text-color': '#ffffff'
-                }
-            });
+            // Cluster layers removed - showing individual pixels at all zoom levels
 
             
             // PA click handler is set up in the 'Override map click for PA areas' section below
@@ -1566,29 +1521,7 @@
             });
 
             
-            // Click handler for clusters - zoom in to expand, but let PA clicks through
-            map.on('click', 'grid-clusters', function(e) {
-                // Check if there's a PA under the cluster - if so, let PA click handler win
-                const paFeatures = map.queryRenderedFeatures(e.point, { layers: ['areas-fill'] });
-                if (paFeatures.length > 0) {
-                    // Don't handle cluster click - let PA click through
-                    return;
-                }
-                
-                e.originalEvent.stopPropagation();
-                const features = map.queryRenderedFeatures(e.point, { layers: ['grid-clusters'] });
-                if (features.length > 0) {
-                    const clusterId = features[0].properties.cluster_id;
-                    const source = map.getSource('grid');
-                    source.getClusterExpansionZoom(clusterId, function(err, zoom) {
-                        if (err) return;
-                        map.easeTo({
-                            center: features[0].geometry.coordinates,
-                            zoom: zoom
-                        });
-                    });
-                }
-            });
+            // Cluster click handler removed - individual pixels shown at all zoom levels
 
             map.on('mouseenter', 'areas-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', 'areas-fill', function() { map.getCanvas().style.cursor = ''; });
@@ -1609,8 +1542,7 @@
             });
             map.on('mouseenter', 'grid-cells', function() { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', 'grid-cells', function() { map.getCanvas().style.cursor = ''; });
-            map.on('mouseenter', 'grid-clusters', function() { map.getCanvas().style.cursor = 'pointer'; });
-            map.on('mouseleave', 'grid-clusters', function() { map.getCanvas().style.cursor = ''; });
+            // Cluster mouse handlers removed
 
             // Update stats when map view changes (debounced)
             let statsUpdateTimeout = null;
@@ -4685,11 +4617,7 @@
             map.setPaintProperty('grid-cells', 'circle-stroke-color', '#ffffff');
             map.setPaintProperty('grid-cells', 'circle-stroke-width', 2.5);
             
-            // Also enhance clusters
-            if (map.getLayer('grid-clusters')) {
-                map.setPaintProperty('grid-clusters', 'circle-stroke-color', '#ffffff');
-                map.setPaintProperty('grid-clusters', 'circle-stroke-width', 3);
-            }
+            // Cluster styling removed - using individual pixels only
             
             // Animate the circles with a pulsing effect
             animatePixelHighlight();
@@ -4715,9 +4643,7 @@
                 if (map.getLayer('grid-glow')) {
                     map.setPaintProperty('grid-glow', 'circle-opacity', glowOpacity);
                 }
-                if (map.getLayer('grid-clusters')) {
-                    map.setPaintProperty('grid-clusters', 'circle-opacity', 0.5 + glowOpacity);
-                }
+                // Cluster animation removed
                 pixelAnimationFrame = requestAnimationFrame(pulse);
             }
             pulse();
@@ -4754,11 +4680,7 @@
             map.setPaintProperty('grid-cells', 'circle-stroke-color', '#ffffff');
             map.setPaintProperty('grid-cells', 'circle-stroke-width', 2);
             
-            // Also update clusters
-            if (map.getLayer('grid-clusters')) {
-                map.setPaintProperty('grid-clusters', 'circle-color', '#f97316');
-                map.setPaintProperty('grid-clusters', 'circle-stroke-color', '#ffffff');
-            }
+            // Cluster styling removed
         }
 
         async function zoomToPatrolCoverage() {
@@ -4840,13 +4762,7 @@
                 ]);
             }
             
-            // Also reset clusters to original style
-            if (map.getLayer('grid-clusters')) {
-                map.setPaintProperty('grid-clusters', 'circle-color', '#22c55e');
-                map.setPaintProperty('grid-clusters', 'circle-stroke-color', '#4ade80');
-                map.setPaintProperty('grid-clusters', 'circle-stroke-width', 2);
-                map.setPaintProperty('grid-clusters', 'circle-opacity', 0.7);
-            }
+            // Cluster reset removed - using individual pixels only
         }
 
         function removeHighlightLayers() {
@@ -4868,7 +4784,7 @@
         map.on('click', function(e) {
             // Don't reset if clicking on a feature
             const features = map.queryRenderedFeatures(e.point, {
-                layers: ['areas-fill', 'grid-cells', 'grid-clusters']
+                layers: ['areas-fill', 'grid-cells']
             });
             if (features.length === 0 && activeStatMode) {
                 // Small delay to let other click handlers run first
