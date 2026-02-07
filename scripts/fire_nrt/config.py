@@ -4,19 +4,14 @@
 MAP_KEY = "REDACTED_FIRMS_KEY"
 BASE_URL = "https://firms.modaps.eosdis.nasa.gov/api"
 
-# Working proxies (tested and verified Feb 2026)
-# Put most reliable ones first
+# Working proxies (tested and verified Feb 6, 2026)
+# These are verified to reach NASA FIRMS API
 PROXIES = [
-    "95.213.217.168:52004",   # Russia - most reliable
-    "194.58.34.63:3128",      # Russia - reliable
-    "43.155.138.148:3128",    # Hong Kong
-    "66.80.0.115:3128", 
-    "177.71.224.87:3128",
-    "46.161.6.165:8080",
-    "89.208.85.78:443",
-    "217.77.102.18:3128",
-    "18.219.243.198:3128",
-    "43.130.6.42:80",
+    "95.213.217.168:52004",   # Russia - verified working
+    "89.208.85.78:443",       # Russia - verified working  
+    "66.80.0.115:3128",       # verified working
+    "46.161.6.165:8080",      # verified working
+    "43.130.6.42:80",         # verified working
 ]
 
 # Data sources (prefer NRT for recent data, standard for backfill)

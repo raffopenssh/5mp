@@ -127,7 +127,8 @@ def fetch_fire_data(
     proxy: str,
     days: int = 5,
     source: str = "VIIRS_SNPP_NRT",
-    date: Optional[str] = None
+    date: Optional[str] = None,
+    retry_proxies: bool = True
 ) -> List[Dict]:
     """
     Fetch fire data from FIRMS API.
@@ -138,6 +139,7 @@ def fetch_fire_data(
         days: Number of days of data (1-10 for NRT)
         source: FIRMS data source
         date: Specific date for historical data (YYYY-MM-DD)
+        retry_proxies: If True, try other proxies on failure
     
     Returns:
         List of fire detection dictionaries
@@ -152,33 +154,50 @@ def fetch_fire_data(
         days = min(days, 10)  # API limit
         url = f"{BASE_URL}/area/csv/{MAP_KEY}/{source}/{west},{south},{east},{north}/{days}"
     
-    try:
-        response = requests.get(
-            url,
-            proxies={"http": f"http://{proxy}", "https": f"http://{proxy}"},
-            timeout=60
-        )
-        
-        if not response.ok:
-            logger.error(f"API error: {response.status_code} - {response.text[:200]}")
-            return []
-        
-        # Check for error messages
-        if "Invalid" in response.text or "Error" in response.text:
-            logger.warning(f"API returned: {response.text[:100]}")
-            return []
-        
-        # Parse CSV
-        fires = []
-        reader = csv.DictReader(io.StringIO(response.text))
-        for row in reader:
-            fires.append(row)
-        
-        return fires
-        
-    except Exception as e:
-        logger.error(f"Request failed: {e}")
-        return []
+    # Try with provided proxy first, then others if retry enabled
+    proxies_to_try = [proxy]
+    if retry_proxies:
+        proxies_to_try.extend([p for p in PROXIES if p != proxy])
+    
+    last_error = None
+    for try_proxy in proxies_to_try[:5]:  # Try up to 5 proxies
+        try:
+            response = requests.get(
+                url,
+                proxies={"http": f"http://{try_proxy}", "https": f"http://{try_proxy}"},
+                timeout=60
+            )
+            
+            if not response.ok:
+                logger.warning(f"API error with {try_proxy}: {response.status_code}")
+                last_error = f"HTTP {response.status_code}"
+                time.sleep(1)
+                continue
+            
+            # Check for error messages
+            if "Invalid" in response.text or "Error" in response.text:
+                logger.warning(f"API returned error: {response.text[:100]}")
+                return []
+            
+            # Parse CSV
+            fires = []
+            reader = csv.DictReader(io.StringIO(response.text))
+            for row in reader:
+                fires.append(row)
+            
+            if try_proxy != proxy:
+                logger.info(f"Success with alternate proxy: {try_proxy}")
+            
+            return fires
+            
+        except Exception as e:
+            logger.warning(f"Proxy {try_proxy} failed: {type(e).__name__}")
+            last_error = str(e)
+            time.sleep(1)
+            continue
+    
+    logger.error(f"All proxies failed. Last error: {last_error}")
+    return []
 
 
 def store_fire_data(db_path: str, park_id: str, fires: List[Dict]) -> int:

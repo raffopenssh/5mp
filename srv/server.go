@@ -202,6 +202,11 @@ func (s *Server) Serve(addr string) error {
 	// RSS Feed for starred items
 	mux.HandleFunc("GET /api/feed", s.HandleAPIFeed)
 
+	// Notifications
+	mux.HandleFunc("GET /api/notifications", s.HandleGetNotifications)
+	mux.HandleFunc("POST /api/notifications/{id}/read", s.HandleMarkNotificationRead)
+	mux.HandleFunc("POST /api/notifications/read-all", s.HandleMarkAllNotificationsRead)
+
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
 	
