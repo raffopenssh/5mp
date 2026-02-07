@@ -3914,6 +3914,18 @@
                     countEl.textContent = ` • ${data.roadless.roadless_percentage.toFixed(0)}% roadless`;
                 }
                 
+                // Also fetch places and road counts from feature-stats
+                let placesCount = 0;
+                let roadCount = 0;
+                try {
+                    const fstatsResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/feature-stats?pwd=${encodeURIComponent(getPwd())}`);
+                    if (fstatsResp.ok) {
+                        const fstats = await fstatsResp.json();
+                        placesCount = fstats.places || 0;
+                        roadCount = fstats.road_segments || 0;
+                    }
+                } catch (e) { /* ignore */ }
+
                 if (data.roadless) {
                     const r = data.roadless;
                     const pct = r.roadless_percentage;
@@ -3928,6 +3940,10 @@
                             <span class="pa-popup-mini-stat-label">Road length</span>
                             <span class="pa-popup-mini-stat-value">${r.total_road_km.toFixed(1)} km</span>
                         </div>
+                        ${placesCount > 0 ? `<div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Named places</span>
+                            <span class="pa-popup-mini-stat-value">${placesCount}</span>
+                        </div>` : ''}
                     `;
                 } else {
                     el.innerHTML = '<div class="pa-popup-section-empty">Roadless data not yet processed</div>';
@@ -6060,6 +6076,64 @@ ${starredItems.narratives.map(n => {
         </button>`;
     }
     // ===== End Pinned GeoJSON Layers =====
+
+    // Track individually pinned features (fire groups, settlements, deforestation events)
+    const singlePinnedFeatures = {}; // key: parkId_type_featureId
+
+    function isSingleFeaturePinned(parkId, type, featureId) {
+        const key = `${parkId}_${type}_${featureId}`;
+        return !!singlePinnedFeatures[key];
+    }
+
+    async function toggleSingleFeaturePin(parkId, parkName, type, featureId, iconEl) {
+        const key = `${parkId}_${type}_${featureId}`;
+        const isPinned = isSingleFeaturePinned(parkId, type, featureId);
+        
+        if (isPinned) {
+            // Remove the layer
+            const layerId = `single-${key}`;
+            const sourceId = `single-source-${key}`;
+            if (map.getLayer(layerId)) map.removeLayer(layerId);
+            if (map.getSource(sourceId)) map.removeSource(sourceId);
+            delete singlePinnedFeatures[key];
+            if (iconEl) {
+                iconEl.classList.remove('pinned');
+                iconEl.textContent = '\ud83d\udccc';
+            }
+        } else {
+            // Fetch the single feature and add to map
+            try {
+                const resp = await fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=${type}&feature_id=${encodeURIComponent(featureId)}&pwd=${encodeURIComponent(getPwd())}`);
+                if (!resp.ok) throw new Error('Feature not found');
+                const geojson = await resp.json();
+                if (!geojson.features || geojson.features.length === 0) throw new Error('No features');
+                
+                const sourceId = `single-source-${key}`;
+                const layerId = `single-${key}`;
+                const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa' };
+                const color = colors[type] || '#22c55e';
+                
+                map.addSource(sourceId, { type: 'geojson', data: geojson });
+                
+                const geomType = geojson.features[0].geometry?.type || '';
+                if (geomType.includes('Point')) {
+                    map.addLayer({ id: layerId, type: 'circle', source: sourceId, paint: { 'circle-radius': 8, 'circle-color': color, 'circle-stroke-width': 2, 'circle-stroke-color': '#fff' }});
+                } else if (geomType.includes('Line')) {
+                    map.addLayer({ id: layerId, type: 'line', source: sourceId, paint: { 'line-color': color, 'line-width': 3 }});
+                } else {
+                    map.addLayer({ id: layerId, type: 'fill', source: sourceId, paint: { 'fill-color': color, 'fill-opacity': 0.5 }});
+                }
+                
+                singlePinnedFeatures[key] = { parkId, parkName, type, featureId, layerId, sourceId };
+                if (iconEl) {
+                    iconEl.classList.add('pinned');
+                    iconEl.textContent = '\ud83d\udccd';
+                }
+            } catch (e) {
+                console.error('Failed to pin feature:', e);
+            }
+        }
+    }
 
     // Toggle pin from section icon click
     async function togglePinFromIcon(iconEl) {

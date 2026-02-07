@@ -1247,6 +1247,7 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 		Settlements         int            `json:"settlements"`
 		DeforestationEvents int            `json:"deforestation_events"`
 		RoadSegments        int            `json:"road_segments"`
+		Places              int            `json:"places"`
 		SettlementsByClass  map[string]int `json:"settlements_by_class,omitempty"`
 		DeforestByClass     map[string]int `json:"deforestation_by_class,omitempty"`
 	}
@@ -1283,6 +1284,11 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 		}
 	}
 	
+	// Count places from osm_places
+	var placesCount int
+	s.DB.QueryRow(`SELECT COUNT(*) FROM osm_places WHERE park_id = ?`, internalID).Scan(&placesCount)
+	stats.Places = placesCount
+
 	// Settlement classifications
 	rows2, err := s.DB.Query(`
 		SELECT classification, COUNT(*) 
