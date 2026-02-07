@@ -198,7 +198,7 @@
         .notification-empty { padding: 24px; text-align: center; color: #666; font-size: 13px; }
 
         /* Star button styles */
-        .star-btn { background: none; border: none; cursor: pointer; padding: 4px; color: #666; transition: all 0.2s; font-size: 14px; line-height: 1; }
+        .star-btn { background: none; border: none; cursor: pointer; padding: 4px; color: #666; transition: all 0.2s; font-size: 14px; line-height: 1; outline: none; box-shadow: none; -webkit-appearance: none; }
         .star-btn:hover { color: #fbbf24; transform: scale(1.1); }
         .star-btn.starred { color: #fbbf24; }
         .star-btn.starred:hover { color: #f59e0b; }
@@ -442,6 +442,11 @@
         .pinned-item.settlement { border-left: 2px solid #fbbf24; }
         .pinned-item.deforestation { border-left: 2px solid #a855f7; }
         .pinned-item.road { border-left: 2px solid #60a5fa; }
+        .pinned-item.single { font-style: italic; opacity: 0.9; }
+        .single-pin-icon { user-select: none; }
+        .single-pin-icon.pinned { opacity: 1 !important; }
+        .single-pin-icon.loading { animation: pulse 0.6s ease-in-out infinite; }
+        @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
         .pinned-indicator-close { color: #666; font-size: 14px; padding: 2px 6px; }
         .pinned-indicator-close:hover { color: #fff; }
         .pinned-indicator .clear-hint { font-size: 10px; color: #666; margin-left: 8px; cursor: pointer; }
@@ -3698,7 +3703,10 @@
                         if (text.length > 120) {
                             text = text.substring(0, 117) + '...';
                         }
-                        return `<div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: default;" title="${fullText.replace(/"/g, '&quot;')}"><span style="color: ${outcomeColor};">●</span> ${text}</div>`;
+                        const fireFeatureId = data.park_id + '_' + data.year + '_grp_' + n.group_num;
+                        const isPinned = isSingleFeaturePinned(paId, 'fire', fireFeatureId);
+                        const pinHtml = `<span class="single-pin-icon${isPinned ? ' pinned' : ''}" onclick="event.stopPropagation(); toggleSingleFeaturePin('${paId}', '${escapeHtml(data.park_name || paId)}', 'fire', '${fireFeatureId}', this)" title="Pin this fire group to map" style="cursor:pointer; margin-left:auto; padding-left:4px; font-size:10px; opacity:0.4; transition: opacity 0.2s; flex-shrink:0;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity=this.classList.contains('pinned')?'1':'0.4'">${isPinned ? '\ud83d\udccd' : '\ud83d\udccc'}</span>`;
+                        return `<div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: default; display: flex; align-items: center;" title="${fullText.replace(/"/g, '&quot;')}"><span style="color: ${outcomeColor};">●</span> <span style="flex:1;">${text}</span>${pinHtml}</div>`;
                     };
                     
                     // Render active fire groups alert
@@ -4321,10 +4329,74 @@
             }
         }
         
+        // Handle shift+click to add/remove park from multi-selection
+        function handleShiftClickPark(props) {
+            const paId = props.id || props.wdpa_id || props.wdpaid;
+            const name = props.name || 'Protected Area';
+            const country = props.country || '';
+            const center = props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null;
+            var bbox = props.bbox;
+            if (typeof bbox === 'string') { try { bbox = JSON.parse(bbox); } catch(e) { bbox = null; } }
+            toggleParkSelection(paId, name, bbox, center);
+            updateFilterAreaDisplay();
+            var isNowSelected = selectedParks.some(function(p) { return p.id === paId; });
+            showToast(isNowSelected ? 'Added "' + name + '" to selection' : 'Removed "' + name + '" from selection', 'info');
+        }
+
+        // Zoom to a park with a reasonable buffer around it
+        function zoomToParkWithBuffer(props) {
+            var bbox = props.bbox;
+            if (typeof bbox === 'string') { try { bbox = JSON.parse(bbox); } catch(e) { bbox = null; } }
+            if (bbox && bbox.length === 4) {
+                var lngSpan = bbox[2] - bbox[0];
+                var latSpan = bbox[3] - bbox[1];
+                var bufferLng = lngSpan * 0.2;
+                var bufferLat = latSpan * 0.2;
+                map.fitBounds(
+                    [[bbox[0] - bufferLng, bbox[1] - bufferLat], [bbox[2] + bufferLng, bbox[3] + bufferLat]],
+                    { padding: { top: 100, bottom: 100, left: 50, right: 50 }, duration: 1500, maxZoom: 14 }
+                );
+            } else if (props.center) {
+                var center = typeof props.center === 'string' ? JSON.parse(props.center) : props.center;
+                if (center && center.length === 2) { map.flyTo({ center: center, zoom: 10, duration: 1500 }); }
+            }
+        }
+
+        // Update filter area display to show names instead of bbox coordinates
+        function updateFilterAreaDisplay() {
+            var filterArea = document.getElementById('filter-area');
+            var filterAreaValue = document.getElementById('filter-area-value');
+            if (!filterAreaValue) return;
+            if (selectedParks.length > 0) {
+                if (filterArea) filterArea.style.display = 'flex';
+                if (selectedParks.length === 1) {
+                    filterAreaValue.textContent = selectedParks[0].name;
+                } else if (selectedParks.length <= 3) {
+                    filterAreaValue.textContent = selectedParks.map(function(p) { return p.name; }).join(', ');
+                } else {
+                    filterAreaValue.textContent = selectedParks[0].name + ' + ' + (selectedParks.length - 1) + ' more parks';
+                }
+            } else if (currentCountryFilter) {
+                if (filterArea) filterArea.style.display = 'flex';
+                filterAreaValue.textContent = currentCountryFilter;
+            } else if (currentBbox) {
+                if (filterArea) filterArea.style.display = 'flex';
+                var latDiff = Math.abs(currentBbox[3] - currentBbox[1]);
+                var lngDiff = Math.abs(currentBbox[2] - currentBbox[0]);
+                var approxKm = Math.round(latDiff * 111 * lngDiff * 111 * Math.cos((currentBbox[1] + currentBbox[3]) / 2 * Math.PI / 180));
+                filterAreaValue.textContent = formatNumber(approxKm) + ' km\u00b2 region';
+            } else {
+                if (filterArea) filterArea.style.display = 'none';
+            }
+        }
+
         function updateSelectedParksDisplay() {
             const container = document.getElementById('selected-parks');
             const countriesContainer = document.getElementById('selected-countries');
             if (!container) return;
+            
+            // Also update filter area display with names
+            updateFilterAreaDisplay();
             
             // Clear existing tags
             container.innerHTML = '';
@@ -4415,7 +4487,7 @@
         // Works reliably in Safari 18.6, Firefox 146, DuckDuckGo Android, and all major browsers
         function setupPAClickHandler() {
             // Helper to handle PA feature interaction at a point
-            function handlePAInteraction(point, lngLat) {
+            function handlePAInteraction(point, lngLat, originalEvent) {
                 // Skip if in bbox draw mode
                 if (document.getElementById('bbox-draw-overlay')?.classList.contains('active')) {
                     return false;
@@ -4431,7 +4503,16 @@
                 if (paFeatures.length > 0) {
                     console.log('PA click handler - found PA:', paFeatures[0].properties?.name);
                     const props = paFeatures[0].properties;
+                    
+                    // Shift+click: toggle park in multi-selection
+                    if (originalEvent && originalEvent.shiftKey) {
+                        handleShiftClickPark(props);
+                        return true;
+                    }
+                    
+                    // Normal click: show popup and zoom to park with buffer
                     showPAPopup(props, lngLat);
+                    zoomToParkWithBuffer(props);
                     return true;
                 }
                 return false;
@@ -4440,7 +4521,7 @@
             // Single unified click handler using queryRenderedFeatures
             // This is more reliable than layer-specific handlers across browsers
             map.on('click', function(e) {
-                handlePAInteraction(e.point, e.lngLat);
+                handlePAInteraction(e.point, e.lngLat, e.originalEvent);
             });
             
             // Add touch handler for mobile browsers (DuckDuckGo Android, Safari iOS)
@@ -5945,6 +6026,7 @@ ${starredItems.narratives.map(n => {
     function clearAllPinnedLayers() {
         Object.keys(pinnedLayers).forEach(key => removePinnedLayer(key));
         pinnedLayers = {};
+        clearAllSingleFeaturePins();
         updatePinnedIndicator();
         savePinnedToURL();
         

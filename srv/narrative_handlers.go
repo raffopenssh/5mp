@@ -74,6 +74,7 @@ type FireYearSummary struct {
 // FireGroupStory describes a single fire group's movement
 type FireGroupStory struct {
 	GroupNum      int      `json:"group_num"`
+	GeoJSONID     int64    `json:"geojson_id,omitempty"`
 	OriginDesc    string   `json:"origin_desc"`
 	DestDesc      string   `json:"dest_desc"`
 	EntryDate     string   `json:"entry_date"`
@@ -100,15 +101,18 @@ type DeforestationNarrative struct {
 	FiveYearAvgEarly  float64                   `json:"five_year_avg_early"`   // earliest 5-year average
 	FiveYearAvgRecent float64                   `json:"five_year_avg_recent"`  // most recent 5-year average
 	Hotspots          []DeforestationHotspot    `json:"hotspots,omitempty"`    // worst cluster hotspots
+	ByClassification  map[string]int            `json:"by_classification,omitempty"`
 }
 
 // DeforestationYearStory describes forest loss for a single year
 type DeforestationYearStory struct {
-	Year         int      `json:"year"`
-	AreaKm2      float64  `json:"area_km2"`
-	PatternType  string   `json:"pattern_type"`
-	Narrative    string   `json:"narrative"`
-	NearbyPlaces []string `json:"nearby_places"`
+	Year           int      `json:"year"`
+	AreaKm2        float64  `json:"area_km2"`
+	PatternType    string   `json:"pattern_type"`
+	Classification string   `json:"classification,omitempty"`
+	GeoJSONID      int64    `json:"geojson_id,omitempty"`
+	Narrative      string   `json:"narrative"`
+	NearbyPlaces   []string `json:"nearby_places"`
 }
 
 // DeforestationHotspot describes a significant cluster of deforestation
@@ -349,9 +353,16 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 	}
 	
 	// Parse time filter parameters - support multi-year ranges
+	// Support both start/end and from/to query params
 	yearStr := r.URL.Query().Get("year")
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
+	if s := r.URL.Query().Get("start"); s != "" {
+		fromStr = s
+	}
+	if s := r.URL.Query().Get("end"); s != "" {
+		toStr = s
+	}
 	
 	var fromYear, toYear int
 	now := time.Now()
@@ -368,11 +379,15 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		if fromStr != "" {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
 				fromYear = t.Year()
+			} else if y, err := strconv.Atoi(fromStr); err == nil {
+				fromYear = y
 			}
 		}
 		if toStr != "" {
 			if t, err := time.Parse("2006-01-02", toStr); err == nil {
 				toYear = t.Year()
+			} else if y, err := strconv.Atoi(toStr); err == nil {
+				toYear = y
 			}
 		}
 	}
@@ -566,6 +581,18 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 				}
 				
 				story.Narrative = narr.String()
+				
+				// Look up geojson_id from feature_geometries
+				var geoID sql.NullInt64
+				s.DB.QueryRow(`
+					SELECT id FROM feature_geometries
+					WHERE park_id = ? AND feature_type = 'fire_trajectory' AND start_date = ?
+					LIMIT 1
+				`, internalID, t.EntryDate).Scan(&geoID)
+				if geoID.Valid {
+					story.GeoJSONID = geoID.Int64
+				}
+				
 				narrative.Narratives = append(narrative.Narratives, story)
 			}
 		}
@@ -639,9 +666,16 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	}
 	
 	// Parse time filter parameters
+	// Support both start/end and from/to query params
 	yearStr := r.URL.Query().Get("year")
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
+	if s := r.URL.Query().Get("start"); s != "" {
+		fromStr = s
+	}
+	if s := r.URL.Query().Get("end"); s != "" {
+		toStr = s
+	}
 	
 	var fromYear, toYear int
 	if yearStr != "" {
@@ -656,18 +690,21 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		if fromStr != "" {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
 				fromYear = t.Year()
+			} else if y, err := strconv.Atoi(fromStr); err == nil {
+				fromYear = y
 			}
 		}
 		if toStr != "" {
 			if t, err := time.Parse("2006-01-02", toStr); err == nil {
 				toYear = t.Year()
+			} else if y, err := strconv.Atoi(toStr); err == nil {
+				toYear = y
 			}
 		}
 	}
 	
 	// Check for stats-only format
 	if r.URL.Query().Get("format") == "stats" {
-		// Also support start/end as aliases for from/to
 		startStr := r.URL.Query().Get("start")
 		endStr := r.URL.Query().Get("end")
 		startYr := fromYear
@@ -691,12 +728,15 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		ParkName: parkName,
 	}
 	
-	// Query deforestation events with time filter
+	// Query deforestation events with time filter, including geojson_id and classification
 	rows, err := s.DB.Query(`
-		SELECT year, area_km2, pattern_type, lat, lon, description
-		FROM deforestation_events
-		WHERE park_id = ? AND year >= ? AND year <= ?
-		ORDER BY year ASC
+		SELECT de.year, de.area_km2, de.pattern_type, de.lat, de.lon, de.description,
+		       fg.id, COALESCE(dc.classification, '')
+		FROM deforestation_events de
+		LEFT JOIN feature_geometries fg ON fg.feature_id = 'deforestation_' || de.id AND fg.feature_type = 'deforestation'
+		LEFT JOIN deforestation_clusters dc ON dc.park_id = de.park_id AND dc.year = de.year AND dc.cluster_id = 1
+		WHERE de.park_id = ? AND de.year >= ? AND de.year <= ?
+		ORDER BY de.year ASC
 	`, internalID, fromYear, toYear)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -713,6 +753,7 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		lat  float64
 		lon  float64
 	}
+	classificationCounts := make(map[string]int)
 	
 	// Track geographic shift over time for trend analysis
 	var earlyYearsLat, earlyYearsLon float64
@@ -725,8 +766,10 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		var patternType sql.NullString
 		var lat, lon float64
 		var description sql.NullString
+		var geojsonID sql.NullInt64
+		var classification string
 		
-		if err := rows.Scan(&year, &area, &patternType, &lat, &lon, &description); err != nil {
+		if err := rows.Scan(&year, &area, &patternType, &lat, &lon, &description, &geojsonID, &classification); err != nil {
 			continue
 		}
 		
@@ -743,13 +786,24 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 			worstYear = year
 		}
 		
+		// Track classification
+		clsKey := classification
+		if clsKey == "" {
+			clsKey = "unclassified"
+		}
+		classificationCounts[clsKey]++
+		
 		// Determine actual pattern type from cluster data for this year
 		actualPattern := s.determinePatternType(internalID, year, patternType.String)
 		
 		story := DeforestationYearStory{
-			Year:        year,
-			AreaKm2:     area,
-			PatternType: actualPattern,
+			Year:           year,
+			AreaKm2:        area,
+			PatternType:    actualPattern,
+			Classification: clsKey,
+		}
+		if geojsonID.Valid {
+			story.GeoJSONID = geojsonID.Int64
 		}
 		
 		// Find nearby places for context (settlements and rivers)
@@ -825,6 +879,11 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	// Fetch worst hotspots from clusters table
 	narrative.Hotspots = s.fetchHotspots(internalID, 5)
 	
+	// Add classification breakdown
+	if len(classificationCounts) > 0 {
+		narrative.ByClassification = classificationCounts
+	}
+	
 	// Build summary with trend and geographic shift information
 	if totalLoss == 0 {
 		narrative.Summary = fmt.Sprintf("No significant deforestation events recorded for %s.", parkName)
@@ -877,11 +936,14 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	// Get settlement statistics from park_settlements table
 	var settlementCount int
 	var totalPopulation sql.NullFloat64
+	var totalPop2030 sql.NullFloat64
 	err := s.DB.QueryRow(`
-		SELECT COUNT(*) as count, COALESCE(SUM(population_est), 0) as total_pop
+		SELECT COUNT(*) as count,
+		       COALESCE(SUM(population_est), 0) as total_pop,
+		       COALESCE(SUM(population_2030), 0) as total_pop_2030
 		FROM park_settlements
 		WHERE park_id = ?
-	`, internalID).Scan(&settlementCount, &totalPopulation)
+	`, internalID).Scan(&settlementCount, &totalPopulation, &totalPop2030)
 	
 	if err != nil {
 		narrative.Status = "error"
@@ -893,6 +955,9 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	
 	narrative.SettlementCount = settlementCount
 	narrative.TotalPopulation = int64(totalPopulation.Float64)
+	if totalPop2030.Valid {
+		narrative.Population2030 = int64(totalPop2030.Float64)
+	}
 	
 	// Get polygon count from feature_geometries (for map display)
 	var polygonCount int
@@ -917,18 +982,23 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		return
 	}
 	
-	// Get largest settlements
+	// Get largest settlements with geojson_id, classification, and population data
 	largestRows, err := s.DB.Query(`
 		SELECT 
-			id,
-			COALESCE(nearest_place, 'Unnamed settlement') as name,
-			COALESCE(area_m2, 0) as area_m2,
-			lat, lon,
-			COALESCE(direction_from_place, '') as direction,
-			COALESCE(distance_to_place_km, 0) as distance_km
-		FROM park_settlements
-		WHERE park_id = ?
-		ORDER BY area_m2 DESC
+			s.id,
+			COALESCE(s.nearest_place, 'Unnamed settlement') as name,
+			COALESCE(s.classification, '') as classification,
+			COALESCE(s.area_m2, 0) as area_m2,
+			COALESCE(s.population_est, 0) as pop_est,
+			COALESCE(s.population_2030, 0) as pop_2030,
+			s.lat, s.lon,
+			COALESCE(s.direction_from_place, '') as direction,
+			COALESCE(s.distance_to_place_km, 0) as distance_km,
+			fg.id as geojson_id
+		FROM park_settlements s
+		LEFT JOIN feature_geometries fg ON fg.feature_id = 'settlement_' || s.id AND fg.feature_type = 'settlement'
+		WHERE s.park_id = ?
+		ORDER BY s.area_m2 DESC
 	`, internalID)
 	
 	if err == nil {
@@ -936,8 +1006,12 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		for largestRows.Next() {
 			var sd SettlementDetail
 			var distKm float64
-			if err := largestRows.Scan(&sd.ID, &sd.Name, &sd.AreaM2, &sd.Lat, &sd.Lon, &sd.Direction, &distKm); err == nil {
+			var geojsonID sql.NullInt64
+			if err := largestRows.Scan(&sd.ID, &sd.Name, &sd.Classification, &sd.AreaM2, &sd.PopulationEst, &sd.Population2030, &sd.Lat, &sd.Lon, &sd.Direction, &distKm, &geojsonID); err == nil {
 				sd.NearestBoundaryKm = distKm
+				if geojsonID.Valid {
+					sd.GeoJSONID = geojsonID.Int64
+				}
 				narrative.LargestSettlements = append(narrative.LargestSettlements, sd)
 			}
 		}
