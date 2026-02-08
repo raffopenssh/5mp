@@ -125,15 +125,3 @@ See `docs/` directory:
 ## Current Status
 
 See `TODO.md` for sprint status.
-
-**Working Features:**
-- Fire detection with NRT data and trajectory analysis
-- Deforestation and settlement narratives
-- GPX upload with async processing
-- Fire group alerts and notifications
-- Starring and report builder
-- Search, filters, sharing
-
-**In Progress:**
-- Fire data backfill (Jan 2025 - present)
-- UI refinements
