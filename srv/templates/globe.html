@@ -1006,7 +1006,7 @@
     <div class="footer-attribution">
         <span id="page-views-footer" class="desktop-only">0 views</span>
         <span class="footer-sep desktop-only">|</span>
-        <span>v0.70</span>
+        <span>{{.Version}}</span>
         <span class="footer-sep desktop-only">|</span>
         <a href="https://github.com/raffopenssh/5mp" target="_blank" title="View on GitHub" class="github-link desktop-only">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -1244,6 +1244,7 @@
     </div>
 
     <script>
+        const APP_VERSION = '{{.Version}}';
         const MAPTILER_KEY = 'dea58ea0389007e386776c4f583f4425';
         const API_HOST = 'five-mp-conservation-effort';
 
@@ -5414,7 +5415,7 @@
         const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0);
         
         meta.innerHTML = `
-            <div>Report: ${now.toLocaleDateString()} ${now.toLocaleTimeString()} • v0.70</div>
+            <div>Report: ${now.toLocaleDateString()} ${now.toLocaleTimeString()} • ${APP_VERSION}</div>
             <div>Time range: ${dateFrom || 'all'} to ${dateTo || 'now'} • ${total} items</div>
         `;
     }
