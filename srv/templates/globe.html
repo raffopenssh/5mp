@@ -1910,7 +1910,6 @@
                     const stats = await res.json();
                     document.getElementById('stats-pixels').textContent = formatNumber(stats.active_pixels || 0);
                     document.getElementById('stats-distance').textContent = formatNumber(stats.total_distance_km || 0, 1) + ' km';
-                    document.getElementById('stats-patrols').textContent = formatNumber(stats.total_patrols || 0);
                     
                     // Conservation data
                     document.getElementById('stats-fires').textContent = formatNumber(stats.total_fires || 0);
