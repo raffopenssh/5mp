@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"io"
 	"math"
+	"strings"
 	"time"
 )
 
@@ -47,6 +48,42 @@ type Waypoint struct {
 	Time      *time.Time
 	Name      string
 	Desc      string // Message content from InReach devices
+}
+
+// MovementHint provides context from waypoint messages to help classify movement type.
+type MovementHint struct {
+	IsVehicle   bool
+	IsAircraft  bool
+	IsFoot      bool
+	Type        string  // "vehicle", "aircraft", "foot", or ""
+	Confidence  float64 // 0.0 to 1.0
+}
+
+// ExtractMovementHintsFromWaypoints analyzes waypoint descriptions for movement hints.
+func ExtractMovementHintsFromWaypoints(waypoints []Waypoint) MovementHint {
+	hint := MovementHint{}
+	for _, wp := range waypoints {
+		desc := strings.ToLower(wp.Desc + " " + wp.Name)
+		// Check for vehicle indicators
+		if strings.Contains(desc, "vehicle") || strings.Contains(desc, "car") || strings.Contains(desc, "truck") || strings.Contains(desc, "driving") || strings.Contains(desc, "road") {
+			hint.IsVehicle = true
+			hint.Type = "vehicle"
+			hint.Confidence = 0.8
+		}
+		// Check for aircraft indicators
+		if strings.Contains(desc, "flight") || strings.Contains(desc, "plane") || strings.Contains(desc, "aircraft") || strings.Contains(desc, "helicopter") || strings.Contains(desc, "flying") {
+			hint.IsAircraft = true
+			hint.Type = "aircraft"
+			hint.Confidence = 0.9
+		}
+		// Check for foot patrol indicators
+		if strings.Contains(desc, "patrol") || strings.Contains(desc, "walking") || strings.Contains(desc, "foot") || strings.Contains(desc, "hiking") || strings.Contains(desc, "ranger") {
+			hint.IsFoot = true
+			hint.Type = "foot"
+			hint.Confidence = 0.7
+		}
+	}
+	return hint
 }
 
 type gpxFile struct {
