@@ -701,9 +701,9 @@
             .filter-panel { top: auto; bottom: 140px; left: 10px; width: calc(100vw - 20px); max-width: none; -webkit-transform: translateY(400px); transform: translateY(400px); max-height: 50vh; }
             .filter-panel.open { -webkit-transform: translateY(0); transform: translateY(0); }
             /* Search bar mobile - show in toolbar area */
-            /* Search bar - positioned above toolbar, hidden by default, shown via .open class */
-            .search-container { position: fixed; top: auto; bottom: 135px; left: 60px; right: 60px; z-index: 145; }
-            .search-container .search-bar { display: none; width: 100%; }
+            /* Search - icon stays in toolbar, bar floats above */
+            .search-container { position: relative; display: flex; }
+            .search-container .search-bar { display: none; position: fixed; bottom: 135px; left: 60px; right: 60px; width: auto; z-index: 145; }
             .search-container .search-bar.open { display: block; }
             #toolbar-search { display: flex; } /* Keep search icon visible on mobile */
             
