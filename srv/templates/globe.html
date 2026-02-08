@@ -701,10 +701,11 @@
             .filter-panel { top: auto; bottom: 140px; left: 10px; width: calc(100vw - 20px); max-width: none; -webkit-transform: translateY(400px); transform: translateY(400px); max-height: 50vh; }
             .filter-panel.open { -webkit-transform: translateY(0); transform: translateY(0); }
             /* Search bar mobile - show in toolbar area */
-            .search-container { display: flex; position: fixed; top: auto; bottom: 135px; left: 60px; right: 60px; z-index: 145; }
-            .search-container .search-bar { display: block; width: 100%; }
+            /* Search bar - positioned above toolbar, hidden by default, shown via .open class */
+            .search-container { position: fixed; top: auto; bottom: 135px; left: 60px; right: 60px; z-index: 145; }
+            .search-container .search-bar { display: none; width: 100%; }
             .search-container .search-bar.open { display: block; }
-            #toolbar-search { display: none; }
+            #toolbar-search { display: flex; } /* Keep search icon visible on mobile */
             
             /* Stats panel - compact 2-row grid at top */
             .stats-panel { top: 10px; bottom: auto; right: 10px; left: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 6px; padding: 6px 10px; min-width: auto; }
