@@ -352,32 +352,23 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Try to serve from cache first (for default full-range queries)
+	// Always try to serve from cache - cache contains full history (2000-present)
+	// Date filters are applied by the UI to subset the cached data
+	if cached, computedAt, err := s.GetCachedFireNarrative(internalID); err == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-Cache", "HIT")
+		w.Header().Set("X-Cache-Date", computedAt.Format(time.RFC3339))
+		json.NewEncoder(w).Encode(cached)
+		return
+	}
+
+	// Cache miss - compute on demand (slow path)
+	w.Header().Set("X-Cache", "MISS")
+
+	// Parse time filter parameters - support multi-year ranges
 	yearStr := r.URL.Query().Get("year")
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
-	if r.URL.Query().Get("start") != "" {
-		fromStr = r.URL.Query().Get("start")
-	}
-	if r.URL.Query().Get("end") != "" {
-		toStr = r.URL.Query().Get("end")
-	}
-
-	// If no filters specified, try cache
-	if yearStr == "" && fromStr == "" && toStr == "" {
-		if cached, computedAt, err := s.GetCachedFireNarrative(internalID); err == nil {
-			// Cache hit - add metadata and return
-			w.Header().Set("Content-Type", "application/json")
-			w.Header().Set("X-Cache", "HIT")
-			w.Header().Set("X-Cache-Date", computedAt.Format(time.RFC3339))
-			json.NewEncoder(w).Encode(cached)
-			return
-		}
-		// Cache miss - fall through to compute
-		w.Header().Set("X-Cache", "MISS")
-	}
-
-	// Parse time filter parameters - support multi-year ranges
 	if s := r.URL.Query().Get("start"); s != "" {
 		fromStr = s
 	}
