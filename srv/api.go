@@ -2671,3 +2671,145 @@ func writeGeoJSONToKML(kml *strings.Builder, geojsonStr, styleID, name string) {
 	}
 	kml.WriteString("</Placemark>\n")
 }
+
+// HandleAPIParksExport returns enriched park data for CSV export
+// GET /api/parks/export?from=&to=&country=&bbox=
+func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
+	dateFrom := r.URL.Query().Get("from")
+	dateTo := r.URL.Query().Get("to")
+	country := r.URL.Query().Get("country")
+	bboxStr := r.URL.Query().Get("bbox")
+	
+	type ParkExport struct {
+		WDPAID              string  `json:"wdpa_id"`
+		Name                string  `json:"name"`
+		Country             string  `json:"country"`
+		AreaKm2             float64 `json:"area_km2"`
+		FireDetections      int     `json:"fire_detections"`
+		FireGroups          int     `json:"fire_groups"`
+		DeforestationKm2    float64 `json:"deforestation_km2"`
+		DeforestationEvents int     `json:"deforestation_events"`
+		Settlements         int     `json:"settlements"`
+		TotalPopulation     int     `json:"total_population"`
+		RoadsKm             float64 `json:"roads_km"`
+		RoadlessPct         float64 `json:"roadless_pct"`
+		PatrolPixels        int     `json:"patrol_pixels"`
+		PatrolDistanceKm    float64 `json:"patrol_distance_km"`
+		PatrolIntensityMed  float64 `json:"patrol_intensity_median"`
+		PublicationsCount   int     `json:"publications_count"`
+		Lat                 float64 `json:"lat"`
+		Lon                 float64 `json:"lon"`
+	}
+	
+	var results []ParkExport
+	
+	// Build query with filters
+	query := `
+		WITH park_stats AS (
+			SELECT 
+				a.id, a.wdpa_id, a.name, a.country, a.area_km2, a.lat, a.lon,
+				COALESCE(f.fire_count, 0) as fire_detections,
+				COALESCE(fg.group_count, 0) as fire_groups,
+				COALESCE(d.defo_km2, 0) as deforestation_km2,
+				COALESCE(d.defo_events, 0) as deforestation_events,
+				COALESCE(st.settlement_count, 0) as settlements,
+				COALESCE(st.total_pop, 0) as total_population,
+				COALESCE(rd.road_km, 0) as roads_km,
+				COALESCE(rd.roadless_pct, 0) as roadless_pct,
+				COALESCE(g.pixel_count, 0) as patrol_pixels,
+				COALESCE(g.total_distance, 0) as patrol_distance_km,
+				COALESCE(g.median_intensity, 0) as patrol_intensity_median,
+				COALESCE(pub.pub_count, 0) as publications_count
+			FROM (
+				SELECT DISTINCT id, wdpa_id, name, country, area_km2, lat, lon 
+				FROM (SELECT * FROM json_each(?))
+			) a
+			LEFT JOIN (
+				SELECT park_id, COUNT(*) as fire_count 
+				FROM fire_detections 
+				WHERE ($1 = '' OR acq_date >= $1) AND ($2 = '' OR acq_date <= $2)
+				GROUP BY park_id
+			) f ON a.id = f.park_id
+			LEFT JOIN (
+				SELECT park_id, COUNT(DISTINCT group_name) as group_count 
+				FROM fire_group_alerts GROUP BY park_id
+			) fg ON a.id = fg.park_id
+			LEFT JOIN (
+				SELECT park_id, SUM(area_km2) as defo_km2, COUNT(*) as defo_events 
+				FROM deforestation_events 
+				WHERE ($1 = '' OR year >= CAST(substr($1,1,4) AS INTEGER))
+				GROUP BY park_id
+			) d ON a.id = d.park_id
+			LEFT JOIN (
+				SELECT park_id, COUNT(*) as settlement_count, SUM(population_est) as total_pop 
+				FROM park_settlements GROUP BY park_id
+			) st ON a.id = st.park_id
+			LEFT JOIN (
+				SELECT park_id, road_length_km as road_km, roadless_percentage as roadless_pct 
+				FROM osm_roadless_data
+			) rd ON a.id = rd.park_id
+			LEFT JOIN (
+				SELECT park_id, COUNT(*) as pixel_count, SUM(total_distance_km) as total_distance,
+				       AVG(intensity) as median_intensity
+				FROM grid_cells GROUP BY park_id
+			) g ON a.id = g.park_id
+			LEFT JOIN (
+				SELECT pa_id, COUNT(*) as pub_count FROM pa_publications GROUP BY pa_id
+			) pub ON a.wdpa_id = pub.pa_id
+		)
+		SELECT * FROM park_stats WHERE 1=1
+	`
+	
+	// For now, return data from loaded areas
+	if s.AreaStore == nil {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode([]ParkExport{})
+		return
+	}
+	
+	for _, area := range s.AreaStore.Areas {
+		if country != "" && area.Country != country {
+			continue
+		}
+		
+		// Get stats for this park
+		var fires, groups, defoEvents, settlements, pop, pixels, pubs int
+		var defoKm2, roadsKm, roadlessPct, patrolDist, intensity float64
+		
+		s.DB.QueryRow(`SELECT COUNT(*) FROM fire_detections WHERE park_id = ? AND ($1 = '' OR acq_date >= $1) AND ($2 = '' OR acq_date <= $2)`, 
+			area.ID, dateFrom, dateTo).Scan(&fires)
+		s.DB.QueryRow(`SELECT COUNT(DISTINCT group_name) FROM fire_group_alerts WHERE park_id = ?`, area.ID).Scan(&groups)
+		s.DB.QueryRow(`SELECT COALESCE(SUM(area_km2), 0), COUNT(*) FROM deforestation_events WHERE park_id = ?`, area.ID).Scan(&defoKm2, &defoEvents)
+		s.DB.QueryRow(`SELECT COUNT(*), COALESCE(SUM(population_est), 0) FROM park_settlements WHERE park_id = ?`, area.ID).Scan(&settlements, &pop)
+		s.DB.QueryRow(`SELECT COALESCE(road_length_km, 0), COALESCE(roadless_percentage, 0) FROM osm_roadless_data WHERE park_id = ?`, area.ID).Scan(&roadsKm, &roadlessPct)
+		s.DB.QueryRow(`SELECT COUNT(*), COALESCE(SUM(total_distance_km), 0), COALESCE(AVG(intensity), 0) FROM grid_cells WHERE park_id = ?`, area.ID).Scan(&pixels, &patrolDist, &intensity)
+		s.DB.QueryRow(`SELECT COUNT(*) FROM pa_publications WHERE pa_id = ?`, area.WDPAID).Scan(&pubs)
+		
+		results = append(results, ParkExport{
+			WDPAID:              area.WDPAID,
+			Name:                area.Name,
+			Country:             area.Country,
+			AreaKm2:             area.AreaKm2,
+			FireDetections:      fires,
+			FireGroups:          groups,
+			DeforestationKm2:    defoKm2,
+			DeforestationEvents: defoEvents,
+			Settlements:         settlements,
+			TotalPopulation:     pop,
+			RoadsKm:             roadsKm,
+			RoadlessPct:         roadlessPct,
+			PatrolPixels:        pixels,
+			PatrolDistanceKm:    patrolDist,
+			PatrolIntensityMed:  intensity,
+			PublicationsCount:   pubs,
+			Lat:                 0, // Calculated from geometry if needed
+			Lon:                 0,
+		})
+	}
+	
+	_ = bboxStr // TODO: implement bbox filtering
+	_ = query   // Complex query for future optimization
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
+}

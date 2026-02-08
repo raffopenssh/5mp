@@ -49,6 +49,55 @@ type Waypoint struct {
 	Desc      string // Message content from InReach devices
 }
 
+// MovementHint provides context from waypoint messages to help classify movement type.
+type MovementHint struct {
+	IsVehicle   bool
+	IsAircraft  bool
+	IsFoot      bool
+	Type        string  // "vehicle", "aircraft", "foot", or ""
+	Confidence  float64 // 0.0 to 1.0
+}
+
+// ExtractMovementHintsFromWaypoints analyzes waypoint descriptions for movement hints.
+func ExtractMovementHintsFromWaypoints(waypoints []Waypoint) MovementHint {
+	hint := MovementHint{}
+	for _, wp := range waypoints {
+		desc := wp.Desc + " " + wp.Name
+		// Check for vehicle indicators
+		if containsAny(desc, []string{"vehicle", "car", "truck", "driving", "road"}) {
+			hint.IsVehicle = true
+			hint.Type = "vehicle"
+			hint.Confidence = 0.8
+		}
+		// Check for aircraft indicators
+		if containsAny(desc, []string{"flight", "plane", "aircraft", "helicopter", "flying"}) {
+			hint.IsAircraft = true
+			hint.Type = "aircraft"
+			hint.Confidence = 0.9
+		}
+		// Check for foot patrol indicators
+		if containsAny(desc, []string{"patrol", "walking", "foot", "hiking", "ranger"}) {
+			hint.IsFoot = true
+			hint.Type = "foot"
+			hint.Confidence = 0.7
+		}
+	}
+	return hint
+}
+
+func containsAny(s string, patterns []string) bool {
+	for _, p := range patterns {
+		if len(s) >= len(p) {
+			for i := 0; i <= len(s)-len(p); i++ {
+				if s[i:i+len(p)] == p {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 type gpxFile struct {
 	XMLName   xml.Name      `xml:"gpx"`
 	Metadata  gpxMeta       `xml:"metadata"`
