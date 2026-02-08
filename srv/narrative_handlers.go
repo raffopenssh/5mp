@@ -323,7 +323,7 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Park ID required", http.StatusBadRequest)
 		return
 	}
-	
+
 	// Map WDPA ID to internal park_id if needed
 	internalID := parkID
 	parkName := parkID
@@ -336,7 +336,7 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 			}
 		}
 	}
-	
+
 	// Check for stats-only format
 	if r.URL.Query().Get("format") == "stats" {
 		// Also support start/end as aliases for from/to
@@ -351,12 +351,33 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		s.handleFireNarrativeStats(w, internalID, parkName, startDate, endDate)
 		return
 	}
-	
-	// Parse time filter parameters - support multi-year ranges
-	// Support both start/end and from/to query params
+
+	// Try to serve from cache first (for default full-range queries)
 	yearStr := r.URL.Query().Get("year")
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
+	if r.URL.Query().Get("start") != "" {
+		fromStr = r.URL.Query().Get("start")
+	}
+	if r.URL.Query().Get("end") != "" {
+		toStr = r.URL.Query().Get("end")
+	}
+
+	// If no filters specified, try cache
+	if yearStr == "" && fromStr == "" && toStr == "" {
+		if cached, computedAt, err := s.GetCachedFireNarrative(internalID); err == nil {
+			// Cache hit - add metadata and return
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("X-Cache", "HIT")
+			w.Header().Set("X-Cache-Date", computedAt.Format(time.RFC3339))
+			json.NewEncoder(w).Encode(cached)
+			return
+		}
+		// Cache miss - fall through to compute
+		w.Header().Set("X-Cache", "MISS")
+	}
+
+	// Parse time filter parameters - support multi-year ranges
 	if s := r.URL.Query().Get("start"); s != "" {
 		fromStr = s
 	}

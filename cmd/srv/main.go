@@ -67,9 +67,10 @@ func run() error {
 		slog.Warn("failed to load GADM data", "error", err)
 	}
 
-	// Start research publication worker in background
+	// Start background workers
 	ctx := context.Background()
 	go server.StartResearchWorker(ctx)
+	go server.StartFireNarrativeCacheWorker(ctx)
 
 	return server.Serve(*flagListenAddr)
 }
