@@ -1948,9 +1948,6 @@
         // Movement type filter state (all on by default)
         var movementTypes = { foot: true, vehicle: true, aerial: true };
         var currentCountryFilter = ''; // Country filter state
-        
-        // Initial stats load will happen after initDateRange sets dates
-        // loadStats(); // Moved to after initDateRange
 
         function toggleFilterPanel() {
             filterPanelOpen = !filterPanelOpen;
@@ -3112,9 +3109,6 @@
             setTimeout(loadNotifications, 1000);
             setTimeout(loadFireActiveParks, 1500);
         });
-
-        
-        initDateRange();
 
         
         var searchTimeout = null;
