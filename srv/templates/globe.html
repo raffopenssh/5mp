@@ -1876,6 +1876,8 @@
                 // Build URL with filters
                 var url = '/api/stats';
                 var params = [];
+                var pwd = getPwd();
+                if (pwd) params.push('pwd=' + encodeURIComponent(pwd));
                 if (dateFrom) params.push('from=' + dateFrom);
                 if (dateTo) params.push('to=' + dateTo);
                 
