@@ -1246,6 +1246,11 @@
         const MAPTILER_KEY = 'dea58ea0389007e386776c4f583f4425';
         const API_HOST = 'five-mp-conservation-effort';
 
+        // Get current password from URL
+        function getPwd() {
+            return new URLSearchParams(window.location.search).get('pwd') || '';
+        }
+
         // Format numbers - only use commas for numbers >= 1000
         function formatNumber(n, decimals) {
             if (n === null || n === undefined) return '0';
@@ -3458,7 +3463,10 @@
                     <div class="pa-popup-header">
                         <div class="pa-popup-name" style="display: flex; align-items: center; justify-content: space-between;">
                             <span>${escapeHtml(name)}</span>
-                            ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
+                            <span style="display: flex; gap: 4px; align-items: center;">
+                                <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}" download="${paId}.kml" title="Download KML for Google Earth" style="text-decoration: none; font-size: 10px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 3px; color: #888;">KML</a>
+                                ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
+                            </span>
                         </div>
                         <div class="pa-popup-country">
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -3511,7 +3519,7 @@
                     <!-- Roadless Section -->
                     <div class="pa-popup-section" id="road-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="road" onclick="event.stopPropagation(); togglePinFromIcon(this)">═</span> Roads & Places<span id="road-count-${paId}" class="pa-popup-section-count"></span></div>
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="road" onclick="event.stopPropagation(); togglePinFromIcon(this)">═</span> Roads, Places & Infrastructure<span id="road-count-${paId}" class="pa-popup-section-count"></span></div>
                             
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'road', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
@@ -3893,30 +3901,93 @@
                 const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/stats`);
                 const data = await resp.json();
                 
+                // Fetch feature stats (places, roads, airstrips, bases)
+                let fstats = { places: 0, road_segments: 0, airstrips: 0, bases: 0 };
+                try {
+                    const fstatsResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/feature-stats?pwd=${encodeURIComponent(getPwd())}`);
+                    if (fstatsResp.ok) {
+                        fstats = await fstatsResp.json();
+                    }
+                } catch (e) { /* ignore */ }
+                
+                // Fetch learned infrastructure
+                let learnedData = { airstrips: [], roads: [] };
+                try {
+                    const learnedResp = await fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(paId)}&pwd=${encodeURIComponent(getPwd())}`);
+                    if (learnedResp.ok) {
+                        learnedData = await learnedResp.json();
+                    }
+                } catch (e) { /* ignore */ }
+                
                 // Update count in header
                 const countEl = document.getElementById(`road-count-${paId}`);
-                if (countEl && data.roadless && data.roadless.total_road_km > 0) {
-                    countEl.textContent = ` • ${data.roadless.roadless_percentage.toFixed(0)}% roadless`;
+                const totalItems = (fstats.places || 0) + (fstats.road_segments || 0) + (learnedData.airstrips?.length || 0);
+                if (countEl && totalItems > 0) {
+                    countEl.textContent = ` • ${totalItems} items`;
                 }
                 
+                // Get park name for pin buttons
+                const parkName = el.closest('.pa-popup')?.querySelector('.pa-popup-name span')?.textContent || paId;
+
+                let html = '';
+                
+                // Roadless stats
                 if (data.roadless) {
                     const r = data.roadless;
                     const pct = r.roadless_percentage;
                     const pctClass = pct >= 80 ? ' good' : pct >= 50 ? ' warning' : ' bad';
-                    el.innerHTML = `
+                    html += `
                         <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label" title="Percentage of area more than 1km from any road">Roadless area</span>
+                            <span class="pa-popup-mini-stat-label">Roadless area</span>
                             <span class="pa-popup-mini-stat-value${pctClass}">${pct.toFixed(1)}%</span>
                         </div>
                         <div class="pa-popup-bar"><div class="pa-popup-bar-fill${pct >= 80 ? ' good' : pct >= 50 ? ' warning' : ' bad'}" style="width: ${pct}%;"></div></div>
-                        <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Road length</span>
-                            <span class="pa-popup-mini-stat-value">${r.total_road_km.toFixed(1)} km</span>
-                        </div>
                     `;
-                } else {
-                    el.innerHTML = '<div class="pa-popup-section-empty">Roadless data not yet processed</div>';
                 }
+                
+                // Pin buttons for each category
+                html += '<div class="road-pin-buttons" style="display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.08);">';
+                
+                if (fstats.road_segments > 0) {
+                    html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="road" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'road', this)" style="flex: 1; min-width: 80px;">
+                        <span class="pin-icon">═</span> Roads (${fstats.road_segments})
+                    </button>`;
+                }
+                
+                if (fstats.places > 0) {
+                    html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="place" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'place', this)" style="flex: 1; min-width: 80px;">
+                        <span class="pin-icon">●</span> Places (${fstats.places})
+                    </button>`;
+                }
+                
+                // Infrastructure section (airstrips + bases)
+                const airstripsApproved = (learnedData.airstrips || []).filter(a => a.status === 'auto_approved' || a.status === 'approved');
+                const infrastructureCount = airstripsApproved.length + (fstats.bases || 0);
+                
+                if (infrastructureCount > 0) {
+                    html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="infrastructure" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'infrastructure', this)" style="flex: 1; min-width: 80px;">
+                        <span class="pin-icon">✈</span> Infrastructure (${infrastructureCount})
+                    </button>`;
+                }
+                
+                html += '</div>';
+                
+                // Infrastructure details
+                if (airstripsApproved.length > 0) {
+                    html += `<div style="font-size: 11px; color: #888; margin-top: 8px;">✈ AIRSTRIPS (${airstripsApproved.length})</div>`;
+                    html += '<div style="font-size: 12px; margin-top: 4px;">';
+                    airstripsApproved.slice(0, 5).forEach((a, i) => {
+                        html += `<div style="padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            Airstrip ${i+1}: ${a.landing_count || 0} landings, ${(a.length_m/1000).toFixed(1)}km runway
+                        </div>`;
+                    });
+                    if (airstripsApproved.length > 5) {
+                        html += `<div style="color: #666; font-size: 11px;">+ ${airstripsApproved.length - 5} more</div>`;
+                    }
+                    html += '</div>';
+                }
+                
+                el.innerHTML = html || '<div class="pa-popup-section-empty">No data available</div>';
             } catch (e) {
                 el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
             }
@@ -5773,6 +5844,30 @@ ${starredItems.narratives.map(n => {
         } else {
             // Pin - fetch and add layer
             if (btn) btn.classList.add('pinned');
+            await addPinnedLayer(parkId, parkName, type);
+        }
+        
+        updatePinnedIndicator();
+        savePinnedToURL();
+    }
+    
+    // Toggle pin for a category (roads, places, infrastructure) from popup button
+    async function togglePinCategory(parkId, parkName, type, btn) {
+        const key = getPinKey(parkId, type);
+        
+        if (pinnedLayers[key]) {
+            // Unpin
+            removePinnedLayer(key);
+            if (btn) {
+                btn.classList.remove('pinned');
+                btn.style.background = '';
+            }
+        } else {
+            // Pin
+            if (btn) {
+                btn.classList.add('pinned');
+                btn.style.background = 'rgba(34,197,94,0.3)';
+            }
             await addPinnedLayer(parkId, parkName, type);
         }
         
