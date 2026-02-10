@@ -562,8 +562,31 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 				
 				// Build narrative text
 				var narr strings.Builder
-				narr.WriteString(fmt.Sprintf("Fire group %d originated %s on %s. ", 
-					i+1, story.OriginDesc, t.EntryDate))
+				// Add seasonal context based on date
+					seasonDesc := ""
+					if entryTime, err := time.Parse("2006-01-02", t.EntryDate); err == nil {
+						month := int(entryTime.Month())
+						// Query climate data for seasonality
+						var precipWettest, precipDriest int
+						err := s.DB.QueryRow(`
+							SELECT COALESCE(precip_wettest_mm, 0), COALESCE(precip_driest_mm, 0) 
+							FROM park_climate WHERE park_id = ?
+						`, parkID).Scan(&precipWettest, &precipDriest)
+						if err == nil && precipWettest > 0 && precipDriest >= 0 {
+							seasonality := float64(precipWettest) / float64(precipDriest+1)
+							if seasonality > 3 {
+								// Distinct dry/wet seasons
+								if month >= 6 && month <= 9 {
+									seasonDesc = " (dry season)"
+								} else if month >= 11 || month <= 2 {
+									seasonDesc = " (wet season)"
+								}
+							}
+						}
+					}
+					
+					narr.WriteString(fmt.Sprintf("Fire group %d originated %s on %s%s. ", 
+						i+1, story.OriginDesc, t.EntryDate, seasonDesc))
 				
 				if len(story.RiversCrossed) > 0 {
 					unique := uniqueStrings(story.RiversCrossed)

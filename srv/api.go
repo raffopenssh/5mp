@@ -2683,6 +2683,105 @@ func (s *Server) HandleAPIParkClimate(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(data)
 }
 
+// HandleAPIParkSpecies returns IUCN Red List species for a park
+func (s *Server) HandleAPIParkSpecies(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+	
+	// Map WDPA ID to internal park_id if needed
+	internalID := parkID
+	if s.AreaStore != nil {
+		for _, area := range s.AreaStore.Areas {
+			if area.WDPAID == parkID {
+				internalID = area.ID
+				break
+			}
+		}
+	}
+	
+	type Species struct {
+		Binomial     string `json:"binomial"`
+		CommonName   string `json:"common_name,omitempty"`
+		Status       string `json:"status"`
+		StatusName   string `json:"status_name"`
+		Order        string `json:"order"`
+		Family       string `json:"family"`
+	}
+	
+	type SpeciesResponse struct {
+		ParkID      string    `json:"park_id"`
+		TotalCount  int       `json:"total_count"`
+		Threatened  int       `json:"threatened"`
+		Critical    int       `json:"critical"`
+		Endangered  int       `json:"endangered"`
+		Vulnerable  int       `json:"vulnerable"`
+		Species     []Species `json:"species"`
+	}
+	
+	statusNames := map[string]string{
+		"CR": "Critically Endangered",
+		"EN": "Endangered",
+		"VU": "Vulnerable",
+		"NT": "Near Threatened",
+		"LC": "Least Concern",
+		"DD": "Data Deficient",
+	}
+	
+	rows, err := s.DB.Query(`
+		SELECT binomial, common_name, conservation_status, taxon_order, family
+		FROM park_species
+		WHERE park_id = ?
+		ORDER BY 
+			CASE conservation_status 
+				WHEN 'CR' THEN 1 
+				WHEN 'EN' THEN 2 
+				WHEN 'VU' THEN 3 
+				WHEN 'NT' THEN 4 
+				WHEN 'LC' THEN 5 
+				ELSE 6 
+			END, binomial
+	`, internalID)
+	
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(SpeciesResponse{ParkID: internalID})
+		return
+	}
+	defer rows.Close()
+	
+	var resp SpeciesResponse
+	resp.ParkID = internalID
+	
+	for rows.Next() {
+		var sp Species
+		var commonName, status, order, family sql.NullString
+		rows.Scan(&sp.Binomial, &commonName, &status, &order, &family)
+		
+		sp.CommonName = commonName.String
+		sp.Status = status.String
+		sp.StatusName = statusNames[sp.Status]
+		sp.Order = order.String
+		sp.Family = family.String
+		
+		resp.Species = append(resp.Species, sp)
+		resp.TotalCount++
+		
+		switch sp.Status {
+		case "CR":
+			resp.Critical++
+			resp.Threatened++
+		case "EN":
+			resp.Endangered++
+			resp.Threatened++
+		case "VU":
+			resp.Vulnerable++
+			resp.Threatened++
+		}
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
 // HandleAPIParkKML exports park data as KML for Google Earth
 func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	parkID := r.PathValue("id")

@@ -156,6 +156,43 @@ func (s *Server) computeFireNarrativeForCache(parkID, parkName string, fromYear,
 	return narrative
 }
 
+// getSeasonalContext returns seasonal description based on climate data
+func (s *Server) getSeasonalContext(parkID string, month int) string {
+	var precipAnnual, precipWettest, precipDriest int
+	err := s.DB.QueryRow(`
+		SELECT precip_annual_mm, precip_wettest_mm, precip_driest_mm 
+		FROM park_climate WHERE park_id = ?
+	`, parkID).Scan(&precipAnnual, &precipWettest, &precipDriest)
+	if err != nil {
+		return ""
+	}
+	
+	// Determine if the park has distinct seasons
+	if precipAnnual == 0 || precipWettest == 0 {
+		return ""
+	}
+	
+	// Calculate seasonality index (ratio of wettest to driest month)
+	seasonality := float64(precipWettest) / float64(precipDriest+1)
+	
+	if seasonality < 3 {
+		return "year-round rainfall"
+	}
+	
+	// Africa typically has rainy season in summer months
+	// Northern hemisphere: June-Sept
+	// Southern hemisphere: Nov-March
+	// Equatorial: two rainy seasons
+	switch {
+	case month >= 6 && month <= 9:
+		return "during the typical dry season"
+	case month >= 11 || month <= 2:
+		return "during the typical rainy season"
+	default:
+		return "during the transition season"
+	}
+}
+
 // buildFireSummary creates the summary text
 func (s *Server) buildFireSummary(parkName string, fromYear, toYear, yearCount, totalFires, totalGroups, stoppedInside, transited int, responseRate float64, peakMonth string, avgDaysBurning float64) string {
 	var parts []string

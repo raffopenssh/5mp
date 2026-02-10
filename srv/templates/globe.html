@@ -3560,6 +3560,17 @@
                         </div>
                     </div>
                     
+                    <!-- Species Section -->
+                    <div class="pa-popup-section" id="species-section-${paId}" onclick="togglePopupSection(this)">
+                        <div class="pa-popup-section-header">
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">❦</span> Species</div>
+                            <span class="pa-popup-section-toggle">▼</span>
+                        </div>
+                        <div class="pa-popup-section-content" id="species-content-${paId}">
+                            <div class="pa-popup-section-loading">Loading...</div>
+                        </div>
+                    </div>
+                    
                     <!-- Climate Section -->
                     <div class="pa-popup-section" id="climate-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
@@ -3610,6 +3621,7 @@
                 fetchPopupRoadData(paId);
                 fetchPopupResearchData(paId, name);
                 fetchPopupClimateData(paId);
+                fetchPopupSpeciesData(paId);
                 fetchPopupLegalData(paId);
             }
         }
@@ -4067,6 +4079,69 @@
                 el.innerHTML = html || '<div class="pa-popup-section-empty">No data available</div>';
             } catch (e) {
                 el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
+            }
+        }
+        
+        async function fetchPopupSpeciesData(paId) {
+            const el = document.getElementById(`species-content-${paId}`);
+            if (!el) return;
+            try {
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/species?pwd=${encodeURIComponent(getPwd())}`);
+                if (!resp.ok) throw new Error('Species data not available');
+                const data = await resp.json();
+                
+                if (!data.species || data.species.length === 0) {
+                    el.innerHTML = '<div class="pa-popup-section-empty">No species data available</div>';
+                    return;
+                }
+                
+                // Build species display
+                const statusColors = {
+                    'CR': '#dc2626', // red
+                    'EN': '#ea580c', // orange
+                    'VU': '#d97706', // amber
+                    'NT': '#65a30d', // lime
+                    'LC': '#22c55e'  // green
+                };
+                
+                // Threatened species (CR, EN, VU)
+                const threatened = data.species.filter(s => ['CR', 'EN', 'VU'].includes(s.status));
+                const nearThreatened = data.species.filter(s => s.status === 'NT');
+                
+                let html = `
+                    <div class="pa-popup-mini-stat">
+                        <span class="pa-popup-mini-stat-label">Mammal species</span>
+                        <span class="pa-popup-mini-stat-value">${data.total_count}</span>
+                    </div>
+                `;
+                
+                if (data.threatened > 0) {
+                    html += `
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Threatened</span>
+                            <span class="pa-popup-mini-stat-value" style="color: #ea580c;">${data.threatened}</span>
+                        </div>
+                    `;
+                }
+                
+                // Show threatened species as tags
+                if (threatened.length > 0) {
+                    html += '<div style="margin-top: 8px; margin-bottom: 4px; font-size: 10px; color: #888;">Threatened species:</div>';
+                    html += '<div style="display: flex; flex-wrap: wrap; gap: 4px;">';
+                    for (const sp of threatened.slice(0, 20)) {
+                        const color = statusColors[sp.status] || '#888';
+                        const name = sp.common_name || sp.binomial.split(' ')[1];
+                        html += `<span style="background: ${color}22; color: ${color}; font-size: 9px; padding: 2px 6px; border-radius: 3px; border: 1px solid ${color}44;" title="${sp.binomial} (${sp.status_name})">${sp.status} ${name}</span>`;
+                    }
+                    if (threatened.length > 20) {
+                        html += `<span style="font-size: 9px; color: #666; padding: 2px 4px;">+${threatened.length - 20} more</span>`;
+                    }
+                    html += '</div>';
+                }
+                
+                el.innerHTML = html;
+            } catch (err) {
+                el.innerHTML = '<div class="pa-popup-section-empty">Species data not available</div>';
             }
         }
         
