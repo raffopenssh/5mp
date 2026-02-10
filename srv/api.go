@@ -2710,11 +2710,11 @@ func (s *Server) HandleAPIParkSpecies(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	rows, err := s.DB.Query(`
-		SELECT binomial, common_name, conservation_status, taxon_order, family
+		SELECT binomial, common_name, status, species_order, family
 		FROM park_species
 		WHERE park_id = ?
 		ORDER BY 
-			CASE conservation_status 
+			CASE status 
 				WHEN 'CR' THEN 1 
 				WHEN 'EN' THEN 2 
 				WHEN 'VU' THEN 3 

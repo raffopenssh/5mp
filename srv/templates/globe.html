@@ -4062,6 +4062,41 @@
                             return '';
                         })()}
                     `;
+                    // Store remaining classified events for the "Show more" button
+                    if (classifiedEvents && classifiedEvents.length > 10) {
+                        const remaining = classifiedEvents.slice(10);
+                        window._deforestRemainingEvents = window._deforestRemainingEvents || {};
+                        window._deforestRemainingEvents[paId] = remaining;
+                        
+                        // Attach click handler
+                        setTimeout(() => {
+                            const btn = document.getElementById(`deforest-more-classified-${paId}`);
+                            if (btn) {
+                                btn.onclick = () => {
+                                    const container = document.getElementById(`deforest-stories-${paId}`);
+                                    const events = window._deforestRemainingEvents[paId] || [];
+                                    events.forEach(e => {
+                                        const featureId = `deforestation_${e.id || e.year}`;
+                                        const classColors = {
+                                            'slash_burn': '#f59e0b', 'logging': '#ef4444', 'mining': '#dc2626',
+                                            'encroachment': '#fb923c', 'natural': '#22c55e'
+                                        };
+                                        const color = classColors[e.classification] || '#a855f7';
+                                        const text = e.narrative || `${e.classification || 'Unknown'} (${e.year}): ${e.area_km2?.toFixed(2) || '?'} km²`;
+                                        const shortText = text.length > 150 ? text.substring(0, 147) + '...' : text;
+                                        const div = document.createElement('div');
+                                        div.className = 'narrative-row';
+                                        div.innerHTML = `<span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${shortText}</span>`;
+                                        div.style.cssText = 'font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px;';
+                                        div.title = 'Click to pin on map. ' + text;
+                                        div.onclick = () => toggleSingleFeaturePin(paId, '', 'deforestation', featureId, div);
+                                        container.appendChild(div);
+                                    });
+                                    btn.remove();
+                                };
+                            }
+                        }, 100);
+                    }
                 } else {
                     el.innerHTML = '<div class="pa-popup-section-empty" style="color: #22c55e;">✓ No deforestation detected in this period</div>';
                 }
@@ -4283,18 +4318,18 @@
                         </div>
                     </div>
                     <div style="margin-top: 10px;">
-                        <div style="font-size: 10px; color: #888; margin-bottom: 4px;">Precipitation Seasonality</div>
-                        <div style="display: flex; height: 16px; border-radius: 4px; overflow: hidden; background: rgba(0,0,0,0.3);">
-                            <div style="width: ${wetPct}%; background: #3b82f6; display: flex; align-items: center; justify-content: center;">
-                                <span style="font-size: 9px; color: white;">${precipWet} mm</span>
+                        <div style="font-size: 10px; color: #888; margin-bottom: 4px;">Seasons</div>
+                        <div style="display: flex; gap: 10px;">
+                            <div style="flex: 1; padding: 6px; background: rgba(59,130,246,0.15); border-radius: 4px; border-left: 3px solid #3b82f6;">
+                                <div style="font-size: 9px; color: #3b82f6; font-weight: 500;">🌧️ Rainy Season</div>
+                                <div style="font-size: 11px; color: #fff; margin-top: 2px;">${data.rainy_season || 'N/A'}</div>
+                                <div style="font-size: 9px; color: #888;">Peak: ${precipWet} mm/month</div>
                             </div>
-                            <div style="width: ${dryPct}%; background: #d97706; display: flex; align-items: center; justify-content: center;">
-                                <span style="font-size: 9px; color: white;">${precipDry} mm</span>
+                            <div style="flex: 1; padding: 6px; background: rgba(217,119,6,0.15); border-radius: 4px; border-left: 3px solid #d97706;">
+                                <div style="font-size: 9px; color: #d97706; font-weight: 500;">☀️ Dry Season</div>
+                                <div style="font-size: 11px; color: #fff; margin-top: 2px;">${data.dry_season || 'N/A'}</div>
+                                <div style="font-size: 9px; color: #888;">Min: ${precipDry} mm/month</div>
                             </div>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 9px; color: #666; margin-top: 2px;">
-                            <span>Wettest month</span>
-                            <span>Driest month</span>
                         </div>
                     </div>
                 `;
