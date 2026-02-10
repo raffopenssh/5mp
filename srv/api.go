@@ -1043,6 +1043,12 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		s.handlePlaceFeatures(w, internalID, limitStr)
 		return
 	}
+	
+	// Handle waterbodies from park_waterbodies table
+	if featureType == "waterbody" || featureType == "water" {
+		s.handleWaterbodyFeatures(w, internalID, limitStr)
+		return
+	}
 
 	// Build query for feature_geometries table
 	query := `
@@ -1227,6 +1233,122 @@ func (s *Server) handlePlaceFeatures(w http.ResponseWriter, parkID string, limit
 	json.NewEncoder(w).Encode(fc)
 }
 
+// handleWaterbodyFeatures returns waterbody features as GeoJSON
+func (s *Server) handleWaterbodyFeatures(w http.ResponseWriter, parkID string, limitStr string) {
+	limit := 500
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 5000 {
+			limit = l
+		}
+	}
+
+	type GeoJSONFeature struct {
+		Type       string                 `json:"type"`
+		Geometry   json.RawMessage        `json:"geometry"`
+		Properties map[string]interface{} `json:"properties"`
+	}
+
+	type FeatureCollection struct {
+		Type     string           `json:"type"`
+		Features []GeoJSONFeature `json:"features"`
+	}
+
+	fc := FeatureCollection{
+		Type:     "FeatureCollection",
+		Features: []GeoJSONFeature{},
+	}
+
+	// Get waterbodies from park_waterbodies table
+	wbRows, err := s.DB.Query(`
+		SELECT waterbody_id, name, waterbody_type, lat, lon, geojson
+		FROM park_waterbodies
+		WHERE park_id = ?
+		LIMIT ?
+	`, parkID, limit)
+	if err == nil {
+		defer wbRows.Close()
+		for wbRows.Next() {
+			var wbID, name, wbType string
+			var lat, lon float64
+			var geojson sql.NullString
+
+			if err := wbRows.Scan(&wbID, &name, &wbType, &lat, &lon, &geojson); err != nil {
+				continue
+			}
+
+			var geometry json.RawMessage
+			if geojson.Valid && geojson.String != "" {
+				geometry = json.RawMessage(geojson.String)
+			} else {
+				geometry = json.RawMessage(fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat))
+			}
+
+			displayName := name
+			if displayName == "" {
+				displayName = wbType
+			}
+
+			fc.Features = append(fc.Features, GeoJSONFeature{
+				Type:     "Feature",
+				Geometry: geometry,
+				Properties: map[string]interface{}{
+					"feature_type":   "waterbody",
+					"feature_id":     wbID,
+					"name":           displayName,
+					"waterbody_type": wbType,
+					"lat":            lat,
+					"lon":            lon,
+				},
+			})
+		}
+	}
+
+	// Also get rivers/streams/lakes from osm_places
+	riverRows, err := s.DB.Query(`
+		SELECT id, name, place_type, lat, lon, geojson
+		FROM osm_places
+		WHERE park_id = ? AND place_type IN ('river', 'stream', 'lake')
+		LIMIT ?
+	`, parkID, limit)
+	if err == nil {
+		defer riverRows.Close()
+		for riverRows.Next() {
+			var id int
+			var name, placeType string
+			var lat, lon float64
+			var geojson sql.NullString
+
+			if err := riverRows.Scan(&id, &name, &placeType, &lat, &lon, &geojson); err != nil {
+				continue
+			}
+
+			var geometry json.RawMessage
+			if geojson.Valid && geojson.String != "" {
+				geometry = json.RawMessage(geojson.String)
+			} else {
+				// Create a point for rivers without geometry
+				geometry = json.RawMessage(fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat))
+			}
+
+			fc.Features = append(fc.Features, GeoJSONFeature{
+				Type:     "Feature",
+				Geometry: geometry,
+				Properties: map[string]interface{}{
+					"feature_type":   "river",
+					"feature_id":     fmt.Sprintf("river_%d", id),
+					"name":           name,
+					"waterbody_type": placeType,
+					"lat":            lat,
+					"lon":            lon,
+				},
+			})
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(fc)
+}
+
 // HandleAPIParkFeatureStats returns summary statistics for features in a park
 func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Request) {
 	parkID := r.PathValue("id")
@@ -1248,6 +1370,8 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 		DeforestationEvents int            `json:"deforestation_events"`
 		RoadSegments        int            `json:"road_segments"`
 		Places              int            `json:"places"`
+		Waterbodies         int            `json:"waterbodies"`
+		Rivers              int            `json:"rivers"`
 		SettlementsByClass  map[string]int `json:"settlements_by_class,omitempty"`
 		DeforestByClass     map[string]int `json:"deforestation_by_class,omitempty"`
 	}
@@ -1288,6 +1412,16 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 	var placesCount int
 	s.DB.QueryRow(`SELECT COUNT(*) FROM osm_places WHERE park_id = ?`, internalID).Scan(&placesCount)
 	stats.Places = placesCount
+	
+	// Count waterbodies
+	var waterbodyCount int
+	s.DB.QueryRow(`SELECT COUNT(*) FROM park_waterbodies WHERE park_id = ?`, internalID).Scan(&waterbodyCount)
+	stats.Waterbodies = waterbodyCount
+	
+	// Count rivers from osm_places
+	var riverCount int
+	s.DB.QueryRow(`SELECT COUNT(*) FROM osm_places WHERE park_id = ? AND place_type IN ('river', 'stream', 'lake')`, internalID).Scan(&riverCount)
+	stats.Rivers = riverCount
 
 	// Settlement classifications
 	rows2, err := s.DB.Query(`
@@ -2516,6 +2650,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	kml.WriteString("<Style id=\"deforestation\"><IconStyle><color>ffff00ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/triangle.png</href></Icon></IconStyle><PolyStyle><color>50ff00ff</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"road\"><LineStyle><color>ff60a5fa</color><width>2</width></LineStyle></Style>\n")
 	kml.WriteString("<Style id=\"place\"><IconStyle><color>ffffffff</color><scale>0.8</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>\n")
+	kml.WriteString("<Style id=\"water\"><IconStyle><color>ffff9933</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/water.png</href></Icon></IconStyle><LineStyle><color>ffff9933</color><width>2</width></LineStyle><PolyStyle><color>50ff9933</color></PolyStyle></Style>\n")
 
 	// Boundary folder
 	if boundary != "" {
@@ -2634,6 +2769,45 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			placeRows.Scan(&name, &lat, &lon, &placeType)
 			pointGeoJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat)
 			writeGeoJSONToKML(&kml, pointGeoJSON, "place", fmt.Sprintf("%s (%s)", name, placeType))
+		}
+	}
+	kml.WriteString("</Folder>\n")
+
+	// Waterbodies folder
+	kml.WriteString("<Folder><name>Waterbodies</name>\n")
+	wbRows, _ := s.DB.Query(`SELECT waterbody_id, name, waterbody_type, lat, lon, geojson FROM park_waterbodies WHERE park_id = ? LIMIT 500`, parkID)
+	if wbRows != nil {
+		defer wbRows.Close()
+		for wbRows.Next() {
+			var wbID, wbName, wbType, geojson string
+			var lat, lon float64
+			wbRows.Scan(&wbID, &wbName, &wbType, &lat, &lon, &geojson)
+			displayName := wbName
+			if displayName == "" {
+				displayName = fmt.Sprintf("%s at %.3f, %.3f", wbType, lat, lon)
+			}
+			writeGeoJSONToKML(&kml, geojson, "water", displayName)
+		}
+	}
+	kml.WriteString("</Folder>\n")
+
+	// Rivers folder (from osm_places)
+	kml.WriteString("<Folder><name>Rivers</name>\n")
+	riverRows, _ := s.DB.Query(`SELECT name, lat, lon, place_type, geojson FROM osm_places WHERE park_id = ? AND place_type IN ('river', 'stream', 'lake') LIMIT 500`, parkID)
+	if riverRows != nil {
+		defer riverRows.Close()
+		for riverRows.Next() {
+			var name string
+			var lat, lon float64
+			var placeType, geojson sql.NullString
+			riverRows.Scan(&name, &lat, &lon, &placeType, &geojson)
+			if geojson.Valid && geojson.String != "" {
+				writeGeoJSONToKML(&kml, geojson.String, "water", name)
+			} else {
+				// Point for rivers without geometry
+				pointGeoJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat)
+				writeGeoJSONToKML(&kml, pointGeoJSON, "water", fmt.Sprintf("%s (%s)", name, placeType.String))
+			}
 		}
 	}
 	kml.WriteString("</Folder>\n")

@@ -4017,6 +4017,14 @@
                     </button>`;
                 }
                 
+                // Water features (waterbodies + rivers)
+                const waterCount = (fstats.waterbodies || 0) + (fstats.rivers || 0);
+                if (waterCount > 0) {
+                    html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="water" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'water', this)" style="flex: 1; min-width: 80px;">
+                        <span class="pin-icon" style="color: #3b82f6;">∿</span> Water (${waterCount})
+                    </button>`;
+                }
+                
                 // Infrastructure section (airstrips + bases)
                 const airstripsApproved = (learnedData.airstrips || []).filter(a => a.status === 'auto_approved' || a.status === 'approved');
                 const infrastructureCount = airstripsApproved.length + (fstats.bases || 0);
@@ -6132,7 +6140,8 @@ ${starredItems.narratives.map(n => {
                 'fire': 'fire_trajectory',
                 'settlement': 'settlement',
                 'deforestation': 'deforestation',
-                'road': 'road'
+                'road': 'road',
+                'water': 'waterbody'
             }[type] || type;
             
             // Get date range from time slider for time-filtered features
@@ -6160,9 +6169,9 @@ ${starredItems.narratives.map(n => {
             map.addSource(sourceId, { type: 'geojson', data: geojson });
             
             // Style based on type
-            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa' };
+            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', water: '#3b82f6' };
             const color = colors[type] || '#22c55e';
-            const lineWidths = { fire: 3, settlement: 3, deforestation: 3, road: 1.5 };
+            const lineWidths = { fire: 3, settlement: 3, deforestation: 3, road: 1.5, water: 2 };
             const lineWidth = lineWidths[type] || 2;
             
             // Store reference early so we can add arrowLayerId
