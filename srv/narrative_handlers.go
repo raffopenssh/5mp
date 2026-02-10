@@ -213,6 +213,13 @@ func bearingToCardinalWithDegrees(bearing float64) string {
 	return fmt.Sprintf("%s (bearing %03.0f°)", cardinal, bearing)
 }
 
+// bearingToCardinalSimple returns a simple 8-point compass direction
+func bearingToCardinalSimple(bearing float64) string {
+	directions := []string{"north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"}
+	index := int(math.Floor((bearing+22.5)/45)) % 8
+	return directions[index]
+}
+
 // formatPlaceWithDirection formats a place name with distance and direction from a reference point
 func formatPlaceWithDirection(placeName, placeType string, distKm, refLat, refLon, placeLat, placeLon float64) string {
 	bearing := bearingTo(refLat, refLon, placeLat, placeLon)

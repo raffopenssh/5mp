@@ -2634,10 +2634,13 @@ func (s *Server) HandleAPIParkClimate(w http.ResponseWriter, r *http.Request) {
 	data.ParkID = internalID
 	
 	err := s.DB.QueryRow(`
-		SELECT temp_annual_c, temp_max_c, temp_min_c, precip_annual_mm, precip_wettest_mm, precip_driest_mm
+		SELECT temp_annual_c, temp_max_c, temp_min_c, precip_annual_mm, precip_wettest_mm, precip_driest_mm,
+		       COALESCE(climate_zone, ''), COALESCE(rainy_season, ''), COALESCE(dry_season, '')
 		FROM park_climate
 		WHERE park_id = ?
-	`, internalID).Scan(&data.TempAnnualC, &data.TempMaxC, &data.TempMinC, &data.PrecipAnnualMM, &data.PrecipWettestMM, &data.PrecipDriestMM)
+	`, internalID).Scan(&data.TempAnnualC, &data.TempMaxC, &data.TempMinC, 
+		&data.PrecipAnnualMM, &data.PrecipWettestMM, &data.PrecipDriestMM,
+		&data.ClimateZone, &data.RainySeason, &data.DrySeason)
 	
 	if err != nil {
 		// Return empty data if not found
@@ -2646,37 +2649,17 @@ func (s *Server) HandleAPIParkClimate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	// Determine climate zone based on temperature and precipitation
-	if data.PrecipAnnualMM > 2000 {
-		data.ClimateZone = "Tropical Rainforest"
-	} else if data.PrecipAnnualMM > 1500 {
-		data.ClimateZone = "Tropical Moist"
-	} else if data.PrecipAnnualMM > 800 {
-		if data.TempAnnualC > 22 {
+	// Fill in defaults if not set
+	if data.ClimateZone == "" {
+		if data.PrecipAnnualMM > 2000 {
+			data.ClimateZone = "Tropical Rainforest"
+		} else if data.PrecipAnnualMM > 800 && data.TempAnnualC > 22 {
 			data.ClimateZone = "Tropical Savanna"
+		} else if data.PrecipAnnualMM > 400 {
+			data.ClimateZone = "Semi-Arid"
 		} else {
-			data.ClimateZone = "Subtropical"
+			data.ClimateZone = "Arid"
 		}
-	} else if data.PrecipAnnualMM > 400 {
-		data.ClimateZone = "Semi-Arid"
-	} else {
-		data.ClimateZone = "Arid"
-	}
-	
-	// Estimate rainy/dry seasons based on position (simple Northern/Southern hemisphere)
-	// This is a simplification - proper seasonal analysis needs monthly data
-	if data.TempAnnualC > 20 {
-		// Tropical - seasons depend on ITCZ movement
-		if data.PrecipWettestMM > data.PrecipAnnualMM/4 {
-			data.RainySeason = "Mar-Oct" // Typical northern tropics
-			data.DrySeason = "Nov-Feb"
-		} else {
-			data.RainySeason = "Year-round rainfall"
-			data.DrySeason = "Brief dry spells"
-		}
-	} else {
-		data.RainySeason = "Variable"
-		data.DrySeason = "Variable"
 	}
 	
 	w.Header().Set("Content-Type", "application/json")

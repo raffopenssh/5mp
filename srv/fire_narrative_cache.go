@@ -150,8 +150,11 @@ func (s *Server) computeFireNarrativeForCache(parkID, parkName string, fromYear,
 	// Hotspots for most recent year
 	narrative.Hotspots = s.analyzeFireHotspots(parkID, toYear, totalFires)
 
-	// Trajectory narratives from most recent year
-	narrative.Narratives = s.getTrajectoryNarratives(parkID, fromYear, toYear)
+	// Get narrative context for enhanced location descriptions
+	ctx := s.getNarrativeContext(parkID, parkName)
+	
+	// Trajectory narratives from most recent year with context
+	narrative.Narratives = s.getTrajectoryNarratives(parkID, fromYear, toYear, ctx)
 
 	return narrative
 }
@@ -312,8 +315,8 @@ func (s *Server) analyzeFireTrendFast(parkID string, currentYear int) *FireTrend
 	return trend
 }
 
-// getTrajectoryNarratives extracts trajectory stories from park_group_infractions
-func (s *Server) getTrajectoryNarratives(parkID string, fromYear, toYear int) []FireGroupStory {
+// getTrajectoryNarratives extracts trajectory stories from park_group_infractions with enhanced context
+func (s *Server) getTrajectoryNarratives(parkID string, fromYear, toYear int, ctx *NarrativeContext) []FireGroupStory {
 	var stories []FireGroupStory
 
 	var trajJSON sql.NullString
@@ -346,24 +349,54 @@ func (s *Server) getTrajectoryNarratives(parkID string, fromYear, toYear int) []
 		trajBearing := bearingTo(t.Origin.Lat, t.Origin.Lon, t.Destination.Lat, t.Destination.Lon)
 		movementDesc := fmt.Sprintf("moving %s", bearingToCardinalWithDegrees(trajBearing))
 
-		// Describe locations
-		story.OriginDesc = s.describeLocation(parkID, t.Origin.Lat, t.Origin.Lon)
-		if strings.HasPrefix(story.OriginDesc, "at coordinates") {
-			story.OriginDesc = fmt.Sprintf("(%.3f°, %.3f°), %s", t.Origin.Lat, t.Origin.Lon, movementDesc)
-		} else {
-			story.OriginDesc = fmt.Sprintf("%s, %s", story.OriginDesc, movementDesc)
-		}
-		story.DestDesc = s.describeLocation(parkID, t.Destination.Lat, t.Destination.Lon)
-
-		// Build narrative
+		// Build verbose narrative with enhanced context
 		var narr strings.Builder
-		narr.WriteString(fmt.Sprintf("Fire group %d originated %s on %s. ", i+1, story.OriginDesc, t.EntryDate))
+		
+		// Get seasonal context
+		seasonStr := ""
+		if ctx != nil {
+			if season := ctx.getSeasonForDate(t.EntryDate); season != "" {
+				seasonStr = fmt.Sprintf(" (%s)", season)
+			}
+		}
+		
+		// Describe origin with enhanced context if available
+		if ctx != nil {
+			originLoc := ctx.describeLocationWithContext(t.Origin.Lat, t.Origin.Lon)
+			if originLoc != "" && !strings.HasPrefix(originLoc, "at (") {
+				story.OriginDesc = fmt.Sprintf("%s, %s", originLoc, movementDesc)
+			} else {
+				story.OriginDesc = fmt.Sprintf("(%.3f°, %.3f°), %s", t.Origin.Lat, t.Origin.Lon, movementDesc)
+			}
+		} else {
+			story.OriginDesc = s.describeLocation(parkID, t.Origin.Lat, t.Origin.Lon)
+			if strings.HasPrefix(story.OriginDesc, "at coordinates") {
+				story.OriginDesc = fmt.Sprintf("(%.3f°, %.3f°), %s", t.Origin.Lat, t.Origin.Lon, movementDesc)
+			} else {
+				story.OriginDesc = fmt.Sprintf("%s, %s", story.OriginDesc, movementDesc)
+			}
+		}
+		
+		// Describe destination with enhanced context
+		if ctx != nil {
+			story.DestDesc = ctx.describeLocationWithContext(t.Destination.Lat, t.Destination.Lon)
+			if story.DestDesc == "" || strings.HasPrefix(story.DestDesc, "at (") {
+				story.DestDesc = fmt.Sprintf("at coordinates (%.3f°, %.3f°)", t.Destination.Lat, t.Destination.Lon)
+			}
+		} else {
+			story.DestDesc = s.describeLocation(parkID, t.Destination.Lat, t.Destination.Lon)
+		}
+
+		// Build verbose narrative
+		narr.WriteString(fmt.Sprintf("Fire group %d originated %s on %s%s. ", 
+			i+1, story.OriginDesc, t.EntryDate, seasonStr))
 
 		daysWord := "days"
 		if t.DaysInside == 1 {
 			daysWord = "day"
 		}
-		narr.WriteString(fmt.Sprintf("Burned inside the park for %d %s (%d fire detections). ", t.DaysInside, daysWord, t.FiresInside))
+		narr.WriteString(fmt.Sprintf("Burned inside the park for %d %s (%d fire detections). ", 
+			t.DaysInside, daysWord, t.FiresInside))
 
 		switch t.Outcome {
 		case "STOPPED_INSIDE":
