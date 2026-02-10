@@ -2985,12 +2985,27 @@
             if (index >= 0 && index < fireAlerts.length) {
                 const alert = fireAlerts[index];
                 if (alert.lat && alert.lon) {
+                    // Zoom to location
                     zoomToActivityWithHighlight({
                         lat: alert.lat,
                         lon: alert.lon,
                         type: 'fire',
                         location: alert.park_name
                     });
+                    
+                    // Also pin the fire trajectory if group_id available
+                    if (alert.park_id && alert.group_id) {
+                        const year = new Date().getFullYear();
+                        const featureId = `${alert.park_id}_${alert.year || year}_grp_${alert.group_id}`;
+                        const narrative = alert.message || formatFireAlertMessage(alert);
+                        
+                        // Pin it (without clicking a button, pass null)
+                        if (!isSingleFeaturePinned(alert.park_id, 'fire', featureId)) {
+                            addSinglePinnedFeature(alert.park_id, alert.park_name || alert.park_id, 'fire', featureId, narrative);
+                            updatePinnedIndicator();
+                        }
+                    }
+                    
                     closeNotificationDropdown();
                 }
             }
@@ -3813,21 +3828,43 @@
                         return `${Math.round(m2).toLocaleString()} m²`;
                     };
                     
-                    // Format settlement with place-based location
-                    const formatSettlement = (s) => {
+                    // Format settlement with place-based location and pinning
+                    const formatSettlement = (s, paId, parkName) => {
                         let location = '';
                         if (s.direction && s.nearest_boundary_km && s.nearest_boundary_km < 50) {
                             location = ` (${s.nearest_boundary_km.toFixed(1)} km ${s.direction})`;
                         }
                         const name = s.name && s.name !== 'Unnamed settlement' ? s.name : `${s.lat.toFixed(3)}°, ${s.lon.toFixed(3)}°`;
-                        return `<div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px;">${formatArea(s.area_m2)} near ${name}${location}</div>`;
+                        const featureId = `settlement_${s.id || s.lat.toFixed(4)}_${s.lon.toFixed(4)}`;
+                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to pin on map">${formatArea(s.area_m2)} near ${name}${location}</div>`;
                     };
                     
-                    // Get settlements - show top 10 initially
+                    // Format classified settlement with narrative
+                    const formatClassifiedSettlement = (s, paId, parkName) => {
+                        const featureId = `settlement_${s.id}`;
+                        const classColors = {
+                            'agricultural': '#f59e0b',
+                            'residential': '#3b82f6',
+                            'pastoral': '#22c55e',
+                            'mining': '#ef4444',
+                            'fishing': '#06b6d4',
+                            'temporary_camp': '#a855f7'
+                        };
+                        const color = classColors[s.classification] || '#fbbf24';
+                        const text = s.narrative || `${s.classification || 'Unknown'} settlement at ${s.lat?.toFixed(3) || '?'}°, ${s.lon?.toFixed(3) || '?'}°`;
+                        const shortText = text.length > 120 ? text.substring(0, 117) + '...' : text;
+                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}"><span style="color: ${color}; flex-shrink: 0;">◻</span> <span style="flex:1;">${shortText}</span></div>`;
+                    };
+                    
+                    // Get settlements - prefer classified if available
+                    const classifiedSettlements = data.classified_settlements || [];
                     const settlements = data.largest_settlements || [];
-                    const initial = settlements.slice(0, 10);
-                    const remaining = settlements.slice(10);
+                    const useClassified = classifiedSettlements.length > 0;
+                    const displayList = useClassified ? classifiedSettlements : settlements;
+                    const initial = displayList.slice(0, 10);
+                    const remaining = displayList.slice(10);
                     const containerId = `settlements-list-${paId}`;
+                    const parkName = data.park_name || paId;
                     const btnId = `settlements-more-btn-${paId}`;
                     
                     el.innerHTML = `
@@ -3844,9 +3881,9 @@
                         
                         ${initial.length > 0 ? `
                         <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-                            <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Settlements by built-up area:</div>
+                            <div style="font-size: 9px; color: #666; margin-bottom: 6px;">${useClassified ? 'Settlement details (click to pin):' : 'Settlements by built-up area:'}</div>
                             <div id="${containerId}">
-                                ${initial.map(s => formatSettlement(s)).join('')}
+                                ${initial.map(s => useClassified ? formatClassifiedSettlement(s, paId, parkName) : formatSettlement(s, paId, parkName)).join('')}
                             </div>
                             ${remaining.length > 0 ? `
                             <button id="${btnId}" style="margin-top: 6px; padding: 4px 8px; font-size: 9px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: #aaa; cursor: pointer; width: 100%;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
@@ -3862,7 +3899,7 @@
                             btn.addEventListener('click', () => {
                                 const container = document.getElementById(containerId);
                                 if (container) {
-                                    container.innerHTML += remaining.map(s => formatSettlement(s)).join('');
+                                    container.innerHTML += remaining.map(s => useClassified ? formatClassifiedSettlement(s, paId, parkName) : formatSettlement(s, paId, parkName)).join('');
                                 }
                                 btn.remove();
                             });
@@ -3948,23 +3985,66 @@
                         
                         ${data.summary ? `<div style="margin-top: 8px; font-size: 10px; color: #aaa; line-height: 1.4;">${data.summary}</div>` : ''}
                         
-                        ${yearlyStories.length > 0 ? `
-                        <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-                            <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Deforestation events (${yearlyStories.length} years):</div>
-                            <div id="deforest-stories-${paId}">
-                                ${yearlyStories.slice(0, 10).map(y => `
-                                    <div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px;">
-                                        ${y.narrative ? y.narrative : `<span style="color: #f59e0b; font-weight: 500;">${y.year}:</span> ${y.area_km2.toFixed(2)} km² lost${y.nearby_places && y.nearby_places.length > 0 ? ` near ${y.nearby_places[0]}` : ''}`}
+                        ${(() => {
+                            // Check for classified events first
+                            const classifiedEvents = data.classified_events || [];
+                            const parkName = data.park_name || paId;
+                            
+                            // Format classified deforestation event with pinning
+                            const formatClassifiedDefo = (e) => {
+                                const featureId = `deforestation_${e.id || e.year}`;
+                                const classColors = {
+                                    'slash_burn': '#f59e0b',
+                                    'logging': '#ef4444',
+                                    'mining': '#dc2626',
+                                    'encroachment': '#fb923c',
+                                    'natural': '#22c55e'
+                                };
+                                const color = classColors[e.classification] || '#a855f7';
+                                const text = e.narrative || `${e.classification || 'Unknown'} (${e.year}): ${e.area_km2?.toFixed(2) || '?'} km²`;
+                                const shortText = text.length > 150 ? text.substring(0, 147) + '...' : text;
+                                return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}"><span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${shortText}</span></div>`;
+                            };
+                            
+                            // Format yearly story without classified data
+                            const formatYearlyStory = (y) => {
+                                const featureId = `deforestation_year_${y.year}`;
+                                const text = y.narrative || `${y.year}: ${y.area_km2.toFixed(2)} km² lost${y.nearby_places && y.nearby_places.length > 0 ? ' near ' + y.nearby_places[0] : ''}`;
+                                return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to pin on map">${text}</div>`;
+                            };
+                            
+                            if (classifiedEvents.length > 0) {
+                                const initial = classifiedEvents.slice(0, 10);
+                                const remaining = classifiedEvents.slice(10);
+                                return `
+                                <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
+                                    <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Deforestation events (click to pin):</div>
+                                    <div id="deforest-stories-${paId}">
+                                        ${initial.map(e => formatClassifiedDefo(e)).join('')}
                                     </div>
-                                `).join('')}
-                            </div>
-                            ${yearlyStories.length > 10 ? `
-                            <button onclick="showMoreDeforestStories('${paId}', ${JSON.stringify(yearlyStories.slice(10)).replace(/"/g, '&quot;')})" 
-                                    id="deforest-more-btn-${paId}"
-                                    style="margin-top: 6px; font-size: 9px; color: #f59e0b; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); padding: 4px 8px; border-radius: 4px; cursor: pointer; width: 100%;">
-                                Show ${yearlyStories.length - 10} more years
-                            </button>` : ''}
-                        </div>` : ''}
+                                    ${remaining.length > 0 ? `
+                                    <button onclick="document.getElementById('deforest-stories-${paId}').innerHTML += '${remaining.map(e => formatClassifiedDefo(e).replace(/'/g, "\\'")).join('')}'; this.remove();" 
+                                            style="margin-top: 6px; font-size: 9px; color: #a855f7; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); padding: 4px 8px; border-radius: 4px; cursor: pointer; width: 100%;">
+                                        Show ${remaining.length} more events
+                                    </button>` : ''}
+                                </div>`;
+                            } else if (yearlyStories.length > 0) {
+                                return `
+                                <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
+                                    <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Deforestation events (${yearlyStories.length} years):</div>
+                                    <div id="deforest-stories-${paId}">
+                                        ${yearlyStories.slice(0, 10).map(y => formatYearlyStory(y)).join('')}
+                                    </div>
+                                    ${yearlyStories.length > 10 ? `
+                                    <button onclick="showMoreDeforestStories('${paId}', ${JSON.stringify(yearlyStories.slice(10)).replace(/"/g, '&quot;')})" 
+                                            id="deforest-more-btn-${paId}"
+                                            style="margin-top: 6px; font-size: 9px; color: #f59e0b; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); padding: 4px 8px; border-radius: 4px; cursor: pointer; width: 100%;">
+                                        Show ${yearlyStories.length - 10} more years
+                                    </button>` : ''}
+                                </div>`;
+                            }
+                            return '';
+                        })()}
                     `;
                 } else {
                     el.innerHTML = '<div class="pa-popup-section-empty" style="color: #22c55e;">✓ No deforestation detected in this period</div>';
@@ -6062,27 +6142,31 @@ ${starredItems.narratives.map(n => {
     async function toggleSingleFeaturePin(parkId, parkName, type, featureId, btn) {
         const key = getSinglePinKey(parkId, type, featureId);
         
+        // Get narrative from title attribute if available
+        let narrative = '';
+        if (btn && btn.title) {
+            narrative = btn.title.replace('Click to pin on map. ', '').replace('Click to pin on map', '');
+        }
+        
         if (singlePinnedFeatures[key]) {
             // Unpin
             removeSinglePinnedFeature(key);
             if (btn) {
                 btn.classList.remove('pinned');
                 btn.style.opacity = '0.4';
-                // btn no longer used for single pins
             }
         } else {
             // Pin
             if (btn) {
                 btn.classList.add('pinned');
                 btn.style.opacity = '1';
-                // btn no longer used for single pins
             }
-            await addSinglePinnedFeature(parkId, parkName, type, featureId);
+            await addSinglePinnedFeature(parkId, parkName, type, featureId, narrative);
         }
         updatePinnedIndicator();
     }
     
-    async function addSinglePinnedFeature(parkId, parkName, type, featureId) {
+    async function addSinglePinnedFeature(parkId, parkName, type, featureId, narrative = '') {
         const key = getSinglePinKey(parkId, type, featureId);
         const layerId = `pinned-single-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
         const sourceId = `pinned-single-source-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
@@ -6143,6 +6227,30 @@ ${starredItems.narratives.map(n => {
                         'line-width': 4
                     }
                 });
+                
+                // Add directional arrows for fire trajectories
+                if (type === 'fire') {
+                    const arrowLayerId = layerId + '-arrows';
+                    map.addLayer({
+                        id: arrowLayerId,
+                        type: 'symbol',
+                        source: sourceId,
+                        layout: {
+                            'symbol-placement': 'line',
+                            'symbol-spacing': 80,
+                            'icon-image': 'arrow-right',
+                            'icon-size': 0.6,
+                            'icon-rotate': 90,
+                            'icon-rotation-alignment': 'map',
+                            'icon-allow-overlap': true,
+                            'icon-ignore-placement': true
+                        },
+                        paint: {
+                            'icon-color': color,
+                            'icon-opacity': 0.9
+                        }
+                    });
+                }
             } else if (geomType.includes('Polygon')) {
                 map.addLayer({
                     id: layerId + '-glow',
@@ -6179,14 +6287,47 @@ ${starredItems.narratives.map(n => {
             singlePinnedFeatures[key] = {
                 parkId, parkName, type, featureId,
                 sourceId, layerId,
-                feature
+                feature, narrative
             };
             
-            // Add click handler for popup
+            // Add click and hover handlers for popup with narrative
+            let hoverPopup = null;
+            
+            // Hover shows narrative
+            map.on('mouseenter', layerId, (e) => {
+                map.getCanvas().style.cursor = 'pointer';
+                const pin = singlePinnedFeatures[key];
+                if (pin && pin.narrative) {
+                    hoverPopup = new maplibregl.Popup({
+                        closeButton: false,
+                        closeOnClick: false,
+                        maxWidth: '300px'
+                    })
+                        .setLngLat(e.lngLat)
+                        .setHTML(`<div style="font-size:11px;max-width:280px;line-height:1.4;padding:4px;">${pin.narrative}</div>`)
+                        .addTo(map);
+                }
+            });
+            
+            map.on('mouseleave', layerId, () => {
+                map.getCanvas().style.cursor = '';
+                if (hoverPopup) {
+                    hoverPopup.remove();
+                    hoverPopup = null;
+                }
+            });
+            
+            // Click shows detailed info
             map.on('click', layerId, (e) => {
+                if (hoverPopup) hoverPopup.remove();
                 const props = e.features[0]?.properties || {};
+                const pin = singlePinnedFeatures[key];
                 let description = '';
-                if (type === 'fire') {
+                
+                // Prefer narrative if available
+                if (pin && pin.narrative) {
+                    description = pin.narrative;
+                } else if (type === 'fire') {
                     description = `Fire Group: ${props.group_id || featureId}<br>` +
                         `${props.start_date || ''} - ${props.end_date || ''}<br>` +
                         `${props.fires_inside || '?'} detections, ${props.days_inside || '?'} days`;
@@ -6196,18 +6337,37 @@ ${starredItems.narratives.map(n => {
                         .map(([k, v]) => `${k}: ${v}`)
                         .join('<br>');
                 }
-                new maplibregl.Popup()
+                new maplibregl.Popup({ maxWidth: '350px' })
                     .setLngLat(e.lngLat)
-                    .setHTML(`<div style="font-size:11px;max-width:200px;">${description}</div>`)
+                    .setHTML(`<div style="font-size:11px;max-width:330px;line-height:1.4;">${description}</div>`)
                     .addTo(map);
             });
             
-            // Flash effect
-            setTimeout(() => {
-                if (map.getLayer(layerId + '-glow')) {
-                    map.setPaintProperty(layerId + '-glow', geomType.includes('Line') ? 'line-opacity' : 'fill-opacity', 0.3);
+            // Pulse animation for glow - makes pinned feature easy to find
+            let pulseCount = 0;
+            const maxPulses = 3;
+            const pulseGlow = () => {
+                if (!map.getLayer(layerId + '-glow') || pulseCount >= maxPulses) {
+                    // Settle at final opacity
+                    if (map.getLayer(layerId + '-glow')) {
+                        const prop = geomType.includes('Line') ? 'line-opacity' : 'fill-opacity';
+                        map.setPaintProperty(layerId + '-glow', prop, 0.3);
+                    }
+                    return;
                 }
-            }, 2000);
+                const prop = geomType.includes('Line') ? 'line-opacity' : 'fill-opacity';
+                // Pulse high
+                map.setPaintProperty(layerId + '-glow', prop, 0.8);
+                setTimeout(() => {
+                    if (map.getLayer(layerId + '-glow')) {
+                        map.setPaintProperty(layerId + '-glow', prop, 0.4);
+                    }
+                    pulseCount++;
+                    setTimeout(pulseGlow, 300);
+                }, 300);
+            };
+            // Start pulsing after layer is added
+            setTimeout(pulseGlow, 100);
             
         } catch (e) {
             console.error('Failed to pin single feature:', e);
@@ -6219,6 +6379,8 @@ ${starredItems.narratives.map(n => {
         const pin = singlePinnedFeatures[key];
         if (!pin) return;
         
+        // Remove arrow layer if it exists (fire trajectories)
+        if (map.getLayer(pin.layerId + '-arrows')) map.removeLayer(pin.layerId + '-arrows');
         if (map.getLayer(pin.layerId + '-glow')) map.removeLayer(pin.layerId + '-glow');
         if (map.getLayer(pin.layerId)) map.removeLayer(pin.layerId);
         if (map.getSource(pin.sourceId)) map.removeSource(pin.sourceId);
@@ -7116,6 +7278,12 @@ ${starredItems.narratives.map(n => {
             params.set('types', activeTypes.join(','));
         }
         
+        // Add search query if present
+        const searchInput = document.getElementById('search-input');
+        if (searchInput && searchInput.value.trim()) {
+            params.set('q', searchInput.value.trim());
+        }
+        
         // Add open popup PA if any
         if (currentPAPopup && currentPAPopup._lngLat) {
             // Find the PA at popup location
@@ -7125,7 +7293,56 @@ ${starredItems.narratives.map(n => {
             );
             if (popupFeatures.length > 0 && popupFeatures[0].properties.id) {
                 params.set('popup', popupFeatures[0].properties.id);
+                
+                // Add expanded accordion sections
+                const openSections = [];
+                document.querySelectorAll('.pa-popup-section.open').forEach(sec => {
+                    const id = sec.id;
+                    if (id) {
+                        // Extract section type from id like 'fire-section-PARK_ID'
+                        const match = id.match(/^(\w+)-section-/);
+                        if (match) openSections.push(match[1]);
+                    }
+                });
+                if (openSections.length > 0) {
+                    params.set('sections', openSections.join(','));
+                }
             }
+        }
+        
+        // Add pinned layers
+        const pinnedKeys = Object.keys(pinnedLayers || {});
+        if (pinnedKeys.length > 0) {
+            const pinned = pinnedKeys.map(key => {
+                const layer = pinnedLayers[key];
+                return `${layer.parkId}:${layer.type}`;
+            }).join(',');
+            params.set('pinned', pinned);
+        }
+        
+        // Add starred items
+        if (starredItems.parks.length > 0) {
+            params.set('starred_parks', starredItems.parks.map(p => p.id).join(','));
+        }
+        if (starredItems.countries.length > 0) {
+            params.set('starred_countries', starredItems.countries.map(c => c.name).join(','));
+        }
+        if (starredItems.bboxes.length > 0) {
+            params.set('starred_bboxes', starredItems.bboxes.map(b => b.bbox.join(':')).join(','));
+        }
+        if (starredItems.narratives.length > 0) {
+            params.set('starred_narratives', starredItems.narratives.map(n => `${n.park_id}:${n.type}`).join(','));
+        }
+        
+        // Add notification panel state
+        const notifDropdown = document.getElementById('notification-dropdown');
+        if (notifDropdown && notifDropdown.classList.contains('open')) {
+            params.set('notif', '1');
+        }
+        
+        // Add keystones toggle state
+        if (typeof keystonesEnabled !== 'undefined' && !keystonesEnabled) {
+            params.set('keystones', '0');
         }
         
         const url = window.location.origin + window.location.pathname + '?' + params.toString();
@@ -7208,8 +7425,41 @@ ${starredItems.narratives.map(n => {
             });
         }
         
+        // Restore search query
+        const searchQuery = params.get('q');
+        if (searchQuery) {
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.value = searchQuery;
+                // Trigger search
+                setTimeout(() => {
+                    if (typeof handleSearchInput === 'function') {
+                        handleSearchInput({ target: searchInput });
+                    }
+                }, 500);
+            }
+        }
+        
+        // Restore keystones toggle
+        const keystonesParam = params.get('keystones');
+        if (keystonesParam === '0' && typeof toggleKeystonesBtn === 'function') {
+            keystonesEnabled = false;
+            const btn = document.getElementById('keystones-toggle-btn');
+            if (btn) btn.classList.remove('active');
+        }
+        
+        // Restore notification panel
+        const notifParam = params.get('notif');
+        if (notifParam === '1') {
+            setTimeout(() => {
+                const dropdown = document.getElementById('notification-dropdown');
+                if (dropdown) dropdown.classList.add('open');
+            }, 1000);
+        }
+        
         // Restore popup (delayed to ensure data is loaded)
         const popupPaId = params.get('popup');
+        const sectionsToOpen = params.get('sections')?.split(',') || [];
         if (popupPaId) {
             setTimeout(() => {
                 // Find the PA and show popup
@@ -7222,6 +7472,18 @@ ${starredItems.narratives.map(n => {
                     if (center) {
                         const coords = JSON.parse(center);
                         showPAPopup(props, { lng: coords[0], lat: coords[1] });
+                        
+                        // Open specified accordion sections after popup loads
+                        if (sectionsToOpen.length > 0) {
+                            setTimeout(() => {
+                                sectionsToOpen.forEach(secType => {
+                                    const section = document.getElementById(`${secType}-section-${popupPaId}`);
+                                    if (section && !section.classList.contains('open')) {
+                                        section.classList.add('open');
+                                    }
+                                });
+                            }, 500);
+                        }
                     }
                 }
             }, 2000);
@@ -7258,6 +7520,39 @@ ${starredItems.narratives.map(n => {
                     }
                 }
             });
+        }
+        
+        // Restore starred narratives
+        const starredNarratives = params.get('starred_narratives');
+        if (starredNarratives) {
+            starredNarratives.split(',').forEach(narr => {
+                const [parkId, narrType] = narr.split(':');
+                if (parkId && narrType) {
+                    const park = (window.keystoneAreas || []).find(p => p.id === parkId);
+                    const parkName = park ? park.name : parkId;
+                    if (!starredItems.narratives.some(n => n.park_id === parkId && n.type === narrType)) {
+                        starredItems.narratives.push({ park_id: parkId, park_name: parkName, type: narrType });
+                    }
+                }
+            });
+            updateStarBadge();
+        }
+        
+        // Restore pinned layers from URL param (in addition to restorePinnedFromURL)
+        const pinnedParam = params.get('pinned');
+        if (pinnedParam) {
+            setTimeout(() => {
+                pinnedParam.split(',').forEach(async (item) => {
+                    const [parkId, type] = item.split(':');
+                    if (parkId && type) {
+                        const park = (window.keystoneAreas || []).find(p => p.id === parkId);
+                        const parkName = park ? park.name : parkId;
+                        if (!pinnedLayers[getPinKey(parkId, type)]) {
+                            await addPinnedLayer(parkId, parkName, type);
+                        }
+                    }
+                });
+            }, 2500);
         }
         
         // Reload data with restored filters

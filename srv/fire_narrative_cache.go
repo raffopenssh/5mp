@@ -438,6 +438,8 @@ func (s *Server) GetCachedFireNarrative(parkID string) (*FireNarrative, time.Tim
 }
 
 // StartNarrativeCacheWorker runs pre-computation for all narrative types
+// - Fire narratives: daily for recent fires (last 14 days), weekly full refresh
+// - Settlement/Deforestation: annually (classifications don't change often)
 func (s *Server) StartNarrativeCacheWorker(ctx context.Context) {
 	log.Println("[NarrativeCacheWorker] Started")
 
@@ -456,7 +458,7 @@ func (s *Server) StartNarrativeCacheWorker(ctx context.Context) {
 		s.PrecomputeAllClassifications(ctx)
 	}
 
-	// Then run weekly (Sunday 2am UTC)
+	// Check every hour for scheduled tasks
 	ticker := time.NewTicker(1 * time.Hour)
 	defer ticker.Stop()
 
@@ -467,10 +469,86 @@ func (s *Server) StartNarrativeCacheWorker(ctx context.Context) {
 			return
 		case <-ticker.C:
 			now := time.Now().UTC()
+			
+			// Daily at 3am UTC: Refresh fire narratives for parks with recent fires (last 14 days)
+			if now.Hour() == 3 {
+				log.Println("[NarrativeCacheWorker] Running daily fire refresh for recent activity")
+				s.PrecomputeRecentFireNarratives(ctx, 14)
+			}
+			
+			// Weekly (Sunday 2am UTC): Full fire narrative refresh
 			if now.Weekday() == time.Sunday && now.Hour() == 2 {
+				log.Println("[NarrativeCacheWorker] Running weekly full fire refresh")
 				s.PrecomputeFireNarratives(ctx)
+			}
+			
+			// Annually (January 1st, 4am UTC): Refresh settlement/deforestation classifications
+			if now.Month() == time.January && now.Day() == 1 && now.Hour() == 4 {
+				log.Println("[NarrativeCacheWorker] Running annual classification refresh")
 				s.PrecomputeAllClassifications(ctx)
 			}
+		}
+	}
+}
+
+// PrecomputeRecentFireNarratives updates fire narratives only for parks with recent fire activity
+func (s *Server) PrecomputeRecentFireNarratives(ctx context.Context, days int) {
+	// Find parks with fires in the last N days
+	cutoff := time.Now().AddDate(0, 0, -days).Format("2006-01-02")
+	rows, err := s.DB.Query(`
+		SELECT DISTINCT park_id 
+		FROM fire_detections 
+		WHERE acq_date >= ?
+		GROUP BY park_id
+		HAVING COUNT(*) > 0`, cutoff)
+	if err != nil {
+		log.Printf("[FireNarrativeCache] Error finding recent fire parks: %v", err)
+		return
+	}
+	defer rows.Close()
+	
+	var parksWithFires []string
+	for rows.Next() {
+		var parkID string
+		rows.Scan(&parkID)
+		parksWithFires = append(parksWithFires, parkID)
+	}
+	
+	if len(parksWithFires) == 0 {
+		log.Println("[FireNarrativeCache] No parks with recent fire activity")
+		return
+	}
+	
+	log.Printf("[FireNarrativeCache] Refreshing %d parks with recent fire activity", len(parksWithFires))
+	
+	for _, parkID := range parksWithFires {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+		// Compute and cache for this single park
+		fromYear := time.Now().Year() - 25
+		toYear := time.Now().Year()
+		parkName := parkID
+		for _, area := range s.AreaStore.Areas {
+			if area.ID == parkID {
+				parkName = area.Name
+				break
+			}
+		}
+		narrative := s.computeFireNarrativeForCache(parkID, parkName, fromYear, toYear)
+		if narrative != nil {
+			narrativeJSON, _ := json.Marshal(narrative)
+			s.DB.Exec(`
+				INSERT INTO fire_narrative_cache (park_id, narrative_json, computed_at, from_year, to_year)
+				VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?)
+				ON CONFLICT(park_id) DO UPDATE SET
+					narrative_json = excluded.narrative_json,
+					computed_at = CURRENT_TIMESTAMP,
+					from_year = excluded.from_year,
+					to_year = excluded.to_year`,
+				parkID, string(narrativeJSON), fromYear, toYear)
 		}
 	}
 }
@@ -514,10 +592,11 @@ func (s *Server) classifyParkData(parkID string) (int, int) {
 }
 
 func (s *Server) classifyParkSettlements(parkID string) int {
+	// Only reclassify if unclassified or older than 1 year
 	rows, err := s.DB.Query(`
 		SELECT id, lat, lon, area_m2, population_est, nearest_place, distance_to_place_km
 		FROM park_settlements
-		WHERE park_id = ? AND (classified_at IS NULL OR classified_at < datetime('now', '-7 days'))
+		WHERE park_id = ? AND (classified_at IS NULL OR classified_at < datetime('now', '-365 days'))
 	`, parkID)
 	if err != nil {
 		return 0
@@ -563,10 +642,11 @@ func (s *Server) classifyParkSettlements(parkID string) int {
 }
 
 func (s *Server) classifyParkDeforestation(parkID string) int {
+	// Only reclassify if unclassified or older than 1 year
 	rows, err := s.DB.Query(`
 		SELECT id, year, area_km2, lat, lon, COALESCE(pattern_type, '')
 		FROM deforestation_events
-		WHERE park_id = ? AND (classified_at IS NULL OR classified_at < datetime('now', '-7 days'))
+		WHERE park_id = ? AND (classified_at IS NULL OR classified_at < datetime('now', '-365 days'))
 	`, parkID)
 	if err != nil {
 		return 0
