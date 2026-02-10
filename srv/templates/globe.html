@@ -1927,25 +1927,33 @@
                 const res = await fetch(url);
                 if (res.ok) {
                     const stats = await res.json();
-                    document.getElementById('stats-pixels').textContent = formatNumber(stats.active_pixels || 0);
-                    document.getElementById('stats-distance').textContent = formatNumber(stats.total_distance_km || 0, 1) + ' km';
-                    document.getElementById('stats-patrols').textContent = formatNumber(stats.total_patrols || 0);
+                    const setIfExists = (id, value) => {
+                        const el = document.getElementById(id);
+                        if (el) el.textContent = value;
+                    };
+                    setIfExists('stats-pixels', formatNumber(stats.active_pixels || 0));
+                    setIfExists('stats-distance', formatNumber(stats.total_distance_km || 0, 1) + ' km');
+                    setIfExists('stats-patrols', formatNumber(stats.total_patrols || 0));
                     
                     // Conservation data
-                    document.getElementById('stats-fires').textContent = formatNumber(stats.total_fires || 0);
+                    setIfExists('stats-fires', formatNumber(stats.total_fires || 0));
                     const fireTrend = stats.fire_trend || 'stable';
                     const fireTrendEl = document.getElementById('stats-fire-trend');
-                    fireTrendEl.className = 'stats-trend ' + fireTrend;
-                    fireTrendEl.textContent = fireTrend === 'up' ? ' ▲' : (fireTrend === 'down' ? ' ▼' : '');
+                    if (fireTrendEl) {
+                        fireTrendEl.className = 'stats-trend ' + fireTrend;
+                        fireTrendEl.textContent = fireTrend === 'up' ? ' ▲' : (fireTrend === 'down' ? ' ▼' : '');
+                    }
                     
                     const deforest = stats.total_deforestation || 0;
-                    document.getElementById('stats-deforest').textContent = formatNumber(deforest, 1) + ' km²';
+                    setIfExists('stats-deforest', formatNumber(deforest, 1) + ' km²');
                     const deforestTrend = stats.deforest_trend || 'stable';
                     const deforestTrendEl = document.getElementById('stats-deforest-trend');
-                    deforestTrendEl.className = 'stats-trend ' + deforestTrend;
-                    deforestTrendEl.textContent = deforestTrend === 'worsening' ? ' ▲' : (deforestTrend === 'improving' ? ' ▼' : '');
+                    if (deforestTrendEl) {
+                        deforestTrendEl.className = 'stats-trend ' + deforestTrend;
+                        deforestTrendEl.textContent = deforestTrend === 'worsening' ? ' ▲' : (deforestTrend === 'improving' ? ' ▼' : '');
+                    }
                     
-                    document.getElementById('stats-settlements').textContent = formatNumber(stats.total_settlements || 0);
+                    setIfExists('stats-settlements', formatNumber(stats.total_settlements || 0));
                 }
 
             } catch (err) {
