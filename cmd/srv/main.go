@@ -70,7 +70,7 @@ func run() error {
 	// Start background workers
 	ctx := context.Background()
 	go server.StartResearchWorker(ctx)
-	go server.StartFireNarrativeCacheWorker(ctx)
+	go server.StartNarrativeCacheWorker(ctx)
 
 	return server.Serve(*flagListenAddr)
 }

@@ -89,19 +89,21 @@ type FireGroupStory struct {
 
 // DeforestationNarrative contains rich textual description of forest loss
 type DeforestationNarrative struct {
-	ParkID            string                    `json:"park_id"`
-	ParkName          string                    `json:"park_name"`
-	Summary           string                    `json:"summary"`
-	YearlyStory       []DeforestationYearStory  `json:"yearly_stories"`
-	TotalLoss         float64                   `json:"total_loss_km2"`
-	PolygonCount      int                       `json:"polygon_count,omitempty"`
-	WorstYear         int                       `json:"worst_year"`
-	TrendDirection    string                    `json:"trend_direction"`       // "improving", "worsening", "stable"
-	TrendPercentChange float64                  `json:"trend_percent_change"`  // percentage change between periods
-	FiveYearAvgEarly  float64                   `json:"five_year_avg_early"`   // earliest 5-year average
-	FiveYearAvgRecent float64                   `json:"five_year_avg_recent"`  // most recent 5-year average
-	Hotspots          []DeforestationHotspot    `json:"hotspots,omitempty"`    // worst cluster hotspots
-	ByClassification  map[string]int            `json:"by_classification,omitempty"`
+	ParkID            string                      `json:"park_id"`
+	ParkName          string                      `json:"park_name"`
+	Summary           string                      `json:"summary"`
+	YearlyStory       []DeforestationYearStory    `json:"yearly_stories"`
+	TotalLoss         float64                     `json:"total_loss_km2"`
+	PolygonCount      int                         `json:"polygon_count,omitempty"`
+	WorstYear         int                         `json:"worst_year"`
+	TrendDirection    string                      `json:"trend_direction"`       // "improving", "worsening", "stable"
+	TrendPercentChange float64                    `json:"trend_percent_change"`  // percentage change between periods
+	FiveYearAvgEarly  float64                     `json:"five_year_avg_early"`   // earliest 5-year average
+	FiveYearAvgRecent float64                     `json:"five_year_avg_recent"`  // most recent 5-year average
+	Hotspots          []DeforestationHotspot      `json:"hotspots,omitempty"`    // worst cluster hotspots
+	ByClassification  map[string]int              `json:"by_classification,omitempty"`
+	AreaByClass       map[string]float64          `json:"area_by_classification,omitempty"`
+	ClassifiedEvents  []ClassifiedDeforestation   `json:"classified_events,omitempty"`
 }
 
 // DeforestationYearStory describes forest loss for a single year
@@ -128,20 +130,21 @@ type DeforestationHotspot struct {
 
 // SettlementNarrative contains description of settlements and human-wildlife interface
 type SettlementNarrative struct {
-	ParkID              string               `json:"park_id"`
-	ParkName            string               `json:"park_name"`
-	Summary             string               `json:"summary"`
-	Status              string               `json:"status"`
-	SettlementCount     int                  `json:"settlement_count"`
-	PolygonCount        int                  `json:"polygon_count,omitempty"`
-	TotalPopulation     int64                `json:"total_population"`
-	Population2030      int64                `json:"population_2030,omitempty"`
-	PopulationDensity   float64              `json:"population_density_per_km2"`
-	ParkAreaKm2         float64              `json:"park_area_km2"`
-	ConflictRisk        string               `json:"conflict_risk"`
-	LargestSettlements  []SettlementDetail   `json:"largest_settlements"`
-	RegionalBreakdown   []RegionSettlement   `json:"regional_breakdown,omitempty"`
-	ByClassification    map[string]int       `json:"by_classification,omitempty"`
+	ParkID              string                  `json:"park_id"`
+	ParkName            string                  `json:"park_name"`
+	Summary             string                  `json:"summary"`
+	Status              string                  `json:"status"`
+	SettlementCount     int                     `json:"settlement_count"`
+	PolygonCount        int                     `json:"polygon_count,omitempty"`
+	TotalPopulation     int64                   `json:"total_population"`
+	Population2030      int64                   `json:"population_2030,omitempty"`
+	PopulationDensity   float64                 `json:"population_density_per_km2"`
+	ParkAreaKm2         float64                 `json:"park_area_km2"`
+	ConflictRisk        string                  `json:"conflict_risk"`
+	LargestSettlements  []SettlementDetail      `json:"largest_settlements"`
+	RegionalBreakdown   []RegionSettlement      `json:"regional_breakdown,omitempty"`
+	ByClassification    map[string]int          `json:"by_classification,omitempty"`
+	ClassifiedList      []ClassifiedSettlement  `json:"classified_settlements,omitempty"`
 }
 
 // SettlementDetail describes a single settlement
@@ -934,6 +937,17 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 			earlyYearsLat, earlyYearsLon, recentYearsLat, recentYearsLon, earlyCount, recentCount, internalID)
 	}
 	
+	// Get classified deforestation events with individual narratives
+	narrative.ClassifiedEvents = s.GetCachedClassifiedDeforestation(internalID)
+	if len(narrative.ClassifiedEvents) > 0 {
+		narrative.ByClassification = make(map[string]int)
+		narrative.AreaByClass = make(map[string]float64)
+		for _, ev := range narrative.ClassifiedEvents {
+			narrative.ByClassification[ev.Classification]++
+			narrative.AreaByClass[ev.Classification] += ev.AreaKm2
+		}
+	}
+	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(narrative)
 }
@@ -1103,6 +1117,17 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		}
 		if len(classMap) > 0 {
 			narrative.ByClassification = classMap
+		}
+	}
+	
+	// Get classified settlements with individual narratives
+	narrative.ClassifiedList = s.GetCachedClassifiedSettlements(internalID)
+	
+	// Update ByClassification from classified data
+	if len(narrative.ClassifiedList) > 0 {
+		narrative.ByClassification = make(map[string]int)
+		for _, cs := range narrative.ClassifiedList {
+			narrative.ByClassification[cs.Classification]++
 		}
 	}
 	

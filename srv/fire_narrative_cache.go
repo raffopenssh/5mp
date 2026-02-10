@@ -437,16 +437,23 @@ func (s *Server) GetCachedFireNarrative(parkID string) (*FireNarrative, time.Tim
 	return &narrative, computedAt, nil
 }
 
-// StartFireNarrativeCacheWorker runs weekly pre-computation
-func (s *Server) StartFireNarrativeCacheWorker(ctx context.Context) {
-	log.Println("[FireNarrativeCacheWorker] Started")
+// StartNarrativeCacheWorker runs pre-computation for all narrative types
+func (s *Server) StartNarrativeCacheWorker(ctx context.Context) {
+	log.Println("[NarrativeCacheWorker] Started")
 
 	// Run immediately if cache is empty
-	var count int
-	s.DB.QueryRow("SELECT COUNT(*) FROM fire_narrative_cache").Scan(&count)
-	if count == 0 {
-		log.Println("[FireNarrativeCacheWorker] Cache empty, running initial computation")
+	var fireCount, settCount int
+	s.DB.QueryRow("SELECT COUNT(*) FROM fire_narrative_cache").Scan(&fireCount)
+	s.DB.QueryRow("SELECT COUNT(*) FROM park_settlements WHERE classified_at IS NOT NULL").Scan(&settCount)
+	
+	if fireCount == 0 {
+		log.Println("[NarrativeCacheWorker] Fire cache empty, running initial computation")
 		s.PrecomputeFireNarratives(ctx)
+	}
+	
+	if settCount == 0 {
+		log.Println("[NarrativeCacheWorker] Classifications empty, running initial computation")
+		s.PrecomputeAllClassifications(ctx)
 	}
 
 	// Then run weekly (Sunday 2am UTC)
@@ -456,13 +463,201 @@ func (s *Server) StartFireNarrativeCacheWorker(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Println("[FireNarrativeCacheWorker] Stopped")
+			log.Println("[NarrativeCacheWorker] Stopped")
 			return
 		case <-ticker.C:
 			now := time.Now().UTC()
 			if now.Weekday() == time.Sunday && now.Hour() == 2 {
 				s.PrecomputeFireNarratives(ctx)
+				s.PrecomputeAllClassifications(ctx)
 			}
 		}
 	}
+}
+
+// PrecomputeAllClassifications classifies settlements and deforestation for all parks
+func (s *Server) PrecomputeAllClassifications(ctx context.Context) {
+	if s.AreaStore == nil {
+		log.Println("[Classification] No area store, skipping")
+		return
+	}
+	
+	log.Printf("[Classification] Starting for %d parks", len(s.AreaStore.Areas))
+	start := time.Now()
+	settCount, defoCount := 0, 0
+	
+	for i, area := range s.AreaStore.Areas {
+		select {
+		case <-ctx.Done():
+			log.Println("[Classification] Cancelled")
+			return
+		default:
+		}
+		
+		if i > 0 && i%20 == 0 {
+			log.Printf("[Classification] Progress: %d/%d parks", i, len(s.AreaStore.Areas))
+		}
+		
+		sc, dc := s.classifyParkData(area.ID)
+		settCount += sc
+		defoCount += dc
+	}
+	
+	log.Printf("[Classification] Done in %v: %d settlements, %d deforestation events",
+		time.Since(start), settCount, defoCount)
+}
+
+func (s *Server) classifyParkData(parkID string) (int, int) {
+	settCount := s.classifyParkSettlements(parkID)
+	defoCount := s.classifyParkDeforestation(parkID)
+	return settCount, defoCount
+}
+
+func (s *Server) classifyParkSettlements(parkID string) int {
+	rows, err := s.DB.Query(`
+		SELECT id, lat, lon, area_m2, population_est, nearest_place, distance_to_place_km
+		FROM park_settlements
+		WHERE park_id = ? AND (classified_at IS NULL OR classified_at < datetime('now', '-7 days'))
+	`, parkID)
+	if err != nil {
+		return 0
+	}
+	defer rows.Close()
+	
+	count := 0
+	for rows.Next() {
+		var st ClassifiedSettlement
+		var nearestPlace sql.NullString
+		var distToPlace sql.NullFloat64
+		
+		err := rows.Scan(&st.ID, &st.Lat, &st.Lon, &st.AreaM2, &st.PopulationEst, &nearestPlace, &distToPlace)
+		if err != nil {
+			continue
+		}
+		
+		if nearestPlace.Valid {
+			st.NearestPlace = nearestPlace.String
+		}
+		if distToPlace.Valid {
+			st.DistanceToPlace = distToPlace.Float64
+		}
+		
+		st.ParkID = parkID
+		s.ClassifySettlement(parkID, &st)
+		
+		s.DB.Exec(`
+			UPDATE park_settlements SET
+				classification = ?,
+				classification_confidence = ?,
+				narrative = ?,
+				fires_5km = ?,
+				fire_seasonality = ?,
+				deforest_nearby_km2 = ?,
+				classified_at = CURRENT_TIMESTAMP
+			WHERE id = ?
+		`, st.Classification, st.Confidence, st.Narrative,
+			st.FiresWithin5km, st.FireSeasonality, st.DeforestNearby, st.ID)
+		count++
+	}
+	return count
+}
+
+func (s *Server) classifyParkDeforestation(parkID string) int {
+	rows, err := s.DB.Query(`
+		SELECT id, year, area_km2, lat, lon, COALESCE(pattern_type, '')
+		FROM deforestation_events
+		WHERE park_id = ? AND (classified_at IS NULL OR classified_at < datetime('now', '-7 days'))
+	`, parkID)
+	if err != nil {
+		return 0
+	}
+	defer rows.Close()
+	
+	count := 0
+	for rows.Next() {
+		var df ClassifiedDeforestation
+		err := rows.Scan(&df.ID, &df.Year, &df.AreaKm2, &df.Lat, &df.Lon, &df.OriginalPattern)
+		if err != nil {
+			continue
+		}
+		
+		df.ParkID = parkID
+		s.ClassifyDeforestation(parkID, &df)
+		
+		s.DB.Exec(`
+			UPDATE deforestation_events SET
+				classification = ?,
+				classification_confidence = ?,
+				narrative = ?,
+				fires_same_year = ?,
+				fire_ratio = ?,
+				nearest_settlement_km = ?,
+				classified_at = CURRENT_TIMESTAMP
+			WHERE id = ?
+		`, df.Classification, df.Confidence, df.Narrative,
+			df.FiresSameYear, df.FireRatio, df.NearestSettlement, df.ID)
+		count++
+	}
+	return count
+}
+
+// GetCachedClassifiedSettlements returns pre-computed classifications from DB
+func (s *Server) GetCachedClassifiedSettlements(parkID string) []ClassifiedSettlement {
+	rows, err := s.DB.Query(`
+		SELECT id, park_id, lat, lon, area_m2, population_est,
+			COALESCE(classification, 'unknown'), COALESCE(classification_confidence, 0),
+			COALESCE(narrative, ''), COALESCE(nearest_place, ''), COALESCE(distance_to_place_km, 0),
+			COALESCE(fires_5km, 0), COALESCE(fire_seasonality, ''), COALESCE(deforest_nearby_km2, 0)
+		FROM park_settlements
+		WHERE park_id = ?
+		ORDER BY area_m2 DESC
+	`, parkID)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	
+	var settlements []ClassifiedSettlement
+	for rows.Next() {
+		var st ClassifiedSettlement
+		err := rows.Scan(&st.ID, &st.ParkID, &st.Lat, &st.Lon, &st.AreaM2, &st.PopulationEst,
+			&st.Classification, &st.Confidence, &st.Narrative,
+			&st.NearestPlace, &st.DistanceToPlace,
+			&st.FiresWithin5km, &st.FireSeasonality, &st.DeforestNearby)
+		if err != nil {
+			continue
+		}
+		settlements = append(settlements, st)
+	}
+	return settlements
+}
+
+// GetCachedClassifiedDeforestation returns pre-computed classifications from DB
+func (s *Server) GetCachedClassifiedDeforestation(parkID string) []ClassifiedDeforestation {
+	rows, err := s.DB.Query(`
+		SELECT id, park_id, year, area_km2, lat, lon,
+			COALESCE(classification, 'unknown'), COALESCE(classification_confidence, 0),
+			COALESCE(narrative, ''), COALESCE(pattern_type, ''),
+			COALESCE(fires_same_year, 0), COALESCE(fire_ratio, 0), COALESCE(nearest_settlement_km, 0)
+		FROM deforestation_events
+		WHERE park_id = ?
+		ORDER BY year DESC
+	`, parkID)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	
+	var events []ClassifiedDeforestation
+	for rows.Next() {
+		var df ClassifiedDeforestation
+		err := rows.Scan(&df.ID, &df.ParkID, &df.Year, &df.AreaKm2, &df.Lat, &df.Lon,
+			&df.Classification, &df.Confidence, &df.Narrative, &df.OriginalPattern,
+			&df.FiresSameYear, &df.FireRatio, &df.NearestSettlement)
+		if err != nil {
+			continue
+		}
+		events = append(events, df)
+	}
+	return events
 }

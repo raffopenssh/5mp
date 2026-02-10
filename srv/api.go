@@ -3182,3 +3182,63 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(results)
 }
+
+// HandleAPIClassifiedSettlements returns settlements with AI classification
+func (s *Server) HandleAPIClassifiedSettlements(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+	if parkID == "" {
+		http.Error(w, "park id required", http.StatusBadRequest)
+		return
+	}
+	
+	settlements := s.GetCachedClassifiedSettlements(parkID)
+	
+	// Group by classification
+	byClass := make(map[string]int)
+	for _, st := range settlements {
+		byClass[st.Classification]++
+	}
+	
+	response := map[string]interface{}{
+		"park_id":       parkID,
+		"total":         len(settlements),
+		"by_class":      byClass,
+		"settlements":   settlements,
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// HandleAPIClassifiedDeforestation returns deforestation events with AI classification
+func (s *Server) HandleAPIClassifiedDeforestation(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+	if parkID == "" {
+		http.Error(w, "park id required", http.StatusBadRequest)
+		return
+	}
+	
+	events := s.GetCachedClassifiedDeforestation(parkID)
+	
+	// Group by classification
+	byClass := make(map[string]int)
+	totalArea := 0.0
+	areaByClass := make(map[string]float64)
+	for _, ev := range events {
+		byClass[ev.Classification]++
+		totalArea += ev.AreaKm2
+		areaByClass[ev.Classification] += ev.AreaKm2
+	}
+	
+	response := map[string]interface{}{
+		"park_id":        parkID,
+		"total_events":   len(events),
+		"total_area_km2": totalArea,
+		"by_class":       byClass,
+		"area_by_class":  areaByClass,
+		"events":         events,
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}

@@ -183,6 +183,8 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/admin/update-fire-alerts", s.HandleAPIUpdateFireAlerts)
 	mux.HandleFunc("GET /api/parks/{id}/deforestation-narrative", s.HandleAPIDeforestationNarrative)
 	mux.HandleFunc("GET /api/parks/{id}/settlement-narrative", s.HandleAPISettlementNarrative)
+	mux.HandleFunc("GET /api/parks/{id}/classified-settlements", s.HandleAPIClassifiedSettlements)
+	mux.HandleFunc("GET /api/parks/{id}/classified-deforestation", s.HandleAPIClassifiedDeforestation)
 
 	// Export endpoint
 	mux.HandleFunc("GET /api/export/parks", s.HandleAPIExportParks)
