@@ -3560,6 +3560,17 @@
                         </div>
                     </div>
                     
+                    <!-- Climate Section -->
+                    <div class="pa-popup-section" id="climate-section-${paId}" onclick="togglePopupSection(this)">
+                        <div class="pa-popup-section-header">
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">☼</span> Climate</div>
+                            <span class="pa-popup-section-toggle">▼</span>
+                        </div>
+                        <div class="pa-popup-section-content" id="climate-content-${paId}">
+                            <div class="pa-popup-section-loading">Loading...</div>
+                        </div>
+                    </div>
+                    
                     <!-- Research Section -->
                     <div class="pa-popup-section" id="research-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
@@ -3598,6 +3609,7 @@
                 fetchPopupDeforestData(paId);
                 fetchPopupRoadData(paId);
                 fetchPopupResearchData(paId, name);
+                fetchPopupClimateData(paId);
                 fetchPopupLegalData(paId);
             }
         }
@@ -4055,6 +4067,68 @@
                 el.innerHTML = html || '<div class="pa-popup-section-empty">No data available</div>';
             } catch (e) {
                 el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
+            }
+        }
+        
+        async function fetchPopupClimateData(paId) {
+            const el = document.getElementById(`climate-content-${paId}`);
+            if (!el) return;
+            try {
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/climate?pwd=${encodeURIComponent(getPwd())}`);
+                if (!resp.ok) throw new Error('Climate data not available');
+                const data = await resp.json();
+                
+                if (!data.temp_annual_c) {
+                    el.innerHTML = '<div class="pa-popup-section-empty">Climate data not available</div>';
+                    return;
+                }
+                
+                // Build climate display
+                const tempRange = `${data.temp_min_c.toFixed(1)}°C - ${data.temp_max_c.toFixed(1)}°C`;
+                const precipDry = data.precip_driest_mm;
+                const precipWet = data.precip_wettest_mm;
+                
+                // Simple seasonality bar chart using HTML/CSS
+                const wetPct = Math.min(100, Math.round((precipWet / (precipWet + precipDry)) * 100));
+                const dryPct = 100 - wetPct;
+                
+                el.innerHTML = `
+                    <div class="climate-summary">
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Annual Temp</span>
+                            <span class="pa-popup-mini-stat-value">${data.temp_annual_c.toFixed(1)}°C</span>
+                        </div>
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Temp Range</span>
+                            <span class="pa-popup-mini-stat-value" style="font-size: 11px;">${tempRange}</span>
+                        </div>
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Annual Rainfall</span>
+                            <span class="pa-popup-mini-stat-value">${data.precip_annual_mm} mm</span>
+                        </div>
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Climate Zone</span>
+                            <span class="pa-popup-mini-stat-value" style="font-size: 10px;">${data.climate_zone}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <div style="font-size: 10px; color: #888; margin-bottom: 4px;">Precipitation Seasonality</div>
+                        <div style="display: flex; height: 16px; border-radius: 4px; overflow: hidden; background: rgba(0,0,0,0.3);">
+                            <div style="width: ${wetPct}%; background: #3b82f6; display: flex; align-items: center; justify-content: center;">
+                                <span style="font-size: 9px; color: white;">${precipWet} mm</span>
+                            </div>
+                            <div style="width: ${dryPct}%; background: #d97706; display: flex; align-items: center; justify-content: center;">
+                                <span style="font-size: 9px; color: white;">${precipDry} mm</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 9px; color: #666; margin-top: 2px;">
+                            <span>Wettest month</span>
+                            <span>Driest month</span>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                el.innerHTML = '<div class="pa-popup-section-empty">Climate data not available</div>';
             }
         }
         

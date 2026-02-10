@@ -2602,6 +2602,87 @@ func (s *Server) HandleAPISettlementIntensity(w http.ResponseWriter, r *http.Req
 	json.NewEncoder(w).Encode(fc)
 }
 
+// HandleAPIParkClimate returns climate data for a park
+func (s *Server) HandleAPIParkClimate(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+	
+	// Map WDPA ID to internal park_id if needed
+	internalID := parkID
+	if s.AreaStore != nil {
+		for _, area := range s.AreaStore.Areas {
+			if area.WDPAID == parkID {
+				internalID = area.ID
+				break
+			}
+		}
+	}
+	
+	type ClimateData struct {
+		ParkID          string  `json:"park_id"`
+		TempAnnualC     float64 `json:"temp_annual_c"`
+		TempMaxC        float64 `json:"temp_max_c"`
+		TempMinC        float64 `json:"temp_min_c"`
+		PrecipAnnualMM  int     `json:"precip_annual_mm"`
+		PrecipWettestMM int     `json:"precip_wettest_mm"`
+		PrecipDriestMM  int     `json:"precip_driest_mm"`
+		ClimateZone     string  `json:"climate_zone"`
+		RainySeason     string  `json:"rainy_season"`
+		DrySeason       string  `json:"dry_season"`
+	}
+	
+	var data ClimateData
+	data.ParkID = internalID
+	
+	err := s.DB.QueryRow(`
+		SELECT temp_annual_c, temp_max_c, temp_min_c, precip_annual_mm, precip_wettest_mm, precip_driest_mm
+		FROM park_climate
+		WHERE park_id = ?
+	`, internalID).Scan(&data.TempAnnualC, &data.TempMaxC, &data.TempMinC, &data.PrecipAnnualMM, &data.PrecipWettestMM, &data.PrecipDriestMM)
+	
+	if err != nil {
+		// Return empty data if not found
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(ClimateData{ParkID: internalID})
+		return
+	}
+	
+	// Determine climate zone based on temperature and precipitation
+	if data.PrecipAnnualMM > 2000 {
+		data.ClimateZone = "Tropical Rainforest"
+	} else if data.PrecipAnnualMM > 1500 {
+		data.ClimateZone = "Tropical Moist"
+	} else if data.PrecipAnnualMM > 800 {
+		if data.TempAnnualC > 22 {
+			data.ClimateZone = "Tropical Savanna"
+		} else {
+			data.ClimateZone = "Subtropical"
+		}
+	} else if data.PrecipAnnualMM > 400 {
+		data.ClimateZone = "Semi-Arid"
+	} else {
+		data.ClimateZone = "Arid"
+	}
+	
+	// Estimate rainy/dry seasons based on position (simple Northern/Southern hemisphere)
+	// This is a simplification - proper seasonal analysis needs monthly data
+	if data.TempAnnualC > 20 {
+		// Tropical - seasons depend on ITCZ movement
+		if data.PrecipWettestMM > data.PrecipAnnualMM/4 {
+			data.RainySeason = "Mar-Oct" // Typical northern tropics
+			data.DrySeason = "Nov-Feb"
+		} else {
+			data.RainySeason = "Year-round rainfall"
+			data.DrySeason = "Brief dry spells"
+		}
+	} else {
+		data.RainySeason = "Variable"
+		data.DrySeason = "Variable"
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(data)
+}
+
 // HandleAPIParkKML exports park data as KML for Google Earth
 func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	parkID := r.PathValue("id")
