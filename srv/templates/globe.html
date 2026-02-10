@@ -2927,7 +2927,7 @@
                     
                     return `
                         <div class="notification-item" onclick="handleFireAlertClick(${item._index})">
-                            <div class="${iconClass}">🔥</div>
+                            <div class="${iconClass}"><span style="font-size: 16px;">●</span></div>
                             <div class="notification-content">
                                 <div class="notification-location">${escapeHtml(item.park_name || item.park_id)} ${directionArrow}</div>
                                 <div class="notification-details">${escapeHtml(item.message || formatFireAlertMessage(item))}</div>
@@ -3637,12 +3637,6 @@
                     `${new Date(dateFrom).getFullYear()}-${new Date(dateTo).getFullYear()}` : 
                     'All time';
                 
-                // Update count in header
-                const countEl = document.getElementById(`fire-count-${paId}`);
-                if (countEl && data.total_fires > 0) {
-                    countEl.textContent = ` • ${formatNumber(data.total_fires)}`;
-                }
-                
                 if (data.total_fires > 0 || (data.narratives && data.narratives.length > 0)) {
                     const trendData = data.trend || {};
                     const avgRate = Math.round(trendData.avg_response_rate || 0);
@@ -3668,7 +3662,7 @@
                     const loadMoreBtnId = `fire-load-more-${paId}`;
                     
                     // Helper to render a single narrative as one concise sentence
-                    const renderNarrative = (n) => {
+                    const renderNarrative = (n, idx) => {
                         const outcomeColor = n.outcome === 'STOPPED_INSIDE' ? '#22c55e' : '#f59e0b';
                         // Use narrative if available, otherwise build a concise one-sentence summary
                         let text = n.narrative;
@@ -3681,10 +3675,10 @@
                         if (text.length > 120) {
                             text = text.substring(0, 117) + '...';
                         }
-                        const fireFeatureId = data.park_id + '_' + data.year + '_grp_' + n.group_num;
+                        const fireFeatureId = data.park_id + '_' + (n.entry_date ? n.entry_date.substring(0,4) : data.year) + '_grp_' + n.group_num;
                         const isPinned = isSingleFeaturePinned(paId, 'fire', fireFeatureId);
-                        const pinHtml = `<span class="single-pin-icon${isPinned ? ' pinned' : ''}" onclick="event.stopPropagation(); toggleSingleFeaturePin('${paId}', '${escapeHtml(data.park_name || paId)}', 'fire', '${fireFeatureId}', this)" title="Pin this fire group to map" style="cursor:pointer; margin-left:auto; padding-left:4px; font-size:10px; opacity:0.4; transition: opacity 0.2s; flex-shrink:0;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity=this.classList.contains('pinned')?'1':'0.4'">${isPinned ? '\ud83d\udccd' : '\ud83d\udccc'}</span>`;
-                        return `<div style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: default; display: flex; align-items: center;" title="${fullText.replace(/"/g, '&quot;')}"><span style="color: ${outcomeColor};">●</span> <span style="flex:1;">${text}</span>${pinHtml}</div>`;
+                        const rowStyle = isPinned ? 'background: rgba(34,197,94,0.15); border-left: 2px solid #22c55e;' : 'background: rgba(0,0,0,0.2);';
+                        return `<div class="narrative-row" data-park="${paId}" data-type="fire" data-feature="${fireFeatureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(data.park_name || paId)}', 'fire', '${fireFeatureId}', this)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; ${rowStyle} border-radius: 4px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;" title="Click to pin on map. ${fullText.replace(/"/g, '&quot;')}"><span style="color: ${outcomeColor}; margin-right: 4px;">●</span> <span style="flex:1;">${text}</span></div>`;
                     };
                     
                     // Render active fire groups alert
@@ -3692,18 +3686,38 @@
                         if (!realtimeData || realtimeData.groups_inside_count === 0) return "";
                         const activeInside = realtimeData.groups.filter(g => g.is_inside && g.is_active);
                         if (activeInside.length === 0) return "";
-                        return `<div class="fire-alert-box"><div class="fire-alert-title">🔥 Active Fire Groups Inside</div>${activeInside.map(g => `<div class="fire-alert-group"><span class="fire-group-name">${g.name}</span><span class="fire-group-status active inside">${g.metrics?.days || g.days_inside || '?'}d • ${g.metrics?.fires || '?'} fires</span></div>`).join("")}</div>`;
+                        return `<div class="fire-alert-box"><div class="fire-alert-title"><span style="color: #ef4444;">●</span> Active Fire Groups Inside</div>${activeInside.map(g => `<div class="fire-alert-group"><span class="fire-group-name">${g.name}</span><span class="fire-group-status active inside">${g.metrics?.days || g.days_inside || '?'}d • ${g.metrics?.fires || '?'} fires</span></div>`).join("")}</div>`;
                     };
+                    // Calculate filtered fire count (sum fires_inside from filtered narratives)
+                    const filteredFireCount = allNarratives.reduce((sum, n) => sum + (n.fires_inside || 0), 0);
+                    const filteredGroupCount = allNarratives.length;
+                    
+                    // Update count in header with filtered count
+                    const countEl = document.getElementById(`fire-count-${paId}`);
+                    if (countEl) {
+                        countEl.textContent = filteredFireCount > 0 ? ` • ${formatNumber(filteredFireCount)}` : '';
+                    }
+                    
+                    // Generate summary based on filtered data
+                    let filteredSummary = '';
+                    if (filteredGroupCount > 0) {
+                        const stoppedCount = allNarratives.filter(n => n.outcome === 'STOPPED_INSIDE').length;
+                        const transitedCount = filteredGroupCount - stoppedCount;
+                        const responseRate = Math.round((stoppedCount / filteredGroupCount) * 100);
+                        filteredSummary = `In ${rangeLabel}, ${filteredFireCount.toLocaleString()} fire detections across ${filteredGroupCount} fire groups. ${stoppedCount} (${responseRate}%) stopped inside, ${transitedCount} transited.`;
+                    } else {
+                        filteredSummary = `No fire groups recorded in ${rangeLabel}.`;
+                    }
                     
                     el.innerHTML = `
                         ${renderActiveGroups()}
                         <div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Fire detections (${rangeLabel})</span>
-                            <span class="pa-popup-mini-stat-value">${formatNumber(data.total_fires || 0)}</span>
+                            <span class="pa-popup-mini-stat-value">${formatNumber(filteredFireCount)}</span>
                         </div>
-                        ${data.narratives ? `<div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Fire groups tracked</span>
-                            <span class="pa-popup-mini-stat-value${data.narratives.length > 50 ? ' bad' : data.narratives.length > 20 ? ' warning' : ''}">${data.narratives.length}</span>
+                        ${filteredGroupCount > 0 ? `<div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Fire groups in period</span>
+                            <span class="pa-popup-mini-stat-value${filteredGroupCount > 50 ? ' bad' : filteredGroupCount > 20 ? ' warning' : ''}">${filteredGroupCount}</span>
                         </div>` : ''}
                         ${avgRate > 0 ? `<div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Avg response rate</span>
@@ -3711,13 +3725,13 @@
                         </div>
                         <div class="pa-popup-bar"><div class="pa-popup-bar-fill${avgRate >= 60 ? ' good' : avgRate >= 40 ? ' warning' : ' bad'}" style="width: ${avgRate}%;"></div></div>` : ''}
                         
-                        ${data.summary ? `<div style="margin-top: 8px; font-size: 10px; color: #aaa; line-height: 1.4;">${data.summary}</div>` : ''}
+                        ${filteredSummary ? `<div style="margin-top: 8px; font-size: 10px; color: #aaa; line-height: 1.4;">${filteredSummary}</div>` : ''}
                         
                         ${initialNarratives.length > 0 ? `
                         <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
                             <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Fire group details (${allNarratives.length} total):</div>
                             <div id="${narrativeContainerId}">
-                                ${initialNarratives.map(n => renderNarrative(n)).join('')}
+                                ${initialNarratives.map((n, i) => renderNarrative(n, i)).join('')}
                             </div>
                             ${remainingNarratives.length > 0 ? `
                             <button id="${loadMoreBtnId}" style="margin-top: 6px; padding: 4px 8px; font-size: 9px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: #aaa; cursor: pointer; width: 100%;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
@@ -3733,7 +3747,7 @@
                             loadMoreBtn.addEventListener('click', () => {
                                 const container = document.getElementById(narrativeContainerId);
                                 if (container) {
-                                    container.innerHTML += remainingNarratives.map(n => renderNarrative(n)).join('');
+                                    container.innerHTML += remainingNarratives.map((n, i) => renderNarrative(n, i + 10)).join('');
                                 }
                                 loadMoreBtn.remove();
                             });
@@ -5897,14 +5911,14 @@ ${starredItems.narratives.map(n => {
             if (btn) {
                 btn.classList.remove('pinned');
                 btn.style.opacity = '0.4';
-                btn.innerHTML = '📌';
+                // btn no longer used for single pins
             }
         } else {
             // Pin
             if (btn) {
                 btn.classList.add('pinned');
                 btn.style.opacity = '1';
-                btn.innerHTML = '📍';
+                // btn no longer used for single pins
             }
             await addSinglePinnedFeature(parkId, parkName, type, featureId);
         }
@@ -6062,7 +6076,7 @@ ${starredItems.narratives.map(n => {
         document.querySelectorAll('.single-pin-icon.pinned').forEach(icon => {
             icon.classList.remove('pinned');
             icon.style.opacity = '0.4';
-            icon.innerHTML = '📌';
+            // icon no longer used for single pins
         });
     }
     
