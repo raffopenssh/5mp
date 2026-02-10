@@ -2476,6 +2476,16 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Parse date filters
+	fromDate := r.URL.Query().Get("from")
+	toDate := r.URL.Query().Get("to")
+	if fromDate == "" {
+		fromDate = r.URL.Query().Get("start")
+	}
+	if toDate == "" {
+		toDate = r.URL.Query().Get("end")
+	}
+
 	// Get park info
 	parkName := parkID
 	var boundary string
@@ -2535,7 +2545,18 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 
 	// Deforestation folder
 	kml.WriteString("<Folder><name>Deforestation</name>\n")
-	defoRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'deforestation' LIMIT 1000`, parkID)
+	defoQuery := `SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'deforestation'`
+	defoArgs := []interface{}{parkID}
+	if fromDate != "" {
+		defoQuery += " AND (end_date IS NULL OR end_date >= ?)"
+		defoArgs = append(defoArgs, fromDate)
+	}
+	if toDate != "" {
+		defoQuery += " AND (start_date IS NULL OR start_date <= ?)"
+		defoArgs = append(defoArgs, toDate)
+	}
+	defoQuery += " LIMIT 1000"
+	defoRows, _ := s.DB.Query(defoQuery, defoArgs...)
 	if defoRows != nil {
 		defer defoRows.Close()
 		for defoRows.Next() {
@@ -2554,7 +2575,18 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 
 	// Fire trajectories folder
 	kml.WriteString("<Folder><name>Fire Trajectories</name>\n")
-	fireRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'fire_trajectory' LIMIT 500`, parkID)
+	fireQuery := `SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'fire_trajectory'`
+	fireArgs := []interface{}{parkID}
+	if fromDate != "" {
+		fireQuery += " AND (end_date IS NULL OR end_date >= ?)"
+		fireArgs = append(fireArgs, fromDate)
+	}
+	if toDate != "" {
+		fireQuery += " AND (start_date IS NULL OR start_date <= ?)"
+		fireArgs = append(fireArgs, toDate)
+	}
+	fireQuery += " LIMIT 500"
+	fireRows, _ := s.DB.Query(fireQuery, fireArgs...)
 	if fireRows != nil {
 		defer fireRows.Close()
 		for fireRows.Next() {

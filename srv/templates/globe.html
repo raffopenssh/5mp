@@ -32,6 +32,25 @@
     <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet">
     <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
     <style>
+        :root {
+            /* Category Colors - consistent across UI */
+            --color-fire: #ef4444;
+            --color-fire-light: #f87171;
+            --color-fire-bg: rgba(239,68,68,0.2);
+            --color-settlement: #fbbf24;
+            --color-settlement-light: #fcd34d;
+            --color-settlement-bg: rgba(251,191,36,0.2);
+            --color-deforestation: #a855f7;
+            --color-deforestation-light: #c084fc;
+            --color-deforestation-bg: rgba(168,85,247,0.2);
+            --color-road: #60a5fa;
+            --color-road-light: #93c5fd;
+            --color-road-bg: rgba(96,165,250,0.2);
+            /* Status colors */
+            --color-good: #22c55e;
+            --color-warning: #f97316;
+            --color-bad: #ef4444;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; overflow: hidden; -webkit-tap-highlight-color: transparent; }
         
@@ -123,12 +142,12 @@
         .stats-trend.stable { color: #666; }
         .stats-trend.improving { color: #22c55e; }
         .stats-trend.worsening { color: #ef4444; }
-        .stats-item.fire .stats-value { color: #ef4444; }
-        .stats-item.fire:hover .stats-value { color: #f87171; }
+        .stats-item.fire .stats-value { color: var(--color-fire); }
+        .stats-item.fire:hover .stats-value { color: var(--color-fire-light); }
         .stats-item.deforest .stats-value { color: #eab308; }
         .stats-item.deforest:hover .stats-value { color: #facc15; }
-        .stats-item.settlement .stats-value { color: #fbbf24; }
-        .stats-item.settlement:hover .stats-value { color: #fcd34d; }
+        .stats-item.settlement .stats-value { color: var(--color-settlement); }
+        .stats-item.settlement:hover .stats-value { color: var(--color-settlement-light); }
         @keyframes stats-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         .stats-item.pulsing { animation: stats-pulse 0.6s ease-in-out; }
         .maplibregl-ctrl-attrib a { color: #666 !important; }
@@ -179,7 +198,7 @@
         .notification-item:hover { background: rgba(255,255,255,0.05); }
         .notification-item:last-child { border-bottom: none; }
         .notification-icon { width: 28px; height: 28px; background: rgba(34,197,94,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; }
-        .notification-icon.fire { background: rgba(239,68,68,0.2); color: #f87171; }
+        .notification-icon.fire { background: var(--color-fire-bg); color: var(--color-fire-light); }
         .notification-icon.fire-active { background: rgba(239,68,68,0.3); animation: fire-pulse 1.5s ease-in-out infinite; }
         @keyframes fire-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 50% { box-shadow: 0 0 8px 4px rgba(239,68,68,0.2); } }
         .fire-active-park { animation: park-fire-pulse 2s ease-in-out infinite; }
@@ -438,9 +457,10 @@
         .pinned-indicator-text { flex: 1; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .pinned-indicator-items { display: flex; flex-wrap: wrap; gap: 4px; }
         .pinned-item { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 3px; font-size: 10px; display: inline-flex; align-items: center; gap: 3px; }
-        .pinned-item.fire { border-left: 2px solid #ef4444; }
-        .pinned-item.settlement { border-left: 2px solid #fbbf24; }
-        .pinned-item.deforestation { border-left: 2px solid #a855f7; }
+        .pinned-item.fire { border-left: 2px solid var(--color-fire); }
+        .pinned-item.settlement { border-left: 2px solid var(--color-settlement); }
+        .pinned-item.deforestation { border-left: 2px solid var(--color-deforestation); }
+        .pinned-item.road { border-left: 2px solid var(--color-road); }
         .pinned-item.road { border-left: 2px solid #60a5fa; }
         .pinned-item.single { font-style: italic; opacity: 0.9; }
         .single-pin-icon { user-select: none; }
@@ -3467,7 +3487,7 @@
                         <div class="pa-popup-name" style="display: flex; align-items: center; justify-content: space-between;">
                             <span>${escapeHtml(name)}</span>
                             <span style="display: flex; gap: 4px; align-items: center;">
-                                <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}" download="${paId}.kml" title="Download KML for Google Earth" style="text-decoration: none; font-size: 10px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 3px; color: #888;">KML</a>
+                                <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}.kml" title="Download KML for Google Earth" style="text-decoration: none; font-size: 10px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 3px; color: #888;">KML</a>
                                 ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
                             </span>
                         </div>
@@ -3483,7 +3503,7 @@
                     <!-- Fire Section -->
                     <div class="pa-popup-section" id="fire-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="fire" onclick="event.stopPropagation(); togglePinFromIcon(this)">◈</span> Fire Activity<span id="fire-count-${paId}" class="pa-popup-section-count"></span></div>
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="fire" onclick="event.stopPropagation(); togglePinFromIcon(this)">◇</span> Fire Activity<span id="fire-count-${paId}" class="pa-popup-section-count"></span></div>
                             
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'fire', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
@@ -3509,7 +3529,7 @@
                     <!-- Deforestation Section -->
                     <div class="pa-popup-section" id="deforest-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="deforestation" onclick="event.stopPropagation(); togglePinFromIcon(this)">▲</span> Deforestation<span id="deforest-count-${paId}" class="pa-popup-section-count"></span></div>
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="deforestation" onclick="event.stopPropagation(); togglePinFromIcon(this)">△</span> Deforestation<span id="deforest-count-${paId}" class="pa-popup-section-count"></span></div>
                             
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'deforestation', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
@@ -3620,8 +3640,20 @@
                     const avgRate = Math.round(trendData.avg_response_rate || 0);
                     const rateClass = avgRate >= 60 ? ' good' : avgRate >= 40 ? ' warning' : ' bad';
                     
-                    // Get a few sample narratives to display
-                    const allNarratives = data.narratives || [];
+                    // Filter narratives by date range (cache returns all, we filter client-side)
+                    let allNarratives = data.narratives || [];
+                    if (dateFrom || dateTo) {
+                        const fromDate = dateFrom ? new Date(dateFrom) : new Date('1900-01-01');
+                        const toDate = dateTo ? new Date(dateTo) : new Date('2100-01-01');
+                        allNarratives = allNarratives.filter(n => {
+                            // Include if any part of the fire group overlaps with the date range
+                            const entryDate = n.entry_date ? new Date(n.entry_date) : null;
+                            const lastDate = n.last_inside ? new Date(n.last_inside) : entryDate;
+                            if (!entryDate) return true; // No date, include anyway
+                            // Overlap: entry <= toDate AND last >= fromDate
+                            return entryDate <= toDate && lastDate >= fromDate;
+                        });
+                    }
                     const initialNarratives = allNarratives.slice(0, 10);
                     const remainingNarratives = allNarratives.slice(10);
                     const narrativeContainerId = `fire-narratives-${paId}`;
@@ -5837,6 +5869,195 @@ ${starredItems.narratives.map(n => {
         return !!pinnedLayers[getPinKey(parkId, type)];
     }
     
+    // ===== Single Feature Pinning =====
+    let singlePinnedFeatures = {}; // { 'parkId_type_featureId': { sourceId, layerId, ... } }
+    
+    function getSinglePinKey(parkId, type, featureId) {
+        return `${parkId}_${type}_${featureId}`;
+    }
+    
+    function isSingleFeaturePinned(parkId, type, featureId) {
+        return !!singlePinnedFeatures[getSinglePinKey(parkId, type, featureId)];
+    }
+    
+    async function toggleSingleFeaturePin(parkId, parkName, type, featureId, btn) {
+        const key = getSinglePinKey(parkId, type, featureId);
+        
+        if (singlePinnedFeatures[key]) {
+            // Unpin
+            removeSinglePinnedFeature(key);
+            if (btn) {
+                btn.classList.remove('pinned');
+                btn.style.opacity = '0.4';
+                btn.innerHTML = '📌';
+            }
+        } else {
+            // Pin
+            if (btn) {
+                btn.classList.add('pinned');
+                btn.style.opacity = '1';
+                btn.innerHTML = '📍';
+            }
+            await addSinglePinnedFeature(parkId, parkName, type, featureId);
+        }
+        updatePinnedIndicator();
+    }
+    
+    async function addSinglePinnedFeature(parkId, parkName, type, featureId) {
+        const key = getSinglePinKey(parkId, type, featureId);
+        const layerId = `pinned-single-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        const sourceId = `pinned-single-source-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        
+        try {
+            // Map type to feature_type for API
+            const featureType = type === 'fire' ? 'fire_trajectory' : type;
+            
+            // Fetch the specific feature by ID
+            const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&limit=1000&pwd=${window.accessPwd || ''}`);
+            if (!response.ok) throw new Error('Failed to fetch features');
+            
+            const allFeatures = await response.json();
+            
+            // Find the specific feature
+            const feature = allFeatures.features?.find(f => 
+                f.properties?.feature_id === featureId || 
+                f.properties?.id == featureId ||
+                (f.properties?.group_id && `${parkId}_${f.properties.year || ''}_grp_${f.properties.group_id}` === featureId)
+            );
+            
+            if (!feature) {
+                showToast(`Feature not found`, 'warning');
+                return;
+            }
+            
+            // Create a single-feature collection
+            const geojson = { type: 'FeatureCollection', features: [feature] };
+            
+            // Add to map with highlight style
+            if (map.getSource(sourceId)) map.removeSource(sourceId);
+            map.addSource(sourceId, { type: 'geojson', data: geojson });
+            
+            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7' };
+            const color = colors[type] || '#ff6b35';
+            
+            const geomType = feature.geometry?.type || 'Point';
+            
+            if (geomType.includes('Line')) {
+                // Add glow effect for line
+                map.addLayer({
+                    id: layerId + '-glow',
+                    type: 'line',
+                    source: sourceId,
+                    paint: {
+                        'line-color': '#ff9500',
+                        'line-width': 8,
+                        'line-blur': 4,
+                        'line-opacity': 0.6
+                    }
+                });
+                map.addLayer({
+                    id: layerId,
+                    type: 'line',
+                    source: sourceId,
+                    paint: {
+                        'line-color': color,
+                        'line-width': 4
+                    }
+                });
+            } else if (geomType.includes('Polygon')) {
+                map.addLayer({
+                    id: layerId + '-glow',
+                    type: 'fill',
+                    source: sourceId,
+                    paint: {
+                        'fill-color': '#ff9500',
+                        'fill-opacity': 0.4
+                    }
+                });
+                map.addLayer({
+                    id: layerId,
+                    type: 'line',
+                    source: sourceId,
+                    paint: {
+                        'line-color': color,
+                        'line-width': 3
+                    }
+                });
+            } else {
+                map.addLayer({
+                    id: layerId,
+                    type: 'circle',
+                    source: sourceId,
+                    paint: {
+                        'circle-radius': 10,
+                        'circle-color': color,
+                        'circle-stroke-width': 3,
+                        'circle-stroke-color': '#ff9500'
+                    }
+                });
+            }
+            
+            singlePinnedFeatures[key] = {
+                parkId, parkName, type, featureId,
+                sourceId, layerId,
+                feature
+            };
+            
+            // Add click handler for popup
+            map.on('click', layerId, (e) => {
+                const props = e.features[0]?.properties || {};
+                let description = '';
+                if (type === 'fire') {
+                    description = `Fire Group: ${props.group_id || featureId}<br>` +
+                        `${props.start_date || ''} - ${props.end_date || ''}<br>` +
+                        `${props.fires_inside || '?'} detections, ${props.days_inside || '?'} days`;
+                } else {
+                    description = Object.entries(props)
+                        .filter(([k]) => !k.startsWith('_'))
+                        .map(([k, v]) => `${k}: ${v}`)
+                        .join('<br>');
+                }
+                new maplibregl.Popup()
+                    .setLngLat(e.lngLat)
+                    .setHTML(`<div style="font-size:11px;max-width:200px;">${description}</div>`)
+                    .addTo(map);
+            });
+            
+            // Flash effect
+            setTimeout(() => {
+                if (map.getLayer(layerId + '-glow')) {
+                    map.setPaintProperty(layerId + '-glow', geomType.includes('Line') ? 'line-opacity' : 'fill-opacity', 0.3);
+                }
+            }, 2000);
+            
+        } catch (e) {
+            console.error('Failed to pin single feature:', e);
+            showToast('Failed to pin feature', 'error');
+        }
+    }
+    
+    function removeSinglePinnedFeature(key) {
+        const pin = singlePinnedFeatures[key];
+        if (!pin) return;
+        
+        if (map.getLayer(pin.layerId + '-glow')) map.removeLayer(pin.layerId + '-glow');
+        if (map.getLayer(pin.layerId)) map.removeLayer(pin.layerId);
+        if (map.getSource(pin.sourceId)) map.removeSource(pin.sourceId);
+        
+        delete singlePinnedFeatures[key];
+    }
+    
+    function clearAllSingleFeaturePins() {
+        Object.keys(singlePinnedFeatures).forEach(key => removeSinglePinnedFeature(key));
+        singlePinnedFeatures = {};
+        // Update UI - reset all single pin icons
+        document.querySelectorAll('.single-pin-icon.pinned').forEach(icon => {
+            icon.classList.remove('pinned');
+            icon.style.opacity = '0.4';
+            icon.innerHTML = '📌';
+        });
+    }
+    
     async function togglePinLayer(parkId, parkName, type, btn) {
         const key = getPinKey(parkId, type);
         
@@ -5917,7 +6138,7 @@ ${starredItems.narratives.map(n => {
             map.addSource(sourceId, { type: 'geojson', data: geojson });
             
             // Style based on type
-            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#888888' };
+            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa' };
             const color = colors[type] || '#22c55e';
             const lineWidths = { fire: 3, settlement: 3, deforestation: 3, road: 1.5 };
             const lineWidth = lineWidths[type] || 2;
@@ -6067,19 +6288,30 @@ ${starredItems.narratives.map(n => {
     function updatePinnedIndicator() {
         const indicator = document.getElementById('pinned-indicator');
         const itemsContainer = document.getElementById('pinned-items');
-        const keys = Object.keys(pinnedLayers);
+        const categoryKeys = Object.keys(pinnedLayers);
+        const singleKeys = Object.keys(singlePinnedFeatures);
+        const totalCount = categoryKeys.length + singleKeys.length;
         
-        if (keys.length === 0) {
+        if (totalCount === 0) {
             indicator.classList.remove('active');
             return;
         }
         
         indicator.classList.add('active');
         
-        const items = keys.map(key => {
+        let items = '';
+        
+        // Category pins
+        items += categoryKeys.map(key => {
             const layer = pinnedLayers[key];
             const count = layer.featureCount;
             return `<span class="pinned-item ${layer.type}">${layer.parkName} ${layer.type} (${count})</span>`;
+        }).join('');
+        
+        // Single feature pins
+        items += singleKeys.map(key => {
+            const pin = singlePinnedFeatures[key];
+            return `<span class="pinned-item ${pin.type} single" style="font-size:9px;">${pin.parkName} ${pin.type}</span>`;
         }).join('');
         
         itemsContainer.innerHTML = items;
@@ -6164,6 +6396,21 @@ ${starredItems.narratives.map(n => {
     // ===== End Pinned GeoJSON Layers =====
 
     // Toggle pin from section icon click
+    // Icon symbols: unfilled -> filled when pinned
+    const iconSymbols = {
+        fire: { unfilled: '◇', filled: '◆' },
+        settlement: { unfilled: '◻', filled: '◼' },
+        deforestation: { unfilled: '△', filled: '▲' },
+        road: { unfilled: '═', filled: '═' }
+    };
+    
+    function updateIconSymbol(iconEl, type, pinned) {
+        const symbols = iconSymbols[type];
+        if (symbols) {
+            iconEl.textContent = pinned ? symbols.filled : symbols.unfilled;
+        }
+    }
+    
     async function togglePinFromIcon(iconEl) {
         const parkId = iconEl.dataset.parkId;
         const parkName = iconEl.dataset.parkName;
@@ -6178,6 +6425,7 @@ ${starredItems.narratives.map(n => {
             // Unpin
             removePinnedLayer(key);
             iconEl.classList.remove('pinned');
+            updateIconSymbol(iconEl, type, false);
             updatePinnedIndicator();
         } else {
             // Pin - add loading state
@@ -6186,6 +6434,7 @@ ${starredItems.narratives.map(n => {
                 await addPinnedLayer(parkId, parkName, type);
                 iconEl.classList.add('pinned');
                 iconEl.classList.remove('loading');
+                updateIconSymbol(iconEl, type, true);
                 updatePinnedIndicator();
             } catch (e) {
                 iconEl.classList.remove('loading');
@@ -6200,11 +6449,13 @@ ${starredItems.narratives.map(n => {
         document.querySelectorAll('.pa-popup-section-icon.toggleable').forEach(icon => {
             if (icon.dataset.parkId === parkId) {
                 const type = icon.dataset.type;
-                if (isPinned(parkId, type)) {
+                const pinned = isPinned(parkId, type);
+                if (pinned) {
                     icon.classList.add('pinned');
                 } else {
                     icon.classList.remove('pinned');
                 }
+                updateIconSymbol(icon, type, pinned);
             }
         });
     }
