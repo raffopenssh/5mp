@@ -1282,6 +1282,26 @@
             }
             return Math.abs(num) >= 1000 ? num.toLocaleString() : String(num);
         }
+        
+        // Format date range for display - show actual dates, not just years
+        function formatDateRangeLabel(fromStr, toStr) {
+            if (!fromStr || !toStr) return 'All time';
+            const from = new Date(fromStr);
+            const to = new Date(toStr);
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const fromYear = from.getFullYear();
+            const toYear = to.getFullYear();
+            
+            if (fromYear === toYear) {
+                // Same year - show month/day range
+                return months[from.getMonth()] + ' ' + from.getDate() + ' - ' + 
+                       months[to.getMonth()] + ' ' + to.getDate() + ', ' + fromYear;
+            } else {
+                // Different years - show year range with months
+                return months[from.getMonth()] + ' ' + fromYear + ' - ' + 
+                       months[to.getMonth()] + ' ' + toYear;
+            }
+        }
 
         const darkStyle = {
             version: 8,
@@ -3672,9 +3692,7 @@
 
                 
                 // Get date range label
-                const rangeLabel = dateFrom && dateTo ? 
-                    `${new Date(dateFrom).getFullYear()}-${new Date(dateTo).getFullYear()}` : 
-                    'All time';
+                const rangeLabel = formatDateRangeLabel(dateFrom, dateTo);
                 
                 if (data.total_fires > 0 || (data.narratives && data.narratives.length > 0)) {
                     const trendData = data.trend || {};
@@ -3954,9 +3972,7 @@
                 }
                 
                 // Get date range label
-                const rangeLabel = dateFrom && dateTo ? 
-                    `${new Date(dateFrom).getFullYear()}-${new Date(dateTo).getFullYear()}` : 
-                    'All time';
+                const rangeLabel = formatDateRangeLabel(dateFrom, dateTo);
                 
                 if (totalLoss > 0) {
                     const trendClass = data.trend_direction === 'improving' ? ' good' : 
