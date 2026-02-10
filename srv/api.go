@@ -234,6 +234,11 @@ func (s *Server) HandleAPIAreas(w http.ResponseWriter, r *http.Request) {
 	features := make([]GeoJSONFeature, 0, len(s.AreaStore.Areas))
 
 	for _, area := range s.AreaStore.Areas {
+		// Compute center from bounding box
+		latMin, latMax, lonMin, lonMax := area.GetBoundingBox()
+		centerLat := (latMin + latMax) / 2
+		centerLon := (lonMin + lonMax) / 2
+
 		// Use the polygon geometry directly from the area data
 		feature := GeoJSONFeature{
 			Type: "Feature",
@@ -242,14 +247,15 @@ func (s *Server) HandleAPIAreas(w http.ResponseWriter, r *http.Request) {
 				Coordinates: area.Geometry.Coordinates,
 			},
 			Properties: map[string]interface{}{
-				"id":          area.ID,
-				"name":        area.Name,
-				"country":     area.Country,
+				"id":           area.ID,
+				"name":         area.Name,
+				"country":      area.Country,
 				"country_code": area.CountryCode,
-				"wdpa_id":     area.WDPAID,
-				"area_km2":    area.AreaKm2,
-				"partner":     area.Partner,
-				"buffer_km":   area.BufferKm,
+				"wdpa_id":      area.WDPAID,
+				"area_km2":     area.AreaKm2,
+				"partner":      area.Partner,
+				"buffer_km":    area.BufferKm,
+				"center":       []float64{centerLon, centerLat}, // GeoJSON [lon, lat]
 			},
 		}
 		features = append(features, feature)

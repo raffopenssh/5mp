@@ -28,9 +28,13 @@ type Server struct {
 	UploadQueueProcessor *UploadQueueProcessor
 }
 
+// Version is set at build time via ldflags
+var Version = "dev"
+
 type pageData struct {
 	Hostname string
 	User     *auth.User
+	Version  string
 }
 
 func New(dbPath, hostname string) (*Server, error) {
@@ -63,6 +67,7 @@ func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 	data := pageData{
 		Hostname: s.Hostname,
 		User:     user,
+		Version:  Version,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
