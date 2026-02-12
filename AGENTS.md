@@ -121,7 +121,7 @@ curl -X POST "http://localhost:8000/api/upload/async?pwd=test2026" -F "gpx=@file
 
 **Feature geometries by type:**
 - deforestation: 221,277 (2001-2024)
-- fire_trajectory: 130,708 (2018-2024)
+- fire_trajectory: 130,708 (2018-2026)
 - settlement: 64,016
 - road: 26,550
 

@@ -84,44 +84,64 @@ python scripts/load_json_data.py
 
 | Directory | Files | Description |
 |-----------|-------|-------------|
-| `data/fire_analysis/` | 157 | Yearly fire groups with trajectories |
-| `data/fire_trajectories/` | 153 | Enhanced trajectories with context |
+| `data/fire_analysis/` | 161 | Yearly fire groups with trajectories |
+| `data/fire_trajectories/` | 153 | Enhanced trajectories (2018-2026) |
 | `data/deforestation_events/` | 79 | Classified deforestation events |
 | `data/settlement_events/` | 156 | Classified settlements |
 | `data/roads_heigit/` | 159 | Road surface data |
 | `data/rivers/` | 161 | HydroRIVERS data |
-| `data/osm_places/` | 106 | OSM place names |
+| `data/osm_places/` | 91 | OSM place names |
+| `data/climate/` | 1 | Monthly precipitation, seasons |
+| `data/species/` | 1 | IUCN mammal species |
+| `data/waterbodies/` | 137 | Global waterbody polygons |
+| `data/feature_geometries/settlement/` | 156 | Settlement GeoJSON polygons |
+| `data/feature_geometries/deforestation/` | 79 | Deforestation GeoJSON polygons |
 | `data/export/` | 7 | Precomputed narratives |
 
-## Production Update
+---
 
-Quick update (code only):
+## Production Deployment
+
+### Quick Update (code only)
 ```bash
 git pull --rebase
 make build
 sudo systemctl restart srv
 ```
 
-Full data sync:
+### Full Data Import (after git pull with new JSON files)
+
+Run the unified import script:
 ```bash
 git pull --rebase
-python scripts/load_json_data.py  # Load new JSON data to DB
+python3 scripts/import_json_to_db.py
 make build
 sudo systemctl restart srv
 ```
 
-Complete rebuild:
+This script:
+1. Syncs `feature_geometries` table with JSON files (exact match)
+2. Imports `park_fire_analysis` from fire_analysis/*.json
+3. Imports `osm_places` from osm_places/*.json  
+4. Imports `park_climate` from climate/park_climate.json
+5. Imports `park_waterbodies` from waterbodies/*.json
+6. Verifies all counts match source files
+
+### Complete Rebuild (regenerate from raw data)
 ```bash
-# 1. Fire analysis
+# 1. Fire analysis (from fire_detections table)
 python scripts/rebuild_park_fire_analysis.py
 
-# 2. Trajectories  
+# 2. Trajectories (adds context from rivers, roads, places)
 python scripts/analyze_fire_trajectories_v3.py
 
 # 3. Narratives
 python scripts/precompute_narratives_v3.py
 
-# 4. Rebuild server
+# 4. Import to database
+python3 scripts/import_json_to_db.py
+
+# 5. Rebuild server
 make build
 sudo systemctl restart srv
 ```

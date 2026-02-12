@@ -44,6 +44,43 @@ Access at: http://localhost:8000/?pwd=test2026
 
 ---
 
+## Production Data Import
+
+After cloning/pulling the repo, sync JSON data files to the database:
+
+```bash
+# Pull latest code and data files
+git pull --rebase
+
+# Import all JSON data to database (idempotent, safe to re-run)
+python3 scripts/import_json_to_db.py
+
+# Rebuild and restart server
+make build
+sudo systemctl restart srv
+```
+
+**What gets imported:**
+
+| Source | Table | Records |
+|--------|-------|---------|
+| `data/fire_trajectories/*.json` | feature_geometries (fire_trajectory) | 130,708 |
+| `data/feature_geometries/settlement/*.json` | feature_geometries (settlement) | 64,016 |
+| `data/feature_geometries/deforestation/*.json` | feature_geometries (deforestation) | 221,277 |
+| `data/roads_heigit/*.json` | feature_geometries (road) | 26,550 |
+| `data/fire_analysis/*.json` | park_fire_analysis | 1,214 |
+| `data/osm_places/*.json` | osm_places | 105,334 |
+| `data/climate/park_climate.json` | park_climate | 162 |
+| `data/waterbodies/*.json` | park_waterbodies | 2,573 |
+
+The import script:
+- Ensures exact match between JSON files and database
+- Deletes orphan records not in JSON
+- Inserts new records from JSON
+- Safe to run multiple times (idempotent)
+
+---
+
 ## First-Time Data Generation
 
 If you need to regenerate data from scratch (not recommended - use DB download):
