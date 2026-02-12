@@ -6,9 +6,8 @@ SQLite database (~1.8GB) with conservation data for 162 African protected areas.
 
 **Download:** https://five-megapixel-conservation.exe.xyz:8000/static/downloads/5mp_data_latest.sqlite3 (1.7 GB)  
 **MD5:** https://five-megapixel-conservation.exe.xyz:8000/static/downloads/5mp_data_latest.sqlite3.md5  
-**Checksum:** `4bc0e551691b2c3cea9afe02291b57f6`
 
-**Last Updated:** 2026-02-06
+**Last Updated:** 2026-02-12
 
 ---
 
@@ -16,13 +15,23 @@ SQLite database (~1.8GB) with conservation data for 162 African protected areas.
 
 | Table | Records | Description |
 |-------|---------|-------------|
-| fire_detections | 5,667,773 | VIIRS satellite fire detections |
+| fire_detections | 5,667,773 | VIIRS satellite fire detections (2018-2026) |
 | feature_geometries | 279,749 | GeoJSON for fires/settlements/deforestation/roads |
 | park_settlements | 15,066 | Settlement centroids with population |
 | deforestation_events | 3,218 | Forest loss polygons |
 | osm_places | 10,600 | Place names for narratives |
+| park_climate | 162 | Monthly precipitation and temperature |
+| park_species | 39,489 | IUCN mammal species |
+| park_waterbodies | 2,573 | Lake/reservoir polygons |
 | osm_roadless_data | 162 | Road networks by park |
-| fire_group_alerts | 271 | Active fire group alerts |
+| fire_group_alerts | ~270 | Active fire group alerts |
+| fire_narrative_cache | 162 | Pre-computed fire narratives |
+
+**Feature geometries breakdown:**
+- fire_trajectory: 50,899 (years 2018-2024)
+- deforestation: 153,980 (years 2001-2024)
+- settlement: 64,016
+- road: 10,854
 
 ---
 
@@ -46,7 +55,7 @@ Satellite fire detection data from NASA FIRMS (VIIRS sensor).
 | protected_area_id | TEXT | Park ID if inside boundary |
 
 **Records:** 5,667,773  
-**Date Range:** 2020-01-01 to present  
+**Date Range:** 2018-04-01 to 2026-02-05  
 **Source:** NASA FIRMS VIIRS NRT and archive
 
 ### feature_geometries
@@ -65,8 +74,8 @@ Unified GeoJSON storage for all spatial features.
 | properties_json | TEXT | Additional properties |
 
 **Records by type:**
-- fire_trajectory: 50,899
-- deforestation: 153,980  
+- fire_trajectory: 50,899 (years 2018-2024)
+- deforestation: 153,980 (years 2001-2024)
 - settlement: 64,016
 - road: 10,854
 
@@ -86,6 +95,9 @@ GHSL settlement/built-up area data with population estimates.
 | distance_to_place_km | REAL | Distance to nearest place |
 | direction_from_place | TEXT | Cardinal direction |
 | settlement_type | TEXT | temporary/permanent |
+| classification | TEXT | AI classification (mining/village/camp) |
+| classification_confidence | REAL | Confidence score |
+| narrative | TEXT | Generated narrative text |
 | in_buffer | INTEGER | 1 if in 10km buffer zone |
 
 **Records:** 15,066  
@@ -98,13 +110,16 @@ Hansen Global Forest Change data.
 |--------|------|-------------|
 | id | INTEGER | Primary key |
 | park_id | TEXT | Protected area ID |
-| year | INTEGER | Year of forest loss |
+| year | INTEGER | Year of forest loss (2001-2024) |
 | area_km2 | REAL | Area lost |
 | lat | REAL | Centroid latitude |
 | lon | REAL | Centroid longitude |
 | geojson | TEXT | Polygon geometry |
 | event_type | TEXT | Classification |
 | pattern_type | TEXT | clearing/road/encroachment |
+| classification | TEXT | AI classification |
+| classification_confidence | REAL | Confidence score |
+| narrative | TEXT | Generated narrative text |
 
 **Records:** 3,218  
 **Source:** Hansen Global Forest Change v1.10
@@ -119,12 +134,82 @@ OpenStreetMap place names for narrative context.
 | name | TEXT | Place name |
 | lat | REAL | Location |
 | lon | REAL | Location |
-| place_type | TEXT | city/town/village/hamlet |
+| place_type | TEXT | city/town/village/hamlet/river/stream |
 | geojson | TEXT | Point geometry (optional) |
 | osm_id | TEXT | OpenStreetMap ID |
 
 **Records:** 10,600  
 **Source:** OpenStreetMap via Overpass API
+
+**Place types:**
+- city: 14
+- town: 133
+- village: 4,772
+- hamlet: 2,280
+- river: 3,360
+- stream: 40
+- lake: 1
+
+### park_climate
+WorldClim monthly climate data for seasonal context.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| park_id | TEXT | Primary key |
+| temp_annual_c | REAL | Annual mean temperature |
+| temp_max_c | REAL | Max temp (warmest month) |
+| temp_min_c | REAL | Min temp (coldest month) |
+| precip_annual_mm | INTEGER | Annual precipitation |
+| precip_wettest_mm | INTEGER | Wettest month (mm) |
+| precip_driest_mm | INTEGER | Driest month (mm) |
+| climate_zone | TEXT | Tropical/Subtropical/Arid |
+| rainy_season | TEXT | e.g., "Jun-Sep" |
+| dry_season | TEXT | e.g., "Dec-Feb" |
+| monthly_precip | TEXT | JSON array of 12 monthly values |
+
+**Records:** 162  
+**Source:** WorldClim 2.1 (2.5 arc-min resolution)
+
+### park_species
+IUCN Red List mammal species.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key |
+| park_id | TEXT | Protected area ID |
+| binomial | TEXT | Scientific name |
+| common_name | TEXT | English common name |
+| status | TEXT | CR/EN/VU/NT/LC/DD |
+| species_order | TEXT | Taxonomic order |
+| family | TEXT | Taxonomic family |
+
+**Records:** 39,489  
+**Source:** IUCN Red List (2017 version)
+
+**Conservation status codes:**
+- CR: Critically Endangered (14)
+- EN: Endangered (48)
+- VU: Vulnerable (65)
+- NT: Near Threatened (56)
+- LC: Least Concern (679)
+- DD: Data Deficient (88)
+
+### park_waterbodies
+Global waterbody polygons.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key |
+| park_id | TEXT | Protected area ID |
+| waterbody_id | TEXT | Unique waterbody reference |
+| name | TEXT | Waterbody name (if named) |
+| waterbody_type | TEXT | Inland perennial/intermittent |
+| lat | REAL | Centroid latitude |
+| lon | REAL | Centroid longitude |
+| geojson | TEXT | Polygon geometry |
+
+**Records:** 2,573  
+**Source:** Global waterbodies dataset
 
 ### osm_roadless_data
 Road network analysis by park.
@@ -166,6 +251,20 @@ Real-time fire group tracking alerts.
 | latest_lat/lon | REAL | Last known position |
 | is_dismissed | BOOLEAN | User dismissed |
 
+### fire_narrative_cache
+Pre-computed fire narratives for fast loading.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| park_id | TEXT | Primary key |
+| narrative_json | TEXT | Full narrative data |
+| computed_at | TIMESTAMP | Cache timestamp |
+| from_year | INTEGER | Data start year |
+| to_year | INTEGER | Data end year |
+
+**Records:** 162  
+**Refresh:** Weekly (Sunday 2am UTC)
+
 ### park_group_infractions
 Historical fire pattern analysis.
 
@@ -177,6 +276,7 @@ Historical fire pattern analysis.
 | transhumance_groups | INTEGER | Long-range movement |
 | herder_groups | INTEGER | Local herding pattern |
 | stationary_groups | INTEGER | Fixed location fires |
+| trajectories_json | TEXT | Full trajectory data |
 
 ---
 
@@ -220,19 +320,23 @@ Aggregated patrol effort by grid cell.
 
 ---
 
-## Queue Tables
+## JSON Data Files
 
-### upload_queue
-Async upload processing queue.
+Additional data is stored in JSON files for production sync:
 
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INTEGER | Primary key |
-| user_id | TEXT | Uploader |
-| filename | TEXT | Filename |
-| file_content | BLOB | Raw GPX data |
-| status | TEXT | pending/processing/completed/failed |
-| result_json | TEXT | Processing result |
+| Directory | Count | Description |
+|-----------|-------|-------------|
+| `data/fire_analysis/` | 161 | Fire groups by year with trajectories |
+| `data/fire_trajectories/` | 153 | Enhanced trajectories with context |
+| `data/settlement_events/` | 156 | Classified settlement data |
+| `data/deforestation_events/` | 79 | Classified deforestation events |
+| `data/rivers/` | 161 | HydroRIVERS data per park |
+| `data/roads_heigit/` | 159 | Road surface data |
+| `data/osm_places/` | 91 | OSM place names |
+| `data/climate/` | 1 | Monthly precipitation/seasons |
+| `data/species/` | 1 | IUCN mammal species |
+| `data/waterbodies/` | 137 | Waterbody polygons |
+| `data/export/` | 7 | Pre-computed narratives |
 
 ---
 
@@ -254,6 +358,7 @@ Async upload processing queue.
 |------|-----------|--------|
 | Fire (NRT) | Daily 3am UTC | Systemd timer |
 | Fire (backfill) | Daily 4am UTC | Systemd timer |
+| Fire narratives | Weekly Sunday 2am | Systemd timer |
 | Deforestation | Annual | Manual script |
 | Settlements/Pop | As needed | Manual script |
 | Place names | As needed | Manual script |
@@ -289,6 +394,15 @@ FROM feature_geometries
 GROUP BY feature_type;
 ```
 
+### Fire trajectories by year
+```sql
+SELECT SUBSTR(start_date, 1, 4) as year, COUNT(*) as trajectories
+FROM feature_geometries
+WHERE feature_type = 'fire_trajectory'
+GROUP BY year
+ORDER BY year;
+```
+
 ### Recent fire trajectories for a park
 ```sql
 SELECT feature_id, start_date, end_date, properties_json
@@ -297,6 +411,23 @@ WHERE park_id = 'COD_Virunga'
   AND feature_type = 'fire_trajectory'
   AND end_date >= date('now', '-7 days')
 ORDER BY end_date DESC;
+```
+
+### Threatened species by park
+```sql
+SELECT park_id, status, COUNT(*) as species
+FROM park_species
+WHERE status IN ('CR', 'EN', 'VU')
+GROUP BY park_id, status
+ORDER BY park_id, status;
+```
+
+### Climate data
+```sql
+SELECT park_id, temp_annual_c, precip_annual_mm, 
+       climate_zone, dry_season, rainy_season
+FROM park_climate
+WHERE park_id = 'CAF_Chinko';
 ```
 
 ### Roadless percentage ranking

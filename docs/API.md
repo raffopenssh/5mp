@@ -83,12 +83,93 @@ GET /api/parks/{id}/deforestation-narrative
 GET /api/parks/{id}/settlement-narrative
 ```
 
-### Get Park Features (GeoJSON)
+### Get Climate Data
 ```
-GET /api/parks/{id}/features?type={type}
+GET /api/parks/{id}/climate
 ```
 
-**Types:** `fire_trajectory`, `deforestation`, `settlements`
+**Response:**
+```json
+{
+  "park_id": "CAF_Chinko",
+  "temp_annual_c": 24.3,
+  "temp_max_c": 33.8,
+  "temp_min_c": 14.4,
+  "precip_annual_mm": 1498,
+  "precip_wettest_mm": 255,
+  "precip_driest_mm": 6,
+  "climate_zone": "Tropical Savanna",
+  "rainy_season": "Jun-Sep",
+  "dry_season": "Dec-Feb",
+  "monthly_precip": [5, 17, 59, 113, 173, 204, 214, 247, 232, 182, 44, 6]
+}
+```
+
+### Get IUCN Species
+```
+GET /api/parks/{id}/species
+```
+
+**Response:**
+```json
+{
+  "park_id": "COD_Virunga",
+  "total_species": 272,
+  "threatened_count": 15,
+  "species": [
+    {
+      "binomial": "Gorilla beringei",
+      "common_name": "Mountain Gorilla",
+      "status": "CR"
+    }
+  ]
+}
+```
+
+### Get Park Features (GeoJSON)
+```
+GET /api/parks/{id}/features?type={type}&start={date}&end={date}&limit={n}
+```
+
+**Types:** `fire_trajectory`, `deforestation`, `settlement`, `road`, `water`, `waterbody`
+
+**Parameters:**
+- `type` - Feature type (required)
+- `start`, `end` - Date range filter (for fire_trajectory, deforestation)
+- `limit` - Max features (default: 1000)
+
+**Response:** GeoJSON FeatureCollection
+
+### Get Feature Stats
+```
+GET /api/parks/{id}/feature-stats
+```
+
+**Response:**
+```json
+{
+  "fire_trajectories": 341,
+  "settlements": 35,
+  "deforestation_events": 24,
+  "road_segments": 37,
+  "places": 51,
+  "waterbodies": 4,
+  "rivers": 30
+}
+```
+
+### Export KML
+```
+GET /api/parks/{id}/export.kml?from={date}&to={date}
+```
+
+Exports park data as KML for Google Earth with:
+- Park boundary
+- Fire trajectories (filtered by date)
+- Deforestation polygons
+- Settlements
+- Places
+- Waterbodies
 
 ---
 
