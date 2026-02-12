@@ -14,7 +14,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-BASE_DIR = Path("/home/exedev/5mpglobe")
+BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / "db.sqlite3"
 KEYSTONES_FILE = BASE_DIR / "data/keystones_with_boundaries.json"
 
