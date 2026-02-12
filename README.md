@@ -6,7 +6,12 @@ Use this as a foundation to build your own service.
 
 ## Building and Running
 
-Build with `make build`, then run `./srv`. The server listens on port 8000 by default.
+Build with `make build`, then run `./server`. The server listens on port 8000 by default.
+
+The Makefile:
+- Embeds git commit hash as version (`-X srv.exe.dev/srv.Version=...`)
+- Generates `.git-commits.txt` for the version history modal in UI
+- Click the version number in the footer to see recent commits
 
 ## Running as a systemd service
 

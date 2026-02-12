@@ -40,6 +40,11 @@ make build
 ./server
 ```
 
+The `make build` command:
+- Compiles the Go server binary
+- Embeds the git commit hash as the version number
+- Generates `.git-commits.txt` with recent commit history (shown in UI version modal)
+
 Access at: http://localhost:8000/?pwd=test2026
 
 ---

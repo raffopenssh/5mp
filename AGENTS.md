@@ -45,6 +45,11 @@ Interactive 3D globe with fire detection, deforestation, settlements, patrol tra
 make build && ./server
 ```
 
+**Build details:**
+- `make build` embeds git commit hash as version (shown in footer)
+- Generates `.git-commits.txt` for version history modal (click version in UI)
+- Version passed via `-ldflags "-X srv.exe.dev/srv.Version=$(VERSION)"`
+
 Access: http://localhost:8000/?pwd=test2026
 
 ---

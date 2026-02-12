@@ -109,6 +109,10 @@ make build
 sudo systemctl restart srv
 ```
 
+**Note:** `make build` automatically:
+- Sets version from `git rev-parse --short HEAD`
+- Generates `.git-commits.txt` with last 20 commits (for version modal in UI)
+
 ### Full Data Import (after git pull with new JSON files)
 
 Run the unified import script:
