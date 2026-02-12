@@ -1,0 +1,24 @@
+[
+  {
+    "id": 4192,
+    "park_id": "NAM_Namib-Naukluft",
+    "year": 2011,
+    "area_km2": 0.0052,
+    "event_type": null,
+    "lat": -23.644906,
+    "lon": 15.200563,
+    "geojson": null,
+    "description": null,
+    "pattern_type": "scattered",
+    "pixel_count": 1,
+    "created_at": "2026-02-10 18:21:58",
+    "classification": "natural",
+    "classification_confidence": 0.5,
+    "narrative": "In 2011, Namib-Naukluft experienced minor forest loss of 0.01 km\u00b2 across 1 distinct patches. Low fire association and scattered pattern may indicate natural disturbance. Peak clearing typically occurs during dry season (May-Oct).",
+    "fires_same_year": 0,
+    "fire_ratio": 0.0,
+    "nearest_settlement_km": null,
+    "classified_at": null,
+    "polygon_ids": "deforest_NAM_Namib-Naukluft_2011_0"
+  }
+]

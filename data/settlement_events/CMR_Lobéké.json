@@ -1,0 +1,27 @@
+[
+  {
+    "id": 31232,
+    "park_id": "CMR_Lob\u00e9k\u00e9",
+    "lat": 2.19367,
+    "lon": 16.07915,
+    "area_m2": 49932.16,
+    "population_est": 37,
+    "households_est": 8,
+    "nearest_place": "",
+    "distance_to_place_km": null,
+    "direction_from_place": null,
+    "settlement_type": "permanent",
+    "in_buffer": 0,
+    "tile_row": null,
+    "tile_col": null,
+    "detected_at": "2026-02-10 18:39:35",
+    "classification": "settlement",
+    "classification_confidence": 0.5,
+    "narrative": "Settlement with 1 distinct built-up areas. Covers 4.99 hectares. Near Sangha.",
+    "fires_5km": 0,
+    "fire_seasonality": null,
+    "deforest_nearby_km2": 0.0,
+    "classified_at": null,
+    "polygon_ids": "settlement_CMR_Lob\u00e9k\u00e9_0"
+  }
+]

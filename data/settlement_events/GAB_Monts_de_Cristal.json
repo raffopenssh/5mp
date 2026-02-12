@@ -1,0 +1,27 @@
+[
+  {
+    "id": 34701,
+    "park_id": "GAB_Monts_de_Cristal",
+    "lat": 0.453316,
+    "lon": 10.277805,
+    "area_m2": 10000.0,
+    "population_est": 1,
+    "households_est": 0,
+    "nearest_place": "",
+    "distance_to_place_km": null,
+    "direction_from_place": null,
+    "settlement_type": "temporary",
+    "in_buffer": 0,
+    "tile_row": null,
+    "tile_col": null,
+    "detected_at": "2026-02-10 19:05:48",
+    "classification": "temporary_camp",
+    "classification_confidence": 0.6,
+    "narrative": "Temporary or seasonal camp.",
+    "fires_5km": 0,
+    "fire_seasonality": null,
+    "deforest_nearby_km2": 0.0,
+    "classified_at": null,
+    "polygon_ids": "settlement_GAB_Monts_de_Cristal_0"
+  }
+]
