@@ -5449,6 +5449,11 @@
             if (typeof refreshPopupData === 'function') {
                 refreshPopupData();
             }
+            
+            // Refresh pinned layers with new date range
+            if (typeof refreshPinnedLayers === 'function') {
+                refreshPinnedLayers();
+            }
         }
         
         function initTicks() {
@@ -6915,6 +6920,44 @@ ${starredItems.narratives.map(n => {
         }).join('');
         
         itemsContainer.innerHTML = items;
+    }
+    
+    // Refresh all pinned category layers with new date filter
+    async function refreshPinnedLayers() {
+        const keys = Object.keys(pinnedLayers);
+        if (keys.length === 0) return;
+        
+        for (const key of keys) {
+            const layer = pinnedLayers[key];
+            if (!layer || !layer.parkId || !layer.type) continue;
+            
+            try {
+                // Build date params
+                let dateParams = '';
+                const featureType = layer.type === 'fire' ? 'fire_trajectory' : layer.type;
+                if (dateFrom && dateTo) {
+                    dateParams = `&start=${dateFrom}&end=${dateTo}`;
+                }
+                
+                // Fetch updated data
+                const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=500&pwd=${window.accessPwd || ''}`);
+                if (!response.ok) continue;
+                
+                const geojson = await response.json();
+                
+                // Update source data
+                const source = map.getSource(layer.sourceId);
+                if (source) {
+                    source.setData(geojson);
+                    layer.featureCount = geojson.features?.length || 0;
+                }
+            } catch (err) {
+                console.error('Failed to refresh pinned layer:', key, err);
+            }
+        }
+        
+        // Update indicator to show new counts
+        updatePinnedIndicator();
     }
     
     function showPinnedFeaturePopup(props, lngLat, type, parkName) {

@@ -578,7 +578,7 @@ def import_group_infractions(conn):
     # Process all trajectory files
     from collections import defaultdict
     stats = defaultdict(lambda: defaultdict(lambda: {
-        'total': 0, 'stopped': 0, 'transited': 0, 'fires': 0, 'days_sum': 0
+        'total': 0, 'stopped': 0, 'transited': 0, 'fires': 0, 'days_sum': 0, 'trajectories': []
     }))
     
     file_count = 0
@@ -604,19 +604,38 @@ def import_group_infractions(conn):
                 s['stopped'] += 1
             elif outcome == 'TRANSITED':
                 s['transited'] += 1
+            
+            # Store trajectory details for narrative generation
+            origin = traj.get('origin', {})
+            dest = traj.get('destination', {})
+            s['trajectories'].append({
+                'entry_date': traj.get('start_date'),
+                'last_inside': traj.get('end_date'),
+                'days_inside': traj.get('days', 0),
+                'fires_inside': traj.get('fires_total', 0),
+                'outcome': outcome,
+                'group_type': traj.get('group_type'),
+                'direction': traj.get('direction'),
+                'speed_km_day': traj.get('avg_speed_km_day'),
+                'origin': {'lat': origin.get('lat'), 'lon': origin.get('lon')},
+                'destination': {'lat': dest.get('lat'), 'lon': dest.get('lon')},
+                'river_crossings': traj.get('river_crossings', 0),
+                'rivers_crossed': traj.get('rivers_crossed', [])
+            })
     
     # Insert into database
     inserted = 0
     for park_id, years in stats.items():
         for year, data in years.items():
             avg_days = data['days_sum'] / data['total'] if data['total'] > 0 else 0
+            traj_json = json.dumps(data['trajectories']) if data['trajectories'] else None
             conn.execute("""
                 INSERT INTO park_group_infractions 
                 (park_id, year, total_groups, groups_stopped_inside, groups_transited, 
-                 total_fires_inside, avg_days_burning)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                 total_fires_inside, avg_days_burning, trajectories_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (park_id, year, data['total'], data['stopped'], data['transited'], 
-                  data['fires'], avg_days))
+                  data['fires'], avg_days, traj_json))
             inserted += 1
     
     conn.commit()

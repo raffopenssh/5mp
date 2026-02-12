@@ -426,54 +426,57 @@ func (l *GPXLearner) processRoadSegment(ctx context.Context, parkID string, uplo
 		return
 	}
 
-	// First check if this matches a known HeiGIT road (reference data)
-	if matchedRef, refRoadInfo := l.matchHeiGITRoad(ctx, parkID, simplified); matchedRef {
-		// This road already exists in reference data - no need to learn it
-		// But we can update stats on road usage
-		slog.Debug("road segment matches HeiGIT reference road", "road", refRoadInfo)
-		return
-	}
-
-	// Check if this matches existing learned vehicle tracks (±20m)
-	matched, matchID := l.findMatchingTrack(ctx, parkID, simplified)
-
-	if matched {
-		// Increment match count
-		var matchCount int64
-		var existingGeojson string
-		var lengthM float64
-		l.db.QueryRowContext(ctx, "SELECT match_count, geojson, COALESCE(length_m, 0) FROM learned_roads WHERE id = ?", matchID).Scan(&matchCount, &existingGeojson, &lengthM)
-		newMatchCount := matchCount + 1
-		confidence := math.Min(float64(newMatchCount)*25.0, 95.0) // 25% per match, max 95%
-
-		l.queries.UpdateLearnedRoadMatch(ctx, dbgen.UpdateLearnedRoadMatchParams{
-			ConfidencePct: ptrFloat64(confidence),
-			ID:            matchID,
-		})
-
-		if newMatchCount >= 2 {
-			result.NewRoads++
-			result.NewRoadsKm += seg.DistanceKm
-			result.RoadConfidence = confidence
+	// Check which portions match HeiGIT reference roads
+	// Only learn the portions that DON'T match existing roads
+	unmatchedSegments := l.findUnmatchedRoadPortions(ctx, parkID, simplified)
+	
+	for _, unmatchedCoords := range unmatchedSegments {
+		if len(unmatchedCoords) < 2 {
+			continue
 		}
+		
+		// Check if this unmatched portion matches existing learned vehicle tracks (±20m)
+		matched, matchID := l.findMatchingTrack(ctx, parkID, unmatchedCoords)
 
-		// Check for auto-approval: high confidence AND frequently traversed
-		if confidence >= AutoApprovalConfidenceThreshold && newMatchCount >= AutoApprovalMinTraversals {
-			l.autoApproveRoad(ctx, parkID, matchID, existingGeojson, lengthM, newMatchCount, confidence)
+		if matched {
+			// Increment match count
+			var matchCount int64
+			var existingGeojson string
+			var lengthM float64
+			l.db.QueryRowContext(ctx, "SELECT match_count, geojson, COALESCE(length_m, 0) FROM learned_roads WHERE id = ?", matchID).Scan(&matchCount, &existingGeojson, &lengthM)
+			newMatchCount := matchCount + 1
+			confidence := math.Min(float64(newMatchCount)*25.0, 95.0) // 25% per match, max 95%
+
+			l.queries.UpdateLearnedRoadMatch(ctx, dbgen.UpdateLearnedRoadMatchParams{
+				ConfidencePct: ptrFloat64(confidence),
+				ID:            matchID,
+			})
+
+			if newMatchCount >= 2 {
+				result.NewRoads++
+				result.NewRoadsKm += l.calculateSegmentLength(unmatchedCoords)
+				result.RoadConfidence = confidence
+			}
+
+			// Check for auto-approval: high confidence AND frequently traversed
+			if confidence >= AutoApprovalConfidenceThreshold && newMatchCount >= AutoApprovalMinTraversals {
+				l.autoApproveRoad(ctx, parkID, matchID, existingGeojson, lengthM, newMatchCount, confidence)
+			}
+		} else {
+			// Store as new potential road
+			geojson, _ := json.Marshal(map[string]interface{}{
+				"type":        "LineString",
+				"coordinates": unmatchedCoords,
+			})
+			lengthKm := l.calculateSegmentLength(unmatchedCoords)
+			l.queries.CreateLearnedRoad(ctx, dbgen.CreateLearnedRoadParams{
+				ParkID:        parkID,
+				Geojson:       string(geojson),
+				LengthM:       ptrFloat64(lengthKm * 1000),
+				MatchCount:    ptrInt64(1),
+				ConfidencePct: ptrFloat64(25.0),
+			})
 		}
-	} else {
-		// Store as new potential road
-		geojson, _ := json.Marshal(map[string]interface{}{
-			"type":        "LineString",
-			"coordinates": simplified,
-		})
-		l.queries.CreateLearnedRoad(ctx, dbgen.CreateLearnedRoadParams{
-			ParkID:        parkID,
-			Geojson:       string(geojson),
-			LengthM:       ptrFloat64(seg.DistanceKm * 1000),
-			MatchCount:    ptrInt64(1),
-			ConfidencePct: ptrFloat64(25.0),
-		})
 	}
 }
 
@@ -2343,4 +2346,164 @@ func (l *GPXLearner) matchHeiGITRoad(ctx context.Context, parkID string, track [
 	}
 
 	return false, ""
+}
+
+// findUnmatchedRoadPortions returns portions of the track that don't match HeiGIT roads
+func (l *GPXLearner) findUnmatchedRoadPortions(ctx context.Context, parkID string, track [][]float64) [][][]float64 {
+	if len(track) < 2 {
+		return nil
+	}
+
+	// Get bbox of track
+	minLon, minLat := track[0][0], track[0][1]
+	maxLon, maxLat := track[0][0], track[0][1]
+	for _, pt := range track {
+		if pt[0] < minLon {
+			minLon = pt[0]
+		}
+		if pt[0] > maxLon {
+			maxLon = pt[0]
+		}
+		if pt[1] < minLat {
+			minLat = pt[1]
+		}
+		if pt[1] > maxLat {
+			maxLat = pt[1]
+		}
+	}
+
+	// Expand bbox by ~500m
+	buffer := 0.005
+	minLon -= buffer
+	minLat -= buffer
+	maxLon += buffer
+	maxLat += buffer
+
+	// Get HeiGIT roads in bbox
+	rows, err := l.db.QueryContext(ctx, `
+		SELECT geojson FROM roads_heigit
+		WHERE park_id = ?
+		AND json_extract(geojson, '$.coordinates[0][0]') BETWEEN ? AND ?
+		AND json_extract(geojson, '$.coordinates[0][1]') BETWEEN ? AND ?
+	`, parkID, minLon, maxLon, minLat, maxLat)
+	if err != nil {
+		// If query fails, return entire track as unmatched
+		return [][][]float64{track}
+	}
+	defer rows.Close()
+
+	// Parse reference road geometries
+	var refRoads [][][]float64
+	for rows.Next() {
+		var geojsonStr string
+		if err := rows.Scan(&geojsonStr); err != nil {
+			continue
+		}
+		refCoords := l.parseGeoJSONCoords(geojsonStr)
+		if len(refCoords) >= 2 {
+			refRoads = append(refRoads, refCoords)
+		}
+	}
+
+	// If no reference roads, entire track is unmatched
+	if len(refRoads) == 0 {
+		return [][][]float64{track}
+	}
+
+	// Mark which points match a reference road (within 30m)
+	const matchThreshold = 30.0 // meters
+	matched := make([]bool, len(track))
+	for i, pt := range track {
+		for _, refRoad := range refRoads {
+			if l.pointNearLine(pt, refRoad, matchThreshold) {
+				matched[i] = true
+				break
+			}
+		}
+	}
+
+	// Extract contiguous unmatched segments
+	var segments [][][]float64
+	var currentSegment [][]float64
+	
+	for i, pt := range track {
+		if !matched[i] {
+			currentSegment = append(currentSegment, pt)
+		} else {
+			// If we have accumulated unmatched points, save them
+			if len(currentSegment) >= 2 {
+				segments = append(segments, currentSegment)
+			}
+			currentSegment = nil
+		}
+	}
+	
+	// Don't forget the last segment
+	if len(currentSegment) >= 2 {
+		segments = append(segments, currentSegment)
+	}
+
+	// If entire track matched, return empty (nothing to learn)
+	if len(segments) == 0 {
+		return nil
+	}
+
+	return segments
+}
+
+// pointNearLine checks if a point is within threshold meters of any segment of a line
+func (l *GPXLearner) pointNearLine(pt []float64, line [][]float64, thresholdMeters float64) bool {
+	for i := 0; i < len(line)-1; i++ {
+		dist := l.pointToSegmentDistance(pt, line[i], line[i+1])
+		if dist <= thresholdMeters {
+			return true
+		}
+	}
+	return false
+}
+
+// pointToSegmentDistance returns distance in meters from point to line segment
+func (l *GPXLearner) pointToSegmentDistance(pt, segStart, segEnd []float64) float64 {
+	// Convert to approximate meters (at equator, 1 degree ≈ 111km)
+	scale := 111000.0
+	px, py := pt[0]*scale, pt[1]*scale
+	ax, ay := segStart[0]*scale, segStart[1]*scale
+	bx, by := segEnd[0]*scale, segEnd[1]*scale
+
+	// Vector from A to B
+	abx, aby := bx-ax, by-ay
+	// Vector from A to P
+	apx, apy := px-ax, py-ay
+
+	// Project AP onto AB
+	abLen2 := abx*abx + aby*aby
+	if abLen2 == 0 {
+		// Segment is a point
+		return math.Sqrt((px-ax)*(px-ax) + (py-ay)*(py-ay))
+	}
+
+	t := (apx*abx + apy*aby) / abLen2
+	if t < 0 {
+		t = 0
+	} else if t > 1 {
+		t = 1
+	}
+
+	// Closest point on segment
+	closestX := ax + t*abx
+	closestY := ay + t*aby
+
+	return math.Sqrt((px-closestX)*(px-closestX) + (py-closestY)*(py-closestY))
+}
+
+// calculateSegmentLength calculates length of a coordinate array in km
+func (l *GPXLearner) calculateSegmentLength(coords [][]float64) float64 {
+	if len(coords) < 2 {
+		return 0
+	}
+	var totalKm float64
+	for i := 1; i < len(coords); i++ {
+		totalKm += haversineDistance(coords[i-1][1], coords[i-1][0], coords[i][1], coords[i][0])
+	}
+	return totalKm
 }

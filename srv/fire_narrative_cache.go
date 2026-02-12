@@ -410,25 +410,45 @@ func (s *Server) analyzeFireTrendFast(parkID string, currentYear int) *FireTrend
 func (s *Server) getTrajectoryNarratives(parkID string, fromYear, toYear int, ctx *NarrativeContext) []FireGroupStory {
 	var stories []FireGroupStory
 
-	var trajJSON sql.NullString
-	s.DB.QueryRow(`
-		SELECT trajectories_json FROM park_group_infractions 
+	// Get trajectories from ALL years in range
+	rows, err := s.DB.Query(`
+		SELECT year, trajectories_json FROM park_group_infractions 
 		WHERE park_id = ? AND year >= ? AND year <= ? AND trajectories_json IS NOT NULL
-		ORDER BY year DESC LIMIT 1
-	`, parkID, fromYear, toYear).Scan(&trajJSON)
+		ORDER BY year ASC
+	`, parkID, fromYear, toYear)
+	if err != nil {
+		return stories
+	}
+	defer rows.Close()
 
-	if !trajJSON.Valid || trajJSON.String == "" {
+	var allTrajs []FireGroupTrajectory
+	for rows.Next() {
+		var year int
+		var trajJSON sql.NullString
+		if err := rows.Scan(&year, &trajJSON); err != nil || !trajJSON.Valid {
+			continue
+		}
+		var trajs []FireGroupTrajectory
+		if err := json.Unmarshal([]byte(trajJSON.String), &trajs); err != nil {
+			continue
+		}
+		// Set year on each trajectory
+		for i := range trajs {
+			trajs[i].Year = year
+		}
+		allTrajs = append(allTrajs, trajs...)
+	}
+
+	if len(allTrajs) == 0 {
 		return stories
 	}
 
-	var trajs []FireGroupTrajectory
-	if err := json.Unmarshal([]byte(trajJSON.String), &trajs); err != nil {
-		return stories
-	}
+	trajs := allTrajs
 
 	for i, t := range trajs {
 		story := FireGroupStory{
 			GroupNum:    i + 1,
+			Year:        t.Year,
 			EntryDate:   t.EntryDate,
 			LastInside:  t.LastInside,
 			DaysInside:  t.DaysInside,

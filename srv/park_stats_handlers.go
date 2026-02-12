@@ -49,6 +49,7 @@ type FireStats struct {
 }
 
 type FireGroupTrajectory struct {
+	Year        int      `json:"year,omitempty"`
 	Origin      GeoPoint `json:"origin"`
 	Destination GeoPoint `json:"dest"`
 	EntryDate   string   `json:"entry_date"`
