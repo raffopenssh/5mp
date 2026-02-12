@@ -144,8 +144,8 @@
         .stats-trend.worsening { color: #ef4444; }
         .stats-item.fire .stats-value { color: var(--color-fire); }
         .stats-item.fire:hover .stats-value { color: var(--color-fire-light); }
-        .stats-item.deforest .stats-value { color: #eab308; }
-        .stats-item.deforest:hover .stats-value { color: #facc15; }
+        .stats-item.deforest .stats-value { color: var(--color-deforestation); }
+        .stats-item.deforest:hover .stats-value { color: var(--color-deforestation-light); }
         .stats-item.settlement .stats-value { color: var(--color-settlement); }
         .stats-item.settlement:hover .stats-value { color: var(--color-settlement-light); }
         @keyframes stats-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
@@ -3782,7 +3782,8 @@
                     // Update count in header with filtered count
                     const countEl = document.getElementById(`fire-count-${paId}`);
                     if (countEl) {
-                        countEl.textContent = filteredFireCount > 0 ? ` • ${formatNumber(filteredFireCount)}` : '';
+                        // Show groups count instead of total fire detections for clarity
+                        countEl.textContent = filteredGroupCount > 0 ? ` • ${filteredGroupCount} GROUPS` : '';
                     }
                     
                     // Generate summary based on filtered data
@@ -6045,8 +6046,8 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; }
 .park-meta { font-size: 13px; color: #888; }
 .narrative-section { margin: 16px 0; padding: 12px 16px; background: rgba(0,0,0,0.2); border-radius: 8px; border-left: 3px solid; }
 .narrative-section.fire { border-color: #ef4444; }
-.narrative-section.deforestation { border-color: #f59e0b; }
-.narrative-section.settlements { border-color: #8b5cf6; }
+.narrative-section.deforestation { border-color: #a855f7; }
+.narrative-section.settlements { border-color: #fbbf24; }
 .narrative-section.patrol { border-color: #22c55e; }
 .narrative-title { font-weight: 600; color: #fff; margin-bottom: 8px; }
 .narrative-stats { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #aaa; margin-bottom: 8px; }
