@@ -11,205 +11,224 @@ source .venv/bin/activate
 
 ---
 
-## 1. Update Production from GitHub
+## Data Import Scripts
 
-Pull latest code and data:
-
+### 1. Load Polygon Geometries (deforestation/settlement)
 ```bash
-git pull --rebase
-make build
-sudo systemctl restart srv  # or: pkill -f "./server" && ./server &
+python scripts/load_polygon_geometries.py
 ```
+- Loads `data/feature_geometries/deforestation/*.json` and `data/feature_geometries/settlement/*.json`
+- Populates `feature_geometries` table
+- **Run when:** New polygon data available
 
----
-
-## 2. Fire Data Processing
-
-### 2.1 Rebuild Fire Analysis (from fire_detections table)
-
-Run when: New fire detections added, or annually to refresh all years.
-
+### 2. Rebuild Events from Polygons
 ```bash
-python scripts/rebuild_park_fire_analysis.py > /tmp/fire_analysis.log 2>&1 &
-tail -f /tmp/fire_analysis.log
+python scripts/rebuild_events_from_polygons.py
 ```
+- Rebuilds `deforestation_events` and `park_settlements` from polygon data
+- Generates classifications and narratives
+- **Run after:** `load_polygon_geometries.py`
+- **Output:** `data/deforestation_events/*.json`, `data/settlement_events/*.json`
 
-Output: Updates `park_fire_analysis` table (158 parks × 9 years)
-
-### 2.2 Export Fire Trajectories with Climate/River Context
-
-Run when: After fire analysis rebuild, or when climate/river data updated.
-
+### 3. Import HydroRIVERS
 ```bash
-rm -rf data/fire_trajectories/*
-PYTHONUNBUFFERED=1 python scripts/analyze_fire_trajectories_v2.py > /tmp/fire_traj.log 2>&1 &
-tail -f /tmp/fire_traj.log
+python scripts/import_hydrorivers.py
 ```
+- Imports river data from `data/hydrorivers/HydroRIVERS_v10_af_shp/`
+- Populates `rivers` and `park_rivers` tables
+- **Output:** `data/rivers/*.json`
 
-Output: `data/fire_trajectories/*.json` (132 parks, 50k+ trajectories)
-
-### 2.3 Export Fire Analysis to JSON
-
-Run when: After fire analysis rebuild.
-
+### 4. Load JSON Data (species, rivers, settlements)
 ```bash
-python3 << 'PY'
-import json, sqlite3, struct
+python scripts/load_json_data.py
+```
+- Loads IUCN species from `data/species/park_mammals.json`
+- Verifies rivers and settlements
+- **Run when:** Updating species data
+
+### 5. Import Fire Detections
+```bash
+# For 2025-2026 data from JSON files:
+python << 'PY'
+import json, sqlite3
 from pathlib import Path
+
 conn = sqlite3.connect('db.sqlite3')
-conn.row_factory = sqlite3.Row
-OUTPUT = Path('data/fire_analysis')
-OUTPUT.mkdir(exist_ok=True)
-by_park = {}
-for row in conn.execute('SELECT * FROM park_fire_analysis ORDER BY park_id, year'):
-    pk = row['park_id']
-    if pk not in by_park: by_park[pk] = []
-    by_park[pk].append({
-        'year': row['year'], 'total_fires': row['total_fires'],
-        'transhumance_groups': row['transhumance_groups'],
-        'herder_groups': row['herder_groups'], 'management_groups': row['management_groups'],
-        'analysis': json.loads(row['analysis_json']) if row['analysis_json'] else None
-    })
-for pk, yrs in by_park.items():
-    with open(OUTPUT / f'{pk}.json', 'w') as f: json.dump({'park_id': pk, 'years': yrs}, f)
-print(f"Exported {len(by_park)} parks")
+fire_dir = Path('data/fire_detections_2025_2026')
+
+for json_file in sorted(fire_dir.glob('*.json')):
+    with open(json_file) as f:
+        fires = json.load(f)
+    for fire in fires:
+        conn.execute("""
+            INSERT INTO fire_detections 
+            (latitude, longitude, brightness, scan, track, 
+             acq_date, acq_time, satellite, confidence, frp, daynight)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (fire.get('lat'), fire.get('lng'), fire.get('brightness'),
+              fire.get('scan'), fire.get('track'), fire.get('date'),
+              fire.get('time', ''), fire.get('satellite', ''),
+              fire.get('confidence', ''), fire.get('frp', 0), fire.get('daynight', '')))
+    conn.commit()
+conn.close()
+PY
+```
+
+### 6. Import OSM Places
+```bash
+python << 'PY'
+import json, sqlite3
+from pathlib import Path
+
+conn = sqlite3.connect('db.sqlite3')
+osm_dir = Path('data/osm_places')
+
+for json_file in sorted(osm_dir.glob('*.json')):
+    if json_file.suffix == '.error': continue
+    park_id = json_file.stem
+    with open(json_file) as f:
+        data = json.load(f)
+    places = data.get('places', []) if isinstance(data, dict) else data
+    conn.execute("DELETE FROM osm_places WHERE park_id = ?", (park_id,))
+    for p in places:
+        if isinstance(p, dict):
+            conn.execute("INSERT OR IGNORE INTO osm_places (park_id, place_type, name, lat, lon) VALUES (?, ?, ?, ?, ?)",
+                (park_id, p.get('type', p.get('place_type', '')), p.get('name', ''), p.get('lat', 0), p.get('lon', 0)))
+conn.commit()
+conn.close()
+PY
+```
+
+### 7. Import HeiGIT Roads
+```bash
+python << 'PY'
+import json, sqlite3
+from pathlib import Path
+
+conn = sqlite3.connect('db.sqlite3')
+roads_dir = Path('data/roads_heigit')
+conn.execute("DELETE FROM feature_geometries WHERE feature_type = 'road_heigit'")
+
+for json_file in sorted(roads_dir.glob('*.json')):
+    park_id = json_file.stem
+    with open(json_file) as f:
+        roads = json.load(f)
+    for i, road in enumerate(roads):
+        props = {k: v for k, v in road.items() if k != 'geometry'}
+        conn.execute("""
+            INSERT INTO feature_geometries (park_id, feature_id, feature_type, geojson, properties_json)
+            VALUES (?, ?, 'road_heigit', ?, ?)
+        """, (park_id, f"road_heigit_{park_id}_{i}", json.dumps(road.get('geometry', {})), json.dumps(props)))
+conn.commit()
+conn.close()
 PY
 ```
 
 ---
 
-## 3. River Data
+## Analysis Scripts
 
-### 3.1 Import HydroRIVERS (one-time or when new shapefile)
-
+### 8. Rebuild Park Fire Analysis
 ```bash
-python scripts/import_hydrorivers.py > /tmp/rivers.log 2>&1 &
-tail -f /tmp/rivers.log
+python scripts/rebuild_park_fire_analysis.py
 ```
+- Analyzes fire trajectories for all parks (2018-2026)
+- Classifies fire groups (transhumance, herder, management, etc.)
+- **Run when:** Major fire data updates
 
-Output: `rivers` table, `park_rivers` table, `data/rivers/*.json`
+### 9. Fire Trajectory Analysis v2
+```bash
+python scripts/analyze_fire_trajectories_v2.py
+```
+- Enhanced trajectories with climate, rivers, roads context
+- Generates timestamped coordinates
+- **Output:** `data/fire_trajectories/*.json`
+- **Run after:** `rebuild_park_fire_analysis.py`
+
+### 10. Precompute Narratives
+```bash
+python scripts/precompute_narratives.py
+```
+- Generates all narrative JSON files
+- **Output:** `data/export/fire_narratives.json`, `deforestation_narratives.json`, `settlement_narratives.json`
 
 ---
 
-## 4. Settlement & Deforestation Classification
+## Download Scripts
 
-### 4.1 Run Classification (annually)
-
-Classification runs automatically on server start. To force:
-
+### 11. Download OSM Places (for missing parks)
 ```bash
-# In Go code: server.PrecomputeClassifications() 
-# Or restart server - it runs on startup if data is stale (>1 year)
+python scripts/download_osm_places_to_file.py --list-missing  # Check first
+python scripts/download_osm_places_to_file.py                 # Run all
+python scripts/download_osm_places_to_file.py --park TZA_Serengeti  # Single park
 ```
 
-### 4.2 Export Classified Data to JSON
-
+### 12. Download HeiGIT Roads
 ```bash
-python scripts/load_json_data.py
+python scripts/download_heigit_roads.py          # All countries
+python scripts/download_heigit_roads.py NG KE TZ # Specific countries
 ```
-
-Output: `data/export/classified_settlements.json`, `data/export/classified_deforestation.json`
 
 ---
 
-## 5. Precompute All Narratives
-
-Run when: After any of the above, before production deployment.
+## Full Production Update Sequence
 
 ```bash
-PYTHONUNBUFFERED=1 python scripts/precompute_narratives.py > /tmp/narratives.log 2>&1 &
-tail -f /tmp/narratives.log
-```
+cd /home/exedev/5mpglobe
+source .venv/bin/activate
 
-Output: 
-- `data/export/fire_narratives.json` (53MB)
-- `data/export/settlement_narratives.json` (2.7MB)
-- `data/export/deforestation_narratives.json` (612KB)
-
----
-
-## 6. Species Data
-
-### 6.1 Load Species from JSON to DB
-
-```bash
-python scripts/load_json_data.py
-```
-
-Source: `data/species/park_mammals.json`
-Output: `park_species` table
-
----
-
-## 7. OSM Places
-
-### 7.1 Download OSM Places for Missing Parks
-
-```bash
-python scripts/download_osm_places_to_file.py --list-missing  # Check which parks need data
-python scripts/download_osm_places_to_file.py                  # Download all missing
-python scripts/download_osm_places_to_file.py --park CAF_Chinko  # Single park
-```
-
-Output: `data/osm_places/*.json`
-
----
-
-## 8. Full Production Update Sequence
-
-When deploying all changes to a fresh production instance:
-
-```bash
-# 1. Pull code and data
+# 1. Pull latest code and data
 git pull --rebase
 
-# 2. Load JSON data to database
-source .venv/bin/activate
+# 2. Import polygon data
+python scripts/load_polygon_geometries.py
+
+# 3. Rebuild events from polygons
+python scripts/rebuild_events_from_polygons.py
+
+# 4. Import other JSON data (OSM, roads, fires, species)
 python scripts/load_json_data.py
+# Plus inline imports above for fires, OSM, roads
 
-# 3. Build and restart
+# 5. Rebuild fire analysis
+python scripts/rebuild_park_fire_analysis.py
+
+# 6. Generate enhanced fire trajectories
+python scripts/analyze_fire_trajectories_v2.py
+
+# 7. Precompute all narratives
+python scripts/precompute_narratives.py
+
+# 8. Rebuild and restart server
 make build
-./server &
-
-# Server will auto-run classification if needed
+sudo systemctl restart srv
 ```
 
 ---
 
-## 9. Adding a New Park
+## Automated Jobs (in server)
 
-1. Add park to `data/keystones_with_boundaries.json` with geometry
-2. Run fire analysis: `python scripts/rebuild_park_fire_analysis.py`
-3. Run trajectory export: `python scripts/analyze_fire_trajectories_v2.py`
-4. Download OSM places: `python scripts/download_osm_places_to_file.py --park NEW_PARK_ID`
-5. Run narratives: `python scripts/precompute_narratives.py`
-6. Commit and push all JSON files
+The server runs these automatically via `StartNarrativeCacheWorker`:
+
+| Schedule | Task | Description |
+|----------|------|-------------|
+| Daily 3am UTC | `PrecomputeRecentFireNarratives` | Updates parks with fires in last 14 days |
+| Weekly Sun 2am | `PrecomputeFireNarratives` | Full fire narrative refresh |
+| Jan 1st 4am | `PrecomputeAllClassifications` | Settlement/deforestation classifications |
 
 ---
 
 ## Data Files Summary
 
-| Path | Description | Update Frequency |
-|------|-------------|------------------|
-| `data/fire_analysis/*.json` | Yearly fire stats | After fire rebuild |
-| `data/fire_trajectories/*.json` | Trajectories with timestamps | After fire rebuild |
-| `data/rivers/*.json` | HydroRIVERS per park | One-time |
-| `data/osm_places/*.json` | OSM place names | One-time per park |
-| `data/climate/park_climate.json` | Climate zones, seasons | One-time |
-| `data/species/park_mammals.json` | IUCN species | Annual |
-| `data/export/*.json` | Precomputed narratives | Before deployment |
-
----
-
-## Database Tables Summary
-
-| Table | Records | Source |
-|-------|---------|--------|
-| `fire_detections` | 5.6M | FIRMS NRT downloads |
-| `park_fire_analysis` | 1,197 | `rebuild_park_fire_analysis.py` |
-| `rivers` | 183K | `import_hydrorivers.py` |
-| `park_rivers` | 215K | `import_hydrorivers.py` |
-| `park_settlements` | 15K | GHSL import |
-| `deforestation_events` | 3.2K | Hansen import |
-| `park_species` | 39K | `load_json_data.py` |
-| `osm_places` | 10K+ | `download_osm_places.py` |
+| Directory | Contents | Update Frequency |
+|-----------|----------|------------------|
+| `data/fire_trajectories/` | Fire group trajectories with timestamps | After fire analysis |
+| `data/fire_analysis/` | Yearly park fire analysis | After fire analysis |
+| `data/deforestation_events/` | Classified deforestation by park | After polygon rebuild |
+| `data/settlement_events/` | Classified settlements by park | After polygon rebuild |
+| `data/export/` | Precomputed narratives | After precompute |
+| `data/rivers/` | HydroRIVERS per park | One-time |
+| `data/osm_places/` | OSM places per park | After OSM download |
+| `data/roads_heigit/` | HeiGIT road data per park | After road download |
+| `data/climate/` | WorldClim climate data | Static |
+| `data/species/` | IUCN species data | Yearly update |
