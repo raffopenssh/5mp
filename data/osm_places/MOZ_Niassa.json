@@ -1,0 +1,5558 @@
+{
+  "park_id": "MOZ_Niassa",
+  "downloaded_at": "2026-02-08T09:58:23.393757+00:00",
+  "buffer_km": 50,
+  "place_count": 411,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Tunduru",
+      "lat": -11.0422376,
+      "lon": 37.3350655,
+      "osm_id": "node/258926603",
+      "osm_tags": {
+        "is_in": "Ruvuma, Tanzania",
+        "name": "Tunduru",
+        "name:ru": "\u0422\u0443\u043d\u0434\u0443\u0440\u0443",
+        "name:uk": "\u0422\u0443\u043d\u0434\u0443\u0440\u0443",
+        "place": "town",
+        "population": "50054",
+        "source:population": "German Wikipedia https://de.wikipedia.org/wiki/Liste_der_St%C3%A4dte_in_Tansania",
+        "wikidata": "Q1514015"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Nangomba",
+      "lat": -10.902697,
+      "lon": 38.5161362,
+      "osm_id": "node/259080486",
+      "osm_tags": {
+        "is_in": "Mtwara, Tanzania",
+        "name": "Nangomba",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Montepuez",
+      "lat": -13.1253048,
+      "lon": 39.0016963,
+      "osm_id": "node/331694684",
+      "osm_tags": {
+        "name": "Montepuez",
+        "place": "city",
+        "population": "76139",
+        "wikidata": "Q1027174"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Marumba",
+      "lat": -11.3184816,
+      "lon": 36.8660093,
+      "osm_id": "node/965843916",
+      "osm_tags": {
+        "name": "Marumba",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nampungu",
+      "lat": -10.9190913,
+      "lon": 37.0559126,
+      "osm_id": "node/965844103",
+      "osm_tags": {
+        "name": "Nampungu",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Marumba village",
+      "lat": -11.238729,
+      "lon": 38.6637438,
+      "osm_id": "node/965844290",
+      "osm_tags": {
+        "name": "Marumba village",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namaputa",
+      "lat": -11.0747448,
+      "lon": 38.9719254,
+      "osm_id": "node/965844480",
+      "osm_tags": {
+        "name": "Namaputa",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lusewa",
+      "lat": -11.3220758,
+      "lon": 36.3786707,
+      "osm_id": "node/965844494",
+      "osm_tags": {
+        "name": "Lusewa",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msechela",
+      "lat": -11.1695847,
+      "lon": 37.7116784,
+      "osm_id": "node/965844565",
+      "osm_tags": {
+        "name": "Msechela",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masuguru",
+      "lat": -11.3807817,
+      "lon": 38.4576834,
+      "osm_id": "node/965844654",
+      "osm_tags": {
+        "name": "Masuguru",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwitanda",
+      "lat": -10.8702716,
+      "lon": 37.4509535,
+      "osm_id": "node/965844866",
+      "osm_tags": {
+        "name": "Kwitanda",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mlasi",
+      "lat": -10.7816016,
+      "lon": 38.7430188,
+      "osm_id": "node/965844877",
+      "osm_tags": {
+        "name": "Mlasi",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukumbule",
+      "lat": -11.5106396,
+      "lon": 37.3862507,
+      "osm_id": "node/965844878",
+      "osm_tags": {
+        "name": "Lukumbule",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namasakata",
+      "lat": -11.1409691,
+      "lon": 37.4589774,
+      "osm_id": "node/965845020",
+      "osm_tags": {
+        "name": "Namasakata",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nakapanya",
+      "lat": -10.9569492,
+      "lon": 37.8884349,
+      "osm_id": "node/965845039",
+      "osm_tags": {
+        "name": "Nakapanya",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ligera",
+      "lat": -10.9419968,
+      "lon": 36.108883,
+      "osm_id": "node/965847965",
+      "osm_tags": {
+        "name": "Ligera",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Marrupa",
+      "lat": -13.1940469,
+      "lon": 37.4998675,
+      "osm_id": "node/1418220292",
+      "osm_tags": {
+        "name": "Marrupa",
+        "place": "town",
+        "wikidata": "Q5649378"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Balama",
+      "lat": -13.3474456,
+      "lon": 38.5746736,
+      "osm_id": "node/1425002986",
+      "osm_tags": {
+        "name": "Balama",
+        "place": "town",
+        "population": "321085"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Machomane",
+      "lat": -13.3022276,
+      "lon": 35.5436984,
+      "osm_id": "node/1426225264",
+      "osm_tags": {
+        "name": "Machomane",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Chiconono",
+      "lat": -12.9407499,
+      "lon": 35.740402,
+      "osm_id": "node/1426225290",
+      "osm_tags": {
+        "name": "Chiconono",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ajabo",
+      "lat": -13.3500008,
+      "lon": 35.8947459,
+      "osm_id": "node/1426225292",
+      "osm_tags": {
+        "name": "Ajabo",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Litunde",
+      "lat": -13.3108579,
+      "lon": 35.7474948,
+      "osm_id": "node/1426225313",
+      "osm_tags": {
+        "name": "Litunde",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbesa",
+      "lat": -11.3396338,
+      "lon": 37.073298,
+      "osm_id": "node/2497770604",
+      "osm_tags": {
+        "name": "Mbesa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rutukira",
+      "lat": -11.5637051,
+      "lon": 36.4659824,
+      "osm_id": "node/2498254907",
+      "osm_tags": {
+        "name": "Rutukira",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Inch\u00fari",
+      "lat": -13.045844,
+      "lon": 38.8278714,
+      "osm_id": "node/2574517921",
+      "osm_tags": {
+        "name": "Inch\u00fari",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Macaloge",
+      "lat": -12.5061343,
+      "lon": 35.4338631,
+      "osm_id": "node/2833682871",
+      "osm_tags": {
+        "name": "Macaloge",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Colongo",
+      "lat": -13.344547,
+      "lon": 35.371503,
+      "osm_id": "node/3069032835",
+      "osm_tags": {
+        "name": "Colongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Chimbonila",
+      "lat": -13.3324868,
+      "lon": 35.4211821,
+      "osm_id": "node/3069039813",
+      "osm_tags": {
+        "name": "Chimbonila",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nangoma",
+      "lat": -11.0680788,
+      "lon": 39.2271101,
+      "osm_id": "node/3679709665",
+      "osm_tags": {
+        "fixme": "Verify name",
+        "name": "Nangoma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makong'onda",
+      "lat": -11.0032618,
+      "lon": 39.2577818,
+      "osm_id": "node/3679709666",
+      "osm_tags": {
+        "name": "Makong'onda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkululu",
+      "lat": -10.7921477,
+      "lon": 39.1029169,
+      "osm_id": "node/3895020891",
+      "osm_tags": {
+        "name": "Mkululu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mnavira",
+      "lat": -11.0762833,
+      "lon": 39.2617991,
+      "osm_id": "node/3957700823",
+      "osm_tags": {
+        "name": "Mnavira",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nanyumbu",
+      "lat": -11.1451384,
+      "lon": 38.4927154,
+      "osm_id": "node/4302357619",
+      "osm_tags": {
+        "is_in": "Mtwara, Tanzania",
+        "name": "Nanyumbu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gomba",
+      "lat": -11.3391346,
+      "lon": 38.3021197,
+      "osm_id": "node/4570155246",
+      "osm_tags": {
+        "name": "Gomba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mangaka",
+      "lat": -10.9336082,
+      "lon": 38.3839933,
+      "osm_id": "node/4699952292",
+      "osm_tags": {
+        "name": "Mangaka",
+        "name:en": "Mangaka",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuekue",
+      "lat": -13.4586497,
+      "lon": 38.1461805,
+      "osm_id": "node/5001922700",
+      "osm_tags": {
+        "name": "Kuekue",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nandembo",
+      "lat": -10.9270623,
+      "lon": 38.1223127,
+      "osm_id": "node/5273145350",
+      "osm_tags": {
+        "name": "Nandembo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Meloco",
+      "lat": -13.4744759,
+      "lon": 39.17302,
+      "osm_id": "node/6438195581",
+      "osm_tags": {
+        "name": "Meloco",
+        "place": "town",
+        "source": "name from clinic tag"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "25 de September",
+      "lat": -13.0422904,
+      "lon": 39.257377,
+      "osm_id": "node/7302123861",
+      "osm_tags": {
+        "name": "25 de September",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Namahaca",
+      "lat": -13.0606971,
+      "lon": 39.1963572,
+      "osm_id": "node/7302123864",
+      "osm_tags": {
+        "name": "Namahaca",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Morkony",
+      "lat": -13.0724215,
+      "lon": 39.1675792,
+      "osm_id": "node/7302123865",
+      "osm_tags": {
+        "name": "Morkony",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "DJama",
+      "lat": -13.085762,
+      "lon": 39.138333,
+      "osm_id": "node/7302123866",
+      "osm_tags": {
+        "name": "DJama",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muica",
+      "lat": -13.0766924,
+      "lon": 38.9817663,
+      "osm_id": "node/7302123867",
+      "osm_tags": {
+        "name": "Muica",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namatil",
+      "lat": -13.038267,
+      "lon": 38.982253,
+      "osm_id": "node/7302123868",
+      "osm_tags": {
+        "name": "Namatil",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Unidade",
+      "lat": -13.016802,
+      "lon": 38.988943,
+      "osm_id": "node/7302123869",
+      "osm_tags": {
+        "name": "Unidade",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Newara",
+      "lat": -12.976614,
+      "lon": 38.9900133,
+      "osm_id": "node/7302123870",
+      "osm_tags": {
+        "name": "Newara",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vinte Cinco",
+      "lat": -12.9645547,
+      "lon": 38.985697,
+      "osm_id": "node/7302123871",
+      "osm_tags": {
+        "name": "Vinte Cinco",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Milamba",
+      "lat": -12.9366227,
+      "lon": 38.9786459,
+      "osm_id": "node/7302123872",
+      "osm_tags": {
+        "name": "Milamba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chipembe",
+      "lat": -12.904632,
+      "lon": 38.979128,
+      "osm_id": "node/7302123873",
+      "osm_tags": {
+        "name": "Chipembe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tivira B",
+      "lat": -12.840045,
+      "lon": 38.997737,
+      "osm_id": "node/7302123874",
+      "osm_tags": {
+        "name": "Tivira B",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maputo Familia",
+      "lat": -12.7920765,
+      "lon": 39.001955,
+      "osm_id": "node/7302123875",
+      "osm_tags": {
+        "name": "Maputo Familia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nikokwe",
+      "lat": -12.7489236,
+      "lon": 39.0069685,
+      "osm_id": "node/7302123876",
+      "osm_tags": {
+        "name": "Nikokwe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namoro",
+      "lat": -12.6653426,
+      "lon": 39.0190507,
+      "osm_id": "node/7302123877",
+      "osm_tags": {
+        "name": "Namoro",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nairoto",
+      "lat": -12.553098,
+      "lon": 39.002078,
+      "osm_id": "node/7302123878",
+      "osm_tags": {
+        "name": "Nairoto",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ntele",
+      "lat": -12.380611,
+      "lon": 38.986189,
+      "osm_id": "node/7302123879",
+      "osm_tags": {
+        "name": "Ntele",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nakalolo",
+      "lat": -12.30363,
+      "lon": 39.109729,
+      "osm_id": "node/7302123880",
+      "osm_tags": {
+        "name": "Nakalolo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muireti",
+      "lat": -12.0677082,
+      "lon": 39.2117199,
+      "osm_id": "node/7302123881",
+      "osm_tags": {
+        "name": "Muireti",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mitahu",
+      "lat": -10.7971966,
+      "lon": 39.154501,
+      "osm_id": "node/7412766943",
+      "osm_tags": {
+        "name": "Mitahu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiwambo Juu",
+      "lat": -10.8347286,
+      "lon": 39.1849494,
+      "osm_id": "node/7412798906",
+      "osm_tags": {
+        "name": "Chiwambo Juu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Imani",
+      "lat": -10.8145168,
+      "lon": 39.1914618,
+      "osm_id": "node/7412798907",
+      "osm_tags": {
+        "name": "Imani",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwoneka",
+      "lat": -10.9732892,
+      "lon": 39.2627361,
+      "osm_id": "node/7414844009",
+      "osm_tags": {
+        "name": "Mwoneka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nambunga",
+      "lat": -10.8741734,
+      "lon": 39.2374188,
+      "osm_id": "node/7415507497",
+      "osm_tags": {
+        "name": "Nambunga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chitekete",
+      "lat": -10.7949202,
+      "lon": 39.2185521,
+      "osm_id": "node/7415533680",
+      "osm_tags": {
+        "name": "Chitekete",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nanyonda",
+      "lat": -10.8233899,
+      "lon": 39.2643535,
+      "osm_id": "node/7415827352",
+      "osm_tags": {
+        "name": "Nanyonda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makong'onda",
+      "lat": -11.0260874,
+      "lon": 39.256264,
+      "osm_id": "node/7418313003",
+      "osm_tags": {
+        "name": "Makong'onda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Madukani",
+      "lat": -10.7884756,
+      "lon": 39.2499125,
+      "osm_id": "node/7418358941",
+      "osm_tags": {
+        "name": "Madukani",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Minjale",
+      "lat": -10.7890236,
+      "lon": 39.26386,
+      "osm_id": "node/7418358942",
+      "osm_tags": {
+        "name": "Minjale",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nakarara",
+      "lat": -11.0204902,
+      "lon": 39.2219102,
+      "osm_id": "node/7418366859",
+      "osm_tags": {
+        "name": "Nakarara",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chang'Ombe",
+      "lat": -10.8489592,
+      "lon": 38.6300057,
+      "osm_id": "node/7447325679",
+      "osm_tags": {
+        "name": "Chang'Ombe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nawaje",
+      "lat": -10.8205552,
+      "lon": 38.6025882,
+      "osm_id": "node/7447325680",
+      "osm_tags": {
+        "name": "Nawaje",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiroro",
+      "lat": -10.7884123,
+      "lon": 38.6200333,
+      "osm_id": "node/7447325681",
+      "osm_tags": {
+        "name": "Chiroro",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sululu",
+      "lat": -10.7877461,
+      "lon": 38.7272208,
+      "osm_id": "node/7486917841",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi Township Authority",
+        "name": "Sululu",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Sululu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tukaewote",
+      "lat": -10.7813953,
+      "lon": 38.8150881,
+      "osm_id": "node/7486917842",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi Township Authority",
+        "name": "Tukaewote",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mwenge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chakama",
+      "lat": -10.8165907,
+      "lon": 38.8020264,
+      "osm_id": "node/7486917853",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi Township Authority",
+        "name": "Chakama",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mwenge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naikula",
+      "lat": -11.1637811,
+      "lon": 37.4817785,
+      "osm_id": "node/7545703954",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Naikula",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Namasakata"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Liwanga",
+      "lat": -11.1639987,
+      "lon": 37.6490497,
+      "osm_id": "node/7545703955",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Liwanga",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Misechela"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Amani",
+      "lat": -11.2168767,
+      "lon": 37.4551472,
+      "osm_id": "node/7545703956",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Amani",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Namasakata"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkotamo",
+      "lat": -11.1362394,
+      "lon": 37.542253,
+      "osm_id": "node/7545703957",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mkotamo",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Namasakata"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkasale",
+      "lat": -11.1407937,
+      "lon": 37.5156669,
+      "osm_id": "node/7545703958",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mkasale",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Namasakata"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mchengamoto",
+      "lat": -11.2091775,
+      "lon": 37.4574511,
+      "osm_id": "node/7545703959",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mchengamoto",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Namasakata"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nasomba",
+      "lat": -11.5862966,
+      "lon": 37.0827017,
+      "osm_id": "node/7545703960",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Nasomba",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nalasi Mashariki"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makande",
+      "lat": -11.6489089,
+      "lon": 37.3515034,
+      "osm_id": "node/7545703961",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Makande",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Lukumbule"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muungano",
+      "lat": -11.2615511,
+      "lon": 37.3659144,
+      "osm_id": "node/7545703962",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Muungano",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mtina"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiwana",
+      "lat": -11.2160787,
+      "lon": 37.179501,
+      "osm_id": "node/7545703963",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Chiwana",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mbesa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Azimio",
+      "lat": -11.1755024,
+      "lon": 37.2578651,
+      "osm_id": "node/7545703964",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Azimio",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mtina"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Angalia",
+      "lat": -11.3138659,
+      "lon": 37.3841184,
+      "osm_id": "node/7545703965",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Angalia",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mtina"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Semeni",
+      "lat": -11.2271521,
+      "lon": 37.2940859,
+      "osm_id": "node/7545703966",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Semeni",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mtina"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lijombo",
+      "lat": -11.4025853,
+      "lon": 37.0694314,
+      "osm_id": "node/7545703967",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Lijombo",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mbesa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpanji",
+      "lat": -11.2081651,
+      "lon": 36.960986,
+      "osm_id": "node/7545703968",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mpanji",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mbati"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkandu",
+      "lat": -11.2453755,
+      "lon": 37.1535646,
+      "osm_id": "node/7545703969",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mkandu",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mbesa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Misyaje",
+      "lat": -11.2446464,
+      "lon": 36.882905,
+      "osm_id": "node/7545703970",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Misyaje",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Marumba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyerere",
+      "lat": -11.2646354,
+      "lon": 37.3704684,
+      "osm_id": "node/7545703971",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Nyerere",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mtina"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nasya",
+      "lat": -11.21235,
+      "lon": 37.3856941,
+      "osm_id": "node/7545703972",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Nasya",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Tuwemacho"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namasalau",
+      "lat": -11.1558212,
+      "lon": 37.3498826,
+      "osm_id": "node/7545703973",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Namasalau",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Tuwemacho"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitani",
+      "lat": -11.4410653,
+      "lon": 36.8875496,
+      "osm_id": "node/7545703974",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Kitani",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mchoteka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkolola",
+      "lat": -11.4534428,
+      "lon": 36.8876897,
+      "osm_id": "node/7545703975",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mkolola",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mchoteka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mchoteka",
+      "lat": -11.4472348,
+      "lon": 36.8865274,
+      "osm_id": "node/7545703976",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mchoteka",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mchoteka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukumbo",
+      "lat": -11.391299,
+      "lon": 37.0335563,
+      "osm_id": "node/7545703977",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Lukumbo",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nalasi Mashariki"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mnemasi",
+      "lat": -11.3915356,
+      "lon": 36.9437775,
+      "osm_id": "node/7545703978",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mnemasi",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mchoteka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mchekeni",
+      "lat": -11.3676901,
+      "lon": 36.8894076,
+      "osm_id": "node/7545703979",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mchekeni",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Marumba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Njenga",
+      "lat": -11.4150393,
+      "lon": 36.8461321,
+      "osm_id": "node/7545703980",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Njenga",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mchoteka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masuguru",
+      "lat": -11.3712184,
+      "lon": 36.8871155,
+      "osm_id": "node/7545703981",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Masuguru",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Marumba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mdabwa",
+      "lat": -11.3140845,
+      "lon": 36.9546536,
+      "osm_id": "node/7545703982",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mdabwa",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mbati"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbati",
+      "lat": -11.3080157,
+      "lon": 36.9614458,
+      "osm_id": "node/7545703983",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mbati",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mbati"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Molani",
+      "lat": -11.3220055,
+      "lon": 36.86053,
+      "osm_id": "node/7545703984",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Molani",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Marumba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwenge",
+      "lat": -11.3824142,
+      "lon": 37.3610569,
+      "osm_id": "node/7545720485",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mwenge",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mchesi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chinunje",
+      "lat": -11.3957909,
+      "lon": 37.1359861,
+      "osm_id": "node/7545720486",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Chinunje",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mbesa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jiungeni",
+      "lat": -11.4428314,
+      "lon": 37.3645512,
+      "osm_id": "node/7545720487",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Jiungeni",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mchesi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukala",
+      "lat": -11.5213117,
+      "lon": 37.2422879,
+      "osm_id": "node/7545720488",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Lukala",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mchesi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chikomo",
+      "lat": -11.4001658,
+      "lon": 37.1353919,
+      "osm_id": "node/7545720489",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Chikomo",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mbesa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mrusha",
+      "lat": -11.4562158,
+      "lon": 37.3298324,
+      "osm_id": "node/7545720490",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mrusha",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mchesi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mchesi",
+      "lat": -11.5007795,
+      "lon": 37.3675572,
+      "osm_id": "node/7545720491",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mchesi",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mchesi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chilundundu Kaskazini",
+      "lat": -11.4677556,
+      "lon": 36.9878489,
+      "osm_id": "node/7545720492",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Chilundundu Kaskazini",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nalasi Mashariki"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chilundundu",
+      "lat": -11.4681478,
+      "lon": 36.9850412,
+      "osm_id": "node/7545720493",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Chilundundu",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nalasi Mashariki"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chilundundu Kusini",
+      "lat": -11.472355,
+      "lon": 36.9864082,
+      "osm_id": "node/7545720494",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Chilundundu Kusini",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nalasi Mashariki"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lipepo",
+      "lat": -11.4607065,
+      "lon": 36.9857131,
+      "osm_id": "node/7545720495",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Lipepo",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nalasi-Magharibi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitalo",
+      "lat": -10.9680912,
+      "lon": 37.1216763,
+      "osm_id": "node/7545720496",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Kitalo",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nampungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbatamila",
+      "lat": -10.9987853,
+      "lon": 36.9700446,
+      "osm_id": "node/7545720497",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mbatamila",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nampungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Legezamwendo",
+      "lat": -11.0921951,
+      "lon": 37.1716357,
+      "osm_id": "node/7545720498",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Legezamwendo",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Kidodoma"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Machemba",
+      "lat": -11.1209314,
+      "lon": 37.1596524,
+      "osm_id": "node/7545720499",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Machemba",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Kidodoma"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kidodoma",
+      "lat": -11.0388822,
+      "lon": 37.1815529,
+      "osm_id": "node/7545720500",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Kidodoma",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Kidodoma"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chingulungulu",
+      "lat": -10.9186489,
+      "lon": 37.4141604,
+      "osm_id": "node/7545720501",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Chingulungulu",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Muhuwesi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chemchem",
+      "lat": -11.0967948,
+      "lon": 37.4351427,
+      "osm_id": "node/7545720502",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Chemchem",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Tuwemacho"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masonya",
+      "lat": -10.9514048,
+      "lon": 37.3206974,
+      "osm_id": "node/7545720503",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Masonya",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Masonya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cheleweni",
+      "lat": -10.9681312,
+      "lon": 37.4562292,
+      "osm_id": "node/7545720504",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Cheleweni",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Sisikwasisi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makoteni",
+      "lat": -11.0731416,
+      "lon": 37.5004469,
+      "osm_id": "node/7545720505",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Makoteni",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ligoma"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tuwemacho",
+      "lat": -11.1169863,
+      "lon": 37.3861063,
+      "osm_id": "node/7545720506",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Tuwemacho",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Tuwemacho"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sisikwasisi",
+      "lat": -10.9715771,
+      "lon": 37.3966644,
+      "osm_id": "node/7545720507",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Sisikwasisi",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Sisikwasisi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitanda",
+      "lat": -11.1119088,
+      "lon": 37.3152031,
+      "osm_id": "node/7545720508",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Kitanda",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mlingoti_Magharibi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naluwale",
+      "lat": -10.9892941,
+      "lon": 37.2037522,
+      "osm_id": "node/7545720509",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Naluwale",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nandembo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkwajuni",
+      "lat": -11.0057202,
+      "lon": 37.2389272,
+      "osm_id": "node/7545720510",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mkwajuni",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Kidodoma"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ligoma",
+      "lat": -11.0770781,
+      "lon": 37.4940301,
+      "osm_id": "node/7545720511",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Ligoma",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ligoma"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mchangani",
+      "lat": -11.04491,
+      "lon": 37.348381,
+      "osm_id": "node/7545720512",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mchangani",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mchangani"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mchuluka",
+      "lat": -11.0078844,
+      "lon": 37.4570519,
+      "osm_id": "node/7545720513",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mchuluka",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mchuluka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hulia",
+      "lat": -10.7952837,
+      "lon": 36.6843795,
+      "osm_id": "node/7545720514",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Hulia",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Namwinyu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muhesi",
+      "lat": -10.8648122,
+      "lon": 37.4525087,
+      "osm_id": "node/7545720515",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Muhesi",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Muhuwesi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msagula",
+      "lat": -10.8737116,
+      "lon": 37.4492704,
+      "osm_id": "node/7545720516",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Msagula",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Muhuwesi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nangunguru",
+      "lat": -10.9501502,
+      "lon": 37.2437502,
+      "osm_id": "node/7545720517",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Nangunguru",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nandembo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nandembo",
+      "lat": -10.9570244,
+      "lon": 37.2337653,
+      "osm_id": "node/7545720518",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Nandembo",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nandembo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Amka",
+      "lat": -10.9514345,
+      "lon": 37.2402362,
+      "osm_id": "node/7545720519",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Amka",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nandembo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Majala",
+      "lat": -10.8809767,
+      "lon": 37.1690078,
+      "osm_id": "node/7545720520",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Majala",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nandembo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtengashari",
+      "lat": -10.8276879,
+      "lon": 37.1659481,
+      "osm_id": "node/7545720522",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mtengashari",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ligunga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Fundimbanga",
+      "lat": -10.8017683,
+      "lon": 37.0320677,
+      "osm_id": "node/7545720526",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Fundimbanga",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Matemanga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndenyende",
+      "lat": -10.7962641,
+      "lon": 36.9620779,
+      "osm_id": "node/7545720528",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Ndenyende",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Namwinyu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ligunga",
+      "lat": -10.7845566,
+      "lon": 37.1229529,
+      "osm_id": "node/7545720529",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Ligunga",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ligunga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Majimaji",
+      "lat": -10.8573095,
+      "lon": 37.5759477,
+      "osm_id": "node/7545720536",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Majimaji",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Muhuwesi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namakambale",
+      "lat": -10.8995788,
+      "lon": 37.8077361,
+      "osm_id": "node/7545720537",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Namakambale",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nakapanya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nakapanya",
+      "lat": -10.9010057,
+      "lon": 37.800106,
+      "osm_id": "node/7545720538",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Nakapanya",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nakapanya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mindu",
+      "lat": -10.8233395,
+      "lon": 37.7633245,
+      "osm_id": "node/7545720539",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mindu",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mindu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Misufini",
+      "lat": -10.8734443,
+      "lon": 37.657757,
+      "osm_id": "node/7545720541",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Misufini",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Namiungo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tinginya",
+      "lat": -10.7817592,
+      "lon": 37.9605607,
+      "osm_id": "node/7545720542",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Tinginya",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ngapa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkowela",
+      "lat": -10.919813,
+      "lon": 37.9423772,
+      "osm_id": "node/7545720544",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Mkowela",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Nakapanya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namiungo",
+      "lat": -10.8732062,
+      "lon": 37.6482893,
+      "osm_id": "node/7545720545",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Tunduru",
+        "name": "Namiungo",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Namiungo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpitimbi",
+      "lat": -10.8121878,
+      "lon": 35.5467367,
+      "osm_id": "node/7581120905",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Songea Rural",
+        "name": "Mpitimbi",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mpitimbi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lipaya",
+      "lat": -10.7846181,
+      "lon": 35.6012392,
+      "osm_id": "node/7581120906",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Songea Rural",
+        "name": "Lipaya",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Mpitimbi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kikunja",
+      "lat": -10.827995,
+      "lon": 35.7349419,
+      "osm_id": "node/7581120908",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Songea Rural",
+        "name": "Kikunja",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Matimira"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngahokola",
+      "lat": -10.8620512,
+      "lon": 35.3523302,
+      "osm_id": "node/7581120944",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Songea Rural",
+        "name": "Ngahokola",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Magagura"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namatuh",
+      "lat": -10.9137183,
+      "lon": 35.4893589,
+      "osm_id": "node/7581120945",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Songea Rural",
+        "name": "Namatuh",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ndongosi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndongosi",
+      "lat": -10.9916444,
+      "lon": 35.6038999,
+      "osm_id": "node/7581120946",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Songea Rural",
+        "name": "Ndongosi",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ndongosi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muhukulu Bara",
+      "lat": -11.2069661,
+      "lon": 35.4492974,
+      "osm_id": "node/7581120947",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Songea Rural",
+        "name": "Muhukulu Bara",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Muhuruku"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muhukulu Lila",
+      "lat": -11.2109021,
+      "lon": 35.4775142,
+      "osm_id": "node/7581120948",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Songea Rural",
+        "name": "Muhukulu Lila",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Muhuruku"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nakawale",
+      "lat": -11.4123471,
+      "lon": 35.4003524,
+      "osm_id": "node/7581120949",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Songea Rural",
+        "name": "Nakawale",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Muhuruku"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nambendo",
+      "lat": -11.2363272,
+      "lon": 35.7916545,
+      "osm_id": "node/7581120950",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Songea Rural",
+        "name": "Nambendo",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ndongosi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sengenya",
+      "lat": -10.8958925,
+      "lon": 38.346221,
+      "osm_id": "node/7787845774",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Sengenya",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Sengenya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mara",
+      "lat": -10.8873481,
+      "lon": 38.359557,
+      "osm_id": "node/7787845775",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mara",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Sengenya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nachiura",
+      "lat": -10.9458892,
+      "lon": 38.3316084,
+      "osm_id": "node/7787845776",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Nachiura",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Sengenya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msinyasi",
+      "lat": -10.932743,
+      "lon": 38.2872769,
+      "osm_id": "node/7787845777",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Msinyasi",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Likokona"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Likokona",
+      "lat": -10.897262,
+      "lon": 38.2389114,
+      "osm_id": "node/7787845778",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Likokona",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Likokona"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Michiga",
+      "lat": -10.9215134,
+      "lon": 38.1681656,
+      "osm_id": "node/7787845779",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Michiga",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Likokona"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chigweje",
+      "lat": -10.9111683,
+      "lon": 38.0663491,
+      "osm_id": "node/7787845780",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Chigweje",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lumesule"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lumesule",
+      "lat": -10.9158037,
+      "lon": 38.0202796,
+      "osm_id": "node/7787845781",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Lumesule",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lumesule"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lipupu",
+      "lat": -11.0105165,
+      "lon": 38.6373796,
+      "osm_id": "node/7787880567",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Lipupu",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Maratani"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chitowe",
+      "lat": -11.0632737,
+      "lon": 38.5289327,
+      "osm_id": "node/7787880568",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Chitowe",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nanyumbu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maswera",
+      "lat": -10.9734545,
+      "lon": 38.4602576,
+      "osm_id": "node/7787880569",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Maswera",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nangomba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nangaramo",
+      "lat": -10.8932164,
+      "lon": 38.5663119,
+      "osm_id": "node/7787880570",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Nangaramo",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mikangaula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nahimba",
+      "lat": -10.87834,
+      "lon": 38.5872546,
+      "osm_id": "node/7787880571",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Nahimba",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mikangaula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kilosa",
+      "lat": -10.835097,
+      "lon": 38.6489453,
+      "osm_id": "node/7787880572",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Kilosa",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mikangaula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namatumbusi",
+      "lat": -10.8262031,
+      "lon": 38.6879337,
+      "osm_id": "node/7787880573",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Namatumbusi",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mikangaula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngupe",
+      "lat": -10.8299124,
+      "lon": 38.7239824,
+      "osm_id": "node/7787880574",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Ngupe",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mnanje"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mnanje B",
+      "lat": -10.8835235,
+      "lon": 38.6905085,
+      "osm_id": "node/7787880575",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mnanje B",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mnanje"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mikuva",
+      "lat": -10.8764435,
+      "lon": 38.7284458,
+      "osm_id": "node/7787880576",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mikuva",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mnanje"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Holola",
+      "lat": -10.9102413,
+      "lon": 38.6980188,
+      "osm_id": "node/7787880577",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Holola",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mkonona"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ulanga",
+      "lat": -10.8619453,
+      "lon": 38.7912736,
+      "osm_id": "node/7787880578",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Ulanga",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nandete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtalikachau",
+      "lat": -10.855539,
+      "lon": 38.8374504,
+      "osm_id": "node/7787880579",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mtalikachau",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nandete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nakole",
+      "lat": -10.9268439,
+      "lon": 38.7785708,
+      "osm_id": "node/7787880580",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Nakole",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nandete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nandete",
+      "lat": -10.9096513,
+      "lon": 38.8077531,
+      "osm_id": "node/7787880581",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Nandete",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nandete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chivirikiti",
+      "lat": -10.9582765,
+      "lon": 38.7731634,
+      "osm_id": "node/7787880582",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Chivirikiti",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nandete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mitumbati",
+      "lat": -11.2278022,
+      "lon": 38.5812464,
+      "osm_id": "node/7787880583",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mitumbati",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mkonona"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nanderu",
+      "lat": -11.2316748,
+      "lon": 38.5519782,
+      "osm_id": "node/7787880584",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Nanderu",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nanyumbu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chilunda",
+      "lat": -11.1315595,
+      "lon": 38.6044206,
+      "osm_id": "node/7787880785",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Chilunda",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mkonona"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namijati",
+      "lat": -11.141581,
+      "lon": 38.5747233,
+      "osm_id": "node/7787880786",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Namijati",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mkonona"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Njisa",
+      "lat": -11.1477285,
+      "lon": 38.5487166,
+      "osm_id": "node/7787880787",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Njisa",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mkonona"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makanya",
+      "lat": -11.1653281,
+      "lon": 38.5306064,
+      "osm_id": "node/7787880788",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Makanya",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nanyumbu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkuula",
+      "lat": -11.1473075,
+      "lon": 38.511037,
+      "osm_id": "node/7787880789",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mkuula",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nanyumbu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chungu",
+      "lat": -11.1952618,
+      "lon": 38.4547322,
+      "osm_id": "node/7787880790",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Chungu",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nanyumbu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukwika",
+      "lat": -11.2473963,
+      "lon": 38.3657689,
+      "osm_id": "node/7787880791",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Lukwika",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Masuguru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masuguru",
+      "lat": -11.3481235,
+      "lon": 38.3877844,
+      "osm_id": "node/7787880792",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Masuguru",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Masuguru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukula",
+      "lat": -11.3494279,
+      "lon": 38.4302062,
+      "osm_id": "node/7787880793",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Lukula",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Masuguru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mitonga",
+      "lat": -11.1224431,
+      "lon": 38.0970658,
+      "osm_id": "node/7787986559",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mitonga",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Napacho"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nakopi",
+      "lat": -11.0402239,
+      "lon": 38.1756114,
+      "osm_id": "node/7787986560",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Nakopi",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Napacho"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kazamoyo",
+      "lat": -11.0798887,
+      "lon": 38.2721064,
+      "osm_id": "node/7787986561",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Kazamoyo",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Napacho"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpwahia",
+      "lat": -11.0551554,
+      "lon": 38.3799953,
+      "osm_id": "node/7787986562",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mpwahia",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chipuputa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtokora",
+      "lat": -10.9732333,
+      "lon": 38.3430453,
+      "osm_id": "node/7787986563",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mtokora",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mangaka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namaguluvi",
+      "lat": -10.9907723,
+      "lon": 38.3696715,
+      "osm_id": "node/7787986564",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Namaguluvi",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chipuputa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nahawara",
+      "lat": -10.9767512,
+      "lon": 38.3902521,
+      "osm_id": "node/7787986565",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Nahawara",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mangaka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkohora",
+      "lat": -11.0033972,
+      "lon": 38.4037489,
+      "osm_id": "node/7787986566",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mkohora",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chipuputa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chipuputa",
+      "lat": -11.0268606,
+      "lon": 38.4152931,
+      "osm_id": "node/7787986567",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Chipuputa",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chipuputa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namasogo",
+      "lat": -11.0686226,
+      "lon": 38.4618991,
+      "osm_id": "node/7787986568",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Namasogo",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chipuputa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maneme",
+      "lat": -11.1132842,
+      "lon": 38.4732717,
+      "osm_id": "node/7787986569",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Maneme",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nanyumbu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mburusa",
+      "lat": -11.1394336,
+      "lon": 38.2425592,
+      "osm_id": "node/7787986570",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mburusa",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Napacho"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpombe",
+      "lat": -11.1887259,
+      "lon": 38.1977664,
+      "osm_id": "node/7787986571",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mpombe",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Napacho"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makongondera",
+      "lat": -10.8252653,
+      "lon": 38.1541645,
+      "osm_id": "node/7787986572",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Makongondera",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Likokona"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masyalele",
+      "lat": -10.8547753,
+      "lon": 38.3620729,
+      "osm_id": "node/7787986574",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Masyalele",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Sengenya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mnonia",
+      "lat": -10.8909408,
+      "lon": 38.4190268,
+      "osm_id": "node/7787986575",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mnonia",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mangaka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndwika Ii",
+      "lat": -10.9331538,
+      "lon": 38.4317297,
+      "osm_id": "node/7787986576",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Ndwika Ii",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mangaka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndwika",
+      "lat": -10.9232095,
+      "lon": 38.458938,
+      "osm_id": "node/7787986577",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Ndwika",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mangaka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamungi",
+      "lat": -10.8377525,
+      "lon": 38.5665265,
+      "osm_id": "node/7787986578",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Kamungi",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mikangaula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lowasa",
+      "lat": -10.8571091,
+      "lon": 38.615407,
+      "osm_id": "node/7787986579",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Lowasa",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mikangaula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mchangani A",
+      "lat": -10.9335225,
+      "lon": 38.6238184,
+      "osm_id": "node/7787986580",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Mchangani A",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Maratani"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maratani",
+      "lat": -10.9569283,
+      "lon": 38.6187007,
+      "osm_id": "node/7787986581",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Maratani",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Maratani"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malema",
+      "lat": -10.9471849,
+      "lon": 38.6305132,
+      "osm_id": "node/7787986582",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Nanyumbu",
+        "name": "Malema",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Maratani"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwitika",
+      "lat": -11.0499431,
+      "lon": 39.1478994,
+      "osm_id": "node/7788002519",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mwitika",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mchauru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lichehe",
+      "lat": -11.1180848,
+      "lon": 39.0473491,
+      "osm_id": "node/7788002520",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Lichehe",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Sindano"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sindano",
+      "lat": -11.1129052,
+      "lon": 39.0588074,
+      "osm_id": "node/7788002521",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Sindano",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Sindano"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Utimbe",
+      "lat": -11.0341373,
+      "lon": 38.9454682,
+      "osm_id": "node/7788002522",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Utimbe",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lipumburu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalipinde",
+      "lat": -10.8962507,
+      "lon": 39.000786,
+      "osm_id": "node/7788002523",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Kalipinde",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chiungutwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiungutwa",
+      "lat": -10.8929636,
+      "lon": 38.9872248,
+      "osm_id": "node/7788002524",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Chiungutwa",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chiungutwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maugura",
+      "lat": -10.8793725,
+      "lon": 38.9719899,
+      "osm_id": "node/7788002525",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Maugura",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chiungutwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpeta",
+      "lat": -10.867888,
+      "lon": 38.9498027,
+      "osm_id": "node/7788002526",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mpeta",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chiungutwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalangwale",
+      "lat": -10.8565085,
+      "lon": 38.9773543,
+      "osm_id": "node/7788002527",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Kalangwale",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chiungutwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Majembe Ndago",
+      "lat": -10.8664972,
+      "lon": 39.0224153,
+      "osm_id": "node/7788002528",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Majembe Ndago",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mbuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mfuto",
+      "lat": -10.8136417,
+      "lon": 39.0703945,
+      "osm_id": "node/7788002529",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mfuto",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mkululu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mnolela",
+      "lat": -10.8391855,
+      "lon": 39.0729694,
+      "osm_id": "node/7788002530",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mnolela",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mkululu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpulima",
+      "lat": -10.848964,
+      "lon": 39.0473061,
+      "osm_id": "node/7788002531",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mpulima",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mbuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtengula",
+      "lat": -10.8355606,
+      "lon": 39.0227586,
+      "osm_id": "node/7788002532",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mtengula",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nanjota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mijelejele",
+      "lat": -10.8053796,
+      "lon": 39.0161496,
+      "osm_id": "node/7788002533",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mijelejele",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nanjota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nakachindu",
+      "lat": -10.787337,
+      "lon": 39.041813,
+      "osm_id": "node/7788002536",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Nakachindu",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mkundi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nambunda",
+      "lat": -10.780086,
+      "lon": 39.0060646,
+      "osm_id": "node/7788002538",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Nambunda",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nanjota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mnopwe",
+      "lat": -10.8675298,
+      "lon": 39.1070442,
+      "osm_id": "node/7788031371",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mnopwe",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lulindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lulindi",
+      "lat": -10.8610393,
+      "lon": 39.1250042,
+      "osm_id": "node/7788031372",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Lulindi",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lulindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndwika Chini",
+      "lat": -10.8526942,
+      "lon": 39.1262488,
+      "osm_id": "node/7788031373",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Ndwika Chini",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lulindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muungano",
+      "lat": -10.8396176,
+      "lon": 39.1352181,
+      "osm_id": "node/7788031374",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Muungano",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lulindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiwambo",
+      "lat": -10.8329473,
+      "lon": 39.1448096,
+      "osm_id": "node/7788031375",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Chiwambo",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lulindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkaseka",
+      "lat": -10.8494277,
+      "lon": 39.1059713,
+      "osm_id": "node/7788031376",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mkaseka",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lulindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Luagala",
+      "lat": -10.870501,
+      "lon": 39.1259698,
+      "osm_id": "node/7788031377",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Luagala",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lulindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mvita",
+      "lat": -10.9478696,
+      "lon": 39.0916376,
+      "osm_id": "node/7788031378",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mvita",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Namalenga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namalenga",
+      "lat": -10.940833,
+      "lon": 39.1091041,
+      "osm_id": "node/7788031379",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Namalenga",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Namalenga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matogoro",
+      "lat": -10.9085558,
+      "lon": 39.0762954,
+      "osm_id": "node/7788031380",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Matogoro",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mbuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kivukoni",
+      "lat": -10.8672558,
+      "lon": 39.0851573,
+      "osm_id": "node/7788031381",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Kivukoni",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lulindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Miungo",
+      "lat": -10.8700374,
+      "lon": 39.0515118,
+      "osm_id": "node/7788031382",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Miungo",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mbuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndibwa",
+      "lat": -10.8944807,
+      "lon": 39.0746002,
+      "osm_id": "node/7788031383",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Ndibwa",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mbuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chigawe",
+      "lat": -10.9112843,
+      "lon": 39.1013257,
+      "osm_id": "node/7788031384",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Chigawe",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Namalenga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nagaga",
+      "lat": -10.9012654,
+      "lon": 39.1095333,
+      "osm_id": "node/7788044885",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Nagaga",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Namalenga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkangaula",
+      "lat": -10.9148345,
+      "lon": 39.1203479,
+      "osm_id": "node/7788044886",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mkangaula",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Namalenga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mitesa",
+      "lat": -10.8935114,
+      "lon": 39.1634348,
+      "osm_id": "node/7788044887",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mitesa",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Namalenga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msanga",
+      "lat": -10.8839872,
+      "lon": 39.1958358,
+      "osm_id": "node/7788044888",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Msanga",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Namalenga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rivango",
+      "lat": -11.0116539,
+      "lon": 39.193218,
+      "osm_id": "node/7788044889",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Rivango",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mchauru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namombwe",
+      "lat": -11.0301673,
+      "lon": 39.1591111,
+      "osm_id": "node/7788044890",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Namombwe",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mchauru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mirewe",
+      "lat": -11.0168037,
+      "lon": 39.163231,
+      "osm_id": "node/7788044891",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mirewe",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mchauru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mchauru",
+      "lat": -11.0219164,
+      "lon": 39.1229576,
+      "osm_id": "node/7788044892",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mchauru",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mchauru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Luatala",
+      "lat": -11.0062407,
+      "lon": 39.0906452,
+      "osm_id": "node/7788044893",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Luatala",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Sindano"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ulungu",
+      "lat": -10.9771513,
+      "lon": 39.0823249,
+      "osm_id": "node/7788044894",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Ulungu",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Sindano"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mitonji",
+      "lat": -10.9504397,
+      "lon": 39.0359765,
+      "osm_id": "node/7788044895",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mitonji",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Mbuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Misechela",
+      "lat": -10.9276864,
+      "lon": 38.971346,
+      "osm_id": "node/7788044896",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Misechela",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chiungutwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lipumburu",
+      "lat": -10.9847347,
+      "lon": 38.8699803,
+      "osm_id": "node/7788044897",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Lipumburu",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lipumburu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtojo",
+      "lat": -10.9511138,
+      "lon": 38.917702,
+      "osm_id": "node/7788044898",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mtojo",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lipumburu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lupaso",
+      "lat": -10.9384734,
+      "lon": 38.9057716,
+      "osm_id": "node/7788044899",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Lupaso",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Lipumburu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Huwe",
+      "lat": -10.9020661,
+      "lon": 38.9248259,
+      "osm_id": "node/7788044900",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Huwe",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chiungutwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makanyama",
+      "lat": -10.8706274,
+      "lon": 38.8985618,
+      "osm_id": "node/7788044901",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Makanyama",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chiungutwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Milunda",
+      "lat": -10.8435691,
+      "lon": 38.9468844,
+      "osm_id": "node/7788044902",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Milunda",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nanjota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mipande",
+      "lat": -10.8486269,
+      "lon": 39.0090257,
+      "osm_id": "node/7788044903",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Mipande",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Chiungutwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nanjota",
+      "lat": -10.8191216,
+      "lon": 38.9771825,
+      "osm_id": "node/7788044904",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Masasi",
+        "name": "Nanjota",
+        "place": "village",
+        "region": "Mtwara",
+        "ward": "Nanjota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matepwende",
+      "lat": -10.9898013,
+      "lon": 36.0446773,
+      "osm_id": "node/7835305767",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Matepwende",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ligera"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ulamboni",
+      "lat": -10.9675966,
+      "lon": 36.0573832,
+      "osm_id": "node/7835305783",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Ulamboni",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ligera"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mterawamwahi",
+      "lat": -10.854347,
+      "lon": 36.1875138,
+      "osm_id": "node/7835305784",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Mterawamwahi",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ligera"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Njoomlole",
+      "lat": -10.8835486,
+      "lon": 36.1186464,
+      "osm_id": "node/7835313490",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Njoomlole",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ligera"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Likusanguse",
+      "lat": -11.4748237,
+      "lon": 36.6600547,
+      "osm_id": "node/7835313492",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Likusanguse",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Magazini"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matepwende",
+      "lat": -11.3299427,
+      "lon": 36.1640078,
+      "osm_id": "node/7835313495",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Matepwende",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Lusewa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Amani",
+      "lat": -11.4010982,
+      "lon": 36.4312149,
+      "osm_id": "node/7835313499",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Amani",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Magazini"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Limamu",
+      "lat": -10.8207752,
+      "lon": 35.9775995,
+      "osm_id": "node/7835313505",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Limamu",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Limamu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msisima",
+      "lat": -11.295778,
+      "lon": 36.2091624,
+      "osm_id": "node/7835313507",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Msisima",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Lusewa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtakuja",
+      "lat": -10.8316001,
+      "lon": 36.0335119,
+      "osm_id": "node/7835313511",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Mtakuja",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Limamu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namahoka",
+      "lat": -10.9079964,
+      "lon": 36.0863196,
+      "osm_id": "node/7835313512",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Namahoka",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ligera"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lusewa",
+      "lat": -11.2122042,
+      "lon": 36.2780687,
+      "osm_id": "node/7835313513",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Lusewa",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Lusewa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magazini",
+      "lat": -11.5611243,
+      "lon": 36.4673466,
+      "osm_id": "node/7835313518",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Magazini",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Magazini"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ligera",
+      "lat": -10.9271915,
+      "lon": 36.0904831,
+      "osm_id": "node/7835313519",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Ligera",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Ligera"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Milonji",
+      "lat": -11.122577,
+      "lon": 36.2140447,
+      "osm_id": "node/7835313525",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Milonji",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Lusewa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ligunga",
+      "lat": -11.1838839,
+      "lon": 36.3473167,
+      "osm_id": "node/7835313526",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Namtumbo",
+        "name": "Ligunga",
+        "place": "village",
+        "region": "Ruvuma",
+        "ward": "Lusewa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbamba",
+      "lat": -12.199579,
+      "lon": 38.0173339,
+      "osm_id": "node/8415725522",
+      "osm_tags": {
+        "name": "Mbamba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tuwemacho",
+      "lat": -11.112464,
+      "lon": 37.271601,
+      "osm_id": "node/8611516301",
+      "osm_tags": {
+        "name": "Tuwemacho",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Impiri",
+      "lat": -13.3779137,
+      "lon": 38.369155,
+      "osm_id": "node/8693236967",
+      "osm_tags": {
+        "name": "Impiri",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chirucutu",
+      "lat": -11.4982872,
+      "lon": 38.5579991,
+      "osm_id": "node/9175535570",
+      "osm_tags": {
+        "name": "Chirucutu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nazombe",
+      "lat": -11.2739662,
+      "lon": 39.0411186,
+      "osm_id": "node/9175535578",
+      "osm_tags": {
+        "name": "Nazombe",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Micungo",
+      "lat": -11.2559418,
+      "lon": 39.2564142,
+      "osm_id": "node/9175535579",
+      "osm_tags": {
+        "alt_name": "Micungu",
+        "name": "Micungo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Roma",
+      "lat": -11.2590565,
+      "lon": 39.1954529,
+      "osm_id": "node/9175535580",
+      "osm_tags": {
+        "alt_name": "Nambungale;Nambungali",
+        "name": "Roma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nachipande",
+      "lat": -11.1889735,
+      "lon": 39.195244,
+      "osm_id": "node/9502243268",
+      "osm_tags": {
+        "alt_name": "Alberto Chipande",
+        "name": "Nachipande",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mecula",
+      "lat": -12.1167524,
+      "lon": 37.6674686,
+      "osm_id": "node/9502660985",
+      "osm_tags": {
+        "name": "Mecula",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naulala",
+      "lat": -11.7577603,
+      "lon": 38.0590579,
+      "osm_id": "node/9502668754",
+      "osm_tags": {
+        "name": "Naulala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lichengue",
+      "lat": -12.1796885,
+      "lon": 37.6736055,
+      "osm_id": "node/9502893286",
+      "osm_tags": {
+        "alt_name": "Lichengwe;Lishengwe",
+        "name": "Lichengue",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chimene",
+      "lat": -12.2336539,
+      "lon": 37.6667142,
+      "osm_id": "node/9502950433",
+      "osm_tags": {
+        "alt_name": "Semeni;Nampequesse;Nampequesso",
+        "name": "Chimene",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nangomwa",
+      "lat": -11.0749573,
+      "lon": 39.1742127,
+      "osm_id": "node/9505120341",
+      "osm_tags": {
+        "name": "Nangomwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maparawe",
+      "lat": -11.1138952,
+      "lon": 39.1230983,
+      "osm_id": "node/9505636245",
+      "osm_tags": {
+        "alt_name": "Mapelawe",
+        "name": "Maparawe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mchauru",
+      "lat": -10.9721076,
+      "lon": 39.1773826,
+      "osm_id": "node/9602670317",
+      "osm_tags": {
+        "name": "Mchauru",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lulemba",
+      "lat": -11.0086142,
+      "lon": 39.1004832,
+      "osm_id": "node/9602754017",
+      "osm_tags": {
+        "name": "Lulemba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mkumbululu",
+      "lat": -11.0195765,
+      "lon": 39.1227532,
+      "osm_id": "node/9602754317",
+      "osm_tags": {
+        "name": "Mkumbululu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matekuta",
+      "lat": -13.3484306,
+      "lon": 35.8770693,
+      "osm_id": "node/9890344601",
+      "osm_tags": {
+        "name": "Matekuta",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namitunda",
+      "lat": -13.3592565,
+      "lon": 35.9305772,
+      "osm_id": "node/9890357706",
+      "osm_tags": {
+        "name": "Namitunda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mzilu",
+      "lat": -13.3951356,
+      "lon": 36.1262088,
+      "osm_id": "node/9890365273",
+      "osm_tags": {
+        "name": "Mzilu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nkwalu",
+      "lat": -13.3632999,
+      "lon": 36.061102,
+      "osm_id": "node/9890381234",
+      "osm_tags": {
+        "name": "Nkwalu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cepawonde",
+      "lat": -13.366669,
+      "lon": 36.0093048,
+      "osm_id": "node/9890381235",
+      "osm_tags": {
+        "name": "Cepawonde",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Machomane",
+      "lat": -13.313598,
+      "lon": 35.5332376,
+      "osm_id": "node/9890382227",
+      "osm_tags": {
+        "name": "Machomane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbawu",
+      "lat": -13.3150001,
+      "lon": 35.6892796,
+      "osm_id": "node/9890401763",
+      "osm_tags": {
+        "name": "Mbawu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naconda",
+      "lat": -13.3460198,
+      "lon": 35.6220965,
+      "osm_id": "node/9890413421",
+      "osm_tags": {
+        "name": "Naconda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matitima",
+      "lat": -12.9898552,
+      "lon": 35.4817942,
+      "osm_id": "node/10135368836",
+      "osm_tags": {
+        "name": "Matitima",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nzizi",
+      "lat": -13.00444,
+      "lon": 35.5502628,
+      "osm_id": "node/10135373040",
+      "osm_tags": {
+        "name": "Nzizi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Burundi",
+      "lat": -12.9902357,
+      "lon": 35.468221,
+      "osm_id": "node/10135376081",
+      "osm_tags": {
+        "name": "Burundi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matondovela",
+      "lat": -12.0748502,
+      "lon": 37.0155569,
+      "osm_id": "node/10135399309",
+      "osm_tags": {
+        "name": "Matondovela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Malanga (Majune)",
+      "lat": -13.4709556,
+      "lon": 36.1354674,
+      "osm_id": "node/10135404554",
+      "osm_tags": {
+        "name": "Malanga (Majune)",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Unangu",
+      "lat": -12.867849,
+      "lon": 35.4194547,
+      "osm_id": "node/10135421275",
+      "osm_tags": {
+        "name": "Unangu",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matama",
+      "lat": -13.2744116,
+      "lon": 35.3631451,
+      "osm_id": "node/10135435454",
+      "osm_tags": {
+        "name": "Matama",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Daraja Mbili",
+      "lat": -10.7793619,
+      "lon": 36.8082319,
+      "osm_id": "node/10173625804",
+      "osm_tags": {
+        "name": "Daraja Mbili",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mbuyuni",
+      "lat": -10.9097403,
+      "lon": 39.0434751,
+      "osm_id": "node/10173683517",
+      "osm_tags": {
+        "name": "Mbuyuni",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mkapunda, Nandembo",
+      "lat": -10.9870525,
+      "lon": 38.0922282,
+      "osm_id": "node/11822080071",
+      "osm_tags": {
+        "name": "Mkapunda, Nandembo",
+        "place": "hamlet",
+        "postal_code": "246, Nanyumbu"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbuyuni",
+      "lat": -10.9239869,
+      "lon": 38.0833474,
+      "osm_id": "node/11955734973",
+      "osm_tags": {
+        "name": "Mbuyuni",
+        "place": "hamlet",
+        "postal_code": "246"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mnazi Mmoja",
+      "lat": -10.9653712,
+      "lon": 38.0796888,
+      "osm_id": "node/11955748849",
+      "osm_tags": {
+        "name": "Mnazi Mmoja",
+        "place": "hamlet",
+        "postal_code": "246"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mchenjeuka",
+      "lat": -10.9944907,
+      "lon": 38.0653766,
+      "osm_id": "node/11955838910",
+      "osm_tags": {
+        "name": "Mchenjeuka",
+        "place": "village",
+        "postal_code": "246"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Namasiga",
+      "lat": -11.0286095,
+      "lon": 38.0797532,
+      "osm_id": "node/11955838911",
+      "osm_tags": {
+        "name": "Namasiga",
+        "place": "hamlet",
+        "postal_code": "246"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mchundi",
+      "lat": -11.0525185,
+      "lon": 38.1114542,
+      "osm_id": "node/11957787039",
+      "osm_tags": {
+        "name": "Mchundi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndechela",
+      "lat": -11.114559,
+      "lon": 38.1517786,
+      "osm_id": "node/11957842459",
+      "osm_tags": {
+        "name": "Ndechela",
+        "place": "village",
+        "postal_code": "246"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mdibwa",
+      "lat": -10.885468,
+      "lon": 38.1332606,
+      "osm_id": "node/12010286824",
+      "osm_tags": {
+        "name": "Mdibwa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lugenda",
+      "lat": -13.2812664,
+      "lon": 36.4453558,
+      "osm_id": "way/32045036",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lugenda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rirrimpui River",
+      "lat": -13.0130914,
+      "lon": 37.2364728,
+      "osm_id": "way/32045226",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Rirrimpui River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Megaruma",
+      "lat": -13.2786503,
+      "lon": 39.4801792,
+      "osm_id": "way/32137334",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Megaruma",
+        "waterway": "river",
+        "wikidata": "Q18343541",
+        "wikipedia": "en:Megaruma River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.5121925,
+      "lon": 35.6072283,
+      "osm_id": "way/219935557",
+      "osm_tags": {
+        "admin_level": "2",
+        "attribution": "US Dept. of State Office of the Geographer",
+        "boat": "no",
+        "border_type": "nation",
+        "boundary": "administrative",
+        "name": "Rovuma",
+        "source": "Large Scale International Boundary (US DoS/INR/GGI-09/2012)",
+        "source:date": "2012-09",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.5716685,
+      "lon": 36.078692,
+      "osm_id": "way/219935559",
+      "osm_tags": {
+        "admin_level": "2",
+        "attribution": "US Dept. of State Office of the Geographer",
+        "boat": "no",
+        "border_type": "nation",
+        "boundary": "administrative",
+        "name": "Rovuma",
+        "source": "Large Scale International Boundary (US DoS/INR/GGI-09/2012)",
+        "source:date": "2012-09",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lucheringo",
+      "lat": -11.9759388,
+      "lon": 36.0859851,
+      "osm_id": "way/240138226",
+      "osm_tags": {
+        "name": "Rio Lucheringo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lucheringo",
+      "lat": -12.2913367,
+      "lon": 35.772891,
+      "osm_id": "way/243025977",
+      "osm_tags": {
+        "name": "Rio Lucheringo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mapudje",
+      "lat": -12.8370885,
+      "lon": 35.4082138,
+      "osm_id": "way/243032050",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Mapudje",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ligogolo",
+      "lat": -12.8920172,
+      "lon": 35.7481083,
+      "osm_id": "way/263517880",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Ligogolo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muembe",
+      "lat": -13.0897455,
+      "lon": 35.64056,
+      "osm_id": "way/263518743",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Muembe",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malulu",
+      "lat": -12.944507,
+      "lon": 35.4245514,
+      "osm_id": "way/263519863",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Malulu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mavago",
+      "lat": -12.5652608,
+      "lon": 36.2636306,
+      "osm_id": "way/264639808",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Mavago",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambala",
+      "lat": -13.5066088,
+      "lon": 35.8977204,
+      "osm_id": "way/295283704",
+      "osm_tags": {
+        "name": "Luambala",
+        "name:en": "Luambala River",
+        "name:pt": "Rio Luambala",
+        "waterway": "river",
+        "wikidata": "Q4786430",
+        "wikipedia": "en:Luambala River"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matekuta",
+      "lat": -13.3452388,
+      "lon": 35.8769747,
+      "osm_id": "way/295287910",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Matekuta",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namitunda",
+      "lat": -13.3587644,
+      "lon": 35.930385,
+      "osm_id": "way/295289211",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Namitunda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cepawonde",
+      "lat": -13.3670104,
+      "lon": 36.0088139,
+      "osm_id": "way/295290457",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Cepawonde",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nkwalu",
+      "lat": -13.3626504,
+      "lon": 36.0610561,
+      "osm_id": "way/295290460",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Nkwalu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mzilu",
+      "lat": -13.394457,
+      "lon": 36.1260466,
+      "osm_id": "way/302634777",
+      "osm_tags": {
+        "name": "Mzilu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Machomane",
+      "lat": -13.3147126,
+      "lon": 35.5343925,
+      "osm_id": "way/302641644",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Machomane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Michiga village",
+      "lat": -10.9215016,
+      "lon": 38.1650553,
+      "osm_id": "way/344734197",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Michiga village",
+        "place": "village",
+        "residential": "rural",
+        "source": "bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Negomano",
+      "lat": -11.4254639,
+      "lon": 38.4905521,
+      "osm_id": "way/344738603",
+      "osm_tags": {
+        "name": "Negomano",
+        "place": "village",
+        "source": "bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matchedje",
+      "lat": -11.5990935,
+      "lon": 35.4400311,
+      "osm_id": "way/353753555",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Matchedje",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.3402096,
+      "lon": 38.2179084,
+      "osm_id": "way/367263699",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Rovuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ninga",
+      "lat": -11.3720446,
+      "lon": 38.8209197,
+      "osm_id": "way/375607896",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Ninga",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Messalo",
+      "lat": -12.9128155,
+      "lon": 38.2920662,
+      "osm_id": "way/404385848",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Rio Messalo",
+        "waterway": "river",
+        "wikidata": "Q4786451",
+        "wikipedia": "en:Messalo River"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naconda",
+      "lat": -13.3456562,
+      "lon": 35.6219953,
+      "osm_id": "way/448623463",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Naconda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbawu",
+      "lat": -13.3149527,
+      "lon": 35.688641,
+      "osm_id": "way/448623798",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Mbawu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luatize",
+      "lat": -12.6823735,
+      "lon": 36.3310254,
+      "osm_id": "way/459641126",
+      "osm_tags": {
+        "name": "Luatize",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lussanhando",
+      "lat": -12.4316695,
+      "lon": 36.3358433,
+      "osm_id": "way/459647210",
+      "osm_tags": {
+        "name": "Lussanhando",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lugenda",
+      "lat": -12.4540484,
+      "lon": 37.5762718,
+      "osm_id": "way/459648764",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lugenda",
+        "name:en": "Lugenda River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.3015389,
+      "lon": 38.6798586,
+      "osm_id": "way/459648786",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Rovuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luatize",
+      "lat": -12.7114165,
+      "lon": 36.5809617,
+      "osm_id": "way/459648787",
+      "osm_tags": {
+        "name": "Luatize",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lussanhando",
+      "lat": -12.3078814,
+      "lon": 36.3763605,
+      "osm_id": "way/459951987",
+      "osm_tags": {
+        "name": "Lussanhando",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luatize",
+      "lat": -12.670184,
+      "lon": 36.1498502,
+      "osm_id": "way/461548509",
+      "osm_tags": {
+        "name": "Luatize",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lussanhando",
+      "lat": -11.964404,
+      "lon": 36.43075,
+      "osm_id": "way/465227285",
+      "osm_tags": {
+        "name": "Lussanhando",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.6519508,
+      "lon": 37.1289933,
+      "osm_id": "way/465227757",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Rovuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luatize",
+      "lat": -12.6896866,
+      "lon": 35.9892221,
+      "osm_id": "way/465228202",
+      "osm_tags": {
+        "name": "Luatize",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lugenda",
+      "lat": -12.9214297,
+      "lon": 36.7574727,
+      "osm_id": "way/465230745",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lugenda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lugenda",
+      "lat": -12.0305775,
+      "lon": 38.3222541,
+      "osm_id": "way/465233114",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lugenda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambeze River",
+      "lat": -12.3131474,
+      "lon": 38.1767233,
+      "osm_id": "way/465233115",
+      "osm_tags": {
+        "name": "Luambeze River",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lugenda",
+      "lat": -11.6466744,
+      "lon": 38.4448869,
+      "osm_id": "way/465233703",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lugenda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -10.8291871,
+      "lon": 39.6551018,
+      "osm_id": "way/465242987",
+      "osm_tags": {
+        "alt_name": "Ruvuma",
+        "boat": "no",
+        "name": "Rovuma",
+        "name:en": "Ruvuma River",
+        "name:pt": "Rio Rovuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nakhuca",
+      "lat": -13.0615862,
+      "lon": 38.7989903,
+      "osm_id": "way/491670604",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Nakhuca",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Impiri",
+      "lat": -13.3792447,
+      "lon": 38.3711725,
+      "osm_id": "way/634498019",
+      "osm_tags": {
+        "name": "Impiri",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Megaruma",
+      "lat": -13.3747011,
+      "lon": 39.04699,
+      "osm_id": "way/685815154",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "R\u00edo Megaruma",
+        "waterway": "river",
+        "wikidata": "Q18343541",
+        "wikipedia": "en:Megaruma River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.4000039,
+      "lon": 37.8506067,
+      "osm_id": "way/715693593",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Rovuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusinge River",
+      "lat": -12.442377,
+      "lon": 37.9472121,
+      "osm_id": "way/814925832",
+      "osm_tags": {
+        "name": "Lusinge River",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luase River",
+      "lat": -12.2841337,
+      "lon": 37.8825652,
+      "osm_id": "way/814963510",
+      "osm_tags": {
+        "name": "Luase River",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chitande River",
+      "lat": -12.2945213,
+      "lon": 38.121605,
+      "osm_id": "way/814971567",
+      "osm_tags": {
+        "name": "Chitande River",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dzindje River",
+      "lat": -12.3189491,
+      "lon": 37.7974876,
+      "osm_id": "way/814975301",
+      "osm_tags": {
+        "name": "Dzindje River",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ricuenha River",
+      "lat": -13.0451067,
+      "lon": 36.7313987,
+      "osm_id": "way/815478224",
+      "osm_tags": {
+        "name": "Ricuenha River",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Messangoge",
+      "lat": -12.9746618,
+      "lon": 36.8659746,
+      "osm_id": "way/815485125",
+      "osm_tags": {
+        "name": "Messangoge",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Cangula River",
+      "lat": -12.717493,
+      "lon": 37.1501371,
+      "osm_id": "way/815489876",
+      "osm_tags": {
+        "name": "Cangula River",
+        "seasonal": "yes",
+        "waterway": "stream",
+        "wikidata": "Q32584708"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Namissimba River",
+      "lat": -12.7599788,
+      "lon": 36.9369552,
+      "osm_id": "way/815492766",
+      "osm_tags": {
+        "name": "Namissimba River",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusinge River",
+      "lat": -12.3218088,
+      "lon": 37.847317,
+      "osm_id": "way/815726576",
+      "osm_tags": {
+        "name": "Lusinge River",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Gupo River",
+      "lat": -12.4550163,
+      "lon": 37.7000866,
+      "osm_id": "way/815848943",
+      "osm_tags": {
+        "name": "Gupo River",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruvuma",
+      "lat": -11.3960742,
+      "lon": 35.3883512,
+      "osm_id": "way/867065377",
+      "osm_tags": {
+        "name": "Ruvuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruvuma",
+      "lat": -11.4406825,
+      "lon": 35.3828719,
+      "osm_id": "way/867065378",
+      "osm_tags": {
+        "name": "Ruvuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruvuma",
+      "lat": -11.4525536,
+      "lon": 35.3789793,
+      "osm_id": "way/867065379",
+      "osm_tags": {
+        "name": "Ruvuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruvuma",
+      "lat": -11.4653603,
+      "lon": 35.3814708,
+      "osm_id": "way/867065380",
+      "osm_tags": {
+        "name": "Ruvuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruvuma",
+      "lat": -11.3681726,
+      "lon": 35.3912384,
+      "osm_id": "way/867065383",
+      "osm_tags": {
+        "name": "Ruvuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruvuma",
+      "lat": -11.3124458,
+      "lon": 35.3547059,
+      "osm_id": "way/867065384",
+      "osm_tags": {
+        "name": "Ruvuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruvuma",
+      "lat": -11.4268392,
+      "lon": 35.3800849,
+      "osm_id": "way/867065388",
+      "osm_tags": {
+        "name": "Ruvuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.3727916,
+      "lon": 35.388256,
+      "osm_id": "way/947804434",
+      "osm_tags": {
+        "name": "Rovuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.3495204,
+      "lon": 35.3741232,
+      "osm_id": "way/947804435",
+      "osm_tags": {
+        "name": "Rovuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.2588637,
+      "lon": 35.3424751,
+      "osm_id": "way/947804436",
+      "osm_tags": {
+        "name": "Rovuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.1712217,
+      "lon": 35.3385193,
+      "osm_id": "way/947804437",
+      "osm_tags": {
+        "name": "Rovuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.4796587,
+      "lon": 35.3857005,
+      "osm_id": "way/947805944",
+      "osm_tags": {
+        "name": "Rovuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.4584024,
+      "lon": 35.3835878,
+      "osm_id": "way/947805945",
+      "osm_tags": {
+        "name": "Rovuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.4468878,
+      "lon": 35.384907,
+      "osm_id": "way/947805946",
+      "osm_tags": {
+        "name": "Rovuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.699731,
+      "lon": 36.4037181,
+      "osm_id": "way/963194169",
+      "osm_tags": {
+        "admin_level": "2",
+        "attribution": "US Dept. of State Office of the Geographer",
+        "boat": "no",
+        "border_type": "nation",
+        "boundary": "administrative",
+        "name": "Rovuma",
+        "source": "Large Scale International Boundary (US DoS/INR/GGI-09/2012)",
+        "source:date": "2012-09",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.4269875,
+      "lon": 35.8312923,
+      "osm_id": "way/967219288",
+      "osm_tags": {
+        "admin_level": "2",
+        "attribution": "US Dept. of State Office of the Geographer",
+        "boat": "no",
+        "border_type": "nation",
+        "boundary": "administrative",
+        "name": "Rovuma",
+        "source": "Large Scale International Boundary (US DoS/INR/GGI-09/2012)",
+        "source:date": "2012-09",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luatize",
+      "lat": -12.7156182,
+      "lon": 36.8491976,
+      "osm_id": "way/1085737113",
+      "osm_tags": {
+        "name": "Luatize",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dzindje River",
+      "lat": -12.2942216,
+      "lon": 37.7892432,
+      "osm_id": "way/1088137546",
+      "osm_tags": {
+        "name": "Dzindje River",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dzindje River",
+      "lat": -12.2977019,
+      "lon": 37.7916103,
+      "osm_id": "way/1088137547",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Dzindje River",
+        "seasonal": "yes",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lugenda",
+      "lat": -13.5326882,
+      "lon": 36.2752394,
+      "osm_id": "way/1093048165",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Rio Lugenda",
+        "name:en": "Lugenda River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rovuma",
+      "lat": -11.6994174,
+      "lon": 36.5179552,
+      "osm_id": "way/1251603178",
+      "osm_tags": {
+        "admin_level": "2",
+        "attribution": "US Dept. of State Office of the Geographer",
+        "boat": "no",
+        "border_type": "nation",
+        "boundary": "administrative",
+        "name": "Rovuma",
+        "source": "Large Scale International Boundary (US DoS/INR/GGI-09/2012)",
+        "source:date": "2012-09",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mto Nandembo",
+      "lat": -10.9287615,
+      "lon": 38.1247822,
+      "osm_id": "way/1272998611",
+      "osm_tags": {
+        "boat": "private",
+        "canoe": "no",
+        "layer": "3",
+        "motorboat": "no",
+        "name": "Mto Nandembo",
+        "seasonal": "yes",
+        "ship": "private",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mto Namajani",
+      "lat": -10.9289696,
+      "lon": 38.1185916,
+      "osm_id": "way/1272998612",
+      "osm_tags": {
+        "boat": "no",
+        "canoe": "no",
+        "layer": "2",
+        "motorboat": "no",
+        "name": "Mto Namajani",
+        "seasonal": "yes",
+        "ship": "no",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mkachemba",
+      "lat": -10.9294858,
+      "lon": 38.1320077,
+      "osm_id": "way/1273120641",
+      "osm_tags": {
+        "name": "Mkachemba",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kachemba",
+      "lat": -10.9251765,
+      "lon": 38.1193405,
+      "osm_id": "way/1273125377",
+      "osm_tags": {
+        "name": "Kachemba",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    }
+  ]
+}

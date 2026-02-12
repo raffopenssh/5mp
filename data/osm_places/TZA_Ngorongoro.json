@@ -1,0 +1,7096 @@
+{
+  "park_id": "TZA_Ngorongoro",
+  "downloaded_at": "2026-02-08T12:14:38.645027+00:00",
+  "buffer_km": 50,
+  "place_count": 534,
+  "places": [
+    {
+      "place_type": "village",
+      "name": "Shompole",
+      "lat": -2.0904627,
+      "lon": 36.1193279,
+      "osm_id": "node/44923680",
+      "osm_tags": {
+        "name": "Shompole",
+        "place": "village",
+        "wikidata": "Q7086380"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Makuyuni",
+      "lat": -3.5502319,
+      "lon": 36.1020802,
+      "osm_id": "node/255619853",
+      "osm_tags": {
+        "name": "Makuyuni",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mto wa Mbu",
+      "lat": -3.3767101,
+      "lon": 35.8558004,
+      "osm_id": "node/255620128",
+      "osm_tags": {
+        "is_in": "Arusha, Tanzania",
+        "name": "Mto wa Mbu",
+        "place": "town",
+        "population": "11405"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Karatu",
+      "lat": -3.3386568,
+      "lon": 35.6733489,
+      "osm_id": "node/255653806",
+      "osm_tags": {
+        "name": "Karatu",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mbulu",
+      "lat": -3.856242,
+      "lon": 35.5436105,
+      "osm_id": "node/259068983",
+      "osm_tags": {
+        "is_in": "Manyara, Tanzania",
+        "name": "Mbulu",
+        "place": "town",
+        "wikidata": "Q17472898",
+        "wikipedia": "en:Mbulu"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Boundary Hill",
+      "lat": -3.8677418,
+      "lon": 36.1467014,
+      "osm_id": "node/470254452",
+      "osm_tags": {
+        "fixme": "Unknown altitude and exact position.",
+        "name": "Boundary Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Geyasagong Hill",
+      "lat": -3.5748654,
+      "lon": 35.7083022,
+      "osm_id": "node/470284459",
+      "osm_tags": {
+        "ele": "1666",
+        "name": "Geyasagong Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwa Kuchinia",
+      "lat": -3.6949162,
+      "lon": 35.9369894,
+      "osm_id": "node/473390258",
+      "osm_tags": {
+        "name": "Kwa Kuchinia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tarangire Hill",
+      "lat": -3.9123274,
+      "lon": 36.0437634,
+      "osm_id": "node/506088076",
+      "osm_tags": {
+        "ele": "1285",
+        "name": "Tarangire Hill",
+        "natural": "peak",
+        "source": "Landsat"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbuyu wa Mjerumani",
+      "lat": -3.9041876,
+      "lon": 35.8125836,
+      "osm_id": "node/657616927",
+      "osm_tags": {
+        "name": "Mbuyu wa Mjerumani",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Anslay",
+      "lat": -3.8448248,
+      "lon": 35.5617308,
+      "osm_id": "node/657616994",
+      "osm_tags": {
+        "name": "Anslay",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Datlaa",
+      "lat": -3.8220667,
+      "lon": 35.6247126,
+      "osm_id": "node/657617159",
+      "osm_tags": {
+        "name": "Datlaa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gidama",
+      "lat": -3.7671071,
+      "lon": 35.5558475,
+      "osm_id": "node/657618023",
+      "osm_tags": {
+        "name": "Gidama",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maweni",
+      "lat": -3.8429525,
+      "lon": 35.7056966,
+      "osm_id": "node/657618309",
+      "osm_tags": {
+        "name": "Maweni",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magara",
+      "lat": -3.806394,
+      "lon": 35.696145,
+      "osm_id": "node/657618355",
+      "osm_tags": {
+        "name": "Magara",
+        "place": "village",
+        "wikidata": "Q13123831",
+        "wikipedia": "en:Magara (Tanzanian ward)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kansay",
+      "lat": -3.657382,
+      "lon": 35.585056,
+      "osm_id": "node/657618748",
+      "osm_tags": {
+        "name": "Kansay",
+        "place": "village",
+        "wikidata": "Q6365209",
+        "wikipedia": "en:Kansay"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gorfani, Baray",
+      "lat": -3.5004543,
+      "lon": 35.3929944,
+      "osm_id": "node/910420302",
+      "osm_tags": {
+        "name": "Gorfani, Baray",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mang'ola Barazani",
+      "lat": -3.5171587,
+      "lon": 35.3380425,
+      "osm_id": "node/910420562",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Mang'ola Barazani",
+        "place": "town",
+        "region": "Arusha",
+        "ward": "Endamaghang"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbuga Nyekundu, Baray",
+      "lat": -3.5263494,
+      "lon": 35.3774857,
+      "osm_id": "node/910421468",
+      "osm_tags": {
+        "name": "Mbuga Nyekundu, Baray",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Majengo",
+      "lat": -3.3540486,
+      "lon": 35.867432,
+      "osm_id": "node/910421756",
+      "osm_tags": {
+        "name": "Majengo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Rhotia",
+      "lat": -3.3126708,
+      "lon": 35.7334075,
+      "osm_id": "node/910424111",
+      "osm_tags": {
+        "name": "Rhotia",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Engaruka Chini",
+      "lat": -2.9974263,
+      "lon": 35.9986668,
+      "osm_id": "node/946582056",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Engaruka Chini",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Engaruka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Engare Sero, Pinyinyi",
+      "lat": -2.6152204,
+      "lon": 35.879356,
+      "osm_id": "node/946584923",
+      "osm_tags": {
+        "name": "Engare Sero, Pinyinyi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Selela",
+      "lat": -3.2021431,
+      "lon": 35.9469983,
+      "osm_id": "node/946585023",
+      "osm_tags": {
+        "name": "Selela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Oldean",
+      "lat": -3.3600798,
+      "lon": 35.5620334,
+      "osm_id": "node/965844641",
+      "osm_tags": {
+        "alt_name": "Oldeani",
+        "name": "Oldean",
+        "place": "village",
+        "population": "6870",
+        "source": "OpenData-NBS2012-HealthFacilities",
+        "wikidata": "Q94531777"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kimali",
+      "lat": -3.4221727,
+      "lon": 34.4441214,
+      "osm_id": "node/965844999",
+      "osm_tags": {
+        "name": "Kimali",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mt. Wasso",
+      "lat": -2.0836331,
+      "lon": 35.5903515,
+      "osm_id": "node/1331016959",
+      "osm_tags": {
+        "ele": "2011",
+        "name": "Mt. Wasso",
+        "natural": "peak",
+        "source": "gps"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wasso",
+      "lat": -2.0634301,
+      "lon": 35.5605879,
+      "osm_id": "node/1331017111",
+      "osm_tags": {
+        "name": "Wasso",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endulen",
+      "lat": -3.2193755,
+      "lon": 35.2694376,
+      "osm_id": "node/1332639869",
+      "osm_tags": {
+        "name": "Endulen",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Naabi Hill",
+      "lat": -2.8330749,
+      "lon": 34.997913,
+      "osm_id": "node/1394009965",
+      "osm_tags": {
+        "name": "Naabi Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Endoinyo Engitati",
+      "lat": -3.1321548,
+      "lon": 35.5521667,
+      "osm_id": "node/1454765236",
+      "osm_tags": {
+        "ele": "1793",
+        "int_name": "Engitati Hill",
+        "name": "Endoinyo Engitati",
+        "name:en": "Engitati Hill",
+        "name:sw": "Endoinyo Engitati",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Robanda",
+      "lat": -2.1500686,
+      "lon": 34.6836911,
+      "osm_id": "node/1525412040",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Serengeti",
+        "name": "Robanda",
+        "name:en": "Robanda",
+        "name:sw": "Kijiji cha Robanda",
+        "place": "village",
+        "region": "Mara",
+        "ward": "Ikoma"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Engaruka Juu",
+      "lat": -2.9944661,
+      "lon": 35.9731765,
+      "osm_id": "node/1627145172",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Engaruka Juu",
+        "place": "village",
+        "region": "Arusha",
+        "source": "Local_knowledge",
+        "ward": "Engaruka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chem Chem",
+      "lat": -4.0560526,
+      "lon": 34.5874028,
+      "osm_id": "node/1814358908",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_string": "populated place",
+        "GNS:id": "-2561845",
+        "GNS:modify_date": "2011-02-02",
+        "name": "Chem Chem",
+        "place": "village",
+        "source": "GNS, Bing"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Lemakarot",
+      "lat": -3.1674231,
+      "lon": 35.3723705,
+      "osm_id": "node/1843883856",
+      "osm_tags": {
+        "ele": "3133",
+        "name": "Mount Lemakarot",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Banee",
+      "lat": -3.8774522,
+      "lon": 35.6177539,
+      "osm_id": "node/2021603146",
+      "osm_tags": {
+        "amenity": "place_of_worship",
+        "name": "Banee",
+        "place": "village",
+        "religion": "christian"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ampa",
+      "lat": -3.77217,
+      "lon": 35.56967,
+      "osm_id": "node/2021603165",
+      "osm_tags": {
+        "amenity": "place_of_worship",
+        "name": "Ampa",
+        "place": "village",
+        "religion": "christian"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hareabi",
+      "lat": -3.90792,
+      "lon": 35.59347,
+      "osm_id": "node/2021603172",
+      "osm_tags": {
+        "amenity": "place_of_worship",
+        "name": "Hareabi",
+        "place": "village",
+        "religion": "christian"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Titiwi",
+      "lat": -3.82258,
+      "lon": 35.61189,
+      "osm_id": "node/2021603178",
+      "osm_tags": {
+        "amenity": "place_of_worship",
+        "name": "Titiwi",
+        "place": "village",
+        "religion": "christian"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endagikot",
+      "lat": -3.87475,
+      "lon": 35.52787,
+      "osm_id": "node/2021603217",
+      "osm_tags": {
+        "amenity": "place_of_worship",
+        "name": "Endagikot",
+        "place": "village",
+        "religion": "christian"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bambe",
+      "lat": -3.89361,
+      "lon": 35.58528,
+      "osm_id": "node/2021603224",
+      "osm_tags": {
+        "amenity": "place_of_worship",
+        "name": "Bambe",
+        "place": "village",
+        "religion": "christian"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mahheri",
+      "lat": -3.98111,
+      "lon": 35.52009,
+      "osm_id": "node/2023336751",
+      "osm_tags": {
+        "amenity": "place_of_worship",
+        "name": "Mahheri",
+        "place": "village",
+        "religion": "christian"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Suum",
+      "lat": -3.843282,
+      "lon": 35.6348317,
+      "osm_id": "node/2027781865",
+      "osm_tags": {
+        "amenity": "place_of_worship",
+        "name": "Suum",
+        "place": "village",
+        "religion": "christian",
+        "source": "GPS-logg"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moringa",
+      "lat": -3.761191,
+      "lon": 35.5570409,
+      "osm_id": "node/2029821798",
+      "osm_tags": {
+        "name": "Moringa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bargish",
+      "lat": -3.7940447,
+      "lon": 35.5473599,
+      "osm_id": "node/2029822313",
+      "osm_tags": {
+        "name": "Bargish",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gahabya",
+      "lat": -3.8009308,
+      "lon": 35.5774212,
+      "osm_id": "node/2029822423",
+      "osm_tags": {
+        "name": "Gahabya",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Hharwetaay Kalvari",
+      "lat": -3.9988969,
+      "lon": 35.5382891,
+      "osm_id": "node/2032352710",
+      "osm_tags": {
+        "amenity": "place_of_worship",
+        "name": "Hharwetaay Kalvari",
+        "place": "hamlet",
+        "religion": "christian",
+        "source": "GPS-logg"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bayno",
+      "lat": -3.98949,
+      "lon": 35.52352,
+      "osm_id": "node/2032352711",
+      "osm_tags": {
+        "amenity": "place_of_worship",
+        "name": "Bayno",
+        "place": "village",
+        "religion": "christian",
+        "source": "GPS-logg"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Waama",
+      "lat": -3.8288799,
+      "lon": 35.5566447,
+      "osm_id": "node/2038468692",
+      "osm_tags": {
+        "name": "Waama",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tlooma",
+      "lat": -3.9126688,
+      "lon": 35.5603238,
+      "osm_id": "node/2038468750",
+      "osm_tags": {
+        "amenity": "place_of_worship",
+        "name": "Tlooma",
+        "place": "village",
+        "religion": "christian"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tsawa",
+      "lat": -3.8102952,
+      "lon": 35.6555291,
+      "osm_id": "node/2041810355",
+      "osm_tags": {
+        "amenity": "place_of_worship",
+        "name": "Tsawa",
+        "place": "village",
+        "religion": "christian"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Amowa Swedish",
+      "lat": -3.97839,
+      "lon": 35.58428,
+      "osm_id": "node/2043749294",
+      "osm_tags": {
+        "amenity": "place_of_worship",
+        "denomination": "baptist",
+        "name": "Amowa Swedish",
+        "place": "village",
+        "religion": "christian"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwanyomba",
+      "lat": -3.9004734,
+      "lon": 34.5178149,
+      "osm_id": "node/3047001037",
+      "osm_tags": {
+        "name": "Mwanyomba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makao",
+      "lat": -3.3869527,
+      "lon": 34.8270591,
+      "osm_id": "node/3047520675",
+      "osm_tags": {
+        "name": "Makao",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Paji",
+      "lat": -3.5346912,
+      "lon": 34.4587919,
+      "osm_id": "node/3047520677",
+      "osm_tags": {
+        "name": "Paji",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Miskitini",
+      "lat": -3.997963,
+      "lon": 35.7752565,
+      "osm_id": "node/3558402400",
+      "osm_tags": {
+        "name": "Miskitini",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Majengo A",
+      "lat": -3.9990333,
+      "lon": 35.7827238,
+      "osm_id": "node/3558429276",
+      "osm_tags": {
+        "name": "Majengo A",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Majengo B",
+      "lat": -4.0024796,
+      "lon": 35.781844,
+      "osm_id": "node/3558508792",
+      "osm_tags": {
+        "name": "Majengo B",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Warangi A",
+      "lat": -4.0014949,
+      "lon": 35.7784752,
+      "osm_id": "node/3558514606",
+      "osm_tags": {
+        "name": "Warangi A",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Warangi B",
+      "lat": -4.0012381,
+      "lon": 35.7757501,
+      "osm_id": "node/3558514607",
+      "osm_tags": {
+        "name": "Warangi B",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endabash",
+      "lat": -3.5811442,
+      "lon": 35.6114504,
+      "osm_id": "node/3620225239",
+      "osm_tags": {
+        "name": "Endabash",
+        "place": "village",
+        "region": "Arusha",
+        "wikidata": "Q5375920",
+        "wikipedia": "en:Endabash"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Massai Kopjes",
+      "lat": -2.5115211,
+      "lon": 34.8849551,
+      "osm_id": "node/3669666258",
+      "osm_tags": {
+        "name": "Massai Kopjes",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Minjingu",
+      "lat": -3.7088385,
+      "lon": 35.9170531,
+      "osm_id": "node/4230476912",
+      "osm_tags": {
+        "name": "Minjingu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbuyuni",
+      "lat": -3.449445,
+      "lon": 36.1970896,
+      "osm_id": "node/4238935740",
+      "osm_tags": {
+        "name": "Mbuyuni",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nanja",
+      "lat": -3.399326,
+      "lon": 36.2647105,
+      "osm_id": "node/4493302425",
+      "osm_tags": {
+        "name": "Nanja",
+        "name:en": "Nanja",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Sangaiwe Hills",
+      "lat": -4.0321335,
+      "lon": 35.8566167,
+      "osm_id": "node/4647919788",
+      "osm_tags": {
+        "name": "Sangaiwe Hills",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Olkambe Hill",
+      "lat": -3.9985689,
+      "lon": 35.9188711,
+      "osm_id": "node/4647920489",
+      "osm_tags": {
+        "ele": "1361",
+        "name": "Olkambe Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kitibong Hill",
+      "lat": -4.0568821,
+      "lon": 35.9376708,
+      "osm_id": "node/4647920490",
+      "osm_tags": {
+        "ele": "1411",
+        "name": "Kitibong Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kimba",
+      "lat": -3.2134983,
+      "lon": 35.467577,
+      "osm_id": "node/4710136493",
+      "osm_tags": {
+        "name": "Kimba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Endoinyo Osilale",
+      "lat": -3.16755,
+      "lon": 35.6217167,
+      "osm_id": "node/4711405622",
+      "osm_tags": {
+        "ele": "1850",
+        "int_name": "Osilale Hill",
+        "name": "Endoinyo Osilale",
+        "name:en": "Osilale Hill",
+        "name:sw": "Endoinyo Osilale",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Endoinyo Rumbe",
+      "lat": -3.182597,
+      "lon": 35.6340907,
+      "osm_id": "node/4713014124",
+      "osm_tags": {
+        "ele": "1908",
+        "int_name": "Rumbe Hill",
+        "name": "Endoinyo Rumbe",
+        "name:en": "Rumbe Hill",
+        "name:sw": "Endoinyo Rumbe",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Meshili",
+      "lat": -2.9850015,
+      "lon": 35.5061645,
+      "osm_id": "node/4713978738",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Meshili",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Olbaibal"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ormekeke",
+      "lat": -3.1611127,
+      "lon": 35.2915624,
+      "osm_id": "node/4724289321",
+      "osm_tags": {
+        "name": "Ormekeke",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Irmisigiyo",
+      "lat": -3.2072708,
+      "lon": 35.3624536,
+      "osm_id": "node/4725011505",
+      "osm_tags": {
+        "name": "Irmisigiyo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Loosilale",
+      "lat": -3.2180546,
+      "lon": 35.296484,
+      "osm_id": "node/4725011666",
+      "osm_tags": {
+        "name": "Loosilale",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Esirwa",
+      "lat": -3.2362094,
+      "lon": 35.3277056,
+      "osm_id": "node/4725012698",
+      "osm_tags": {
+        "name": "Esirwa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Oloroklukonya",
+      "lat": -3.2024667,
+      "lon": 35.4631,
+      "osm_id": "node/4725522058",
+      "osm_tags": {
+        "ele": "2664",
+        "name": "Oloroklukonya",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Malanja",
+      "lat": -3.2222876,
+      "lon": 35.4576586,
+      "osm_id": "node/4725524619",
+      "osm_tags": {
+        "name": "Malanja",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Elmuk",
+      "lat": -3.2225045,
+      "lon": 35.4210786,
+      "osm_id": "node/4725529642",
+      "osm_tags": {
+        "name": "Elmuk",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Satiman Elgon",
+      "lat": -3.19505,
+      "lon": 35.4117833,
+      "osm_id": "node/4725530596",
+      "osm_tags": {
+        "ele": "2879",
+        "name": "Satiman Elgon",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Engilusui Hill",
+      "lat": -2.9148,
+      "lon": 35.3814,
+      "osm_id": "node/4725837203",
+      "osm_tags": {
+        "ele": "1637",
+        "name": "Engilusui Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Makomba Peak",
+      "lat": -3.3152333,
+      "lon": 35.4392,
+      "osm_id": "node/4725839738",
+      "osm_tags": {
+        "ele": "2967",
+        "name": "Makomba Peak",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Oldeani",
+      "lat": -3.2713167,
+      "lon": 35.4428833,
+      "osm_id": "node/4725839850",
+      "osm_tags": {
+        "ele": "3206",
+        "name": "Mount Oldeani",
+        "natural": "peak",
+        "wikidata": "Q31625037"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Arusha road",
+      "lat": -2.1521718,
+      "lon": 34.6865445,
+      "osm_id": "node/4975286136",
+      "osm_tags": {
+        "fixme": "What exactly the name of this road?, resurvey",
+        "name": "Arusha road",
+        "name:en": "Arusha road",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Fort Ikoma Peak Ground",
+      "lat": -2.0856735,
+      "lon": 34.6334184,
+      "osm_id": "node/4975326621",
+      "osm_tags": {
+        "name": "Fort Ikoma Peak Ground",
+        "name:sw": "Eneo la Mwinuko, Fort Ikoma",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chambala village",
+      "lat": -3.6320679,
+      "lon": 34.4387565,
+      "osm_id": "node/5016902822",
+      "osm_tags": {
+        "name": "Chambala village",
+        "name:en": "Chambala village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwermusl",
+      "lat": -3.9596151,
+      "lon": 35.5683365,
+      "osm_id": "node/5033497899",
+      "osm_tags": {
+        "name": "Kwermusl",
+        "place": "village",
+        "shop": "convenience"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bashay",
+      "lat": -4.0019673,
+      "lon": 35.3403296,
+      "osm_id": "node/5243780706",
+      "osm_tags": {
+        "name": "Bashay",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Antsi",
+      "lat": -3.7960355,
+      "lon": 35.5503593,
+      "osm_id": "node/5996462976",
+      "osm_tags": {
+        "is_in:ward": "Bargish",
+        "name": "Antsi",
+        "place": "village",
+        "population": "3348",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dirim",
+      "lat": -4.0109117,
+      "lon": 35.2768799,
+      "osm_id": "node/5996483072",
+      "osm_tags": {
+        "is_in:ward": "Bashay",
+        "name": "Dirim",
+        "place": "village",
+        "population": "2350",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Seronera",
+      "lat": -2.4467155,
+      "lon": 34.8190893,
+      "osm_id": "node/6018361935",
+      "osm_tags": {
+        "name": "Seronera",
+        "place": "village",
+        "wikidata": "Q6273481"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Makoma Hill",
+      "lat": -2.49053,
+      "lon": 34.7678781,
+      "osm_id": "node/6018386703",
+      "osm_tags": {
+        "name": "Makoma Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Simba Kopjes",
+      "lat": -2.6746798,
+      "lon": 34.9122727,
+      "osm_id": "node/6019129975",
+      "osm_tags": {
+        "name": "Simba Kopjes",
+        "natural": "peak",
+        "place": "locality"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muslur",
+      "lat": -4.0678092,
+      "lon": 35.267956,
+      "osm_id": "node/6034298594",
+      "osm_tags": {
+        "is_in:ward": "Dinamu",
+        "name": "Muslur",
+        "place": "village",
+        "population": "4242",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mamagi",
+      "lat": -4.0517616,
+      "lon": 35.2311866,
+      "osm_id": "node/6034298595",
+      "osm_tags": {
+        "is_in:ward": "Dinamu",
+        "name": "Mamagi",
+        "place": "village",
+        "population": "2229",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Diyomat",
+      "lat": -4.0282637,
+      "lon": 35.3244244,
+      "osm_id": "node/6034298596",
+      "osm_tags": {
+        "is_in:ward": "Dinamu",
+        "name": "Diyomat",
+        "place": "village",
+        "population": "2204",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endamilay",
+      "lat": -4.0184848,
+      "lon": 35.1677822,
+      "osm_id": "node/6035086930",
+      "osm_tags": {
+        "is_in:ward": "Endamilay",
+        "name": "Endamilay",
+        "place": "village",
+        "population": "3018",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gunyoda",
+      "lat": -3.7817016,
+      "lon": 35.4875806,
+      "osm_id": "node/6037729350",
+      "osm_tags": {
+        "is_in:ward": "Gunyoda",
+        "name": "Gunyoda",
+        "place": "village",
+        "population": "2267",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Silaloda",
+      "lat": -3.8355816,
+      "lon": 35.4436341,
+      "osm_id": "node/6037729351",
+      "osm_tags": {
+        "is_in:ward": "Gunyoda",
+        "name": "Silaloda",
+        "place": "village",
+        "population": "4665",
+        "source": "GNS-P.PPL 2016-11-11"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Losimingur",
+      "lat": -3.3943721,
+      "lon": 36.079881,
+      "osm_id": "node/6127800202",
+      "osm_tags": {
+        "name": "Losimingur",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpambala",
+      "lat": -4.0547431,
+      "lon": 34.5630344,
+      "osm_id": "node/6365423339",
+      "osm_tags": {
+        "name": "Mpambala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kainam",
+      "lat": -3.9189872,
+      "lon": 35.5770878,
+      "osm_id": "node/7044982067",
+      "osm_tags": {
+        "name": "Kainam",
+        "place": "village",
+        "population": "2796",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hareabi",
+      "lat": -3.9102953,
+      "lon": 35.5932755,
+      "osm_id": "node/7044982068",
+      "osm_tags": {
+        "name": "Hareabi",
+        "place": "village",
+        "population": "2817",
+        "source": "OpenData-NBS2012-SecondarySchools2015"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sarame",
+      "lat": -4.0075211,
+      "lon": 35.8063755,
+      "osm_id": "node/7047147396",
+      "osm_tags": {
+        "name": "Sarame",
+        "place": "village",
+        "population": "1788",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mawemairo",
+      "lat": -4.0559845,
+      "lon": 35.7615884,
+      "osm_id": "node/7047147397",
+      "osm_tags": {
+        "name": "Mawemairo",
+        "place": "village",
+        "population": "3469",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matufa",
+      "lat": -4.0324766,
+      "lon": 35.7711191,
+      "osm_id": "node/7047147398",
+      "osm_tags": {
+        "name": "Matufa",
+        "place": "village",
+        "population": "4823",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masware",
+      "lat": -4.0377274,
+      "lon": 35.7241253,
+      "osm_id": "node/7047147399",
+      "osm_tags": {
+        "name": "Masware",
+        "place": "village",
+        "population": "1745",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mapea",
+      "lat": -3.9948561,
+      "lon": 35.7624444,
+      "osm_id": "node/7047147400",
+      "osm_tags": {
+        "name": "Mapea",
+        "place": "village",
+        "population": "2963",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magugu",
+      "lat": -3.9953996,
+      "lon": 35.7817237,
+      "osm_id": "node/7047147401",
+      "osm_tags": {
+        "name": "Magugu",
+        "place": "village",
+        "population": "13064",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gichameda",
+      "lat": -3.97266,
+      "lon": 35.71631,
+      "osm_id": "node/7047147402",
+      "osm_tags": {
+        "name": "Gichameda",
+        "place": "village",
+        "population": "4922",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masieda",
+      "lat": -3.7134642,
+      "lon": 35.4618571,
+      "osm_id": "node/7047549307",
+      "osm_tags": {
+        "name": "Masieda",
+        "place": "village",
+        "population": "2789",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gembakw",
+      "lat": -3.6750712,
+      "lon": 35.4067555,
+      "osm_id": "node/7047549308",
+      "osm_tags": {
+        "name": "Gembakw",
+        "place": "village",
+        "population": "2280",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Endanyawish",
+      "lat": -3.7119611,
+      "lon": 35.2665777,
+      "osm_id": "node/7047549309",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Endanyawish",
+        "place": "hamlet",
+        "population": "1537",
+        "region": "Manyara",
+        "source": "OpenData-NBS2012-PrimairySchools2016",
+        "ward": "Masieda"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endahagichan",
+      "lat": -3.7806268,
+      "lon": 35.3981591,
+      "osm_id": "node/7047549310",
+      "osm_tags": {
+        "name": "Endahagichan",
+        "place": "village",
+        "population": "3323",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuta",
+      "lat": -3.999589,
+      "lon": 35.5811393,
+      "osm_id": "node/7047633413",
+      "osm_tags": {
+        "name": "Kuta",
+        "place": "village",
+        "population": "3001",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shaurimoyo",
+      "lat": -3.9133934,
+      "lon": 35.6932028,
+      "osm_id": "node/7047658729",
+      "osm_tags": {
+        "name": "Shaurimoyo",
+        "place": "village",
+        "population": "2555",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sangaiwe",
+      "lat": -3.9401038,
+      "lon": 35.8240894,
+      "osm_id": "node/7047658730",
+      "osm_tags": {
+        "name": "Sangaiwe",
+        "place": "village",
+        "population": "3065",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kakoi",
+      "lat": -3.771731,
+      "lon": 35.9312947,
+      "osm_id": "node/7048941475",
+      "osm_tags": {
+        "name": "Kakoi",
+        "place": "village",
+        "population": "3691",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tlawi",
+      "lat": -3.9135207,
+      "lon": 35.4663688,
+      "osm_id": "node/7049562485",
+      "osm_tags": {
+        "country": "TZ",
+        "name": "Tlawi",
+        "place": "village",
+        "population": "2005",
+        "region": "Manyara",
+        "source": "OpenData-NBS2012-SecondarySchools2015"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tumati",
+      "lat": -4.0414111,
+      "lon": 35.4196815,
+      "osm_id": "node/7049564839",
+      "osm_tags": {
+        "name": "Tumati",
+        "place": "village",
+        "population": "4132",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mongahay",
+      "lat": -4.0574343,
+      "lon": 35.4425536,
+      "osm_id": "node/7049564840",
+      "osm_tags": {
+        "name": "Mongahay",
+        "place": "village",
+        "population": "3584",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manyara",
+      "lat": -3.7951757,
+      "lon": 35.6927938,
+      "osm_id": "node/7064530117",
+      "osm_tags": {
+        "name": "Manyara",
+        "place": "village",
+        "population": "3508",
+        "source": "OpenData-NBS2012-SecondarySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hayseng",
+      "lat": -3.995941,
+      "lon": 35.4388046,
+      "osm_id": "node/7064618272",
+      "osm_tags": {
+        "name": "Hayseng",
+        "place": "village",
+        "population": "2292",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yaeda Ampa",
+      "lat": -4.0063086,
+      "lon": 35.4263441,
+      "osm_id": "node/7064618273",
+      "osm_tags": {
+        "name": "Yaeda Ampa",
+        "place": "village",
+        "population": "2345",
+        "source": "OpenData-NBS2012-PrimarySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mangisa",
+      "lat": -4.0039385,
+      "lon": 35.3736862,
+      "osm_id": "node/7064618274",
+      "osm_tags": {
+        "name": "Mangisa",
+        "place": "village",
+        "population": "3409",
+        "source": "OpenData-NBS2012-PrimarySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Laghangesh",
+      "lat": -4.0061666,
+      "lon": 35.3443574,
+      "osm_id": "node/7064618275",
+      "osm_tags": {
+        "name": "Laghangesh",
+        "place": "village",
+        "population": "1944",
+        "source": "OpenData-NBS2012-PrimarySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Arri",
+      "lat": -4.0149673,
+      "lon": 35.4594927,
+      "osm_id": "node/7064618276",
+      "osm_tags": {
+        "name": "Arri",
+        "place": "village",
+        "population": "3148",
+        "source": "OpenData-NBS2012-PrimarySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yaeda Chini",
+      "lat": -3.9633249,
+      "lon": 35.1563571,
+      "osm_id": "node/7064754057",
+      "osm_tags": {
+        "name": "Yaeda Chini",
+        "place": "village",
+        "population": "3046",
+        "source": "OpenData-NBS2012-SecondarySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moya",
+      "lat": -3.7377288,
+      "lon": 35.7171243,
+      "osm_id": "node/7470553141",
+      "osm_tags": {
+        "name": "Moya",
+        "place": "village",
+        "population": "2774",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Arash",
+      "lat": -2.3688282,
+      "lon": 35.5088031,
+      "osm_id": "node/7495152660",
+      "osm_tags": {
+        "name": "Arash",
+        "place": "village",
+        "population": "7841",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Alailelai",
+      "lat": -2.9550848,
+      "lon": 35.6986941,
+      "osm_id": "node/7495205075",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Alailelai",
+        "place": "village",
+        "population": "7351",
+        "region": "Arusha",
+        "source": "OpenData-NBS2012-PrimairySchools2016",
+        "ward": "Alailelai"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Qangdend, Baray",
+      "lat": -3.5366225,
+      "lon": 35.3705712,
+      "osm_id": "node/7499247935",
+      "osm_tags": {
+        "name": "Qangdend, Baray",
+        "place": "hamlet",
+        "population": "6011",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Matala, Baray",
+      "lat": -3.8934574,
+      "lon": 34.7568484,
+      "osm_id": "node/7499247936",
+      "osm_tags": {
+        "name": "Matala, Baray",
+        "place": "hamlet",
+        "population": "5626",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dumbechand",
+      "lat": -3.5794044,
+      "lon": 35.3168581,
+      "osm_id": "node/7499247937",
+      "osm_tags": {
+        "name": "Dumbechand",
+        "place": "hamlet",
+        "population": "3535",
+        "source": "OpenData-NBS2012-HealthFacilities2014",
+        "ward": "Baray"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Endonyawet",
+      "lat": -3.6216642,
+      "lon": 35.6661125,
+      "osm_id": "node/7499291685",
+      "osm_tags": {
+        "name": "Endonyawet",
+        "place": "hamlet",
+        "population": "3333",
+        "source": "OpenData-NBS2012-SecondarySchools2015",
+        "ward": "Buger"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Buger",
+      "lat": -3.6586372,
+      "lon": 35.6380984,
+      "osm_id": "node/7499291686",
+      "osm_tags": {
+        "name": "Buger",
+        "place": "village",
+        "population": "3994",
+        "source": "OpenData-NBS2012-SecondarySchools2015"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ayalaliyo",
+      "lat": -3.6401023,
+      "lon": 35.6533071,
+      "osm_id": "node/7499291687",
+      "osm_tags": {
+        "name": "Ayalaliyo",
+        "place": "hamlet",
+        "population": "2592",
+        "source": "OpenData-NBS2012-PrimairySchools2016",
+        "ward": "Buger"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mang'ola Juu",
+      "lat": -3.3894445,
+      "lon": 35.4992174,
+      "osm_id": "node/7501742260",
+      "osm_tags": {
+        "name": "Mang'ola Juu",
+        "place": "village",
+        "population": "3541",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makhoromba",
+      "lat": -3.3833084,
+      "lon": 35.4358778,
+      "osm_id": "node/7501742261",
+      "osm_tags": {
+        "name": "Makhoromba",
+        "place": "village",
+        "population": "1965",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Noondoto, Eleng'ata Dapash",
+      "lat": -2.98868,
+      "lon": 36.2911442,
+      "osm_id": "node/7501749977",
+      "osm_tags": {
+        "name": "Noondoto, Eleng'ata Dapash",
+        "place": "village",
+        "population": "4727",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kisangiro",
+      "lat": -2.1639048,
+      "lon": 35.7391663,
+      "osm_id": "node/7501788847",
+      "osm_tags": {
+        "name": "Kisangiro",
+        "place": "village",
+        "population": "1902",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Digodigo",
+      "lat": -2.1479497,
+      "lon": 35.7361626,
+      "osm_id": "node/7501788848",
+      "osm_tags": {
+        "alt_name": "Naidigidigo",
+        "name": "Digodigo",
+        "place": "village",
+        "population": "3320",
+        "source": "GNS_PPL_NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Qaru",
+      "lat": -3.5176583,
+      "lon": 35.6210075,
+      "osm_id": "node/7501817759",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Qaru",
+        "place": "village",
+        "population": "4797",
+        "region": "Arusha",
+        "source": "OpenData-NBS2012-SecondarySchools2015",
+        "ward": "Endabash"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Endamaghang",
+      "lat": -3.3751365,
+      "lon": 35.3364425,
+      "osm_id": "node/7501844416",
+      "osm_tags": {
+        "name": "Endamaghang",
+        "place": "hamlet",
+        "population": "2676",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Getamock",
+      "lat": -3.5206964,
+      "lon": 35.7082297,
+      "osm_id": "node/7501864652",
+      "osm_tags": {
+        "name": "Getamock",
+        "place": "village",
+        "population": "5600",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endamarariek",
+      "lat": -3.4994702,
+      "lon": 35.6679531,
+      "osm_id": "node/7501864653",
+      "osm_tags": {
+        "name": "Endamarariek",
+        "place": "village",
+        "population": "6323",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Basodowish",
+      "lat": -3.440168,
+      "lon": 35.6728718,
+      "osm_id": "node/7501864654",
+      "osm_tags": {
+        "name": "Basodowish",
+        "place": "village",
+        "population": "5393",
+        "source": "OpenData-NBS2012-SecondarySchools2015"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gyekrum Lambo",
+      "lat": -3.3969717,
+      "lon": 35.681654,
+      "osm_id": "node/7512154571",
+      "osm_tags": {
+        "name": "Gyekrum Lambo",
+        "place": "village",
+        "population": "5636",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tloma, Ganako",
+      "lat": -3.3083854,
+      "lon": 35.6664861,
+      "osm_id": "node/7512187505",
+      "osm_tags": {
+        "name": "Tloma, Ganako",
+        "place": "village",
+        "population": "10996",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ngaibara",
+      "lat": -3.6725401,
+      "lon": 35.5629301,
+      "osm_id": "node/7512226757",
+      "osm_tags": {
+        "name": "Ngaibara",
+        "place": "hamlet",
+        "population": "2455",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Laja",
+      "lat": -3.6315117,
+      "lon": 35.5466996,
+      "osm_id": "node/7512226758",
+      "osm_tags": {
+        "name": "Laja",
+        "place": "hamlet",
+        "population": "1309",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Upper Kitete, Mbulumbulu",
+      "lat": -3.243538,
+      "lon": 35.881809,
+      "osm_id": "node/7512233365",
+      "osm_tags": {
+        "name": "Upper Kitete, Mbulumbulu",
+        "place": "village",
+        "population": "4872",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Slahhamo",
+      "lat": -3.2704354,
+      "lon": 35.8388998,
+      "osm_id": "node/7512233366",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Slahhamo",
+        "place": "hamlet",
+        "population": "4384",
+        "region": "Arusha",
+        "source": "OpenData-NBS2012-SecondarySchools2015",
+        "ward": "Mbulumbulu"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lositete, Mbulumbulu",
+      "lat": -3.1794733,
+      "lon": 35.9069115,
+      "osm_id": "node/7512233367",
+      "osm_tags": {
+        "name": "Lositete, Mbulumbulu",
+        "place": "hamlet",
+        "population": "3358",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Qurus",
+      "lat": -3.4328691,
+      "lon": 35.6078522,
+      "osm_id": "node/7512313020",
+      "osm_tags": {
+        "name": "Qurus",
+        "place": "village",
+        "population": "2746",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gongali",
+      "lat": -3.3869546,
+      "lon": 35.6549547,
+      "osm_id": "node/7512313021",
+      "osm_tags": {
+        "name": "Gongali",
+        "place": "village",
+        "population": "6359",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kilimatembo",
+      "lat": -3.33527,
+      "lon": 35.7318,
+      "osm_id": "node/7512339355",
+      "osm_tags": {
+        "name": "Kilimatembo",
+        "place": "hamlet",
+        "population": "3990",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kilima Moja, Rhotia",
+      "lat": -3.3912804,
+      "lon": 35.7639086,
+      "osm_id": "node/7512339356",
+      "osm_tags": {
+        "name": "Kilima Moja, Rhotia",
+        "place": "hamlet",
+        "population": "5326",
+        "source": "OpenData-NBS2012-SecondarySchools2015"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manyara",
+      "lat": -3.813849,
+      "lon": 35.7317591,
+      "osm_id": "node/7798563950",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Babati",
+        "name": "Manyara",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Magara"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mayoka",
+      "lat": -3.7223801,
+      "lon": 35.7232619,
+      "osm_id": "node/7798563951",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Babati",
+        "name": "Mayoka",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Magara"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kisangaji",
+      "lat": -3.9137427,
+      "lon": 35.7411576,
+      "osm_id": "node/7798563966",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Babati",
+        "name": "Kisangaji",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Mwada"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngoley",
+      "lat": -3.8575671,
+      "lon": 35.8342406,
+      "osm_id": "node/7798563967",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Babati",
+        "name": "Ngoley",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Mwada"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vilima Vitatu",
+      "lat": -3.7917961,
+      "lon": 35.8568999,
+      "osm_id": "node/7798563968",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Babati",
+        "name": "Vilima Vitatu",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Nkaiti"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Osinoni",
+      "lat": -3.3613475,
+      "lon": 35.0956407,
+      "osm_id": "node/7813569993",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Osinoni",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Kakesio"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nainokanoka",
+      "lat": -3.0290231,
+      "lon": 35.6912943,
+      "osm_id": "node/7813569995",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Nainokanoka",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Nainokanoka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Samunge",
+      "lat": -2.1596884,
+      "lon": 35.6994317,
+      "osm_id": "node/7813569997",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Samunge",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Samunge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lugulu",
+      "lat": -3.2594213,
+      "lon": 34.9247185,
+      "osm_id": "node/7813569998",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Lugulu",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Lugulu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngoile",
+      "lat": -3.0419395,
+      "lon": 35.4827,
+      "osm_id": "node/7813569999",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Ngoile",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Olbaibal"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Oldonyowas",
+      "lat": -2.1715855,
+      "lon": 35.5690791,
+      "osm_id": "node/7813570002",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Oldonyowas",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Oloirien"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kisangilo",
+      "lat": -2.1299681,
+      "lon": 35.7705985,
+      "osm_id": "node/7813570003",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Kisangilo",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Digodigo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Piyaya",
+      "lat": -2.6011094,
+      "lon": 35.4832884,
+      "osm_id": "node/7813570004",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Piyaya",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Malambo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naiyobi",
+      "lat": -2.8441536,
+      "lon": 35.8417297,
+      "osm_id": "node/7813570005",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Naiyobi",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Naiyobi"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sakala",
+      "lat": -2.0581185,
+      "lon": 35.6062673,
+      "osm_id": "node/7813570006",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Sakala",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Olgosorok"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Maloon",
+      "lat": -2.2471207,
+      "lon": 35.5788581,
+      "osm_id": "node/7813570007",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Maloon",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Maalon"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Arashi",
+      "lat": -2.3500046,
+      "lon": 35.5055476,
+      "osm_id": "node/7813570008",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Arashi",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Arash"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Oloirobi",
+      "lat": -3.205949,
+      "lon": 35.4452102,
+      "osm_id": "node/7813570009",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Oloirobi",
+        "name:de": "Ngorongoro",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Ngorongoro"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Oloirien",
+      "lat": -2.1309921,
+      "lon": 35.574857,
+      "osm_id": "node/7813570012",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Oloirien",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Oloirien"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Loliondo",
+      "lat": -2.0554127,
+      "lon": 35.6219564,
+      "osm_id": "node/7813570014",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Loliondo",
+        "place": "town",
+        "region": "Arusha",
+        "ward": "Olgosorok"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Losooito",
+      "lat": -2.2337877,
+      "lon": 35.4903047,
+      "osm_id": "node/7813570015",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Losooito",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Maalon"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pinyinyi",
+      "lat": -2.3218219,
+      "lon": 35.9333241,
+      "osm_id": "node/7813570017",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Pinyinyi",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Pinyinyi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malambo",
+      "lat": -2.5459423,
+      "lon": 35.3984614,
+      "osm_id": "node/7813570018",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Malambo",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Malambo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bulati",
+      "lat": -2.9849404,
+      "lon": 35.7991544,
+      "osm_id": "node/7813570019",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Bulati",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Nainokanoka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olpiro",
+      "lat": -3.334738,
+      "lon": 35.2847083,
+      "osm_id": "node/7813570020",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Olpiro",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Ngorongoro"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Irkeepus",
+      "lat": -3.0903068,
+      "lon": 35.6895148,
+      "osm_id": "node/7813570021",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Irkeepus",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Nainokanoka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nasiporio",
+      "lat": -3.17842,
+      "lon": 35.250527,
+      "osm_id": "node/7813570022",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Nasiporio",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Enduleni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kakesio",
+      "lat": -3.3789037,
+      "lon": 34.987605,
+      "osm_id": "node/7813570023",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Kakesio",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Kakesio"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sendui",
+      "lat": -2.9138924,
+      "lon": 35.7507293,
+      "osm_id": "node/7813570024",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Sendui",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Alailelai"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lopolun",
+      "lat": -2.0976665,
+      "lon": 35.5596724,
+      "osm_id": "node/7813570025",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Lopolun",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Olgosorok"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olchaniomelek",
+      "lat": -2.9544374,
+      "lon": 35.6604119,
+      "osm_id": "node/7813570026",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Olchaniomelek",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Alailelai"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Losooito",
+      "lat": -2.1813749,
+      "lon": 35.4599562,
+      "osm_id": "node/7813570027",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Losooito",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Olgosorok"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Esere",
+      "lat": -3.2950761,
+      "lon": 35.1900814,
+      "osm_id": "node/7813570031",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Esere",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Enduleni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwaniko",
+      "lat": -3.2128336,
+      "lon": 35.2474431,
+      "osm_id": "node/7813570032",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Mwaniko",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Mwaniko"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndiyani",
+      "lat": -3.1887763,
+      "lon": 35.282175,
+      "osm_id": "node/7813570033",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Ndiyani",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Enduleni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kapenjiro",
+      "lat": -2.9426578,
+      "lon": 35.8794372,
+      "osm_id": "node/7813570034",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Kapenjiro",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Naiyobi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sale",
+      "lat": -2.2950838,
+      "lon": 35.6935606,
+      "osm_id": "node/7813570035",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Sale",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Sale"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngoyapase",
+      "lat": -3.164841,
+      "lon": 35.264263,
+      "osm_id": "node/7813570036",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Ngoyapase",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Enduleni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Oldonyosambu",
+      "lat": -2.1405927,
+      "lon": 35.88183,
+      "osm_id": "node/7813570038",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ngorongoro",
+        "name": "Oldonyosambu",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Oldonyo Sambu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matale B",
+      "lat": -2.359168,
+      "lon": 36.3793075,
+      "osm_id": "node/7815546543",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Longido",
+        "name": "Matale B",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Matale"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitumbeine",
+      "lat": -2.8259926,
+      "lon": 36.3206208,
+      "osm_id": "node/7815546550",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Longido",
+        "name": "Kitumbeine",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Kitumbeine"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Armanie",
+      "lat": -2.7996959,
+      "lon": 36.3076282,
+      "osm_id": "node/7815546551",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Longido",
+        "name": "Armanie",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Kitumbeine"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sokon, Eleng'ata Dapash",
+      "lat": -2.9323417,
+      "lon": 36.2135151,
+      "osm_id": "node/7815546552",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Longido",
+        "name": "Sokon, Eleng'ata Dapash",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Eleng'ata Dapash"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Elang'atadapa, Eleng'ata Dapash",
+      "lat": -2.9307667,
+      "lon": 36.2328055,
+      "osm_id": "node/7815546553",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Longido",
+        "name": "Elang'atadapa, Eleng'ata Dapash",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Eleng'ata Dapash"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Olchoronyokye, Eleng'ata Dapash",
+      "lat": -2.9076546,
+      "lon": 36.2602927,
+      "osm_id": "node/7815546554",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Longido",
+        "name": "Olchoronyokye, Eleng'ata Dapash",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Eleng'ata Dapash"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olorienito",
+      "lat": -2.8772558,
+      "lon": 36.1833457,
+      "osm_id": "node/7815546555",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Longido",
+        "name": "Olorienito",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Ilorienito"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Losirwa",
+      "lat": -2.8434592,
+      "lon": 36.203827,
+      "osm_id": "node/7815546556",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Longido",
+        "name": "Losirwa",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Ilorienito"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lumbwa",
+      "lat": -2.6195355,
+      "lon": 36.1867896,
+      "osm_id": "node/7815546557",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Longido",
+        "name": "Lumbwa",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Gelai lumbwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Meirugoi",
+      "lat": -2.7320866,
+      "lon": 36.1128036,
+      "osm_id": "node/7815546558",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Longido",
+        "name": "Meirugoi",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Gelai Meirugoi"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kinihe",
+      "lat": -3.5403884,
+      "lon": 35.6649573,
+      "osm_id": "node/7830243652",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Kinihe",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Endabash"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mrangarini",
+      "lat": -3.5070088,
+      "lon": 35.3284735,
+      "osm_id": "node/7830243655",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Mrangarini",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Endamaghang"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "G/Rambo",
+      "lat": -3.3933548,
+      "lon": 35.6958418,
+      "osm_id": "node/7830243657",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "G/Rambo",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Karatu"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Majengo",
+      "lat": -3.5454777,
+      "lon": 35.6093718,
+      "osm_id": "node/7830243659",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Majengo",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Majengo"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Endallah",
+      "lat": -3.4653258,
+      "lon": 35.7295865,
+      "osm_id": "node/7830243660",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Endallah",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Endamarariek"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kainam",
+      "lat": -3.351711,
+      "lon": 35.7277659,
+      "osm_id": "node/7830243662",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Kainam",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Rhotia"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kambi Ya Faru",
+      "lat": -3.6217174,
+      "lon": 35.6040289,
+      "osm_id": "node/7830243663",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Kambi Ya Faru",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Kansay"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endamaghan",
+      "lat": -3.3738961,
+      "lon": 35.3358421,
+      "osm_id": "node/7830243667",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Endamaghan",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Endamaghang"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Endashangwet",
+      "lat": -3.4275253,
+      "lon": 35.5633706,
+      "osm_id": "node/7830243668",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Endashangwet",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Daa"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kambi ya Simba",
+      "lat": -3.2711258,
+      "lon": 35.8002427,
+      "osm_id": "node/7830243669",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Kambi ya Simba",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Mbulumbulu"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Khusumay",
+      "lat": -3.4739513,
+      "lon": 35.625003,
+      "osm_id": "node/7830243670",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Khusumay",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Endabash"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kitete. Mbulumbulu",
+      "lat": -3.2421853,
+      "lon": 35.8484393,
+      "osm_id": "node/7830243673",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Kitete. Mbulumbulu",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Mbulumbulu"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Endahaghay, Endamaghang",
+      "lat": -3.3934929,
+      "lon": 35.3392174,
+      "osm_id": "node/7830243674",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Endahaghay, Endamaghang",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Endamaghang"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Qurus",
+      "lat": -3.4134492,
+      "lon": 35.6152063,
+      "osm_id": "node/7830243675",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Qurus",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Qurus"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Changarawe",
+      "lat": -3.3847579,
+      "lon": 35.57661,
+      "osm_id": "node/7830243676",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Changarawe",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Daa"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Jobaji",
+      "lat": -3.5457224,
+      "lon": 35.3483562,
+      "osm_id": "node/7830243678",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Jobaji",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Baray"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ayalalio",
+      "lat": -3.6139748,
+      "lon": 35.6591981,
+      "osm_id": "node/7830243680",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Ayalalio",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Buger"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Getamock",
+      "lat": -3.52147,
+      "lon": 35.6987085,
+      "osm_id": "node/7830243681",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Getamock",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Endamarariek"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Laghangareri",
+      "lat": -3.5429576,
+      "lon": 35.3120136,
+      "osm_id": "node/7830243683",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Laghangareri",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Mang'ola"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bashay",
+      "lat": -3.3560141,
+      "lon": 35.6253006,
+      "osm_id": "node/7830263986",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Karatu",
+        "name": "Bashay",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Qurus"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bukundi",
+      "lat": -3.8973284,
+      "lon": 34.5221108,
+      "osm_id": "node/8038345874",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Meatu",
+        "name": "Bukundi",
+        "place": "village",
+        "region": "Simiyu",
+        "ward": "Bukundi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbushi",
+      "lat": -3.5898811,
+      "lon": 34.583905,
+      "osm_id": "node/8038369987",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Meatu",
+        "name": "Mbushi",
+        "place": "village",
+        "region": "Simiyu",
+        "ward": "Mwanjolo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwabagimu",
+      "lat": -3.86298,
+      "lon": 34.6200885,
+      "osm_id": "node/8038369989",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Meatu",
+        "name": "Mwabagimu",
+        "place": "village",
+        "region": "Simiyu",
+        "ward": "Bukundi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jinamo",
+      "lat": -3.7171905,
+      "lon": 34.4969237,
+      "osm_id": "node/8038369997",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Meatu",
+        "name": "Jinamo",
+        "place": "village",
+        "region": "Simiyu",
+        "ward": "Mwanjolo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukale",
+      "lat": -3.6730731,
+      "lon": 34.7474851,
+      "osm_id": "node/8038370000",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Meatu",
+        "name": "Lukale",
+        "place": "village",
+        "region": "Simiyu",
+        "ward": "Bukundi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naitorio, Mswakini",
+      "lat": -3.6073492,
+      "lon": 36.0982376,
+      "osm_id": "node/8038398145",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Naitorio, Mswakini",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Mswakini"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Oltukay",
+      "lat": -3.6320748,
+      "lon": 35.9199187,
+      "osm_id": "node/8038398147",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Oltukay",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Esilalei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Losmingori",
+      "lat": -3.3932147,
+      "lon": 36.1931514,
+      "osm_id": "node/8038398148",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Losmingori",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Lepurko"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lemoot",
+      "lat": -3.7607012,
+      "lon": 36.3052231,
+      "osm_id": "node/8038398152",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Lemoot",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Lolkisale"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nafco",
+      "lat": -3.7189884,
+      "lon": 36.4056984,
+      "osm_id": "node/8038398153",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Nafco",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Lolkisale"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naiti",
+      "lat": -3.5157329,
+      "lon": 36.1687888,
+      "osm_id": "node/8038398156",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Naiti",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Makuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Losirwa",
+      "lat": -3.3744178,
+      "lon": 35.907691,
+      "osm_id": "node/8038398159",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Losirwa",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Esilalei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mswakini Juu",
+      "lat": -3.6668191,
+      "lon": 36.0553307,
+      "osm_id": "node/8038398160",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Mswakini Juu",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Mswakini"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mswakini",
+      "lat": -3.6564388,
+      "lon": 35.9924456,
+      "osm_id": "node/8038398162",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Mswakini",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Mswakini"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Engaruka",
+      "lat": -2.9943046,
+      "lon": 35.9836468,
+      "osm_id": "node/8038398163",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Engaruka",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Engaruka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Arkan",
+      "lat": -3.4168188,
+      "lon": 36.3919878,
+      "osm_id": "node/8038398168",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Arkan",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Sepeko"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lepruko",
+      "lat": -3.348829,
+      "lon": 36.2280842,
+      "osm_id": "node/8038398169",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Lepruko",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Lepurko"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Arkaria, Sepeko",
+      "lat": -3.3300079,
+      "lon": 36.3064496,
+      "osm_id": "node/8038398171",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Arkaria, Sepeko",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Sepeko"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mti Mmoja",
+      "lat": -3.4036586,
+      "lon": 36.314355,
+      "osm_id": "node/8038398172",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Mti Mmoja",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Sepeko"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Esilalei",
+      "lat": -3.4834737,
+      "lon": 35.996481,
+      "osm_id": "node/8038398173",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Esilalei",
+        "place": "hamlet",
+        "region": "Arusha",
+        "ward": "Esilalei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Migungani",
+      "lat": -3.3764001,
+      "lon": 35.887171,
+      "osm_id": "node/8038398175",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Migungani",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Esilalei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Selela",
+      "lat": -3.2090521,
+      "lon": 35.9479186,
+      "osm_id": "node/8038398176",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Selela",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Selela"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lendikinya, Sepeko",
+      "lat": -3.3419096,
+      "lon": 36.3552609,
+      "osm_id": "node/8038398178",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Lendikinya, Sepeko",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Sepeko"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Arkatan",
+      "lat": -3.4167423,
+      "lon": 36.3912758,
+      "osm_id": "node/8038398179",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Arkatan",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Sepeko"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbashi",
+      "lat": -3.209895,
+      "lon": 36.067131,
+      "osm_id": "node/8038398180",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Mbashi",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Selela"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Migombani",
+      "lat": -3.3506235,
+      "lon": 35.8471311,
+      "osm_id": "node/8038398182",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Migombani",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Majengo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Losmangori",
+      "lat": -3.4223933,
+      "lon": 36.1893402,
+      "osm_id": "node/8038398183",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Losmangori",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Lepurko"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mungere",
+      "lat": -3.3152604,
+      "lon": 35.884496,
+      "osm_id": "node/8038398184",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Mungere",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Esilalei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endahagichan",
+      "lat": -3.7824095,
+      "lon": 35.3863425,
+      "osm_id": "node/8038410317",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Endahagichan",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Masieda"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ayaingi",
+      "lat": -3.8745,
+      "lon": 35.55275,
+      "osm_id": "node/8038410318",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Ayaingi",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Ayamaami"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Laghangeshi",
+      "lat": -4.0058646,
+      "lon": 35.3413477,
+      "osm_id": "node/8038410319",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Laghangeshi",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Yaeda Ampa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sanu Baray",
+      "lat": -3.86,
+      "lon": 35.5505,
+      "osm_id": "node/8038410320",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Sanu Baray",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Sanu Baray"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ants",
+      "lat": -3.7955031,
+      "lon": 35.548357,
+      "osm_id": "node/8038410321",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Ants",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Bargish"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gembakw",
+      "lat": -3.6744614,
+      "lon": 35.4053651,
+      "osm_id": "node/8038410322",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Gembakw",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Masieda"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Marang",
+      "lat": -3.7316726,
+      "lon": 35.5648294,
+      "osm_id": "node/8038410323",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Marang",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Marang"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Aicho",
+      "lat": -3.7042028,
+      "lon": 35.5340366,
+      "osm_id": "node/8038410324",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Aicho",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Marang"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tsaayo",
+      "lat": -3.9123399,
+      "lon": 35.5782565,
+      "osm_id": "node/8038410325",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Tsaayo",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Kainam"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mongahay",
+      "lat": -4.0508713,
+      "lon": 35.4482668,
+      "osm_id": "node/8038410328",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Mongahay",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Tumati"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Eshkesh",
+      "lat": -3.9649577,
+      "lon": 35.0653918,
+      "osm_id": "node/8038410329",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Eshkesh",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Eshkesh"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tumati",
+      "lat": -4.0329185,
+      "lon": 35.4211319,
+      "osm_id": "node/8038410330",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Tumati",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Tumati"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hasangw",
+      "lat": -4.004782,
+      "lon": 35.441444,
+      "osm_id": "node/8038410331",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Hasangw",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Yaeda Ampa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mongo Wa Mono",
+      "lat": -3.8740314,
+      "lon": 35.2594199,
+      "osm_id": "node/8038410332",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Mongo Wa Mono",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Yaeda Chini"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yaeda Chini",
+      "lat": -3.9519963,
+      "lon": 35.1548871,
+      "osm_id": "node/8038410334",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Yaeda Chini",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Yaeda Chini"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Imboru",
+      "lat": -3.8575998,
+      "lon": 35.5164908,
+      "osm_id": "node/8038410335",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Imboru",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Imboru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gedamar",
+      "lat": -3.822003,
+      "lon": 35.4926044,
+      "osm_id": "node/8038410337",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Gedamar",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Gunyoda"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kainam",
+      "lat": -3.841711,
+      "lon": 35.5920107,
+      "osm_id": "node/8038410338",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Kainam",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Gehandu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Landa",
+      "lat": -3.84216,
+      "lon": 35.59204,
+      "osm_id": "node/8038410340",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Landa",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Gehandu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sanu Kati",
+      "lat": -3.8565,
+      "lon": 35.5535,
+      "osm_id": "node/8038410341",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Sanu Kati",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Sanu Baray"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gwandumehi",
+      "lat": -3.7374341,
+      "lon": 35.557113,
+      "osm_id": "node/8038410342",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Gwandumehi",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Marang"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ari",
+      "lat": -4.0140047,
+      "lon": 35.452923,
+      "osm_id": "node/8038410345",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Ari",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Yaeda Ampa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masieda",
+      "lat": -3.6948904,
+      "lon": 35.4697812,
+      "osm_id": "node/8038410347",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Masieda",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Masieda"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uhuru",
+      "lat": -3.8449634,
+      "lon": 35.5374882,
+      "osm_id": "node/8038410348",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Uhuru",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Imboru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hayahaya",
+      "lat": -3.871,
+      "lon": 35.541,
+      "osm_id": "node/8038410349",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Hayahaya",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Ayamaami"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dongobesh juu",
+      "lat": -4.057,
+      "lon": 35.338,
+      "osm_id": "node/8038410350",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Dongobesh juu",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Dongobesh"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Domanga",
+      "lat": -3.9446767,
+      "lon": 34.9501338,
+      "osm_id": "node/8038410351",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Domanga",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Eshkesh"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Harbanget",
+      "lat": -3.8692,
+      "lon": 35.4088,
+      "osm_id": "node/8038410352",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Harbanget",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Masqaroda"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kainam",
+      "lat": -3.9358726,
+      "lon": 35.5905743,
+      "osm_id": "node/8038410355",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Kainam",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Kainam"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Silaloda",
+      "lat": -3.8445836,
+      "lon": 35.4668688,
+      "osm_id": "node/8038410356",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Silaloda",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Gunyoda"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ayamohe",
+      "lat": -3.8433333,
+      "lon": 35.5606667,
+      "osm_id": "node/8038410360",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Ayamohe",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Ayamohe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sanu Ayapara",
+      "lat": -3.8600124,
+      "lon": 35.5557296,
+      "osm_id": "node/8038410362",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Sanu Ayapara",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Sanu Baray"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Guneneda",
+      "lat": -3.9179101,
+      "lon": 35.4509001,
+      "osm_id": "node/8038410364",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Guneneda",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Tlawi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Basodarer",
+      "lat": -4.054,
+      "lon": 35.208,
+      "osm_id": "node/8038410366",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Basodarer",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Maghang"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moringa",
+      "lat": -3.7591555,
+      "lon": 35.5781963,
+      "osm_id": "node/8038410369",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Moringa",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Murray"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endamilay",
+      "lat": -4.047,
+      "lon": 35.1365,
+      "osm_id": "node/8038410370",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Endamilay",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Endamilay"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hayloto",
+      "lat": -3.924,
+      "lon": 35.55,
+      "osm_id": "node/8038410371",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Hayloto",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Nambisi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yaeda Ampa",
+      "lat": -4.0064044,
+      "lon": 35.4156554,
+      "osm_id": "node/8038410374",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Yaeda Ampa",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Yaeda Ampa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Murray",
+      "lat": -3.9650204,
+      "lon": 35.5564045,
+      "osm_id": "node/8038410375",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Murray",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Murray"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Khaday",
+      "lat": -3.8782,
+      "lon": 35.5242,
+      "osm_id": "node/8038410377",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Khaday",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Endagikot"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endagikot",
+      "lat": -3.8644424,
+      "lon": 35.5311177,
+      "osm_id": "node/8038410378",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Endagikot",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Imboru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Laghandamur",
+      "lat": -3.7787829,
+      "lon": 35.5674423,
+      "osm_id": "node/8038410379",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Laghandamur",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Bargish"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sanu Gilala",
+      "lat": -3.863,
+      "lon": 35.508,
+      "osm_id": "node/8038410380",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Sanu Gilala",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Imboru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ayamaami",
+      "lat": -3.87825,
+      "lon": 35.5534167,
+      "osm_id": "node/8038410382",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Ayamaami",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Ayamaami"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bargish Uwa",
+      "lat": -3.8088562,
+      "lon": 35.5285873,
+      "osm_id": "node/8038410383",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Bargish Uwa",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Bargish"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tsawe",
+      "lat": -3.8266022,
+      "lon": 35.6434988,
+      "osm_id": "node/8038410384",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Tsawe",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Gehandu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endadubu",
+      "lat": -3.83,
+      "lon": 35.34,
+      "osm_id": "node/8038422385",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Endadubu",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Masqaroda"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Genda",
+      "lat": -4.024,
+      "lon": 35.278,
+      "osm_id": "node/8038422387",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Genda",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Dinamu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mishiqo",
+      "lat": -3.881,
+      "lon": 35.541,
+      "osm_id": "node/8038422389",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Mishiqo",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Ayamaami"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endamaksi",
+      "lat": -3.8801687,
+      "lon": 35.5116227,
+      "osm_id": "node/8038422390",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Endamaksi",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Endagikot"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Isale",
+      "lat": -3.849,
+      "lon": 35.535,
+      "osm_id": "node/8038422394",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Isale",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Imboru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Qualyeda",
+      "lat": -3.7827706,
+      "lon": 35.5139217,
+      "osm_id": "node/8038422395",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Qualyeda",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Gunyoda"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gunyoda",
+      "lat": -3.7795363,
+      "lon": 35.484605,
+      "osm_id": "node/8038422396",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Gunyoda",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Gunyoda"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Anslay",
+      "lat": -3.842,
+      "lon": 35.575,
+      "osm_id": "node/8038422397",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Anslay",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Ayamohe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sanugawa",
+      "lat": -3.8609652,
+      "lon": 35.5452584,
+      "osm_id": "node/8038422399",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Sanugawa",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Sanu Baray"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bashay",
+      "lat": -3.9974302,
+      "lon": 35.3185101,
+      "osm_id": "node/8038422400",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Bashay",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Bashay"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Garbabi",
+      "lat": -3.92,
+      "lon": 35.3636667,
+      "osm_id": "node/8038422401",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Garbabi",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Masqaroda"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tango",
+      "lat": -3.874,
+      "lon": 35.522,
+      "osm_id": "node/8038422403",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Tango",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Endagikot"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Harsha",
+      "lat": -3.9817885,
+      "lon": 35.3365233,
+      "osm_id": "node/8038422404",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Harsha",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Bashay"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ujenzi",
+      "lat": -3.858,
+      "lon": 35.532,
+      "osm_id": "node/8038422406",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Ujenzi",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Uhuru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endalat",
+      "lat": -4.0275,
+      "lon": 35.19,
+      "osm_id": "node/8038422407",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Endalat",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Endamilay"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yaeda Kati",
+      "lat": -3.9938731,
+      "lon": 35.2988874,
+      "osm_id": "node/8038422408",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Yaeda Kati",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Bashay"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dongobesh",
+      "lat": -4.0579271,
+      "lon": 35.3659717,
+      "osm_id": "node/8038422410",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Dongobesh",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Dongobesh"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jaranjar",
+      "lat": -3.8917182,
+      "lon": 35.4810884,
+      "osm_id": "node/8038422412",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Jaranjar",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Tlawi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Qashan",
+      "lat": -3.834,
+      "lon": 35.575,
+      "osm_id": "node/8038422413",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Qashan",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Ayamohe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lagandamur",
+      "lat": -3.7952128,
+      "lon": 35.5559351,
+      "osm_id": "node/8038422415",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mbulu",
+        "name": "Lagandamur",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Bargish"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Emairete",
+      "lat": -3.2545737,
+      "lon": 36.3933578,
+      "osm_id": "node/8038455585",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Monduli",
+        "name": "Emairete",
+        "place": "village",
+        "region": "Arusha",
+        "ward": "Monduli juu"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Cloud",
+      "lat": -2.7487408,
+      "lon": 35.2709927,
+      "osm_id": "node/8691954288",
+      "osm_tags": {
+        "name": "Cloud",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malambo",
+      "lat": -2.508228,
+      "lon": 35.605799,
+      "osm_id": "node/8719449256",
+      "osm_tags": {
+        "name": "Malambo",
+        "place": "village",
+        "wikidata": "Q7193818"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ngurumani",
+      "lat": -2.9703469,
+      "lon": 35.5108595,
+      "osm_id": "node/9364124572",
+      "osm_tags": {
+        "name": "Ngurumani",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Loomunyi",
+      "lat": -3.0565143,
+      "lon": 35.5512214,
+      "osm_id": "node/9364124573",
+      "osm_tags": {
+        "name": "Loomunyi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Oonjurai",
+      "lat": -3.0454792,
+      "lon": 35.5134666,
+      "osm_id": "node/9364124582",
+      "osm_tags": {
+        "name": "Oonjurai",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mikocheni, Edamaghang",
+      "lat": -3.4749368,
+      "lon": 35.3572928,
+      "osm_id": "node/9407457063",
+      "osm_tags": {
+        "name": "Mikocheni, Edamaghang",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kambi Ya Simba, Mbulumbulu",
+      "lat": -3.2838881,
+      "lon": 35.8064028,
+      "osm_id": "node/9441722723",
+      "osm_tags": {
+        "name": "Kambi Ya Simba, Mbulumbulu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Eleng'ata Dapash",
+      "lat": -2.979943,
+      "lon": 36.2660693,
+      "osm_id": "node/9491413472",
+      "osm_tags": {
+        "name": "Eleng'ata Dapash",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Munguli",
+      "lat": -4.0221731,
+      "lon": 34.8350581,
+      "osm_id": "node/10136751527",
+      "osm_tags": {
+        "alt_name": "Kikaranga B",
+        "name": "Munguli",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ilongo",
+      "lat": -4.0700355,
+      "lon": 34.6316528,
+      "osm_id": "node/10137815041",
+      "osm_tags": {
+        "name": "Ilongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Munung'Una",
+      "lat": -4.0681814,
+      "lon": 34.7918826,
+      "osm_id": "node/10137815088",
+      "osm_tags": {
+        "name": "Munung'Una",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gidamba",
+      "lat": -3.7512403,
+      "lon": 35.5092502,
+      "osm_id": "node/10658185880",
+      "osm_tags": {
+        "name": "Gidamba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ol Doinyo Lengai (highest point crater rim)",
+      "lat": -2.760508,
+      "lon": 35.9145507,
+      "osm_id": "node/11950456671",
+      "osm_tags": {
+        "ele": "2878",
+        "name": "Ol Doinyo Lengai (highest point crater rim)",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pakase",
+      "lat": -2.0594968,
+      "lon": 36.0405222,
+      "osm_id": "node/12573930992",
+      "osm_tags": {
+        "name": "Pakase",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Endoinyo Olasho",
+      "lat": -2.1528007,
+      "lon": 36.1773432,
+      "osm_id": "node/12573951978",
+      "osm_tags": {
+        "name": "Endoinyo Olasho",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Orikisma",
+      "lat": -3.4773957,
+      "lon": 36.1729306,
+      "osm_id": "node/13100262187",
+      "osm_tags": {
+        "name": "Orikisma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Manyara",
+      "lat": -3.6223657,
+      "lon": 35.8222799,
+      "osm_id": "way/4262744",
+      "osm_tags": {
+        "boat": "no",
+        "canoe": "no",
+        "description": "wet season water level",
+        "ele": "955",
+        "is_in": "Tanzania",
+        "motorboat": "no",
+        "name": "Lake Manyara",
+        "name:ar": "\u0628\u062d\u064a\u0631\u0629 \u0645\u0627\u0646\u064a\u0627\u0631\u0627",
+        "name:cs": "jezero Manyara",
+        "name:de": "Manyara-See",
+        "name:en": "Lake Manyara",
+        "name:sk": "jazero Manyara",
+        "natural": "water",
+        "salt": "yes",
+        "ship": "no",
+        "sorting_name:cs": "Manyara",
+        "sorting_name:sk": "Manyara",
+        "source": "Landsat",
+        "water": "lake",
+        "wikidata": "Q577148",
+        "wikipedia": "en:Lake Manyara"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Eyasi",
+      "lat": -3.5922133,
+      "lon": 35.0383856,
+      "osm_id": "way/4262745",
+      "osm_tags": {
+        "name": "Lake Eyasi",
+        "name:de": "Eyasisee",
+        "name:fr": "Lac Eyasi",
+        "name:it": "Lago Eyasi",
+        "natural": "water",
+        "old_name:de": "Hohenlohesee",
+        "source": "EOx cloudless Sentinel-2 2021",
+        "water": "lake",
+        "wikidata": "Q1291135",
+        "wikimedia_commons": "Category:Lake Eyasi",
+        "wikipedia": "en:Lake Eyasi"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Magadi",
+      "lat": -3.1932946,
+      "lon": 35.5356983,
+      "osm_id": "way/23562481",
+      "osm_tags": {
+        "is_in": "Tanzania",
+        "name": "Lake Magadi",
+        "name:cs": "jezero Magadi",
+        "name:de": "Magadisee",
+        "name:fr": "Lac Magadi",
+        "name:it": "Lago Magadi",
+        "name:sk": "jazero Magadi",
+        "natural": "water",
+        "sorting_name:cs": "Magadi",
+        "sorting_name:sk": "Magadi",
+        "water": "lake",
+        "wikidata": "Q112204601",
+        "wikipedia": "en:Lake Magadi (Ngorongoro)"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Empakaai",
+      "lat": -2.9122227,
+      "lon": 35.8410749,
+      "osm_id": "way/23562501",
+      "osm_tags": {
+        "name": "Lake Empakaai",
+        "natural": "water",
+        "salt": "yes",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Natron",
+      "lat": -2.3470894,
+      "lon": 36.0105742,
+      "osm_id": "way/23786069",
+      "osm_tags": {
+        "name": "Lake Natron",
+        "name:de": "Natronsee",
+        "name:es": "Lago Natron",
+        "name:fr": "Lac Natron",
+        "name:it": "Lago Natron",
+        "name:pt": "Lago Natron",
+        "name:sk": "Sodn\u00e9 jazero",
+        "natural": "water",
+        "water": "lake",
+        "wikidata": "Q838080",
+        "wikipedia": "en:Lake Natron"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jambi River",
+      "lat": -3.5625832,
+      "lon": 35.7121059,
+      "osm_id": "way/30802873",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Jambi River",
+        "source": "Yahoo, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Makati",
+      "lat": -2.6574331,
+      "lon": 34.7943591,
+      "osm_id": "way/30804798",
+      "osm_tags": {
+        "name": "Lake Makati",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Ndutu",
+      "lat": -3.0026529,
+      "lon": 34.9999242,
+      "osm_id": "way/30810773",
+      "osm_tags": {
+        "name": "Lake Ndutu",
+        "natural": "water",
+        "salt": "no",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Masek",
+      "lat": -3.0268852,
+      "lon": 35.0402181,
+      "osm_id": "way/30810774",
+      "osm_tags": {
+        "name": "Lake Masek",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munge River",
+      "lat": -3.0888769,
+      "lon": 35.6128056,
+      "osm_id": "way/43196957",
+      "osm_tags": {
+        "name": "Munge River",
+        "waterway": "river",
+        "wikidata": "Q53765031"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oldupai River",
+      "lat": -2.9729563,
+      "lon": 35.3019581,
+      "osm_id": "way/43196960",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oldupai River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Norkuman River",
+      "lat": -3.0275503,
+      "lon": 35.2981206,
+      "osm_id": "way/43197473",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Norkuman River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Engejung'iro",
+      "lat": -3.1118636,
+      "lon": 35.1313746,
+      "osm_id": "way/43197505",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Engejung'iro",
+        "source": "Landsat",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Engeju Engitok",
+      "lat": -3.1090492,
+      "lon": 35.0881025,
+      "osm_id": "way/43197630",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Engeju Engitok",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Elemeti",
+      "lat": -2.9884552,
+      "lon": 34.9236806,
+      "osm_id": "way/43197742",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lake Elemeti",
+        "natural": "water",
+        "salt": "yes",
+        "source": "Landsat",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Loburo",
+      "lat": -3.0794739,
+      "lon": 35.9630935,
+      "osm_id": "way/81246718",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Loburo",
+        "source": "Landsat",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pinyinyi",
+      "lat": -2.4555354,
+      "lon": 35.8664231,
+      "osm_id": "way/81246758",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Pinyinyi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Saglela",
+      "lat": -3.1057074,
+      "lon": 35.9734488,
+      "osm_id": "way/81246765",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Saglela",
+        "source": "Landsat",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Mandusi Hippo Pool",
+      "lat": -3.1590108,
+      "lon": 35.5493504,
+      "osm_id": "way/125531338",
+      "osm_tags": {
+        "name": "Mandusi Hippo Pool",
+        "name:cs": "hro\u0161\u00ed jez\u00edrko Mandusi",
+        "name:de": "Mandusi-Flusspferd-See",
+        "name:sk": "hro\u0161\u00ed jaz\u00edrko Mandusi",
+        "natural": "water",
+        "sorting_name:cs": "Mandusi",
+        "sorting_name:sk": "Mandusi",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyabogati River",
+      "lat": -2.393593,
+      "lon": 35.1340989,
+      "osm_id": "way/130917276",
+      "osm_tags": {
+        "name": "Nyabogati River",
+        "source": "ESRI Weltbilder",
+        "source:date": "2024-10-10",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Seronera River",
+      "lat": -2.3871224,
+      "lon": 34.8011281,
+      "osm_id": "way/131948059",
+      "osm_tags": {
+        "name": "Seronera River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ngare Nanyuki",
+      "lat": -2.4307961,
+      "lon": 34.9581384,
+      "osm_id": "way/170084393",
+      "osm_tags": {
+        "name": "Ngare Nanyuki",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyabogati River",
+      "lat": -2.3237404,
+      "lon": 34.8920414,
+      "osm_id": "way/170084941",
+      "osm_tags": {
+        "check_date": "2024-10-10",
+        "name": "Nyabogati River",
+        "source": "ESRI Weltbilder",
+        "waterway": "river",
+        "width": "5"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sibiti",
+      "lat": -3.8881942,
+      "lon": 34.5985482,
+      "osm_id": "way/170283786",
+      "osm_tags": {
+        "name": "Sibiti",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Seronera River",
+      "lat": -2.5794097,
+      "lon": 34.9304821,
+      "osm_id": "way/172544974",
+      "osm_tags": {
+        "name": "Seronera River",
+        "source": "ESRI 2024",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ngooyangolani",
+      "lat": -2.626273,
+      "lon": 34.8120513,
+      "osm_id": "way/173605459",
+      "osm_tags": {
+        "name": "Ngooyangolani",
+        "source": "ESRI",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti",
+      "lat": -2.5508958,
+      "lon": 34.653719,
+      "osm_id": "way/173605471",
+      "osm_tags": {
+        "name": "Mbalageti",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mbalageti",
+      "lat": -2.7616939,
+      "lon": 34.8372163,
+      "osm_id": "way/173611742",
+      "osm_tags": {
+        "name": "Mbalageti",
+        "source": "ESRI Weltbilder",
+        "source:date": "2022-12-31",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti River",
+      "lat": -2.6834421,
+      "lon": 34.8014028,
+      "osm_id": "way/173611744",
+      "osm_tags": {
+        "name": "Mbalageti River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Thalwi",
+      "lat": -4.1389518,
+      "lon": 35.7651109,
+      "osm_id": "way/180746758",
+      "osm_tags": {
+        "name": "Thalwi",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Makuyuni",
+      "lat": -3.5793102,
+      "lon": 36.0693355,
+      "osm_id": "way/209448860",
+      "osm_tags": {
+        "name": "Makuyuni",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Engare Rongai River",
+      "lat": -3.7907578,
+      "lon": 36.0723105,
+      "osm_id": "way/209448862",
+      "osm_tags": {
+        "name": "Engare Rongai River",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Semu",
+      "lat": -3.3265613,
+      "lon": 34.4162702,
+      "osm_id": "way/287925945",
+      "osm_tags": {
+        "name": "Semu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Barai",
+      "lat": -3.5289911,
+      "lon": 35.3682156,
+      "osm_id": "way/297618893",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Barai",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ardai",
+      "lat": -3.4582962,
+      "lon": 36.4096624,
+      "osm_id": "way/297887764",
+      "osm_tags": {
+        "name": "Ardai",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Engorika",
+      "lat": -3.5392996,
+      "lon": 36.3147448,
+      "osm_id": "way/297887765",
+      "osm_tags": {
+        "name": "Engorika",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loorela",
+      "lat": -3.5125763,
+      "lon": 36.4197717,
+      "osm_id": "way/297887767",
+      "osm_tags": {
+        "name": "Loorela",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Buani",
+      "lat": -3.5284408,
+      "lon": 36.2388768,
+      "osm_id": "way/298136629",
+      "osm_tags": {
+        "name": "Buani",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Esikirai",
+      "lat": -3.5267622,
+      "lon": 36.2536293,
+      "osm_id": "way/298136630",
+      "osm_tags": {
+        "name": "Esikirai",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Engaruka",
+      "lat": -2.9966223,
+      "lon": 35.9926736,
+      "osm_id": "way/298785645",
+      "osm_tags": {
+        "name": "Engaruka",
+        "source": "bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loilera",
+      "lat": -3.5723634,
+      "lon": 36.1952778,
+      "osm_id": "way/298803220",
+      "osm_tags": {
+        "name": "Loilera",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Endamarariek",
+      "lat": -3.4493011,
+      "lon": 35.6782652,
+      "osm_id": "way/298846372",
+      "osm_tags": {
+        "name": "Lake Endamarariek",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itembe",
+      "lat": -3.7563794,
+      "lon": 34.465871,
+      "osm_id": "way/300618137",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Itembe",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndili",
+      "lat": -3.5292946,
+      "lon": 34.5120533,
+      "osm_id": "way/300618146",
+      "osm_tags": {
+        "name": "Ndili",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mongomawe",
+      "lat": -3.4133087,
+      "lon": 34.6898421,
+      "osm_id": "way/300656909",
+      "osm_tags": {
+        "name": "Mongomawe",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwabugaleji",
+      "lat": -3.4884533,
+      "lon": 34.4731858,
+      "osm_id": "way/300656910",
+      "osm_tags": {
+        "name": "Mwabugaleji",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwanyagula",
+      "lat": -3.506209,
+      "lon": 34.4343169,
+      "osm_id": "way/300656911",
+      "osm_tags": {
+        "name": "Mwanyagula",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Endarufta",
+      "lat": -3.8420239,
+      "lon": 34.9553506,
+      "osm_id": "way/300753440",
+      "osm_tags": {
+        "name": "Endarufta",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Endarufta",
+      "lat": -3.8600562,
+      "lon": 34.9691703,
+      "osm_id": "way/300753441",
+      "osm_tags": {
+        "name": "Endarufta",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bad",
+      "lat": -3.8439027,
+      "lon": 34.4185564,
+      "osm_id": "way/300769280",
+      "osm_tags": {
+        "name": "Bad",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Endagulda",
+      "lat": -4.0358755,
+      "lon": 35.0203959,
+      "osm_id": "way/312398679",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2562349",
+        "GNS:modify_date": "2011-02-02",
+        "intermittent": "yes",
+        "name": "Endagulda",
+        "source": "Bing, GNS, Series Y742 - Sheet 84/1",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Endagulda",
+      "lat": -4.0579548,
+      "lon": 35.0481817,
+      "osm_id": "way/312398680",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2562349",
+        "GNS:modify_date": "2011-02-02",
+        "intermittent": "yes",
+        "name": "Endagulda",
+        "source": "Bing, GNS, Series Y742 - Sheet 84/1",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Grumeti",
+      "lat": -2.1786486,
+      "lon": 34.263323,
+      "osm_id": "way/327568843",
+      "osm_tags": {
+        "name": "Grumeti",
+        "name:en": "Grumenti River",
+        "name:sw": "Mto Grumeti",
+        "source": "Yahoo;bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kirurum",
+      "lat": -3.3650838,
+      "lon": 35.8306624,
+      "osm_id": "way/364647439",
+      "osm_tags": {
+        "name": "Kirurum",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mto Wa Mbo",
+      "lat": -3.3245243,
+      "lon": 35.8449577,
+      "osm_id": "way/364647442",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mto Wa Mbo",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mto Wa Simba",
+      "lat": -3.3422208,
+      "lon": 35.8335921,
+      "osm_id": "way/364647458",
+      "osm_tags": {
+        "name": "Mto Wa Simba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Wheat Stream",
+      "lat": -3.2963973,
+      "lon": 35.8562622,
+      "osm_id": "way/364647480",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Wheat Stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Hhaynu River",
+      "lat": -3.9545727,
+      "lon": 35.608675,
+      "osm_id": "way/421122337",
+      "osm_tags": {
+        "depth": "10",
+        "name": "Hhaynu River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nambis River",
+      "lat": -3.9664455,
+      "lon": 35.6194067,
+      "osm_id": "way/421122338",
+      "osm_tags": {
+        "depth": "10",
+        "name": "Nambis River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nambis River",
+      "lat": -3.969591,
+      "lon": 35.6266296,
+      "osm_id": "way/421480473",
+      "osm_tags": {
+        "depth": "10",
+        "name": "Nambis River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nyandelema",
+      "lat": -2.161122,
+      "lon": 35.0854231,
+      "osm_id": "way/423524564",
+      "osm_tags": {
+        "name": "Nyandelema",
+        "source": "Bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Seronera River",
+      "lat": -2.483905,
+      "lon": 34.8157365,
+      "osm_id": "way/429929777",
+      "osm_tags": {
+        "name": "Seronera River",
+        "source": "Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orangi River",
+      "lat": -2.2263599,
+      "lon": 35.0970327,
+      "osm_id": "way/442574737",
+      "osm_tags": {
+        "name": "Orangi River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oloipiri",
+      "lat": -2.1519173,
+      "lon": 35.1890362,
+      "osm_id": "way/443380081",
+      "osm_tags": {
+        "name": "Oloipiri",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ngare Naironya",
+      "lat": -2.1060475,
+      "lon": 35.1103915,
+      "osm_id": "way/443793392",
+      "osm_tags": {
+        "name": "Ngare Naironya",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ngare Naironya",
+      "lat": -2.0511458,
+      "lon": 35.1716028,
+      "osm_id": "way/443793393",
+      "osm_tags": {
+        "name": "Ngare Naironya",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oloipiri",
+      "lat": -2.0117288,
+      "lon": 35.3665732,
+      "osm_id": "way/443805054",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oloipiri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orangi River",
+      "lat": -2.2561061,
+      "lon": 34.6233225,
+      "osm_id": "way/452485007",
+      "osm_tags": {
+        "check_date": "2024-08-04",
+        "name": "Orangi River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Southern Ewaso Ng'iro",
+      "lat": -1.9110059,
+      "lon": 36.1149231,
+      "osm_id": "way/455275903",
+      "osm_tags": {
+        "name": "Southern Ewaso Ng'iro",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Grumeti",
+      "lat": -2.2509309,
+      "lon": 34.4761793,
+      "osm_id": "way/461762192",
+      "osm_tags": {
+        "name": "Grumeti",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tarangire River",
+      "lat": -3.8046237,
+      "lon": 35.8968021,
+      "osm_id": "way/466520691",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Tarangire River",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tarangire River",
+      "lat": -3.792756,
+      "lon": 35.9676228,
+      "osm_id": "way/466520692",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Tarangire River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sibiti",
+      "lat": -3.9227639,
+      "lon": 34.5550966,
+      "osm_id": "way/473948622",
+      "osm_tags": {
+        "name": "Sibiti",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sibiti",
+      "lat": -3.9228023,
+      "lon": 34.5822895,
+      "osm_id": "way/473948623",
+      "osm_tags": {
+        "name": "Sibiti",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yambi River",
+      "lat": -3.6570718,
+      "lon": 35.7352616,
+      "osm_id": "way/476628616",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Yambi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Endabash River",
+      "lat": -3.4999234,
+      "lon": 35.7704911,
+      "osm_id": "way/476670327",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Endabash River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Aray River",
+      "lat": -3.6364398,
+      "lon": 35.7380805,
+      "osm_id": "way/476670341",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Aray River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ndala River",
+      "lat": -3.4697817,
+      "lon": 35.7840282,
+      "osm_id": "way/476694060",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ndala River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Bagayo River",
+      "lat": -3.4817902,
+      "lon": 35.7711596,
+      "osm_id": "way/476694066",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Bagayo River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Marera",
+      "lat": -3.3862914,
+      "lon": 35.8180222,
+      "osm_id": "way/476769405",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Marera",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Marera",
+      "lat": -3.4125641,
+      "lon": 35.8234069,
+      "osm_id": "way/476769426",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Marera",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mto wa Mbu",
+      "lat": -3.3925974,
+      "lon": 35.8463617,
+      "osm_id": "way/476769450",
+      "osm_tags": {
+        "name": "Mto wa Mbu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mikundu River",
+      "lat": -3.4175749,
+      "lon": 35.8089856,
+      "osm_id": "way/476769455",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mikundu River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mchanga River",
+      "lat": -3.4246645,
+      "lon": 35.8012362,
+      "osm_id": "way/476769457",
+      "osm_tags": {
+        "name": "Mchanga River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msasa River",
+      "lat": -3.4351936,
+      "lon": 35.7975185,
+      "osm_id": "way/476769488",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msasa River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chem Chem River",
+      "lat": -3.4533917,
+      "lon": 35.7902566,
+      "osm_id": "way/476769493",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chem Chem River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Vidimbwini",
+      "lat": -3.1585182,
+      "lon": 35.5286357,
+      "osm_id": "way/477782603",
+      "osm_tags": {
+        "alt_name": "Goose Pond",
+        "alt_name:cs": "Hus\u00ed jez\u00edrko",
+        "alt_name:de": "G\u00e4nset\u00fcmpel",
+        "alt_name:sk": "Hus\u00ed jaz\u00edrko",
+        "name": "Vidimbwini",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Layanai River",
+      "lat": -3.1277818,
+      "lon": 35.5875049,
+      "osm_id": "way/477842985",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Layanai River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Endeani River",
+      "lat": -3.2242953,
+      "lon": 35.4991316,
+      "osm_id": "way/477900771",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Endeani River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Olawara River",
+      "lat": -3.2189816,
+      "lon": 35.5193929,
+      "osm_id": "way/477900772",
+      "osm_tags": {
+        "name": "Olawara River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lairatati River",
+      "lat": -3.2261229,
+      "lon": 35.5152691,
+      "osm_id": "way/477900774",
+      "osm_tags": {
+        "name": "Lairatati River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oijoro Nyokie River",
+      "lat": -3.1723307,
+      "lon": 35.627983,
+      "osm_id": "way/478036383",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oijoro Nyokie River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oldupai River",
+      "lat": -3.0103159,
+      "lon": 35.0941741,
+      "osm_id": "way/478249734",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oldupai River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake IIdapashi",
+      "lat": -2.9703716,
+      "lon": 34.9230692,
+      "osm_id": "way/479587715",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lake IIdapashi",
+        "natural": "water",
+        "salt": "yes"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oldibai River",
+      "lat": -3.0181625,
+      "lon": 34.869088,
+      "osm_id": "way/479587733",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oldibai River",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mikocheni",
+      "lat": -3.4350226,
+      "lon": 35.3882431,
+      "osm_id": "way/509462580",
+      "osm_tags": {
+        "name": "Mikocheni",
+        "place": "village",
+        "type": "administrative"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbuganyekundu",
+      "lat": -3.5739086,
+      "lon": 35.3782667,
+      "osm_id": "way/509462590",
+      "osm_tags": {
+        "Matumizi": "Mpaka wa Kijiji",
+        "name": "Mbuganyekundu",
+        "place": "village",
+        "type": "administrative"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "cha jobaj",
+      "lat": -3.5867085,
+      "lon": 35.3440348,
+      "osm_id": "way/509462592",
+      "osm_tags": {
+        "name": "cha jobaj",
+        "place": "village",
+        "type": "administrative"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Endamagha",
+      "lat": -3.3719225,
+      "lon": 35.3564041,
+      "osm_id": "way/509462605",
+      "osm_tags": {
+        "Matumizi": "Mpaka wa Kijiji",
+        "name": "Endamagha",
+        "place": "village",
+        "type": "administrative"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "HD",
+      "lat": -4.0072756,
+      "lon": 35.1266162,
+      "osm_id": "way/515754160",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "HD",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti",
+      "lat": -2.4441944,
+      "lon": 34.4398502,
+      "osm_id": "way/525661056",
+      "osm_tags": {
+        "name": "Mbalageti",
+        "source": "ESRI Weltbilder",
+        "source:date": "2024-08-11",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Pinyinyi",
+      "lat": -2.3517997,
+      "lon": 35.8418276,
+      "osm_id": "way/536787901",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Pinyinyi",
+        "source": "Landsat",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Southbound Stream2",
+      "lat": -3.9368383,
+      "lon": 35.307076,
+      "osm_id": "way/553528402",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Southbound Stream2",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Southbound Stream",
+      "lat": -3.9333329,
+      "lon": 35.3085055,
+      "osm_id": "way/553528403",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Southbound Stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "MEANDER",
+      "lat": -3.9495781,
+      "lon": 35.116438,
+      "osm_id": "way/554009546",
+      "osm_tags": {
+        "name": "MEANDER",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Songore",
+      "lat": -2.4957205,
+      "lon": 34.8034127,
+      "osm_id": "way/638590806",
+      "osm_tags": {
+        "name": "Songore",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Dry Stream",
+      "lat": -2.7169214,
+      "lon": 35.2214364,
+      "osm_id": "way/641350816",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Dry Stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mbalageti",
+      "lat": -2.8185586,
+      "lon": 34.8580173,
+      "osm_id": "way/643205300",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mbalageti",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Endabash",
+      "lat": -3.5062624,
+      "lon": 35.5795146,
+      "osm_id": "way/644295771",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Endabash",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Magara River",
+      "lat": -3.8204011,
+      "lon": 35.6781673,
+      "osm_id": "way/645100481",
+      "osm_tags": {
+        "name": "Magara River",
+        "source": "Landsat",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mayoka River",
+      "lat": -3.7949596,
+      "lon": 35.6770804,
+      "osm_id": "way/645102142",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mayoka River",
+        "source": "Landsat",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Southern Ewaso Ng'iro",
+      "lat": -2.11578,
+      "lon": 36.0968376,
+      "osm_id": "way/777107146",
+      "osm_tags": {
+        "name": "Southern Ewaso Ng'iro",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti",
+      "lat": -2.3721404,
+      "lon": 34.5470536,
+      "osm_id": "way/878706747",
+      "osm_tags": {
+        "fixme": "flow direction?",
+        "name": "Mbalageti",
+        "source": "Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orangi River",
+      "lat": -2.2624691,
+      "lon": 34.9951995,
+      "osm_id": "way/878706751",
+      "osm_tags": {
+        "name": "Orangi River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orangi River",
+      "lat": -2.2230429,
+      "lon": 35.0587853,
+      "osm_id": "way/878706752",
+      "osm_tags": {
+        "name": "Orangi River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Grumeti",
+      "lat": -2.1395131,
+      "lon": 34.6290894,
+      "osm_id": "way/878706758",
+      "osm_tags": {
+        "name": "Grumeti",
+        "name:en": "Grumenti River",
+        "name:sw": "Mto Grumeti",
+        "source": "Yahoo; bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti",
+      "lat": -2.5171785,
+      "lon": 34.5624227,
+      "osm_id": "way/917180561",
+      "osm_tags": {
+        "name": "Mbalageti",
+        "source": "ESRI Weltbilder",
+        "source:date": "2024-07-16",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orangi River",
+      "lat": -2.2319821,
+      "lon": 35.0457705,
+      "osm_id": "way/938219637",
+      "osm_tags": {
+        "name": "Orangi River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Burungi",
+      "lat": -3.8743686,
+      "lon": 35.884577,
+      "osm_id": "way/981343496",
+      "osm_tags": {
+        "name": "Lake Burungi",
+        "natural": "water",
+        "salt": "yes",
+        "water": "lake",
+        "wikidata": "Q35730076"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mto wa Simba",
+      "lat": -3.3719987,
+      "lon": 35.8519142,
+      "osm_id": "way/1023512135",
+      "osm_tags": {
+        "name": "Mto wa Simba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mto Wa Mbu River",
+      "lat": -3.3731856,
+      "lon": 35.851683,
+      "osm_id": "way/1023512136",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Mto Wa Mbu River",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mto Wa Mbu River",
+      "lat": -3.3732964,
+      "lon": 35.8516563,
+      "osm_id": "way/1023512137",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Mto Wa Mbu River",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mto Wa Mbu River",
+      "lat": -3.3732301,
+      "lon": 35.8516723,
+      "osm_id": "way/1023512138",
+      "osm_tags": {
+        "name": "Mto Wa Mbu River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kirurum",
+      "lat": -3.3426774,
+      "lon": 35.8120384,
+      "osm_id": "way/1023512139",
+      "osm_tags": {
+        "name": "Kirurum",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kirurum",
+      "lat": -3.3519924,
+      "lon": 35.8149859,
+      "osm_id": "way/1023512140",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Kirurum",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kirurum",
+      "lat": -3.3292241,
+      "lon": 35.8058081,
+      "osm_id": "way/1023512148",
+      "osm_tags": {
+        "name": "Kirurum",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mto Wa Simba",
+      "lat": -3.2358063,
+      "lon": 35.794401,
+      "osm_id": "way/1023512150",
+      "osm_tags": {
+        "name": "Mto Wa Simba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mto Wa Simba",
+      "lat": -3.2438796,
+      "lon": 35.7920773,
+      "osm_id": "way/1023512151",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Mto Wa Simba",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mto Wa Simba",
+      "lat": -3.2481026,
+      "lon": 35.7932773,
+      "osm_id": "way/1023512152",
+      "osm_tags": {
+        "name": "Mto Wa Simba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mto Wa Simba",
+      "lat": -3.2523282,
+      "lon": 35.7943758,
+      "osm_id": "way/1023512153",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Mto Wa Simba",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mto Wa Simba",
+      "lat": -3.2678577,
+      "lon": 35.7981724,
+      "osm_id": "way/1023512154",
+      "osm_tags": {
+        "name": "Mto Wa Simba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mto Wa Simba",
+      "lat": -3.2833923,
+      "lon": 35.8026634,
+      "osm_id": "way/1023512155",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Mto Wa Simba",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mto Wa Simba",
+      "lat": -3.2985116,
+      "lon": 35.8088027,
+      "osm_id": "way/1023512156",
+      "osm_tags": {
+        "name": "Mto Wa Simba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mto Wa Simba",
+      "lat": -3.3135891,
+      "lon": 35.8149527,
+      "osm_id": "way/1023512157",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Mto Wa Simba",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mto wa Simba",
+      "lat": -3.3752989,
+      "lon": 35.8489751,
+      "osm_id": "way/1023512158",
+      "osm_tags": {
+        "name": "Mto wa Simba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Marera",
+      "lat": -3.3658777,
+      "lon": 35.8060799,
+      "osm_id": "way/1023523426",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Marera",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jambi River",
+      "lat": -3.5856506,
+      "lon": 35.6383212,
+      "osm_id": "way/1023525732",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Jambi River",
+        "source": "Yahoo, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jambi River",
+      "lat": -3.5599727,
+      "lon": 35.6541053,
+      "osm_id": "way/1023525733",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Jambi River",
+        "source": "Yahoo, Landsat",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jambi",
+      "lat": -3.5597816,
+      "lon": 35.6544475,
+      "osm_id": "way/1023525734",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Jambi",
+        "source": "Yahoo, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jambi River",
+      "lat": -3.5596422,
+      "lon": 35.6547474,
+      "osm_id": "way/1023525735",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Jambi River",
+        "source": "Yahoo, Landsat",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Barai",
+      "lat": -3.5235906,
+      "lon": 35.2865684,
+      "osm_id": "way/1023831589",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Barai",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Barai",
+      "lat": -3.5293917,
+      "lon": 35.2936834,
+      "osm_id": "way/1023831590",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Barai",
+        "source": "bing",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Barai",
+      "lat": -3.5320546,
+      "lon": 35.297284,
+      "osm_id": "way/1023831591",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Barai",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Barai",
+      "lat": -3.5344609,
+      "lon": 35.3009395,
+      "osm_id": "way/1023831592",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Barai",
+        "source": "bing",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Barai",
+      "lat": -3.5027041,
+      "lon": 35.460882,
+      "osm_id": "way/1023831593",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Barai",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Barai",
+      "lat": -3.5328281,
+      "lon": 35.435486,
+      "osm_id": "way/1023831594",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Barai",
+        "source": "bing",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oldonyosambu",
+      "lat": -3.0873006,
+      "lon": 36.5328864,
+      "osm_id": "way/1023914081",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oldonyosambu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Samunge",
+      "lat": -2.166127,
+      "lon": 35.7222954,
+      "osm_id": "way/1029504115",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Samunge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tarangire River",
+      "lat": -3.9735107,
+      "lon": 36.0747971,
+      "osm_id": "way/1163639634",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Tarangire River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tarangire River",
+      "lat": -3.8272673,
+      "lon": 36.0547654,
+      "osm_id": "way/1207984289",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Tarangire River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River",
+      "lat": -3.0662139,
+      "lon": 36.3453686,
+      "osm_id": "way/1410166045",
+      "osm_tags": {
+        "name": "River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River",
+      "lat": -3.0694026,
+      "lon": 36.3319803,
+      "osm_id": "way/1410166046",
+      "osm_tags": {
+        "name": "River",
+        "tunnel": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munge River",
+      "lat": -3.0224552,
+      "lon": 35.6536962,
+      "osm_id": "way/1451053755",
+      "osm_tags": {
+        "name": "Munge River",
+        "waterway": "river",
+        "wikidata": "Q53765031"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti",
+      "lat": -2.6679176,
+      "lon": 34.7889839,
+      "osm_id": "way/1456013826",
+      "osm_tags": {
+        "name": "Mbalageti",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti",
+      "lat": -2.667925,
+      "lon": 34.789233,
+      "osm_id": "way/1456013827",
+      "osm_tags": {
+        "name": "Mbalageti",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orangi River",
+      "lat": -2.2855784,
+      "lon": 34.9552671,
+      "osm_id": "way/1456656246",
+      "osm_tags": {
+        "check_date": "2024-08-04",
+        "name": "Orangi River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orangi River",
+      "lat": -2.2912813,
+      "lon": 34.9278105,
+      "osm_id": "way/1456656247",
+      "osm_tags": {
+        "check_date": "2024-08-04",
+        "name": "Orangi River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orangi River",
+      "lat": -2.2958395,
+      "lon": 34.8681506,
+      "osm_id": "way/1457017288",
+      "osm_tags": {
+        "check_date": "2024-08-04",
+        "name": "Orangi River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orangi River",
+      "lat": -2.2977206,
+      "lon": 34.8179369,
+      "osm_id": "way/1457017289",
+      "osm_tags": {
+        "check_date": "2024-08-04",
+        "name": "Orangi River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orangi River",
+      "lat": -2.2760757,
+      "lon": 34.776404,
+      "osm_id": "way/1457017290",
+      "osm_tags": {
+        "check_date": "2024-08-04",
+        "name": "Orangi River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orangi River",
+      "lat": -2.2573639,
+      "lon": 34.7431525,
+      "osm_id": "way/1457017291",
+      "osm_tags": {
+        "check_date": "2024-08-04",
+        "name": "Orangi River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyabogati River",
+      "lat": -2.3177431,
+      "lon": 34.8955975,
+      "osm_id": "way/1457115581",
+      "osm_tags": {
+        "name": "Nyabogati River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orangi River",
+      "lat": -2.2475893,
+      "lon": 35.000185,
+      "osm_id": "way/1457115582",
+      "osm_tags": {
+        "name": "Orangi River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orangi River",
+      "lat": -2.2905438,
+      "lon": 34.9167066,
+      "osm_id": "way/1457144807",
+      "osm_tags": {
+        "name": "Orangi River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Seronera River",
+      "lat": -2.3293364,
+      "lon": 34.7866795,
+      "osm_id": "way/1457449845",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Seronera River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Seronera",
+      "lat": -2.5618799,
+      "lon": 34.9236227,
+      "osm_id": "way/1457503001",
+      "osm_tags": {
+        "name": "Seronera",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Seronera River",
+      "lat": -2.5408442,
+      "lon": 34.9014763,
+      "osm_id": "way/1457551601",
+      "osm_tags": {
+        "name": "Seronera River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Seronera",
+      "lat": -2.5402176,
+      "lon": 34.8995468,
+      "osm_id": "way/1457551603",
+      "osm_tags": {
+        "name": "Seronera",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Seronera River",
+      "lat": -2.5396631,
+      "lon": 34.8991566,
+      "osm_id": "way/1457551604",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Seronera River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Seronera River",
+      "lat": -2.5395183,
+      "lon": 34.8985026,
+      "osm_id": "way/1457551605",
+      "osm_tags": {
+        "name": "Seronera River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Seronera River",
+      "lat": -2.5233189,
+      "lon": 34.8776761,
+      "osm_id": "way/1457551606",
+      "osm_tags": {
+        "name": "Seronera River",
+        "source": "ESRI 2024",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Seronera River",
+      "lat": -2.6269749,
+      "lon": 34.9725022,
+      "osm_id": "way/1457675790",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Seronera River",
+        "source": "ESRI 2024",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Seronera River",
+      "lat": -2.4906739,
+      "lon": 34.8271283,
+      "osm_id": "way/1457675813",
+      "osm_tags": {
+        "name": "Seronera River",
+        "source": "Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Seronera River",
+      "lat": -2.5015506,
+      "lon": 34.8502588,
+      "osm_id": "way/1457682299",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Seronera River",
+        "source": "ESRI 2024",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Seronera River",
+      "lat": -2.5064196,
+      "lon": 34.8591324,
+      "osm_id": "way/1457682300",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Seronera River",
+        "source": "ESRI 2024",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Seronera River",
+      "lat": -2.4944766,
+      "lon": 34.8383599,
+      "osm_id": "way/1457682305",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Seronera River",
+        "source": "ESRI 2024",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Hippo Pool",
+      "lat": -2.4295056,
+      "lon": 34.8011133,
+      "osm_id": "way/1457968447",
+      "osm_tags": {
+        "name": "Hippo Pool",
+        "natural": "water",
+        "water": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ngare Nanyuki River",
+      "lat": -2.3979402,
+      "lon": 34.9118409,
+      "osm_id": "way/1459846245",
+      "osm_tags": {
+        "name": "Ngare Nanyuki River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ngare Nanyuki River",
+      "lat": -2.3385297,
+      "lon": 34.8756579,
+      "osm_id": "way/1459998192",
+      "osm_tags": {
+        "name": "Ngare Nanyuki River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyabogati River",
+      "lat": -2.358717,
+      "lon": 35.0058768,
+      "osm_id": "way/1460232236",
+      "osm_tags": {
+        "check_date": "2024-10-10",
+        "name": "Nyabogati River",
+        "source": "ESRI Weltbilder",
+        "waterway": "river",
+        "width": "5"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyabogati River",
+      "lat": -2.3692939,
+      "lon": 35.03714,
+      "osm_id": "way/1460352303",
+      "osm_tags": {
+        "name": "Nyabogati River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti River",
+      "lat": -2.6121581,
+      "lon": 34.7346702,
+      "osm_id": "way/1463045548",
+      "osm_tags": {
+        "name": "Mbalageti River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti",
+      "lat": -2.4883242,
+      "lon": 34.4905274,
+      "osm_id": "way/1463047722",
+      "osm_tags": {
+        "name": "Mbalageti",
+        "source": "ESRI Weltbilder",
+        "source:date": "2023-05-27",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti",
+      "lat": -2.4774317,
+      "lon": 34.4785011,
+      "osm_id": "way/1463049432",
+      "osm_tags": {
+        "name": "Mbalageti",
+        "source": "ESRI Weltbilder",
+        "source:date": "2023-04-10",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mbalageti",
+      "lat": -2.8903108,
+      "lon": 34.8891965,
+      "osm_id": "way/1464577127",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mbalageti",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mbalageti",
+      "lat": -2.7818546,
+      "lon": 34.846426,
+      "osm_id": "way/1464577133",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mbalageti",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mbalageti",
+      "lat": -2.8629761,
+      "lon": 34.875636,
+      "osm_id": "way/1464860192",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mbalageti",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mbalageti",
+      "lat": -2.8734388,
+      "lon": 34.8827699,
+      "osm_id": "way/1464860193",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Mbalageti",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti River",
+      "lat": -2.7328464,
+      "lon": 34.8260231,
+      "osm_id": "way/1464865254",
+      "osm_tags": {
+        "name": "Mbalageti River",
+        "source": "ESRI Weltbilder",
+        "source:date": "2022-12-31",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti River",
+      "lat": -2.720347,
+      "lon": 34.8248863,
+      "osm_id": "way/1464865274",
+      "osm_tags": {
+        "name": "Mbalageti River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti River",
+      "lat": -2.6753321,
+      "lon": 34.7954898,
+      "osm_id": "way/1464865799",
+      "osm_tags": {
+        "name": "Mbalageti River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalageti River",
+      "lat": -2.701854,
+      "lon": 34.8131464,
+      "osm_id": "way/1464882586",
+      "osm_tags": {
+        "name": "Mbalageti River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ngare Nanyuki",
+      "lat": -2.538396,
+      "lon": 35.0756668,
+      "osm_id": "way/1465357950",
+      "osm_tags": {
+        "name": "Ngare Nanyuki",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ngare Nanyuki",
+      "lat": -2.5153344,
+      "lon": 35.0422045,
+      "osm_id": "way/1465513624",
+      "osm_tags": {
+        "name": "Ngare Nanyuki",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nyandelema",
+      "lat": -2.0949492,
+      "lon": 35.0913624,
+      "osm_id": "way/1467091608",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nyandelema",
+        "source": "Bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Buffalo Pool",
+      "lat": -3.9094635,
+      "lon": 36.0119288,
+      "osm_id": "way/1474472915",
+      "osm_tags": {
+        "name": "Buffalo Pool",
+        "natural": "water"
+      }
+    }
+  ]
+}

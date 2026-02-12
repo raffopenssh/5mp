@@ -1,0 +1,1499 @@
+{
+  "park_id": "ZAF_Namaqua",
+  "downloaded_at": "2026-02-08T13:21:29.837742+00:00",
+  "buffer_km": 50,
+  "place_count": 109,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Springbok",
+      "lat": -29.6660948,
+      "lon": 17.8831039,
+      "osm_id": "node/33364953",
+      "osm_tags": {
+        "name": "Springbok",
+        "name:ckb": "\u0633\u067e\u0631\u06cc\u0646\u06af\u0628\u06c6\u06a9",
+        "name:en": "Springbok",
+        "name:ru": "\u0421\u043f\u0440\u0438\u043d\u0433\u0431\u043e\u043a",
+        "place": "town",
+        "wikidata": "Q2301363",
+        "wikimedia_commons": "Category:Springbok, Northern Cape",
+        "wikipedia": "en:Springbok, South Africa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nababeep",
+      "lat": -29.5907651,
+      "lon": 17.7875853,
+      "osm_id": "node/243652300",
+      "osm_tags": {
+        "name": "Nababeep",
+        "place": "village",
+        "wikidata": "Q1925174",
+        "wikimedia_commons": "Category:Nababeep",
+        "wikipedia": "en:Nababeep"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bitterfontein",
+      "lat": -31.0361111,
+      "lon": 18.2661111,
+      "osm_id": "node/262695206",
+      "osm_tags": {
+        "name": "Bitterfontein",
+        "place": "village",
+        "population": "984",
+        "population:date": "2011",
+        "sagns_id": "94778",
+        "source": "sagns",
+        "source:population": "Wikipedia",
+        "wikidata": "Q2730024",
+        "wikipedia": "en:Bitterfontein"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Fonteintjie",
+      "lat": -29.6733389,
+      "lon": 17.9229915,
+      "osm_id": "node/262706279",
+      "osm_tags": {
+        "name": "Fonteintjie",
+        "place": "village",
+        "sagns_id": "85796",
+        "source": "sagns"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hondeklipbaai",
+      "lat": -30.3163889,
+      "lon": 17.2772222,
+      "osm_id": "node/262707105",
+      "osm_tags": {
+        "name": "Hondeklipbaai",
+        "place": "village",
+        "sagns_id": "81014",
+        "source": "sagns",
+        "wikidata": "Q2935301",
+        "wikimedia_commons": "Category:Hondeklip_Bay",
+        "wikipedia": "en:Hondeklip Bay"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamieskroon",
+      "lat": -30.2096443,
+      "lon": 17.9345442,
+      "osm_id": "node/262707368",
+      "osm_tags": {
+        "name": "Kamieskroon",
+        "place": "village",
+        "sagns_id": "79137",
+        "source": "sagns",
+        "wikidata": "Q3642309",
+        "wikimedia_commons": "Category:Kamieskroon",
+        "wikipedia": "en:Kamieskroon"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kleinsee",
+      "lat": -29.6777778,
+      "lon": 17.0708333,
+      "osm_id": "node/262707566",
+      "osm_tags": {
+        "alt_name": "Kleinzee",
+        "name": "Kleinsee",
+        "place": "village",
+        "population": "728",
+        "population:date": "2011",
+        "postal_code": "8282",
+        "sagns_id": "77044",
+        "source": "sagns",
+        "wikidata": "Q3642187",
+        "wikimedia_commons": "Category:Kleinzee",
+        "wikipedia": "af:Kleinsee"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Komaggas",
+      "lat": -29.8002778,
+      "lon": 17.4825,
+      "osm_id": "node/262707759",
+      "osm_tags": {
+        "name": "Komaggas",
+        "place": "hamlet",
+        "sagns_id": "76322",
+        "source": "sagns",
+        "wikidata": "Q6428067",
+        "wikipedia": "en:Komaggas"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Leliefontein",
+      "lat": -30.3141667,
+      "lon": 18.0825,
+      "osm_id": "node/262708562",
+      "osm_tags": {
+        "name": "Leliefontein",
+        "place": "village",
+        "sagns_id": "100205",
+        "source": "sagns",
+        "wikidata": "Q6520888",
+        "wikimedia_commons": "Category:Leliefontein, Northern Cape",
+        "wikipedia": "en:Leliefontein, Northern Cape"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nuwerus",
+      "lat": -31.1483333,
+      "lon": 18.3586111,
+      "osm_id": "node/262714218",
+      "osm_tags": {
+        "name": "Nuwerus",
+        "place": "village",
+        "population": "650",
+        "population:date": "2011",
+        "sagns_id": "113222",
+        "source": "sagns",
+        "source:population": "https://census2011.adrianfrith.com/place/160005",
+        "wikidata": "Q7070683",
+        "wikimedia_commons": "Category:Nuwerus",
+        "wikipedia": "en:Nuwerus"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "O'Kiep",
+      "lat": -29.5968707,
+      "lon": 17.8796318,
+      "osm_id": "node/262714287",
+      "osm_tags": {
+        "name": "O'Kiep",
+        "place": "village",
+        "sagns_id": "113603",
+        "source": "sagns",
+        "wikidata": "Q1003356",
+        "wikimedia_commons": "Category:Okiep",
+        "wikipedia": "en:Okiep"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wallekraal",
+      "lat": -30.3875,
+      "lon": 17.5088889,
+      "osm_id": "node/262718549",
+      "osm_tags": {
+        "name": "Wallekraal",
+        "place": "hamlet",
+        "sagns_id": "62086",
+        "source": "sagns"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nourivier",
+      "lat": -30.2144459,
+      "lon": 18.1383407,
+      "osm_id": "node/2283574742",
+      "osm_tags": {
+        "name": "Nourivier",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Concordia",
+      "lat": -29.5385362,
+      "lon": 17.9462783,
+      "osm_id": "node/2458136038",
+      "osm_tags": {
+        "name": "Concordia",
+        "place": "village",
+        "population": "5000",
+        "wikidata": "Q3642542",
+        "wikimedia_commons": "Category:Concordia, Northern Cape",
+        "wikipedia": "en:Concordia, Northern Cape"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Molsvlei",
+      "lat": -30.8759792,
+      "lon": 18.0445541,
+      "osm_id": "node/2916169234",
+      "osm_tags": {
+        "name": "Molsvlei",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rietpoort",
+      "lat": -30.956826,
+      "lon": 18.041866,
+      "osm_id": "node/2916169235",
+      "osm_tags": {
+        "name": "Rietpoort",
+        "place": "village",
+        "wikidata": "Q7333185",
+        "wikipedia": "en:Rietpoort"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Stofkraal",
+      "lat": -30.8323659,
+      "lon": 18.0166977,
+      "osm_id": "node/2916169236",
+      "osm_tags": {
+        "name": "Stofkraal",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kamassies",
+      "lat": -30.030978,
+      "lon": 18.2687414,
+      "osm_id": "node/3217553570",
+      "osm_tags": {
+        "name": "Kamassies",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Rooifontein",
+      "lat": -30.0667167,
+      "lon": 18.2601562,
+      "osm_id": "node/3217553807",
+      "osm_tags": {
+        "name": "Rooifontein",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Paulshoek",
+      "lat": -30.3631723,
+      "lon": 18.2580694,
+      "osm_id": "node/3974506698",
+      "osm_tags": {
+        "name": "Paulshoek",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nigramoep",
+      "lat": -29.5283099,
+      "lon": 17.5852677,
+      "osm_id": "node/3975237346",
+      "osm_tags": {
+        "name": "Nigramoep",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bulletrap",
+      "lat": -29.4640197,
+      "lon": 17.7668242,
+      "osm_id": "node/3975252877",
+      "osm_tags": {
+        "name": "Bulletrap",
+        "place": "village",
+        "wikidata": "Q61361363",
+        "wikipedia": "af:Bulletrap"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kheis",
+      "lat": -30.4620483,
+      "lon": 17.9929881,
+      "osm_id": "node/3975269370",
+      "osm_tags": {
+        "name": "Kheis",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Buffelsrivier",
+      "lat": -29.702178,
+      "lon": 17.603215,
+      "osm_id": "node/3975281915",
+      "osm_tags": {
+        "name": "Buffelsrivier",
+        "place": "village",
+        "population": "1123",
+        "population:date": "2001",
+        "wikidata": "Q15205637",
+        "wikipedia": "en:Buffelsrivier"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rooiberg",
+      "lat": -30.4363521,
+      "lon": 18.0945015,
+      "osm_id": "node/6147138288",
+      "osm_tags": {
+        "ele": "1673",
+        "name": "Rooiberg",
+        "natural": "peak",
+        "prominence": "778",
+        "wikidata": "Q31524997"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Eselkop",
+      "lat": -30.3636039,
+      "lon": 18.0767157,
+      "osm_id": "node/6246676312",
+      "osm_tags": {
+        "ele": "1663.7",
+        "name": "Eselkop",
+        "natural": "peak",
+        "prominence": "480",
+        "source": "ngi",
+        "wikidata": "Q31533130"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tierberg",
+      "lat": -30.6225,
+      "lon": 18.0983,
+      "osm_id": "node/6250445365",
+      "osm_tags": {
+        "ele": "802.8432",
+        "name": "Tierberg",
+        "natural": "peak",
+        "prominence": "284.0736",
+        "sagns_id": "65849",
+        "wikidata": "Q31521708"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Toringberg",
+      "lat": -31.0275,
+      "lon": 17.9942,
+      "osm_id": "node/6250445366",
+      "osm_tags": {
+        "ele": "550.8",
+        "name": "Toringberg",
+        "natural": "peak",
+        "prominence": "285",
+        "sagns_id": "65287"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Uitspanberg",
+      "lat": -30.82,
+      "lon": 18.2517,
+      "osm_id": "node/6250445705",
+      "osm_tags": {
+        "ele": "694.9440000000001",
+        "name": "Uitspanberg",
+        "natural": "peak",
+        "prominence": "333.1464",
+        "sagns_id": "64147",
+        "wikidata": "Q31521043"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rondefonteinsberg",
+      "lat": -30.7683,
+      "lon": 18.18,
+      "osm_id": "node/6250445733",
+      "osm_tags": {
+        "ele": "856.7928",
+        "name": "Rondefonteinsberg",
+        "natural": "peak",
+        "prominence": "377.0376",
+        "sagns_id": "73561",
+        "wikidata": "Q31525183"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Sandplaat",
+      "lat": -30.6267,
+      "lon": 18.3733,
+      "osm_id": "node/6250957037",
+      "osm_tags": {
+        "ele": "1056.7416",
+        "name": "Sandplaat",
+        "natural": "peak",
+        "prominence": "226.77120000000002",
+        "sagns_id": "71969"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jaloerskop",
+      "lat": -30.6867,
+      "lon": 18.2325,
+      "osm_id": "node/6251136974",
+      "osm_tags": {
+        "ele": "774.8016",
+        "name": "Jaloerskop",
+        "natural": "peak",
+        "prominence": "211.836",
+        "sagns_id": "79725",
+        "wikidata": "Q31410629"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Grootberg",
+      "lat": -30.2917,
+      "lon": 17.7275,
+      "osm_id": "node/6251169730",
+      "osm_tags": {
+        "ele": "877.8240000000001",
+        "name": "Grootberg",
+        "natural": "peak",
+        "prominence": "452.01840000000004",
+        "sagns_id": "83067"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Vyemond se Berg",
+      "lat": -30.3225,
+      "lon": 17.9425,
+      "osm_id": "node/6251169732",
+      "osm_tags": {
+        "ele": "1271.9304",
+        "name": "Vyemond se Berg",
+        "natural": "peak",
+        "prominence": "373.9896",
+        "sagns_id": "62227",
+        "wikidata": "Q31520408"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Boesmankop",
+      "lat": -30.2117,
+      "lon": 17.88,
+      "osm_id": "node/6251169733",
+      "osm_tags": {
+        "ele": "1088.7456",
+        "name": "Boesmankop",
+        "natural": "peak",
+        "prominence": "324.0024",
+        "sagns_id": "93715",
+        "wikidata": "Q31535457"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kouberg",
+      "lat": -30.025,
+      "lon": 17.9342,
+      "osm_id": "node/6251169734",
+      "osm_tags": {
+        "ele": "1225.9056",
+        "name": "Kouberg",
+        "natural": "peak",
+        "prominence": "418.1856",
+        "sagns_id": "75707",
+        "wikidata": "Q31529122"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Vo\u00eblklip se Berg",
+      "lat": -29.77,
+      "lon": 17.8592,
+      "osm_id": "node/6251169735",
+      "osm_tags": {
+        "ele": "1291.7424",
+        "name": "Vo\u00eblklip se Berg",
+        "natural": "peak",
+        "prominence": "435.86400000000003",
+        "sagns_id": "62587",
+        "wikidata": "Q31520552",
+        "wikipedia": "af:Vo\u00eblklip se Berg"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Lewerberg",
+      "lat": -29.7583,
+      "lon": 17.9783,
+      "osm_id": "node/6251169736",
+      "osm_tags": {
+        "ele": "1341.7296000000001",
+        "name": "Lewerberg",
+        "natural": "peak",
+        "prominence": "353.87280000000004",
+        "sagns_id": "100448",
+        "wikidata": "Q31528320"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rooiberg",
+      "lat": -30.105,
+      "lon": 18.0342,
+      "osm_id": "node/6251169737",
+      "osm_tags": {
+        "ele": "1395.3",
+        "name": "Rooiberg",
+        "natural": "peak",
+        "prominence": "321.8688",
+        "wikidata": "Q31409699"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rondekop",
+      "lat": -30.0333,
+      "lon": 17.8433,
+      "osm_id": "node/6251169738",
+      "osm_tags": {
+        "ele": "1055.8272",
+        "name": "Rondekop",
+        "natural": "peak",
+        "prominence": "403.86",
+        "sagns_id": "73497",
+        "wikidata": "Q31525150"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Weeskind",
+      "lat": -30.3758,
+      "lon": 18.0325,
+      "osm_id": "node/6251169739",
+      "osm_tags": {
+        "ele": "1392.9360000000001",
+        "name": "Weeskind",
+        "natural": "peak",
+        "prominence": "345.03360000000004",
+        "sagns_id": "61645",
+        "wikidata": "Q31520116"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Sneeukop",
+      "lat": -30.1542,
+      "lon": 17.9642,
+      "osm_id": "node/6251169740",
+      "osm_tags": {
+        "ele": "1566.9768000000001",
+        "name": "Sneeukop",
+        "natural": "peak",
+        "prominence": "478.2312",
+        "sagns_id": "69380",
+        "wikidata": "Q31523612"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Osplaat se Berg",
+      "lat": -30.0825,
+      "lon": 17.9808,
+      "osm_id": "node/6251169742",
+      "osm_tags": {
+        "ele": "1424.94",
+        "name": "Osplaat se Berg",
+        "natural": "peak",
+        "prominence": "395.0208",
+        "sagns_id": "114250",
+        "wikidata": "Q31526632"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Carolusberg",
+      "lat": -29.645,
+      "lon": 18.0008,
+      "osm_id": "node/6251169743",
+      "osm_tags": {
+        "ele": "1332.8904",
+        "name": "Carolusberg",
+        "natural": "peak",
+        "prominence": "331.9272",
+        "sagns_id": "91677",
+        "wikidata": "Q31534676"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rietberg",
+      "lat": -29.4858,
+      "lon": 17.8842,
+      "osm_id": "node/6251173257",
+      "osm_tags": {
+        "ele": "1345.5",
+        "name": "Rietberg",
+        "natural": "peak",
+        "prominence": "309",
+        "sagns_id": "58864",
+        "source": "ngi",
+        "wikidata": "Q31525440"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Brandberg",
+      "lat": -30.0467,
+      "lon": 18.0258,
+      "osm_id": "node/6253199375",
+      "osm_tags": {
+        "ele": "1216.8",
+        "name": "Brandberg",
+        "natural": "peak",
+        "prominence": "240.8",
+        "sagns_id": "92533"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Haaslipkop",
+      "lat": -29.7825,
+      "lon": 18.0625,
+      "osm_id": "node/6253199378",
+      "osm_tags": {
+        "ele": "1196.9",
+        "name": "Haaslipkop",
+        "natural": "peak",
+        "prominence": "271.0",
+        "sagns_id": "82346",
+        "wikidata": "Q31531723"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Horinggatkop",
+      "lat": -30.2533,
+      "lon": 18.0867,
+      "osm_id": "node/6253199380",
+      "osm_tags": {
+        "ele": "1442.9",
+        "name": "Horinggatkop",
+        "natural": "peak",
+        "prominence": "286.2",
+        "sagns_id": "80704"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Grasberg",
+      "lat": -30.5108,
+      "lon": 18.3533,
+      "osm_id": "node/6253199490",
+      "osm_tags": {
+        "ele": "1325.9",
+        "name": "Grasberg",
+        "natural": "peak",
+        "prominence": "242.9",
+        "sagns_id": "83676",
+        "wikidata": "Q31532533"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Brandberg",
+      "lat": -29.6875,
+      "lon": 17.5608,
+      "osm_id": "node/6255278806",
+      "osm_tags": {
+        "ele": "648.9",
+        "name": "Brandberg",
+        "natural": "peak",
+        "prominence": "188.1",
+        "sagns_id": "92530",
+        "wikidata": "Q31535073"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bethelsberg",
+      "lat": -30.38,
+      "lon": 17.8033,
+      "osm_id": "node/6255278819",
+      "osm_tags": {
+        "ele": "813.8",
+        "name": "Bethelsberg",
+        "natural": "peak",
+        "prominence": "232.0",
+        "sagns_id": "94855"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Boegoeberg",
+      "lat": -30.3592,
+      "lon": 18.0333,
+      "osm_id": "node/6255278824",
+      "osm_tags": {
+        "ele": "1325.9",
+        "name": "Boegoeberg",
+        "natural": "peak",
+        "prominence": "192.9",
+        "sagns_id": "93658",
+        "wikidata": "Q31535519"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Grasberg",
+      "lat": -30.2292,
+      "lon": 18.0783,
+      "osm_id": "node/6255278832",
+      "osm_tags": {
+        "ele": "1348.7",
+        "name": "Grasberg",
+        "natural": "peak",
+        "prominence": "185.9",
+        "sagns_id": "83674"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Grootberg",
+      "lat": -30.4742,
+      "lon": 17.9567,
+      "osm_id": "node/6255278833",
+      "osm_tags": {
+        "ele": "852.8",
+        "name": "Grootberg",
+        "natural": "peak",
+        "prominence": "214.0",
+        "sagns_id": "83068",
+        "wikidata": "Q31532215"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Melkhoutbak se Berg",
+      "lat": -30.1925,
+      "lon": 17.5842,
+      "osm_id": "node/6255278835",
+      "osm_tags": {
+        "ele": "536.8",
+        "name": "Melkhoutbak se Berg",
+        "natural": "peak",
+        "prominence": "221.0",
+        "sagns_id": "105658"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Langhoek se Berg",
+      "lat": -30.2392,
+      "lon": 18.3175,
+      "osm_id": "node/6255337770",
+      "osm_tags": {
+        "ele": "1193.0",
+        "name": "Langhoek se Berg",
+        "natural": "peak",
+        "prominence": "99.1",
+        "sagns_id": "99495"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Donkieberg",
+      "lat": -30.199563,
+      "lon": 18.2014318,
+      "osm_id": "node/6895214911",
+      "osm_tags": {
+        "ele": "1229",
+        "name": "Donkieberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Pypklip se Berg",
+      "lat": -30.1446353,
+      "lon": 18.279217,
+      "osm_id": "node/6895214912",
+      "osm_tags": {
+        "ele": "1173",
+        "name": "Pypklip se Berg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Besemberg",
+      "lat": -30.1239506,
+      "lon": 18.0799271,
+      "osm_id": "node/6895237358",
+      "osm_tags": {
+        "ele": "1299",
+        "name": "Besemberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Osberg",
+      "lat": -30.0835751,
+      "lon": 18.0104472,
+      "osm_id": "node/6895237363",
+      "osm_tags": {
+        "ele": "1003",
+        "name": "Osberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Koingnaas",
+      "lat": -30.1849913,
+      "lon": 17.9274084,
+      "osm_id": "node/9352131782",
+      "osm_tags": {
+        "name": "Koingnaas",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Lepelsfontein",
+      "lat": -31.0443941,
+      "lon": 17.8491921,
+      "osm_id": "node/13253621288",
+      "osm_tags": {
+        "name": "Lepelsfontein",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Arnot se Kop",
+      "lat": -29.6054012,
+      "lon": 17.0866656,
+      "osm_id": "node/13288665741",
+      "osm_tags": {
+        "name": "Arnot se Kop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Spoegrivier",
+      "lat": -30.4715158,
+      "lon": 17.3626005,
+      "osm_id": "way/113727822",
+      "osm_tags": {
+        "name": "Spoegrivier",
+        "natural": "water",
+        "water": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Spoegrivier",
+      "lat": -30.4108645,
+      "lon": 17.5715459,
+      "osm_id": "way/113727836",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Spoegrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Groenrivier Estuary",
+      "lat": -30.84043,
+      "lon": 17.5788832,
+      "osm_id": "way/113801730",
+      "osm_tags": {
+        "name": "Groenrivier Estuary",
+        "natural": "water",
+        "water": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Groenrivier",
+      "lat": -30.8295275,
+      "lon": 17.576975,
+      "osm_id": "way/113801734",
+      "osm_tags": {
+        "name": "Groenrivier",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Groenrivier",
+      "lat": -30.8347813,
+      "lon": 17.5779415,
+      "osm_id": "way/113801736",
+      "osm_tags": {
+        "name": "Groenrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kookfontein pool",
+      "lat": -30.0705157,
+      "lon": 17.6455337,
+      "osm_id": "way/113805274",
+      "osm_tags": {
+        "name": "Kookfontein pool",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Brakrivier",
+      "lat": -29.878838,
+      "lon": 18.3091541,
+      "osm_id": "way/123102792",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Brakrivier",
+        "name:af": "Brakrivier",
+        "waterway": "stream",
+        "wikidata": "Q35259223"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Goubespan",
+      "lat": -29.4390315,
+      "lon": 18.2922661,
+      "osm_id": "way/123693612",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Goubespan",
+        "natural": "water",
+        "sagns_id": "83861",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.8144133,
+      "lon": 17.6485368,
+      "osm_id": "way/127719983",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ybeeprivier",
+      "lat": -30.0137525,
+      "lon": 17.9863357,
+      "osm_id": "way/127719984",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ybeeprivier",
+        "name:af": "Ybeeprivier",
+        "waterway": "stream",
+        "wikidata": "Q35425559"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Drodaprivier",
+      "lat": -29.8264447,
+      "lon": 17.9666388,
+      "osm_id": "way/127719985",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Drodaprivier",
+        "waterway": "river",
+        "wikidata": "Q56542066"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.6361632,
+      "lon": 17.5160018,
+      "osm_id": "way/127719987",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "name:en": "Buffels",
+        "waterway": "river",
+        "wikidata": "Q13034439",
+        "wikipedia": "af:Buffelsrivier (Boesmanland)"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.939851,
+      "lon": 17.700285,
+      "osm_id": "way/127719988",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.9012111,
+      "lon": 17.6658714,
+      "osm_id": "way/127719989",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffelsrivier",
+      "lat": -29.9651459,
+      "lon": 17.8472334,
+      "osm_id": "way/148976305",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffelsrivier",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.9728388,
+      "lon": 17.7385479,
+      "osm_id": "way/188944871",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.6227775,
+      "lon": 17.153384,
+      "osm_id": "way/206653817",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -30.1321241,
+      "lon": 17.6516705,
+      "osm_id": "way/207902804",
+      "osm_tags": {
+        "name": "Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tweerivier",
+      "lat": -30.3553278,
+      "lon": 17.9909869,
+      "osm_id": "way/219189394",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Tweerivier",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Garies",
+      "lat": -30.5608655,
+      "lon": 17.9896715,
+      "osm_id": "way/229344348",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Garies",
+        "place": "town",
+        "population": "2105",
+        "population:date": "2011",
+        "sagns_id": "84843",
+        "source": "sagns",
+        "source:population": "http://census2011.adrianfrith.com/place/365016",
+        "wikidata": "Q667485",
+        "wikimedia_commons": "Category:Garies",
+        "wikipedia": "en:Garies"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Groenrivier",
+      "lat": -30.5876106,
+      "lon": 17.7965665,
+      "osm_id": "way/229344360",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Groenrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffelsrivier",
+      "lat": -29.9521977,
+      "lon": 18.1128986,
+      "osm_id": "way/315624525",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Spoegrivier",
+      "lat": -30.4709487,
+      "lon": 17.3649655,
+      "osm_id": "way/315975055",
+      "osm_tags": {
+        "name": "Spoegrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bitterrivier",
+      "lat": -30.5865753,
+      "lon": 17.6642615,
+      "osm_id": "way/323769317",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Bitterrivier",
+        "waterway": "river",
+        "wikidata": "Q56458476"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffelsrivier",
+      "lat": -29.9375052,
+      "lon": 18.0000666,
+      "osm_id": "way/429712349",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.5563713,
+      "lon": 17.3704305,
+      "osm_id": "way/449131025",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.5791915,
+      "lon": 17.2758309,
+      "osm_id": "way/449131026",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.5604594,
+      "lon": 17.3355919,
+      "osm_id": "way/449131027",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.5706464,
+      "lon": 17.3280978,
+      "osm_id": "way/449131028",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Swartdoring",
+      "lat": -30.8172218,
+      "lon": 17.9843617,
+      "osm_id": "way/550457252",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Swartdoring",
+        "source": "interpolation;bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Groenrivier",
+      "lat": -30.7774045,
+      "lon": 17.8745091,
+      "osm_id": "way/550487959",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Groenrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Groenrivier",
+      "lat": -30.776621,
+      "lon": 17.8777223,
+      "osm_id": "way/550487960",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Groenrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Horees",
+      "lat": -30.3630102,
+      "lon": 17.52767,
+      "osm_id": "way/551390464",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Horees",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Klipfontein",
+      "lat": -30.5041595,
+      "lon": 17.8329349,
+      "osm_id": "way/551396677",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Klipfontein",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Spoegrivier",
+      "lat": -30.343551,
+      "lon": 17.7603274,
+      "osm_id": "way/551396699",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Spoegrivier",
+        "place": "village",
+        "wikidata": "Q68594",
+        "wikipedia": "en:Spoegrivier"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gasabrivier",
+      "lat": -30.0296025,
+      "lon": 18.3243769,
+      "osm_id": "way/660547674",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Gasabrivier",
+        "name:af": "Gasabrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.6714211,
+      "lon": 17.0673235,
+      "osm_id": "way/762667858",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.6745095,
+      "lon": 17.0591916,
+      "osm_id": "way/762667859",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "name:en": "Buffels",
+        "waterway": "river",
+        "wikidata": "Q96112953"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.6621217,
+      "lon": 17.0748053,
+      "osm_id": "way/762667862",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.6528209,
+      "lon": 17.0822961,
+      "osm_id": "way/762667863",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Karaspan",
+      "lat": -29.5775994,
+      "lon": 17.0302698,
+      "osm_id": "way/1419109582",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Karaspan",
+        "natural": "water",
+        "sagns_id": "78929",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Dreyerspan",
+      "lat": -29.5246799,
+      "lon": 17.0409312,
+      "osm_id": "way/1419111016",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Dreyerspan",
+        "natural": "water",
+        "sagns_id": "88744",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Bloupan",
+      "lat": -29.5133518,
+      "lon": 17.0540562,
+      "osm_id": "way/1419329748",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Bloupan",
+        "natural": "water",
+        "sagns_id": "94157",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Geelpan",
+      "lat": -29.7203388,
+      "lon": 17.1189311,
+      "osm_id": "way/1419331010",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Geelpan",
+        "natural": "water",
+        "sagns_id": "84658",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Soutpan",
+      "lat": -31.2337631,
+      "lon": 17.870487,
+      "osm_id": "way/1419340492",
+      "osm_tags": {
+        "name": "Soutpan",
+        "natural": "water",
+        "sagns_id": "69037",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Panvlei",
+      "lat": -30.968345,
+      "lon": 18.2920486,
+      "osm_id": "way/1419362082",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Panvlei",
+        "natural": "water",
+        "sagns_id": "114785",
+        "water": "pan"
+      }
+    }
+  ]
+}

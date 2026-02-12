@@ -1,0 +1,378 @@
+{
+  "park_id": "MOZ_Zinave",
+  "downloaded_at": "2026-02-08T10:05:57.975895+00:00",
+  "buffer_km": 50,
+  "place_count": 30,
+  "places": [
+    {
+      "place_type": "village",
+      "name": "Machaila",
+      "lat": -22.254531,
+      "lon": 32.9146355,
+      "osm_id": "node/560641824",
+      "osm_tags": {
+        "name": "Machaila",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Vila Franca do Save",
+      "lat": -21.1430223,
+      "lon": 34.5672169,
+      "osm_id": "node/1425047888",
+      "osm_tags": {
+        "name": "Vila Franca do Save",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Macoche",
+      "lat": -20.8979565,
+      "lon": 34.2202705,
+      "osm_id": "node/1425047889",
+      "osm_tags": {
+        "name": "Macoche",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Chessungalane",
+      "lat": -20.972452,
+      "lon": 34.54739,
+      "osm_id": "node/1425047890",
+      "osm_tags": {
+        "name": "Chessungalane",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Maculuge",
+      "lat": -21.0801275,
+      "lon": 34.4519463,
+      "osm_id": "node/1425047892",
+      "osm_tags": {
+        "name": "Maculuge",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Muave",
+      "lat": -20.9115297,
+      "lon": 34.4229355,
+      "osm_id": "node/1425047895",
+      "osm_tags": {
+        "name": "Muave",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Quatine",
+      "lat": -20.9464829,
+      "lon": 34.4794121,
+      "osm_id": "node/1425047896",
+      "osm_tags": {
+        "name": "Quatine",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mabote",
+      "lat": -22.0405813,
+      "lon": 34.1309253,
+      "osm_id": "node/1426294337",
+      "osm_tags": {
+        "name": "Mabote",
+        "place": "town",
+        "wikidata": "Q6318356"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Massangena",
+      "lat": -21.578915,
+      "lon": 32.933847,
+      "osm_id": "node/2386754726",
+      "osm_tags": {
+        "name": "Massangena",
+        "place": "village",
+        "wikidata": "Q6784527",
+        "wikipedia": "pt:Massangena"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chechangue",
+      "lat": -21.8362543,
+      "lon": 34.3540421,
+      "osm_id": "node/2428555470",
+      "osm_tags": {
+        "name": "Chechangue",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mechisso",
+      "lat": -21.7937758,
+      "lon": 33.7606687,
+      "osm_id": "node/5150901092",
+      "osm_tags": {
+        "name": "Mechisso",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cometela",
+      "lat": -21.848907,
+      "lon": 34.4789849,
+      "osm_id": "node/6856910466",
+      "osm_tags": {
+        "name": "Cometela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gumane",
+      "lat": -22.3582932,
+      "lon": 34.1552959,
+      "osm_id": "node/7004361845",
+      "osm_tags": {
+        "name": "Gumane",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Zinhoche",
+      "lat": -22.358797,
+      "lon": 33.9378894,
+      "osm_id": "node/7004361862",
+      "osm_tags": {
+        "name": "Zinhoche",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Save",
+      "lat": -21.2028762,
+      "lon": 34.4106213,
+      "osm_id": "way/61889267",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Save",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Vuma\u00f3ze",
+      "lat": -21.3062694,
+      "lon": 32.8269232,
+      "osm_id": "way/252996497",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Vuma\u00f3ze",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Changane River",
+      "lat": -22.4540158,
+      "lon": 33.4582652,
+      "osm_id": "way/286903246",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "intermittent": "yes",
+        "name": "Changane River",
+        "name:en": "Changane River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Rio Chitseve",
+      "lat": -22.4722628,
+      "lon": 32.5583615,
+      "osm_id": "way/341854901",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Chitseve",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Garagua",
+      "lat": -20.8630625,
+      "lon": 32.5822931,
+      "osm_id": "way/355199761",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Garagua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Save",
+      "lat": -21.3922516,
+      "lon": 32.6039605,
+      "osm_id": "way/700118838",
+      "osm_tags": {
+        "name": "Save",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Save",
+      "lat": -21.3906209,
+      "lon": 32.6010194,
+      "osm_id": "way/700118839",
+      "osm_tags": {
+        "name": "Save",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Save",
+      "lat": -21.4124122,
+      "lon": 32.646143,
+      "osm_id": "way/700118840",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Save",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Save",
+      "lat": -21.4387621,
+      "lon": 33.5901618,
+      "osm_id": "way/849197754",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Save",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Save",
+      "lat": -21.3195153,
+      "lon": 32.4423379,
+      "osm_id": "way/849197755",
+      "osm_tags": {
+        "admin_level": "2",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Save",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Save",
+      "lat": -21.3050691,
+      "lon": 34.021846,
+      "osm_id": "way/849337848",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Save",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Save",
+      "lat": -21.3556236,
+      "lon": 33.9464184,
+      "osm_id": "way/849337849",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Save",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Save",
+      "lat": -21.5292873,
+      "lon": 33.0543114,
+      "osm_id": "way/849342068",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Save",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Zinave",
+      "lat": -21.4332717,
+      "lon": 33.8753866,
+      "osm_id": "way/1061043927",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lake Zinave",
+        "natural": "water",
+        "salt": "no",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Save",
+      "lat": -21.2028762,
+      "lon": 34.4106213,
+      "osm_id": "way/1113702845",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Save",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "lagoa de mazuzi",
+      "lat": -22.0454679,
+      "lon": 34.132255,
+      "osm_id": "way/1232734635",
+      "osm_tags": {
+        "name": "lagoa de mazuzi",
+        "natural": "water",
+        "water": "pond"
+      }
+    }
+  ]
+}

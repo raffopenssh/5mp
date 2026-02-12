@@ -1,0 +1,2519 @@
+{
+  "park_id": "MOZ_Gil\u00e9",
+  "downloaded_at": "2026-02-08T09:48:35.340792+00:00",
+  "buffer_km": 50,
+  "place_count": 224,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Pebane",
+      "lat": -17.2655997,
+      "lon": 38.1419334,
+      "osm_id": "node/899428244",
+      "osm_tags": {
+        "name": "Pebane",
+        "place": "town",
+        "wikidata": "Q15265796"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Moma",
+      "lat": -16.7627579,
+      "lon": 39.2216925,
+      "osm_id": "node/899428253",
+      "osm_tags": {
+        "name": "Moma",
+        "place": "town",
+        "population": "324442",
+        "wikidata": "Q948247",
+        "wikipedia": "en:Moma District"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Gil\u00e9",
+      "lat": -16.1461114,
+      "lon": 38.3701196,
+      "osm_id": "node/2312755132",
+      "osm_tags": {
+        "name": "Gil\u00e9",
+        "place": "town",
+        "wikidata": "Q10289652",
+        "wikipedia": "pt:Gil\u00e9"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bajone",
+      "lat": -17.2060769,
+      "lon": 38.064909,
+      "osm_id": "node/2315719639",
+      "osm_tags": {
+        "name": "Bajone",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mocubela",
+      "lat": -16.9003035,
+      "lon": 37.8386067,
+      "osm_id": "node/3421730098",
+      "osm_tags": {
+        "name": "Mocubela",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magiga",
+      "lat": -17.1179456,
+      "lon": 38.1474317,
+      "osm_id": "node/3421730099",
+      "osm_tags": {
+        "name": "Magiga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nicadine",
+      "lat": -17.0745864,
+      "lon": 38.2033052,
+      "osm_id": "node/3421730100",
+      "osm_tags": {
+        "name": "Nicadine",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mucoroje",
+      "lat": -16.8674239,
+      "lon": 39.1354199,
+      "osm_id": "node/3788867264",
+      "osm_tags": {
+        "name": "Mucoroje",
+        "place": "village",
+        "source": "www.geonames.org"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magene",
+      "lat": -17.1067962,
+      "lon": 38.1653387,
+      "osm_id": "node/5171734582",
+      "osm_tags": {
+        "name": "Magene",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nacoene",
+      "lat": -17.0555936,
+      "lon": 38.2261517,
+      "osm_id": "node/5171737003",
+      "osm_tags": {
+        "name": "Nacoene",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Munuca",
+      "lat": -17.0497111,
+      "lon": 38.2357523,
+      "osm_id": "node/5171737004",
+      "osm_tags": {
+        "name": "Munuca",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Inuanua",
+      "lat": -16.9846198,
+      "lon": 38.247765,
+      "osm_id": "node/5171743004",
+      "osm_tags": {
+        "name": "Inuanua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nahavahra",
+      "lat": -16.955266,
+      "lon": 38.2670364,
+      "osm_id": "node/5171743005",
+      "osm_tags": {
+        "name": "Nahavahra",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nakuruku",
+      "lat": -16.8549448,
+      "lon": 38.2024749,
+      "osm_id": "node/5171743006",
+      "osm_tags": {
+        "name": "Nakuruku",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mulela",
+      "lat": -16.8938789,
+      "lon": 38.2904869,
+      "osm_id": "node/5171752369",
+      "osm_tags": {
+        "name": "Mulela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nicugo",
+      "lat": -16.8833706,
+      "lon": 38.3178043,
+      "osm_id": "node/5171752370",
+      "osm_tags": {
+        "name": "Nicugo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sacane",
+      "lat": -16.8623011,
+      "lon": 38.380658,
+      "osm_id": "node/5171752371",
+      "osm_tags": {
+        "name": "Sacane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chigipe",
+      "lat": -16.8436435,
+      "lon": 38.4446861,
+      "osm_id": "node/5171752372",
+      "osm_tags": {
+        "name": "Chigipe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naculihe",
+      "lat": -16.8163391,
+      "lon": 38.4787575,
+      "osm_id": "node/5171752373",
+      "osm_tags": {
+        "name": "Naculihe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mujaiane",
+      "lat": -16.7831428,
+      "lon": 38.5082645,
+      "osm_id": "node/5171764167",
+      "osm_tags": {
+        "name": "Mujaiane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malema",
+      "lat": -16.8269701,
+      "lon": 38.4980482,
+      "osm_id": "node/5171764196",
+      "osm_tags": {
+        "name": "Malema",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Regone",
+      "lat": -16.8027411,
+      "lon": 38.526282,
+      "osm_id": "node/5171774064",
+      "osm_tags": {
+        "name": "Regone",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Namahele",
+      "lat": -16.8229503,
+      "lon": 38.5462156,
+      "osm_id": "node/5171774065",
+      "osm_tags": {
+        "name": "Namahele",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ribaue",
+      "lat": -16.8131215,
+      "lon": 38.581644,
+      "osm_id": "node/5171774066",
+      "osm_tags": {
+        "name": "Ribaue",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namacula",
+      "lat": -16.8327569,
+      "lon": 38.5959654,
+      "osm_id": "node/5171774067",
+      "osm_tags": {
+        "name": "Namacula",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moneia",
+      "lat": -16.8704186,
+      "lon": 38.5985874,
+      "osm_id": "node/5171774068",
+      "osm_tags": {
+        "name": "Moneia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nanjoca",
+      "lat": -16.8866277,
+      "lon": 38.611824,
+      "osm_id": "node/5171774069",
+      "osm_tags": {
+        "name": "Nanjoca",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Muterenha",
+      "lat": -16.9150771,
+      "lon": 38.6422589,
+      "osm_id": "node/5171778487",
+      "osm_tags": {
+        "name": "Muterenha",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Murimone",
+      "lat": -16.9434628,
+      "lon": 38.6700139,
+      "osm_id": "node/5171778488",
+      "osm_tags": {
+        "name": "Murimone",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mucudane",
+      "lat": -16.9553397,
+      "lon": 38.6262095,
+      "osm_id": "node/5171778489",
+      "osm_tags": {
+        "name": "Mucudane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Fuzi",
+      "lat": -16.9822803,
+      "lon": 38.6245717,
+      "osm_id": "node/5172742971",
+      "osm_tags": {
+        "name": "Fuzi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namigule",
+      "lat": -16.9696434,
+      "lon": 38.6712933,
+      "osm_id": "node/5172742996",
+      "osm_tags": {
+        "name": "Namigule",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Munana",
+      "lat": -16.9633988,
+      "lon": 38.6875692,
+      "osm_id": "node/5172742997",
+      "osm_tags": {
+        "name": "Munana",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Alto Maganha",
+      "lat": -16.98248,
+      "lon": 38.729383,
+      "osm_id": "node/5172742998",
+      "osm_tags": {
+        "name": "Alto Maganha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nagonha",
+      "lat": -17.0183732,
+      "lon": 38.7181636,
+      "osm_id": "node/5172742999",
+      "osm_tags": {
+        "name": "Nagonha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Cuassiane",
+      "lat": -17.0725375,
+      "lon": 38.7520324,
+      "osm_id": "node/5172743000",
+      "osm_tags": {
+        "name": "Cuassiane",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muligode",
+      "lat": -16.9493488,
+      "lon": 38.7830548,
+      "osm_id": "node/5172743001",
+      "osm_tags": {
+        "name": "Muligode",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nihicu",
+      "lat": -16.8945617,
+      "lon": 38.7579367,
+      "osm_id": "node/5172743002",
+      "osm_tags": {
+        "name": "Nihicu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namirupa",
+      "lat": -16.8838127,
+      "lon": 38.7657193,
+      "osm_id": "node/5172743003",
+      "osm_tags": {
+        "name": "Namirupa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bilane",
+      "lat": -16.8750451,
+      "lon": 38.7695912,
+      "osm_id": "node/5172743004",
+      "osm_tags": {
+        "name": "Bilane",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nikumula",
+      "lat": -16.8131745,
+      "lon": 38.8011606,
+      "osm_id": "node/5172743005",
+      "osm_tags": {
+        "name": "Nikumula",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nipamo",
+      "lat": -16.7924258,
+      "lon": 38.7892119,
+      "osm_id": "node/5172767966",
+      "osm_tags": {
+        "name": "Nipamo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nacocopua",
+      "lat": -16.7445485,
+      "lon": 38.8100857,
+      "osm_id": "node/5172767967",
+      "osm_tags": {
+        "name": "Nacocopua",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Musseia",
+      "lat": -16.7358788,
+      "lon": 38.8301048,
+      "osm_id": "node/5172767970",
+      "osm_tags": {
+        "name": "Musseia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mpula",
+      "lat": -16.7547129,
+      "lon": 38.8480411,
+      "osm_id": "node/5172767998",
+      "osm_tags": {
+        "name": "Mpula",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muhabua",
+      "lat": -16.781898,
+      "lon": 38.835121,
+      "osm_id": "node/5172767999",
+      "osm_tags": {
+        "name": "Muhabua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hame",
+      "lat": -16.8066558,
+      "lon": 38.8540832,
+      "osm_id": "node/5172768000",
+      "osm_tags": {
+        "name": "Hame",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nab\u00fari",
+      "lat": -16.7879774,
+      "lon": 38.8828188,
+      "osm_id": "node/5172768002",
+      "osm_tags": {
+        "name": "Nab\u00fari",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Namitala",
+      "lat": -16.850774,
+      "lon": 38.9056904,
+      "osm_id": "node/5172768004",
+      "osm_tags": {
+        "name": "Namitala",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mutogoli",
+      "lat": -16.88155,
+      "lon": 38.9176107,
+      "osm_id": "node/5172768005",
+      "osm_tags": {
+        "name": "Mutogoli",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mugomane",
+      "lat": -16.9157888,
+      "lon": 38.8798859,
+      "osm_id": "node/5172768006",
+      "osm_tags": {
+        "name": "Mugomane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Momane",
+      "lat": -16.9401111,
+      "lon": 38.8319729,
+      "osm_id": "node/5172768007",
+      "osm_tags": {
+        "name": "Momane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mazuripa",
+      "lat": -17.0087819,
+      "lon": 38.9025449,
+      "osm_id": "node/5172768008",
+      "osm_tags": {
+        "name": "Mazuripa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Miraje",
+      "lat": -16.8927386,
+      "lon": 38.9976685,
+      "osm_id": "node/5172768009",
+      "osm_tags": {
+        "name": "Miraje",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tomeia",
+      "lat": -16.8703218,
+      "lon": 39.0250087,
+      "osm_id": "node/5172768010",
+      "osm_tags": {
+        "name": "Tomeia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namuro",
+      "lat": -16.8917431,
+      "lon": 39.068189,
+      "osm_id": "node/5172768011",
+      "osm_tags": {
+        "name": "Namuro",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Namigone",
+      "lat": -16.855368,
+      "lon": 39.0101956,
+      "osm_id": "node/5172768012",
+      "osm_tags": {
+        "name": "Namigone",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nambui",
+      "lat": -16.796389,
+      "lon": 39.1485508,
+      "osm_id": "node/5172768013",
+      "osm_tags": {
+        "name": "Nambui",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nareva",
+      "lat": -16.781878,
+      "lon": 38.9586633,
+      "osm_id": "node/5172768014",
+      "osm_tags": {
+        "name": "Nareva",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Macotone",
+      "lat": -16.7807027,
+      "lon": 38.9947529,
+      "osm_id": "node/5172768015",
+      "osm_tags": {
+        "name": "Macotone",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Massua",
+      "lat": -16.784642,
+      "lon": 39.0414334,
+      "osm_id": "node/5172768016",
+      "osm_tags": {
+        "name": "Massua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mavelo",
+      "lat": -16.7884589,
+      "lon": 39.0555665,
+      "osm_id": "node/5172768017",
+      "osm_tags": {
+        "name": "Mavelo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mulabane",
+      "lat": -16.7135325,
+      "lon": 38.9526105,
+      "osm_id": "node/5172801803",
+      "osm_tags": {
+        "name": "Mulabane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mussila",
+      "lat": -16.6768935,
+      "lon": 38.9930448,
+      "osm_id": "node/5172801804",
+      "osm_tags": {
+        "name": "Mussila",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Intxuquela",
+      "lat": -16.6389497,
+      "lon": 38.9732104,
+      "osm_id": "node/5172801805",
+      "osm_tags": {
+        "name": "Intxuquela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Regone",
+      "lat": -16.7013014,
+      "lon": 38.8301578,
+      "osm_id": "node/5172801806",
+      "osm_tags": {
+        "name": "Regone",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Munhado",
+      "lat": -16.6695818,
+      "lon": 38.8204551,
+      "osm_id": "node/5172801807",
+      "osm_tags": {
+        "name": "Munhado",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Invana",
+      "lat": -16.6436278,
+      "lon": 38.7979375,
+      "osm_id": "node/5172801808",
+      "osm_tags": {
+        "name": "Invana",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Macudene",
+      "lat": -16.6066972,
+      "lon": 38.7724469,
+      "osm_id": "node/5172801816",
+      "osm_tags": {
+        "name": "Macudene",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namahipe",
+      "lat": -16.5595953,
+      "lon": 38.7523403,
+      "osm_id": "node/5172802424",
+      "osm_tags": {
+        "name": "Namahipe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mucuale",
+      "lat": -16.5352485,
+      "lon": 38.7784481,
+      "osm_id": "node/5172802425",
+      "osm_tags": {
+        "name": "Mucuale",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nabaue",
+      "lat": -16.6003841,
+      "lon": 38.866492,
+      "osm_id": "node/5172802426",
+      "osm_tags": {
+        "name": "Nabaue",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Capuine",
+      "lat": -16.5594845,
+      "lon": 38.9013934,
+      "osm_id": "node/5172802427",
+      "osm_tags": {
+        "name": "Capuine",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Txalalane",
+      "lat": -16.4931601,
+      "lon": 38.950932,
+      "osm_id": "node/5172802428",
+      "osm_tags": {
+        "name": "Txalalane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nagonha",
+      "lat": -16.4694696,
+      "lon": 38.9533009,
+      "osm_id": "node/5172802429",
+      "osm_tags": {
+        "name": "Nagonha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Moroa",
+      "lat": -16.2566893,
+      "lon": 38.9111355,
+      "osm_id": "node/5172802431",
+      "osm_tags": {
+        "name": "Moroa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mihecue",
+      "lat": -16.401292,
+      "lon": 38.6036701,
+      "osm_id": "node/5172802679",
+      "osm_tags": {
+        "name": "Mihecue",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Metacasse A",
+      "lat": -16.4500513,
+      "lon": 38.639594,
+      "osm_id": "node/5172830992",
+      "osm_tags": {
+        "name": "Metacasse A",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Metacasse B",
+      "lat": -16.4513747,
+      "lon": 38.6100408,
+      "osm_id": "node/5172830993",
+      "osm_tags": {
+        "name": "Metacasse B",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Inveteia",
+      "lat": -16.4124911,
+      "lon": 38.5915658,
+      "osm_id": "node/5172830994",
+      "osm_tags": {
+        "name": "Inveteia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Txocuine",
+      "lat": -16.398576,
+      "lon": 38.5683186,
+      "osm_id": "node/5172830995",
+      "osm_tags": {
+        "name": "Txocuine",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muelaipa",
+      "lat": -16.4374964,
+      "lon": 38.5943365,
+      "osm_id": "node/5172830997",
+      "osm_tags": {
+        "name": "Muelaipa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Natxere",
+      "lat": -16.4290346,
+      "lon": 38.6023535,
+      "osm_id": "node/5172830998",
+      "osm_tags": {
+        "name": "Natxere",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Marogane",
+      "lat": -16.352585,
+      "lon": 38.5299697,
+      "osm_id": "node/5172830999",
+      "osm_tags": {
+        "name": "Marogane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Seleliha",
+      "lat": -16.3516639,
+      "lon": 38.58686,
+      "osm_id": "node/5172831348",
+      "osm_tags": {
+        "name": "Seleliha",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mureguela",
+      "lat": -16.3000054,
+      "lon": 38.5529976,
+      "osm_id": "node/5172831349",
+      "osm_tags": {
+        "name": "Mureguela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naicha",
+      "lat": -16.2577983,
+      "lon": 38.5172661,
+      "osm_id": "node/5172831350",
+      "osm_tags": {
+        "name": "Naicha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naheche",
+      "lat": -16.2248032,
+      "lon": 38.5026611,
+      "osm_id": "node/5172831351",
+      "osm_tags": {
+        "name": "Naheche",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moriha",
+      "lat": -16.1842495,
+      "lon": 38.6013553,
+      "osm_id": "node/5172831353",
+      "osm_tags": {
+        "name": "Moriha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Amela",
+      "lat": -16.1777997,
+      "lon": 38.8814786,
+      "osm_id": "node/5172831354",
+      "osm_tags": {
+        "name": "Amela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muconhe",
+      "lat": -16.1890217,
+      "lon": 38.8031689,
+      "osm_id": "node/5172831355",
+      "osm_tags": {
+        "name": "Muconhe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mahacha",
+      "lat": -16.0363385,
+      "lon": 38.7183198,
+      "osm_id": "node/5172831356",
+      "osm_tags": {
+        "name": "Mahacha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namicopo",
+      "lat": -15.9791826,
+      "lon": 38.7033196,
+      "osm_id": "node/5172831357",
+      "osm_tags": {
+        "name": "Namicopo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mukhotone",
+      "lat": -15.9859232,
+      "lon": 38.6784035,
+      "osm_id": "node/5172831358",
+      "osm_tags": {
+        "name": "Mukhotone",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muhiriwa",
+      "lat": -15.996995,
+      "lon": 38.6450482,
+      "osm_id": "node/5172831359",
+      "osm_tags": {
+        "name": "Muhiriwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Namipissa",
+      "lat": -15.9619043,
+      "lon": 38.635889,
+      "osm_id": "node/5172842279",
+      "osm_tags": {
+        "name": "Namipissa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uaturia",
+      "lat": -15.9392627,
+      "lon": 38.6494535,
+      "osm_id": "node/5172842280",
+      "osm_tags": {
+        "name": "Uaturia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Txarua",
+      "lat": -15.9646177,
+      "lon": 38.6166043,
+      "osm_id": "node/5172842281",
+      "osm_tags": {
+        "name": "Txarua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Inlepa",
+      "lat": -15.9675688,
+      "lon": 38.5613633,
+      "osm_id": "node/5172842282",
+      "osm_tags": {
+        "name": "Inlepa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mamala",
+      "lat": -15.9744857,
+      "lon": 38.5489782,
+      "osm_id": "node/5172842283",
+      "osm_tags": {
+        "name": "Mamala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pacane",
+      "lat": -15.9486117,
+      "lon": 38.5680271,
+      "osm_id": "node/5172842284",
+      "osm_tags": {
+        "name": "Pacane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uelela",
+      "lat": -15.9192299,
+      "lon": 38.5994375,
+      "osm_id": "node/5172842285",
+      "osm_tags": {
+        "name": "Uelela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namarrepo",
+      "lat": -15.9165354,
+      "lon": 38.6361891,
+      "osm_id": "node/5172842286",
+      "osm_tags": {
+        "name": "Namarrepo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Eduardo Mondlane",
+      "lat": -15.8840668,
+      "lon": 38.6725215,
+      "osm_id": "node/5172842287",
+      "osm_tags": {
+        "name": "Eduardo Mondlane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Marreca",
+      "lat": -16.0313845,
+      "lon": 38.5036348,
+      "osm_id": "node/5172842290",
+      "osm_tags": {
+        "name": "Marreca",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namibaua",
+      "lat": -16.0583231,
+      "lon": 38.4861033,
+      "osm_id": "node/5172842291",
+      "osm_tags": {
+        "name": "Namibaua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Subuco",
+      "lat": -16.0954632,
+      "lon": 38.4462154,
+      "osm_id": "node/5172842292",
+      "osm_tags": {
+        "name": "Subuco",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nahavarra",
+      "lat": -16.125118,
+      "lon": 38.4015556,
+      "osm_id": "node/5172842293",
+      "osm_tags": {
+        "name": "Nahavarra",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Rupanama",
+      "lat": -16.2061502,
+      "lon": 38.4450776,
+      "osm_id": "node/5172842295",
+      "osm_tags": {
+        "name": "Rupanama",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muquela",
+      "lat": -16.2059925,
+      "lon": 38.4821638,
+      "osm_id": "node/5172842296",
+      "osm_tags": {
+        "name": "Muquela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pupe",
+      "lat": -16.1634751,
+      "lon": 38.3559348,
+      "osm_id": "node/5172865074",
+      "osm_tags": {
+        "name": "Pupe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Munie",
+      "lat": -16.2164846,
+      "lon": 38.3763389,
+      "osm_id": "node/5172865075",
+      "osm_tags": {
+        "name": "Munie",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malema Centro",
+      "lat": -16.2041796,
+      "lon": 38.3492045,
+      "osm_id": "node/5172865077",
+      "osm_tags": {
+        "name": "Malema Centro",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malema Serra",
+      "lat": -16.2286548,
+      "lon": 38.3144592,
+      "osm_id": "node/5172865078",
+      "osm_tags": {
+        "name": "Malema Serra",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vassele",
+      "lat": -16.244444,
+      "lon": 38.238736,
+      "osm_id": "node/5172865079",
+      "osm_tags": {
+        "name": "Vassele",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namurrua",
+      "lat": -16.3186125,
+      "lon": 38.219164,
+      "osm_id": "node/5172865082",
+      "osm_tags": {
+        "name": "Namurrua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nanhope",
+      "lat": -16.2171891,
+      "lon": 38.2143825,
+      "osm_id": "node/5172865089",
+      "osm_tags": {
+        "name": "Nanhope",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nihame",
+      "lat": -16.206607,
+      "lon": 38.283049,
+      "osm_id": "node/5172865091",
+      "osm_tags": {
+        "name": "Nihame",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Patxua",
+      "lat": -16.1341469,
+      "lon": 38.3116918,
+      "osm_id": "node/5172865092",
+      "osm_tags": {
+        "name": "Patxua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Micolene",
+      "lat": -16.1022498,
+      "lon": 38.2789986,
+      "osm_id": "node/5172865093",
+      "osm_tags": {
+        "name": "Micolene",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muaharaba",
+      "lat": -16.080622,
+      "lon": 38.2465185,
+      "osm_id": "node/5172865094",
+      "osm_tags": {
+        "name": "Muaharaba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uelela",
+      "lat": -16.0439019,
+      "lon": 38.2207789,
+      "osm_id": "node/5172865095",
+      "osm_tags": {
+        "name": "Uelela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Teniua",
+      "lat": -16.0004132,
+      "lon": 38.2511937,
+      "osm_id": "node/5172865096",
+      "osm_tags": {
+        "name": "Teniua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nacala",
+      "lat": -15.9927859,
+      "lon": 38.2695723,
+      "osm_id": "node/5172865097",
+      "osm_tags": {
+        "name": "Nacala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Phuri",
+      "lat": -15.977783,
+      "lon": 38.3109221,
+      "osm_id": "node/5172865098",
+      "osm_tags": {
+        "name": "Phuri",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nampossa",
+      "lat": -16.0210857,
+      "lon": 38.3366517,
+      "osm_id": "node/5172865099",
+      "osm_tags": {
+        "name": "Nampossa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mucaua",
+      "lat": -16.0459388,
+      "lon": 38.4039568,
+      "osm_id": "node/5172865100",
+      "osm_tags": {
+        "name": "Mucaua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namipaua",
+      "lat": -16.0774668,
+      "lon": 38.3926265,
+      "osm_id": "node/5172865101",
+      "osm_tags": {
+        "name": "Namipaua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Icuesseria",
+      "lat": -16.1106486,
+      "lon": 38.3841553,
+      "osm_id": "node/5172865102",
+      "osm_tags": {
+        "name": "Icuesseria",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nanepa",
+      "lat": -16.2602465,
+      "lon": 38.1122646,
+      "osm_id": "node/5173100952",
+      "osm_tags": {
+        "name": "Nanepa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lisse",
+      "lat": -16.2566885,
+      "lon": 37.9832613,
+      "osm_id": "node/5173100953",
+      "osm_tags": {
+        "name": "Lisse",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mutequela",
+      "lat": -16.2298102,
+      "lon": 37.9970204,
+      "osm_id": "node/5173100954",
+      "osm_tags": {
+        "name": "Mutequela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Munema",
+      "lat": -16.2202815,
+      "lon": 38.0187222,
+      "osm_id": "node/5173100955",
+      "osm_tags": {
+        "name": "Munema",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Matxael",
+      "lat": -16.2045678,
+      "lon": 38.0537985,
+      "osm_id": "node/5173100956",
+      "osm_tags": {
+        "name": "Matxael",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tavera",
+      "lat": -16.1760668,
+      "lon": 38.0592941,
+      "osm_id": "node/5173100957",
+      "osm_tags": {
+        "name": "Tavera",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uape",
+      "lat": -16.132115,
+      "lon": 38.0985772,
+      "osm_id": "node/5173100958",
+      "osm_tags": {
+        "name": "Uape",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namivo",
+      "lat": -16.1222033,
+      "lon": 38.1396825,
+      "osm_id": "node/5173100959",
+      "osm_tags": {
+        "name": "Namivo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Macaruene",
+      "lat": -16.1578769,
+      "lon": 38.1433057,
+      "osm_id": "node/5173100960",
+      "osm_tags": {
+        "name": "Macaruene",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namahica",
+      "lat": -16.1789923,
+      "lon": 38.1927668,
+      "osm_id": "node/5173100961",
+      "osm_tags": {
+        "name": "Namahica",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Khayane",
+      "lat": -16.2787015,
+      "lon": 37.9279193,
+      "osm_id": "node/5173100962",
+      "osm_tags": {
+        "name": "Khayane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Morrua",
+      "lat": -16.2929265,
+      "lon": 37.855006,
+      "osm_id": "node/5173100963",
+      "osm_tags": {
+        "alt_name": "Murrua",
+        "name": "Morrua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mujahopa",
+      "lat": -16.332185,
+      "lon": 37.8260031,
+      "osm_id": "node/5173100964",
+      "osm_tags": {
+        "name": "Mujahopa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masanta",
+      "lat": -16.3599463,
+      "lon": 37.8093313,
+      "osm_id": "node/5173100965",
+      "osm_tags": {
+        "name": "Masanta",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maropine",
+      "lat": -16.5111714,
+      "lon": 37.8901177,
+      "osm_id": "node/5173100966",
+      "osm_tags": {
+        "name": "Maropine",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiraco",
+      "lat": -16.3580712,
+      "lon": 37.7680889,
+      "osm_id": "node/5173100967",
+      "osm_tags": {
+        "name": "Chiraco",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malolo",
+      "lat": -16.3406773,
+      "lon": 37.7146415,
+      "osm_id": "node/5173100968",
+      "osm_tags": {
+        "name": "Malolo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Inturro",
+      "lat": -16.3010952,
+      "lon": 37.6440348,
+      "osm_id": "node/5173100969",
+      "osm_tags": {
+        "name": "Inturro",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Majavone",
+      "lat": -16.0155733,
+      "lon": 38.4358516,
+      "osm_id": "node/5174318719",
+      "osm_tags": {
+        "name": "Majavone",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Urela",
+      "lat": -15.9967269,
+      "lon": 38.4381988,
+      "osm_id": "node/5174318720",
+      "osm_tags": {
+        "name": "Urela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moneia",
+      "lat": -15.9640493,
+      "lon": 38.4418495,
+      "osm_id": "node/5174318721",
+      "osm_tags": {
+        "name": "Moneia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Monte Inrule",
+      "lat": -15.9562626,
+      "lon": 38.2964866,
+      "osm_id": "node/5174318808",
+      "osm_tags": {
+        "ele": "820",
+        "name": "Monte Inrule",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nah\u00f4a",
+      "lat": -15.9303374,
+      "lon": 38.4607584,
+      "osm_id": "node/5174318809",
+      "osm_tags": {
+        "name": "Nah\u00f4a",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nahoco",
+      "lat": -15.9599819,
+      "lon": 38.51536,
+      "osm_id": "node/5174318810",
+      "osm_tags": {
+        "name": "Nahoco",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mutxora",
+      "lat": -15.9138545,
+      "lon": 38.4329111,
+      "osm_id": "node/5174318811",
+      "osm_tags": {
+        "name": "Mutxora",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nacarara",
+      "lat": -15.8798698,
+      "lon": 38.4209894,
+      "osm_id": "node/5174318812",
+      "osm_tags": {
+        "name": "Nacarara",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Impharea",
+      "lat": -15.838428,
+      "lon": 38.3907444,
+      "osm_id": "node/5174318813",
+      "osm_tags": {
+        "name": "Impharea",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namihaly",
+      "lat": -15.8219472,
+      "lon": 38.338984,
+      "osm_id": "node/5174318814",
+      "osm_tags": {
+        "name": "Namihaly",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lougela",
+      "lat": -15.8121801,
+      "lon": 37.7593771,
+      "osm_id": "node/5174392151",
+      "osm_tags": {
+        "name": "Lougela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Murrito",
+      "lat": -15.8429665,
+      "lon": 37.7696541,
+      "osm_id": "node/5174392152",
+      "osm_tags": {
+        "name": "Murrito",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nacuita",
+      "lat": -15.8925932,
+      "lon": 37.7690907,
+      "osm_id": "node/5174392153",
+      "osm_tags": {
+        "name": "Nacuita",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jaua",
+      "lat": -15.8959278,
+      "lon": 37.8302331,
+      "osm_id": "node/5174392154",
+      "osm_tags": {
+        "name": "Jaua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mutala",
+      "lat": -15.9174064,
+      "lon": 37.8528569,
+      "osm_id": "node/5174392155",
+      "osm_tags": {
+        "name": "Mutala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Narilo",
+      "lat": -15.9837083,
+      "lon": 37.9355441,
+      "osm_id": "node/5174392156",
+      "osm_tags": {
+        "name": "Narilo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uelela",
+      "lat": -15.9946439,
+      "lon": 37.9487243,
+      "osm_id": "node/5174392157",
+      "osm_tags": {
+        "name": "Uelela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naciaia",
+      "lat": -16.0145711,
+      "lon": 38.0440476,
+      "osm_id": "node/5174392158",
+      "osm_tags": {
+        "name": "Naciaia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Napacala",
+      "lat": -16.0381192,
+      "lon": 38.0660303,
+      "osm_id": "node/5174392159",
+      "osm_tags": {
+        "name": "Napacala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mucata",
+      "lat": -16.1873281,
+      "lon": 37.7116256,
+      "osm_id": "node/5174392160",
+      "osm_tags": {
+        "name": "Mucata",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muapila",
+      "lat": -16.7977226,
+      "lon": 37.6372402,
+      "osm_id": "node/5176325556",
+      "osm_tags": {
+        "name": "Muapila",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cannaua",
+      "lat": -16.7985773,
+      "lon": 37.7003867,
+      "osm_id": "node/5176325557",
+      "osm_tags": {
+        "name": "Cannaua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muiticula",
+      "lat": -16.7200902,
+      "lon": 37.7508685,
+      "osm_id": "node/5176325558",
+      "osm_tags": {
+        "name": "Muiticula",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ginama",
+      "lat": -16.8194266,
+      "lon": 37.7306467,
+      "osm_id": "node/5176325559",
+      "osm_tags": {
+        "name": "Ginama",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mutepule",
+      "lat": -16.8797428,
+      "lon": 37.7895177,
+      "osm_id": "node/5176325560",
+      "osm_tags": {
+        "name": "Mutepule",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mucuna",
+      "lat": -16.9063591,
+      "lon": 37.9588054,
+      "osm_id": "node/5176325561",
+      "osm_tags": {
+        "name": "Mucuna",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mitale",
+      "lat": -16.9434874,
+      "lon": 38.0319544,
+      "osm_id": "node/5176325563",
+      "osm_tags": {
+        "name": "Mitale",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ratata (Mutagane)",
+      "lat": -16.9663407,
+      "lon": 38.0488482,
+      "osm_id": "node/5176325571",
+      "osm_tags": {
+        "name": "Ratata (Mutagane)",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namalugo",
+      "lat": -17.0074867,
+      "lon": 38.0719522,
+      "osm_id": "node/5176325572",
+      "osm_tags": {
+        "name": "Namalugo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Impaca",
+      "lat": -17.0516619,
+      "lon": 38.0933609,
+      "osm_id": "node/5176325576",
+      "osm_tags": {
+        "name": "Impaca",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hobe",
+      "lat": -17.0913935,
+      "lon": 38.1288436,
+      "osm_id": "node/5176325577",
+      "osm_tags": {
+        "name": "Hobe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Alto Cone",
+      "lat": -17.1526965,
+      "lon": 38.150278,
+      "osm_id": "node/5176325578",
+      "osm_tags": {
+        "name": "Alto Cone",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naico",
+      "lat": -17.1029334,
+      "lon": 37.9772732,
+      "osm_id": "node/5176359104",
+      "osm_tags": {
+        "name": "Naico",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nacuda",
+      "lat": -17.1991408,
+      "lon": 37.9615259,
+      "osm_id": "node/5176359105",
+      "osm_tags": {
+        "name": "Nacuda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tapata",
+      "lat": -17.2594919,
+      "lon": 37.8944486,
+      "osm_id": "node/5176359106",
+      "osm_tags": {
+        "name": "Tapata",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Missal",
+      "lat": -17.2316962,
+      "lon": 37.7765719,
+      "osm_id": "node/5176359108",
+      "osm_tags": {
+        "name": "Missal",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lul\u00fati",
+      "lat": -15.8325037,
+      "lon": 38.9810731,
+      "osm_id": "node/5176383799",
+      "osm_tags": {
+        "name": "Lul\u00fati",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Murimue",
+      "lat": -15.7870378,
+      "lon": 39.0719098,
+      "osm_id": "node/5176383800",
+      "osm_tags": {
+        "name": "Murimue",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lavaria",
+      "lat": -15.9165365,
+      "lon": 39.0202351,
+      "osm_id": "node/5176383962",
+      "osm_tags": {
+        "name": "Lavaria",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mavuco",
+      "lat": -15.947515,
+      "lon": 39.0156471,
+      "osm_id": "node/5176383963",
+      "osm_tags": {
+        "name": "Mavuco",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Monte Muti",
+      "lat": -15.9770015,
+      "lon": 38.9916559,
+      "osm_id": "node/5176384029",
+      "osm_tags": {
+        "ele": "633",
+        "name": "Monte Muti",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nahege",
+      "lat": -16.0043735,
+      "lon": 38.9806145,
+      "osm_id": "node/5176384030",
+      "osm_tags": {
+        "name": "Nahege",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chalaua",
+      "lat": -16.0793809,
+      "lon": 39.1570038,
+      "osm_id": "node/5176384031",
+      "osm_tags": {
+        "name": "Chalaua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nono",
+      "lat": -16.1469834,
+      "lon": 39.1365596,
+      "osm_id": "node/5176384032",
+      "osm_tags": {
+        "name": "Nono",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mucuaia",
+      "lat": -16.2460104,
+      "lon": 39.1018954,
+      "osm_id": "node/5176384033",
+      "osm_tags": {
+        "name": "Mucuaia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Caluma",
+      "lat": -16.3208472,
+      "lon": 39.0323743,
+      "osm_id": "node/5176384034",
+      "osm_tags": {
+        "name": "Caluma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Metil",
+      "lat": -16.3850467,
+      "lon": 39.0225663,
+      "osm_id": "node/5176384035",
+      "osm_tags": {
+        "name": "Metil",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jagoma",
+      "lat": -16.4774198,
+      "lon": 39.0660617,
+      "osm_id": "node/5176384036",
+      "osm_tags": {
+        "name": "Jagoma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muhemua",
+      "lat": -15.7980575,
+      "lon": 39.2587584,
+      "osm_id": "node/5183947754",
+      "osm_tags": {
+        "name": "Muhemua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mucucuiza",
+      "lat": -15.8650575,
+      "lon": 39.2276329,
+      "osm_id": "node/5183947755",
+      "osm_tags": {
+        "name": "Mucucuiza",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Melela",
+      "lat": -16.840638,
+      "lon": 38.3847662,
+      "osm_id": "way/32204847",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Rio Melela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Namiroe",
+      "lat": -15.9778412,
+      "lon": 38.6044343,
+      "osm_id": "way/222294061",
+      "osm_tags": {
+        "name": "Rio Namiroe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Melela",
+      "lat": -15.8275596,
+      "lon": 37.6053463,
+      "osm_id": "way/222361213",
+      "osm_tags": {
+        "name": "Rio Melela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Nipiode",
+      "lat": -16.7696082,
+      "lon": 37.6854494,
+      "osm_id": "way/222622628",
+      "osm_tags": {
+        "name": "Rio Nipiode",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Moebase",
+      "lat": -17.0216229,
+      "lon": 38.6622531,
+      "osm_id": "way/243568484",
+      "osm_tags": {
+        "name": "Moebase",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Mol\u00f3cu\u00e8",
+      "lat": -17.0011194,
+      "lon": 38.844689,
+      "osm_id": "way/243608289",
+      "osm_tags": {
+        "name": "Rio Mol\u00f3cu\u00e8",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ligonha",
+      "lat": -16.7555375,
+      "lon": 39.2136596,
+      "osm_id": "way/243651532",
+      "osm_tags": {
+        "name": "Ligonha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Mol\u00f3cu\u00e8",
+      "lat": -16.6802737,
+      "lon": 38.6921403,
+      "osm_id": "way/262096178",
+      "osm_tags": {
+        "name": "Rio Mol\u00f3cu\u00e8",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Mol\u00f3cu\u00e8",
+      "lat": -16.2127099,
+      "lon": 38.3227711,
+      "osm_id": "way/262096180",
+      "osm_tags": {
+        "name": "Rio Mol\u00f3cu\u00e8",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Mol\u00f3cu\u00e8",
+      "lat": -15.9340704,
+      "lon": 37.9988313,
+      "osm_id": "way/366039505",
+      "osm_tags": {
+        "name": "Rio Mol\u00f3cu\u00e8",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Namidjaia",
+      "lat": -16.8281865,
+      "lon": 38.5128642,
+      "osm_id": "way/436851656",
+      "osm_tags": {
+        "name": "Namidjaia",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munela",
+      "lat": -16.8327388,
+      "lon": 38.5213373,
+      "osm_id": "way/436851661",
+      "osm_tags": {
+        "name": "Munela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Ligonha",
+      "lat": -16.633204,
+      "lon": 39.0640998,
+      "osm_id": "way/808312379",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Ligonha",
+        "waterway": "river",
+        "wikidata": "Q59993206"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Ligonha",
+      "lat": -15.6134671,
+      "lon": 38.525265,
+      "osm_id": "way/854479071",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Ligonha",
+        "waterway": "river",
+        "wikidata": "Q59993206"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Ligonha",
+      "lat": -16.0430256,
+      "lon": 38.8924691,
+      "osm_id": "way/854479072",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Ligonha",
+        "waterway": "river",
+        "wikidata": "Q59993206"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Nipiode",
+      "lat": -17.2690781,
+      "lon": 37.7282344,
+      "osm_id": "way/854479140",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Nipiode",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Namiroe",
+      "lat": -16.1469643,
+      "lon": 38.8823024,
+      "osm_id": "way/854479141",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Namiroe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Ligonha",
+      "lat": -16.2689452,
+      "lon": 38.9617601,
+      "osm_id": "way/854479151",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Ligonha",
+        "waterway": "river",
+        "wikidata": "Q59993206"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Melela",
+      "lat": -16.031771,
+      "lon": 37.6832912,
+      "osm_id": "way/854603259",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Melela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Melela",
+      "lat": -16.1988435,
+      "lon": 37.8112474,
+      "osm_id": "way/854603260",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Melela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Melela",
+      "lat": -16.3928389,
+      "lon": 37.9417392,
+      "osm_id": "way/854603261",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Melela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Melela",
+      "lat": -16.5047545,
+      "lon": 38.0111534,
+      "osm_id": "way/854603262",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Melela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Melela",
+      "lat": -16.5790889,
+      "lon": 38.0895904,
+      "osm_id": "way/854603263",
+      "osm_tags": {
+        "name": "Rio Melela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Ligonha",
+      "lat": -15.8849409,
+      "lon": 38.8351585,
+      "osm_id": "way/881235744",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Ligonha",
+        "waterway": "river",
+        "wikidata": "Q59993206"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Ligonha",
+      "lat": -15.8203986,
+      "lon": 38.8083024,
+      "osm_id": "way/881235748",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Ligonha",
+        "waterway": "river",
+        "wikidata": "Q59993206"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Mol\u00f3cu\u00e8",
+      "lat": -15.8340836,
+      "lon": 37.8901873,
+      "osm_id": "way/1353345054",
+      "osm_tags": {
+        "name": "Rio Mol\u00f3cu\u00e8",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Mol\u00f3cu\u00e8",
+      "lat": -15.7713506,
+      "lon": 37.8286681,
+      "osm_id": "way/1353387887",
+      "osm_tags": {
+        "name": "Rio Mol\u00f3cu\u00e8",
+        "waterway": "river"
+      }
+    }
+  ]
+}

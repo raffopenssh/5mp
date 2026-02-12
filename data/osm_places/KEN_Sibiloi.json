@@ -1,0 +1,783 @@
+{
+  "park_id": "KEN_Sibiloi",
+  "downloaded_at": "2026-02-08T09:21:07.928140+00:00",
+  "buffer_km": 50,
+  "place_count": 64,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Lokitaung",
+      "lat": 4.2691168,
+      "lon": 35.7522638,
+      "osm_id": "node/44931361",
+      "osm_tags": {
+        "is_in": "Turkana,Kenya",
+        "name": "Lokitaung",
+        "place": "town",
+        "wikidata": "Q6668687"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Kalokol",
+      "lat": 3.5327417,
+      "lon": 35.8570234,
+      "osm_id": "node/44931399",
+      "osm_tags": {
+        "name": "Kalokol",
+        "place": "town",
+        "wikidata": "Q6354210"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hado",
+      "lat": 4.6471179,
+      "lon": 36.1908981,
+      "osm_id": "node/1102262637",
+      "osm_tags": {
+        "name": "Hado",
+        "place": "village",
+        "source": "300TDI"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ileret",
+      "lat": 4.311568,
+      "lon": 36.2270357,
+      "osm_id": "node/2940775447",
+      "osm_tags": {
+        "alt_name": "Illeret;Iloret",
+        "name": "Ileret",
+        "place": "village",
+        "wikidata": "Q5997621"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nachukui",
+      "lat": 4.0649042,
+      "lon": 35.8835138,
+      "osm_id": "node/3069430947",
+      "osm_tags": {
+        "name": "Nachukui",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lowareng'ak",
+      "lat": 4.2778208,
+      "lon": 35.8932733,
+      "osm_id": "node/3284008163",
+      "osm_tags": {
+        "name": "Lowareng'ak",
+        "place": "village",
+        "wikidata": "Q28223350"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nariokotome",
+      "lat": 4.1264788,
+      "lon": 35.857605,
+      "osm_id": "node/3285660396",
+      "osm_tags": {
+        "name": "Nariokotome",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalokodo",
+      "lat": 4.0241348,
+      "lon": 35.8620665,
+      "osm_id": "node/3285660735",
+      "osm_tags": {
+        "name": "Kalokodo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kangaki",
+      "lat": 3.9649569,
+      "lon": 35.8455313,
+      "osm_id": "node/3285667855",
+      "osm_tags": {
+        "name": "Kangaki",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lomekwi",
+      "lat": 3.9132917,
+      "lon": 35.8364293,
+      "osm_id": "node/3285667857",
+      "osm_tags": {
+        "name": "Lomekwi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Narengewoi",
+      "lat": 4.0006157,
+      "lon": 35.8494584,
+      "osm_id": "node/3285667858",
+      "osm_tags": {
+        "name": "Narengewoi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katiko",
+      "lat": 3.7955267,
+      "lon": 35.8383297,
+      "osm_id": "node/3285667860",
+      "osm_tags": {
+        "name": "Katiko",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Eliye Springs",
+      "lat": 3.2374363,
+      "lon": 36.0228161,
+      "osm_id": "node/3287382518",
+      "osm_tags": {
+        "name": "Eliye Springs",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lokitoeang'aberu",
+      "lat": 3.6746327,
+      "lon": 35.8274897,
+      "osm_id": "node/3287383351",
+      "osm_tags": {
+        "name": "Lokitoeang'aberu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nasechabuin",
+      "lat": 3.7256528,
+      "lon": 35.824504,
+      "osm_id": "node/3287383399",
+      "osm_tags": {
+        "name": "Nasechabuin",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kataboi",
+      "lat": 3.7544802,
+      "lon": 35.8304492,
+      "osm_id": "node/3308928639",
+      "osm_tags": {
+        "name": "Kataboi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Spanish Mission",
+      "lat": 4.1222411,
+      "lon": 35.8549874,
+      "osm_id": "node/3435108040",
+      "osm_tags": {
+        "name": "Spanish Mission",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Anam",
+      "lat": 4.1390132,
+      "lon": 35.9145536,
+      "osm_id": "node/3435125915",
+      "osm_tags": {
+        "name": "Anam",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Cross Mountain",
+      "lat": 4.2621333,
+      "lon": 35.746881,
+      "osm_id": "node/4533839136",
+      "osm_tags": {
+        "ele": "890",
+        "name": "Cross Mountain",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kala-Jarso",
+      "lat": 4.3655445,
+      "lon": 36.9124837,
+      "osm_id": "node/6956107770",
+      "osm_tags": {
+        "ele": "850",
+        "name": "Kala-Jarso",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kokurfo",
+      "lat": 4.1698293,
+      "lon": 36.9576767,
+      "osm_id": "node/6993474885",
+      "osm_tags": {
+        "ele": "990",
+        "name": "Kokurfo",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Sullsull Mudde",
+      "lat": 4.3683418,
+      "lon": 36.9550895,
+      "osm_id": "node/6993892326",
+      "osm_tags": {
+        "ele": "1380",
+        "name": "Sullsull Mudde",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Loia",
+      "lat": 4.6226823,
+      "lon": 36.4553052,
+      "osm_id": "node/6997165137",
+      "osm_tags": {
+        "ele": "820",
+        "name": "Mount Loia",
+        "natural": "peak",
+        "source:elevation": "txu-pclmaps"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bollo",
+      "lat": 4.0057402,
+      "lon": 36.9567686,
+      "osm_id": "node/6997401722",
+      "osm_tags": {
+        "ele": "931",
+        "name": "Bollo",
+        "natural": "peak",
+        "source:elevation": "txu-pclmaps"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u1261\u1267",
+      "lat": 4.4558143,
+      "lon": 36.2150083,
+      "osm_id": "node/7140627085",
+      "osm_tags": {
+        "alt_name:en": "Bubua;Bubuaa",
+        "name": "\u1261\u1267",
+        "name:en": "Bubwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moite",
+      "lat": 3.3137048,
+      "lon": 36.2492394,
+      "osm_id": "node/8365253867",
+      "osm_tags": {
+        "name": "Moite",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Selicho",
+      "lat": 4.3988358,
+      "lon": 36.2216573,
+      "osm_id": "node/9665274018",
+      "osm_tags": {
+        "name": "Selicho",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Natoo",
+      "lat": 4.2141903,
+      "lon": 35.7638605,
+      "osm_id": "node/10873429029",
+      "osm_tags": {
+        "name": "Natoo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "El-Beso",
+      "lat": 3.5477951,
+      "lon": 36.9085445,
+      "osm_id": "node/12529339985",
+      "osm_tags": {
+        "name": "El-Beso",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u12a6\u121e / Omo",
+      "lat": 4.6235677,
+      "lon": 36.016109,
+      "osm_id": "way/8036035",
+      "osm_tags": {
+        "name": "\u12a6\u121e / Omo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Chew Bahir",
+      "lat": 4.6269467,
+      "lon": 36.8495206,
+      "osm_id": "way/27144020",
+      "osm_tags": {
+        "int_name": "Stefanie",
+        "intermittent": "yes",
+        "name": "Lake Chew Bahir",
+        "name:am": "\u1328\u12cd \u1263\u1215\u122d",
+        "name:hu": "Csev-Bahir-t\u00f3",
+        "name:sk": "\u0160tef\u00e1niino jazero",
+        "natural": "water",
+        "old_name:hu": "Stef\u00e1nia-t\u00f3",
+        "salt": "yes",
+        "water": "lake",
+        "wikidata": "Q662811",
+        "wikimedia_commons": "Category:Lake Chew Bahir"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u12a6\u121e / Omo",
+      "lat": 4.6467573,
+      "lon": 35.9821793,
+      "osm_id": "way/28938256",
+      "osm_tags": {
+        "name": "\u12a6\u121e / Omo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u12a6\u121e / Omo",
+      "lat": 4.5258937,
+      "lon": 35.9801463,
+      "osm_id": "way/311442537",
+      "osm_tags": {
+        "name": "\u12a6\u121e / Omo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lowareng'ak",
+      "lat": 4.2757971,
+      "lon": 35.89529,
+      "osm_id": "way/321797703",
+      "osm_tags": {
+        "name": "Lowareng'ak",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Anam",
+      "lat": 4.140104,
+      "lon": 35.914045,
+      "osm_id": "way/336468501",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Anam",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nariokotome Village",
+      "lat": 4.1313118,
+      "lon": 35.8775632,
+      "osm_id": "way/429438881",
+      "osm_tags": {
+        "name": "Nariokotome Village",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomogol",
+      "lat": 4.5655326,
+      "lon": 35.6512753,
+      "osm_id": "way/545747851",
+      "osm_tags": {
+        "description": "Also spelled \"Lomogoil\"",
+        "intermittent": "yes",
+        "name": "Lomogol",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Lokitaung",
+      "lat": 4.2694527,
+      "lon": 35.7457184,
+      "osm_id": "way/545749985",
+      "osm_tags": {
+        "name": "Lokitaung",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Il Eriet",
+      "lat": 4.4517545,
+      "lon": 36.4650753,
+      "osm_id": "way/587279439",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Il Eriet",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Il Eriet (Lalabaino Gura)",
+      "lat": 4.3904089,
+      "lon": 36.363405,
+      "osm_id": "way/587279441",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Il Eriet (Lalabaino Gura)",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Il Olo",
+      "lat": 4.464841,
+      "lon": 36.3123766,
+      "osm_id": "way/674692065",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Il Olo",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kaieris",
+      "lat": 4.6625007,
+      "lon": 35.7511035,
+      "osm_id": "way/713288313",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kaieris",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mogorei",
+      "lat": 4.4010216,
+      "lon": 36.8252599,
+      "osm_id": "way/747450831",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mogorei",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Eriet (Daicho Gura)",
+      "lat": 4.5269655,
+      "lon": 36.4700998,
+      "osm_id": "way/747889755",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Eriet (Daicho Gura)",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Eriet (Daicho Gura)",
+      "lat": 4.4520998,
+      "lon": 36.4188731,
+      "osm_id": "way/747905625",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Eriet (Daicho Gura)",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Il Eriet",
+      "lat": 4.507982,
+      "lon": 36.5436771,
+      "osm_id": "way/747905635",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Il Eriet",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Laga Tulu Bor",
+      "lat": 4.2331333,
+      "lon": 36.3447147,
+      "osm_id": "way/747928583",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Laga Tulu Bor",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Laga Tulu Bor",
+      "lat": 4.2579202,
+      "lon": 36.3866366,
+      "osm_id": "way/747928591",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Laga Tulu Bor",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Laga Tulu Bor",
+      "lat": 4.219904,
+      "lon": 36.3143954,
+      "osm_id": "way/749165662",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Laga Tulu Bor",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Il Eriet (Dura Gura)",
+      "lat": 4.4137565,
+      "lon": 36.4997456,
+      "osm_id": "way/749165681",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Il Eriet (Dura Gura)",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Natoo",
+      "lat": 4.2088203,
+      "lon": 35.8266349,
+      "osm_id": "way/749293641",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Natoo",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lopurr",
+      "lat": 4.6082258,
+      "lon": 35.7524602,
+      "osm_id": "way/749394007",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lopurr",
+        "seasonal": "wet_season",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomogol",
+      "lat": 4.6993798,
+      "lon": 35.7950432,
+      "osm_id": "way/749394041",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lomogol",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Naiyena Epul",
+      "lat": 4.6104401,
+      "lon": 35.808184,
+      "osm_id": "way/749394045",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Naiyena Epul",
+        "seasonal": "wet_season",
+        "waterway": "river",
+        "wikidata": "Q20909035"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ziwa Andr\u00e1s Vojnits",
+      "lat": 3.6322897,
+      "lon": 36.3325222,
+      "osm_id": "way/1154351479",
+      "osm_tags": {
+        "name": "Ziwa Andr\u00e1s Vojnits",
+        "name:en": "Lake Andr\u00e1s Vojnits",
+        "name:hu": "Vojnits Andr\u00e1s t\u00f3",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u12a6\u121e / Omo",
+      "lat": 4.4262279,
+      "lon": 35.9813288,
+      "osm_id": "way/1154578500",
+      "osm_tags": {
+        "name": "\u12a6\u121e / Omo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u12a6\u121e / Omo",
+      "lat": 4.7670091,
+      "lon": 36.0337234,
+      "osm_id": "way/1154578501",
+      "osm_tags": {
+        "name": "\u12a6\u121e / Omo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u12a6\u121e / Omo",
+      "lat": 4.4833301,
+      "lon": 36.0144214,
+      "osm_id": "way/1154578502",
+      "osm_tags": {
+        "name": "\u12a6\u121e / Omo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Natoo",
+      "lat": 4.2137984,
+      "lon": 35.7625661,
+      "osm_id": "way/1169330952",
+      "osm_tags": {
+        "name": "Natoo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Eliye Springs",
+      "lat": 3.2393332,
+      "lon": 36.0237154,
+      "osm_id": "way/1169446759",
+      "osm_tags": {
+        "name": "Eliye Springs",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River1",
+      "lat": 3.3807882,
+      "lon": 35.8537767,
+      "osm_id": "way/1332156471",
+      "osm_tags": {
+        "name": "River1",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River3",
+      "lat": 3.3836468,
+      "lon": 35.8921694,
+      "osm_id": "way/1332156474",
+      "osm_tags": {
+        "name": "River3",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River2",
+      "lat": 3.3896456,
+      "lon": 35.8922482,
+      "osm_id": "way/1332156478",
+      "osm_tags": {
+        "name": "River2",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "-",
+      "lat": 3.5162615,
+      "lon": 35.7330212,
+      "osm_id": "way/1389328102",
+      "osm_tags": {
+        "name": "-",
+        "waterway": "stream"
+      }
+    }
+  ]
+}

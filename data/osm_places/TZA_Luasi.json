@@ -1,0 +1,931 @@
+{
+  "park_id": "TZA_Luasi",
+  "downloaded_at": "2026-02-08T11:58:22.733474+00:00",
+  "buffer_km": 50,
+  "place_count": 71,
+  "places": [
+    {
+      "place_type": "city",
+      "name": "Sumbawanga",
+      "lat": -7.9523861,
+      "lon": 31.6231898,
+      "osm_id": "node/262095995",
+      "osm_tags": {
+        "name": "Sumbawanga",
+        "name:ko": "\uc228\ubc14\uc655\uac00",
+        "name:lt": "Sumbavanga",
+        "name:ru": "\u0421\u0443\u043c\u0431\u0430\u0432\u0430\u043d\u0433\u0430",
+        "name:uk": "\u0421\u0443\u043c\u0431\u0430\u0432\u0430\u043d\u0491\u0430",
+        "place": "city",
+        "population": "182970",
+        "source:population": "German Wikipedia https://de.wikipedia.org/wiki/Liste_der_St%C3%A4dte_in_Tansania",
+        "wikidata": "Q115323",
+        "wikipedia": "en:Sumbawanga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Siwe",
+      "lat": -6.841523,
+      "lon": 32.2091684,
+      "osm_id": "node/965844528",
+      "osm_tags": {
+        "name": "Siwe",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukolini",
+      "lat": -6.8666667,
+      "lon": 32.7166667,
+      "osm_id": "node/965844652",
+      "osm_tags": {
+        "name": "Lukolini",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msia",
+      "lat": -7.9826458,
+      "lon": 31.8872338,
+      "osm_id": "node/965844858",
+      "osm_tags": {
+        "is_in": "Rukwa, Tanzania",
+        "name": "Msia",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaengesa",
+      "lat": -8.2649634,
+      "lon": 31.7015527,
+      "osm_id": "node/1813254412",
+      "osm_tags": {
+        "is_in": "Rukwa, Tanzania",
+        "name": "Kaengesa",
+        "place": "village",
+        "source": "GNS, Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ilemba",
+      "lat": -8.2545249,
+      "lon": 31.9904137,
+      "osm_id": "node/2185558883",
+      "osm_tags": {
+        "is_in": "Rukwa, Tanzania",
+        "name": "Ilemba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kambia",
+      "lat": -8.1954272,
+      "lon": 31.7696849,
+      "osm_id": "node/2493698966",
+      "osm_tags": {
+        "name": "Kambia",
+        "place": "hamlet",
+        "region": "Rukwa,"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mapili",
+      "lat": -6.7981705,
+      "lon": 32.1303648,
+      "osm_id": "node/3517719563",
+      "osm_tags": {
+        "name": "Mapili",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gua",
+      "lat": -7.8600077,
+      "lon": 32.4825161,
+      "osm_id": "node/7484617931",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Chunya",
+        "name": "Gua",
+        "place": "village",
+        "region": "Mbeya",
+        "ward": "Gua"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngwala",
+      "lat": -7.7440611,
+      "lon": 32.8153669,
+      "osm_id": "node/7484617932",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Chunya",
+        "name": "Ngwala",
+        "place": "village",
+        "region": "Mbeya",
+        "ward": "Ngwala"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katusa",
+      "lat": -7.9382544,
+      "lon": 31.6107571,
+      "osm_id": "node/7553581551",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Katusa",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Old Sumbawanga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katuma",
+      "lat": -7.9390301,
+      "lon": 31.5996205,
+      "osm_id": "node/7553581552",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Katuma",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Old Sumbawanga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mponda",
+      "lat": -7.9350985,
+      "lon": 31.7198798,
+      "osm_id": "node/7553581553",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Mponda",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Majengo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "King`Ombe",
+      "lat": -7.9684099,
+      "lon": 31.6670297,
+      "osm_id": "node/7553581554",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "King`Ombe",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Chanji"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Isesa",
+      "lat": -8.0184517,
+      "lon": 31.678016,
+      "osm_id": "node/7553581555",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Isesa",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Mollo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ulinji",
+      "lat": -8.0353968,
+      "lon": 31.7069094,
+      "osm_id": "node/7553581556",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Ulinji",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Mollo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mawenzusi",
+      "lat": -7.9897554,
+      "lon": 31.7914947,
+      "osm_id": "node/7553581557",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Mawenzusi",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Mollo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nambogo",
+      "lat": -8.0422486,
+      "lon": 31.6648196,
+      "osm_id": "node/7553581558",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Nambogo",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Milanzi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katumba Azimio",
+      "lat": -8.0842828,
+      "lon": 31.6726838,
+      "osm_id": "node/7553581559",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Katumba Azimio",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Pito"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malonje",
+      "lat": -8.0707923,
+      "lon": 31.7387937,
+      "osm_id": "node/7553581560",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Malonje",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Mollo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tamasenga",
+      "lat": -8.1384895,
+      "lon": 31.6719703,
+      "osm_id": "node/7553581561",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Tamasenga",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Pito"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pito",
+      "lat": -8.1167376,
+      "lon": 31.6446491,
+      "osm_id": "node/7553581562",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Pito",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Pito"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malagano",
+      "lat": -8.1398117,
+      "lon": 31.6232668,
+      "osm_id": "node/7553581563",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Malagano",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Pito"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mlanda",
+      "lat": -8.0529673,
+      "lon": 31.5952861,
+      "osm_id": "node/7553581564",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Mlanda",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Milanzi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wipanga",
+      "lat": -7.8686375,
+      "lon": 31.6330083,
+      "osm_id": "node/7553581572",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Wipanga",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Senga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Senga",
+      "lat": -7.9118586,
+      "lon": 31.6261422,
+      "osm_id": "node/7553581573",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Senga",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Senga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Milanzi",
+      "lat": -8.0203321,
+      "lon": 31.6060578,
+      "osm_id": "node/7553581578",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Sumbawanga Urban",
+        "name": "Milanzi",
+        "place": "village",
+        "region": "Rukwa",
+        "ward": "Milanzi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nsekwa",
+      "lat": -6.7747923,
+      "lon": 32.013731,
+      "osm_id": "node/7692846460",
+      "osm_tags": {
+        "name": "Nsekwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Songambele",
+      "lat": -6.7474163,
+      "lon": 32.0005935,
+      "osm_id": "node/7692846465",
+      "osm_tags": {
+        "name": "Songambele",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gua",
+      "lat": -7.8709132,
+      "lon": 32.4911908,
+      "osm_id": "node/7747097612",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Chunya",
+        "name": "Gua",
+        "place": "village",
+        "region": "Mbeya",
+        "ward": "Gua"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngwala",
+      "lat": -7.7353303,
+      "lon": 32.810612,
+      "osm_id": "node/7747097615",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Chunya",
+        "name": "Ngwala",
+        "place": "village",
+        "region": "Mbeya",
+        "ward": "Ngwala"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Udinde",
+      "lat": -8.0936436,
+      "lon": 32.614834,
+      "osm_id": "node/7747097616",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Chunya",
+        "name": "Udinde",
+        "place": "village",
+        "region": "Mbeya",
+        "ward": "Kapalala"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamalampaka",
+      "lat": -6.7455436,
+      "lon": 32.1349026,
+      "osm_id": "node/7761806561",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mlele",
+        "name": "Kamalampaka",
+        "place": "village",
+        "region": "Katavi",
+        "ward": "Inyonga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masigo",
+      "lat": -6.8278962,
+      "lon": 32.0429566,
+      "osm_id": "node/7761806563",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mlele",
+        "name": "Masigo",
+        "place": "village",
+        "region": "Katavi",
+        "ward": "Ilela"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaulolo",
+      "lat": -6.7970875,
+      "lon": 32.0164672,
+      "osm_id": "node/7761806564",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mlele",
+        "name": "Kaulolo",
+        "place": "village",
+        "region": "Katavi",
+        "ward": "Nsenkwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zimba",
+      "lat": -7.8542954,
+      "lon": 31.8242963,
+      "osm_id": "node/8094616691",
+      "osm_tags": {
+        "name": "Zimba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uzia",
+      "lat": -7.7268675,
+      "lon": 31.6112269,
+      "osm_id": "node/8094617080",
+      "osm_tags": {
+        "name": "Uzia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwela",
+      "lat": -7.7940788,
+      "lon": 31.7231236,
+      "osm_id": "node/8094617081",
+      "osm_tags": {
+        "name": "Mwela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vuma",
+      "lat": -7.8083253,
+      "lon": 31.7710447,
+      "osm_id": "node/8094617082",
+      "osm_tags": {
+        "name": "Vuma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Visela",
+      "lat": -8.1848945,
+      "lon": 31.7353874,
+      "osm_id": "node/8596233929",
+      "osm_tags": {
+        "name": "Visela",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalole",
+      "lat": -8.1893016,
+      "lon": 31.7465401,
+      "osm_id": "node/8596233941",
+      "osm_tags": {
+        "name": "Kalole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kapalala",
+      "lat": -8.0641719,
+      "lon": 32.6832238,
+      "osm_id": "node/10760301750",
+      "osm_tags": {
+        "name": "Kapalala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rukwa",
+      "lat": -8.095209,
+      "lon": 32.6053056,
+      "osm_id": "node/10760301755",
+      "osm_tags": {
+        "name": "Rukwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kavuu River",
+      "lat": -7.2157252,
+      "lon": 31.5907704,
+      "osm_id": "way/222921960",
+      "osm_tags": {
+        "name": "Kavuu River",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rungwa River",
+      "lat": -7.378217,
+      "lon": 31.7121308,
+      "osm_id": "way/222921970",
+      "osm_tags": {
+        "name": "Rungwa River",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rungwa River",
+      "lat": -7.312173,
+      "lon": 31.759838,
+      "osm_id": "way/222921971",
+      "osm_tags": {
+        "name": "Rungwa River",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rungwa River",
+      "lat": -7.2783194,
+      "lon": 31.8411214,
+      "osm_id": "way/222921973",
+      "osm_tags": {
+        "name": "Rungwa River",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Momba",
+      "lat": -8.5933532,
+      "lon": 32.5021618,
+      "osm_id": "way/247827868",
+      "osm_tags": {
+        "name": "Momba",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkunda",
+      "lat": -8.208653,
+      "lon": 31.6817836,
+      "osm_id": "way/248327700",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Mkunda",
+        "place": "village",
+        "source": "bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaengesa",
+      "lat": -8.2616855,
+      "lon": 31.7021238,
+      "osm_id": "way/248327719",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Kaengesa",
+        "place": "village",
+        "source": "bing;local knowledge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pwela",
+      "lat": -8.0310655,
+      "lon": 31.6559089,
+      "osm_id": "way/248327750",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Pwela",
+        "place": "village",
+        "source": "bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nambogo",
+      "lat": -8.0430943,
+      "lon": 31.6659808,
+      "osm_id": "way/248327751",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Nambogo",
+        "place": "village",
+        "source": "bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katumba Azimio",
+      "lat": -8.0841932,
+      "lon": 31.6725887,
+      "osm_id": "way/248327777",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Katumba Azimio",
+        "place": "village",
+        "source": "bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kianda",
+      "lat": -8.2939344,
+      "lon": 31.7564008,
+      "osm_id": "way/248327795",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Kianda",
+        "place": "village",
+        "source": "bing;local knowledge"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rungwa River",
+      "lat": -7.2529558,
+      "lon": 32.0098611,
+      "osm_id": "way/300529620",
+      "osm_tags": {
+        "name": "Rungwa River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rungwa River",
+      "lat": -7.0542548,
+      "lon": 32.6627742,
+      "osm_id": "way/300539888",
+      "osm_tags": {
+        "name": "Rungwa River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwitch River",
+      "lat": -7.9475213,
+      "lon": 31.5991656,
+      "osm_id": "way/361714120",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lwitch River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chitete",
+      "lat": -8.2589708,
+      "lon": 31.6464583,
+      "osm_id": "way/480844946",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Chitete",
+        "place": "village",
+        "source": "bing"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Leiche River",
+      "lat": -7.9813351,
+      "lon": 31.611487,
+      "osm_id": "way/667857140",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Leiche River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Leiche River",
+      "lat": -7.9699594,
+      "lon": 31.603452,
+      "osm_id": "way/667857143",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Leiche River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwiche River",
+      "lat": -7.9641302,
+      "lon": 31.6058658,
+      "osm_id": "way/667900931",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Lwiche River",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Leiche River",
+      "lat": -7.964348,
+      "lon": 31.6059664,
+      "osm_id": "way/667900932",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Leiche River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Leiche River",
+      "lat": -7.7839574,
+      "lon": 31.5869122,
+      "osm_id": "way/668827303",
+      "osm_tags": {
+        "name": "Leiche River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Leiche river",
+      "lat": -7.7165148,
+      "lon": 31.6107162,
+      "osm_id": "way/668827304",
+      "osm_tags": {
+        "name": "Leiche river",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Leiche river",
+      "lat": -7.7207112,
+      "lon": 31.6065596,
+      "osm_id": "way/668827305",
+      "osm_tags": {
+        "name": "Leiche river",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Leiche river",
+      "lat": -7.71492,
+      "lon": 31.6124742,
+      "osm_id": "way/668874107",
+      "osm_tags": {
+        "name": "Leiche river",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Leiche river",
+      "lat": -7.7156193,
+      "lon": 31.613981,
+      "osm_id": "way/668874109",
+      "osm_tags": {
+        "name": "Leiche river",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Leiche river",
+      "lat": -7.7204867,
+      "lon": 31.6064482,
+      "osm_id": "way/668874111",
+      "osm_tags": {
+        "name": "Leiche river",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Leiche River",
+      "lat": -7.7247696,
+      "lon": 31.6043798,
+      "osm_id": "way/669019629",
+      "osm_tags": {
+        "name": "Leiche River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Leiche River",
+      "lat": -7.7236173,
+      "lon": 31.6046878,
+      "osm_id": "way/669019630",
+      "osm_tags": {
+        "name": "Leiche River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Leiche River",
+      "lat": -7.7005127,
+      "lon": 31.6243786,
+      "osm_id": "way/670041046",
+      "osm_tags": {
+        "name": "Leiche River",
+        "waterway": "river"
+      }
+    }
+  ]
+}

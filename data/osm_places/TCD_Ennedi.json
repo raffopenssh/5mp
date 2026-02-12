@@ -1,0 +1,5992 @@
+{
+  "park_id": "TCD_Ennedi",
+  "downloaded_at": "2026-02-08T11:30:19.604815+00:00",
+  "buffer_km": 50,
+  "place_count": 368,
+  "places": [
+    {
+      "place_type": "city",
+      "name": "Fada \u0641\u0627\u062f\u0627",
+      "lat": 17.1930577,
+      "lon": 21.5813259,
+      "osm_id": "node/322506424",
+      "osm_tags": {
+        "GNS:dsg_code": "PPLA",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1094428",
+        "GNS:modify_date": "2014-08-05",
+        "admin_level": "4",
+        "alt_name": "Fada",
+        "alt_name:fr": "Fort de Fada",
+        "capital": "4",
+        "name": "Fada \u0641\u0627\u062f\u0627",
+        "name:ar": "\u0641\u0627\u062f\u0627",
+        "name:en": "Fada",
+        "name:es": "Fada",
+        "name:fr": "Fada",
+        "name:ru": "\u0424\u0430\u0434\u0430",
+        "name:uk": "\u0424\u0430\u0434\u0430",
+        "note": "rank=0 + city car gouvernorat",
+        "place": "city",
+        "population": "23786",
+        "rank": "0",
+        "source": "wikipedia",
+        "wikidata": "Q985562",
+        "wikipedia": "fr:Fada"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "\u0643\u0627\u0644\u064a\u062a Kalait",
+      "lat": 15.8404295,
+      "lon": 20.8961158,
+      "osm_id": "node/1785663149",
+      "osm_tags": {
+        "capital": "5",
+        "name": "\u0643\u0627\u0644\u064a\u062a Kalait",
+        "name:ar": "\u0643\u0627\u0644\u064a\u062a",
+        "name:en": "Kalait",
+        "name:fr": "Kala\u00eft",
+        "note": "rank=0 + city car prefecture",
+        "place": "city",
+        "rank": "0"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Arso \u0623\u0631\u0633\u0648",
+      "lat": 15.9378072,
+      "lon": 22.737525,
+      "osm_id": "node/1972867797",
+      "osm_tags": {
+        "name": "Arso \u0623\u0631\u0633\u0648",
+        "name:ar": "\u0623\u0631\u0633\u0648",
+        "name:en": "Arso",
+        "name:fr": "Arso",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Amdjarass \u0623\u0645 \u062c\u0631\u0633",
+      "lat": 16.0662879,
+      "lon": 22.8350448,
+      "osm_id": "node/1972867801",
+      "osm_tags": {
+        "GNS:dsg_code": "PPLA",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "12280328",
+        "GNS:modify_date": "2014-08-19",
+        "admin_level": "4",
+        "alt_name": "Amdjarass;Am Djarass;Am Jars",
+        "capital": "4",
+        "ele": "896",
+        "name": "Amdjarass \u0623\u0645 \u062c\u0631\u0633",
+        "name:ar": "\u0623\u0645 \u062c\u0631\u0633",
+        "name:en": "Am-Djarass",
+        "name:fa": "\u0627\u0645 \u062c\u0631\u0633",
+        "name:fr": "Amdjarass",
+        "name:ks": "\u0627\u0645 \u062c\u0631\u0633",
+        "name:ur": "\u0627\u0645 \u062c\u0631\u0633",
+        "note": "rank=0 + city car gouvernorat",
+        "place": "city",
+        "population": "20850",
+        "population:date": "2009",
+        "rank": "0",
+        "wikidata": "Q2842496",
+        "wikipedia": "en:Amdjarass"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ito \u0625\u064a\u062a\u0648",
+      "lat": 16.3240979,
+      "lon": 22.4698897,
+      "osm_id": "node/2083909806",
+      "osm_tags": {
+        "alt_name": "itou",
+        "capital": "5",
+        "name": "Ito \u0625\u064a\u062a\u0648",
+        "name:ar": "\u0625\u064a\u062a\u0648",
+        "name:fr": "Ito",
+        "note": "rank=0 + city car prefecture",
+        "place": "town",
+        "rank": "0"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaoura \u0643\u0627\u0648\u0631\u0627",
+      "lat": 16.2083696,
+      "lon": 22.6107645,
+      "osm_id": "node/2471159725",
+      "osm_tags": {
+        "name": "Kaoura \u0643\u0627\u0648\u0631\u0627",
+        "name:ar": "\u0643\u0627\u0648\u0631\u0627",
+        "name:en": "Kaoura",
+        "name:fr": "Kaoura",
+        "note": "Rank =0 car lieu important pour la navigation : ville \u00e9tape",
+        "place": "village",
+        "rank": "0"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ch\u00e9bi",
+      "lat": 16.7011797,
+      "lon": 22.3123848,
+      "osm_id": "node/2472577072",
+      "osm_tags": {
+        "name": "Ch\u00e9bi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Oum Chalouba",
+      "lat": 15.8019465,
+      "lon": 20.7715508,
+      "osm_id": "node/2864860853",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1102767",
+        "GNS:modify_date": "2010-04-14",
+        "alt_name": "Oum-Chalouba",
+        "name": "Oum Chalouba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Berdoba",
+      "lat": 16.0253641,
+      "lon": 22.8804669,
+      "osm_id": "node/2864863148",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1090914",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Berdoba",
+        "name:fr": "Berdoba",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer H\u00e9rissa Djerba",
+      "lat": 15.8837833,
+      "lon": 23.6086668,
+      "osm_id": "node/3104088470",
+      "osm_tags": {
+        "name": "Hadjer H\u00e9rissa Djerba",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hill",
+      "name": "Hadjer Agous",
+      "lat": 15.7965631,
+      "lon": 23.4348162,
+      "osm_id": "node/3104088471",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1088347",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Hadjer Hagous;Hagar Agouse;Hadjer Agouse",
+        "name": "Hadjer Agous",
+        "natural": "hill"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Tamali",
+      "lat": 15.7568082,
+      "lon": 23.3119426,
+      "osm_id": "node/3104088472",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1104217",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Hagar Tamiala;Hadjer Tamiala",
+        "name": "Hadjer Tamali",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Houm\u00e9goulema",
+      "lat": 16.027916,
+      "lon": 23.1469444,
+      "osm_id": "node/3104088473",
+      "osm_tags": {
+        "name": "Hadjer Houm\u00e9goulema",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Yoka",
+      "lat": 15.8731758,
+      "lon": 22.9898355,
+      "osm_id": "node/3104088475",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1105632",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hadjer Yoka",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Arso \u0623\u0631\u0633\u0648",
+      "lat": 15.9498828,
+      "lon": 22.7397896,
+      "osm_id": "node/3106661435",
+      "osm_tags": {
+        "name": "Arso \u0623\u0631\u0633\u0648",
+        "name:ar": "\u0623\u0631\u0633\u0648",
+        "name:en": "Arso",
+        "name:fr": "Arso",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Arso \u062d\u062c\u0631 \u0623\u0631\u0633\u0648",
+      "lat": 15.9537746,
+      "lon": 22.7082226,
+      "osm_id": "node/3106661436",
+      "osm_tags": {
+        "ele": "920",
+        "name": "Hadjer Arso \u062d\u062c\u0631 \u0623\u0631\u0633\u0648",
+        "name:ar": "\u062d\u062c\u0631 \u0623\u0631\u0633\u0648",
+        "name:en": "Hadjer Arso",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bir Douane \u0628\u0626\u0631 \u062f\u0648\u0627\u0646",
+      "lat": 15.8337955,
+      "lon": 22.7269164,
+      "osm_id": "node/3106661459",
+      "osm_tags": {
+        "alt_name": "Birdouane;Birdouani",
+        "capital": "6",
+        "name": "Bir Douane \u0628\u0626\u0631 \u062f\u0648\u0627\u0646",
+        "name:ar": "\u0628\u0626\u0631 \u062f\u0648\u0627\u0646",
+        "name:en": "Bir Douane",
+        "name:fr": "Bir Douane",
+        "note": "rank = 0 car sous prefecture",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Dibri",
+      "lat": 15.7656244,
+      "lon": 22.7798301,
+      "osm_id": "node/3106661463",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092862",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Hadjer Dibri",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Diona",
+      "lat": 17.8472515,
+      "lon": 22.6479593,
+      "osm_id": "node/4390107241",
+      "osm_tags": {
+        "capital": "6",
+        "name": "Diona",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tiagala Yangalea",
+      "lat": 17.9190158,
+      "lon": 22.5938162,
+      "osm_id": "node/4390108041",
+      "osm_tags": {
+        "name": "Tiagala Yangalea",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Orobo \u0623\u0631\u0648\u0628\u0648",
+      "lat": 16.4643986,
+      "lon": 23.0062226,
+      "osm_id": "node/4535186510",
+      "osm_tags": {
+        "alt_name": "Bao; Bao-Billat",
+        "capital": "5",
+        "name": "Orobo \u0623\u0631\u0648\u0628\u0648",
+        "name:ar": "\u0623\u0631\u0648\u0628\u0648",
+        "name:en": "Orobo",
+        "name:fr": "Bao-Billat",
+        "note": "rank=0 + city car prefecture",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ourini",
+      "lat": 16.1190006,
+      "lon": 22.4226944,
+      "osm_id": "node/5176391405",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1102855",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Ourini",
+        "name:fr": "Ourini",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0628\u064a\u0631\u062f\u0648\u0628\u0627 Berdoba",
+      "lat": 16.0219075,
+      "lon": 22.8854449,
+      "osm_id": "node/5932788364",
+      "osm_tags": {
+        "name": "\u0628\u064a\u0631\u062f\u0648\u0628\u0627 Berdoba",
+        "name:ar": "\u0628\u064a\u0631\u062f\u0648\u0628\u0627",
+        "name:en": "Berdoba",
+        "name:fr": "Berdoba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "N'dou",
+      "lat": 17.1789949,
+      "lon": 21.391943,
+      "osm_id": "node/6010358002",
+      "osm_tags": {
+        "name": "N'dou",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ouaba \u0648\u0627\u0628\u0627",
+      "lat": 16.8431446,
+      "lon": 22.0516312,
+      "osm_id": "node/6089013324",
+      "osm_tags": {
+        "name": "Ouaba \u0648\u0627\u0628\u0627",
+        "name:ar": "\u0648\u0627\u0628\u0627",
+        "name:en": "Ouaba",
+        "name:fr": "Ouaba",
+        "place": "village",
+        "rank": "0",
+        "source": "bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bour Kouni",
+      "lat": 17.9190445,
+      "lon": 21.8132686,
+      "osm_id": "node/6117048946",
+      "osm_tags": {
+        "name": "Bour Kouni",
+        "place": "village",
+        "rank": "0",
+        "source": "bing"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "(Tower on the peak)",
+      "lat": 16.8366048,
+      "lon": 21.3395813,
+      "osm_id": "node/7257115862",
+      "osm_tags": {
+        "name": "(Tower on the peak)",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Karna",
+      "lat": 15.883333,
+      "lon": 22.683333,
+      "osm_id": "node/7719723304",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1097163",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Karna",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bir Douan",
+      "lat": 15.816667,
+      "lon": 22.766667,
+      "osm_id": "node/7719726714",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1091261",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Bir Douan",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Oygo",
+      "lat": 15.9,
+      "lon": 22.266667,
+      "osm_id": "node/7719728233",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1102928",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Oygo",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kourdi",
+      "lat": 15.766667,
+      "lon": 22.733333,
+      "osm_id": "node/7719728455",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1098729",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Kourdi",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kanoua",
+      "lat": 15.816667,
+      "lon": 22.6,
+      "osm_id": "node/7719728501",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1097005",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Kanoua",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Key-Ay\u00e9",
+      "lat": 16.829665,
+      "lon": 22.558074,
+      "osm_id": "node/7721349005",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1097373",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Key-Aye;Kei Ay\u00e9;Kei Aye;Key Ay\u00e9;Key Aye",
+        "name": "Key-Ay\u00e9",
+        "name:fr": "Key-Ay\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Boko",
+      "lat": 17.063095,
+      "lon": 21.445713,
+      "osm_id": "node/7721349007",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1091515",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Boko",
+        "name:fr": "Boko",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Darga\u00ef",
+      "lat": 16.158005,
+      "lon": 21.669096,
+      "osm_id": "node/7721349008",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092561",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Dargai;Dargay",
+        "name": "Darga\u00ef",
+        "name:fr": "Darga\u00ef",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Darsak",
+      "lat": 15.816667,
+      "lon": 21.466667,
+      "osm_id": "node/7721349009",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092601",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Hadjer Darsak",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Navarde",
+      "lat": 17.178611,
+      "lon": 21.529722,
+      "osm_id": "node/7721349010",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "33099",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Navarde",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Navarda",
+      "lat": 17.166667,
+      "lon": 21.516667,
+      "osm_id": "node/7721349011",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1101722",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Navarda",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ondoba",
+      "lat": 17.155673,
+      "lon": 21.57708,
+      "osm_id": "node/7721349012",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1102414",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Ondoba",
+        "name:fr": "Ondoba",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "G\u00e9ba",
+      "lat": 17.179811,
+      "lon": 21.681293,
+      "osm_id": "node/7721349013",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1095164",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Geba",
+        "name": "G\u00e9ba",
+        "name:fr": "G\u00e9ba",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gribi",
+      "lat": 17.005404,
+      "lon": 21.821418,
+      "osm_id": "node/7721349014",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1095952",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Gribi",
+        "name:fr": "Gribi",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gobouto",
+      "lat": 17.230099,
+      "lon": 21.574584,
+      "osm_id": "node/7721349015",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1095397",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Gobouto",
+        "name:fr": "Gobouto",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hokoti",
+      "lat": 17.226139,
+      "lon": 21.631139,
+      "osm_id": "node/7721349016",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1096270",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Hokoli",
+        "name": "Hokoti",
+        "name:fr": "Hokoti",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gilikorou",
+      "lat": 17.202707,
+      "lon": 21.420516,
+      "osm_id": "node/7721349017",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1095315",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Gilikorou",
+        "name:fr": "Gilikorou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Manda D\u00efna",
+      "lat": 17.16765,
+      "lon": 21.390462,
+      "osm_id": "node/7721349018",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1100023",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Manda Dina",
+        "name": "Manda D\u00efna",
+        "name:fr": "Manda D\u00efna",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bicha",
+      "lat": 17.211135,
+      "lon": 21.386012,
+      "osm_id": "node/7721349019",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1091057",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Bicha",
+        "name:fr": "Bicha",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Dir\u00e9 Bat\u00e9",
+      "lat": 16.153893,
+      "lon": 21.260433,
+      "osm_id": "node/7721349021",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1093037",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Dire Bate",
+        "name": "Dir\u00e9 Bat\u00e9",
+        "name:fr": "Dir\u00e9 Bat\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Takahin",
+      "lat": 16.11918,
+      "lon": 21.906882,
+      "osm_id": "node/7721349022",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1104154",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Takahin",
+        "name:fr": "Takahin",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Diouala",
+      "lat": 16.560112,
+      "lon": 21.646488,
+      "osm_id": "node/7721349023",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1093005",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Diouala",
+        "name:fr": "Diouala",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Korko",
+      "lat": 16.530905,
+      "lon": 21.538172,
+      "osm_id": "node/7721349024",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1098166",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Korko",
+        "name:fr": "Korko",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Taro",
+      "lat": 16.47691,
+      "lon": 21.619569,
+      "osm_id": "node/7721349025",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1104344",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Taro",
+        "name:fr": "Taro",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Aleka",
+      "lat": 16.751024,
+      "lon": 22.222755,
+      "osm_id": "node/7721349026",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1088494",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Aleka",
+        "name:fr": "Aleka",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gouronga",
+      "lat": 17.3192481,
+      "lon": 21.6586474,
+      "osm_id": "node/7721349027",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1095843",
+        "GNS:modify_date": "2013-06-11",
+        "ele": "860",
+        "name": "Gouronga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Terkei",
+      "lat": 16.741476,
+      "lon": 21.655733,
+      "osm_id": "node/7721349028",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10621928",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Terkei",
+        "name:fr": "Terkei",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Chig\u00e9ou",
+      "lat": 16.81554,
+      "lon": 21.645786,
+      "osm_id": "node/7721349029",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092202",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Chigeou",
+        "name": "Chig\u00e9ou",
+        "name:fr": "Chig\u00e9ou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Barakatra",
+      "lat": 16.771671,
+      "lon": 21.633567,
+      "osm_id": "node/7721349030",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1090328",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Barakatra",
+        "name:fr": "Barakatra",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Daragob\u00e9",
+      "lat": 16.773778,
+      "lon": 21.576735,
+      "osm_id": "node/7721349031",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092527",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Daragobe",
+        "name": "Daragob\u00e9",
+        "name:fr": "Daragob\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Erim\u00e9m\u00e9m\u00e9",
+      "lat": 16.778052,
+      "lon": 21.565322,
+      "osm_id": "node/7721349032",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1094359",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Erimememe",
+        "name": "Erim\u00e9m\u00e9m\u00e9",
+        "name:fr": "Erim\u00e9m\u00e9m\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Koro",
+      "lat": 17.45,
+      "lon": 21.75,
+      "osm_id": "node/7721349033",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1098192",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Koro",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bayka",
+      "lat": 17.4234997,
+      "lon": 21.6142398,
+      "osm_id": "node/7721349034",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1090474",
+        "GNS:modify_date": "2013-06-11",
+        "ele": "820",
+        "name": "Bayka",
+        "name:fr": "Bayka",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hobili",
+      "lat": 17.3588468,
+      "lon": 21.6384956,
+      "osm_id": "node/7721349035",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1096267",
+        "GNS:modify_date": "2013-06-11",
+        "ele": "910",
+        "name": "Hobili",
+        "name:fr": "Hobili",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Batabo",
+      "lat": 17.339621,
+      "lon": 21.574741,
+      "osm_id": "node/7721349036",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1090431",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Batabo",
+        "name:fr": "Batabo",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Enim\u00e9na",
+      "lat": 17.3290825,
+      "lon": 21.6519074,
+      "osm_id": "node/7721349037",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1094265",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Enimena",
+        "ele": "960",
+        "name": "Enim\u00e9na",
+        "name:fr": "Enim\u00e9na",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Arsa S\u00e9l\u00e9ch\u00e9ka",
+      "lat": 17.317326,
+      "lon": 21.566199,
+      "osm_id": "node/7721349038",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1089698",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Arsa Selecheka",
+        "name": "Arsa S\u00e9l\u00e9ch\u00e9ka",
+        "name:fr": "Arsa S\u00e9l\u00e9ch\u00e9ka",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Tordan",
+      "lat": 15.866667,
+      "lon": 23.8,
+      "osm_id": "node/7721349039",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1105101",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Hagar Tordane;Hadjer Tordane;Djebel Tordame",
+        "name": "Hadjer Tordan",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer H\u00e9risa Djerbo",
+      "lat": 15.866667,
+      "lon": 23.633333,
+      "osm_id": "node/7721349040",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1096212",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Hadjer Herisa Djerbo;Hagar Djerbo;Jebel Herisa Djerba",
+        "name": "Hadjer H\u00e9risa Djerbo",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "G\u00e9g\u00e9ranga",
+      "lat": 17.043342,
+      "lon": 21.912409,
+      "osm_id": "node/7721349041",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1095179",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Gegeranga",
+        "name": "G\u00e9g\u00e9ranga",
+        "name:fr": "G\u00e9g\u00e9ranga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Daraterkal\u00e9o",
+      "lat": 17.159737,
+      "lon": 21.911614,
+      "osm_id": "node/7721349042",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092535",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Daraterkaleo",
+        "name": "Daraterkal\u00e9o",
+        "name:fr": "Daraterkal\u00e9o",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Debo",
+      "lat": 17.068774,
+      "lon": 21.894571,
+      "osm_id": "node/7721349043",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092638",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Debo",
+        "name:fr": "Debo",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "T\u00e9limoroi",
+      "lat": 17.153453,
+      "lon": 21.642834,
+      "osm_id": "node/7721349044",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1104674",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Telimoroi",
+        "name": "T\u00e9limoroi",
+        "name:fr": "T\u00e9limoroi",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ihou",
+      "lat": 17.6715229,
+      "lon": 22.2594595,
+      "osm_id": "node/7721349045",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1096400",
+        "GNS:modify_date": "2013-06-11",
+        "ele": "850",
+        "name": "Ihou",
+        "natural": "peak",
+        "source": "Opentopomap"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ehi Soneu",
+      "lat": 17.5764853,
+      "lon": 21.9194508,
+      "osm_id": "node/7721349046",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1103900",
+        "GNS:modify_date": "2013-06-11",
+        "ele": "990",
+        "name": "Ehi Soneu",
+        "name:fr": "Ehi Soneu",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Agay",
+      "lat": 17.6414746,
+      "lon": 21.6587636,
+      "osm_id": "node/7721349047",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1088309",
+        "GNS:modify_date": "2013-06-11",
+        "ele": "840",
+        "name": "Agay",
+        "name:fr": "Agay",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Djoko",
+      "lat": 17.599412,
+      "lon": 21.612921,
+      "osm_id": "node/7721349048",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1093408",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Djoko",
+        "name:fr": "Djoko",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gob\u00e9",
+      "lat": 17.316667,
+      "lon": 21.616667,
+      "osm_id": "node/7721349051",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1095390",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Gobe",
+        "name": "Gob\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Biti",
+      "lat": 17.266667,
+      "lon": 22.166667,
+      "osm_id": "node/7721349052",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1091358",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Biti",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Eli Djinga",
+      "lat": 17.189345,
+      "lon": 21.328115,
+      "osm_id": "node/7721349055",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1094201",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Eli Djinga",
+        "name:fr": "Eli Djinga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Cher",
+      "lat": 16.833475,
+      "lon": 21.803746,
+      "osm_id": "node/7721349059",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10621931",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Cher",
+        "name:fr": "Cher",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Key",
+      "lat": 16.75,
+      "lon": 21.866667,
+      "osm_id": "node/7721349060",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1097575",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Key",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "At\u00e9l\u00e9",
+      "lat": 16.862892,
+      "lon": 21.56119,
+      "osm_id": "node/7721349061",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1089795",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Atele",
+        "name": "At\u00e9l\u00e9",
+        "name:fr": "At\u00e9l\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "K\u00e9l\u00e9o",
+      "lat": 16.848202,
+      "lon": 21.482481,
+      "osm_id": "node/7721349062",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1097412",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Keleo",
+        "name": "K\u00e9l\u00e9o",
+        "name:fr": "K\u00e9l\u00e9o",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Bilim\u00e9si",
+      "lat": 15.966667,
+      "lon": 21.416667,
+      "osm_id": "node/7721349064",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1091171",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Hadjer Bilimesi",
+        "name": "Hadjer Bilim\u00e9si",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "D\u00e9li",
+      "lat": 16.827457,
+      "lon": 21.467448,
+      "osm_id": "node/7721349065",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092699",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Deli",
+        "name": "D\u00e9li",
+        "name:fr": "D\u00e9li",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Souleymani",
+      "lat": 16.752215,
+      "lon": 21.323021,
+      "osm_id": "node/7721349066",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1103983",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Souleymani",
+        "name:fr": "Souleymani",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Am Nechab",
+      "lat": 16.602629,
+      "lon": 21.272801,
+      "osm_id": "node/7721349067",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10621926",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Am Nechab",
+        "name:fr": "Am Nechab",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ch\u00e9gu\u00e9-China",
+      "lat": 17.676731,
+      "lon": 20.846941,
+      "osm_id": "node/7721349068",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092157",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Chegue-China;Ch\u00e9g\u00e9 Chida;Chege Chida;Ch\u00e9g\u00e9 China;Chege China",
+        "name": "Ch\u00e9gu\u00e9-China",
+        "name:fr": "Ch\u00e9gu\u00e9-China",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Baeba",
+      "lat": 17.233333,
+      "lon": 21.733333,
+      "osm_id": "node/7721349069",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1089971",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Baeba",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kouro",
+      "lat": 17.466667,
+      "lon": 23.016667,
+      "osm_id": "node/7721349070",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1098817",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Kouro",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kas\u00e8ra Manga",
+      "lat": 16.034567,
+      "lon": 23.425228,
+      "osm_id": "node/7721349073",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1097233",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Kasera Manga;Kassera Manga",
+        "name": "Kas\u00e8ra Manga",
+        "name:fr": "Kas\u00e8ra Manga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Sidir",
+      "lat": 15.95,
+      "lon": 22.483333,
+      "osm_id": "node/7721349074",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1103703",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hadjer Sidir",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Boroui",
+      "lat": 16.132673,
+      "lon": 22.382206,
+      "osm_id": "node/7721349075",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10622159",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Boroui",
+        "name:fr": "Boroui",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ha Egm\u00e9",
+      "lat": 16.194768,
+      "lon": 22.783782,
+      "osm_id": "node/7721349076",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10622164",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Ha Egme",
+        "name": "Ha Egm\u00e9",
+        "name:fr": "Ha Egm\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bilisina",
+      "lat": 16.18847,
+      "lon": 22.57045,
+      "osm_id": "node/7721349077",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10622163",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Bilisina",
+        "name:fr": "Bilisina",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Akoub\u00e9",
+      "lat": 16.544981,
+      "lon": 23.890663,
+      "osm_id": "node/7721349078",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1088406",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Akoube;Hajar Kobbe;Hagar Kobbe",
+        "name": "Akoub\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u0645\u064a\u0634\u0631\u0629",
+      "lat": 16.433333,
+      "lon": 22.5,
+      "osm_id": "node/7721349079",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1100612",
+        "GNS:modify_date": "2013-06-11",
+        "name": "\u0645\u064a\u0634\u0631\u0629",
+        "name:ar": "\u0645\u064a\u0634\u0631\u0629",
+        "name:en": "Mechera",
+        "name:fr": "M\u00e9ch\u00e9ra",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tokou",
+      "lat": 16.990929,
+      "lon": 22.969672,
+      "osm_id": "node/7721349080",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1105032",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Tokou",
+        "name:fr": "Tokou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nigi\u00e9",
+      "lat": 16.306616,
+      "lon": 21.65729,
+      "osm_id": "node/7721349081",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1102128",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Nigie",
+        "name": "Nigi\u00e9",
+        "name:fr": "Nigi\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Big\u00e9y\u00e9",
+      "lat": 16.283846,
+      "lon": 21.91273,
+      "osm_id": "node/7721349082",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1091109",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Bigeye",
+        "name": "Big\u00e9y\u00e9",
+        "name:fr": "Big\u00e9y\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Be\u00efm\u00e9",
+      "lat": 16.528622,
+      "lon": 21.766743,
+      "osm_id": "node/7721349083",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10621925",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Beime",
+        "name": "Be\u00efm\u00e9",
+        "name:fr": "Be\u00efm\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Boyo",
+      "lat": 16.434782,
+      "lon": 21.921627,
+      "osm_id": "node/7721349084",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092019",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Boyo",
+        "name:fr": "Boyo",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Aski",
+      "lat": 16.736699,
+      "lon": 21.739889,
+      "osm_id": "node/7721349085",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1089747",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Hadjer Aski",
+        "name": "Aski",
+        "name:fr": "Aski",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Batadjal\u00e9",
+      "lat": 17.078908,
+      "lon": 21.66362,
+      "osm_id": "node/7721349086",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1090432",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Batadjale",
+        "name": "Batadjal\u00e9",
+        "name:fr": "Batadjal\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Agusi",
+      "lat": 16.909452,
+      "lon": 21.632076,
+      "osm_id": "node/7721349087",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1088362",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Agusi",
+        "name:fr": "Agusi",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Darko",
+      "lat": 17.074934,
+      "lon": 21.641145,
+      "osm_id": "node/7721349088",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092578",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Darko",
+        "name:fr": "Darko",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ehi Griti Bisaoda",
+      "lat": 17.846706,
+      "lon": 21.339437,
+      "osm_id": "node/7721349089",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1095364",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Ehi Girti Bisaoda",
+        "name": "Ehi Griti Bisaoda",
+        "name:fr": "Ehi Griti Bisaoda",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ogoto",
+      "lat": 17.721826,
+      "lon": 21.536324,
+      "osm_id": "node/7721349090",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1102337",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Ogoto",
+        "name:fr": "Ogoto",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Kouar\u00e9",
+      "lat": 15.933333,
+      "lon": 22.55,
+      "osm_id": "node/7721349091",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1098315",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Hadjer Kouare",
+        "name": "Hadjer Kouar\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Hagrou",
+      "lat": 15.9,
+      "lon": 23.266667,
+      "osm_id": "node/7721349092",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1096120",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Hagar Hagrou",
+        "name": "Hadjer Hagrou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kaimoro",
+      "lat": 16.122497,
+      "lon": 22.961772,
+      "osm_id": "node/7721349093",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10622171",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Kaimoro",
+        "name:fr": "Kaimoro",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "K\u00e9soui M\u00e9",
+      "lat": 16.102832,
+      "lon": 22.941215,
+      "osm_id": "node/7721349094",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10622172",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Kesoui Me",
+        "name": "K\u00e9soui M\u00e9",
+        "name:fr": "K\u00e9soui M\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Dinoura",
+      "lat": 15.866667,
+      "lon": 22.9,
+      "osm_id": "node/7721349095",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092982",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hadjer Dinoura",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Djouga",
+      "lat": 15.966667,
+      "lon": 22.883333,
+      "osm_id": "node/7721349096",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1093454",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hadjer Djouga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Ergoui",
+      "lat": 15.95,
+      "lon": 22.833333,
+      "osm_id": "node/7721349097",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1094341",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hadjer Ergoui",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ha M\u00e9",
+      "lat": 16.115231,
+      "lon": 22.790014,
+      "osm_id": "node/7721349098",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10622173",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Ha Me",
+        "name": "Ha M\u00e9",
+        "name:fr": "Ha M\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "K\u00e9t\u00e9na S\u00e9na",
+      "lat": 16.757681,
+      "lon": 23.025613,
+      "osm_id": "node/7721349099",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1097563",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Ketena Sena",
+        "name": "K\u00e9t\u00e9na S\u00e9na",
+        "name:fr": "K\u00e9t\u00e9na S\u00e9na",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Habili Djinga",
+      "lat": 16.4,
+      "lon": 23.083333,
+      "osm_id": "node/7721349100",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1096081",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Habili-Djinga",
+        "name": "Hadjer Habili Djinga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Ouori",
+      "lat": 16.837655,
+      "lon": 23.525328,
+      "osm_id": "node/7721349101",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1102815",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hadjer Ouori",
+        "name:fr": "Hadjer Ouori",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Natou\u00e9",
+      "lat": 16.75,
+      "lon": 23.083333,
+      "osm_id": "node/7721349102",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1101719",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Natoue",
+        "name": "Natou\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Doubo S\u00e9ba",
+      "lat": 17.2485474,
+      "lon": 23.4889755,
+      "osm_id": "node/7721349103",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10623649",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Hadjer Doubo Seba",
+        "ele": "1070",
+        "name": "Hadjer Doubo S\u00e9ba",
+        "name:fr": "Hadjer Doubo S\u00e9ba",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Elou",
+      "lat": 17.163605,
+      "lon": 23.553516,
+      "osm_id": "node/7721349104",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1094248",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hadjer Elou",
+        "name:fr": "Hadjer Elou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ouoneri",
+      "lat": 17.111894,
+      "lon": 23.893629,
+      "osm_id": "node/7721349105",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10623654",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Ouoneri",
+        "name:fr": "Ouoneri",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Nj\u00e9k\u00e9bidanga",
+      "lat": 17.066469,
+      "lon": 23.321226,
+      "osm_id": "node/7721349106",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1102178",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Hadjer Njekebidanga",
+        "name": "Hadjer Nj\u00e9k\u00e9bidanga",
+        "name:fr": "Hadjer Nj\u00e9k\u00e9bidanga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Boyou Lourso",
+      "lat": 17.61494,
+      "lon": 23.614048,
+      "osm_id": "node/7721349107",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092021",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Boyou Lourso",
+        "name:fr": "Boyou Lourso",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Navar",
+      "lat": 17.05613,
+      "lon": 21.588845,
+      "osm_id": "node/7721349108",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1101721",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Navar",
+        "name:fr": "Navar",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Keymena",
+      "lat": 17.052041,
+      "lon": 21.524379,
+      "osm_id": "node/7721349109",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1097577",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Keymena",
+        "name:fr": "Keymena",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tobokou",
+      "lat": 17.0,
+      "lon": 21.616667,
+      "osm_id": "node/7721349110",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1104991",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Tobokou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hert\u00e9 Kokoli",
+      "lat": 17.147213,
+      "lon": 21.419733,
+      "osm_id": "node/7721349111",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1096214",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Herte Kokoli",
+        "name": "Hert\u00e9 Kokoli",
+        "name:fr": "Hert\u00e9 Kokoli",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tenib\u00e9",
+      "lat": 17.542658,
+      "lon": 23.267977,
+      "osm_id": "node/7721349112",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10623645",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Tenibe",
+        "name": "Tenib\u00e9",
+        "name:fr": "Tenib\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Haala",
+      "lat": 17.720036,
+      "lon": 23.074427,
+      "osm_id": "node/7721349113",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10623644",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hadjer Haala",
+        "name:fr": "Hadjer Haala",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Kouro",
+      "lat": 17.657243,
+      "lon": 22.945664,
+      "osm_id": "node/7721349114",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1098819",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hadjer Kouro",
+        "name:fr": "Hadjer Kouro",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kanoka",
+      "lat": 17.107184,
+      "lon": 21.374036,
+      "osm_id": "node/7721349115",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1097004",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Kanoka",
+        "name:fr": "Kanoka",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "B\u00e9g\u00e9li",
+      "lat": 17.083691,
+      "lon": 21.420875,
+      "osm_id": "node/7721349116",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1090638",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Begeli",
+        "name": "B\u00e9g\u00e9li",
+        "name:fr": "B\u00e9g\u00e9li",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mahou",
+      "lat": 17.079659,
+      "lon": 21.363499,
+      "osm_id": "node/7721349117",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1101039",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Mohou",
+        "name": "Mahou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kakia",
+      "lat": 16.94217,
+      "lon": 21.336096,
+      "osm_id": "node/7721349118",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1096773",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Kakia",
+        "name:fr": "Kakia",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "At\u00e9ba",
+      "lat": 16.928071,
+      "lon": 21.406355,
+      "osm_id": "node/7721349119",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1089789",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Ateba",
+        "name": "At\u00e9ba",
+        "name:fr": "At\u00e9ba",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "D\u00e9l\u00e9bo",
+      "lat": 17.232251,
+      "lon": 21.209218,
+      "osm_id": "node/7721349120",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092679",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Delebo;S\u00e9l\u00e9ba;Seleba",
+        "name": "D\u00e9l\u00e9bo",
+        "name:fr": "D\u00e9l\u00e9bo",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bouboa",
+      "lat": 17.180612,
+      "lon": 21.180818,
+      "osm_id": "node/7721349121",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1091733",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Bouboa",
+        "name:fr": "Bouboa",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "T\u00e9him\u00e9",
+      "lat": 16.587762,
+      "lon": 21.853132,
+      "osm_id": "node/7721349125",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1104625",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Tehime;Hadjer T\u00e9him\u00e9;Hadjer Tehime",
+        "name": "T\u00e9him\u00e9",
+        "name:fr": "T\u00e9him\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "D\u00e9g\u00e9d\u00e8y",
+      "lat": 16.716667,
+      "lon": 21.766667,
+      "osm_id": "node/7721349126",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1092649",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Degedey",
+        "name": "D\u00e9g\u00e9d\u00e8y",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "G\u00e9di",
+      "lat": 16.767457,
+      "lon": 21.76854,
+      "osm_id": "node/7721349127",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1095175",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Gedi",
+        "name": "G\u00e9di",
+        "name:fr": "G\u00e9di",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Div\u00e9",
+      "lat": 16.551492,
+      "lon": 21.943766,
+      "osm_id": "node/7721349128",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1093059",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Dive",
+        "name": "Div\u00e9",
+        "name:fr": "Div\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ouagif",
+      "lat": 16.830135,
+      "lon": 21.337466,
+      "osm_id": "node/7721349129",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1102531",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Ouaguif",
+        "name": "Ouagif",
+        "name:fr": "Ouagif",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "B\u00e9bour",
+      "lat": 17.178989,
+      "lon": 21.709472,
+      "osm_id": "node/7721349285",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1090525",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Bebour",
+        "name": "B\u00e9bour",
+        "name:fr": "B\u00e9bour",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "H\u00e9 Foni",
+      "lat": 17.09386,
+      "lon": 21.873855,
+      "osm_id": "node/7721349286",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1096198",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "He Foni",
+        "name": "H\u00e9 Foni",
+        "name:fr": "H\u00e9 Foni",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Dir\u00e9 Libra",
+      "lat": 16.106229,
+      "lon": 21.172802,
+      "osm_id": "node/7721349294",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1093041",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Dire Libra",
+        "name": "Dir\u00e9 Libra",
+        "name:fr": "Dir\u00e9 Libra",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Doholouk",
+      "lat": 16.478798,
+      "lon": 21.218072,
+      "osm_id": "node/7721349295",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1093604",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Doholouk",
+        "name:fr": "Doholouk",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gaora Halagana",
+      "lat": 17.107111,
+      "lon": 21.302679,
+      "osm_id": "node/7721349296",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1095036",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Gaora Halagana",
+        "name:fr": "Gaora Halagana",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bogaro",
+      "lat": 17.099562,
+      "lon": 21.269228,
+      "osm_id": "node/7721349297",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1091470",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Bogaro",
+        "name:fr": "Bogaro",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bakou Bodokou",
+      "lat": 17.039743,
+      "lon": 21.221921,
+      "osm_id": "node/7721349298",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1090114",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Bakou Bodokou",
+        "name:fr": "Bakou Bodokou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Wihili",
+      "lat": 16.832256,
+      "lon": 21.760244,
+      "osm_id": "node/7721349303",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1105461",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Wihili",
+        "name:fr": "Wihili",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer K\u00e9rdago",
+      "lat": 15.95,
+      "lon": 21.566667,
+      "osm_id": "node/7721349347",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1097511",
+        "GNS:modify_date": "1993-12-18",
+        "alt_name": "Hadjer Kerdago",
+        "name": "Hadjer K\u00e9rdago",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Aoutamara",
+      "lat": 15.766667,
+      "lon": 21.616667,
+      "osm_id": "node/7721349367",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1089425",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Hadjer Aoutamara",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Mada",
+      "lat": 15.833333,
+      "lon": 22.15,
+      "osm_id": "node/7721349451",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1099509",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Hadjer Mada",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Baysa",
+      "lat": 15.866667,
+      "lon": 22.316667,
+      "osm_id": "node/7721349467",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1090481",
+        "GNS:modify_date": "1993-12-18",
+        "alt_name": "Hagar Ba\u00efsa;Hagar Baisa;Hadjer Ba\u00efsa;Hadjer Baisa",
+        "name": "Hadjer Baysa",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Er\u00e9",
+      "lat": 15.783333,
+      "lon": 21.733333,
+      "osm_id": "node/7721349683",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1094305",
+        "GNS:modify_date": "1993-12-18",
+        "alt_name": "Hadjer Ere;Hagar Er\u00e9;Hagar Ere",
+        "name": "Hadjer Er\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Tomboula",
+      "lat": 15.783333,
+      "lon": 21.4,
+      "osm_id": "node/7721349684",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1105057",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Hadjer Tomboula",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Gi\u00e9",
+      "lat": 15.766667,
+      "lon": 22.916667,
+      "osm_id": "node/7721349713",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1095302",
+        "GNS:modify_date": "1993-12-18",
+        "alt_name": "Hadjer Gie;Hadjer Gy\u00e9;Hadjer Gye",
+        "name": "Hadjer Gi\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Ham\u00e9",
+      "lat": 15.816667,
+      "lon": 21.716667,
+      "osm_id": "node/7721349752",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1096143",
+        "GNS:modify_date": "1993-12-18",
+        "alt_name": "Hadjer Hame",
+        "name": "Hadjer Ham\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Doroba",
+      "lat": 15.866667,
+      "lon": 21.916667,
+      "osm_id": "node/7721349753",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1093806",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Hadjer Doroba",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Bakaosiri",
+      "lat": 15.8,
+      "lon": 22.45,
+      "osm_id": "node/7721349759",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1090083",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Hadjer Bakaosiri",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer L\u00e9ga",
+      "lat": 15.9173603,
+      "lon": 21.8503262,
+      "osm_id": "node/7721349761",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1099197",
+        "GNS:modify_date": "1993-12-18",
+        "alt_name": "Hadjer Lega;Hadjer Iega",
+        "name": "Hadjer L\u00e9ga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Djebel Gonou",
+      "lat": 15.933333,
+      "lon": 22.066667,
+      "osm_id": "node/7721349789",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1095532",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Djebel Gonou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer el Tarboul",
+      "lat": 15.95,
+      "lon": 21.7,
+      "osm_id": "node/7721349888",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1104303",
+        "GNS:modify_date": "1993-12-18",
+        "alt_name": "Pic de Tarboul",
+        "name": "Hadjer el Tarboul",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Maderm\u00e9",
+      "lat": 15.85,
+      "lon": 21.566667,
+      "osm_id": "node/7721349895",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1099537",
+        "GNS:modify_date": "1993-12-18",
+        "alt_name": "Hadjer Maderme",
+        "name": "Hadjer Maderm\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer T\u00e9ri",
+      "lat": 15.9,
+      "lon": 21.533333,
+      "osm_id": "node/7721349924",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-1104734",
+        "GNS:modify_date": "1993-12-18",
+        "alt_name": "Hadjer Teri",
+        "name": "Hadjer T\u00e9ri",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Korkome",
+      "lat": 17.616667,
+      "lon": 22.883333,
+      "osm_id": "node/7721847521",
+      "osm_tags": {
+        "GNS:dsg_code": "MT",
+        "GNS:dsg_name": "mountain",
+        "GNS:id": "-1098171",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Hagar Korkone",
+        "name": "Hadjer Korkome",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bideyat",
+      "lat": 17.333333,
+      "lon": 21.316667,
+      "osm_id": "node/7721847523",
+      "osm_tags": {
+        "GNS:dsg_code": "MT",
+        "GNS:dsg_name": "mountain",
+        "GNS:id": "-1091070",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Bideyat",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Djebel Darba",
+      "lat": 15.9,
+      "lon": 21.45,
+      "osm_id": "node/7721860960",
+      "osm_tags": {
+        "GNS:dsg_code": "MT",
+        "GNS:dsg_name": "mountain",
+        "GNS:id": "-1092542",
+        "GNS:modify_date": "1993-12-18",
+        "alt_name": "Jebel Darba",
+        "name": "Djebel Darba",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gouligouli",
+      "lat": 16.684577,
+      "lon": 22.636379,
+      "osm_id": "node/7721875615",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "10622151",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Gouligouli",
+        "name:fr": "Gouligouli",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Eli Manga",
+      "lat": 17.195039,
+      "lon": 21.345201,
+      "osm_id": "node/7721875616",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1094210",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Eli Manga",
+        "name:fr": "Eli Manga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kweiba Foni",
+      "lat": 17.030855,
+      "lon": 21.834336,
+      "osm_id": "node/7721875617",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1099020",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Kweiba Foni",
+        "name:fr": "Kweiba Foni",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Darko",
+      "lat": 17.22317,
+      "lon": 21.575171,
+      "osm_id": "node/7721875618",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1092579",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Darko",
+        "name:fr": "Darko",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gaola",
+      "lat": 17.215071,
+      "lon": 21.524376,
+      "osm_id": "node/7721875619",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1095033",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Gaola",
+        "name:fr": "Gaola",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bala",
+      "lat": 17.208716,
+      "lon": 21.544718,
+      "osm_id": "node/7721875620",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1090124",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Bala",
+        "name:fr": "Bala",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hotroum",
+      "lat": 17.205666,
+      "lon": 21.587192,
+      "osm_id": "node/7721875621",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1096292",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hotroum",
+        "name:fr": "Hotroum",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Dib\u00e9h\u00e9",
+      "lat": 17.199336,
+      "lon": 21.651594,
+      "osm_id": "node/7721875622",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1092845",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Dibehe",
+        "name": "Dib\u00e9h\u00e9",
+        "name:fr": "Dib\u00e9h\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Djoki",
+      "lat": 17.197641,
+      "lon": 21.595418,
+      "osm_id": "node/7721875623",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1093407",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Djoki",
+        "name:fr": "Djoki",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Torobo",
+      "lat": 17.181667,
+      "lon": 21.633358,
+      "osm_id": "node/7721875624",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1105119",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Torobo",
+        "name:fr": "Torobo",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Akag\u00e9li",
+      "lat": 17.281885,
+      "lon": 21.46358,
+      "osm_id": "node/7721875625",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1088389",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Akageli",
+        "name": "Akag\u00e9li",
+        "name:fr": "Akag\u00e9li",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Fourou",
+      "lat": 17.189186,
+      "lon": 21.43427,
+      "osm_id": "node/7721875626",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1094769",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Fourou",
+        "name:fr": "Fourou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Et\u00e9na",
+      "lat": 17.30575,
+      "lon": 21.43648,
+      "osm_id": "node/7721875627",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1094405",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Etena",
+        "name": "Et\u00e9na",
+        "name:fr": "Et\u00e9na",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ebiki",
+      "lat": 17.033036,
+      "lon": 21.790811,
+      "osm_id": "node/7721875628",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1094075",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Ebiki",
+        "name:fr": "Ebiki",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Chigila",
+      "lat": 17.230274,
+      "lon": 21.594735,
+      "osm_id": "node/7721875629",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1092203",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Chigila",
+        "name:fr": "Chigila",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Adiyayaron",
+      "lat": 17.373354,
+      "lon": 21.39852,
+      "osm_id": "node/7721875630",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1088212",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Adiyayaron",
+        "name:fr": "Adiyayaron",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Barakatra",
+      "lat": 16.119623,
+      "lon": 21.385484,
+      "osm_id": "node/7721875631",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1090329",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Barakatra",
+        "name:fr": "Barakatra",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Takahou",
+      "lat": 16.130421,
+      "lon": 21.82683,
+      "osm_id": "node/7721875632",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1104155",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Takahou",
+        "name:fr": "Takahou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nodouk\u00e9",
+      "lat": 17.2098,
+      "lon": 21.365979,
+      "osm_id": "node/7721875634",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1102197",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Nodouke",
+        "name": "Nodouk\u00e9",
+        "name:fr": "Nodouk\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Hom\u00e9goul\u00e9ma",
+      "lat": 15.983333,
+      "lon": 23.15,
+      "osm_id": "node/7721875635",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1096280",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Hadjer Homegoulema;Hagar Homegoulema",
+        "name": "Hadjer Hom\u00e9goul\u00e9ma",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Borb\u00e9ri",
+      "lat": 16.067824,
+      "lon": 23.092999,
+      "osm_id": "node/7721875636",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1091628",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Hadjer Borberi;Hagar Borberi",
+        "name": "Hadjer Borb\u00e9ri",
+        "name:fr": "Hadjer Borb\u00e9ri",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Somonita",
+      "lat": 16.167747,
+      "lon": 22.912284,
+      "osm_id": "node/7721875637",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "10622169",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Somonita",
+        "name:fr": "Somonita",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ha Mordo",
+      "lat": 16.148576,
+      "lon": 22.801917,
+      "osm_id": "node/7721875638",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "10622165",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Ha Mordo",
+        "name:fr": "Ha Mordo",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Toukou",
+      "lat": 16.984948,
+      "lon": 23.018509,
+      "osm_id": "node/7721875639",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "10622176",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Toukou",
+        "name:fr": "Toukou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nour\u00e9",
+      "lat": 16.958468,
+      "lon": 22.018128,
+      "osm_id": "node/7721875640",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1102228",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Noure",
+        "name": "Nour\u00e9",
+        "name:fr": "Nour\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Togoli",
+      "lat": 17.055154,
+      "lon": 21.971993,
+      "osm_id": "node/7721875641",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1105004",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Togoli",
+        "name:fr": "Togoli",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Egm\u00e9 China",
+      "lat": 17.127449,
+      "lon": 21.551659,
+      "osm_id": "node/7721875642",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1094139",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Egme China",
+        "name": "Egm\u00e9 China",
+        "name:fr": "Egm\u00e9 China",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Somanga",
+      "lat": 17.1160067,
+      "lon": 21.5938338,
+      "osm_id": "node/7721875643",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1103883",
+        "GNS:modify_date": "2013-06-11",
+        "ele": "740",
+        "name": "Somanga",
+        "name:fr": "Somanga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Chib\u00e9r\u00e9",
+      "lat": 17.6309852,
+      "lon": 21.9380087,
+      "osm_id": "node/7721875644",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1092185",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Chibere",
+        "ele": "710",
+        "name": "Chib\u00e9r\u00e9",
+        "name:fr": "Chib\u00e9r\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Souroukouloudinga",
+      "lat": 17.6010621,
+      "lon": 21.9140418,
+      "osm_id": "node/7721875645",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1104045",
+        "GNS:modify_date": "2013-06-11",
+        "ele": "890",
+        "name": "Souroukouloudinga",
+        "name:fr": "Souroukouloudinga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Archi",
+      "lat": 17.6031585,
+      "lon": 21.7464807,
+      "osm_id": "node/7721875646",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1089522",
+        "GNS:modify_date": "2013-06-11",
+        "ele": "840",
+        "name": "Archi",
+        "name:fr": "Archi",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Neo",
+      "lat": 16.958204,
+      "lon": 23.884674,
+      "osm_id": "node/7721875647",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1101838",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Neo",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer T\u00e9groba",
+      "lat": 16.933688,
+      "lon": 23.3053826,
+      "osm_id": "node/7721875648",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1104621",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Hadjer Tegroba;Hagar Tegroba",
+        "name": "Hadjer T\u00e9groba",
+        "name:fr": "Hadjer T\u00e9groba",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Gal\u00e9-Gab\u00e9",
+      "lat": 17.879163,
+      "lon": 23.783143,
+      "osm_id": "node/7721875649",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1094895",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Hadjer Gale-Gabe",
+        "name": "Hadjer Gal\u00e9-Gab\u00e9",
+        "name:fr": "Hadjer Gal\u00e9-Gab\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Sozoko",
+      "lat": 17.834221,
+      "lon": 23.323722,
+      "osm_id": "node/7721875650",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1104065",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hadjer Sozoko",
+        "name:fr": "Hadjer Sozoko",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bogtouo",
+      "lat": 17.629941,
+      "lon": 23.497125,
+      "osm_id": "node/7721875651",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1091502",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Bogtouo",
+        "name:fr": "Bogtouo",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "G\u00e9huchi",
+      "lat": 16.335102,
+      "lon": 23.336503,
+      "osm_id": "node/7721875654",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1095976",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Gehuchi;Gu\u00e9huchi;Guehuchi",
+        "name": "G\u00e9huchi",
+        "name:fr": "G\u00e9huchi",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer M\u00e9s\u00e9na",
+      "lat": 16.351863,
+      "lon": 22.361462,
+      "osm_id": "node/7721875655",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "10622158",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Hadjer Mesena",
+        "name": "Hadjer M\u00e9s\u00e9na",
+        "name:fr": "Hadjer M\u00e9s\u00e9na",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Koulia",
+      "lat": 16.460956,
+      "lon": 22.687902,
+      "osm_id": "node/7721875656",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1098508",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Koulia",
+        "name:fr": "Koulia",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Elima",
+      "lat": 16.249989,
+      "lon": 22.582727,
+      "osm_id": "node/7721875657",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "10622161",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Elima",
+        "name:fr": "Elima",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Ou\u00e9sena",
+      "lat": 16.202764,
+      "lon": 22.556112,
+      "osm_id": "node/7721875658",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "10622162",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Hadjer Ouesena",
+        "name": "Hadjer Ou\u00e9sena",
+        "name:fr": "Hadjer Ou\u00e9sena",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "K\u00e9tara",
+      "lat": 16.827164,
+      "lon": 22.389573,
+      "osm_id": "node/7721875659",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1097555",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Ketara;K\u00e9ttara;Kettara",
+        "name": "K\u00e9tara",
+        "name:fr": "K\u00e9tara",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hagar Murnu",
+      "lat": 17.2006303,
+      "lon": 23.1745635,
+      "osm_id": "node/7721875660",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1101186",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Hagar Mornou",
+        "name": "Hagar Murnu",
+        "name:fr": "Hadjer Mornou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Solahi",
+      "lat": 17.233333,
+      "lon": 21.316667,
+      "osm_id": "node/7721875661",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1103876",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Solahi",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hert\u00e9 Saouni",
+      "lat": 17.120392,
+      "lon": 21.278177,
+      "osm_id": "node/7721875662",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1096215",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Herte Saouni",
+        "name": "Hert\u00e9 Saouni",
+        "name:fr": "Hert\u00e9 Saouni",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "K\u00e9t\u00e9 Eg\u00e9n\u00e9",
+      "lat": 17.18548,
+      "lon": 21.279571,
+      "osm_id": "node/7721875663",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1097559",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Kete Egene",
+        "name": "K\u00e9t\u00e9 Eg\u00e9n\u00e9",
+        "name:fr": "K\u00e9t\u00e9 Eg\u00e9n\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "S\u00e9l\u00e9ba",
+      "lat": 17.250828,
+      "lon": 21.287109,
+      "osm_id": "node/7721875664",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1103604",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Seleba",
+        "name": "S\u00e9l\u00e9ba",
+        "name:fr": "S\u00e9l\u00e9ba",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Eli Louloudinga",
+      "lat": 17.168159,
+      "lon": 21.274262,
+      "osm_id": "node/7721875665",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1094208",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Eli Louloudinga",
+        "name:fr": "Eli Louloudinga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Taymanga",
+      "lat": 17.416288,
+      "lon": 21.289757,
+      "osm_id": "node/7721875666",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1104380",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Taymanga",
+        "name:fr": "Taymanga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Oho",
+      "lat": 16.732306,
+      "lon": 23.047207,
+      "osm_id": "node/7721875668",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1102355",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hadjer Oho",
+        "name:fr": "Hadjer Oho",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Koin\u00e9kei",
+      "lat": 16.497345,
+      "lon": 23.050782,
+      "osm_id": "node/7721875669",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "10622438",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Koinekei",
+        "name": "Koin\u00e9kei",
+        "name:fr": "Koin\u00e9kei",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Habili-Manga",
+      "lat": 16.355358,
+      "lon": 23.166369,
+      "osm_id": "node/7721875670",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1096082",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Hadjer Habili-Manga",
+        "name": "Habili-Manga",
+        "name:fr": "Habili-Manga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Takoa",
+      "lat": 16.6235,
+      "lon": 23.550981,
+      "osm_id": "node/7721875671",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1104166",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hadjer Takoa",
+        "name:fr": "Hadjer Takoa",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Baran\u00e9",
+      "lat": 16.28427,
+      "lon": 23.40777,
+      "osm_id": "node/7721875672",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1090333",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Barane",
+        "name": "Baran\u00e9",
+        "name:fr": "Baran\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Sini",
+      "lat": 16.635777,
+      "lon": 23.393038,
+      "osm_id": "node/7721875673",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1103769",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hadjer Sini",
+        "name:fr": "Hadjer Sini",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tougouni",
+      "lat": 16.659767,
+      "lon": 23.245915,
+      "osm_id": "node/7721875674",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1105197",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Tougouni",
+        "name:fr": "Tougouni",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nial\u00e9 Askanga",
+      "lat": 17.291615,
+      "lon": 23.8790443,
+      "osm_id": "node/7721875675",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1102082",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Niale Askanga",
+        "ele": "890",
+        "name": "Nial\u00e9 Askanga",
+        "name:fr": "Nial\u00e9 Askanga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Ek\u00e9danga",
+      "lat": 17.161975,
+      "lon": 23.313669,
+      "osm_id": "node/7721875676",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "10623653",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Hadjer Ekedanga",
+        "name": "Hadjer Ek\u00e9danga",
+        "name:fr": "Hadjer Ek\u00e9danga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Fouto Malinga",
+      "lat": 17.0689307,
+      "lon": 23.5216008,
+      "osm_id": "node/7721875677",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1094775",
+        "GNS:modify_date": "2013-06-11",
+        "ele": "990",
+        "name": "Hadjer Fouto Malinga",
+        "name:fr": "Hadjer Fouto Malinga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bam\u00e9na",
+      "lat": 16.641615,
+      "lon": 22.024268,
+      "osm_id": "node/7721875679",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1090206",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Bamena;Dam\u00e9na;Damena",
+        "name": "Bam\u00e9na",
+        "name:fr": "Bam\u00e9na",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Lobey",
+      "lat": 16.886959,
+      "lon": 22.085837,
+      "osm_id": "node/7721875680",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1099326",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Lobey",
+        "name:fr": "Lobey",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Serde China",
+      "lat": 16.843268,
+      "lon": 23.759774,
+      "osm_id": "node/7721875683",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1103645",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Serd\u00e9 China;Serde China",
+        "name": "Hadjer Serde China",
+        "name:fr": "Hadjer Serde China",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Terbeli",
+      "lat": 16.931797,
+      "lon": 21.696949,
+      "osm_id": "node/7721875684",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1104719",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Terbeli",
+        "name:fr": "Terbeli",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Doboro",
+      "lat": 17.042735,
+      "lon": 21.678741,
+      "osm_id": "node/7721877985",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1093543",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Doboro",
+        "name:fr": "Doboro",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kawalia",
+      "lat": 16.320864,
+      "lon": 21.427519,
+      "osm_id": "node/7721877986",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1097284",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Koalia",
+        "name": "Kawalia",
+        "name:fr": "Kawalia",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bakou Kouak\u00e9l\u00e9",
+      "lat": 17.041294,
+      "lon": 21.167136,
+      "osm_id": "node/7721877987",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1090116",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Bakou Kouakele",
+        "name": "Bakou Kouak\u00e9l\u00e9",
+        "name:fr": "Bakou Kouak\u00e9l\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hili Tacko",
+      "lat": 17.126588,
+      "lon": 21.487505,
+      "osm_id": "node/7721877988",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1096243",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Hili Tarko",
+        "name": "Hili Tacko",
+        "name:fr": "Hili Tacko",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "T\u00e9binara",
+      "lat": 17.105282,
+      "lon": 21.487695,
+      "osm_id": "node/7721877989",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1104581",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Tebinara",
+        "name": "T\u00e9binara",
+        "name:fr": "T\u00e9binara",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Awayke",
+      "lat": 17.079003,
+      "lon": 21.506197,
+      "osm_id": "node/7721877990",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1089829",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Awayke",
+        "name:fr": "Awayke",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ihim Tchouka",
+      "lat": 17.077354,
+      "lon": 21.571815,
+      "osm_id": "node/7721877992",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1096398",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Ihim Tchouka",
+        "name:fr": "Ihim Tchouka",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Konala",
+      "lat": 17.125128,
+      "lon": 21.353779,
+      "osm_id": "node/7721877993",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1098044",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Konala",
+        "name:fr": "Konala",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Birmari",
+      "lat": 17.112453,
+      "lon": 21.448937,
+      "osm_id": "node/7721877994",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1091302",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Birmari",
+        "name:fr": "Birmari",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kernek",
+      "lat": 17.0438961,
+      "lon": 21.3305239,
+      "osm_id": "node/7721877995",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1097550",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Kernek",
+        "name:fr": "Kernek",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Korokou",
+      "lat": 17.043636,
+      "lon": 21.396323,
+      "osm_id": "node/7721877996",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1098210",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Korokou",
+        "name:fr": "Korokou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bey Touchin\u00e9",
+      "lat": 17.003689,
+      "lon": 21.311963,
+      "osm_id": "node/7721877997",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1091037",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Bey Touchine;Bey Tochine",
+        "name": "Bey Touchin\u00e9",
+        "name:fr": "Bey Touchin\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "B\u00e9chik\u00e9",
+      "lat": 17.0,
+      "lon": 21.333333,
+      "osm_id": "node/7721877998",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1090534",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Bechike",
+        "name": "B\u00e9chik\u00e9",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Herte Fourou",
+      "lat": 17.240195,
+      "lon": 21.256617,
+      "osm_id": "node/7721878000",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1096213",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Herte Fourou",
+        "name:fr": "Herte Fourou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hiliba",
+      "lat": 17.267925,
+      "lon": 21.219302,
+      "osm_id": "node/7721878001",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1096240",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Hiliba",
+        "name:fr": "Hiliba",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Koutchot",
+      "lat": 17.152517,
+      "lon": 21.832532,
+      "osm_id": "node/7721878030",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1098891",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Koutchot",
+        "name:fr": "Koutchot",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tamloga",
+      "lat": 17.138165,
+      "lon": 21.736366,
+      "osm_id": "node/7721878031",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1104224",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Tamloga",
+        "name:fr": "Tamloga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Keyti Waron",
+      "lat": 17.072129,
+      "lon": 21.812967,
+      "osm_id": "node/7721878032",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1097582",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Keyti Waron",
+        "name:fr": "Keyti Waron",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Arfalanga",
+      "lat": 17.065335,
+      "lon": 21.305457,
+      "osm_id": "node/7721878033",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1089577",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Arfalanga",
+        "name:fr": "Arfalanga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tami",
+      "lat": 17.101756,
+      "lon": 21.306205,
+      "osm_id": "node/7721878034",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1104216",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Tami",
+        "name:fr": "Tami",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kosom\u00e9ba",
+      "lat": 17.080609,
+      "lon": 21.961219,
+      "osm_id": "node/7721878035",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1098262",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Kosomeba",
+        "name": "Kosom\u00e9ba",
+        "name:fr": "Kosom\u00e9ba",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Ega",
+      "lat": 15.766667,
+      "lon": 21.9,
+      "osm_id": "node/7721878041",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1094130",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Hadjer Ega",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hadjer Sagoursi",
+      "lat": 15.783333,
+      "lon": 21.65,
+      "osm_id": "node/7721878099",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1103325",
+        "GNS:modify_date": "1993-12-18",
+        "name": "Hadjer Sagoursi",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tourkou",
+      "lat": 17.5857207,
+      "lon": 22.1603034,
+      "osm_id": "node/7721878103",
+      "osm_tags": {
+        "GNS:dsg_code": "HLLS",
+        "GNS:dsg_name": "hills",
+        "GNS:id": "-1105309",
+        "GNS:modify_date": "2009-12-08",
+        "ele": "860",
+        "name": "Tourkou",
+        "name:fr": "Tourkou",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bi\u2019r Sind\u012b",
+      "lat": 15.9593189,
+      "lon": 24.1013831,
+      "osm_id": "node/7730430608",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-3925",
+        "GNS:modify_date": "2009-01-27",
+        "alt_name": "Bi'r Sindi;Bir Sendi",
+        "name": "Bi\u2019r Sind\u012b",
+        "name:ar": "\u0628\u0626\u0631 \u0633\u0646\u062f\u064a",
+        "name:en": "Bi'r Sindi",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u1e28ajar Karehu",
+      "lat": 15.9179273,
+      "lon": 24.1038816,
+      "osm_id": "node/7731289228",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-8450",
+        "GNS:modify_date": "2009-01-27",
+        "alt_name": "Hajar Karehu",
+        "ele": "903",
+        "name": "\u1e28ajar Karehu",
+        "name:en": "Hajar Karehu",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u1e28ajar Kumayrah",
+      "lat": 15.8,
+      "lon": 24.0,
+      "osm_id": "node/7731291322",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-9378",
+        "GNS:modify_date": "2009-01-27",
+        "alt_name": "Hajar Kumayrah;Hagar Kimeira",
+        "name": "\u1e28ajar Kumayrah",
+        "name:ar": "\u062d\u062c\u0631 \u0643\u0645\u064a\u0631\u0629",
+        "name:en": "Hajar Kumayrah",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u1e28ajar Markh",
+      "lat": 15.7829418,
+      "lon": 24.04055,
+      "osm_id": "node/7731291585",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-10858",
+        "GNS:modify_date": "2009-01-27",
+        "alt_name": "Hajar Markh;Hagar Marakh",
+        "alt_name:ar": "\u0647\u063a\u0623\u0631 \u0645\u0631\u062e",
+        "description": "Trigonometric Point",
+        "ele": "890",
+        "name": "\u1e28ajar Markh",
+        "name:ar": "\u062d\u062c\u0631 \u0645\u0631\u062e",
+        "name:en": "Hajar Markh",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hagar Habilibu",
+      "lat": 16.550637,
+      "lon": 24.139077,
+      "osm_id": "node/7731291900",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-6891",
+        "GNS:modify_date": "2010-04-20",
+        "name": "Hagar Habilibu",
+        "name:ar": "\u0647\u063a\u0623\u0631 \u0647\u0628\u0644\u0628",
+        "name:en": "Hagar Habilibu",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ouoneri",
+      "lat": 17.066667,
+      "lon": 23.9,
+      "osm_id": "node/7732070705",
+      "osm_tags": {
+        "GNS:dsg_code": "PNDI",
+        "GNS:dsg_name": "intermittent pond",
+        "GNS:id": "-1102812",
+        "GNS:modify_date": "2013-06-11",
+        "intermittent": "yes",
+        "name": "Ouoneri",
+        "natural": "water",
+        "source": "GNS",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Anikel",
+      "lat": 16.346444,
+      "lon": 21.31358,
+      "osm_id": "node/7732070707",
+      "osm_tags": {
+        "GNS:dsg_code": "PNDI",
+        "GNS:dsg_name": "intermittent pond",
+        "GNS:id": "-1089332",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Anik\u00e9;Anike",
+        "intermittent": "yes",
+        "name": "Anikel",
+        "name:fr": "Anikel",
+        "natural": "water",
+        "source": "GNS",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "T\u00e9nib\u00e9",
+      "lat": 17.5,
+      "lon": 23.183333,
+      "osm_id": "node/7732103244",
+      "osm_tags": {
+        "GNS:dsg_code": "PNDI",
+        "GNS:dsg_name": "intermittent pond",
+        "GNS:id": "-1104712",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name": "Tenibe",
+        "intermittent": "yes",
+        "name": "T\u00e9nib\u00e9",
+        "natural": "water",
+        "source": "GNS",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Natou\u00e9",
+      "lat": 16.751378,
+      "lon": 23.080469,
+      "osm_id": "node/7732126822",
+      "osm_tags": {
+        "GNS:dsg_code": "LKI",
+        "GNS:dsg_name": "intermittent lake",
+        "GNS:id": "10622177",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Natoue",
+        "intermittent": "yes",
+        "name": "Natou\u00e9",
+        "name:fr": "Natou\u00e9",
+        "natural": "water",
+        "source": "GNS",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Pillar",
+      "lat": 16.8491624,
+      "lon": 21.9430338,
+      "osm_id": "node/8058846908",
+      "osm_tags": {
+        "name": "Pillar",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hagar Kobbe",
+      "lat": 16.5815326,
+      "lon": 24.0513216,
+      "osm_id": "node/9770407184",
+      "osm_tags": {
+        "name": "Hagar Kobbe",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hagar Habilibu",
+      "lat": 16.5135244,
+      "lon": 24.1660787,
+      "osm_id": "node/9770407185",
+      "osm_tags": {
+        "name": "Hagar Habilibu",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+      "lat": 15.8358194,
+      "lon": 22.9316736,
+      "osm_id": "way/29312623",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+        "name:en": "Wadi Arso",
+        "name:fr": "Ouadis Arso",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadis Arso \u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+      "lat": 16.049499,
+      "lon": 22.6571635,
+      "osm_id": "way/29312625",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadis Arso \u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+        "name:en": "Wadi Arsu",
+        "name:fr": "Ouadis Arso",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadis Bougouradi \u0648\u0627\u062f\u064a \u0628\u0648\u0642\u0648\u0631\u0627\u062f\u064a",
+      "lat": 15.8279595,
+      "lon": 22.748742,
+      "osm_id": "way/29312640",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadis Bougouradi \u0648\u0627\u062f\u064a \u0628\u0648\u0642\u0648\u0631\u0627\u062f\u064a",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0628\u0648\u0642\u0648\u0631\u0627\u062f\u064a",
+        "name:en": "Ouadis Bougouradi",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u0643\u0646\u0648\u0629 Ouadis Kanoua",
+      "lat": 15.7976236,
+      "lon": 22.6464843,
+      "osm_id": "way/29312646",
+      "osm_tags": {
+        "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u0643\u0646\u0648\u0629 Ouadis Kanoua",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a\u0633 \u0643\u0646\u0648\u0629",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi G\u00e9ret",
+      "lat": 15.808193,
+      "lon": 22.7701435,
+      "osm_id": "way/29312650",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi G\u00e9ret",
+        "source": "landsat",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadis Howar",
+      "lat": 16.9751687,
+      "lon": 27.3640895,
+      "osm_id": "way/188315887",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadis Howar",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0647\u0648\u0631",
+        "name:en": "Ouadis Howar",
+        "source": "landsat",
+        "waterway": "river",
+        "wikipedia:ar": "\u0648\u0627\u062f\u064a \u0647\u0648\u0631"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Dougouro",
+      "lat": 17.4679161,
+      "lon": 21.7777161,
+      "osm_id": "way/198187815",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Dougouro",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Dente",
+      "lat": 17.574995,
+      "lon": 21.7738445,
+      "osm_id": "way/198187820",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Dente",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Dougouro",
+      "lat": 17.6625425,
+      "lon": 21.6535372,
+      "osm_id": "way/198187823",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Dougouro",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Hawach",
+      "lat": 15.839125,
+      "lon": 20.8906142,
+      "osm_id": "way/284372594",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Hawach",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0623\u0648\u0627\u062f\u064a \u0647\u0648\u0627\u0634 Ouadi Hawach",
+      "lat": 15.8366453,
+      "lon": 20.8844215,
+      "osm_id": "way/284372595",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0623\u0648\u0627\u062f\u064a \u0647\u0648\u0627\u0634 Ouadi Hawach",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a \u0647\u0648\u0627\u0634",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u0623\u0648\u0627\u062f\u064a \u0647\u0648\u0627\u0634 Ouadi Hawach",
+      "lat": 15.8320343,
+      "lon": 20.8780087,
+      "osm_id": "way/284372596",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0623\u0648\u0627\u062f\u064a \u0647\u0648\u0627\u0634 Ouadi Hawach",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a \u0647\u0648\u0627\u0634",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Hawach",
+      "lat": 15.8178284,
+      "lon": 20.8531092,
+      "osm_id": "way/284372597",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Hawach",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Hawach",
+      "lat": 15.7730014,
+      "lon": 20.7302665,
+      "osm_id": "way/284372598",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Hawach",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u0623\u0648\u0627\u062f\u064a \u0647\u0648\u0627\u0634 Ouadi Hawach",
+      "lat": 15.847462,
+      "lon": 20.9058107,
+      "osm_id": "way/284372599",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0623\u0648\u0627\u062f\u064a \u0647\u0648\u0627\u0634 Ouadi Hawach",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a \u0647\u0648\u0627\u0634",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Hawach",
+      "lat": 15.7434278,
+      "lon": 20.6711433,
+      "osm_id": "way/284372601",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Hawach",
+        "seasonal": "yes",
+        "source": "areal bing 27-12-15",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u064a\u0628\u064a\u0627 Ouadis D\u00e9bia",
+      "lat": 15.7834425,
+      "lon": 23.1737003,
+      "osm_id": "way/305851629",
+      "osm_tags": {
+        "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u064a\u0628\u064a\u0627 Ouadis D\u00e9bia",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u064a\u0628\u064a\u0627",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wadi Kerbougui \u0648\u0627\u062f\u064a \u0643\u064a\u0631\u0628\u0648\u063a\u064a",
+      "lat": 15.7531048,
+      "lon": 23.0801297,
+      "osm_id": "way/305851631",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Wadi Kerbougui \u0648\u0627\u062f\u064a \u0643\u064a\u0631\u0628\u0648\u063a\u064a",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0643\u064a\u0631\u0628\u0648\u063a\u064a",
+        "name:de": "Wadi Kerbougui",
+        "name:en": "Wadi Kerbougui",
+        "name:fr": "Ouadis Kerbougui",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0648\u0627\u062f\u064a \u0628\u064a\u0631\u062f\u0648\u0628\u0627",
+      "lat": 15.8375612,
+      "lon": 22.9293579,
+      "osm_id": "way/305851632",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0648\u0627\u062f\u064a \u0628\u064a\u0631\u062f\u0648\u0628\u0627",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0628\u064a\u0631\u062f\u0648\u0628\u0627",
+        "name:en": "Wadi Berdoba",
+        "name:fr": "Ouadis B\u00e9rdoba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadis Sokoya \u0648\u0627\u062f\u064a \u0633\u0648\u0643\u0648\u064a\u0627",
+      "lat": 15.9462608,
+      "lon": 22.8079241,
+      "osm_id": "way/305955453",
+      "osm_tags": {
+        "name": "Ouadis Sokoya \u0648\u0627\u062f\u064a \u0633\u0648\u0643\u0648\u064a\u0627",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0633\u0648\u0643\u0648\u064a\u0627",
+        "name:en": "Ouadis Sokoya",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadis Sokoya \u0648\u0627\u062f\u064a \u0633\u0648\u0643\u0648\u064a\u0627",
+      "lat": 15.907116,
+      "lon": 22.819408,
+      "osm_id": "way/305955455",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadis Sokoya \u0648\u0627\u062f\u064a \u0633\u0648\u0643\u0648\u064a\u0627",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0633\u0648\u0643\u0648\u064a\u0627",
+        "name:en": "Ouadis Sokoya",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0648\u0627\u062f\u064a \u0633\u0627\u0646\u0648\u0643\u064a",
+      "lat": 15.8323621,
+      "lon": 22.8545489,
+      "osm_id": "way/305955462",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0648\u0627\u062f\u064a \u0633\u0627\u0646\u0648\u0643\u064a",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0633\u0627\u0646\u0648\u0643\u064a",
+        "name:en": "Wadi Sanoukey",
+        "name:fr": "Ouadis Sanoukey",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u0622\u0645\u064a Ouadis Am\u00e9",
+      "lat": 15.8554294,
+      "lon": 22.7928919,
+      "osm_id": "way/305955463",
+      "osm_tags": {
+        "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u0622\u0645\u064a Ouadis Am\u00e9",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a\u0633 \u0622\u0645\u064a",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u0643\u0648\u0631\u062f\u064a Ouadis Kourdi",
+      "lat": 15.7315554,
+      "lon": 22.7836528,
+      "osm_id": "way/305963540",
+      "osm_tags": {
+        "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u0643\u0648\u0631\u062f\u064a Ouadis Kourdi",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a\u0633 \u0643\u0648\u0631\u062f\u064a",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u062c\u064a\u0648\u0631\u0627 Ouadis Djiora",
+      "lat": 15.7500401,
+      "lon": 22.5424727,
+      "osm_id": "way/305963552",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u062c\u064a\u0648\u0631\u0627 Ouadis Djiora",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u062c\u064a\u0648\u0631\u0627",
+        "source": "bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadis Arso \u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+      "lat": 15.9066738,
+      "lon": 22.7835503,
+      "osm_id": "way/306080499",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadis Arso \u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+        "name:en": "Wadi Arsu",
+        "name:fr": "Ouadis Arso",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Horta",
+      "lat": 17.6226766,
+      "lon": 21.9888053,
+      "osm_id": "way/440977017",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Horta",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Horta",
+      "lat": 17.7874789,
+      "lon": 21.9572708,
+      "osm_id": "way/440980060",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Horta",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Karou",
+      "lat": 16.645117,
+      "lon": 22.8744363,
+      "osm_id": "way/441764427",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Karou",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Karou",
+      "lat": 16.6506577,
+      "lon": 22.9066897,
+      "osm_id": "way/441764447",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Karou",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Dougouro",
+      "lat": 17.3554503,
+      "lon": 21.8654862,
+      "osm_id": "way/441825688",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Dougouro",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Karou",
+      "lat": 16.62266,
+      "lon": 22.8132811,
+      "osm_id": "way/441873248",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Karou",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Dougouro",
+      "lat": 17.3176552,
+      "lon": 21.9495873,
+      "osm_id": "way/442491541",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Dougouro",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Dougouro",
+      "lat": 17.3749544,
+      "lon": 21.8164613,
+      "osm_id": "way/442492081",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Dougouro",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Gweni",
+      "lat": 17.454863,
+      "lon": 21.7248862,
+      "osm_id": "way/442492082",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Gweni",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Birre",
+      "lat": 17.6597764,
+      "lon": 22.1252682,
+      "osm_id": "way/446244700",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Birre",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0623\u0648\u0627\u062f\u064a \u0647\u0648\u0627\u0634 Ouadi Hawach",
+      "lat": 15.7874907,
+      "lon": 20.7602934,
+      "osm_id": "way/462781954",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0623\u0648\u0627\u062f\u064a \u0647\u0648\u0627\u0634 Ouadi Hawach",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a \u0647\u0648\u0627\u0634",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Hawach",
+      "lat": 15.8213416,
+      "lon": 20.8584012,
+      "osm_id": "way/462781955",
+      "osm_tags": {
+        "name": "Ouadi Hawach",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi Hawach",
+      "lat": 15.7957424,
+      "lon": 20.8142366,
+      "osm_id": "way/462781956",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Hawach",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0648\u0627\u062f\u064a \u0625\u064a\u062a\u0648",
+      "lat": 16.310116,
+      "lon": 22.4735211,
+      "osm_id": "way/533605080",
+      "osm_tags": {
+        "GNS:dsg_code": "WAD",
+        "GNS:dsg_name": "wadi",
+        "GNS:id": "-1102837",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:ar": "\u0648\u0627\u062f\u064a \u0623\u0648\u0631\u064a \u0625\u064a\u062a\u0648;\u0648\u0627\u062f \u0625\u064a\u062a\u0648",
+        "alt_name:fr": "Ouadi Oure Ito;Oued Ito",
+        "intermittent": "yes",
+        "name": "\u0648\u0627\u062f\u064a \u0625\u064a\u062a\u0648",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0625\u064a\u062a\u0648",
+        "name:fr": "Ouadi Ito",
+        "natural": "valley",
+        "source": "bing;GNS",
+        "waterway": "river",
+        "wikidata": "Q35505855"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi Sokapa",
+      "lat": 16.1365405,
+      "lon": 22.7463441,
+      "osm_id": "way/534529345",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Sokapa",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u064a\u0628\u064a\u0627 Ouadis D\u00e9bia",
+      "lat": 15.7429633,
+      "lon": 23.1928112,
+      "osm_id": "way/591712901",
+      "osm_tags": {
+        "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u064a\u0628\u064a\u0627 Ouadis D\u00e9bia",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u064a\u0628\u064a\u0627",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u0623\u0631\u0633\u0648 Ouadis Arso",
+      "lat": 15.8152724,
+      "lon": 22.9997282,
+      "osm_id": "way/591714347",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u0623\u0631\u0633\u0648 Ouadis Arso",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a\u0633 \u0623\u0631\u0633\u0648",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+      "lat": 15.852164,
+      "lon": 22.8673643,
+      "osm_id": "way/615693682",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+        "name:en": "Wadi Arsu",
+        "name:fr": "Ouadis Arso",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u062c\u064a\u0648\u0631\u0627 Ouadis Djiora",
+      "lat": 15.7519305,
+      "lon": 22.5992053,
+      "osm_id": "way/615696496",
+      "osm_tags": {
+        "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u062c\u064a\u0648\u0631\u0627 Ouadis Djiora",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u062c\u064a\u0648\u0631\u0627",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u062c\u064a\u0648\u0631\u0627 Ouadis Djiora",
+      "lat": 15.7422979,
+      "lon": 22.6123715,
+      "osm_id": "way/615696497",
+      "osm_tags": {
+        "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u062c\u064a\u0648\u0631\u0627 Ouadis Djiora",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u062c\u064a\u0648\u0631\u0627",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u062c\u064a\u0648\u0631\u0627 Ouadis Djiora",
+      "lat": 15.7479547,
+      "lon": 22.5758809,
+      "osm_id": "way/615696501",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u062c\u064a\u0648\u0631\u0627 Ouadis Djiora",
+        "name:ar": "\u0623\u0648\u0627\u062f\u064a\u0633 \u062f\u062c\u064a\u0648\u0631\u0627",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi K\u00e9riko",
+      "lat": 15.881823,
+      "lon": 21.8339433,
+      "osm_id": "way/618327127",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi K\u00e9riko",
+        "source": "bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi K\u00e9riko",
+      "lat": 15.7206549,
+      "lon": 22.0272806,
+      "osm_id": "way/618327133",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi K\u00e9riko",
+        "source": "bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Birre",
+      "lat": 17.7087486,
+      "lon": 22.060954,
+      "osm_id": "way/624444105",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Birre",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u0648\u0627\u062f\u064a \u0643\u0648\u0626\u064a\u0646\u0627 \u0645\u0627\u0631\u0627 Ko\u00efna Mara",
+      "lat": 16.0137988,
+      "lon": 22.8954391,
+      "osm_id": "way/628419284",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0648\u0627\u062f\u064a \u0643\u0648\u0626\u064a\u0646\u0627 \u0645\u0627\u0631\u0627 Ko\u00efna Mara",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0643\u0648\u0626\u064a\u0646\u0627 \u0645\u0627\u0631\u0627",
+        "waterway": "stream",
+        "wikidata": "Q35506916"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u0648\u0627\u062f\u064a \u0648\u0627\u0631\u064a \u0642\u0648\u0646\u064a",
+      "lat": 15.9972024,
+      "lon": 22.8866345,
+      "osm_id": "way/628419286",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0648\u0627\u062f\u064a \u0648\u0627\u0631\u064a \u0642\u0648\u0646\u064a",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0648\u0627\u0631\u064a \u0642\u0648\u0646\u064a",
+        "source": "bing",
+        "waterway": "stream",
+        "wikidata": "Q35508711"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Noure",
+      "lat": 17.2885993,
+      "lon": 21.5330144,
+      "osm_id": "way/637262270",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Noure",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Ouni",
+      "lat": 17.2981927,
+      "lon": 21.6011199,
+      "osm_id": "way/637540818",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Ouni",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Oued Ga",
+      "lat": 17.2541925,
+      "lon": 21.8712795,
+      "osm_id": "way/637557248",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Ga",
+        "source": "bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Eli",
+      "lat": 17.2286195,
+      "lon": 21.8621579,
+      "osm_id": "way/637557251",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Eli",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Ga",
+      "lat": 17.2432021,
+      "lon": 21.8555489,
+      "osm_id": "way/637557252",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Ga",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Oued Deteko",
+      "lat": 17.2160156,
+      "lon": 21.8139065,
+      "osm_id": "way/637557417",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Deteko",
+        "source": "bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Gweni",
+      "lat": 17.4781521,
+      "lon": 21.7474753,
+      "osm_id": "way/648732781",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Gweni",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Guelta d'Archei",
+      "lat": 16.9040518,
+      "lon": 21.7737683,
+      "osm_id": "way/661459250",
+      "osm_tags": {
+        "name": "Guelta d'Archei",
+        "name:ar": "\u0642\u0644\u062a\u0629 \u0622\u0631\u0634\u064a",
+        "natural": "water",
+        "water": "pond",
+        "wikidata": "Q1553203"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Nkaola",
+      "lat": 17.9316438,
+      "lon": 21.8395395,
+      "osm_id": "way/663004047",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Nkaola",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Noure",
+      "lat": 17.3705417,
+      "lon": 21.6106088,
+      "osm_id": "way/685800614",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Noure",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Ezkarti",
+      "lat": 17.4092644,
+      "lon": 21.688767,
+      "osm_id": "way/685816212",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Ezkarti",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Dente",
+      "lat": 17.5300166,
+      "lon": 21.8494557,
+      "osm_id": "way/760737650",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Dente",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Kebela",
+      "lat": 17.7053614,
+      "lon": 21.8207018,
+      "osm_id": "way/760738190",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Kebela",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Saharam",
+      "lat": 17.2316765,
+      "lon": 21.7210544,
+      "osm_id": "way/827386129",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Saharam",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi Koutoudyus",
+      "lat": 17.2005359,
+      "lon": 21.9705958,
+      "osm_id": "way/827396685",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Koutoudyus",
+        "source": "bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Douhin",
+      "lat": 16.606381,
+      "lon": 23.170763,
+      "osm_id": "way/827396699",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Douhin",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi T\u00e9likobou",
+      "lat": 15.7440204,
+      "lon": 21.9158261,
+      "osm_id": "way/827439787",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi T\u00e9likobou",
+        "source": "bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi K\u00e9riko",
+      "lat": 15.9447642,
+      "lon": 21.8270237,
+      "osm_id": "way/827439790",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi K\u00e9riko",
+        "source": "DigitalGlobe",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi K\u00e9riko",
+      "lat": 15.782006,
+      "lon": 21.9381239,
+      "osm_id": "way/827439797",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi K\u00e9riko",
+        "source": "bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi K\u00e9riko",
+      "lat": 15.8275912,
+      "lon": 21.871183,
+      "osm_id": "way/827439801",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi K\u00e9riko",
+        "source": "bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi Badiousi",
+      "lat": 15.7324725,
+      "lon": 22.0770583,
+      "osm_id": "way/827447474",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Badiousi",
+        "source": "bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi Egdi Gourfou",
+      "lat": 15.7361758,
+      "lon": 22.1596415,
+      "osm_id": "way/827454002",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadi Egdi Gourfou",
+        "source": "bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u0648\u0627\u062f\u064a \u0645\u064a\u0634\u0631\u0629",
+      "lat": 16.4567453,
+      "lon": 22.4721928,
+      "osm_id": "way/829463050",
+      "osm_tags": {
+        "GNS:dsg_code": "WAD",
+        "GNS:dsg_name": "wadi",
+        "GNS:id": "-1100613",
+        "GNS:modify_date": "2013-06-11",
+        "intermittent": "yes",
+        "name": "\u0648\u0627\u062f\u064a \u0645\u064a\u0634\u0631\u0629",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0645\u064a\u0634\u0631\u0629",
+        "name:en": "Ouadi Mechera",
+        "name:fr": "Ouadi M\u00e9chera",
+        "natural": "valley",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Guelta de Bachikele",
+      "lat": 16.5164097,
+      "lon": 22.3428515,
+      "osm_id": "way/836870273",
+      "osm_tags": {
+        "basin": "filtration",
+        "description": "Guelta es el nombre que reciben la afloraciones permanetes de agua en esta parte del desierto",
+        "intermittent": "no",
+        "name": "Guelta de Bachikele",
+        "natural": "water",
+        "water": "basin"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Saharam",
+      "lat": 17.243133,
+      "lon": 21.7619518,
+      "osm_id": "way/842750216",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Saharam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadis Arso \u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+      "lat": 15.9784657,
+      "lon": 22.7009311,
+      "osm_id": "way/854814638",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ouadis Arso \u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0623\u0631\u0633\u0648",
+        "name:en": "Wadi Arsu",
+        "name:fr": "Ouadis Arso",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0648\u0627\u062f\u064a \u0645\u064a\u0634\u0631\u0629",
+      "lat": 16.3688827,
+      "lon": 22.4702583,
+      "osm_id": "way/881112561",
+      "osm_tags": {
+        "GNS:dsg_code": "WAD",
+        "GNS:dsg_name": "wadi",
+        "GNS:id": "-1100613",
+        "GNS:modify_date": "2013-06-11",
+        "intermittent": "yes",
+        "name": "\u0648\u0627\u062f\u064a \u0645\u064a\u0634\u0631\u0629",
+        "name:ar": "\u0648\u0627\u062f\u064a \u0645\u064a\u0634\u0631\u0629",
+        "name:en": "Ouadi Mechera",
+        "name:fr": "Ouadi M\u00e9chera",
+        "natural": "valley",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wadi Karehu",
+      "lat": 15.913934,
+      "lon": 24.1323226,
+      "osm_id": "way/965669794",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Wadi Karehu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wadi Sindi",
+      "lat": 15.906065,
+      "lon": 24.1864432,
+      "osm_id": "way/965669795",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Wadi Sindi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wadi Sindi",
+      "lat": 15.9290227,
+      "lon": 24.1404667,
+      "osm_id": "way/965669796",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Wadi Sindi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Wadi Abu Gumur",
+      "lat": 16.0293425,
+      "lon": 24.189765,
+      "osm_id": "way/1063707136",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Wadi Abu Gumur",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Aderanga",
+      "lat": 17.8332805,
+      "lon": 22.5520268,
+      "osm_id": "way/1244747677",
+      "osm_tags": {
+        "GNS:dsg_code": "WTRH",
+        "GNS:dsg_name": "waterhole(s)",
+        "GNS:id": "-1088187",
+        "GNS:modify_date": "2013-06-11",
+        "fixme": "This is water hole imported from GNS please draw as area then copy tags from node and add natural=water,water=pond clear place=locality then delete the node",
+        "intermittent": "yes",
+        "name": "Aderanga",
+        "name:fr": "Aderanga",
+        "natural": "water",
+        "place": "locality",
+        "source": "GNS",
+        "surface": "mud",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Nortoy\u00e9",
+      "lat": 17.0338708,
+      "lon": 23.0579451,
+      "osm_id": "way/1247004236",
+      "osm_tags": {
+        "GNS:dsg_code": "WAD",
+        "GNS:dsg_name": "wadi",
+        "GNS:id": "10623652",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Ouadi Nortoye",
+        "intermittent": "yes",
+        "name": "Ouadi Nortoy\u00e9",
+        "name:fr": "Ouadi Nortoy\u00e9",
+        "natural": "valley",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Kenebe",
+      "lat": 17.4917335,
+      "lon": 21.6767069,
+      "osm_id": "way/1423653311",
+      "osm_tags": {
+        "GNS:dsg_code": "WAD",
+        "GNS:dsg_name": "wadi",
+        "GNS:id": "10623406",
+        "GNS:modify_date": "2013-06-11",
+        "intermittent": "yes",
+        "name": "Ouadi Kenebe",
+        "name:fr": "Ouadi Kenebe",
+        "natural": "valley",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Oloumanga",
+      "lat": 17.4505443,
+      "lon": 21.6929796,
+      "osm_id": "way/1423656123",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Oloumanga",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Ezkarti",
+      "lat": 17.4076571,
+      "lon": 21.6658743,
+      "osm_id": "way/1423656127",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Ezkarti",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi Elibo",
+      "lat": 17.4217126,
+      "lon": 21.6730656,
+      "osm_id": "way/1423656128",
+      "osm_tags": {
+        "GNS:dsg_code": "WAD",
+        "GNS:dsg_name": "wadi",
+        "GNS:id": "-1094198",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Oued Elibo",
+        "intermittent": "yes",
+        "name": "Ouadi Elibo",
+        "name:fr": "Ouadi Elibo",
+        "natural": "valley",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Saharam",
+      "lat": 17.2375064,
+      "lon": 21.7364106,
+      "osm_id": "way/1423669362",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Saharam",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Eli",
+      "lat": 17.2335036,
+      "lon": 21.8357256,
+      "osm_id": "way/1423669372",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Eli",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Kika",
+      "lat": 17.5596297,
+      "lon": 21.6006097,
+      "osm_id": "way/1423671308",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Kika",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Guelta Kika",
+      "lat": 17.5156239,
+      "lon": 21.5949368,
+      "osm_id": "way/1423678293",
+      "osm_tags": {
+        "GNS:dsg_code": "WLL",
+        "GNS:dsg_name": "well",
+        "GNS:id": "-1097678",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Guelta Kika",
+        "name:fr": "Kika",
+        "natural": "water",
+        "source": "bing",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Toura",
+      "lat": 17.5382963,
+      "lon": 21.7845784,
+      "osm_id": "way/1423678296",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Toura",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Guelta Toura",
+      "lat": 17.5394846,
+      "lon": 21.7932741,
+      "osm_id": "way/1423678297",
+      "osm_tags": {
+        "GNS:dsg_code": "WLL",
+        "GNS:dsg_name": "well",
+        "GNS:id": "-1105282",
+        "GNS:modify_date": "2013-06-11",
+        "name": "Guelta Toura",
+        "name:fr": "Toura",
+        "natural": "water",
+        "source": "GNS",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Gweni",
+      "lat": 17.4746988,
+      "lon": 21.7400819,
+      "osm_id": "way/1423678299",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Gweni",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Gweni",
+      "lat": 17.4337925,
+      "lon": 21.7065749,
+      "osm_id": "way/1423678300",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Gweni",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Elibo",
+      "lat": 17.4235867,
+      "lon": 21.6903368,
+      "osm_id": "way/1423678301",
+      "osm_tags": {
+        "GNS:dsg_code": "WAD",
+        "GNS:dsg_name": "wadi",
+        "GNS:id": "-1094198",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Oued Elibo",
+        "intermittent": "yes",
+        "name": "Ouadi Elibo",
+        "name:fr": "Ouadi Elibo",
+        "natural": "valley",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ouadi Bir\u00e9",
+      "lat": 17.4966488,
+      "lon": 21.7917674,
+      "osm_id": "way/1423678887",
+      "osm_tags": {
+        "GNS:dsg_code": "WAD",
+        "GNS:dsg_name": "wadi",
+        "GNS:id": "-1091264",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Ouadi Bire;Oued Bir\u00e9;Oued Bire",
+        "intermittent": "yes",
+        "name": "Ouadi Bir\u00e9",
+        "name:fr": "Ouadi Bir\u00e9",
+        "natural": "valley",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ouadi Bir\u00e9",
+      "lat": 17.5071789,
+      "lon": 21.7699409,
+      "osm_id": "way/1423678888",
+      "osm_tags": {
+        "GNS:dsg_code": "WAD",
+        "GNS:dsg_name": "wadi",
+        "GNS:id": "-1091264",
+        "GNS:modify_date": "2013-06-11",
+        "alt_name:fr": "Ouadi Bire;Oued Bir\u00e9;Oued Bire",
+        "intermittent": "yes",
+        "name": "Ouadi Bir\u00e9",
+        "name:fr": "Ouadi Bir\u00e9",
+        "natural": "valley",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oued Dougouro",
+      "lat": 17.5676105,
+      "lon": 21.7584073,
+      "osm_id": "way/1423999904",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oued Dougouro",
+        "source": "bing",
+        "waterway": "river"
+      }
+    }
+  ]
+}

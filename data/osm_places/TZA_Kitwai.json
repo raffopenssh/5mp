@@ -1,0 +1,7710 @@
+{
+  "park_id": "TZA_Kitwai",
+  "downloaded_at": "2026-02-08T11:55:49.899244+00:00",
+  "buffer_km": 50,
+  "place_count": 566,
+  "places": [
+    {
+      "place_type": "hamlet",
+      "name": "Iginyu",
+      "lat": -4.110131,
+      "lon": 37.9073246,
+      "osm_id": "node/137612160",
+      "osm_tags": {
+        "created_by": "Potlatch 0.8a",
+        "name": "Iginyu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kisiwani",
+      "lat": -4.1375343,
+      "lon": 37.9532466,
+      "osm_id": "node/255609202",
+      "osm_tags": {
+        "name": "Kisiwani",
+        "place": "village",
+        "wikidata": "Q35696717"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkumbara",
+      "lat": -4.7669104,
+      "lon": 38.1762457,
+      "osm_id": "node/255655348",
+      "osm_tags": {
+        "created_by": "Potlatch 0.8a",
+        "is_in": "Tanzania",
+        "name": "Mkumbara",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mombo",
+      "lat": -4.8888042,
+      "lon": 38.2898369,
+      "osm_id": "node/255655408",
+      "osm_tags": {
+        "is_in": "Tanzania",
+        "name": "Mombo",
+        "place": "town",
+        "wikidata": "Q6897070",
+        "wikipedia": "en:Mombo, Tanzania"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Korogwe",
+      "lat": -5.1592095,
+      "lon": 38.4522634,
+      "osm_id": "node/255655635",
+      "osm_tags": {
+        "is_in": "Tanga, Tanzania",
+        "name": "Korogwe",
+        "name:ru": "\u041a\u043e\u0440\u043e\u0433\u0432\u0435",
+        "name:uk": "\u041a\u043e\u0440\u043e\u0433\u0432\u0435",
+        "place": "town",
+        "population": "62032",
+        "source:population": "German Wikipedia https://de.wikipedia.org/wiki/Liste_der_St%C3%A4dte_in_Tansania",
+        "wikidata": "Q1027843",
+        "wikimedia_commons": "Category:Korogwe",
+        "wikipedia": "en:Korogwe"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Lushoto",
+      "lat": -4.795146,
+      "lon": 38.290511,
+      "osm_id": "node/257916259",
+      "osm_tags": {
+        "is_in": "Tanga, Tanzania",
+        "name": "Lushoto",
+        "place": "town",
+        "wikidata": "Q612627",
+        "wikimedia_commons": "Category:Lushoto",
+        "wikipedia": "en:Lushoto"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Handeni",
+      "lat": -5.4283292,
+      "lon": 38.0211414,
+      "osm_id": "node/262031206",
+      "osm_tags": {
+        "name": "Handeni",
+        "place": "city",
+        "population": "108968",
+        "region": "Tanga",
+        "source:population": "German Wikipedia https://de.wikipedia.org/wiki/Liste_der_St%C3%A4dte_in_Tansania"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Langoni",
+      "lat": -4.42628,
+      "lon": 38.2835875,
+      "osm_id": "node/437386768",
+      "osm_tags": {
+        "is_in": "Lushoto, Tanzania",
+        "name": "Langoni",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mnazi",
+      "lat": -4.4264074,
+      "lon": 38.3073421,
+      "osm_id": "node/437455897",
+      "osm_tags": {
+        "is_in": "Lushoto, Tanzania",
+        "name": "Mnazi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Soni",
+      "lat": -4.8463535,
+      "lon": 38.3672549,
+      "osm_id": "node/565454454",
+      "osm_tags": {
+        "name": "Soni",
+        "place": "town",
+        "wikidata": "Q49368026"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwembago",
+      "lat": -4.78507,
+      "lon": 38.2805708,
+      "osm_id": "node/566003511",
+      "osm_tags": {
+        "is_in": "Tanga, Tanzania",
+        "name": "Kwembago",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "magamba",
+      "lat": -4.7705895,
+      "lon": 38.2811426,
+      "osm_id": "node/566003678",
+      "osm_tags": {
+        "ele": "1850",
+        "name": "magamba",
+        "natural": "peak",
+        "tourism": "viewpoint"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magamba",
+      "lat": -4.7609333,
+      "lon": 38.2996765,
+      "osm_id": "node/566003942",
+      "osm_tags": {
+        "is_in": "Lushoto, Tanzania",
+        "name": "Magamba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mambo",
+      "lat": -4.5130667,
+      "lon": 38.2252304,
+      "osm_id": "node/725271057",
+      "osm_tags": {
+        "name": "Mambo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nkelei",
+      "lat": -4.5577318,
+      "lon": 38.2406079,
+      "osm_id": "node/725271078",
+      "osm_tags": {
+        "name": "Nkelei",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manolo",
+      "lat": -4.6214543,
+      "lon": 38.2229416,
+      "osm_id": "node/725365351",
+      "osm_tags": {
+        "name": "Manolo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Viti",
+      "lat": -4.6574283,
+      "lon": 38.2528732,
+      "osm_id": "node/725366490",
+      "osm_tags": {
+        "name": "Viti",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malindi",
+      "lat": -4.6325615,
+      "lon": 38.3008249,
+      "osm_id": "node/726037691",
+      "osm_tags": {
+        "name": "Malindi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rangwi",
+      "lat": -4.5616485,
+      "lon": 38.2441721,
+      "osm_id": "node/726037863",
+      "osm_tags": {
+        "name": "Rangwi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mlalo",
+      "lat": -4.5790517,
+      "lon": 38.3474494,
+      "osm_id": "node/727003327",
+      "osm_tags": {
+        "name": "Mlalo",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kwemkame",
+      "lat": -4.5403979,
+      "lon": 38.3991708,
+      "osm_id": "node/727271838",
+      "osm_tags": {
+        "name": "Kwemkame",
+        "place": "hamlet",
+        "region": "Lushoto"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtae",
+      "lat": -4.4769439,
+      "lon": 38.2352299,
+      "osm_id": "node/727276547",
+      "osm_tags": {
+        "name": "Mtae",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtii",
+      "lat": -4.4604941,
+      "lon": 38.2483085,
+      "osm_id": "node/727280618",
+      "osm_tags": {
+        "name": "Mtii",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkundi Mbaru",
+      "lat": -4.4995585,
+      "lon": 38.169331,
+      "osm_id": "node/727291781",
+      "osm_tags": {
+        "name": "Mkundi Mbaru",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gologolo",
+      "lat": -4.6924326,
+      "lon": 38.2338698,
+      "osm_id": "node/727456438",
+      "osm_tags": {
+        "name": "Gologolo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shume Nywelo",
+      "lat": -4.6925063,
+      "lon": 38.2110215,
+      "osm_id": "node/727459907",
+      "osm_tags": {
+        "name": "Shume Nywelo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tema",
+      "lat": -4.5297975,
+      "lon": 38.2134747,
+      "osm_id": "node/728177952",
+      "osm_tags": {
+        "name": "Tema",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "MamboLeo",
+      "lat": -4.5582851,
+      "lon": 38.2131157,
+      "osm_id": "node/728178035",
+      "osm_tags": {
+        "name": "MamboLeo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madala",
+      "lat": -4.571092,
+      "lon": 38.2068957,
+      "osm_id": "node/728178504",
+      "osm_tags": {
+        "name": "Madala",
+        "place": "village",
+        "region": "Lushoto"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkomazi",
+      "lat": -4.6567652,
+      "lon": 38.0683495,
+      "osm_id": "node/797860545",
+      "osm_tags": {
+        "is_in": "Lushoto, Tanzania",
+        "name": "Mkomazi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwevihingo",
+      "lat": -5.7801741,
+      "lon": 37.5597255,
+      "osm_id": "node/965843934",
+      "osm_tags": {
+        "name": "Kwevihingo",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkalamo",
+      "lat": -4.9823484,
+      "lon": 38.1173934,
+      "osm_id": "node/965844007",
+      "osm_tags": {
+        "name": "Mkalamo",
+        "place": "village",
+        "source": "Africover - Towns (other towns)",
+        "wikidata": "Q20620930"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kijungu",
+      "lat": -5.3967904,
+      "lon": 37.1817536,
+      "osm_id": "node/965844296",
+      "osm_tags": {
+        "name": "Kijungu",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kiberashi",
+      "lat": -5.375225,
+      "lon": 37.4430921,
+      "osm_id": "node/965844638",
+      "osm_tags": {
+        "name": "Kiberashi",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mvungwe",
+      "lat": -4.3591086,
+      "lon": 37.5510375,
+      "osm_id": "node/965844678",
+      "osm_tags": {
+        "name": "Mvungwe",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magamba",
+      "lat": -5.5530364,
+      "lon": 38.0776183,
+      "osm_id": "node/965844755",
+      "osm_tags": {
+        "name": "Magamba",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sindeni",
+      "lat": -5.3461236,
+      "lon": 38.2321281,
+      "osm_id": "node/965845183",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Sindeni",
+        "place": "village",
+        "region": "Tanga",
+        "source": "Africover - Towns (other towns)",
+        "ward": "Sindeni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Negero",
+      "lat": -5.7791851,
+      "lon": 37.8082063,
+      "osm_id": "node/965845198",
+      "osm_tags": {
+        "name": "Negero",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tamota",
+      "lat": -5.5941528,
+      "lon": 37.5480357,
+      "osm_id": "node/965845228",
+      "osm_tags": {
+        "name": "Tamota",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mzundu",
+      "lat": -5.5091223,
+      "lon": 38.3396406,
+      "osm_id": "node/965845249",
+      "osm_tags": {
+        "name": "Mzundu",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Rugosi",
+      "lat": -5.7713328,
+      "lon": 38.4222197,
+      "osm_id": "node/965847969",
+      "osm_tags": {
+        "name": "Rugosi",
+        "place": "hamlet",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mshizii",
+      "lat": -4.8199874,
+      "lon": 38.3529851,
+      "osm_id": "node/1183167409",
+      "osm_tags": {
+        "ele": "1172.9255371",
+        "name": "Mshizii",
+        "place": "village",
+        "wpt_description": "01-MAR-11 1:52:34PM"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boheloi",
+      "lat": -4.7969231,
+      "lon": 38.3638464,
+      "osm_id": "node/1183167412",
+      "osm_tags": {
+        "ele": "1204.9",
+        "name": "Boheloi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Baga",
+      "lat": -4.7845885,
+      "lon": 38.4144492,
+      "osm_id": "node/1183167416",
+      "osm_tags": {
+        "ele": "1492.6",
+        "name": "Baga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Maweni",
+      "lat": -4.3995667,
+      "lon": 38.4317669,
+      "osm_id": "node/1314057695",
+      "osm_tags": {
+        "district": "Lushoto",
+        "name": "Maweni",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwenkwale",
+      "lat": -5.737545,
+      "lon": 38.3219001,
+      "osm_id": "node/1389809952",
+      "osm_tags": {
+        "name": "Kwenkwale",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mkata",
+      "lat": -5.7870408,
+      "lon": 38.2916519,
+      "osm_id": "node/1389809956",
+      "osm_tags": {
+        "name": "Mkata",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kabuku",
+      "lat": -5.5008372,
+      "lon": 38.4773873,
+      "osm_id": "node/1389813869",
+      "osm_tags": {
+        "name": "Kabuku",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitumbi",
+      "lat": -5.6820924,
+      "lon": 38.3643269,
+      "osm_id": "node/1389813870",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kitumbi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mkata"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Pangambili",
+      "lat": -5.670701,
+      "lon": 38.3645037,
+      "osm_id": "node/1833037600",
+      "osm_tags": {
+        "name": "Pangambili",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwachalima",
+      "lat": -5.6151652,
+      "lon": 38.4138942,
+      "osm_id": "node/1833037612",
+      "osm_tags": {
+        "name": "Kwachalima",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Karambatu",
+      "lat": -4.3174887,
+      "lon": 38.1678926,
+      "osm_id": "node/1843845932",
+      "osm_tags": {
+        "ele": "821",
+        "name": "Karambatu",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makanya",
+      "lat": -4.3600497,
+      "lon": 37.8270815,
+      "osm_id": "node/1845285625",
+      "osm_tags": {
+        "is_in": "Kilimanjaro, Tanzania",
+        "name": "Makanya",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mzirai",
+      "lat": -4.6443849,
+      "lon": 38.0525752,
+      "osm_id": "node/1845290507",
+      "osm_tags": {
+        "name": "Mzirai",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manga",
+      "lat": -4.699214,
+      "lon": 38.1185025,
+      "osm_id": "node/1845301318",
+      "osm_tags": {
+        "name": "Manga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mazinde",
+      "lat": -4.8065793,
+      "lon": 38.2103091,
+      "osm_id": "node/1850416856",
+      "osm_tags": {
+        "name": "Mazinde",
+        "place": "village",
+        "wikidata": "Q15252357",
+        "wikipedia": "en:Mazinde"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makuyuni",
+      "lat": -5.0168812,
+      "lon": 38.3285107,
+      "osm_id": "node/1850495635",
+      "osm_tags": {
+        "name": "Makuyuni",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwasunga",
+      "lat": -5.058562,
+      "lon": 38.3352055,
+      "osm_id": "node/1850551224",
+      "osm_tags": {
+        "name": "Kwasunga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kiloza",
+      "lat": -5.0984662,
+      "lon": 38.3525862,
+      "osm_id": "node/1850582964",
+      "osm_tags": {
+        "name": "Kiloza",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msambiasi",
+      "lat": -5.1332067,
+      "lon": 38.4055008,
+      "osm_id": "node/1850587348",
+      "osm_tags": {
+        "name": "Msambiasi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwefingo",
+      "lat": -5.0055883,
+      "lon": 38.4311136,
+      "osm_id": "node/2380572965",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Kwefingo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Dindira"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kimbo",
+      "lat": -4.9613234,
+      "lon": 38.4260439,
+      "osm_id": "node/2381411370",
+      "osm_tags": {
+        "name": "Kimbo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chekelei",
+      "lat": -4.9720469,
+      "lon": 38.3091418,
+      "osm_id": "node/2381411782",
+      "osm_tags": {
+        "name": "Chekelei",
+        "place": "village",
+        "wikidata": "Q55581748"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chang'ombe-Lengatei",
+      "lat": -5.564741,
+      "lon": 37.2187687,
+      "osm_id": "node/2739542093",
+      "osm_tags": {
+        "name": "Chang'ombe-Lengatei",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gitu",
+      "lat": -5.28155,
+      "lon": 37.3866833,
+      "osm_id": "node/2739542104",
+      "osm_tags": {
+        "name": "Gitu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitwai A",
+      "lat": -4.8094128,
+      "lon": 37.1555157,
+      "osm_id": "node/2739542122",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Simanjiro",
+        "name": "Kitwai A",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Kitwai"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kwenkele",
+      "lat": -5.5504184,
+      "lon": 37.2398959,
+      "osm_id": "node/2739542138",
+      "osm_tags": {
+        "name": "Kwenkele",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mphalahala",
+      "lat": -5.4081815,
+      "lon": 37.5663756,
+      "osm_id": "node/2739542168",
+      "osm_tags": {
+        "name": "Mphalahala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Napilukunya",
+      "lat": -5.2495667,
+      "lon": 36.792,
+      "osm_id": "node/2739542190",
+      "osm_tags": {
+        "name": "Napilukunya",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Njakule",
+      "lat": -5.5435455,
+      "lon": 37.1630478,
+      "osm_id": "node/2739542208",
+      "osm_tags": {
+        "name": "Njakule",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kisima Hill",
+      "lat": -4.1051065,
+      "lon": 38.0788864,
+      "osm_id": "node/3298907577",
+      "osm_tags": {
+        "ele": "1356",
+        "name": "Kisima Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kavuma",
+      "lat": -4.1334645,
+      "lon": 38.4390856,
+      "osm_id": "node/3302427444",
+      "osm_tags": {
+        "ele": "853",
+        "name": "Kavuma",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Milimang\u00b4ombe",
+      "lat": -4.3251041,
+      "lon": 38.3073078,
+      "osm_id": "node/3302442000",
+      "osm_tags": {
+        "ele": "866",
+        "name": "Milimang\u00b4ombe",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yogoi",
+      "lat": -4.8074479,
+      "lon": 38.271871,
+      "osm_id": "node/3441767148",
+      "osm_tags": {
+        "name": "Yogoi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Komkonga",
+      "lat": -5.6018863,
+      "lon": 38.4207353,
+      "osm_id": "node/3502732430",
+      "osm_tags": {
+        "name": "Komkonga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malibwi",
+      "lat": -4.7026933,
+      "lon": 38.3867708,
+      "osm_id": "node/3815590684",
+      "osm_tags": {
+        "name": "Malibwi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwekanga",
+      "lat": -4.6503017,
+      "lon": 38.3778528,
+      "osm_id": "node/3815590702",
+      "osm_tags": {
+        "name": "Kwekanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kongei",
+      "lat": -4.8089444,
+      "lon": 38.3529379,
+      "osm_id": "node/3829125604",
+      "osm_tags": {
+        "name": "Kongei",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyasa",
+      "lat": -4.8430205,
+      "lon": 38.3402325,
+      "osm_id": "node/3829125605",
+      "osm_tags": {
+        "name": "Nyasa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kizara",
+      "lat": -4.797703,
+      "lon": 38.334567,
+      "osm_id": "node/3871055168",
+      "osm_tags": {
+        "name": "Kizara",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kwelugogo",
+      "lat": -4.8024352,
+      "lon": 38.3241413,
+      "osm_id": "node/3871055169",
+      "osm_tags": {
+        "name": "Kwelugogo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kwemabanda",
+      "lat": -4.795455,
+      "lon": 38.3370077,
+      "osm_id": "node/3871055170",
+      "osm_tags": {
+        "name": "Kwemabanda",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwemashai",
+      "lat": -4.8021677,
+      "lon": 38.3206962,
+      "osm_id": "node/3871055172",
+      "osm_tags": {
+        "name": "Kwemashai",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kwemdimu",
+      "lat": -4.8029218,
+      "lon": 38.3337499,
+      "osm_id": "node/3871055173",
+      "osm_tags": {
+        "name": "Kwemdimu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Umoja",
+      "lat": -4.7959576,
+      "lon": 38.339359,
+      "osm_id": "node/3871055174",
+      "osm_tags": {
+        "name": "Umoja",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwembe",
+      "lat": -4.1572326,
+      "lon": 37.8392095,
+      "osm_id": "node/4076858046",
+      "osm_tags": {
+        "name": "Mwembe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Maore",
+      "lat": -4.266845,
+      "lon": 38.0516523,
+      "osm_id": "node/4076925775",
+      "osm_tags": {
+        "is_in": "Kilimanjaro, Tanzania",
+        "name": "Maore",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndungu",
+      "lat": -4.3811808,
+      "lon": 38.0607164,
+      "osm_id": "node/4076959102",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Ndungu",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Ndungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwefingo",
+      "lat": -4.7514673,
+      "lon": 38.3545763,
+      "osm_id": "node/4127279184",
+      "osm_tags": {
+        "name": "Kwefingo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Longoi",
+      "lat": -4.6030508,
+      "lon": 38.2435795,
+      "osm_id": "node/4127345935",
+      "osm_tags": {
+        "name": "Longoi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kwemtonga",
+      "lat": -4.7841699,
+      "lon": 38.3388481,
+      "osm_id": "node/4127357497",
+      "osm_tags": {
+        "name": "Kwemtonga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mtindii",
+      "lat": -4.7894024,
+      "lon": 38.3417582,
+      "osm_id": "node/4127357499",
+      "osm_tags": {
+        "name": "Mtindii",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yamba",
+      "lat": -4.7844639,
+      "lon": 38.3428744,
+      "osm_id": "node/4127357500",
+      "osm_tags": {
+        "name": "Yamba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nduru",
+      "lat": -4.1632957,
+      "lon": 37.9193674,
+      "osm_id": "node/4253831761",
+      "osm_tags": {
+        "name": "Nduru",
+        "place": "village",
+        "ward": "Mshewa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtwana",
+      "lat": -4.2431463,
+      "lon": 37.8956178,
+      "osm_id": "node/4253831764",
+      "osm_tags": {
+        "name": "Mtwana",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chome",
+      "lat": -4.2748165,
+      "lon": 37.8986749,
+      "osm_id": "node/4253831765",
+      "osm_tags": {
+        "name": "Chome",
+        "note": "chome consists of 3 different villages",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Munze",
+      "lat": -4.2726363,
+      "lon": 37.8985447,
+      "osm_id": "node/4253831768",
+      "osm_tags": {
+        "name": "Munze",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Shengena Peak",
+      "lat": -4.2678178,
+      "lon": 37.9315143,
+      "osm_id": "node/4253831769",
+      "osm_tags": {
+        "ele": "2463",
+        "name": "Shengena Peak",
+        "natural": "peak",
+        "wikidata": "Q31624923"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpepera",
+      "lat": -4.1314494,
+      "lon": 37.8824668,
+      "osm_id": "node/4253831890",
+      "osm_tags": {
+        "name": "Mpepera",
+        "place": "village",
+        "ward": "Mhezi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbaga-Manka",
+      "lat": -4.1744436,
+      "lon": 37.9192495,
+      "osm_id": "node/4253831892",
+      "osm_tags": {
+        "name": "Mbaga-Manka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bumbuli",
+      "lat": -4.8652171,
+      "lon": 38.4647984,
+      "osm_id": "node/4337381019",
+      "osm_tags": {
+        "name": "Bumbuli",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kivuga Peak",
+      "lat": -4.795425,
+      "lon": 38.3239859,
+      "osm_id": "node/4364576815",
+      "osm_tags": {
+        "name": "Kivuga Peak",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Orkesumet",
+      "lat": -4.4624585,
+      "lon": 37.2047984,
+      "osm_id": "node/4568656316",
+      "osm_tags": {
+        "is_in": "Manyara, Tanzania",
+        "name": "Orkesumet",
+        "place": "village",
+        "wikidata": "Q13124615",
+        "wikipedia": "en:Orkesumet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kiweri",
+      "lat": -4.6648674,
+      "lon": 38.2360341,
+      "osm_id": "node/5545890043",
+      "osm_tags": {
+        "is_in": "Lushoto, Tanzania",
+        "name": "Kiweri",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Sungwi",
+      "lat": -4.716746,
+      "lon": 38.2333124,
+      "osm_id": "node/5751827799",
+      "osm_tags": {
+        "ele": "2130",
+        "name": "Sungwi",
+        "natural": "peak",
+        "wikidata": "Q31624873"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Estate",
+      "lat": -4.3423322,
+      "lon": 37.840926,
+      "osm_id": "node/6068529097",
+      "osm_tags": {
+        "name": "Estate",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vuga",
+      "lat": -4.9051404,
+      "lon": 38.3449086,
+      "osm_id": "node/6140001834",
+      "osm_tags": {
+        "name": "Vuga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gavao",
+      "lat": -4.4148972,
+      "lon": 37.9102406,
+      "osm_id": "node/6644519079",
+      "osm_tags": {
+        "name": "Gavao",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tae",
+      "lat": -4.3370257,
+      "lon": 37.8945481,
+      "osm_id": "node/6644520622",
+      "osm_tags": {
+        "name": "Tae",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kihurio",
+      "lat": -4.46325,
+      "lon": 38.0759042,
+      "osm_id": "node/6644575003",
+      "osm_tags": {
+        "name": "Kihurio",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bangalala",
+      "lat": -4.2334869,
+      "lon": 37.8581748,
+      "osm_id": "node/6644575004",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Bangalala",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Mwembe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chekereni",
+      "lat": -4.5936297,
+      "lon": 37.9649359,
+      "osm_id": "node/6761766224",
+      "osm_tags": {
+        "name": "Chekereni",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gama",
+      "lat": -4.6083477,
+      "lon": 37.9980665,
+      "osm_id": "node/6761766225",
+      "osm_tags": {
+        "name": "Gama",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olkitikiti",
+      "lat": -5.514296,
+      "lon": 37.1166856,
+      "osm_id": "node/7045038081",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kiteto",
+        "name": "Olkitikiti",
+        "place": "village",
+        "population": "2109",
+        "region": "Manyara",
+        "source": "OpenData-NBS2012-HealthFacilities2014",
+        "ward": "Lengatei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lesoit",
+      "lat": -5.5772331,
+      "lon": 37.0624737,
+      "osm_id": "node/7045038082",
+      "osm_tags": {
+        "name": "Lesoit",
+        "place": "village",
+        "population": "2251",
+        "source": "OpenData-NBS2012-PrimairySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namalulu",
+      "lat": -4.3435574,
+      "lon": 36.9498524,
+      "osm_id": "node/7047655802",
+      "osm_tags": {
+        "name": "Namalulu",
+        "place": "village",
+        "population": "5160",
+        "source": "GNS_PPL_NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naberera",
+      "lat": -4.2031672,
+      "lon": 36.9334266,
+      "osm_id": "node/7047655803",
+      "osm_tags": {
+        "name": "Naberera",
+        "place": "village",
+        "population": "5909",
+        "source": "GNS_PPL_NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndedo",
+      "lat": -4.8740412,
+      "lon": 36.7900052,
+      "osm_id": "node/7048797151",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kiteto",
+        "name": "Ndedo",
+        "place": "village",
+        "population": "3437",
+        "region": "Manyara",
+        "source": "OpenData-NBS2012-HealthFacilities2014",
+        "ward": "Ndedo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bombo",
+      "lat": -4.2670984,
+      "lon": 38.0027803,
+      "osm_id": "node/7057158345",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Bombo",
+        "place": "village",
+        "population": "2071",
+        "region": "Kilimanjaro",
+        "source": "OpenData-NBS2012-HealthFacilities2014",
+        "ward": "Bombo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bwambo",
+      "lat": -4.3933407,
+      "lon": 37.9408529,
+      "osm_id": "node/7057172595",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Bwambo",
+        "place": "village",
+        "population": "3547",
+        "region": "Kilimanjaro",
+        "source": "OpenData-NBS2012-HealthFacilities2014",
+        "ward": "Bwambo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hedaru",
+      "lat": -4.5015329,
+      "lon": 37.9144474,
+      "osm_id": "node/7057183308",
+      "osm_tags": {
+        "name": "Hedaru",
+        "place": "village",
+        "population": "14986",
+        "source": "OpenData-NBS2012-HealthFacilities2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mgandu",
+      "lat": -4.5086564,
+      "lon": 38.0830353,
+      "osm_id": "node/7061576797",
+      "osm_tags": {
+        "name": "Mgandu",
+        "place": "village",
+        "population": "2794",
+        "source": "OpenData-NBS2012-PrimarySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bendera",
+      "lat": -4.5770504,
+      "lon": 38.0706007,
+      "osm_id": "node/7061576798",
+      "osm_tags": {
+        "name": "Bendera",
+        "place": "village",
+        "population": "932",
+        "source": "OpenData-NBS2012-PrimarySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mvaa, Bombo",
+      "lat": -4.252679,
+      "lon": 37.9831293,
+      "osm_id": "node/7061616321",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mvaa, Bombo",
+        "place": "village",
+        "population": "1958",
+        "region": "Kilimanjaro",
+        "source": "OpenData-NBS2012-PrimarySchools2016",
+        "ward": "Bombo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mjema",
+      "lat": -4.2615038,
+      "lon": 37.9924772,
+      "osm_id": "node/7061616322",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mjema",
+        "place": "village",
+        "population": "1500",
+        "region": "Kilimanjaro",
+        "source": "OpenData-NBS2012-PrimarySchools2016",
+        "ward": "Bombo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mhero",
+      "lat": -4.2887588,
+      "lon": 37.8951836,
+      "osm_id": "node/7061642336",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mhero",
+        "place": "village",
+        "population": "2146",
+        "region": "Kilimanjaro",
+        "source": "OpenData-NBS2012-SecondarySchools2016",
+        "ward": "Chome"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gwang'A",
+      "lat": -4.2614285,
+      "lon": 37.8963716,
+      "osm_id": "node/7061642338",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Gwang'A",
+        "place": "village",
+        "population": "1876",
+        "region": "Kilimanjaro",
+        "source": "OpenData-NBS2012-SecondarySchools2016",
+        "ward": "Chome"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lorbene",
+      "lat": -4.2061567,
+      "lon": 37.0061771,
+      "osm_id": "node/7064625302",
+      "osm_tags": {
+        "name": "Lorbene",
+        "place": "village",
+        "population": "915",
+        "source": "OpenData-NBS2012-PrimarySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Karamba",
+      "lat": -4.4770519,
+      "lon": 38.1113271,
+      "osm_id": "node/7069830355",
+      "osm_tags": {
+        "name": "Karamba",
+        "place": "village",
+        "population": "1149",
+        "source": "OpenData-NBS2012-PrimarySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalemawe",
+      "lat": -4.4346598,
+      "lon": 38.0943599,
+      "osm_id": "node/7069830356",
+      "osm_tags": {
+        "name": "Kalemawe",
+        "place": "village",
+        "population": "3099",
+        "source": "OpenData-NBS2012-PrimarySchools2016"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manzese",
+      "lat": -5.1724236,
+      "lon": 38.467083,
+      "osm_id": "node/7448620481",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe Township Authority",
+        "name": "Manzese",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kilole"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwanduli",
+      "lat": -5.181912,
+      "lon": 38.4400678,
+      "osm_id": "node/7448620482",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe Township Authority",
+        "name": "Kwanduli",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kilole"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mgambo",
+      "lat": -5.1675619,
+      "lon": 38.4195542,
+      "osm_id": "node/7448620483",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe Township Authority",
+        "name": "Mgambo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ngombezi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pasua",
+      "lat": -5.178303,
+      "lon": 38.4010257,
+      "osm_id": "node/7448620484",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe Township Authority",
+        "name": "Pasua",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ngombezi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwasemangube",
+      "lat": -5.1319043,
+      "lon": 38.4606349,
+      "osm_id": "node/7448728188",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe Township Authority",
+        "name": "Kwasemangube",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Magunga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sunya",
+      "lat": -5.7236355,
+      "lon": 37.0960825,
+      "osm_id": "node/7485903156",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kiteto",
+        "name": "Sunya",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Sunya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwenjugo Maghari",
+      "lat": -5.4128646,
+      "lon": 38.0006021,
+      "osm_id": "node/7486965665",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni Township Authority",
+        "name": "Kwenjugo Maghari",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwenjugo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwenjugo Mashari",
+      "lat": -5.3972414,
+      "lon": 38.0480468,
+      "osm_id": "node/7486965666",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni Township Authority",
+        "name": "Kwenjugo Mashari",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwenjugo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wandama",
+      "lat": -5.4353936,
+      "lon": 37.9913556,
+      "osm_id": "node/7486965667",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni Township Authority",
+        "name": "Wandama",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Chanika"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vibaoni",
+      "lat": -5.4412917,
+      "lon": 38.0315529,
+      "osm_id": "node/7486965668",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni Township Authority",
+        "name": "Vibaoni",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Vibaoni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamasaka",
+      "lat": -5.4631946,
+      "lon": 38.0830067,
+      "osm_id": "node/7486965669",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni Township Authority",
+        "name": "Kwamasaka",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mlimani"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kideleko",
+      "lat": -5.4888263,
+      "lon": 38.0134248,
+      "osm_id": "node/7486965670",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni Township Authority",
+        "name": "Kideleko",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kideleko"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msasa",
+      "lat": -5.4946466,
+      "lon": 38.0470705,
+      "osm_id": "node/7486965671",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni Township Authority",
+        "name": "Msasa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Msasa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwaluwala",
+      "lat": -5.5447957,
+      "lon": 37.9679346,
+      "osm_id": "node/7486965672",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni Township Authority",
+        "name": "Kwaluwala",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwamagome"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamagome",
+      "lat": -5.5518542,
+      "lon": 38.0004322,
+      "osm_id": "node/7486965673",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni Township Authority",
+        "name": "Kwamagome",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwamagome"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Konje",
+      "lat": -5.4099947,
+      "lon": 38.1224406,
+      "osm_id": "node/7486965674",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni Township Authority",
+        "name": "Konje",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Konje"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kibaya",
+      "lat": -5.3314518,
+      "lon": 38.1300044,
+      "osm_id": "node/7486965675",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni Township Authority",
+        "name": "Kibaya",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Misima"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Misima",
+      "lat": -5.3331183,
+      "lon": 38.1136751,
+      "osm_id": "node/7486965676",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni Township Authority",
+        "name": "Misima",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mabanda"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gavao Saweni",
+      "lat": -4.4570257,
+      "lon": 37.8779546,
+      "osm_id": "node/7506232757",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Gavao Saweni",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Hedaru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kidunda",
+      "lat": -4.4776443,
+      "lon": 37.945371,
+      "osm_id": "node/7506397826",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Kidunda",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Vunta"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gundusine",
+      "lat": -4.4815216,
+      "lon": 37.9269711,
+      "osm_id": "node/7506397827",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Gundusine",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Hedaru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gonjanza",
+      "lat": -4.3903057,
+      "lon": 37.8945164,
+      "osm_id": "node/7506397828",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Gonjanza",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Suji"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Marieni",
+      "lat": -4.2706572,
+      "lon": 37.8902035,
+      "osm_id": "node/7506691211",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Marieni",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Chome"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mweteni",
+      "lat": -4.4018159,
+      "lon": 37.932239,
+      "osm_id": "node/7506691212",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mweteni",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Bwambo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Idaru",
+      "lat": -4.4360033,
+      "lon": 37.964125,
+      "osm_id": "node/7506691213",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Idaru",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Kirangare"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kirangare",
+      "lat": -4.4573536,
+      "lon": 37.9625801,
+      "osm_id": "node/7506691214",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Kirangare",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Kirangare"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Njagu",
+      "lat": -4.4697185,
+      "lon": 37.9748967,
+      "osm_id": "node/7506691215",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Njagu",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Vunta"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kankokoro",
+      "lat": -4.4689965,
+      "lon": 38.0718316,
+      "osm_id": "node/7510553839",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Kankokoro",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Kihurio"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mabambara",
+      "lat": -4.4742804,
+      "lon": 38.0660863,
+      "osm_id": "node/7510553840",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mabambara",
+        "place": "hamlet",
+        "region": "Kilimanjaro",
+        "ward": "Kihurio"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mvure Kongei",
+      "lat": -4.4783823,
+      "lon": 38.0755545,
+      "osm_id": "node/7510553841",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mvure Kongei",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Kihurio"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbuyuni",
+      "lat": -4.4821741,
+      "lon": 38.0785639,
+      "osm_id": "node/7510553842",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mbuyuni",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Kihurio"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ruvu Jiungeni",
+      "lat": -4.3987776,
+      "lon": 37.6298148,
+      "osm_id": "node/7510553843",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Ruvu Jiungeni",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Ruvu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bendera",
+      "lat": -4.6008686,
+      "lon": 38.0705602,
+      "osm_id": "node/7510553844",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Bendera",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Bendera"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Majengo",
+      "lat": -4.5708545,
+      "lon": 38.068409,
+      "osm_id": "node/7510553845",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Majengo",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Bendera"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwala",
+      "lat": -4.556994,
+      "lon": 37.9975989,
+      "osm_id": "node/7510553846",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mwala",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Vunta"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makasa",
+      "lat": -4.4616776,
+      "lon": 37.9441855,
+      "osm_id": "node/7510553847",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Makasa",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Kirangare"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Papa",
+      "lat": -4.5068546,
+      "lon": 37.9679873,
+      "osm_id": "node/7510553848",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Papa",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Vunta"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vunta",
+      "lat": -4.4948754,
+      "lon": 37.9785445,
+      "osm_id": "node/7510553849",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Vunta",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Vunta"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ruvu Darajani",
+      "lat": -4.1840438,
+      "lon": 37.5631356,
+      "osm_id": "node/7510897205",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Ruvu Darajani",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Ruvu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ruvu Mferejini",
+      "lat": -4.2194154,
+      "lon": 37.5209212,
+      "osm_id": "node/7510897206",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Ruvu Mferejini",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Ruvu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chajo",
+      "lat": -4.1442368,
+      "lon": 37.8253889,
+      "osm_id": "node/7510897207",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Chajo",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Mwembe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkonga Ijinyu",
+      "lat": -4.1297938,
+      "lon": 37.9453642,
+      "osm_id": "node/7510897208",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mkonga Ijinyu",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Kisiwani"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkonga Ijinyu",
+      "lat": -4.1200839,
+      "lon": 37.9181159,
+      "osm_id": "node/7510897209",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mkonga Ijinyu",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Kisiwani"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mvango",
+      "lat": -4.2394444,
+      "lon": 37.9933589,
+      "osm_id": "node/7510897210",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mvango",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Vuje"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ntenga, Vuje",
+      "lat": -4.2219665,
+      "lon": 37.9795699,
+      "osm_id": "node/7510897211",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Ntenga, Vuje",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Vuje"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Duma",
+      "lat": -4.2102831,
+      "lon": 37.9642449,
+      "osm_id": "node/7510897212",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Duma",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Msindo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Menamo",
+      "lat": -4.2195825,
+      "lon": 37.8866853,
+      "osm_id": "node/7510897214",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Menamo",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Vudee"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mteke",
+      "lat": -4.1678877,
+      "lon": 37.8791869,
+      "osm_id": "node/7510897215",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mteke",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Mhezi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vudee",
+      "lat": -4.2092021,
+      "lon": 37.8853701,
+      "osm_id": "node/7510897216",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Vudee",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Vudee"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kisesa",
+      "lat": -4.1847306,
+      "lon": 37.8728921,
+      "osm_id": "node/7510897217",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Kisesa",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Vudee"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mshewa",
+      "lat": -4.1531558,
+      "lon": 37.9163357,
+      "osm_id": "node/7510897218",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mshewa",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Mshewa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Marindi",
+      "lat": -4.1473047,
+      "lon": 37.9134318,
+      "osm_id": "node/7510897219",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Marindi",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Mshewa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbakweni",
+      "lat": -4.1796299,
+      "lon": 37.9289828,
+      "osm_id": "node/7510897220",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mbakweni",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Msindo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Goma",
+      "lat": -4.1719738,
+      "lon": 37.9155879,
+      "osm_id": "node/7510897221",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Goma",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Mshewa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vuje",
+      "lat": -4.2600171,
+      "lon": 38.0057488,
+      "osm_id": "node/7510897223",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Vuje",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Vuje"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Myombo",
+      "lat": -4.2830038,
+      "lon": 37.9945626,
+      "osm_id": "node/7510897226",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Myombo",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Mtii"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndolwa",
+      "lat": -4.2295719,
+      "lon": 37.8900533,
+      "osm_id": "node/7510897227",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Ndolwa",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Vudee"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mgwasi",
+      "lat": -4.2834103,
+      "lon": 37.8585534,
+      "osm_id": "node/7510897229",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mgwasi",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Makanya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kasapo",
+      "lat": -4.3276701,
+      "lon": 37.8511076,
+      "osm_id": "node/7510897230",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Kasapo",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Makanya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kadando",
+      "lat": -4.3060648,
+      "lon": 38.053614,
+      "osm_id": "node/7510897231",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Kadando",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Maore"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpirani",
+      "lat": -4.3031661,
+      "lon": 38.0320321,
+      "osm_id": "node/7510897232",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mpirani",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Maore"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mafingiro",
+      "lat": -4.3114063,
+      "lon": 38.006877,
+      "osm_id": "node/7510897233",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mafingiro",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Mtii"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtii",
+      "lat": -4.3040466,
+      "lon": 38.0046871,
+      "osm_id": "node/7510897234",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mtii",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Mtii"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanza",
+      "lat": -4.3129293,
+      "lon": 37.9922689,
+      "osm_id": "node/7510897235",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Kanza",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Lugulu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kirole",
+      "lat": -4.3674558,
+      "lon": 38.0151941,
+      "osm_id": "node/7510897236",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Kirole",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Myamba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ivuga",
+      "lat": -4.3842295,
+      "lon": 37.9560569,
+      "osm_id": "node/7510897237",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Ivuga",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Mpinji"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malindi",
+      "lat": -4.3637758,
+      "lon": 37.8947739,
+      "osm_id": "node/7510897239",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Malindi",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Suji"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makokane",
+      "lat": -4.3438349,
+      "lon": 38.1085776,
+      "osm_id": "node/7510897240",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Makokane",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Kalemawe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Misufini",
+      "lat": -4.3658298,
+      "lon": 38.0520369,
+      "osm_id": "node/7510897241",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Misufini",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Ndungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitubwa",
+      "lat": -4.4063087,
+      "lon": 38.002062,
+      "osm_id": "node/7510897243",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Kitubwa",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Myamba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kambeni",
+      "lat": -4.3839729,
+      "lon": 37.988694,
+      "osm_id": "node/7510897244",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Kambeni",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Myamba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kilongwe",
+      "lat": -4.3964673,
+      "lon": 37.9745534,
+      "osm_id": "node/7510897245",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Kilongwe",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Mpinji"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Goha",
+      "lat": -4.3907764,
+      "lon": 37.9920199,
+      "osm_id": "node/7510897246",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Goha",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Myamba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mang'A",
+      "lat": -4.3830314,
+      "lon": 38.0077376,
+      "osm_id": "node/7510897247",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mang'A",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Myamba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalemawe",
+      "lat": -4.4205999,
+      "lon": 38.086927,
+      "osm_id": "node/7510897248",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Kalemawe",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Kalemawe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uzambara",
+      "lat": -4.4635361,
+      "lon": 38.0764343,
+      "osm_id": "node/7510897249",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Uzambara",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Kihurio"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vumba, Mtii",
+      "lat": -4.3226201,
+      "lon": 38.0147834,
+      "osm_id": "node/7526796129",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Vumba, Mtii",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Mtii"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vugwama",
+      "lat": -4.4127374,
+      "lon": 37.9531532,
+      "osm_id": "node/7526796131",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Vugwama",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Bwambo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vugamwa",
+      "lat": -4.4083797,
+      "lon": 37.9459553,
+      "osm_id": "node/7526796132",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Vugamwa",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Bwambo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ruvu Muungano",
+      "lat": -4.1848958,
+      "lon": 37.5642223,
+      "osm_id": "node/7526796133",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Ruvu Muungano",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Ruvu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ruvu Jiungeni",
+      "lat": -4.4150346,
+      "lon": 37.6347004,
+      "osm_id": "node/7526796135",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Ruvu Jiungeni",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Ruvu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masabdare",
+      "lat": -4.0909085,
+      "lon": 37.7305104,
+      "osm_id": "node/7526796137",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Masabdare",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Stesheni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mabilioni",
+      "lat": -4.5697859,
+      "lon": 37.933222,
+      "osm_id": "node/7526796140",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Mabilioni",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Hedaru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwizu",
+      "lat": -4.1343377,
+      "lon": 37.8993767,
+      "osm_id": "node/7526796141",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Same",
+        "name": "Kwizu",
+        "place": "village",
+        "region": "Kilimanjaro",
+        "ward": "Mshewa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Komnazi",
+      "lat": -5.7722969,
+      "lon": 37.5748301,
+      "osm_id": "node/7640759726",
+      "osm_tags": {
+        "name": "Komnazi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitwai B",
+      "lat": -4.9137065,
+      "lon": 37.3073928,
+      "osm_id": "node/7661187852",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Simanjiro",
+        "name": "Kitwai B",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Kitwai"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ruvu Remit",
+      "lat": -4.5566305,
+      "lon": 37.6853475,
+      "osm_id": "node/7661187854",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Simanjiro",
+        "name": "Ruvu Remit",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Ruvu Remiti"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gunge",
+      "lat": -4.5886931,
+      "lon": 37.8796893,
+      "osm_id": "node/7661187855",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Simanjiro",
+        "name": "Gunge",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Ruvu Remiti"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lobosoit B",
+      "lat": -4.3881663,
+      "lon": 37.4812962,
+      "osm_id": "node/7661187858",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Simanjiro",
+        "name": "Lobosoit B",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Liborsoit"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngage",
+      "lat": -4.1699729,
+      "lon": 37.4817146,
+      "osm_id": "node/7661187859",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Simanjiro",
+        "name": "Ngage",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Liborsoit"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chanikakofi",
+      "lat": -5.4852859,
+      "lon": 38.4013124,
+      "osm_id": "node/7755637359",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Chanikakofi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ndolwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kweingoma",
+      "lat": -5.2067187,
+      "lon": 38.3725557,
+      "osm_id": "node/7755637360",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kweingoma",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwamatuku"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Komdudu",
+      "lat": -5.4980801,
+      "lon": 38.3155151,
+      "osm_id": "node/7755637361",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Komdudu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ndolwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbuyuni",
+      "lat": -5.4374459,
+      "lon": 38.2570556,
+      "osm_id": "node/7755637362",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Mbuyuni",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Sindeni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwedikwazu Masha",
+      "lat": -5.5502562,
+      "lon": 38.464273,
+      "osm_id": "node/7755637363",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kwedikwazu Masha",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kabuku"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madera",
+      "lat": -5.2617922,
+      "lon": 38.4662975,
+      "osm_id": "node/7755637365",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Madera",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Segera"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kibindu",
+      "lat": -5.5545895,
+      "lon": 38.1434478,
+      "osm_id": "node/7755637366",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kibindu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwaluguru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Komfungo",
+      "lat": -5.4501794,
+      "lon": 38.268877,
+      "osm_id": "node/7755637368",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Komfungo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Sindeni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mumbwi",
+      "lat": -5.5468444,
+      "lon": 38.4136634,
+      "osm_id": "node/7755637369",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Mumbwi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Komkonga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bongi",
+      "lat": -5.3735264,
+      "lon": 38.2991906,
+      "osm_id": "node/7755637370",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Bongi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Sindeni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwedibangala",
+      "lat": -5.4911227,
+      "lon": 38.1089207,
+      "osm_id": "node/7755637372",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kwedibangala",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kiva"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwedibago",
+      "lat": -5.505726,
+      "lon": 38.4459648,
+      "osm_id": "node/7755637374",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kwedibago",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kabuku"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Turiani",
+      "lat": -5.5567483,
+      "lon": 38.4081665,
+      "osm_id": "node/7755637375",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Turiani",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Komkonga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamkono",
+      "lat": -5.4476138,
+      "lon": 38.2615998,
+      "osm_id": "node/7755637376",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kwamkono",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Sindeni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamwenda",
+      "lat": -5.5257027,
+      "lon": 38.3125426,
+      "osm_id": "node/7755637378",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kwamwenda",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ndolwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kweditilibe",
+      "lat": -5.4600094,
+      "lon": 38.1807919,
+      "osm_id": "node/7755637380",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kweditilibe",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kiva"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Komsala",
+      "lat": -5.2294097,
+      "lon": 38.4181351,
+      "osm_id": "node/7755637383",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Komsala",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwamatuku"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Amani",
+      "lat": -5.7176407,
+      "lon": 38.2393325,
+      "osm_id": "node/7755649819",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Amani",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mazingara"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwachaga Tuliani",
+      "lat": -5.6504392,
+      "lon": 38.1617477,
+      "osm_id": "node/7755649820",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kwachaga Tuliani",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwachaga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwankonje",
+      "lat": -5.5933486,
+      "lon": 38.2056595,
+      "osm_id": "node/7755649821",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kwankonje",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwamkonje"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Komkole B",
+      "lat": -5.5820063,
+      "lon": 38.3464881,
+      "osm_id": "node/7755649822",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Komkole B",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ndolwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Suwa",
+      "lat": -5.6993435,
+      "lon": 38.2062528,
+      "osm_id": "node/7755649823",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Suwa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mazingara"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyasa",
+      "lat": -5.6745902,
+      "lon": 38.0093047,
+      "osm_id": "node/7755649824",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Nyasa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kang'ata"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muungano B",
+      "lat": -5.5981321,
+      "lon": 38.1159507,
+      "osm_id": "node/7755649825",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Muungano B",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwaluguru"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mazingara",
+      "lat": -5.7506291,
+      "lon": 38.2599945,
+      "osm_id": "node/7755649829",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Mazingara",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mazingara"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Komkole",
+      "lat": -5.6429785,
+      "lon": 38.1804497,
+      "osm_id": "node/7755649831",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Komkole",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwachaga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwangahu",
+      "lat": -5.6534129,
+      "lon": 38.3809375,
+      "osm_id": "node/7755649832",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kwangahu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mkata"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Luiye",
+      "lat": -5.5948283,
+      "lon": 38.3462526,
+      "osm_id": "node/7755649833",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Luiye",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ndolwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kweisasu",
+      "lat": -5.356596,
+      "lon": 38.2363579,
+      "osm_id": "node/7755658985",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kweisasu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Sindeni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nkale",
+      "lat": -5.3373644,
+      "lon": 38.3669238,
+      "osm_id": "node/7755658986",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Nkale",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwamatuku"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbagwi",
+      "lat": -5.2827601,
+      "lon": 38.0604375,
+      "osm_id": "node/7755658987",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Mbagwi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Misima"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwemnele",
+      "lat": -5.4561148,
+      "lon": 38.334284,
+      "osm_id": "node/7755658989",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kwemnele",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ndolwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mzeri",
+      "lat": -5.2124673,
+      "lon": 38.1287765,
+      "osm_id": "node/7755658990",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Mzeri",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Misima"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kabuku Nje",
+      "lat": -5.4960591,
+      "lon": 38.4774144,
+      "osm_id": "node/7755658991",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kabuku Nje",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kabuku"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zavuza",
+      "lat": -5.5108399,
+      "lon": 38.1467616,
+      "osm_id": "node/7755658992",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Zavuza",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kiva"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamatuku",
+      "lat": -5.2868756,
+      "lon": 38.3471835,
+      "osm_id": "node/7755658993",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kwamatuku",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwamatuku"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nkumba",
+      "lat": -5.5200103,
+      "lon": 38.266822,
+      "osm_id": "node/7755658994",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Nkumba",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwamkonje"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwedikwazu Magha",
+      "lat": -5.5482046,
+      "lon": 38.4492067,
+      "osm_id": "node/7755658997",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Kwedikwazu Magha",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kabuku"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sezakofi",
+      "lat": -5.5287817,
+      "lon": 38.3852199,
+      "osm_id": "node/7755658999",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Handeni",
+        "name": "Sezakofi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ndolwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkunguli",
+      "lat": -5.0116957,
+      "lon": 38.3788683,
+      "osm_id": "node/7813377521",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Mkunguli",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Bungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lutindi",
+      "lat": -5.0748308,
+      "lon": 38.3726903,
+      "osm_id": "node/7813377523",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Lutindi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Lutindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwasunga A",
+      "lat": -5.080126,
+      "lon": 38.3395588,
+      "osm_id": "node/7813377524",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Kwasunga A",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Makuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Welei",
+      "lat": -5.092759,
+      "lon": 38.3944831,
+      "osm_id": "node/7813377525",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Welei",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Lutindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mazinde Ngua",
+      "lat": -4.7985544,
+      "lon": 38.2198815,
+      "osm_id": "node/7813377526",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Mazinde Ngua",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mazinde"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngulu",
+      "lat": -5.0321546,
+      "lon": 38.3630361,
+      "osm_id": "node/7813377527",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Ngulu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Bungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamkole",
+      "lat": -4.9761928,
+      "lon": 38.3538958,
+      "osm_id": "node/7813377528",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Kwamkole",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Chekelei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bungu Msiga",
+      "lat": -5.0397173,
+      "lon": 38.4038753,
+      "osm_id": "node/7813377529",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Bungu Msiga",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Bungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwemhanya",
+      "lat": -5.0583022,
+      "lon": 38.4591889,
+      "osm_id": "node/7813377531",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Kwemhanya",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwashemshi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magila Gereza",
+      "lat": -5.1019541,
+      "lon": 38.3575747,
+      "osm_id": "node/7813377532",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Magila Gereza",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Makuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msasa",
+      "lat": -5.0101602,
+      "lon": 38.3954546,
+      "osm_id": "node/7813377535",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Msasa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Dindira"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mlungui",
+      "lat": -5.0133447,
+      "lon": 38.3759983,
+      "osm_id": "node/7813377538",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Mlungui",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Bungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magamba Kwalukonge",
+      "lat": -4.9445568,
+      "lon": 38.1862165,
+      "osm_id": "node/7813377539",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Magamba Kwalukonge",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Magamba Kwalukonge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chepete",
+      "lat": -5.0006957,
+      "lon": 38.2689106,
+      "osm_id": "node/7813377540",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Chepete",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Chekelei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwasunga Mpirani",
+      "lat": -5.0688505,
+      "lon": 38.3298081,
+      "osm_id": "node/7813377542",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Kwasunga Mpirani",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Makuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vuje",
+      "lat": -5.0373251,
+      "lon": 38.3817776,
+      "osm_id": "node/7813377543",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Vuje",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Bungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gomba",
+      "lat": -5.0278116,
+      "lon": 38.3148242,
+      "osm_id": "node/7813377545",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Gomba",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Makuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mgobe",
+      "lat": -5.1247503,
+      "lon": 38.3842372,
+      "osm_id": "node/7813377548",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Mgobe",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Makuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kilindini",
+      "lat": -5.1575593,
+      "lon": 38.3892505,
+      "osm_id": "node/7813377549",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Kilindini",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ngombezi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tewe",
+      "lat": -5.0198372,
+      "lon": 38.45402,
+      "osm_id": "node/7813377550",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Tewe",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mpale"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makole",
+      "lat": -4.9515731,
+      "lon": 38.1677724,
+      "osm_id": "node/7813377551",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Makole",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Magamba Kwalukonge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jitengeni",
+      "lat": -4.884583,
+      "lon": 38.280354,
+      "osm_id": "node/7813377555",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Jitengeni",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mombo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwisho Wa Shamba",
+      "lat": -4.922092,
+      "lon": 38.2934718,
+      "osm_id": "node/7813377556",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Mwisho Wa Shamba",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mombo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madumu",
+      "lat": -4.9943371,
+      "lon": 38.3196338,
+      "osm_id": "node/7813377557",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Madumu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Chekelei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maurui Rutuba",
+      "lat": -5.139008,
+      "lon": 38.3866603,
+      "osm_id": "node/7813377559",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Maurui Rutuba",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mswaha"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zege",
+      "lat": -4.9720463,
+      "lon": 38.4144569,
+      "osm_id": "node/7813377560",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Zege",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Dindira"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Goha",
+      "lat": -4.7257535,
+      "lon": 38.1445882,
+      "osm_id": "node/7813377562",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Goha",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mazinde"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Majengo",
+      "lat": -5.1073669,
+      "lon": 38.3106627,
+      "osm_id": "node/7813377565",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Majengo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mswaha"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwenangu",
+      "lat": -4.774761,
+      "lon": 38.1799578,
+      "osm_id": "node/7813377566",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Kwenangu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mazinde"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwenga",
+      "lat": -5.0820742,
+      "lon": 38.2958659,
+      "osm_id": "node/7813377567",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Mwenga",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mswaha"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chekelei",
+      "lat": -4.9694672,
+      "lon": 38.3105483,
+      "osm_id": "node/7813377568",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Chekelei",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Chekelei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Toronto Mbugani",
+      "lat": -4.9098929,
+      "lon": 38.0977864,
+      "osm_id": "node/7813377571",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Toronto Mbugani",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mkalamo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manga Mtindiro",
+      "lat": -4.706564,
+      "lon": 38.110994,
+      "osm_id": "node/7813377572",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Manga Mtindiro",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mkomazi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mlembule",
+      "lat": -4.8916787,
+      "lon": 38.2268366,
+      "osm_id": "node/7813377574",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Mlembule",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mombo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mombo Mjini",
+      "lat": -4.8857238,
+      "lon": 38.2873512,
+      "osm_id": "node/7813377577",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Mombo Mjini",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mombo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lungui",
+      "lat": -5.0105567,
+      "lon": 38.3804603,
+      "osm_id": "node/7813377578",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Lungui",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Bungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tabora",
+      "lat": -5.1758564,
+      "lon": 38.3687518,
+      "osm_id": "node/7813377580",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Tabora",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mswaha"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mheza",
+      "lat": -5.0261784,
+      "lon": 38.4018737,
+      "osm_id": "node/7813377581",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Mheza",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Bungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Changalikwa",
+      "lat": -4.9616531,
+      "lon": 38.2415654,
+      "osm_id": "node/7813377582",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Changalikwa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Magamba Kwalukonge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kweisewa",
+      "lat": -5.0579043,
+      "lon": 38.110437,
+      "osm_id": "node/7813377583",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Kweisewa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mkalamo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bungu",
+      "lat": -5.0237721,
+      "lon": 38.3824359,
+      "osm_id": "node/7813407085",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Bungu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Bungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magundi",
+      "lat": -5.0887883,
+      "lon": 38.4721935,
+      "osm_id": "node/7813407087",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Magundi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwashemshi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magila Mkumbara",
+      "lat": -4.7527094,
+      "lon": 38.1775694,
+      "osm_id": "node/7813407089",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Magila Mkumbara",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mazinde"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mafuleta",
+      "lat": -5.1162195,
+      "lon": 38.3402004,
+      "osm_id": "node/7813407090",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Mafuleta",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mswaha"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madala",
+      "lat": -4.9733269,
+      "lon": 38.3398188,
+      "osm_id": "node/7813407093",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Madala",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Chekelei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kasiga",
+      "lat": -4.8225811,
+      "lon": 38.2395653,
+      "osm_id": "node/7813407094",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Kasiga",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mazinde"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mabogo",
+      "lat": -4.8467581,
+      "lon": 38.1865622,
+      "osm_id": "node/7813407096",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Mabogo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mazinde"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pasilasi",
+      "lat": -4.9597658,
+      "lon": 38.076836,
+      "osm_id": "node/7813407102",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Pasilasi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mkalamo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mazinde Mheza",
+      "lat": -4.810149,
+      "lon": 38.2049908,
+      "osm_id": "node/7813407104",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Mazinde Mheza",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mazinde"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwemshai",
+      "lat": -5.0061805,
+      "lon": 38.3657146,
+      "osm_id": "node/7813407105",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Kwemshai",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Bungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manga Mikocheni",
+      "lat": -4.6893197,
+      "lon": 38.0644254,
+      "osm_id": "node/7813407107",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Manga Mikocheni",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mkomazi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manka",
+      "lat": -4.9849683,
+      "lon": 38.4123425,
+      "osm_id": "node/7813407108",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Manka",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Dindira"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitifu",
+      "lat": -5.1499918,
+      "lon": 38.3985767,
+      "osm_id": "node/7813407112",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Korogwe",
+        "name": "Kitifu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ngombezi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwaligwa",
+      "lat": -5.3688108,
+      "lon": 37.4717483,
+      "osm_id": "node/7823775220",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kwaligwa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kibirashi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mgera",
+      "lat": -5.3864538,
+      "lon": 37.5166105,
+      "osm_id": "node/7823775221",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Mgera",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kisangasa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwankande",
+      "lat": -5.4569828,
+      "lon": 37.8004272,
+      "osm_id": "node/7823775224",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kwankande",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Msanja"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mzinga",
+      "lat": -5.4737624,
+      "lon": 37.5812543,
+      "osm_id": "node/7823775227",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Mzinga",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwediboma"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kigwama",
+      "lat": -5.4808712,
+      "lon": 37.7106579,
+      "osm_id": "node/7823775228",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kigwama",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Msanja"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mafisa",
+      "lat": -5.4674677,
+      "lon": 37.3697837,
+      "osm_id": "node/7823775229",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Mafisa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mvungwe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamaligwa",
+      "lat": -5.3706335,
+      "lon": 37.4713745,
+      "osm_id": "node/7823775231",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kwamaligwa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kibirashi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mheza",
+      "lat": -5.7076633,
+      "lon": 37.2937775,
+      "osm_id": "node/7823775232",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Mheza",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Masagalu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamwande",
+      "lat": -5.5551011,
+      "lon": 37.3396081,
+      "osm_id": "node/7823775235",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kwamwande",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mvungwe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mnkonde",
+      "lat": -5.4403488,
+      "lon": 37.7677264,
+      "osm_id": "node/7823775236",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Mnkonde",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Msanja"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kimembe",
+      "lat": -5.5241792,
+      "lon": 37.5840499,
+      "osm_id": "node/7823775237",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kimembe",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kilwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muungano",
+      "lat": -5.4846183,
+      "lon": 37.6867032,
+      "osm_id": "node/7823775239",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Muungano",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Msanja"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamba",
+      "lat": -5.6597479,
+      "lon": 37.2674578,
+      "osm_id": "node/7823775243",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kwamba",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Masagalu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Misheni",
+      "lat": -5.6784603,
+      "lon": 37.313462,
+      "osm_id": "node/7823775244",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Misheni",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Masagalu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Saunyi",
+      "lat": -5.0501832,
+      "lon": 37.6234431,
+      "osm_id": "node/7823775245",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Saunyi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Saunyi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kigamba",
+      "lat": -5.3836156,
+      "lon": 37.9203854,
+      "osm_id": "node/7823775246",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kigamba",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Jaila"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mswaki",
+      "lat": -5.459414,
+      "lon": 37.7699172,
+      "osm_id": "node/7823775247",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Mswaki",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Msanja"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mabalanga",
+      "lat": -5.4292046,
+      "lon": 37.8459116,
+      "osm_id": "node/7823775249",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Mabalanga",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mabalanga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kolang'A",
+      "lat": -5.3916435,
+      "lon": 37.9313504,
+      "osm_id": "node/7823775250",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kolang'A",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Jaila"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mzunguwasala",
+      "lat": -5.4280069,
+      "lon": 37.7691208,
+      "osm_id": "node/7823775251",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Mzunguwasala",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Msanja"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sangeni",
+      "lat": -5.4637028,
+      "lon": 37.918498,
+      "osm_id": "node/7823775252",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Sangeni",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Jaila"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makasini",
+      "lat": -5.433977,
+      "lon": 37.5756478,
+      "osm_id": "node/7823775253",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Makasini",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwediboma"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gombero Madukani",
+      "lat": -5.4312617,
+      "lon": 37.4535313,
+      "osm_id": "node/7823775254",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Gombero Madukani",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kibirashi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwekinkwembe",
+      "lat": -5.3303453,
+      "lon": 37.9366296,
+      "osm_id": "node/7823775255",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kwekinkwembe",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mkindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwediboma",
+      "lat": -5.4291598,
+      "lon": 37.5629147,
+      "osm_id": "node/7823775256",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kwediboma",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwediboma"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkindi",
+      "lat": -5.364129,
+      "lon": 37.8665291,
+      "osm_id": "node/7823775257",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Mkindi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mkindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kileguru",
+      "lat": -5.4572954,
+      "lon": 37.6073426,
+      "osm_id": "node/7823775258",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kileguru",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwediboma"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lengusero",
+      "lat": -5.2352551,
+      "lon": 37.8018397,
+      "osm_id": "node/7823775259",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Lengusero",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mkindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwandilwa",
+      "lat": -5.5014016,
+      "lon": 37.9261704,
+      "osm_id": "node/7823775260",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kwandilwa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Jaila"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Selewa",
+      "lat": -5.3991405,
+      "lon": 37.8743395,
+      "osm_id": "node/7823775261",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Selewa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Jaila"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gombero",
+      "lat": -5.4338903,
+      "lon": 37.4499921,
+      "osm_id": "node/7823775262",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Gombero",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kibirashi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwadudu",
+      "lat": -5.4918792,
+      "lon": 37.6451114,
+      "osm_id": "node/7823775263",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kwadudu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Msanja"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwedigole",
+      "lat": -5.4150932,
+      "lon": 37.5896035,
+      "osm_id": "node/7823775264",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kwedigole",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwediboma"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msente",
+      "lat": -5.4119234,
+      "lon": 37.9242951,
+      "osm_id": "node/7823775265",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Msente",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Jaila"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sinko",
+      "lat": -5.7842796,
+      "lon": 37.5353475,
+      "osm_id": "node/7823775266",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Sinko",
+        "place": "hamlet",
+        "region": "Tanga",
+        "ward": "Kimbe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kigunga",
+      "lat": -5.6904426,
+      "lon": 37.2979307,
+      "osm_id": "node/7823775267",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Kigunga",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Masagalu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mafisa B",
+      "lat": -5.4450392,
+      "lon": 37.3820997,
+      "osm_id": "node/7823775268",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Mafisa B",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mvungwe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngobole",
+      "lat": -5.1355181,
+      "lon": 37.5570644,
+      "osm_id": "node/7823775269",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilindi",
+        "name": "Ngobole",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Saunyi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Loolera",
+      "lat": -5.3633328,
+      "lon": 37.2248468,
+      "osm_id": "node/7923515481",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kiteto",
+        "name": "Loolera",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Loolera"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Amei",
+      "lat": -5.2861352,
+      "lon": 37.1199978,
+      "osm_id": "node/7923520105",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kiteto",
+        "name": "Amei",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Loolera"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngapapa",
+      "lat": -5.3959388,
+      "lon": 37.0485443,
+      "osm_id": "node/7923520111",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kiteto",
+        "name": "Ngapapa",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Kijungu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Asamatwa",
+      "lat": -5.6483999,
+      "lon": 36.9820855,
+      "osm_id": "node/7923520124",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kiteto",
+        "name": "Asamatwa",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Sunya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lesoit",
+      "lat": -5.5263525,
+      "lon": 37.2242053,
+      "osm_id": "node/7923520125",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kiteto",
+        "name": "Lesoit",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Lengatei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lengatei",
+      "lat": -5.5579516,
+      "lon": 37.2061808,
+      "osm_id": "node/7923520126",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kiteto",
+        "name": "Lengatei",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Lengatei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Engangungale",
+      "lat": -5.589299,
+      "lon": 37.0456802,
+      "osm_id": "node/7923520129",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kiteto",
+        "name": "Engangungale",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Lengatei"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Loltepesi",
+      "lat": -5.7270437,
+      "lon": 36.886296,
+      "osm_id": "node/7923520130",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kiteto",
+        "name": "Loltepesi",
+        "place": "village",
+        "region": "Manyara",
+        "ward": "Sunya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbokoi",
+      "lat": -4.8501463,
+      "lon": 38.4735896,
+      "osm_id": "node/7924756455",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mbokoi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Bumbuli"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndabwa",
+      "lat": -4.683811,
+      "lon": 38.2808515,
+      "osm_id": "node/7924756456",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Ndabwa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Lukozi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mdando",
+      "lat": -4.6683284,
+      "lon": 38.471475,
+      "osm_id": "node/7924756457",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mdando",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Makanya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbwei",
+      "lat": -4.6771113,
+      "lon": 38.4242576,
+      "osm_id": "node/7924756458",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mbwei",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Malibwi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyasa",
+      "lat": -4.6024315,
+      "lon": 38.3333213,
+      "osm_id": "node/7924756459",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Nyasa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mwangoi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mavumo",
+      "lat": -4.6617515,
+      "lon": 38.2459552,
+      "osm_id": "node/7924756461",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mavumo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Shume"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Langoni B",
+      "lat": -4.4326307,
+      "lon": 38.2940411,
+      "osm_id": "node/7924756462",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Langoni B",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mnazi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Emao",
+      "lat": -4.569512,
+      "lon": 38.2524686,
+      "osm_id": "node/7924756464",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Emao",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Rangwi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Migambo",
+      "lat": -4.7539779,
+      "lon": 38.3432075,
+      "osm_id": "node/7924756465",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Migambo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwai"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kukai",
+      "lat": -4.5153718,
+      "lon": 38.2246953,
+      "osm_id": "node/7924756466",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kukai",
+        "place": "hamlet",
+        "region": "Tanga",
+        "ward": "Mtae"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hambalai",
+      "lat": -4.8678148,
+      "lon": 38.3354836,
+      "osm_id": "node/7924756467",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Hambalai",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mbuzii"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lwandai",
+      "lat": -4.8236115,
+      "lon": 38.3765298,
+      "osm_id": "node/7924756468",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Lwandai",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Soni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lwandai",
+      "lat": -4.6333451,
+      "lon": 38.4232879,
+      "osm_id": "node/7924756469",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Lwandai",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mlola"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mavumbi",
+      "lat": -4.4494067,
+      "lon": 38.3278814,
+      "osm_id": "node/7924756470",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mavumbi",
+        "place": "hamlet",
+        "region": "Tanga",
+        "ward": "Mbaramo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalumele",
+      "lat": -4.5513894,
+      "lon": 38.2022805,
+      "osm_id": "node/7924756471",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kalumele",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Sunga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mng`aro",
+      "lat": -4.545751,
+      "lon": 38.403286,
+      "osm_id": "node/7924756472",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mng`aro",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mng'aro"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamakame",
+      "lat": -4.7242737,
+      "lon": 38.3639743,
+      "osm_id": "node/7924756473",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kwamakame",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwai"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mhelo",
+      "lat": -4.5771445,
+      "lon": 38.3543085,
+      "osm_id": "node/7924756475",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mhelo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwemshasha"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Antakaye",
+      "lat": -4.4006304,
+      "lon": 38.4313169,
+      "osm_id": "node/7924756476",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Antakaye",
+        "place": "hamlet",
+        "region": "Tanga",
+        "ward": "Lunguza"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Baghai",
+      "lat": -4.8804708,
+      "lon": 38.3444731,
+      "osm_id": "node/7924756477",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Baghai",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Vuga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbelei",
+      "lat": -4.8297504,
+      "lon": 38.3887933,
+      "osm_id": "node/7924756478",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mbelei",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mamba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwadoe",
+      "lat": -4.8271714,
+      "lon": 38.4331339,
+      "osm_id": "node/7924756479",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kwadoe",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mamba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shume",
+      "lat": -4.6770481,
+      "lon": 38.2031994,
+      "osm_id": "node/7924756480",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Shume",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Manolo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Funta",
+      "lat": -4.9084644,
+      "lon": 38.4561234,
+      "osm_id": "node/7924756481",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Funta",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Funta"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mlesa",
+      "lat": -4.5834229,
+      "lon": 38.3028831,
+      "osm_id": "node/7924756482",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mlesa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mwangoi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kweminyasa",
+      "lat": -4.9107669,
+      "lon": 38.4252638,
+      "osm_id": "node/7924756483",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kweminyasa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mponde"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ungo",
+      "lat": -4.6531741,
+      "lon": 38.4289724,
+      "osm_id": "node/7924756484",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Ungo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mlola"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Handei",
+      "lat": -4.5922368,
+      "lon": 38.3243705,
+      "osm_id": "node/7924772285",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Handei",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Dule M"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kivingo",
+      "lat": -4.4201782,
+      "lon": 38.4372271,
+      "osm_id": "node/7924772286",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kivingo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Lunguza"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kisiwani",
+      "lat": -4.8365264,
+      "lon": 38.3603475,
+      "osm_id": "node/7924772287",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kisiwani",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Soni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makose",
+      "lat": -4.5955865,
+      "lon": 38.2643806,
+      "osm_id": "node/7924772289",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Makose",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Malindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Irente",
+      "lat": -4.7907745,
+      "lon": 38.2594256,
+      "osm_id": "node/7924772290",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Irente",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Lushoto"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kihitu",
+      "lat": -4.5998506,
+      "lon": 38.3816835,
+      "osm_id": "node/7924772291",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kihitu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ngwelo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpanga",
+      "lat": -4.4883564,
+      "lon": 38.2556829,
+      "osm_id": "node/7924772292",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mpanga",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mtae"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matego",
+      "lat": -4.692767,
+      "lon": 38.3796066,
+      "osm_id": "node/7924772293",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Matego",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwekanga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwemshasha",
+      "lat": -4.5810835,
+      "lon": 38.3502423,
+      "osm_id": "node/7924772294",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kwemshasha",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwemshasha"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpalalu",
+      "lat": -4.935951,
+      "lon": 38.4692925,
+      "osm_id": "node/7924772295",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mpalalu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Tamota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mhezi",
+      "lat": -4.6881408,
+      "lon": 38.4075994,
+      "osm_id": "node/7924772296",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mhezi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Malibwi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bungoi",
+      "lat": -4.5685938,
+      "lon": 38.3423329,
+      "osm_id": "node/7924772297",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Bungoi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mlalo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngulwi",
+      "lat": -4.8224423,
+      "lon": 38.2916464,
+      "osm_id": "node/7924772298",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Ngulwi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ngulwi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dule",
+      "lat": -4.5801491,
+      "lon": 38.3191946,
+      "osm_id": "node/7924772300",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Dule",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mwangoi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbuzii",
+      "lat": -4.8572587,
+      "lon": 38.3427088,
+      "osm_id": "node/7924772301",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mbuzii",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mbuzii"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwaleyi",
+      "lat": -4.8198865,
+      "lon": 38.4311226,
+      "osm_id": "node/7924772302",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kwaleyi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mamba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shashui",
+      "lat": -4.8692869,
+      "lon": 38.3645057,
+      "osm_id": "node/7924772303",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Shashui",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Soni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chakechake",
+      "lat": -4.7831461,
+      "lon": 38.2883728,
+      "osm_id": "node/7924772304",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Chakechake",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Lushoto"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Milingui",
+      "lat": -4.7484032,
+      "lon": 38.3662465,
+      "osm_id": "node/7924772305",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Milingui",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwai"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwemtindi",
+      "lat": -4.5149339,
+      "lon": 38.2366449,
+      "osm_id": "node/7924772306",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kwemtindi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mtae"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hambalawei",
+      "lat": -4.6685317,
+      "lon": 38.261511,
+      "osm_id": "node/7924772307",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Hambalawei",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Shume"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mnadani",
+      "lat": -4.6438581,
+      "lon": 38.308362,
+      "osm_id": "node/7924772308",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mnadani",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Malindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malingo",
+      "lat": -4.6367278,
+      "lon": 38.2903727,
+      "osm_id": "node/7924772309",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Malingo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Malindi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kigulunde",
+      "lat": -4.8409423,
+      "lon": 38.3485314,
+      "osm_id": "node/7924772310",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kigulunde",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mbuzii"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Miegeo",
+      "lat": -4.8536942,
+      "lon": 38.3064691,
+      "osm_id": "node/7924772311",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Miegeo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ubiri"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mahange",
+      "lat": -4.9156892,
+      "lon": 38.4411194,
+      "osm_id": "node/7924772313",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mahange",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mponde"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kihitu",
+      "lat": -4.9006873,
+      "lon": 38.354447,
+      "osm_id": "node/7924772314",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kihitu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Vuga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Balangai",
+      "lat": -4.9282658,
+      "lon": 38.4581556,
+      "osm_id": "node/7924772315",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Balangai",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Funta"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mgwashi",
+      "lat": -4.6411562,
+      "lon": 38.2723016,
+      "osm_id": "node/7924772316",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mgwashi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Lukozi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwesimu",
+      "lat": -4.7718571,
+      "lon": 38.2889642,
+      "osm_id": "node/7924772317",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kwesimu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Lushoto"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngazi",
+      "lat": -4.5845118,
+      "lon": 38.3390264,
+      "osm_id": "node/7924772318",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Ngazi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mlalo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbaramo",
+      "lat": -4.459965,
+      "lon": 38.3271167,
+      "osm_id": "node/7924772319",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mbaramo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mbaramo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ntambwe",
+      "lat": -4.7176601,
+      "lon": 38.3973626,
+      "osm_id": "node/7924772320",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Ntambwe",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Malibwi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gare",
+      "lat": -4.7950978,
+      "lon": 38.3383267,
+      "osm_id": "node/7924772321",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Gare",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Gare"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mazashai",
+      "lat": -4.6074927,
+      "lon": 38.4209955,
+      "osm_id": "node/7924772322",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mazashai",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mlola"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwemkwazu",
+      "lat": -4.4217935,
+      "lon": 38.3108536,
+      "osm_id": "node/7924772323",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kwemkwazu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mnazi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sunga",
+      "lat": -4.5259715,
+      "lon": 38.2397499,
+      "osm_id": "node/7924772324",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Sunga",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mtae"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chumbageni",
+      "lat": -4.834608,
+      "lon": 38.2854738,
+      "osm_id": "node/7924772325",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Chumbageni",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ngulwi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kishewa",
+      "lat": -4.8928182,
+      "lon": 38.3363684,
+      "osm_id": "node/7924772327",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kishewa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Vuga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zimbiri",
+      "lat": -4.4403751,
+      "lon": 38.3371446,
+      "osm_id": "node/7924772328",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Zimbiri",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mbaramo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Handei",
+      "lat": -4.8426952,
+      "lon": 38.3188049,
+      "osm_id": "node/7924772329",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Handei",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ubiri"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magamba",
+      "lat": -4.7375027,
+      "lon": 38.2932364,
+      "osm_id": "node/7924772330",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Magamba",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Lushoto"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kidundai",
+      "lat": -4.8910229,
+      "lon": 38.315973,
+      "osm_id": "node/7924772333",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kidundai",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Vuga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwai",
+      "lat": -4.7263012,
+      "lon": 38.343176,
+      "osm_id": "node/7924772335",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kwai",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwai"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwangoi",
+      "lat": -4.5977551,
+      "lon": 38.3159331,
+      "osm_id": "node/7924772336",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mwangoi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mwangoi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bombo Kambogol",
+      "lat": -4.6458308,
+      "lon": 38.3681118,
+      "osm_id": "node/7924772337",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Bombo Kambogol",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwekanga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyasa",
+      "lat": -4.5938487,
+      "lon": 38.3513868,
+      "osm_id": "node/7924772338",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Nyasa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Kwemshasha"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bombo",
+      "lat": -4.8369234,
+      "lon": 38.3055548,
+      "osm_id": "node/7924772340",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Bombo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Ngulwi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kiwanja",
+      "lat": -4.4202322,
+      "lon": 38.3081978,
+      "osm_id": "node/7924772342",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kiwanja",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mnazi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gemai",
+      "lat": -4.6474203,
+      "lon": 38.1769759,
+      "osm_id": "node/7924772343",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Gemai",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Manolo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maseleka",
+      "lat": -4.5462801,
+      "lon": 38.2358898,
+      "osm_id": "node/7924772344",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Maseleka",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Sunga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwemhafa",
+      "lat": -4.9273595,
+      "lon": 38.3979663,
+      "osm_id": "node/7924772345",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Kwemhafa",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mponde"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yoghoi",
+      "lat": -4.8101652,
+      "lon": 38.2739163,
+      "osm_id": "node/7924772346",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Yoghoi",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Lushoto"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Goka",
+      "lat": -4.554411,
+      "lon": 38.2695678,
+      "osm_id": "node/7924772347",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Goka",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Rangwi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkunki",
+      "lat": -4.6475775,
+      "lon": 38.1952102,
+      "osm_id": "node/7924772348",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mkunki",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Manolo"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Lunguza",
+      "lat": -4.5094406,
+      "lon": 38.3925651,
+      "osm_id": "node/7924772349",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Lunguza",
+        "place": "town",
+        "region": "Tanga",
+        "ward": "Lunguza"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vuga Bazo",
+      "lat": -4.9011523,
+      "lon": 38.3482054,
+      "osm_id": "node/7924772350",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Vuga Bazo",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Vuga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Irente Juu",
+      "lat": -4.786926,
+      "lon": 38.263668,
+      "osm_id": "node/7924772351",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Irente Juu",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Lushoto"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Majulai",
+      "lat": -4.6055851,
+      "lon": 38.3273196,
+      "osm_id": "node/7924772353",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Majulai",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mwangoi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mponde",
+      "lat": -4.915469,
+      "lon": 38.4157882,
+      "osm_id": "node/7924772355",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Lushoto",
+        "name": "Mponde",
+        "place": "village",
+        "region": "Tanga",
+        "ward": "Mponde"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamfyomi",
+      "lat": -5.6593315,
+      "lon": 37.4515638,
+      "osm_id": "node/8400599287",
+      "osm_tags": {
+        "name": "Kwamfyomi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lwande",
+      "lat": -5.6772171,
+      "lon": 37.4144286,
+      "osm_id": "node/8400599661",
+      "osm_tags": {
+        "name": "Lwande",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mnazi",
+      "lat": -5.671831,
+      "lon": 37.268731,
+      "osm_id": "node/8400683880",
+      "osm_tags": {
+        "name": "Mnazi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kilindi",
+      "lat": -5.6365887,
+      "lon": 37.6027358,
+      "osm_id": "node/8618631232",
+      "osm_tags": {
+        "name": "Kilindi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukole",
+      "lat": -5.7601866,
+      "lon": 37.7614126,
+      "osm_id": "node/8618975375",
+      "osm_tags": {
+        "name": "Lukole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sambu",
+      "lat": -5.7248898,
+      "lon": 37.2084135,
+      "osm_id": "node/9741695183",
+      "osm_tags": {
+        "name": "Sambu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kichangani",
+      "lat": -5.7186634,
+      "lon": 37.106055,
+      "osm_id": "node/9741695202",
+      "osm_tags": {
+        "name": "Kichangani",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sagasa",
+      "lat": -5.7358772,
+      "lon": 37.3949799,
+      "osm_id": "node/9741706293",
+      "osm_tags": {
+        "name": "Sagasa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mlembula",
+      "lat": -5.4812731,
+      "lon": 37.703898,
+      "osm_id": "node/9801643093",
+      "osm_tags": {
+        "name": "Mlembula",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Marianunka",
+      "lat": -5.5218682,
+      "lon": 37.597484,
+      "osm_id": "node/9885915493",
+      "osm_tags": {
+        "name": "Marianunka",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bokwa",
+      "lat": -5.5599511,
+      "lon": 37.2899768,
+      "osm_id": "node/9900293030",
+      "osm_tags": {
+        "name": "Bokwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kwakiwele",
+      "lat": -5.6320416,
+      "lon": 37.3038357,
+      "osm_id": "node/9900298989",
+      "osm_tags": {
+        "name": "Kwakiwele",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masagalu",
+      "lat": -5.6882829,
+      "lon": 37.3066547,
+      "osm_id": "node/10129258871",
+      "osm_tags": {
+        "name": "Masagalu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Baghali",
+      "lat": -4.5513456,
+      "lon": 38.347891,
+      "osm_id": "node/10689726560",
+      "osm_tags": {
+        "name": "Baghali",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sunga",
+      "lat": -4.5357895,
+      "lon": 38.240093,
+      "osm_id": "node/10695214685",
+      "osm_tags": {
+        "name": "Sunga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kinko",
+      "lat": -4.6871592,
+      "lon": 38.3188534,
+      "osm_id": "node/10699971490",
+      "osm_tags": {
+        "name": "Kinko",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kwemiyangwa",
+      "lat": -4.5957031,
+      "lon": 38.308083,
+      "osm_id": "node/10704825417",
+      "osm_tags": {
+        "name": "Kwemiyangwa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kalusilu",
+      "lat": -4.6082113,
+      "lon": 38.2463881,
+      "osm_id": "node/10707332969",
+      "osm_tags": {
+        "name": "Kalusilu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Majengo",
+      "lat": -4.4613255,
+      "lon": 38.1939214,
+      "osm_id": "node/10710002837",
+      "osm_tags": {
+        "name": "Majengo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkundi Mtae",
+      "lat": -4.4565363,
+      "lon": 38.1981793,
+      "osm_id": "node/10710002842",
+      "osm_tags": {
+        "name": "Mkundi Mtae",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kireti",
+      "lat": -4.7087573,
+      "lon": 38.3447407,
+      "osm_id": "node/10731686369",
+      "osm_tags": {
+        "name": "Kireti",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msale",
+      "lat": -4.6374111,
+      "lon": 38.3672243,
+      "osm_id": "node/10733696075",
+      "osm_tags": {
+        "name": "Msale",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kilole",
+      "lat": -4.6616133,
+      "lon": 38.3975467,
+      "osm_id": "node/10733696100",
+      "osm_tags": {
+        "name": "Kilole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kwemshazi",
+      "lat": -4.689247,
+      "lon": 38.4728631,
+      "osm_id": "node/10734007403",
+      "osm_tags": {
+        "name": "Kwemshazi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kivingo",
+      "lat": -4.3752471,
+      "lon": 38.4145492,
+      "osm_id": "node/10734077633",
+      "osm_tags": {
+        "name": "Kivingo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tewe",
+      "lat": -4.521308,
+      "lon": 38.350043,
+      "osm_id": "node/10735070311",
+      "osm_tags": {
+        "name": "Tewe",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kidongo",
+      "lat": -4.6676336,
+      "lon": 38.2425231,
+      "osm_id": "node/10737215705",
+      "osm_tags": {
+        "name": "Kidongo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mazinde",
+      "lat": -4.5518964,
+      "lon": 38.4426078,
+      "osm_id": "node/10737284809",
+      "osm_tags": {
+        "name": "Mazinde",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kileleni",
+      "lat": -5.445764,
+      "lon": 38.0346072,
+      "osm_id": "node/10769248243",
+      "osm_tags": {
+        "name": "Kileleni",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Majulae",
+      "lat": -4.6071152,
+      "lon": 38.3306873,
+      "osm_id": "node/10777938589",
+      "osm_tags": {
+        "name": "Majulae",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kionwa",
+      "lat": -4.7485314,
+      "lon": 38.339214,
+      "osm_id": "node/10784565745",
+      "osm_tags": {
+        "name": "Kionwa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chanko",
+      "lat": -4.7118051,
+      "lon": 38.3784678,
+      "osm_id": "node/10788400783",
+      "osm_tags": {
+        "name": "Chanko",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kwetongo",
+      "lat": -4.6501659,
+      "lon": 38.3149695,
+      "osm_id": "node/10805931274",
+      "osm_tags": {
+        "name": "Kwetongo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dukani",
+      "lat": -4.7199136,
+      "lon": 38.3986947,
+      "osm_id": "node/10805944133",
+      "osm_tags": {
+        "name": "Dukani",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwaboli",
+      "lat": -4.7408384,
+      "lon": 38.331036,
+      "osm_id": "node/10806171207",
+      "osm_tags": {
+        "name": "Kwaboli",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mtui",
+      "lat": -4.6216003,
+      "lon": 38.263616,
+      "osm_id": "node/10806271049",
+      "osm_tags": {
+        "name": "Mtui",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kagulio",
+      "lat": -4.5893038,
+      "lon": 38.2586431,
+      "osm_id": "node/10816204344",
+      "osm_tags": {
+        "name": "Kagulio",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dindila",
+      "lat": -4.7292721,
+      "lon": 38.338396,
+      "osm_id": "node/10821974049",
+      "osm_tags": {
+        "name": "Dindila",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nkaloi",
+      "lat": -4.7080903,
+      "lon": 38.4197795,
+      "osm_id": "node/10821991124",
+      "osm_tags": {
+        "name": "Nkaloi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mgwashi",
+      "lat": -4.6374071,
+      "lon": 38.3182941,
+      "osm_id": "node/10855569111",
+      "osm_tags": {
+        "name": "Mgwashi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukozi",
+      "lat": -4.6629847,
+      "lon": 38.2901846,
+      "osm_id": "node/10883940355",
+      "osm_tags": {
+        "name": "Lukozi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jereza",
+      "lat": -5.3795549,
+      "lon": 38.0111536,
+      "osm_id": "node/10922177870",
+      "osm_tags": {
+        "name": "Jereza",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Elerai",
+      "lat": -5.3497585,
+      "lon": 37.4276257,
+      "osm_id": "node/11381665688",
+      "osm_tags": {
+        "addr:city": "Elerai",
+        "addr:postcode": "21903",
+        "addr:street": "Elerai Road",
+        "name": "Elerai",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwakiliga",
+      "lat": -5.2534101,
+      "lon": 38.394412,
+      "osm_id": "node/12364843994",
+      "osm_tags": {
+        "name": "Kwakiliga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mswaha",
+      "lat": -5.1535409,
+      "lon": 38.3118874,
+      "osm_id": "node/12393846544",
+      "osm_tags": {
+        "name": "Mswaha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamngodi",
+      "lat": -5.4830112,
+      "lon": 38.0711621,
+      "osm_id": "node/12400764226",
+      "osm_tags": {
+        "name": "Kwamngodi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mnazi Mmoja",
+      "lat": -5.5149481,
+      "lon": 38.067053,
+      "osm_id": "node/12400764401",
+      "osm_tags": {
+        "name": "Mnazi Mmoja",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gumbonneka",
+      "lat": -5.7900696,
+      "lon": 38.184303,
+      "osm_id": "node/12402695025",
+      "osm_tags": {
+        "name": "Gumbonneka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mandera",
+      "lat": -5.1453126,
+      "lon": 38.3708036,
+      "osm_id": "node/12642535013",
+      "osm_tags": {
+        "name": "Mandera",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lewa",
+      "lat": -5.1102147,
+      "lon": 38.40077,
+      "osm_id": "node/12642553947",
+      "osm_tags": {
+        "name": "Lewa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamwanamangale",
+      "lat": -5.7162,
+      "lon": 38.2748705,
+      "osm_id": "node/12649571678",
+      "osm_tags": {
+        "name": "Kwamwanamangale",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kwagosi",
+      "lat": -5.7099612,
+      "lon": 38.4216289,
+      "osm_id": "node/12649572966",
+      "osm_tags": {
+        "name": "Kwagosi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makayo",
+      "lat": -4.9340686,
+      "lon": 38.0490446,
+      "osm_id": "node/12833894258",
+      "osm_tags": {
+        "name": "Makayo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpakani",
+      "lat": -5.4172097,
+      "lon": 37.9592818,
+      "osm_id": "node/12875666238",
+      "osm_tags": {
+        "name": "Mpakani",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwediyamba",
+      "lat": -5.4293965,
+      "lon": 37.9804498,
+      "osm_id": "node/12875666257",
+      "osm_tags": {
+        "name": "Kwediyamba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Msente",
+      "lat": -5.4218024,
+      "lon": 37.9213929,
+      "osm_id": "node/12875675248",
+      "osm_tags": {
+        "name": "Msente",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malezi",
+      "lat": -5.3425501,
+      "lon": 38.011127,
+      "osm_id": "node/12875939452",
+      "osm_tags": {
+        "name": "Malezi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwamagombe",
+      "lat": -5.597592,
+      "lon": 38.1346471,
+      "osm_id": "node/12881352369",
+      "osm_tags": {
+        "name": "Kwamagombe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lumbizi",
+      "lat": -5.5097159,
+      "lon": 38.025072,
+      "osm_id": "node/12885848086",
+      "osm_tags": {
+        "name": "Lumbizi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Golani",
+      "lat": -5.558618,
+      "lon": 38.0458913,
+      "osm_id": "node/12885848254",
+      "osm_tags": {
+        "name": "Golani",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Birikani",
+      "lat": -5.4658284,
+      "lon": 38.0628065,
+      "osm_id": "node/12885848338",
+      "osm_tags": {
+        "name": "Birikani",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Saweni village",
+      "lat": -4.4591078,
+      "lon": 37.8787252,
+      "osm_id": "node/13509825748",
+      "osm_tags": {
+        "name": "Saweni village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -3.9584633,
+      "lon": 37.4808086,
+      "osm_id": "way/23788918",
+      "osm_tags": {
+        "name": "Pangani",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -5.1075831,
+      "lon": 38.2246111,
+      "osm_id": "way/30096628",
+      "osm_tags": {
+        "name": "Pangani",
+        "waterway": "river",
+        "wikidata": "Q1941134"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -4.4851056,
+      "lon": 37.6129342,
+      "osm_id": "way/30096637",
+      "osm_tags": {
+        "name": "Pangani",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -4.5912212,
+      "lon": 37.8340488,
+      "osm_id": "way/30096638",
+      "osm_tags": {
+        "name": "Pangani",
+        "source": "Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -4.2404233,
+      "lon": 37.5039891,
+      "osm_id": "way/30096640",
+      "osm_tags": {
+        "name": "Pangani",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ndungu lake",
+      "lat": -4.3996916,
+      "lon": 38.096509,
+      "osm_id": "way/58903390",
+      "osm_tags": {
+        "name": "Ndungu lake",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Bangala",
+      "lat": -4.8323284,
+      "lon": 38.3300513,
+      "osm_id": "way/65262727",
+      "osm_tags": {
+        "name": "Bangala",
+        "source": "Landsat",
+        "waterway": "stream",
+        "wikidata": "Q4789204"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mkomazi",
+      "lat": -4.9549771,
+      "lon": 38.2575724,
+      "osm_id": "way/65262775",
+      "osm_tags": {
+        "name": "Mkomazi",
+        "seasonal": "yes",
+        "source": "Landsat",
+        "waterway": "river",
+        "wikidata": "Q4789280"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbalamu",
+      "lat": -4.431959,
+      "lon": 38.3881547,
+      "osm_id": "way/116593693",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mbalamu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Umba",
+      "lat": -4.5035237,
+      "lon": 38.4551809,
+      "osm_id": "way/116593703",
+      "osm_tags": {
+        "name": "Umba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makanya",
+      "lat": -4.360093,
+      "lon": 37.8183052,
+      "osm_id": "way/173770867",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Makanya",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -4.5993815,
+      "lon": 37.7505439,
+      "osm_id": "way/182329566",
+      "osm_tags": {
+        "name": "Pangani",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Trinkwasserreservoir",
+      "lat": -5.0780022,
+      "lon": 38.3666471,
+      "osm_id": "way/421220150",
+      "osm_tags": {
+        "name": "Trinkwasserreservoir",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Fischteich",
+      "lat": -5.0755906,
+      "lon": 38.3673319,
+      "osm_id": "way/421225987",
+      "osm_tags": {
+        "name": "Fischteich",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.478249,
+      "lon": 38.0902537,
+      "osm_id": "way/581270106",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.4821071,
+      "lon": 38.0524736,
+      "osm_id": "way/581403969",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.4983165,
+      "lon": 38.0709281,
+      "osm_id": "way/581404808",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.4992824,
+      "lon": 38.0465327,
+      "osm_id": "way/581431704",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.4885173,
+      "lon": 38.0769751,
+      "osm_id": "way/581491884",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.4703048,
+      "lon": 38.0819448,
+      "osm_id": "way/581547332",
+      "osm_tags": {
+        "name": "stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.4716551,
+      "lon": 38.0825095,
+      "osm_id": "way/581547333",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.4659702,
+      "lon": 38.0877214,
+      "osm_id": "way/581551765",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "stream",
+        "source": "DigitalGlobe",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.4700698,
+      "lon": 38.0874388,
+      "osm_id": "way/581551952",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.4757437,
+      "lon": 38.0884224,
+      "osm_id": "way/581554254",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "stream",
+      "lat": -4.8697358,
+      "lon": 38.3207135,
+      "osm_id": "way/606640499",
+      "osm_tags": {
+        "name": "stream",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.8803632,
+      "lon": 38.3199866,
+      "osm_id": "way/606644728",
+      "osm_tags": {
+        "name": "stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.88197,
+      "lon": 38.3226822,
+      "osm_id": "way/606644737",
+      "osm_tags": {
+        "name": "stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.8807667,
+      "lon": 38.3345001,
+      "osm_id": "way/606651098",
+      "osm_tags": {
+        "name": "stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.5251584,
+      "lon": 38.0863703,
+      "osm_id": "way/606689000",
+      "osm_tags": {
+        "name": "stream",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.5281731,
+      "lon": 38.084952,
+      "osm_id": "way/606689001",
+      "osm_tags": {
+        "name": "stream",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.5296558,
+      "lon": 38.1015649,
+      "osm_id": "way/607284064",
+      "osm_tags": {
+        "name": "stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -4.3571679,
+      "lon": 37.5973157,
+      "osm_id": "way/608621733",
+      "osm_tags": {
+        "name": "Pangani",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -4.2607542,
+      "lon": 37.5516274,
+      "osm_id": "way/608621735",
+      "osm_tags": {
+        "name": "Pangani",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Mamka",
+      "lat": -4.7325171,
+      "lon": 38.0727875,
+      "osm_id": "way/608908593",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lake Mamka",
+        "natural": "water",
+        "salt": "no",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.8144683,
+      "lon": 38.2310754,
+      "osm_id": "way/608942743",
+      "osm_tags": {
+        "name": "stream",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "stream",
+      "lat": -4.8132769,
+      "lon": 38.2378904,
+      "osm_id": "way/608942750",
+      "osm_tags": {
+        "name": "stream",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Riverbed (dry)",
+      "lat": -4.2163327,
+      "lon": 37.3858496,
+      "osm_id": "way/629066001",
+      "osm_tags": {
+        "name": "Riverbed (dry)",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Riverbed (dry)",
+      "lat": -4.2164813,
+      "lon": 37.3828925,
+      "osm_id": "way/629066002",
+      "osm_tags": {
+        "name": "Riverbed (dry)",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Riverbed (dry)",
+      "lat": -4.2167741,
+      "lon": 37.3801151,
+      "osm_id": "way/629066003",
+      "osm_tags": {
+        "name": "Riverbed (dry)",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Estate",
+      "lat": -4.3428943,
+      "lon": 37.842093,
+      "osm_id": "way/645623118",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Estate",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -4.5854173,
+      "lon": 37.7384955,
+      "osm_id": "way/654814702",
+      "osm_tags": {
+        "name": "Pangani",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Alkachenje",
+      "lat": -4.3217828,
+      "lon": 37.809077,
+      "osm_id": "way/706159899",
+      "osm_tags": {
+        "name": "Alkachenje",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -5.1752797,
+      "lon": 38.4402136,
+      "osm_id": "way/795853902",
+      "osm_tags": {
+        "name": "Pangani",
+        "waterway": "river",
+        "wikidata": "Q1941134"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -5.1531201,
+      "lon": 38.318029,
+      "osm_id": "way/795853903",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Pangani",
+        "tunnel": "culvert",
+        "waterway": "river",
+        "wikidata": "Q1941134"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -4.6274897,
+      "lon": 38.0160848,
+      "osm_id": "way/795906961",
+      "osm_tags": {
+        "name": "Pangani",
+        "source": "Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -4.5920859,
+      "lon": 37.950922,
+      "osm_id": "way/795906962",
+      "osm_tags": {
+        "name": "Pangani",
+        "source": "Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -4.8129653,
+      "lon": 38.0329962,
+      "osm_id": "way/795919972",
+      "osm_tags": {
+        "name": "Pangani",
+        "source": "Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -4.6914337,
+      "lon": 38.0289582,
+      "osm_id": "way/795919973",
+      "osm_tags": {
+        "name": "Pangani",
+        "source": "Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -5.0123435,
+      "lon": 38.110085,
+      "osm_id": "way/795929223",
+      "osm_tags": {
+        "name": "Pangani",
+        "source": "Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pangani",
+      "lat": -4.9267964,
+      "lon": 38.0712446,
+      "osm_id": "way/795929224",
+      "osm_tags": {
+        "name": "Pangani",
+        "source": "Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yongoma river",
+      "lat": -4.3196121,
+      "lon": 37.9994346,
+      "osm_id": "way/941470038",
+      "osm_tags": {
+        "name": "Yongoma river",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbaramo",
+      "lat": -4.5041994,
+      "lon": 38.1537607,
+      "osm_id": "way/1014540314",
+      "osm_tags": {
+        "name": "Mbaramo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Ranzi",
+      "lat": -4.1838401,
+      "lon": 37.8900765,
+      "osm_id": "way/1032545932",
+      "osm_tags": {
+        "name": "Lake Ranzi",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Umba",
+      "lat": -4.5399907,
+      "lon": 38.3875654,
+      "osm_id": "way/1154280433",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Umba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Bangala",
+      "lat": -4.7337191,
+      "lon": 38.3603385,
+      "osm_id": "way/1157169391",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Bangala",
+        "source": "Landsat",
+        "tunnel": "culvert",
+        "waterway": "stream",
+        "wikidata": "Q4789204"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Bangala",
+      "lat": -4.7309846,
+      "lon": 38.3602461,
+      "osm_id": "way/1157169392",
+      "osm_tags": {
+        "name": "Bangala",
+        "source": "Landsat",
+        "waterway": "stream",
+        "wikidata": "Q4789204"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Leng'iding'idata",
+      "lat": -5.3498213,
+      "lon": 37.4262483,
+      "osm_id": "way/1222734196",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Leng'iding'idata",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mkomazi",
+      "lat": -5.1047945,
+      "lon": 38.3378161,
+      "osm_id": "way/1339846354",
+      "osm_tags": {
+        "name": "Mkomazi",
+        "seasonal": "yes",
+        "source": "Landsat",
+        "waterway": "river",
+        "wikidata": "Q4789280"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "stream",
+      "lat": -4.8528775,
+      "lon": 38.3274606,
+      "osm_id": "way/1390202565",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "stream",
+        "waterway": "river"
+      }
+    }
+  ]
+}

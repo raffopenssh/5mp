@@ -1,0 +1,3270 @@
+{
+  "park_id": "NAM_Etosha",
+  "downloaded_at": "2026-02-08T10:25:16.838952+00:00",
+  "buffer_km": 50,
+  "place_count": 259,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Otavi",
+      "lat": -19.6412405,
+      "lon": 17.3440906,
+      "osm_id": "node/245024172",
+      "osm_tags": {
+        "name": "Otavi",
+        "name:ru": "\u041e\u0442\u0430\u0432\u0438",
+        "place": "town",
+        "wikidata": "Q1013965"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamanjab",
+      "lat": -19.6284083,
+      "lon": 14.8433584,
+      "osm_id": "node/258986827",
+      "osm_tags": {
+        "alt_name": "Okamanja",
+        "name": "Kamanjab",
+        "place": "village",
+        "population": "7000",
+        "postal_code": "21004",
+        "wikidata": "Q1699191",
+        "wikipedia": "en:Kamanjab"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Oshivelo",
+      "lat": -18.6173308,
+      "lon": 17.168044,
+      "osm_id": "node/259486111",
+      "osm_tags": {
+        "name": "Oshivelo",
+        "place": "town",
+        "wikidata": "Q914118"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ombili",
+      "lat": -18.7158118,
+      "lon": 17.3996988,
+      "osm_id": "node/546664314",
+      "osm_tags": {
+        "name": "Ombili",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Onankali",
+      "lat": -18.1865776,
+      "lon": 16.3765811,
+      "osm_id": "node/1299351441",
+      "osm_tags": {
+        "name": "Onankali",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Amuteya",
+      "lat": -18.0814872,
+      "lon": 16.4364539,
+      "osm_id": "node/1299351452",
+      "osm_tags": {
+        "name": "Amuteya",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Omuthiya",
+      "lat": -18.3579195,
+      "lon": 16.581516,
+      "osm_id": "node/1376606376",
+      "osm_tags": {
+        "alt_name": "Omuthiyagwiipundi",
+        "name": "Omuthiya",
+        "name:lt": "Omutija",
+        "name:ru": "\u041e\u043c\u0443\u0442\u0438\u044f",
+        "place": "town",
+        "source": "Local Knowledge",
+        "website": "http://www.omuthiyatowncouncil.com.na/",
+        "wikidata": "Q1005584",
+        "wikipedia": "en:Omuthiya"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Katjiuru",
+      "lat": -18.700252,
+      "lon": 14.2913295,
+      "osm_id": "node/3208273955",
+      "osm_tags": {
+        "name": "Katjiuru",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Otjondeka",
+      "lat": -18.6308227,
+      "lon": 14.2323406,
+      "osm_id": "node/3208274935",
+      "osm_tags": {
+        "name": "Otjondeka",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Orondjize",
+      "lat": -18.8420648,
+      "lon": 14.4487841,
+      "osm_id": "node/3208311615",
+      "osm_tags": {
+        "name": "Orondjize",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Otjivero",
+      "lat": -18.839273,
+      "lon": 14.371705,
+      "osm_id": "node/3208311625",
+      "osm_tags": {
+        "name": "Otjivero",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Otjetjekua",
+      "lat": -18.7956449,
+      "lon": 14.351892,
+      "osm_id": "node/3208312163",
+      "osm_tags": {
+        "name": "Otjetjekua",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Otjerunda",
+      "lat": -18.1985997,
+      "lon": 14.0028595,
+      "osm_id": "node/3209742669",
+      "osm_tags": {
+        "name": "Otjerunda",
+        "place": "village",
+        "wikidata": "Q60049870"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Otjitoko",
+      "lat": -18.4871667,
+      "lon": 14.1026822,
+      "osm_id": "node/3209757379",
+      "osm_tags": {
+        "name": "Otjitoko",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ombombo",
+      "lat": -18.6765724,
+      "lon": 13.9338714,
+      "osm_id": "node/3209796440",
+      "osm_tags": {
+        "name": "Ombombo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Oruvandjai",
+      "lat": -18.9189605,
+      "lon": 14.1063575,
+      "osm_id": "node/3209832989",
+      "osm_tags": {
+        "name": "Oruvandjai",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "King Kauluma Village",
+      "lat": -18.490218,
+      "lon": 17.0622088,
+      "osm_id": "node/3211388525",
+      "osm_tags": {
+        "name": "King Kauluma Village",
+        "place": "hamlet",
+        "wikipedia": "en:King Kauluma Village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Omuntele",
+      "lat": -18.236442,
+      "lon": 16.2379927,
+      "osm_id": "node/3211928281",
+      "osm_tags": {
+        "name": "Omuntele",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Omakange",
+      "lat": -18.1437225,
+      "lon": 14.2943493,
+      "osm_id": "node/3676251145",
+      "osm_tags": {
+        "alt_name": "Omakange",
+        "name": "Omakange",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Halali",
+      "lat": -19.0356338,
+      "lon": 16.4710969,
+      "osm_id": "node/4217155612",
+      "osm_tags": {
+        "name": "Halali",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Guinas",
+      "lat": -19.2325262,
+      "lon": 17.3497016,
+      "osm_id": "node/4354436905",
+      "osm_tags": {
+        "name": "Guinas",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Otjikondo",
+      "lat": -19.847709,
+      "lon": 15.470069,
+      "osm_id": "node/4496874489",
+      "osm_tags": {
+        "name": "Otjikondo",
+        "place": "village",
+        "wikidata": "Q2037060"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Peet Alberts Koppie",
+      "lat": -19.6034187,
+      "lon": 14.8859171,
+      "osm_id": "node/4733931159",
+      "osm_tags": {
+        "description": "Peet Alberts Rock Engravings, National Monument. 1,200 to 1,500 engravings can be found here, mostly animals, but also abstracts like circular forms and a star. The koppie used to be good look-out post for hunters.",
+        "ele": "1281",
+        "name": "Peet Alberts Koppie",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Grootberg",
+      "lat": -19.8163443,
+      "lon": 14.128874,
+      "osm_id": "node/5350392075",
+      "osm_tags": {
+        "ele": "1645",
+        "name": "Mount Grootberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Condor",
+      "lat": -19.6084802,
+      "lon": 14.4764319,
+      "osm_id": "node/5350399221",
+      "osm_tags": {
+        "name": "Condor",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Palmkop",
+      "lat": -19.9120704,
+      "lon": 14.0228403,
+      "osm_id": "node/5350438952",
+      "osm_tags": {
+        "ele": "1409",
+        "name": "Mount Palmkop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Otjisakumuka",
+      "lat": -19.1119409,
+      "lon": 14.0178904,
+      "osm_id": "node/5350930522",
+      "osm_tags": {
+        "ele": "1404",
+        "name": "Otjisakumuka",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Otjozongombe",
+      "lat": -18.8212293,
+      "lon": 13.9706726,
+      "osm_id": "node/5350930545",
+      "osm_tags": {
+        "name": "Otjozongombe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Oromauwa Cattle Post",
+      "lat": -18.9851337,
+      "lon": 14.3734126,
+      "osm_id": "node/5350951319",
+      "osm_tags": {
+        "name": "Oromauwa Cattle Post",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ekango",
+      "lat": -18.6669268,
+      "lon": 14.263623,
+      "osm_id": "node/5350956921",
+      "osm_tags": {
+        "name": "Ekango",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Starkberg",
+      "lat": -18.8770709,
+      "lon": 14.504179,
+      "osm_id": "node/5419468867",
+      "osm_tags": {
+        "alt_name": "Onendera",
+        "ele": "1416",
+        "man_made": "survey_point",
+        "name": "Mount Starkberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Okauvore",
+      "lat": -18.8748997,
+      "lon": 13.923127,
+      "osm_id": "node/5928610851",
+      "osm_tags": {
+        "name": "Okauvore",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Otjiu",
+      "lat": -18.3422138,
+      "lon": 14.1146636,
+      "osm_id": "node/5931484418",
+      "osm_tags": {
+        "alt_name": "Otsivu",
+        "name": "Otjiu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Onyaanya",
+      "lat": -18.0751147,
+      "lon": 16.2457696,
+      "osm_id": "node/5943402392",
+      "osm_tags": {
+        "name": "Onyaanya",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Okapuko",
+      "lat": -18.2720972,
+      "lon": 16.4779115,
+      "osm_id": "node/5945937061",
+      "osm_tags": {
+        "name": "Okapuko",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Okaozuvare",
+      "lat": -18.2983816,
+      "lon": 14.0702746,
+      "osm_id": "node/7425734238",
+      "osm_tags": {
+        "name": "Okaozuvare",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Otjouye",
+      "lat": -18.1813154,
+      "lon": 13.9687617,
+      "osm_id": "node/7518716607",
+      "osm_tags": {
+        "name": "Otjouye",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Okangororosa",
+      "lat": -18.4062243,
+      "lon": 16.5374725,
+      "osm_id": "node/7680994558",
+      "osm_tags": {
+        "name": "Okangororosa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Indongoyakeelu",
+      "lat": -18.4547098,
+      "lon": 16.4671758,
+      "osm_id": "node/7699923412",
+      "osm_tags": {
+        "name": "Indongoyakeelu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ondjamba",
+      "lat": -18.1721549,
+      "lon": 16.2532042,
+      "osm_id": "node/7878529238",
+      "osm_tags": {
+        "name": "Ondjamba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Omusaona Himba Village",
+      "lat": -19.6123523,
+      "lon": 14.8296893,
+      "osm_id": "node/8443148121",
+      "osm_tags": {
+        "facebook": "https://www.facebook.com/Omusaona-Himba-Village-335009640463608",
+        "name": "Omusaona Himba Village",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Otjisakumuka",
+      "lat": -19.1408367,
+      "lon": 13.982653,
+      "osm_id": "node/8960103746",
+      "osm_tags": {
+        "name": "Otjisakumuka",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Elefantenberg",
+      "lat": -19.7181953,
+      "lon": 17.3240326,
+      "osm_id": "node/9924847719",
+      "osm_tags": {
+        "ele": "1689",
+        "man_made": "survey_point",
+        "name": "Elefantenberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Otavispitze",
+      "lat": -19.674104,
+      "lon": 17.5129846,
+      "osm_id": "node/9925255244",
+      "osm_tags": {
+        "ele": "1986",
+        "name": "Otavispitze",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tweekoppies",
+      "lat": -19.0413371,
+      "lon": 16.4919518,
+      "osm_id": "node/12183366229",
+      "osm_tags": {
+        "ele": "1174",
+        "name": "Tweekoppies",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ondundozonanananbana",
+      "lat": -19.2625897,
+      "lon": 15.7303492,
+      "osm_id": "node/12183366232",
+      "osm_tags": {
+        "ele": "1310",
+        "name": "Ondundozonanananbana",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hundskopf",
+      "lat": -19.0676032,
+      "lon": 14.2188603,
+      "osm_id": "node/12184373487",
+      "osm_tags": {
+        "ele": "1549",
+        "man_made": "survey_point",
+        "name": "Hundskopf",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Dolomietberge",
+      "lat": -19.0910184,
+      "lon": 14.5279403,
+      "osm_id": "node/12184373491",
+      "osm_tags": {
+        "ele": "1371",
+        "name": "Dolomietberge",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Vaalberg",
+      "lat": -19.5748317,
+      "lon": 14.8821762,
+      "osm_id": "node/12184373496",
+      "osm_tags": {
+        "ele": "1395",
+        "man_made": "survey_point",
+        "name": "Vaalberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Boulder",
+      "lat": -19.6940346,
+      "lon": 14.6414037,
+      "osm_id": "node/12184373498",
+      "osm_tags": {
+        "ele": "1309",
+        "man_made": "survey_point",
+        "name": "Boulder",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rif",
+      "lat": -19.610288,
+      "lon": 14.6519918,
+      "osm_id": "node/12184373499",
+      "osm_tags": {
+        "ele": "1323",
+        "man_made": "survey_point",
+        "name": "Rif",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Quartz",
+      "lat": -19.5796995,
+      "lon": 14.7436517,
+      "osm_id": "node/12184373500",
+      "osm_tags": {
+        "ele": "1359",
+        "man_made": "survey_point",
+        "name": "Quartz",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Schwarzkamm",
+      "lat": -19.3879135,
+      "lon": 14.4309224,
+      "osm_id": "node/12184384305",
+      "osm_tags": {
+        "ele": "1346",
+        "name": "Schwarzkamm",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Herzog",
+      "lat": -19.3575212,
+      "lon": 14.2033822,
+      "osm_id": "node/12184384306",
+      "osm_tags": {
+        "ele": "1330",
+        "man_made": "survey_point",
+        "name": "Herzog",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Okonjuko",
+      "lat": -19.4140646,
+      "lon": 14.9114238,
+      "osm_id": "node/12184384307",
+      "osm_tags": {
+        "ele": "1504",
+        "man_made": "survey_point",
+        "name": "Okonjuko",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mowgli",
+      "lat": -19.4452513,
+      "lon": 14.6975081,
+      "osm_id": "node/12184384308",
+      "osm_tags": {
+        "ele": "1524",
+        "man_made": "survey_point",
+        "name": "Mowgli",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Groothoes",
+      "lat": -19.3424437,
+      "lon": 14.7970258,
+      "osm_id": "node/12184384309",
+      "osm_tags": {
+        "ele": "1455",
+        "man_made": "survey_point",
+        "name": "Groothoes",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bakenkop",
+      "lat": -19.3767769,
+      "lon": 15.5454613,
+      "osm_id": "node/12184384311",
+      "osm_tags": {
+        "ele": "1258",
+        "name": "Bakenkop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Eisenmine",
+      "lat": -19.4511364,
+      "lon": 15.1220664,
+      "osm_id": "node/12184384312",
+      "osm_tags": {
+        "ele": "1565",
+        "man_made": "survey_point",
+        "name": "Eisenmine",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Blouberg",
+      "lat": -19.6559134,
+      "lon": 15.2483378,
+      "osm_id": "node/12184384314",
+      "osm_tags": {
+        "ele": "1392",
+        "name": "Blouberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hackieskuppe",
+      "lat": -19.8843698,
+      "lon": 15.1068766,
+      "osm_id": "node/12184384317",
+      "osm_tags": {
+        "ele": "1360",
+        "man_made": "survey_point",
+        "name": "Hackieskuppe",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Loskop",
+      "lat": -19.504153,
+      "lon": 15.0025104,
+      "osm_id": "node/12184384319",
+      "osm_tags": {
+        "ele": "1461",
+        "name": "Loskop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Daverob",
+      "lat": -19.7122407,
+      "lon": 15.5826816,
+      "osm_id": "node/12184384320",
+      "osm_tags": {
+        "ele": "1404",
+        "man_made": "survey_point",
+        "name": "Daverob",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Langmann",
+      "lat": -18.8437646,
+      "lon": 14.0694976,
+      "osm_id": "node/12184384321",
+      "osm_tags": {
+        "ele": "1690",
+        "man_made": "survey_point",
+        "name": "Langmann",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Otjingundi",
+      "lat": -18.4942351,
+      "lon": 14.2658918,
+      "osm_id": "node/12184384322",
+      "osm_tags": {
+        "ele": "1386",
+        "man_made": "survey_point",
+        "name": "Otjingundi",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Arongorro",
+      "lat": -18.3896677,
+      "lon": 14.0769032,
+      "osm_id": "node/12184384323",
+      "osm_tags": {
+        "ele": "1578",
+        "man_made": "survey_point",
+        "name": "Arongorro",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Neinsberg",
+      "lat": -19.8818079,
+      "lon": 16.443718,
+      "osm_id": "node/12186531708",
+      "osm_tags": {
+        "ele": "1700",
+        "man_made": "survey_point",
+        "name": "Neinsberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Goanabkop",
+      "lat": -19.7638414,
+      "lon": 16.0430177,
+      "osm_id": "node/12186531709",
+      "osm_tags": {
+        "ele": "1463",
+        "man_made": "survey_point",
+        "name": "Goanabkop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ganobkop",
+      "lat": -19.6015592,
+      "lon": 16.5831117,
+      "osm_id": "node/12186531714",
+      "osm_tags": {
+        "ele": "1360",
+        "man_made": "survey_point",
+        "name": "Ganobkop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Uibkop",
+      "lat": -19.58459,
+      "lon": 16.7218569,
+      "osm_id": "node/12186531715",
+      "osm_tags": {
+        "ele": "1432",
+        "name": "Uibkop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Oasib",
+      "lat": -19.6180111,
+      "lon": 16.8469582,
+      "osm_id": "node/12186531716",
+      "osm_tags": {
+        "ele": "1694",
+        "man_made": "survey_point",
+        "name": "Oasib",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gamgamkuberg",
+      "lat": -19.6870691,
+      "lon": 16.7151461,
+      "osm_id": "node/12186531718",
+      "osm_tags": {
+        "ele": "1722",
+        "man_made": "survey_point",
+        "name": "Gamgamkuberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Abachausberg",
+      "lat": -19.7266157,
+      "lon": 16.7823185,
+      "osm_id": "node/12186531719",
+      "osm_tags": {
+        "ele": "1813",
+        "name": "Abachausberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nuidaus",
+      "lat": -19.8973248,
+      "lon": 17.2517462,
+      "osm_id": "node/12188311096",
+      "osm_tags": {
+        "ele": "1758",
+        "man_made": "survey_point",
+        "name": "Nuidaus",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Langeberg",
+      "lat": -19.6016692,
+      "lon": 17.0466151,
+      "osm_id": "node/12188311100",
+      "osm_tags": {
+        "ele": "1810",
+        "name": "Langeberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Sargberg",
+      "lat": -19.5460205,
+      "lon": 17.4902365,
+      "osm_id": "node/12188311102",
+      "osm_tags": {
+        "ele": "1719",
+        "name": "Sargberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ondorrorundu",
+      "lat": -18.1684783,
+      "lon": 13.9295822,
+      "osm_id": "node/12539161498",
+      "osm_tags": {
+        "ele": "1622",
+        "man_made": "survey_point",
+        "name": "Ondorrorundu",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Joubertberge",
+      "lat": -18.4430085,
+      "lon": 13.9456923,
+      "osm_id": "node/12539163501",
+      "osm_tags": {
+        "ele": "1755",
+        "name": "Joubertberge",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Fahlkuppe",
+      "lat": -18.5007805,
+      "lon": 13.9528167,
+      "osm_id": "node/12539163502",
+      "osm_tags": {
+        "ele": "1784",
+        "man_made": "survey_point",
+        "name": "Fahlkuppe",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Onamatanga",
+      "lat": -18.3121558,
+      "lon": 14.5206301,
+      "osm_id": "node/12569321789",
+      "osm_tags": {
+        "name": "Onamatanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Luiperdskop",
+      "lat": -19.1180362,
+      "lon": 14.4093636,
+      "osm_id": "node/12998771858",
+      "osm_tags": {
+        "ele": "1331",
+        "name": "Luiperdskop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Okatyali",
+      "lat": -18.0506888,
+      "lon": 15.9542951,
+      "osm_id": "node/13119245969",
+      "osm_tags": {
+        "name": "Okatyali",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Beisebvlakte",
+      "lat": -18.5299281,
+      "lon": 17.06945,
+      "osm_id": "way/23937844",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Beisebvlakte",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Oshigambo",
+      "lat": -18.3316352,
+      "lon": 16.1012259,
+      "osm_id": "way/23938429",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Oshigambo",
+        "tidal": "no",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Fisher's Pan",
+      "lat": -18.7615004,
+      "lon": 16.9867086,
+      "osm_id": "way/23939304",
+      "osm_tags": {
+        "alt_name": "Fischer's Pan",
+        "intermittent": "yes",
+        "name": "Fisher's Pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Adamax Pan",
+      "lat": -18.9085498,
+      "lon": 15.664659,
+      "osm_id": "way/23949988",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Adamax Pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Natukanaoka Pan",
+      "lat": -18.6018935,
+      "lon": 15.7400473,
+      "osm_id": "way/24043248",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Natukanaoka Pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Oshikoto",
+      "lat": -19.1948255,
+      "lon": 17.5497015,
+      "osm_id": "way/83481432",
+      "osm_tags": {
+        "name": "Lake Oshikoto",
+        "name:de": "Otjikotosee",
+        "natural": "water",
+        "source": "bing",
+        "water": "lake",
+        "website": "https://www.nhc-nam.org/sites/otjikoto-lake",
+        "wikidata": "Q607602",
+        "wikipedia:de": "Otjikotosee",
+        "wikipedia:en": "Otjikoto Lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Otjivalunda Saltpan #2",
+      "lat": -18.656039,
+      "lon": 15.6036168,
+      "osm_id": "way/88448653",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Otjivalunda Saltpan #2",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Huab",
+      "lat": -19.800206,
+      "lon": 15.1467091,
+      "osm_id": "way/101079110",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Huab",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Oponono",
+      "lat": -18.0545442,
+      "lon": 15.8009721,
+      "osm_id": "way/121178281",
+      "osm_tags": {
+        "description": "Lake Oponona (Ndonga: the one that swallowed up all the water) is a natural lake in the Cuvelai Basin. It holds water up to the following rainy season in a prosperous year.",
+        "intermittent": "yes",
+        "name": "Lake Oponono",
+        "name:de": "Oponono-See",
+        "natural": "water",
+        "tidal": "no",
+        "water": "lake",
+        "wikidata": "Q15241337",
+        "wikipedia": "en:Lake Oponona"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kalkheuwel",
+      "lat": -18.8965182,
+      "lon": 16.8265757,
+      "osm_id": "way/132015309",
+      "osm_tags": {
+        "name": "Kalkheuwel",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ombika",
+      "lat": -19.3154075,
+      "lon": 15.9407068,
+      "osm_id": "way/132015310",
+      "osm_tags": {
+        "name": "Ombika",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Chudob",
+      "lat": -18.8587236,
+      "lon": 16.9249145,
+      "osm_id": "way/132015312",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Chudob",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ekuma",
+      "lat": -18.4284381,
+      "lon": 15.9605729,
+      "osm_id": "way/173683242",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ekuma",
+        "source": "bing aerial",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ekuma",
+      "lat": -18.6738874,
+      "lon": 16.02688,
+      "osm_id": "way/173683252",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ekuma",
+        "source": "bing aerial",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Oshigambo",
+      "lat": -18.2983773,
+      "lon": 16.0851656,
+      "osm_id": "way/173743898",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Oshigambo",
+        "tidal": "no",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Otjivalunda Saltpan #1",
+      "lat": -18.6073667,
+      "lon": 15.5469525,
+      "osm_id": "way/173755777",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Otjivalunda Saltpan #1",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Okasnanakana Pan",
+      "lat": -18.4255263,
+      "lon": 16.4557671,
+      "osm_id": "way/173763454",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Okasnanakana Pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Olyapeke Pan",
+      "lat": -18.4246225,
+      "lon": 16.2511163,
+      "osm_id": "way/173763457",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Olyapeke Pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Koinachas",
+      "lat": -18.8189399,
+      "lon": 16.9286731,
+      "osm_id": "way/173914368",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Koinachas",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Tsumcor Waterhole",
+      "lat": -18.7147906,
+      "lon": 16.9041506,
+      "osm_id": "way/173914371",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Tsumcor Waterhole",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "King Nehale's Waterhole",
+      "lat": -18.8070302,
+      "lon": 16.9389899,
+      "osm_id": "way/173914373",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "King Nehale's Waterhole",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -18.8192534,
+      "lon": 17.0670497,
+      "osm_id": "way/174172219",
+      "osm_tags": {
+        "name": "Waterhole",
+        "natural": "water",
+        "water": "basin"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -18.7574337,
+      "lon": 17.0497787,
+      "osm_id": "way/174361669",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Waterhole",
+        "natural": "water",
+        "salt": "no",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -18.741953,
+      "lon": 17.0718537,
+      "osm_id": "way/174361670",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Waterhole",
+        "natural": "water",
+        "salt": "no",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Guantsas",
+      "lat": -18.7016403,
+      "lon": 17.043247,
+      "osm_id": "way/174361671",
+      "osm_tags": {
+        "name": "Guantsas",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Harib",
+      "lat": -18.7132819,
+      "lon": 17.0455634,
+      "osm_id": "way/174361673",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Harib",
+        "natural": "water",
+        "salt": "no",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -18.7638698,
+      "lon": 17.055064,
+      "osm_id": "way/174361674",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Waterhole",
+        "natural": "water",
+        "salt": "no",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Guinas",
+      "lat": -19.2328898,
+      "lon": 17.3526136,
+      "osm_id": "way/197840545",
+      "osm_tags": {
+        "name": "Lake Guinas",
+        "name:de": "Guinassee",
+        "natural": "water",
+        "source": "Bing",
+        "water": "lake",
+        "wikidata": "Q491209",
+        "wikipedia": "en:Lake Guinas",
+        "wikipedia:de": "Guinassee",
+        "wikipedia:fr": "Lac Guinas"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Dolimietpuunt Waterhole",
+      "lat": -19.0021732,
+      "lon": 14.4731534,
+      "osm_id": "way/215065182",
+      "osm_tags": {
+        "name": "Dolimietpuunt Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Grunewald",
+      "lat": -19.1261022,
+      "lon": 15.6355514,
+      "osm_id": "way/224458799",
+      "osm_tags": {
+        "name": "Grunewald",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Okaukuejo",
+      "lat": -19.1809669,
+      "lon": 15.9156755,
+      "osm_id": "way/224458801",
+      "osm_tags": {
+        "name": "Okaukuejo",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Okaukuejo Camp",
+      "lat": -19.1783873,
+      "lon": 15.9162194,
+      "osm_id": "way/224458802",
+      "osm_tags": {
+        "barrier": "fence",
+        "landuse": "residential",
+        "name": "Okaukuejo Camp",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Olifantsbad",
+      "lat": -19.2388597,
+      "lon": 16.131922,
+      "osm_id": "way/224834159",
+      "osm_tags": {
+        "name": "Olifantsbad",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Halali Camp",
+      "lat": -19.0371211,
+      "lon": 16.4693736,
+      "osm_id": "way/224860058",
+      "osm_tags": {
+        "barrier": "fence",
+        "landuse": "residential",
+        "name": "Halali Camp",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Nuamses",
+      "lat": -18.9659421,
+      "lon": 16.4852933,
+      "osm_id": "way/225090863",
+      "osm_tags": {
+        "name": "Nuamses",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kamaseb",
+      "lat": -19.0664902,
+      "lon": 16.6894098,
+      "osm_id": "way/225109459",
+      "osm_tags": {
+        "name": "Kamaseb",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Agab",
+      "lat": -18.9735686,
+      "lon": 16.6566257,
+      "osm_id": "way/225109472",
+      "osm_tags": {
+        "name": "Agab",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Klein Namutoni",
+      "lat": -18.8270094,
+      "lon": 16.9513382,
+      "osm_id": "way/225220171",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Klein Namutoni",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Stinkwater Waterhole",
+      "lat": -18.6255815,
+      "lon": 16.8326836,
+      "osm_id": "way/225393797",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Stinkwater Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kameeldoring",
+      "lat": -18.6179129,
+      "lon": 16.9894532,
+      "osm_id": "way/225393802",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kameeldoring",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Jakkalswater Waterhole",
+      "lat": -19.1369178,
+      "lon": 14.6573933,
+      "osm_id": "way/226259409",
+      "osm_tags": {
+        "name": "Jakkalswater Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Leeukamp",
+      "lat": -19.0213595,
+      "lon": 14.8157361,
+      "osm_id": "way/226261259",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Leeukamp",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Homob Waterhole",
+      "lat": -19.0529658,
+      "lon": 16.1930241,
+      "osm_id": "way/270802450",
+      "osm_tags": {
+        "name": "Homob Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kapupuhedi Waterhole",
+      "lat": -19.1237761,
+      "lon": 16.0699659,
+      "osm_id": "way/270803593",
+      "osm_tags": {
+        "name": "Kapupuhedi Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gonob",
+      "lat": -19.0332225,
+      "lon": 16.1440202,
+      "osm_id": "way/270803596",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Gonob",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Nebrowni Waterhole",
+      "lat": -19.1633006,
+      "lon": 15.9961112,
+      "osm_id": "way/270804885",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nebrowni Waterhole",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gemsbokvlakte Waterhole",
+      "lat": -19.2133224,
+      "lon": 16.0587831,
+      "osm_id": "way/270806710",
+      "osm_tags": {
+        "name": "Gemsbokvlakte Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gaseb Waterhole",
+      "lat": -19.2046073,
+      "lon": 15.9833712,
+      "osm_id": "way/270806712",
+      "osm_tags": {
+        "name": "Gaseb Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gemsbokvlakte",
+      "lat": -19.2134009,
+      "lon": 16.0592048,
+      "osm_id": "way/270806715",
+      "osm_tags": {
+        "name": "Gemsbokvlakte",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Eindpaal",
+      "lat": -19.2122171,
+      "lon": 15.5301546,
+      "osm_id": "way/270834915",
+      "osm_tags": {
+        "name": "Eindpaal",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Sonderkop Waterhole",
+      "lat": -18.9689846,
+      "lon": 15.3282281,
+      "osm_id": "way/270842354",
+      "osm_tags": {
+        "name": "Sonderkop Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Arendsnes Waterhole",
+      "lat": -18.9774394,
+      "lon": 15.4090574,
+      "osm_id": "way/270842356",
+      "osm_tags": {
+        "name": "Arendsnes Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Duiwelsvuur Waterhole",
+      "lat": -18.9748839,
+      "lon": 15.2423062,
+      "osm_id": "way/270842785",
+      "osm_tags": {
+        "name": "Duiwelsvuur Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Tobieroen Waterhole",
+      "lat": -18.9715494,
+      "lon": 14.9575245,
+      "osm_id": "way/270843096",
+      "osm_tags": {
+        "name": "Tobieroen Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Bitterwater Waterhole",
+      "lat": -18.9771279,
+      "lon": 15.1596898,
+      "osm_id": "way/270843101",
+      "osm_tags": {
+        "name": "Bitterwater Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Olifantsrus Waterhole",
+      "lat": -18.9666128,
+      "lon": 14.8595587,
+      "osm_id": "way/270843286",
+      "osm_tags": {
+        "name": "Olifantsrus Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Okatjongeama",
+      "lat": -18.9944031,
+      "lon": 14.7430481,
+      "osm_id": "way/270850203",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Okatjongeama",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Okavao Waterhole",
+      "lat": -19.0606758,
+      "lon": 14.7585851,
+      "osm_id": "way/270850205",
+      "osm_tags": {
+        "name": "Okavao Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Pionierdam",
+      "lat": -19.175166,
+      "lon": 14.6220375,
+      "osm_id": "way/270851538",
+      "osm_tags": {
+        "name": "Pionierdam",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Renosterflei Waterhole",
+      "lat": -19.1742715,
+      "lon": 14.5302885,
+      "osm_id": "way/270851541",
+      "osm_tags": {
+        "name": "Renosterflei Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Renostervlei Waterhole",
+      "lat": -19.1741158,
+      "lon": 14.5298714,
+      "osm_id": "way/270851542",
+      "osm_tags": {
+        "name": "Renostervlei Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Miernes Waterhole",
+      "lat": -19.2067757,
+      "lon": 14.4917351,
+      "osm_id": "way/270851724",
+      "osm_tags": {
+        "name": "Miernes Waterhole",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Klippan Waterhole",
+      "lat": -19.0736762,
+      "lon": 14.4333102,
+      "osm_id": "way/270852737",
+      "osm_tags": {
+        "name": "Klippan Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Klippan",
+      "lat": -19.0741418,
+      "lon": 14.4332833,
+      "osm_id": "way/270852743",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Klippan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Rateldraf Waterhole",
+      "lat": -19.0866637,
+      "lon": 14.4864575,
+      "osm_id": "way/270852745",
+      "osm_tags": {
+        "name": "Rateldraf Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Onangombati",
+      "lat": -18.8612979,
+      "lon": 14.6568977,
+      "osm_id": "way/270855883",
+      "osm_tags": {
+        "name": "Onangombati",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Duineveld Waterhole",
+      "lat": -18.95154,
+      "lon": 14.6105075,
+      "osm_id": "way/270855889",
+      "osm_tags": {
+        "name": "Duineveld Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Paradyspan",
+      "lat": -18.6418316,
+      "lon": 15.2833832,
+      "osm_id": "way/270859034",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Paradyspan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Okaapa",
+      "lat": -19.1709922,
+      "lon": 13.843137,
+      "osm_id": "way/314021074",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Okaapa",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Oshivelo",
+      "lat": -18.6188488,
+      "lon": 17.1668869,
+      "osm_id": "way/314746350",
+      "osm_tags": {
+        "name": "Oshivelo",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Aap",
+      "lat": -19.1725611,
+      "lon": 14.0560613,
+      "osm_id": "way/314773124",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Aap",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okatembo",
+      "lat": -19.8735929,
+      "lon": 14.701878,
+      "osm_id": "way/316166226",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Okatembo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Onguati",
+      "lat": -19.8175674,
+      "lon": 14.6692264,
+      "osm_id": "way/316166231",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Onguati",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Palmrivier",
+      "lat": -19.9445249,
+      "lon": 14.0066272,
+      "osm_id": "way/338978129",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Palmrivier",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oshigambo",
+      "lat": -18.1265667,
+      "lon": 16.1102871,
+      "osm_id": "way/360520435",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oshigambo",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gaes",
+      "lat": -19.8360905,
+      "lon": 13.918951,
+      "osm_id": "way/360610363",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Gaes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ombonde",
+      "lat": -19.4178599,
+      "lon": 14.1592143,
+      "osm_id": "way/360610372",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ombonde",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Otjovasandu",
+      "lat": -19.3633453,
+      "lon": 14.3602012,
+      "osm_id": "way/375936912",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Otjovasandu",
+        "seasonal": "yes",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Werda",
+      "lat": -19.2398268,
+      "lon": 14.414092,
+      "osm_id": "way/376338898",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Werda",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Koinseb",
+      "lat": -19.0398764,
+      "lon": 16.6389726,
+      "osm_id": "way/382506199",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Koinseb",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Tsam",
+      "lat": -19.0575598,
+      "lon": 16.7391412,
+      "osm_id": "way/382506207",
+      "osm_tags": {
+        "name": "Tsam",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Rietfontein",
+      "lat": -19.0366555,
+      "lon": 16.342249,
+      "osm_id": "way/390221116",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Rietfontein",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -19.3185431,
+      "lon": 14.4709175,
+      "osm_id": "way/453011954",
+      "osm_tags": {
+        "name": "Waterhole",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "New Olifrantrus Waterhole",
+      "lat": -18.9699969,
+      "lon": 14.8596731,
+      "osm_id": "way/466986531",
+      "osm_tags": {
+        "name": "New Olifrantrus Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Klein Omaruru",
+      "lat": -19.9174587,
+      "lon": 15.0841083,
+      "osm_id": "way/471893508",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Klein Omaruru",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Duikerdrink Waterhole",
+      "lat": -19.1531924,
+      "lon": 14.780034,
+      "osm_id": "way/547602315",
+      "osm_tags": {
+        "name": "Duikerdrink Waterhole",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kakatswa",
+      "lat": -19.8518696,
+      "lon": 14.5025515,
+      "osm_id": "way/547646388",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kakatswa",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Andoni Waterhole",
+      "lat": -18.5198527,
+      "lon": 16.7728367,
+      "osm_id": "way/551123508",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Andoni Waterhole",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ozonjuitji m'Bari",
+      "lat": -18.9768354,
+      "lon": 15.5037041,
+      "osm_id": "way/561931077",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Ozonjuitji m'Bari",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ondongab",
+      "lat": -19.103663,
+      "lon": 16.1105326,
+      "osm_id": "way/561936245",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ondongab",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Sueda",
+      "lat": -19.0428294,
+      "lon": 16.2522796,
+      "osm_id": "way/561936254",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Sueda",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Charitsaub",
+      "lat": -19.0436028,
+      "lon": 16.2657574,
+      "osm_id": "way/561936258",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Charitsaub",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Salvadora",
+      "lat": -19.0343557,
+      "lon": 16.2686453,
+      "osm_id": "way/561936262",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Salvadora",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Noniams",
+      "lat": -19.0092573,
+      "lon": 16.5657844,
+      "osm_id": "way/561936277",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Noniams",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Batia",
+      "lat": -18.9514251,
+      "lon": 16.7097615,
+      "osm_id": "way/561936281",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Batia",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ngobib",
+      "lat": -18.8954628,
+      "lon": 16.7692951,
+      "osm_id": "way/561938107",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ngobib",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Charl Marais Dam",
+      "lat": -18.9902155,
+      "lon": 15.5120108,
+      "osm_id": "way/561946646",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Charl Marais Dam",
+        "natural": "water",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Dinteri Seasonal Waterhole",
+      "lat": -19.2075673,
+      "lon": 14.4231386,
+      "osm_id": "way/561948928",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Dinteri Seasonal Waterhole",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Aasvo\u00eblbad",
+      "lat": -19.1653399,
+      "lon": 14.4116947,
+      "osm_id": "way/561948930",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Aasvo\u00eblbad",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Onautinda Natural Waterhole",
+      "lat": -18.9487078,
+      "lon": 14.5786033,
+      "osm_id": "way/561950848",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Onautinda Natural Waterhole",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Nomab",
+      "lat": -18.9653982,
+      "lon": 14.7643075,
+      "osm_id": "way/561950850",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Nomab",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ngandjela Pan",
+      "lat": -18.5739533,
+      "lon": 15.2453272,
+      "osm_id": "way/562118693",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ngandjela Pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ngandjela Pan",
+      "lat": -18.5750549,
+      "lon": 15.2634968,
+      "osm_id": "way/562121701",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ngandjela Pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lyuuku Pan",
+      "lat": -18.4165669,
+      "lon": 15.2284029,
+      "osm_id": "way/562124484",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lyuuku Pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "wet_season",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Otshikango Pan",
+      "lat": -18.0921116,
+      "lon": 14.9407583,
+      "osm_id": "way/562124485",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Otshikango Pan",
+        "natural": "water",
+        "tidal": "no",
+        "water": "lake",
+        "wetland": "saltmarsh"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Onautinda",
+      "lat": -18.9245642,
+      "lon": 14.6021646,
+      "osm_id": "way/564525920",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Onautinda",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Omuramba Ovambo",
+      "lat": -18.6958443,
+      "lon": 17.495145,
+      "osm_id": "way/692753328",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Omuramba Ovambo",
+        "seasonal": "yes",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Oshigambo",
+      "lat": -18.3587372,
+      "lon": 16.1003773,
+      "osm_id": "way/731108824",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Oshigambo",
+        "tidal": "no",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Oshigambo",
+      "lat": -18.2992142,
+      "lon": 16.0799705,
+      "osm_id": "way/731108825",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oshigambo",
+        "tidal": "no",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oshigambo",
+      "lat": -18.5024901,
+      "lon": 16.0904045,
+      "osm_id": "way/731108826",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Oshigambo",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Omuthiya",
+      "lat": -18.7013316,
+      "lon": 17.0138014,
+      "osm_id": "way/731798059",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Omuthiya",
+        "seasonal": "yes",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Erora",
+      "lat": -18.3493656,
+      "lon": 14.0584433,
+      "osm_id": "way/793856805",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Erora",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Etaka",
+      "lat": -18.0573744,
+      "lon": 15.4984178,
+      "osm_id": "way/831922335",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Etaka",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nipele",
+      "lat": -18.4568364,
+      "lon": 16.3984283,
+      "osm_id": "way/844568890",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nipele",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nipele",
+      "lat": -18.4940052,
+      "lon": 16.3876809,
+      "osm_id": "way/844870460",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nipele",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nugames",
+      "lat": -18.816401,
+      "lon": 17.1371926,
+      "osm_id": "way/862964194",
+      "osm_tags": {
+        "alt_name": "Nu-Games",
+        "intermittent": "yes",
+        "name": "Nugames",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nugames",
+      "lat": -18.7714257,
+      "lon": 17.1016227,
+      "osm_id": "way/862964197",
+      "osm_tags": {
+        "alt_name": "Nu-Games",
+        "intermittent": "yes",
+        "name": "Nugames",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Adomo",
+      "lat": -18.7417862,
+      "lon": 17.1081308,
+      "osm_id": "way/862969626",
+      "osm_tags": {
+        "alt_name": "Adom",
+        "intermittent": "yes",
+        "name": "Adomo",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Adomo",
+      "lat": -18.7894103,
+      "lon": 17.2014911,
+      "osm_id": "way/862969627",
+      "osm_tags": {
+        "alt_name": "Adom",
+        "intermittent": "yes",
+        "name": "Adomo",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Adomo",
+      "lat": -18.773085,
+      "lon": 17.1693443,
+      "osm_id": "way/862969628",
+      "osm_tags": {
+        "alt_name": "Adom",
+        "intermittent": "yes",
+        "name": "Adomo",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Adomo",
+      "lat": -18.7887405,
+      "lon": 17.1973166,
+      "osm_id": "way/862969629",
+      "osm_tags": {
+        "alt_name": "Adom",
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Adomo",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nugames",
+      "lat": -18.8057533,
+      "lon": 17.1360254,
+      "osm_id": "way/863233369",
+      "osm_tags": {
+        "alt_name": "Nu-Games",
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Nugames",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Honip",
+      "lat": -19.5560604,
+      "lon": 14.5042979,
+      "osm_id": "way/910899508",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Honip",
+        "tidal": "no",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gwashuui",
+      "lat": -17.9289966,
+      "lon": 15.6891697,
+      "osm_id": "way/981243161",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Gwashuui",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ugab",
+      "lat": -19.9621791,
+      "lon": 16.6711551,
+      "osm_id": "way/1034254291",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ugab",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Newbrownii",
+      "lat": -19.1716119,
+      "lon": 15.9481741,
+      "osm_id": "way/1067735089",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Newbrownii",
+        "natural": "water",
+        "salt": "no",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ekuma",
+      "lat": -18.6592958,
+      "lon": 16.0132465,
+      "osm_id": "way/1073553483",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ekuma",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ekuma",
+      "lat": -18.6709223,
+      "lon": 16.0321455,
+      "osm_id": "way/1073553484",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ekuma",
+        "source": "bing aerial",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okawerongo",
+      "lat": -19.0223826,
+      "lon": 14.2671736,
+      "osm_id": "way/1092220440",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Okawerongo",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Adomo",
+      "lat": -18.757467,
+      "lon": 17.1420716,
+      "osm_id": "way/1182657522",
+      "osm_tags": {
+        "alt_name": "Adom",
+        "ford": "yes",
+        "intermittent": "yes",
+        "name": "Adomo",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nugames",
+      "lat": -18.8059057,
+      "lon": 17.1359403,
+      "osm_id": "way/1182657524",
+      "osm_tags": {
+        "alt_name": "Nu-Games",
+        "intermittent": "yes",
+        "name": "Nugames",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nugames",
+      "lat": -18.806071,
+      "lon": 17.1357976,
+      "osm_id": "way/1182657525",
+      "osm_tags": {
+        "alt_name": "Nu-Games",
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Nugames",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Mushara",
+      "lat": -18.5878841,
+      "lon": 16.8868648,
+      "osm_id": "way/1222926773",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mushara",
+        "natural": "water",
+        "seasonal": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gobaub",
+      "lat": -19.3110409,
+      "lon": 16.4224107,
+      "osm_id": "way/1224578777",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Gobaub",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Charagas",
+      "lat": -19.270892,
+      "lon": 16.2935836,
+      "osm_id": "way/1224578778",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Charagas",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Natco",
+      "lat": -19.0676055,
+      "lon": 15.7411622,
+      "osm_id": "way/1285146587",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Natco",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Huab",
+      "lat": -20.0581474,
+      "lon": 14.6781496,
+      "osm_id": "way/1353644384",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Huab",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -19.2384586,
+      "lon": 15.2852985,
+      "osm_id": "way/1377922199",
+      "osm_tags": {
+        "amenity": "watering_place",
+        "drinking_water": "no",
+        "name": "Waterhole",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Hoanib",
+      "lat": -19.3006698,
+      "lon": 13.961334,
+      "osm_id": "way/1410040754",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Hoanib",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nguruvai",
+      "lat": -18.9537485,
+      "lon": 14.1724954,
+      "osm_id": "way/1414595702",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nguruvai",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ombonde",
+      "lat": -19.5321502,
+      "lon": 14.3889386,
+      "osm_id": "way/1414670749",
+      "osm_tags": {
+        "alt_name": "Honip",
+        "intermittent": "yes",
+        "name": "Ombonde",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ohanyuna",
+      "lat": -18.8754547,
+      "lon": 14.3091946,
+      "osm_id": "way/1414670752",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ohanyuna",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Okaorongwa",
+      "lat": -18.8267694,
+      "lon": 14.2193736,
+      "osm_id": "way/1414670753",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Okaorongwa",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ekangomsuto",
+      "lat": -18.2648163,
+      "lon": 14.9561055,
+      "osm_id": "way/1429020527",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ekangomsuto",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Yalwege",
+      "lat": -18.0633931,
+      "lon": 15.7736055,
+      "osm_id": "way/1429060423",
+      "osm_tags": {
+        "name": "Yalwege",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Okotumare",
+      "lat": -18.6565998,
+      "lon": 15.9533385,
+      "osm_id": "way/1429060424",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Okotumare",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Okahakana",
+      "lat": -18.8866085,
+      "lon": 15.5915045,
+      "osm_id": "way/1429060425",
+      "osm_tags": {
+        "name": "Okahakana",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ohakarungu",
+      "lat": -18.3847358,
+      "lon": 14.1707478,
+      "osm_id": "way/1429060430",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ohakarungu",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Epumbu",
+      "lat": -18.2339129,
+      "lon": 16.0848514,
+      "osm_id": "way/1429060432",
+      "osm_tags": {
+        "name": "Epumbu",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ya-Lyapeke Dam",
+      "lat": -18.2706406,
+      "lon": 16.2011059,
+      "osm_id": "way/1429060433",
+      "osm_tags": {
+        "name": "Ya-Lyapeke Dam",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Yashipala",
+      "lat": -18.1246788,
+      "lon": 16.035839,
+      "osm_id": "way/1429060439",
+      "osm_tags": {
+        "name": "Yashipala",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Yakaonde",
+      "lat": -18.1076684,
+      "lon": 16.1340262,
+      "osm_id": "way/1429060440",
+      "osm_tags": {
+        "name": "Yakaonde",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Yamanyanga",
+      "lat": -18.0737366,
+      "lon": 16.033478,
+      "osm_id": "way/1429060444",
+      "osm_tags": {
+        "name": "Yamanyanga",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Yaamugenga",
+      "lat": -18.0713738,
+      "lon": 15.9930319,
+      "osm_id": "way/1429060445",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Yaamugenga",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Othilu",
+      "lat": -18.0585395,
+      "lon": 17.0408945,
+      "osm_id": "way/1429060450",
+      "osm_tags": {
+        "name": "Othilu",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Elephant's Bath",
+      "lat": -18.5164295,
+      "lon": 17.4988286,
+      "osm_id": "way/1429060451",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Elephant's Bath",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Omuthiya",
+      "lat": -18.4636109,
+      "lon": 17.2501629,
+      "osm_id": "way/1429060452",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Omuthiya",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Omuthiya",
+      "lat": -18.6591571,
+      "lon": 17.0414948,
+      "osm_id": "way/1429060455",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Omuthiya",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Omuthiya",
+      "lat": -18.654785,
+      "lon": 17.0448698,
+      "osm_id": "way/1429060456",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Omuthiya",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Omuthiya",
+      "lat": -18.6433408,
+      "lon": 17.0505003,
+      "osm_id": "way/1429060457",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Omuthiya",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Omuthiya",
+      "lat": -18.6318927,
+      "lon": 17.0561098,
+      "osm_id": "way/1429060458",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Omuthiya",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Omuthiya",
+      "lat": -18.5845705,
+      "lon": 17.0861046,
+      "osm_id": "way/1429060459",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Omuthiya",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Omuthiya",
+      "lat": -18.5372166,
+      "lon": 17.1163823,
+      "osm_id": "way/1429060460",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Omuthiya",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Omuthiya",
+      "lat": -18.5370579,
+      "lon": 17.1199283,
+      "osm_id": "way/1429060461",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Omuthiya",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Omuthiya",
+      "lat": -18.5374921,
+      "lon": 17.1232196,
+      "osm_id": "way/1429060462",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Omuthiya",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ubareb Pan",
+      "lat": -18.6042216,
+      "lon": 16.9570281,
+      "osm_id": "way/1429060463",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ubareb Pan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ubares Pan",
+      "lat": -18.6113268,
+      "lon": 16.9857195,
+      "osm_id": "way/1429060464",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ubares Pan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Haob Pan",
+      "lat": -18.9746371,
+      "lon": 17.0055343,
+      "osm_id": "way/1429060465",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Haob Pan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nugames",
+      "lat": -18.7583645,
+      "lon": 17.1039079,
+      "osm_id": "way/1429060466",
+      "osm_tags": {
+        "alt_name": "Nu-Games",
+        "intermittent": "yes",
+        "name": "Nugames",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Wortel Pan",
+      "lat": -18.7115824,
+      "lon": 17.2779351,
+      "osm_id": "way/1429071881",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Wortel Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Sandhup Pan",
+      "lat": -18.9597212,
+      "lon": 17.3002803,
+      "osm_id": "way/1429071882",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Sandhup Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kwarikarib Pan",
+      "lat": -18.9558301,
+      "lon": 17.035236,
+      "osm_id": "way/1429075719",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kwarikarib Pan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kamarib",
+      "lat": -18.9554474,
+      "lon": 17.07456,
+      "osm_id": "way/1429075720",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kamarib",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Brakpan",
+      "lat": -19.3021881,
+      "lon": 14.9811058,
+      "osm_id": "way/1455738677",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Brakpan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Dungaries",
+      "lat": -19.1785123,
+      "lon": 16.7871498,
+      "osm_id": "way/1456718276",
+      "osm_tags": {
+        "name": "Dungaries",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Aikab",
+      "lat": -19.3493019,
+      "lon": 16.9811996,
+      "osm_id": "way/1456718277",
+      "osm_tags": {
+        "name": "Aikab",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gaidaus",
+      "lat": -19.8303805,
+      "lon": 17.3796108,
+      "osm_id": "way/1456718282",
+      "osm_tags": {
+        "name": "Gaidaus",
+        "natural": "water"
+      }
+    }
+  ]
+}

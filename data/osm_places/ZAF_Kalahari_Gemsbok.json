@@ -1,0 +1,2080 @@
+{
+  "park_id": "ZAF_Kalahari_Gemsbok",
+  "downloaded_at": "2026-02-08T13:09:03.884609+00:00",
+  "buffer_km": 50,
+  "place_count": 156,
+  "places": [
+    {
+      "place_type": "village",
+      "name": "Aroab",
+      "lat": -26.79776,
+      "lon": 19.653768,
+      "osm_id": "node/243781436",
+      "osm_tags": {
+        "name": "Aroab",
+        "place": "village",
+        "population": "5000",
+        "wikidata": "Q697893",
+        "wikipedia": "en:Aroab"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Loubos",
+      "lat": -26.7088889,
+      "lon": 20.1155556,
+      "osm_id": "node/262708804",
+      "osm_tags": {
+        "name": "Loubos",
+        "place": "village",
+        "sagns_id": "101048",
+        "source": "sagns"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Twee Rivieren Rest Camp",
+      "lat": -26.4722697,
+      "lon": 20.6119154,
+      "osm_id": "node/1286979568",
+      "osm_tags": {
+        "name": "Twee Rivieren Rest Camp",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Grootkolk Wilderness Camp",
+      "lat": -24.890963,
+      "lon": 20.1450082,
+      "osm_id": "node/2132521957",
+      "osm_tags": {
+        "email": "reservations@sanparks.org",
+        "fax": "+27 12 426 5500",
+        "name": "Grootkolk Wilderness Camp",
+        "operator": "South African National Parks",
+        "phone": "+27 12 428 9111",
+        "place": "village",
+        "tourism": "chalet",
+        "website": "https://www.sanparks.org/parks/kgalagadi/"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bokspits",
+      "lat": -26.895473,
+      "lon": 20.690119,
+      "osm_id": "node/2449326560",
+      "osm_tags": {
+        "name": "Bokspits",
+        "place": "village",
+        "wikidata": "Q170665",
+        "wikipedia": "en:Bokspits"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Struizendam",
+      "lat": -26.673933,
+      "lon": 20.629384,
+      "osm_id": "node/2453906261",
+      "osm_tags": {
+        "name": "Struizendam",
+        "place": "village",
+        "wikidata": "Q170677",
+        "wikipedia": "en:Struizendam"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rapples Pan",
+      "lat": -26.820024,
+      "lon": 20.815421,
+      "osm_id": "node/2454868260",
+      "osm_tags": {
+        "name": "Rapples Pan",
+        "place": "village",
+        "wikidata": "Q170696",
+        "wikipedia": "en:Rapples Pan"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vaalhoek",
+      "lat": -26.868549,
+      "lon": 20.710231,
+      "osm_id": "node/2454870580",
+      "osm_tags": {
+        "name": "Vaalhoek",
+        "place": "village",
+        "wikidata": "Q170686",
+        "wikipedia": "en:Vaalhoek"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Schanzkotte",
+      "lat": -26.7653714,
+      "lon": 19.9676852,
+      "osm_id": "node/12252869300",
+      "osm_tags": {
+        "ele": "958",
+        "man_made": "survey_point",
+        "name": "Schanzkotte",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hannahpan",
+      "lat": -26.8354961,
+      "lon": 19.8289078,
+      "osm_id": "node/12252884701",
+      "osm_tags": {
+        "ele": "992",
+        "man_made": "survey_point",
+        "name": "Hannahpan",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Witkrans",
+      "lat": -26.8575934,
+      "lon": 19.9496461,
+      "osm_id": "node/12252884702",
+      "osm_tags": {
+        "ele": "949",
+        "man_made": "survey_point",
+        "name": "Witkrans",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bloukop",
+      "lat": -25.1439608,
+      "lon": 19.8918527,
+      "osm_id": "node/13074997228",
+      "osm_tags": {
+        "ele": "1091",
+        "man_made": "survey_point",
+        "name": "Bloukop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Welkom",
+      "lat": -26.5509418,
+      "lon": 20.6045917,
+      "osm_id": "node/13114510248",
+      "osm_tags": {
+        "name": "Welkom",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rietfontein",
+      "lat": -26.7452865,
+      "lon": 20.0271929,
+      "osm_id": "node/13114523091",
+      "osm_tags": {
+        "name": "Rietfontein",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vetrivier",
+      "lat": -26.8130256,
+      "lon": 20.0070764,
+      "osm_id": "node/13114523092",
+      "osm_tags": {
+        "name": "Vetrivier",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Skepkolk",
+      "lat": -26.8096311,
+      "lon": 20.1438594,
+      "osm_id": "node/13114557251",
+      "osm_tags": {
+        "name": "Skepkolk",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Auob",
+      "lat": -26.100164,
+      "lon": 20.3123883,
+      "osm_id": "way/15581392",
+      "osm_tags": {
+        "admin_level": "8",
+        "intermittent": "yes",
+        "name": "Auob",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Auob",
+      "lat": -24.9089245,
+      "lon": 19.114314,
+      "osm_id": "way/31526113",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Auob",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Klein Mier Pan",
+      "lat": -26.759403,
+      "lon": 20.2788643,
+      "osm_id": "way/38352046",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Klein Mier Pan",
+        "name:af": "Klein-Mierpan",
+        "natural": "water",
+        "sagns_id": "77424",
+        "seasonal": "yes",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Witpan",
+      "lat": -26.6623912,
+      "lon": 20.1475399,
+      "osm_id": "way/38352074",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Witpan",
+        "natural": "water",
+        "sagns_id": "60598",
+        "seasonal": "yes",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Simon Pan",
+      "lat": -26.6885113,
+      "lon": 20.2104461,
+      "osm_id": "way/38352085",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Simon Pan",
+        "natural": "water",
+        "note": "ephemeral",
+        "seasonal": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Katnael Dam",
+      "lat": -26.7324453,
+      "lon": 20.0919318,
+      "osm_id": "way/38352120",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Katnael Dam",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Hakskeenpan",
+      "lat": -26.8192537,
+      "lon": 20.2203705,
+      "osm_id": "way/38352212",
+      "osm_tags": {
+        "alt_name": "Hakskeen Pan",
+        "intermittent": "yes",
+        "name": "Hakskeenpan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "yes",
+        "tidal": "no",
+        "water": "lake",
+        "wikidata": "Q24233960",
+        "wikipedia": "en:Hakskeenpan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Rooipan",
+      "lat": -26.8690328,
+      "lon": 20.6332769,
+      "osm_id": "way/38352406",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rooipan",
+        "natural": "water",
+        "sagns_id": "72803",
+        "seasonal": "yes",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Mierhooppan",
+      "lat": -26.8290258,
+      "lon": 20.5928143,
+      "osm_id": "way/38352407",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mierhooppan",
+        "natural": "water",
+        "sagns_id": "106591",
+        "seasonal": "yes",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Molopo",
+      "lat": -26.7831592,
+      "lon": 21.2620408,
+      "osm_id": "way/38352625",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Molopo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Van Zyls Pan",
+      "lat": -26.9789054,
+      "lon": 20.2839528,
+      "osm_id": "way/38366762",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Van Zyls Pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Middelpos se Pan",
+      "lat": -26.9470749,
+      "lon": 20.1031718,
+      "osm_id": "way/38922610",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Middelpos se Pan",
+        "natural": "water",
+        "sagns_id": "106506",
+        "salt": "yes",
+        "seasonal": "yes",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nossob",
+      "lat": -24.7978661,
+      "lon": 19.7724591,
+      "osm_id": "way/99693591",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Nossob",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Geinab Waterhole",
+      "lat": -24.8606803,
+      "lon": 20.1017046,
+      "osm_id": "way/113413897",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Geinab Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gharagab Waterhole",
+      "lat": -24.925439,
+      "lon": 20.0107001,
+      "osm_id": "way/113413905",
+      "osm_tags": {
+        "name": "Gharagab Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Union's End Waterhole",
+      "lat": -24.8034098,
+      "lon": 20.0263893,
+      "osm_id": "way/113499800",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Union's End Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Cubitje Quap Waterhole",
+      "lat": -25.3709988,
+      "lon": 20.5491579,
+      "osm_id": "way/113511191",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 5 of 5*",
+        "intermittent": "no",
+        "name": "Cubitje Quap Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kwang Waterhole",
+      "lat": -25.2995852,
+      "lon": 20.5298022,
+      "osm_id": "way/113511220",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 5 of 5*",
+        "intermittent": "no",
+        "name": "Kwang Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Samevloeiing Waterhole",
+      "lat": -26.4343128,
+      "lon": 20.6249237,
+      "osm_id": "way/113524254",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 5 of 5*",
+        "intermittent": "no",
+        "name": "Samevloeiing Waterhole",
+        "name:af": "Samevloeiing Waterhole",
+        "name:de": "Samevloeiing Waterhole",
+        "name:en": "Samevloeiing Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Batulama Waterhole",
+      "lat": -26.1115163,
+      "lon": 20.4921372,
+      "osm_id": "way/135170786",
+      "osm_tags": {
+        "name": "Batulama Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Dalkeith Waterhole",
+      "lat": -25.9029674,
+      "lon": 20.1629692,
+      "osm_id": "way/135170787",
+      "osm_tags": {
+        "name": "Dalkeith Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Dertiende Boorgat",
+      "lat": -25.970529,
+      "lon": 20.2784882,
+      "osm_id": "way/135170789",
+      "osm_tags": {
+        "name": "Dertiende Boorgat",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gemsbok Waterhole",
+      "lat": -26.3431214,
+      "lon": 20.6552522,
+      "osm_id": "way/135170790",
+      "osm_tags": {
+        "name": "Gemsbok Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gemsbokplein Waterhole",
+      "lat": -26.1518556,
+      "lon": 20.5288161,
+      "osm_id": "way/135170791",
+      "osm_tags": {
+        "name": "Gemsbokplein Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Houmoed Waterhole",
+      "lat": -26.3396266,
+      "lon": 20.5913042,
+      "osm_id": "way/135170792",
+      "osm_tags": {
+        "name": "Houmoed Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kamfersboom Waterhole",
+      "lat": -26.2250144,
+      "lon": 20.5623916,
+      "osm_id": "way/135170793",
+      "osm_tags": {
+        "name": "Kamfersboom Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kamqua Waterhole",
+      "lat": -26.0111999,
+      "lon": 20.4000097,
+      "osm_id": "way/135170794",
+      "osm_tags": {
+        "name": "Kamqua Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kij Kij Waterhole",
+      "lat": -26.2303926,
+      "lon": 20.8071598,
+      "osm_id": "way/135170796",
+      "osm_tags": {
+        "name": "Kij Kij Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Leeuwdril Waterhole",
+      "lat": -26.3857166,
+      "lon": 20.6970201,
+      "osm_id": "way/135170797",
+      "osm_tags": {
+        "name": "Leeuwdril Waterhole",
+        "natural": "water",
+        "place": "locality",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Monro Waterhole",
+      "lat": -26.2910614,
+      "lon": 20.5840531,
+      "osm_id": "way/135170798",
+      "osm_tags": {
+        "name": "Monro Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Montrose Waterhole",
+      "lat": -26.0766687,
+      "lon": 20.4635956,
+      "osm_id": "way/135170799",
+      "osm_tags": {
+        "name": "Montrose Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Rooibrak Waterhole",
+      "lat": -26.0458008,
+      "lon": 20.4321015,
+      "osm_id": "way/135170800",
+      "osm_tags": {
+        "name": "Rooibrak Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Tier Kop Waterhole",
+      "lat": -26.1633586,
+      "lon": 20.7202226,
+      "osm_id": "way/135170801",
+      "osm_tags": {
+        "name": "Tier Kop Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Urikaruus Waterhole",
+      "lat": -25.9954992,
+      "lon": 20.3395809,
+      "osm_id": "way/135170802",
+      "osm_tags": {
+        "name": "Urikaruus Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Veertiende Boorgat",
+      "lat": -25.9461216,
+      "lon": 20.2175274,
+      "osm_id": "way/135170803",
+      "osm_tags": {
+        "name": "Veertiende Boorgat",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Rooiputs Waterhole",
+      "lat": -26.3235588,
+      "lon": 20.7369426,
+      "osm_id": "way/202157539",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 5 of 5*",
+        "name": "Rooiputs Waterhole",
+        "natural": "water",
+        "salt": "no",
+        "tidal": "no",
+        "tourism": "attraction",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kij Gamies Waterhole",
+      "lat": -26.1197163,
+      "lon": 20.6564639,
+      "osm_id": "way/202833313",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Kij Gamies Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Melkvlei Waterhole",
+      "lat": -26.1403964,
+      "lon": 20.8555035,
+      "osm_id": "way/202840395",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Melkvlei Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gunong Waterhole",
+      "lat": -26.0800537,
+      "lon": 20.8386913,
+      "osm_id": "way/203094392",
+      "osm_tags": {
+        "name": "Gunong Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Dikbaardskolk Waterhole",
+      "lat": -25.7696594,
+      "lon": 20.7303443,
+      "osm_id": "way/203096519",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Dikbaardskolk Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kameelsleep Waterhole",
+      "lat": -25.8257477,
+      "lon": 20.743058,
+      "osm_id": "way/203096522",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 3 of 5*",
+        "name": "Kameelsleep Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Jan se Draai Waterhole",
+      "lat": -25.9345092,
+      "lon": 20.8143789,
+      "osm_id": "way/203098814",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 3 of 5*",
+        "name": "Jan se Draai Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kransbrak Waterhole",
+      "lat": -26.0222099,
+      "lon": 20.8299439,
+      "osm_id": "way/203104558",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 4 of 5*",
+        "name": "Kransbrak Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Cheleka Waterhole",
+      "lat": -25.6356908,
+      "lon": 20.6867709,
+      "osm_id": "way/203109361",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 4 of 5*",
+        "name": "Cheleka Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kaspersdraai Waterhole",
+      "lat": -25.5862271,
+      "lon": 20.6932962,
+      "osm_id": "way/203110453",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 4 of 5*",
+        "name": "Kaspersdraai Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Marie se Draai Waterhole",
+      "lat": -25.451891,
+      "lon": 20.6715943,
+      "osm_id": "way/203111271",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 5 of 5*",
+        "intermittent": "no",
+        "name": "Marie se Draai Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Rooikop Waterhole",
+      "lat": -25.451471,
+      "lon": 20.6148589,
+      "osm_id": "way/203116366",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 5 of 5*",
+        "intermittent": "no",
+        "name": "Rooikop Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Nossob Waterhole",
+      "lat": -25.4210008,
+      "lon": 20.5981176,
+      "osm_id": "way/203116370",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 5 of 5*",
+        "intermittent": "no",
+        "name": "Nossob Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Bedinkt Waterhole",
+      "lat": -25.2252969,
+      "lon": 20.4853477,
+      "osm_id": "way/203125914",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 3 of 5*",
+        "intermittent": "no",
+        "name": "Bedinkt Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kwang Waterhole",
+      "lat": -25.2995025,
+      "lon": 20.5297432,
+      "osm_id": "way/203125916",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Kwang Waterhole",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Langklaas Waterhole",
+      "lat": -25.1547105,
+      "lon": 20.4593706,
+      "osm_id": "way/203132644",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 4 of 5*",
+        "intermittent": "no",
+        "name": "Langklaas Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Polentswa Waterhole",
+      "lat": -25.0843365,
+      "lon": 20.4125036,
+      "osm_id": "way/203132645",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 5 of 5*",
+        "intermittent": "no",
+        "name": "Polentswa Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kouant Waterhole",
+      "lat": -25.147217,
+      "lon": 20.4248661,
+      "osm_id": "way/203132651",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 4 of 5*",
+        "intermittent": "no",
+        "name": "Kouant Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kannaguass Waterhole",
+      "lat": -24.916921,
+      "lon": 20.2147433,
+      "osm_id": "way/203256809",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive book rating 5 of 5*",
+        "intermittent": "no",
+        "name": "Kannaguass Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Dankbaar Waterhole",
+      "lat": -25.0705786,
+      "lon": 20.0956793,
+      "osm_id": "way/203261923",
+      "osm_tags": {
+        "name": "Dankbaar Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gharagab Camp Waterhole",
+      "lat": -25.0430888,
+      "lon": 20.0849886,
+      "osm_id": "way/203261928",
+      "osm_tags": {
+        "name": "Gharagab Camp Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Auchterlonie Waterhole",
+      "lat": -26.1856301,
+      "lon": 20.5451813,
+      "osm_id": "way/203275966",
+      "osm_tags": {
+        "name": "Auchterlonie Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "!Xaus Pan",
+      "lat": -26.1553814,
+      "lon": 20.2543178,
+      "osm_id": "way/203280545",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "!Xaus Pan",
+        "natural": "water",
+        "salt": "no",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Urikaruus Waterhole",
+      "lat": -25.9956773,
+      "lon": 20.3396141,
+      "osm_id": "way/203325390",
+      "osm_tags": {
+        "name": "Urikaruus Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Craig Lockhart Waterhole",
+      "lat": -25.8651237,
+      "lon": 20.1028696,
+      "osm_id": "way/203326948",
+      "osm_tags": {
+        "name": "Craig Lockhart Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Bitterpan",
+      "lat": -25.7141478,
+      "lon": 20.4004042,
+      "osm_id": "way/203327123",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Bitterpan",
+        "natural": "water",
+        "salt": "yes",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Moravet Pan",
+      "lat": -25.8190008,
+      "lon": 20.4767184,
+      "osm_id": "way/203327856",
+      "osm_tags": {
+        "name": "Moravet Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Klein Stofpan",
+      "lat": -25.5640157,
+      "lon": 20.4131475,
+      "osm_id": "way/203328579",
+      "osm_tags": {
+        "name": "Klein Stofpan",
+        "natural": "water",
+        "tourism": "attraction",
+        "wikidata": "Q31932824"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Strathmore Waterhole",
+      "lat": -25.805834,
+      "lon": 20.2988085,
+      "osm_id": "way/203329556",
+      "osm_tags": {
+        "name": "Strathmore Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Nu-Quap Waterhole",
+      "lat": -25.770329,
+      "lon": 20.2017963,
+      "osm_id": "way/203329559",
+      "osm_tags": {
+        "name": "Nu-Quap Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Vaalpan Waterhole",
+      "lat": -25.916584,
+      "lon": 20.4391419,
+      "osm_id": "way/203332050",
+      "osm_tags": {
+        "name": "Vaalpan Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Mata-Mata Waterhole",
+      "lat": -25.7660027,
+      "lon": 20.0008852,
+      "osm_id": "way/203336514",
+      "osm_tags": {
+        "name": "Mata-Mata Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kij Kij Waterhole",
+      "lat": -26.2263652,
+      "lon": 20.8092292,
+      "osm_id": "way/226097318",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 4 of 5*",
+        "name": "Kij Kij Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Dikbaardskolk Waterhole",
+      "lat": -25.7440904,
+      "lon": 20.7275974,
+      "osm_id": "way/226115248",
+      "osm_tags": {
+        "description": "Kgalagadi Self-Drive rating 3 of 5*",
+        "name": "Dikbaardskolk Waterhole",
+        "natural": "water",
+        "tourism": "attraction",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Auchterlonie Well",
+      "lat": -26.1848164,
+      "lon": 20.5468567,
+      "osm_id": "way/226513169",
+      "osm_tags": {
+        "barrier": "wall",
+        "historic": "ruins",
+        "name": "Auchterlonie Well",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Urikaruus Wilderness Camp Waterhole",
+      "lat": -26.0112258,
+      "lon": 20.3497961,
+      "osm_id": "way/226539872",
+      "osm_tags": {
+        "name": "Urikaruus Wilderness Camp Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Piriguhgas",
+      "lat": -26.0445787,
+      "lon": 20.0755421,
+      "osm_id": "way/226748142",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Piriguhgas",
+        "name:etymology": "Goat people's pan",
+        "natural": "water",
+        "sagns_id": "117612",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Loretta Pan",
+      "lat": -26.1411494,
+      "lon": 20.2163501,
+      "osm_id": "way/226748143",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Loretta Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Grootschrei Pan",
+      "lat": -26.1360006,
+      "lon": 20.200354,
+      "osm_id": "way/226748144",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Grootschrei Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kafirpan",
+      "lat": -26.0823603,
+      "lon": 20.1834432,
+      "osm_id": "way/226781461",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kafirpan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Pan",
+      "lat": -26.0894929,
+      "lon": 20.2076152,
+      "osm_id": "way/226812259",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Pan",
+      "lat": -26.1339981,
+      "lon": 20.1930038,
+      "osm_id": "way/226812262",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Pan",
+      "lat": -26.1607855,
+      "lon": 20.367707,
+      "osm_id": "way/226812267",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "!Xaus Waterhole",
+      "lat": -26.1512925,
+      "lon": 20.2559496,
+      "osm_id": "way/226815285",
+      "osm_tags": {
+        "name": "!Xaus Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Salt Pan",
+      "lat": -25.2853539,
+      "lon": 20.1617258,
+      "osm_id": "way/277555680",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Salt Pan",
+        "natural": "water",
+        "seasonal": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Salt Pan",
+      "lat": -25.4629012,
+      "lon": 20.3537682,
+      "osm_id": "way/277562092",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Salt Pan",
+        "natural": "water",
+        "seasonal": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Salt Pan",
+      "lat": -25.4473365,
+      "lon": 20.3467316,
+      "osm_id": "way/277562098",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Salt Pan",
+        "natural": "water",
+        "seasonal": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Salt Pan",
+      "lat": -25.3036417,
+      "lon": 20.166958,
+      "osm_id": "way/277562102",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Salt Pan",
+        "natural": "water",
+        "seasonal": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Salt Pan",
+      "lat": -25.4807927,
+      "lon": 20.3528317,
+      "osm_id": "way/277562106",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Salt Pan",
+        "natural": "water",
+        "seasonal": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -25.4468343,
+      "lon": 20.3472101,
+      "osm_id": "way/277562114",
+      "osm_tags": {
+        "name": "Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -25.1229674,
+      "lon": 20.2319519,
+      "osm_id": "way/277793712",
+      "osm_tags": {
+        "name": "Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kaole Pan",
+      "lat": -24.7774428,
+      "lon": 20.3980553,
+      "osm_id": "way/292316458",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kaole Pan",
+        "natural": "water",
+        "salt": "yes",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Rooi Rambuka Pan",
+      "lat": -24.74922,
+      "lon": 20.218213,
+      "osm_id": "way/292316460",
+      "osm_tags": {
+        "name": "Rooi Rambuka Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Sesatswe Pan",
+      "lat": -24.5440339,
+      "lon": 20.8182026,
+      "osm_id": "way/293749752",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Sesatswe Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Khandu Pan",
+      "lat": -24.4313444,
+      "lon": 20.3591676,
+      "osm_id": "way/293885990",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Khandu Pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "yes",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gnus Gnus Pan",
+      "lat": -24.6024062,
+      "lon": 20.242095,
+      "osm_id": "way/294223294",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Gnus Gnus Pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "yes",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Rietfontein",
+      "lat": -26.7437244,
+      "lon": 20.0262504,
+      "osm_id": "way/305738640",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Rietfontein",
+        "place": "town",
+        "population": "2293",
+        "population:date": "2011",
+        "sagns_id": "58833",
+        "source": "sagns",
+        "wikidata": "Q7333175",
+        "wikipedia": "en:Rietfontein"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Klein Nossob",
+      "lat": -24.2545369,
+      "lon": 19.6529993,
+      "osm_id": "way/308953305",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Klein Nossob",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kieliekrankie Waterhole",
+      "lat": -26.1847414,
+      "lon": 20.5927036,
+      "osm_id": "way/375526889",
+      "osm_tags": {
+        "name": "Kieliekrankie Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gaibis se Pan",
+      "lat": -26.2294316,
+      "lon": 19.559588,
+      "osm_id": "way/384171615",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Gaibis se Pan",
+        "natural": "water",
+        "seasonal": "yes",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Molopo",
+      "lat": -26.9072053,
+      "lon": 20.6850864,
+      "osm_id": "way/408887294",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Molopo",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Klein Mier",
+      "lat": -26.7387878,
+      "lon": 20.2762848,
+      "osm_id": "way/409273024",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Klein Mier",
+        "place": "village",
+        "population": "449",
+        "population:date": "2011",
+        "wikidata": "Q39050572",
+        "wikipedia": "en:Klein Mier"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Groot Mier",
+      "lat": -26.7402498,
+      "lon": 20.3260181,
+      "osm_id": "way/409285252",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Groot Mier",
+        "place": "village",
+        "sagns_id": "83276"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Witpan",
+      "lat": -26.6213012,
+      "lon": 19.6387422,
+      "osm_id": "way/410014577",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Witpan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Sizatswe Pan",
+      "lat": -24.3749898,
+      "lon": 20.3440082,
+      "osm_id": "way/512677142",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Sizatswe Pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "yes",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Xchoi Pan",
+      "lat": -24.3516415,
+      "lon": 20.1124424,
+      "osm_id": "way/512678844",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Xchoi Pan",
+        "natural": "water",
+        "seasonal": "yes",
+        "tidal": "no",
+        "water": "lake",
+        "wetland": "marsh"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Peach Pan",
+      "lat": -24.4686143,
+      "lon": 21.1365672,
+      "osm_id": "way/558277494",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Peach Pan",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Bushy Pan",
+      "lat": -24.534833,
+      "lon": 21.0946731,
+      "osm_id": "way/558277839",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Bushy Pan",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Busy Pan",
+      "lat": -24.5329197,
+      "lon": 21.1047535,
+      "osm_id": "way/558279183",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Busy Pan",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Malatsa-Khudu pan",
+      "lat": -24.5916079,
+      "lon": 20.1919581,
+      "osm_id": "way/561872501",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Malatsa-Khudu pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "yes",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Thupapedi Pan",
+      "lat": -24.4289009,
+      "lon": 20.3140009,
+      "osm_id": "way/561872502",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Thupapedi Pan",
+        "natural": "water",
+        "salt": "yes",
+        "seasonal": "yes",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -25.788399,
+      "lon": 20.0175809,
+      "osm_id": "way/739018713",
+      "osm_tags": {
+        "name": "Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -26.4688291,
+      "lon": 20.6121684,
+      "osm_id": "way/754400679",
+      "osm_tags": {
+        "name": "Waterhole",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Molopo",
+      "lat": -26.9232243,
+      "lon": 20.670423,
+      "osm_id": "way/770314689",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Molopo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Thotayamakgowa Pan",
+      "lat": -24.3335664,
+      "lon": 20.3081725,
+      "osm_id": "way/911563351",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Thotayamakgowa Pan",
+        "natural": "water",
+        "salt": "yes",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lekkerwaterpan",
+      "lat": -25.3498755,
+      "lon": 20.4572376,
+      "osm_id": "way/911748025",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lekkerwaterpan",
+        "natural": "water",
+        "salt": "no",
+        "tidal": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Nossob River",
+      "lat": -25.0315664,
+      "lon": 20.3522061,
+      "osm_id": "way/912728841",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nossob River",
+        "natural": "water",
+        "seasonal": "yes",
+        "type": "multipolygon"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -24.8914002,
+      "lon": 20.1443629,
+      "osm_id": "way/941834321",
+      "osm_tags": {
+        "amenity": "watering_place",
+        "name": "Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Christianspan",
+      "lat": -25.5331253,
+      "lon": 19.9119525,
+      "osm_id": "way/964950193",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Christianspan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nossob",
+      "lat": -26.6914977,
+      "lon": 20.6461489,
+      "osm_id": "way/1074188283",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Nossob",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nossob",
+      "lat": -26.4748673,
+      "lon": 20.6134646,
+      "osm_id": "way/1074188284",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Nossob",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nossob",
+      "lat": -26.4753175,
+      "lon": 20.6133618,
+      "osm_id": "way/1074188285",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Nossob",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nossob",
+      "lat": -26.4758125,
+      "lon": 20.6132962,
+      "osm_id": "way/1074188286",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Nossob",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Molopo",
+      "lat": -26.9075523,
+      "lon": 20.6846916,
+      "osm_id": "way/1074303295",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Molopo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Molopo",
+      "lat": -26.907775,
+      "lon": 20.6842621,
+      "osm_id": "way/1074303296",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Molopo",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lijersdraai Waterhole",
+      "lat": -25.0285502,
+      "lon": 20.3496064,
+      "osm_id": "way/1198875771",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Lijersdraai Waterhole",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -25.7161154,
+      "lon": 20.4029485,
+      "osm_id": "way/1346969097",
+      "osm_tags": {
+        "name": "Waterhole",
+        "natural": "water",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Driefendaspan",
+      "lat": -25.6354445,
+      "lon": 20.0249726,
+      "osm_id": "way/1420372907",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Driefendaspan",
+        "natural": "water",
+        "sagns_id": "88413",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Groot- Koupan",
+      "lat": -26.5318372,
+      "lon": 20.0516528,
+      "osm_id": "way/1420692212",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Groot- Koupan",
+        "natural": "water",
+        "sagns_id": "83288",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Klein-Koupan",
+      "lat": -26.5769809,
+      "lon": 20.0531026,
+      "osm_id": "way/1420692738",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Klein-Koupan",
+        "natural": "water",
+        "sagns_id": "77757",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Geisemappan",
+      "lat": -26.3320595,
+      "lon": 20.0643093,
+      "osm_id": "way/1420698372",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Geisemappan",
+        "natural": "water",
+        "sagns_id": "84689",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Blinkpan",
+      "lat": -26.650584,
+      "lon": 20.1130372,
+      "osm_id": "way/1420704488",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Blinkpan",
+        "natural": "water",
+        "sagns_id": "94569",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Aroab",
+      "lat": -26.8340092,
+      "lon": 19.6384136,
+      "osm_id": "way/1422497325",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Aroab",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gannapan",
+      "lat": -26.8515077,
+      "lon": 19.7357971,
+      "osm_id": "way/1422497330",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Gannapan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kannenberg",
+      "lat": -26.8757285,
+      "lon": 19.619983,
+      "osm_id": "way/1422497331",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kannenberg",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Brakpan",
+      "lat": -26.4552594,
+      "lon": 19.819906,
+      "osm_id": "way/1422541063",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Brakpan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Witkop se Pan",
+      "lat": -26.0541004,
+      "lon": 19.5897159,
+      "osm_id": "way/1422548420",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Witkop se Pan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lemoenpan",
+      "lat": -26.0691609,
+      "lon": 19.6745454,
+      "osm_id": "way/1422548421",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lemoenpan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Sitsaspan",
+      "lat": -25.8806279,
+      "lon": 19.9317518,
+      "osm_id": "way/1422736416",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Sitsaspan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Bloukoppan",
+      "lat": -25.1272896,
+      "lon": 19.8848619,
+      "osm_id": "way/1422736425",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Bloukoppan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Platkoppan",
+      "lat": -25.0828479,
+      "lon": 19.7724546,
+      "osm_id": "way/1422736426",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Platkoppan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Rooikoppan",
+      "lat": -25.0697087,
+      "lon": 19.6223708,
+      "osm_id": "way/1422736427",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rooikoppan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Halfpadrivier",
+      "lat": -26.859407,
+      "lon": 20.1298683,
+      "osm_id": "way/1428502280",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Halfpadrivier",
+        "sagns_id": "82401",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Rooivleipan",
+      "lat": -26.7446993,
+      "lon": 20.5264189,
+      "osm_id": "way/1428781277",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rooivleipan",
+        "natural": "water",
+        "sagns_id": "72656",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Guruxanaspan",
+      "lat": -26.3152422,
+      "lon": 20.3299136,
+      "osm_id": "way/1429042285",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Guruxanaspan",
+        "natural": "water",
+        "sagns_id": "82492",
+        "water": "pan"
+      }
+    }
+  ]
+}

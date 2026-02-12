@@ -1,0 +1,3122 @@
+{
+  "park_id": "GNQ_Monte_Al\u00e9n",
+  "downloaded_at": "2026-02-08T09:00:17.574282+00:00",
+  "buffer_km": 50,
+  "place_count": 197,
+  "places": [
+    {
+      "place_type": "city",
+      "name": "Bata",
+      "lat": 1.869189,
+      "lon": 9.7720137,
+      "osm_id": "node/251608438",
+      "osm_tags": {
+        "capital": "4",
+        "name": "Bata",
+        "name:an": "Bata",
+        "name:ar": "\u0628\u0627\u062a\u0627",
+        "name:az-Arab": "\u0628\u0627\u062a\u0627",
+        "name:azb": "\u0628\u0627\u062a\u0627",
+        "name:be": "\u0411\u0430\u0442\u0430",
+        "name:bg": "\u0411\u0430\u0442\u0430",
+        "name:ca": "Bata",
+        "name:cs": "Bata",
+        "name:de": "Bata",
+        "name:en": "Bata",
+        "name:eo": "Batao",
+        "name:es": "Bata",
+        "name:fa": "\u0628\u0627\u062a\u0627",
+        "name:fr": "Bata",
+        "name:gl": "Bata",
+        "name:gn": "Bata",
+        "name:he": "\u05d1\u05d0\u05d8\u05d4",
+        "name:hr": "Bata",
+        "name:hu": "Bata",
+        "name:id": "Bata",
+        "name:it": "Bata",
+        "name:ja": "\u30d0\u30bf",
+        "name:ka": "\u10d1\u10d0\u10e2\u10d0",
+        "name:kk": "\u0411\u0430\u0442\u0430",
+        "name:ko": "\ubc14\ud0c0",
+        "name:ks": "\u0628\u0627\u062a\u0627",
+        "name:lt": "Bata",
+        "name:nl": "Bata",
+        "name:oc": "Bata",
+        "name:pl": "Bata",
+        "name:ps": "\u0628\u0627\u062a\u0627",
+        "name:pt": "Bata",
+        "name:ro": "Bata",
+        "name:ru": "\u0411\u0430\u0442\u0430",
+        "name:sk": "Bata",
+        "name:sr": "\u0411\u0430\u0442\u0430",
+        "name:sv": "Bata",
+        "name:sw": "Bata",
+        "name:ta": "\u0baa\u0bbe\u0b9f\u0bcd\u0b9f\u0bbe",
+        "name:th": "\u0e1a\u0e32\u0e15\u0e32",
+        "name:uk": "\u0411\u0430\u0442\u0430",
+        "name:ur": "\u0628\u0627\u062a\u0627",
+        "name:vi": "Bata",
+        "name:zh": "\u5df4\u5854",
+        "name:zh-Hans": "\u5df4\u5854",
+        "name:zu": "Bata",
+        "place": "city",
+        "population": "230282",
+        "start_date": "1900",
+        "wikidata": "Q320792",
+        "wikipedia": "es:Bata (Guinea Ecuatorial)",
+        "wikipedia:es": "Bata (Guinea Ecuatorial)"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Niefang",
+      "lat": 1.849973,
+      "lon": 10.250384,
+      "osm_id": "node/667646869",
+      "osm_tags": {
+        "name": "Niefang",
+        "old_name": "Sevilla de Niefang",
+        "place": "town",
+        "wikidata": "Q2550461",
+        "wikipedia": "en:Niefang"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Evinayong",
+      "lat": 1.4388356,
+      "lon": 10.5516564,
+      "osm_id": "node/667649688",
+      "osm_tags": {
+        "capital": "4",
+        "name": "Evinayong",
+        "name:ar": "\u0625\u064a\u0641\u064a\u0646\u0627\u064a\u0648\u0646\u063a",
+        "name:de": "Evinayong",
+        "name:es": "Evinayong",
+        "name:fr": "Evinayong",
+        "name:ru": "\u042d\u0432\u0438\u043d\u0430\u0439\u043e\u043d\u0433",
+        "name:ur": "\u0627\u06cc\u0648\u06cc\u0646\u0627\u06cc\u0648\u0646\u06af",
+        "name:zh": "\u57c3\u7ef4\u7eb3\u6c38",
+        "name:zh-Hans": "\u57c3\u7ef4\u7eb3\u6c38",
+        "place": "city",
+        "population": "36521",
+        "wikidata": "Q1988320",
+        "wikipedia": "es:Evinayong"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Medouneu",
+      "lat": 1.017435,
+      "lon": 10.796534,
+      "osm_id": "node/667654938",
+      "osm_tags": {
+        "name": "Medouneu",
+        "place": "town",
+        "wikidata": "Q3304092"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Acurenam",
+      "lat": 1.034965,
+      "lon": 10.6738817,
+      "osm_id": "node/667655303",
+      "osm_tags": {
+        "name": "Acurenam",
+        "place": "town",
+        "wikidata": "Q2249718"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Edoum",
+      "lat": 0.9613209,
+      "lon": 10.6846203,
+      "osm_id": "node/667664658",
+      "osm_tags": {
+        "name": "Edoum",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Micomeseng",
+      "lat": 2.146175,
+      "lon": 10.616425,
+      "osm_id": "node/667667198",
+      "osm_tags": {
+        "name": "Micomeseng",
+        "place": "town",
+        "source": "PCL",
+        "wikidata": "Q2720623"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "A\u00f1isoc",
+      "lat": 1.844383,
+      "lon": 10.747593,
+      "osm_id": "node/667669560",
+      "osm_tags": {
+        "alt_name": "A\u00f1isok",
+        "name": "A\u00f1isoc",
+        "old_name": "Valladolid de los Bimbiles",
+        "place": "town",
+        "population": "16626",
+        "source": "http://www.lib.utexas.edu/maps/africa/equatorial_guinea_pol_1992.jpg",
+        "wikidata": "Q2720938",
+        "wikipedia": "es:A\u00f1isoc"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mbini",
+      "lat": 1.58369,
+      "lon": 9.616028,
+      "osm_id": "node/667671405",
+      "osm_tags": {
+        "name": "Mbini",
+        "name:es": "Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "place": "town",
+        "population": "14034",
+        "wikidata": "Q980895",
+        "wikipedia": "es:Mbini",
+        "wikipedia:es": "Mbini"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Cogo",
+      "lat": 1.086572,
+      "lon": 9.694291,
+      "osm_id": "node/667673697",
+      "osm_tags": {
+        "alt_name": "Kogo",
+        "alt_name:es": "Kogo",
+        "name": "Cogo",
+        "name:es": "Cogo",
+        "old_name": "Puerto Iradier",
+        "old_name:es": "Puerto Iradier",
+        "place": "city",
+        "population": "4607",
+        "wikidata": "Q2549060",
+        "wikipedia": "es:Cogo"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Acalayong",
+      "lat": 1.092698,
+      "lon": 9.665485,
+      "osm_id": "node/667673698",
+      "osm_tags": {
+        "alt_name": "Asalayeng;Akalayong",
+        "alt_name:es": "Asalayeng;Akalayong",
+        "name": "Acalayong",
+        "name:es": "Acalayong",
+        "place": "town",
+        "wikidata": "Q2378079",
+        "wikipedia": "es:Asalayeng"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Cocobeach",
+      "lat": 1.0055667,
+      "lon": 9.5842085,
+      "osm_id": "node/667673760",
+      "osm_tags": {
+        "name": "Cocobeach",
+        "name:bg": "\u041a\u043e\u043a\u043e\u0431\u0438\u0439\u0447",
+        "name:es": "Cocobeach",
+        "name:fr": "Cocobeach",
+        "name:ru": "\u041a\u043e\u043a\u043e\u0431\u0438\u0447",
+        "place": "town",
+        "wikidata": "Q491801",
+        "wikipedia": "fr:Cocobeach"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bekw\u00e9",
+      "lat": 2.1930409,
+      "lon": 10.771433,
+      "osm_id": "node/2460662861",
+      "osm_tags": {
+        "name": "Bekw\u00e9",
+        "place": "village",
+        "source": "WRI_2005"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bindom",
+      "lat": 2.2093484,
+      "lon": 10.7985269,
+      "osm_id": "node/2460662889",
+      "osm_tags": {
+        "name": "Bindom",
+        "place": "village",
+        "source": "WRI_2005"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Engonlozok",
+      "lat": 2.2043571,
+      "lon": 10.8476581,
+      "osm_id": "node/2460662941",
+      "osm_tags": {
+        "name": "Engonlozok",
+        "place": "village",
+        "source": "WRI_2005"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbourango'a",
+      "lat": 2.1951398,
+      "lon": 10.680023,
+      "osm_id": "node/2460663016",
+      "osm_tags": {
+        "name": "Mbourango'a",
+        "place": "village",
+        "source": "WRI_2005"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nsengou",
+      "lat": 2.1957882,
+      "lon": 10.5927369,
+      "osm_id": "node/2460663490",
+      "osm_tags": {
+        "name": "Nsengou",
+        "place": "village",
+        "source": "WRI_2005"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bengole",
+      "lat": 0.7505082,
+      "lon": 9.6587812,
+      "osm_id": "node/2751567369",
+      "osm_tags": {
+        "name": "Bengole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Abayak",
+      "lat": 1.1021272,
+      "lon": 9.6358563,
+      "osm_id": "node/2889955830",
+      "osm_tags": {
+        "name": "Abayak",
+        "name:es": "Abayak",
+        "place": "village",
+        "wikidata": "Q106848597"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Asuiabee",
+      "lat": 1.2237889,
+      "lon": 9.6220541,
+      "osm_id": "node/2889955831",
+      "osm_tags": {
+        "name": "Asuiabee",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bil\u00e9n",
+      "lat": 1.484925,
+      "lon": 9.5942997,
+      "osm_id": "node/2889955836",
+      "osm_tags": {
+        "name": "Bil\u00e9n",
+        "name:es": "Bil\u00e9n",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bis\u00f3binam",
+      "lat": 1.1577918,
+      "lon": 9.6193442,
+      "osm_id": "node/2889955837",
+      "osm_tags": {
+        "name": "Bis\u00f3binam",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bitica",
+      "lat": 1.4218659,
+      "lon": 9.6183073,
+      "osm_id": "node/2889955838",
+      "osm_tags": {
+        "name": "Bitica",
+        "place": "town",
+        "wikidata": "Q3640495"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bono Bono",
+      "lat": 1.2360756,
+      "lon": 9.6258637,
+      "osm_id": "node/2889955841",
+      "osm_tags": {
+        "name": "Bono Bono",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Engong",
+      "lat": 1.3621647,
+      "lon": 9.608654,
+      "osm_id": "node/2889955850",
+      "osm_tags": {
+        "name": "Engong",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mangolia",
+      "lat": 1.5247996,
+      "lon": 9.6015083,
+      "osm_id": "node/2889955858",
+      "osm_tags": {
+        "name": "Mangolia",
+        "name:es": "Mangolia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manguma",
+      "lat": 1.4484463,
+      "lon": 9.6166349,
+      "osm_id": "node/2889955859",
+      "osm_tags": {
+        "name": "Manguma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mboete",
+      "lat": 1.308967,
+      "lon": 9.6036332,
+      "osm_id": "node/2889955860",
+      "osm_tags": {
+        "name": "Mboete",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ncolanvam",
+      "lat": 1.1914229,
+      "lon": 9.6166345,
+      "osm_id": "node/2889955863",
+      "osm_tags": {
+        "name": "Ncolanvam",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nom-Nam",
+      "lat": 1.2917239,
+      "lon": 9.6018162,
+      "osm_id": "node/2889955865",
+      "osm_tags": {
+        "name": "Nom-Nam",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nzang Nam",
+      "lat": 1.2651066,
+      "lon": 9.6012092,
+      "osm_id": "node/2889955866",
+      "osm_tags": {
+        "name": "Nzang Nam",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Ciudad de la Paz",
+      "lat": 1.5994535,
+      "lon": 10.8268276,
+      "osm_id": "node/3346995825",
+      "osm_tags": {
+        "admin_level": "2",
+        "alt_name:br": "Oyala",
+        "alt_name:es": "Oyal\u00e1;Oyala;Oyala-Ciudad de la Paz;Djibloho",
+        "alt_name:zh": "\u62c9\u5df4\u65af\u57ce",
+        "capital": "yes",
+        "capital_ISO3166-1": "yes",
+        "name": "Ciudad de la Paz",
+        "name:ar": "\u0633\u064a\u0648\u062f\u0627\u062f \u062f\u064a \u0644\u0627 \u0628\u0627\u0632",
+        "name:be": "\u0421\u044c\u044e\u0434\u0430\u0434-\u0434\u044d-\u043b\u0430-\u041f\u0430\u0441",
+        "name:bg": "\u0421\u0438\u0443\u0434\u0430\u0434 \u0434\u0435 \u043b\u0430 \u041f\u0430\u0437",
+        "name:br": "Ciudad de la Paz",
+        "name:ca": "Ciudad de la Paz",
+        "name:cs": "Ciudad de la Paz",
+        "name:de": "Ciudad de la Paz",
+        "name:el": "\u0398\u03b9\u03bf\u03c5\u03b4\u03ac\u03b4 \u03bd\u03c4\u03b5 \u03bb\u03b1 \u03a0\u03b1\u03b8",
+        "name:en": "Ciudad de la Paz",
+        "name:es": "Ciudad de la Paz",
+        "name:fa": "\u0633\u06cc\u0648\u062f\u0627\u062f \u062f\u0644\u0627\u067e\u0627\u0632",
+        "name:fi": "Ciudad de la Paz",
+        "name:fr": "Ciudad de la Paz",
+        "name:he": "\u05e1\u05d9\u05d5\u05d3\u05d0\u05d3 \u05d3\u05d4 \u05dc\u05d4 \u05e4\u05d0\u05e1",
+        "name:hr": "Ciudad de la Paz",
+        "name:hu": "Ciudad de la Paz",
+        "name:hy": "\u054d\u0575\u0578\u0582\u0564\u0561\u0564 \u0564\u0565 \u056c\u0561 \u054a\u0561\u057d",
+        "name:it": "Ciudad de la Paz",
+        "name:ja": "\u30e9\u30d1\u30b9",
+        "name:ko": "\uc2dc\uc6b0\ub2e4\ub4dc\ub370\ub77c\ud30c\uc2a4",
+        "name:ku": "Ciudad de la Paz",
+        "name:la": "Civitas Pacis",
+        "name:nl": "Ciudad de la Paz",
+        "name:pl": "Ciudad de la Paz",
+        "name:pt": "Cidade da Paz",
+        "name:ro": "Ciudad de la Paz",
+        "name:ru": "\u0421\u044c\u044e\u0434\u0430\u0434-\u0434\u0435-\u043b\u0430-\u041f\u0430\u0441",
+        "name:sl": "Ciudad de la Paz",
+        "name:sr": "\u0421\u0438\u0458\u0443\u0434\u0430\u0434 \u0434\u0435 \u043b\u0430 \u041f\u0430\u0437",
+        "name:sr-Latn": "Sijudad de la Paz",
+        "name:sv": "Ciudad de la Paz",
+        "name:tr": "Ciudad de la Paz",
+        "name:uk": "\u0421\u044c\u044e\u0434\u0430\u0434-\u0434\u0435-\u043b\u0430-\u041f\u0430\u0441",
+        "name:ur": "\u0633\u06cc\u0648\u062f\u0627\u062f \u062f\u06d2 \u0644\u0627 \u067e\u0627\u0632",
+        "name:vi": "Ciudad de la Paz",
+        "name:zh": "\u62c9\u5df4\u65af\u57ce",
+        "old_name": "Oyala;Djibloho",
+        "place": "city",
+        "wikidata": "Q1140136",
+        "wikipedia": "es:Oyala-Ciudad de la Paz"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boabele",
+      "lat": 1.4868692,
+      "lon": 9.5624515,
+      "osm_id": "node/4215640524",
+      "osm_tags": {
+        "name": "Boabele",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bolondo",
+      "lat": 1.5902741,
+      "lon": 9.6304015,
+      "osm_id": "node/4215642100",
+      "osm_tags": {
+        "name": "Bolondo",
+        "name:es": "Bolondo",
+        "place": "village",
+        "wikidata": "Q1647504",
+        "wikipedia": "es:Bolondo",
+        "wikipedia:es": "Bolondo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Luango",
+      "lat": 1.6820848,
+      "lon": 9.626299,
+      "osm_id": "node/4215642101",
+      "osm_tags": {
+        "name": "Luango",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bicurga",
+      "lat": 1.583502,
+      "lon": 10.4590072,
+      "osm_id": "node/4872929422",
+      "osm_tags": {
+        "name": "Bicurga",
+        "name:de": "Bicurga",
+        "name:fr": "Bicurga",
+        "place": "town",
+        "wikidata": "Q3639735"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Oveng",
+      "lat": 1.0782259,
+      "lon": 10.7561246,
+      "osm_id": "node/5761792213",
+      "osm_tags": {
+        "name": "Oveng",
+        "place": "village",
+        "wikidata": "Q102360779"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Abam",
+      "lat": 1.837436,
+      "lon": 10.8675252,
+      "osm_id": "node/5767714109",
+      "osm_tags": {
+        "name": "Abam",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nsogobor",
+      "lat": 1.0092258,
+      "lon": 9.8332281,
+      "osm_id": "node/5820853976",
+      "osm_tags": {
+        "name": "Nsogobor",
+        "place": "village",
+        "wikidata": "Q106847984"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Efote",
+      "lat": 1.0085539,
+      "lon": 10.9022593,
+      "osm_id": "node/6136734343",
+      "osm_tags": {
+        "name": "Efote",
+        "place": "hamlet",
+        "source:en": "Medouneu Town Hall",
+        "source:name": "Mairie de Medouneu"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Messaye",
+      "lat": 0.9692572,
+      "lon": 9.7889136,
+      "osm_id": "node/6240242274",
+      "osm_tags": {
+        "name": "Messaye",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Aboune",
+      "lat": 0.8658503,
+      "lon": 9.8444888,
+      "osm_id": "node/6240244342",
+      "osm_tags": {
+        "name": "Aboune",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Assok",
+      "lat": 0.7152705,
+      "lon": 10.3596866,
+      "osm_id": "node/6583584357",
+      "osm_tags": {
+        "name": "Assok",
+        "place": "village",
+        "source": "https://www.openstreetmap.org/note/1274867"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ng\u00fcelensoc",
+      "lat": 1.1618962,
+      "lon": 10.5665087,
+      "osm_id": "node/6583897032",
+      "osm_tags": {
+        "name": "Ng\u00fcelensoc",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Esong",
+      "lat": 1.1199843,
+      "lon": 10.4192715,
+      "osm_id": "node/6583897033",
+      "osm_tags": {
+        "name": "Esong",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ayamik\u00e9n",
+      "lat": 2.1110966,
+      "lon": 10.0223422,
+      "osm_id": "node/6583934832",
+      "osm_tags": {
+        "name": "Ayamik\u00e9n",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ekorodo",
+      "lat": 0.9245227,
+      "lon": 9.9420315,
+      "osm_id": "node/7023269692",
+      "osm_tags": {
+        "name": "Ekorodo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Essoua",
+      "lat": 0.945763,
+      "lon": 9.9041963,
+      "osm_id": "node/7023287423",
+      "osm_tags": {
+        "name": "Essoua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngamb",
+      "lat": 0.9578795,
+      "lon": 9.9405885,
+      "osm_id": "node/7023287424",
+      "osm_tags": {
+        "name": "Ngamb",
+        "name:de": "Ngamb",
+        "name:es": "Ngamb",
+        "place": "village",
+        "wikidata": "Q106847892"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Asobla",
+      "lat": 0.9741314,
+      "lon": 9.9682984,
+      "osm_id": "node/7023287427",
+      "osm_tags": {
+        "name": "Asobla",
+        "name:de": "Asobla",
+        "name:es": "Asobla",
+        "place": "village",
+        "wikidata": "Q51468875"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "M'Belobi",
+      "lat": 0.9861454,
+      "lon": 9.5055611,
+      "osm_id": "node/7116084000",
+      "osm_tags": {
+        "name": "M'Belobi",
+        "name:en": "M'Belobi",
+        "name:fr": "M'Belobi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Calatrava",
+      "lat": 1.1155783,
+      "lon": 9.4200253,
+      "osm_id": "node/7894329081",
+      "osm_tags": {
+        "name": "Calatrava",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cabo San Juan",
+      "lat": 1.1940223,
+      "lon": 9.3733334,
+      "osm_id": "node/7894329082",
+      "osm_tags": {
+        "name": "Cabo San Juan",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mofub",
+      "lat": 1.063998,
+      "lon": 10.7888665,
+      "osm_id": "node/8203895209",
+      "osm_tags": {
+        "name": "Mofub",
+        "place": "village",
+        "wikidata": "Q106847677"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Abogotom",
+      "lat": 1.0036528,
+      "lon": 10.7608912,
+      "osm_id": "node/8438445940",
+      "osm_tags": {
+        "name": "Abogotom",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boutika",
+      "lat": 1.0590785,
+      "lon": 9.6661924,
+      "osm_id": "node/8722533533",
+      "osm_tags": {
+        "name": "Boutika",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nkue",
+      "lat": 2.0130235,
+      "lon": 10.4681682,
+      "osm_id": "node/8736140403",
+      "osm_tags": {
+        "name": "Nkue",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Teguete",
+      "lat": 1.3406818,
+      "lon": 10.2807998,
+      "osm_id": "node/8736248096",
+      "osm_tags": {
+        "name": "Teguete",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Nkimi",
+      "lat": 1.9344278,
+      "lon": 10.3500974,
+      "osm_id": "node/8736383658",
+      "osm_tags": {
+        "name": "Nkimi",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Machinda",
+      "lat": 1.8651183,
+      "lon": 9.9869434,
+      "osm_id": "node/8736383659",
+      "osm_tags": {
+        "name": "Machinda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ayene",
+      "lat": 1.9093793,
+      "lon": 10.6353235,
+      "osm_id": "node/8736586763",
+      "osm_tags": {
+        "name": "Ayene",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nkumeki\u00e9n",
+      "lat": 1.7678531,
+      "lon": 10.4686832,
+      "osm_id": "node/8736586764",
+      "osm_tags": {
+        "name": "Nkumeki\u00e9n",
+        "name:de": "Nkumeki\u00e9n",
+        "name:es": "Nkumeki\u00e9n",
+        "name:fr": "Nkumeki\u00e9n",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dipikar",
+      "lat": 2.2331941,
+      "lon": 9.8844901,
+      "osm_id": "node/9010649106",
+      "osm_tags": {
+        "name": "Dipikar",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yeng\u00fce",
+      "lat": 2.2235187,
+      "lon": 9.8783183,
+      "osm_id": "node/9010649107",
+      "osm_tags": {
+        "name": "Yeng\u00fce",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u00c9gnieng Melen",
+      "lat": 1.0236053,
+      "lon": 10.8542991,
+      "osm_id": "node/9041571748",
+      "osm_tags": {
+        "name": "\u00c9gnieng Melen",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nsong Mekok",
+      "lat": 1.040681,
+      "lon": 9.762611,
+      "osm_id": "node/9047271051",
+      "osm_tags": {
+        "name": "Nsong Mekok",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ntouga",
+      "lat": 1.0527119,
+      "lon": 9.6820228,
+      "osm_id": "node/9047271060",
+      "osm_tags": {
+        "name": "Ntouga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mvine",
+      "lat": 1.0103621,
+      "lon": 9.6063351,
+      "osm_id": "node/9047271069",
+      "osm_tags": {
+        "name": "Mvine",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bongoro",
+      "lat": 2.1210086,
+      "lon": 9.8874968,
+      "osm_id": "node/9428418786",
+      "osm_tags": {
+        "name": "Bongoro",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Elende",
+      "lat": 2.2204204,
+      "lon": 9.8019075,
+      "osm_id": "node/9428608887",
+      "osm_tags": {
+        "name": "Elende",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nlozoc",
+      "lat": 2.0677916,
+      "lon": 9.8088813,
+      "osm_id": "node/9428661709",
+      "osm_tags": {
+        "name": "Nlozoc",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngonemanga",
+      "lat": 2.1555797,
+      "lon": 9.7977447,
+      "osm_id": "node/9428661710",
+      "osm_tags": {
+        "name": "Ngonemanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Evongo",
+      "lat": 2.1367209,
+      "lon": 9.7909856,
+      "osm_id": "node/9428661711",
+      "osm_tags": {
+        "name": "Evongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbonda",
+      "lat": 2.0959738,
+      "lon": 9.7675431,
+      "osm_id": "node/9428661712",
+      "osm_tags": {
+        "name": "Mbonda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Eloun",
+      "lat": 0.9986002,
+      "lon": 9.9992108,
+      "osm_id": "node/9455565951",
+      "osm_tags": {
+        "name": "Eloun",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ebengon",
+      "lat": 2.1581608,
+      "lon": 10.4483548,
+      "osm_id": "node/9455682691",
+      "osm_tags": {
+        "name": "Ebengon",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Abang",
+      "lat": 2.1641245,
+      "lon": 10.453738,
+      "osm_id": "node/9455682692",
+      "osm_tags": {
+        "name": "Abang",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngon",
+      "lat": 2.1584637,
+      "lon": 10.3208291,
+      "osm_id": "node/9455699748",
+      "osm_tags": {
+        "name": "Ngon",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Utonde",
+      "lat": 1.9375963,
+      "lon": 9.8124808,
+      "osm_id": "node/9963995056",
+      "osm_tags": {
+        "name": "Utonde",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Elonasi",
+      "lat": 1.1322584,
+      "lon": 9.5352745,
+      "osm_id": "node/10870036169",
+      "osm_tags": {
+        "name": "Elonasi",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Punta Yeke",
+      "lat": 1.04267,
+      "lon": 9.5806709,
+      "osm_id": "node/10870036175",
+      "osm_tags": {
+        "name": "Punta Yeke",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Santa Maria",
+      "lat": 1.1753796,
+      "lon": 9.8475802,
+      "osm_id": "node/10870097678",
+      "osm_tags": {
+        "name": "Santa Maria",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madyamebe",
+      "lat": 1.1112232,
+      "lon": 9.7541428,
+      "osm_id": "node/10870097716",
+      "osm_tags": {
+        "name": "Madyamebe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Banapa",
+      "lat": 1.0894798,
+      "lon": 9.7106695,
+      "osm_id": "node/10870097717",
+      "osm_tags": {
+        "name": "Banapa",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Minduma",
+      "lat": 1.8359904,
+      "lon": 10.3778422,
+      "osm_id": "node/10939618901",
+      "osm_tags": {
+        "name": "Minduma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Aprovecha",
+      "lat": 1.9495896,
+      "lon": 10.3854382,
+      "osm_id": "node/10939664713",
+      "osm_tags": {
+        "name": "Aprovecha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Adangtum",
+      "lat": 1.8661977,
+      "lon": 9.9705648,
+      "osm_id": "node/10939664816",
+      "osm_tags": {
+        "name": "Adangtum",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.2442325,
+      "lon": 10.9174304,
+      "osm_id": "way/30064087",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Noya",
+      "lat": 0.8314642,
+      "lon": 9.8921047,
+      "osm_id": "way/37601892",
+      "osm_tags": {
+        "alt_name": "Nduya",
+        "boat": "no",
+        "name": "Noya",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5713577,
+      "lon": 10.9213233,
+      "osm_id": "way/52555179",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.2124213,
+      "lon": 10.8161876,
+      "osm_id": "way/79367612",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.8694534,
+      "lon": 10.5717817,
+      "osm_id": "way/79375368",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.6550189,
+      "lon": 10.5784086,
+      "osm_id": "way/79375374",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "Yahoo",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.7187039,
+      "lon": 10.1545447,
+      "osm_id": "way/79375378",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.9190616,
+      "lon": 10.4461568,
+      "osm_id": "way/79375382",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "La\u00f1a",
+      "lat": 1.5210585,
+      "lon": 10.1266238,
+      "osm_id": "way/79375398",
+      "osm_tags": {
+        "boat": "no",
+        "name": "La\u00f1a",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5587914,
+      "lon": 9.9712445,
+      "osm_id": "way/79375405",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5868607,
+      "lon": 10.8047925,
+      "osm_id": "way/79375411",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:de": "Mbini",
+        "name:es": "R\u00edo Mbini",
+        "name:fr": "Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:de": "Benito",
+        "old_name:es": "R\u00edo Benito",
+        "old_name:fr": "Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Ekuku",
+      "lat": 1.8144826,
+      "lon": 9.7541726,
+      "osm_id": "way/171460895",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ecuco",
+        "alt_name:es": "R\u00edo Ecuco",
+        "name": "R\u00edo Ekuku",
+        "name:es": "R\u00edo Ekuku",
+        "waterway": "river",
+        "wikidata": "Q16627185",
+        "wikipedia": "es:R\u00edo Ekuku",
+        "wikipedia:es": "R\u00edo Ekuku"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.2576228,
+      "lon": 10.2532589,
+      "osm_id": "way/199308241",
+      "osm_tags": {
+        "admin_level": "6",
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "boundary": "administrative",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "Yahoo;Yahoo;landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mintong",
+      "lat": 1.0839603,
+      "lon": 9.8123413,
+      "osm_id": "way/199328594",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mintong",
+        "name:de": "Mintong",
+        "name:es": "R\u00edo Mintong",
+        "name:fr": "Mintong",
+        "source": "bing",
+        "waterway": "river",
+        "wikidata": "Q24880356"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mitemele",
+      "lat": 1.0016193,
+      "lon": 9.8341147,
+      "osm_id": "way/199383330",
+      "osm_tags": {
+        "admin_level": "2",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "R\u00edo Mitemele",
+        "name:ca": "riu Mitimele",
+        "name:de": "Mitemele",
+        "name:es": "R\u00edo Mitemele",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q4783428",
+        "wikipedia": "es:R\u00edo Mitimele"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mitemele",
+      "lat": 0.9515343,
+      "lon": 9.9622152,
+      "osm_id": "way/199383332",
+      "osm_tags": {
+        "admin_level": "2",
+        "boundary": "administrative",
+        "name": "R\u00edo Mitemele",
+        "name:ca": "riu Mitimele",
+        "name:de": "Mitemele",
+        "name:es": "R\u00edo Mitemele",
+        "source": "bing",
+        "waterway": "river",
+        "wikidata": "Q4783428",
+        "wikipedia": "es:R\u00edo Mitimele"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.2685816,
+      "lon": 10.7150144,
+      "osm_id": "way/199816921",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bongola",
+      "lat": 2.2764293,
+      "lon": 9.9414755,
+      "osm_id": "way/201095467",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bongola",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1658355,
+      "lon": 10.1309093,
+      "osm_id": "way/201095469",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "Yahoo;Yahoo;landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mitemele",
+      "lat": 1.0932571,
+      "lon": 10.0915783,
+      "osm_id": "way/228275942",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Mitemele",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mitemele",
+      "lat": 1.0216865,
+      "lon": 10.0157961,
+      "osm_id": "way/228275951",
+      "osm_tags": {
+        "name": "R\u00edo Mitemele",
+        "name:de": "Mitemele",
+        "name:es": "R\u00edo Mitemele",
+        "source": "bing",
+        "waterway": "river",
+        "wikidata": "Q4783428",
+        "wikipedia": "es:R\u00edo Mitimele"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mvana",
+      "lat": 0.9814844,
+      "lon": 9.8444647,
+      "osm_id": "way/228375337",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Mvana",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mb\u00eda",
+      "lat": 2.0814672,
+      "lon": 9.8477425,
+      "osm_id": "way/263959985",
+      "osm_tags": {
+        "name": "R\u00edo Mb\u00eda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.9312166,
+      "lon": 10.3967896,
+      "osm_id": "way/280441494",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.8770785,
+      "lon": 10.293697,
+      "osm_id": "way/356971331",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lona",
+      "lat": 0.8969905,
+      "lon": 9.9919372,
+      "osm_id": "way/417036762",
+      "osm_tags": {
+        "name": "Lona",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Biamba",
+      "lat": 0.9055466,
+      "lon": 9.9622383,
+      "osm_id": "way/417036767",
+      "osm_tags": {
+        "name": "Biamba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dot\u00e9",
+      "lat": 1.4385209,
+      "lon": 9.645907,
+      "osm_id": "way/421830066",
+      "osm_tags": {
+        "name": "Dot\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mandyani",
+      "lat": 1.2277249,
+      "lon": 9.7449132,
+      "osm_id": "way/465144340",
+      "osm_tags": {
+        "name": "Mandyani",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Muni",
+      "lat": 1.0460584,
+      "lon": 9.6633102,
+      "osm_id": "way/465144351",
+      "osm_tags": {
+        "admin_level": "2",
+        "boundary": "administrative",
+        "name": "R\u00edo Muni",
+        "name:de": "Muni",
+        "name:es": "R\u00edo Muni",
+        "name:fr": "Muni",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Congue",
+      "lat": 1.1377598,
+      "lon": 9.7411972,
+      "osm_id": "way/465144352",
+      "osm_tags": {
+        "name": "R\u00edo Congue",
+        "name:de": "Congue",
+        "name:es": "R\u00edo Congue",
+        "name:fr": "Congue",
+        "waterway": "river",
+        "wikidata": "Q4783422"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mb\u00eda",
+      "lat": 2.0740559,
+      "lon": 9.9960887,
+      "osm_id": "way/499516565",
+      "osm_tags": {
+        "name": "R\u00edo Mb\u00eda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5972675,
+      "lon": 10.8753019,
+      "osm_id": "way/528937995",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:de": "Mbini",
+        "name:es": "R\u00edo Mbini",
+        "name:fr": "Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:de": "Benito",
+        "old_name:es": "R\u00edo Benito",
+        "old_name:fr": "Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Be",
+      "lat": 1.1700576,
+      "lon": 10.4500443,
+      "osm_id": "way/638289679",
+      "osm_tags": {
+        "name": "Be",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mven",
+      "lat": 1.0564592,
+      "lon": 9.8287252,
+      "osm_id": "way/638667566",
+      "osm_tags": {
+        "name": "Mven",
+        "waterway": "river",
+        "wikidata": "Q24880440"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Poto",
+      "lat": 1.4805379,
+      "lon": 9.7606242,
+      "osm_id": "way/640504990",
+      "osm_tags": {
+        "name": "Poto",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1940598,
+      "lon": 9.9224778,
+      "osm_id": "way/643163331",
+      "osm_tags": {
+        "admin_level": "2",
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:ca": "riu Campo",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "boundary": "administrative",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:ca": "riu Ntem",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.216596,
+      "lon": 9.8923018,
+      "osm_id": "way/643163333",
+      "osm_tags": {
+        "admin_level": "2",
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:ca": "riu Campo",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "boundary": "administrative",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:ca": "riu Ntem",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Cocoloondo",
+      "lat": 2.2339849,
+      "lon": 9.8275268,
+      "osm_id": "way/643163338",
+      "osm_tags": {
+        "name": "Cocoloondo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mitong",
+      "lat": 1.2002339,
+      "lon": 9.9275374,
+      "osm_id": "way/644337283",
+      "osm_tags": {
+        "name": "Mitong",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mitong",
+      "lat": 1.3071358,
+      "lon": 9.9775824,
+      "osm_id": "way/644337296",
+      "osm_tags": {
+        "name": "Mitong",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mitong",
+      "lat": 1.3235518,
+      "lon": 9.9809297,
+      "osm_id": "way/644337299",
+      "osm_tags": {
+        "name": "Mitong",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Komo",
+      "lat": 0.7435578,
+      "lon": 10.620636,
+      "osm_id": "way/654931837",
+      "osm_tags": {
+        "name": "Komo",
+        "waterway": "river",
+        "wikidata": "Q2602162",
+        "wikipedia": "fr:Komo (fleuve)"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Komo",
+      "lat": 0.6531189,
+      "lon": 10.6177006,
+      "osm_id": "way/654931845",
+      "osm_tags": {
+        "name": "Komo",
+        "source": "DigitalGlobe + Bing",
+        "waterway": "river",
+        "wikidata": "Q2602162",
+        "wikipedia": "fr:Komo (fleuve)"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Aba",
+      "lat": 1.0012247,
+      "lon": 9.7661195,
+      "osm_id": "way/669696466",
+      "osm_tags": {
+        "name": "Aba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mvo",
+      "lat": 0.8331439,
+      "lon": 10.9344819,
+      "osm_id": "way/674130646",
+      "osm_tags": {
+        "name": "Mvo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mvo",
+      "lat": 0.8763018,
+      "lon": 10.8869076,
+      "osm_id": "way/674130647",
+      "osm_tags": {
+        "name": "Mvo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mitemele",
+      "lat": 1.1566987,
+      "lon": 10.1457839,
+      "osm_id": "way/701061351",
+      "osm_tags": {
+        "name": "Mitemele",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Aba",
+      "lat": 0.9813508,
+      "lon": 9.7454577,
+      "osm_id": "way/751250854",
+      "osm_tags": {
+        "name": "Aba",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mvana",
+      "lat": 0.9552889,
+      "lon": 9.86009,
+      "osm_id": "way/751250856",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Mvana",
+        "source": "landsat",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ngoulou",
+      "lat": 0.9916252,
+      "lon": 9.8132056,
+      "osm_id": "way/751250858",
+      "osm_tags": {
+        "name": "Ngoulou",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5413591,
+      "lon": 9.9669101,
+      "osm_id": "way/758218940",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5528655,
+      "lon": 9.97234,
+      "osm_id": "way/758218941",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5659853,
+      "lon": 9.9887507,
+      "osm_id": "way/758218942",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1653829,
+      "lon": 10.0646618,
+      "osm_id": "way/786217773",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "Yahoo;Yahoo;landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1686513,
+      "lon": 10.1607174,
+      "osm_id": "way/786217775",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "Yahoo;Yahoo;landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1514599,
+      "lon": 10.1428477,
+      "osm_id": "way/786217776",
+      "osm_tags": {
+        "admin_level": "2",
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:ca": "riu Campo",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "boundary": "administrative",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:ca": "riu Ntem",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "Yahoo;Yahoo;landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mb\u00eda",
+      "lat": 2.0731204,
+      "lon": 9.9579542,
+      "osm_id": "way/836048869",
+      "osm_tags": {
+        "name": "R\u00edo Mb\u00eda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mvuba",
+      "lat": 2.1421317,
+      "lon": 10.2019697,
+      "osm_id": "way/836056240",
+      "osm_tags": {
+        "name": "Mvuba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1767547,
+      "lon": 10.0476668,
+      "osm_id": "way/840860217",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1696365,
+      "lon": 10.0540905,
+      "osm_id": "way/840861690",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "Yahoo;Yahoo;landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1657942,
+      "lon": 10.0302113,
+      "osm_id": "way/840861691",
+      "osm_tags": {
+        "admin_level": "2",
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:ca": "riu Campo",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "R\u00edo Campo",
+        "name:ca": "riu Ntem",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1774322,
+      "lon": 9.9944421,
+      "osm_id": "way/840863657",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1746693,
+      "lon": 10.0052716,
+      "osm_id": "way/840863658",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Noya",
+      "lat": 0.7138827,
+      "lon": 10.1491456,
+      "osm_id": "way/908470412",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Noya",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Noya",
+      "lat": 0.7568516,
+      "lon": 10.1589014,
+      "osm_id": "way/908470413",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Noya",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mb\u00e9",
+      "lat": 0.7791233,
+      "lon": 10.4800691,
+      "osm_id": "way/911884384",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Mb\u00e9",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.6756719,
+      "lon": 10.1121923,
+      "osm_id": "way/914155446",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.6563336,
+      "lon": 10.1011884,
+      "osm_id": "way/914155450",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.6421793,
+      "lon": 10.0857435,
+      "osm_id": "way/914155451",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.6323929,
+      "lon": 10.0695362,
+      "osm_id": "way/914155452",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.6235467,
+      "lon": 10.0534068,
+      "osm_id": "way/914155453",
+      "osm_tags": {
+        "alt_name": "R\u00edo Benito",
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.6149841,
+      "lon": 10.0405346,
+      "osm_id": "way/914155454",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5726541,
+      "lon": 9.7370642,
+      "osm_id": "way/914155455",
+      "osm_tags": {
+        "alt_name": "Woleu",
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.791157,
+      "lon": 10.2235497,
+      "osm_id": "way/914155458",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.592152,
+      "lon": 10.8859591,
+      "osm_id": "way/943523911",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5725494,
+      "lon": 10.722414,
+      "osm_id": "way/943523912",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "Yahoo",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5759138,
+      "lon": 10.8535387,
+      "osm_id": "way/943523916",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.9225836,
+      "lon": 10.5063375,
+      "osm_id": "way/943523918",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5823852,
+      "lon": 10.7471763,
+      "osm_id": "way/943523919",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "Yahoo",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1734283,
+      "lon": 10.012118,
+      "osm_id": "way/943527138",
+      "osm_tags": {
+        "admin_level": "2",
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:ca": "riu Campo",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "boundary": "administrative",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:ca": "riu Ntem",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.9378582,
+      "lon": 10.3679503,
+      "osm_id": "way/943527140",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.7514629,
+      "lon": 10.6007843,
+      "osm_id": "way/943535121",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "Yahoo",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5716144,
+      "lon": 10.6453121,
+      "osm_id": "way/943544682",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "Yahoo",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.8017124,
+      "lon": 10.6087257,
+      "osm_id": "way/943576649",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1594177,
+      "lon": 10.174742,
+      "osm_id": "way/943576654",
+      "osm_tags": {
+        "admin_level": "2",
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:ca": "riu Campo",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "boundary": "administrative",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:ca": "riu Ntem",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "Yahoo;Yahoo;landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1647281,
+      "lon": 10.039456,
+      "osm_id": "way/972374370",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.2673782,
+      "lon": 9.8560502,
+      "osm_id": "way/973583140",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1705673,
+      "lon": 10.0212622,
+      "osm_id": "way/973583143",
+      "osm_tags": {
+        "admin_level": "2",
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:ca": "riu Campo",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "R\u00edo Campo",
+        "name:ca": "riu Ntem",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1679098,
+      "lon": 10.0442443,
+      "osm_id": "way/973583144",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1669775,
+      "lon": 10.0586276,
+      "osm_id": "way/973583145",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "Yahoo;Yahoo;landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bingang",
+      "lat": 2.2889505,
+      "lon": 10.1462737,
+      "osm_id": "way/1019679260",
+      "osm_tags": {
+        "name": "Bingang",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mitemele",
+      "lat": 0.9904093,
+      "lon": 9.9908312,
+      "osm_id": "way/1024212693",
+      "osm_tags": {
+        "admin_level": "2",
+        "boundary": "administrative",
+        "name": "R\u00edo Mitemele",
+        "name:ca": "riu Mitimele",
+        "name:de": "Mitemele",
+        "name:es": "R\u00edo Mitemele",
+        "source": "bing",
+        "waterway": "river",
+        "wikidata": "Q4783428",
+        "wikipedia": "es:R\u00edo Mitimele"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5066806,
+      "lon": 9.8876984,
+      "osm_id": "way/1024944347",
+      "osm_tags": {
+        "alt_name": "Woleu",
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5016225,
+      "lon": 9.9001535,
+      "osm_id": "way/1024944348",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.4970843,
+      "lon": 9.8972348,
+      "osm_id": "way/1024944349",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1638298,
+      "lon": 10.1795909,
+      "osm_id": "way/1025540956",
+      "osm_tags": {
+        "admin_level": "2",
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:ca": "riu Campo",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "boundary": "administrative",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:ca": "riu Ntem",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "Yahoo;Yahoo;landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bongola",
+      "lat": 2.2723504,
+      "lon": 10.1066977,
+      "osm_id": "way/1077933128",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bongola",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bongola",
+      "lat": 2.2093574,
+      "lon": 10.1384336,
+      "osm_id": "way/1077937340",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bongola",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bongola",
+      "lat": 2.1790817,
+      "lon": 10.1435994,
+      "osm_id": "way/1077937341",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bongola",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1620685,
+      "lon": 10.0935784,
+      "osm_id": "way/1078767550",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "Yahoo;Yahoo;landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.1748122,
+      "lon": 10.0027454,
+      "osm_id": "way/1078796816",
+      "osm_tags": {
+        "admin_level": "2",
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:ca": "riu Campo",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "R\u00edo Campo",
+        "name:ca": "riu Ntem",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Campo",
+      "lat": 2.186746,
+      "lon": 9.9638219,
+      "osm_id": "way/1083553394",
+      "osm_tags": {
+        "alt_name": "R\u00edo Ntem",
+        "alt_name:de": "Ntem",
+        "alt_name:en": "Ntem River",
+        "alt_name:es": "R\u00edo Ntem",
+        "alt_name:fr": "Campo",
+        "boat": "no",
+        "destination": "Oc\u00e9ano Atl\u00e1ntico",
+        "name": "R\u00edo Campo",
+        "name:de": "Rio Campo",
+        "name:en": "Campo River",
+        "name:es": "R\u00edo Campo",
+        "name:fr": "Ntem",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3086717",
+        "wikipedia": "es:R\u00edo Campo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5171268,
+      "lon": 9.86686,
+      "osm_id": "way/1164767971",
+      "osm_tags": {
+        "alt_name": "Woleu",
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name:es": "R\u00edo Benito",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5496392,
+      "lon": 9.8463951,
+      "osm_id": "way/1164767972",
+      "osm_tags": {
+        "alt_name": "Woleu",
+        "boat": "no",
+        "layer": "-1",
+        "name": "R\u00edo Mbini",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0646\u064a\u062a\u0648",
+        "name:es": "R\u00edo Mbini",
+        "old_name:es": "R\u00edo Benito",
+        "tunnel": "culvert",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "R\u00edo Mbini",
+      "lat": 1.5166525,
+      "lon": 9.9129853,
+      "osm_id": "way/1282345161",
+      "osm_tags": {
+        "boat": "no",
+        "name": "R\u00edo Mbini",
+        "name:es": "R\u00edo Mbini",
+        "old_name": "R\u00edo Benito",
+        "old_name:es": "R\u00edo Benito",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2634342",
+        "wikipedia": "es:R\u00edo Mbini",
+        "wikipedia:es": "R\u00edo Mbini"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndeme",
+      "lat": 2.1549364,
+      "lon": 10.194186,
+      "osm_id": "way/1304409834",
+      "osm_tags": {
+        "name": "Ndeme",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lago Atoc",
+      "lat": 1.5714057,
+      "lon": 10.258926,
+      "osm_id": "way/1429819493",
+      "osm_tags": {
+        "name": "Lago Atoc",
+        "name:en": "Lake Atoc",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Noya",
+      "lat": 0.6603944,
+      "lon": 10.0765884,
+      "osm_id": "way/1447683342",
+      "osm_tags": {
+        "alt_name": "Nduya",
+        "boat": "no",
+        "name": "Noya",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ngoba",
+      "lat": 0.9197432,
+      "lon": 9.9498321,
+      "osm_id": "way/1464097582",
+      "osm_tags": {
+        "name": "Ngoba",
+        "waterway": "stream"
+      }
+    }
+  ]
+}
