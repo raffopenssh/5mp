@@ -290,31 +290,44 @@ func (s *Server) describeLocation(parkID string, lat, lon float64) string {
 	// Find nearest settlement
 	settlements, _ := s.findNearestPlaces(parkID, lat, lon, 1, []string{"village", "hamlet", "town", "city"})
 	
-	// Find nearest river
-	rivers, _ := s.findNearestPlaces(parkID, lat, lon, 1, []string{"river", "stream"})
-	
 	var parts []string
 	
 	if len(settlements) > 0 && settlements[0].Distance < 30 {
 		p := settlements[0]
+		placeType := "(" + p.PlaceType + ")"
+		if p.PlaceType == "" {
+			placeType = ""
+		}
 		if p.Distance < 5 {
-			parts = append(parts, fmt.Sprintf("near %s", p.Name))
+			parts = append(parts, fmt.Sprintf("near %s %s", p.Name, placeType))
 		} else {
 			// Direction FROM settlement TO the location
 			bearing := bearingTo(p.Lat, p.Lon, lat, lon)
 			direction := bearingToCardinal(bearing)
-			parts = append(parts, fmt.Sprintf("%.0f km %s of %s", p.Distance, direction, p.Name))
+			parts = append(parts, fmt.Sprintf("%.0fkm %s of %s %s", p.Distance, direction, p.Name, placeType))
 		}
 	}
 	
-	if len(rivers) > 0 && rivers[0].Distance < 20 {
-		p := rivers[0]
-		if p.Distance < 3 {
-			parts = append(parts, fmt.Sprintf("along the %s", p.Name))
+	// Use HydroRIVERS for better river data
+	hydroRivers, _ := s.findNearestRiverToPoint(parkID, lat, lon, 1)
+	if len(hydroRivers) > 0 && hydroRivers[0].DistanceKm < 30 {
+		r := hydroRivers[0]
+		riverDesc := getRiverDescription(r)
+		if r.DistanceKm < 3 {
+			parts = append(parts, fmt.Sprintf("along %s (%s)", r.Name, riverDesc))
 		} else {
-			bearing := bearingTo(p.Lat, p.Lon, lat, lon)
-			direction := bearingToCardinal(bearing)
-			parts = append(parts, fmt.Sprintf("%.0f km %s of the %s", p.Distance, direction, p.Name))
+			parts = append(parts, fmt.Sprintf("%.0fkm from %s", r.DistanceKm, r.Name))
+		}
+	} else {
+		// Fallback to OSM rivers
+		rivers, _ := s.findNearestPlaces(parkID, lat, lon, 1, []string{"river", "stream"})
+		if len(rivers) > 0 && rivers[0].Distance < 20 {
+			p := rivers[0]
+			if p.Distance < 3 {
+				parts = append(parts, fmt.Sprintf("along the %s", p.Name))
+			} else {
+				parts = append(parts, fmt.Sprintf("%.0fkm from %s", p.Distance, p.Name))
+			}
 		}
 	}
 	
@@ -559,14 +572,31 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 				// Describe destination location
 				story.DestDesc = s.describeLocation(internalID, t.Destination.Lat, t.Destination.Lon)
 				
-				// Find rivers that might have been crossed
-				rivers, _ := s.findNearestPlaces(internalID, 
+				// Find rivers that might have been crossed (using HydroRIVERS)
+				hydroRivers, _ := s.findNearestRiverToPoint(internalID, 
 					(t.Origin.Lat+t.Destination.Lat)/2, 
 					(t.Origin.Lon+t.Destination.Lon)/2, 
-					3, []string{"river"})
-				for _, r := range rivers {
-					if r.Distance < 15 {
-						story.RiversCrossed = append(story.RiversCrossed, r.Name)
+					5)
+				for _, r := range hydroRivers {
+					if r.DistanceKm < 15 && r.Name != "" {
+						// Add river with size context
+						riverDesc := r.Name
+						if r.DischargeCMS > 100 {
+							riverDesc = r.Name + " (major)"
+						}
+						story.RiversCrossed = append(story.RiversCrossed, riverDesc)
+					}
+				}
+				// Fallback to OSM places if no HydroRIVERS found
+				if len(story.RiversCrossed) == 0 {
+					osmRivers, _ := s.findNearestPlaces(internalID, 
+						(t.Origin.Lat+t.Destination.Lat)/2, 
+						(t.Origin.Lon+t.Destination.Lon)/2, 
+						3, []string{"river"})
+					for _, r := range osmRivers {
+						if r.Distance < 15 {
+							story.RiversCrossed = append(story.RiversCrossed, r.Name)
+						}
 					}
 				}
 				
@@ -852,7 +882,26 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		
 		// Find nearby places for context (settlements and rivers)
 		settlements, _ := s.findNearestPlaces(internalID, lat, lon, 3, []string{"village", "hamlet", "town", "city"})
-		rivers, _ := s.findNearestPlaces(internalID, lat, lon, 3, []string{"river", "stream"})
+		
+		// Use HydroRIVERS for better river data
+		var rivers []OSMPlace
+		hydroRivers, _ := s.findNearestRiverToPoint(internalID, lat, lon, 3)
+		for _, hr := range hydroRivers {
+			rivers = append(rivers, OSMPlace{
+				Name:      hr.Name,
+				PlaceType: getRiverDescription(hr),
+				Lat:       hr.CentroidLat,
+				Lon:       hr.CentroidLon,
+				Distance:  hr.DistanceKm,
+			})
+		}
+		// Fallback to OSM places if no HydroRIVERS
+		if len(rivers) == 0 {
+			rivers, _ = s.findNearestPlaces(internalID, lat, lon, 3, []string{"river", "stream"})
+		}
+		
+		// Check if near road
+		_ = s.isNearRoad(internalID, lat, lon, 5.0)
 		
 		seen := make(map[string]bool)
 		for _, p := range settlements {
@@ -2704,4 +2753,135 @@ func (s *Server) handleDeforestationNarrativeStats(w http.ResponseWriter, parkID
 	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+// HydroRiver represents a river from the HydroRIVERS dataset
+type HydroRiver struct {
+	Name        string  `json:"name"`
+	LengthKm    float64 `json:"length_km"`
+	DischargeCMS float64 `json:"discharge_cms"`
+	StreamOrder int     `json:"stream_order"`
+	DistanceKm  float64 `json:"distance_km"`
+	CentroidLat float64 `json:"centroid_lat"`
+	CentroidLon float64 `json:"centroid_lon"`
+}
+
+// findNearestHydroRivers finds the nearest rivers from HydroRIVERS dataset
+func (s *Server) findNearestHydroRivers(parkID string, lat, lon float64, limit int) ([]HydroRiver, error) {
+	// First try to get rivers for this park from park_rivers
+	rows, err := s.DB.Query(`
+		SELECT r.name, r.length_km, r.discharge_cms, r.stream_order, 
+		       pr.distance_km, r.centroid_lat, r.centroid_lon
+		FROM park_rivers pr
+		JOIN rivers r ON r.hyriv_id = pr.hyriv_id
+		WHERE pr.park_id = ? AND r.name != '' AND r.name IS NOT NULL
+		ORDER BY r.discharge_cms DESC
+		LIMIT ?
+	`, parkID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	
+	var rivers []HydroRiver
+	for rows.Next() {
+		var r HydroRiver
+		var distKm sql.NullFloat64
+		err := rows.Scan(&r.Name, &r.LengthKm, &r.DischargeCMS, &r.StreamOrder, 
+		                 &distKm, &r.CentroidLat, &r.CentroidLon)
+		if err != nil {
+			continue
+		}
+		if distKm.Valid {
+			r.DistanceKm = distKm.Float64
+		}
+		rivers = append(rivers, r)
+	}
+	
+	return rivers, nil
+}
+
+// findNearestRiverToPoint finds rivers closest to a specific point
+func (s *Server) findNearestRiverToPoint(parkID string, lat, lon float64, limit int) ([]HydroRiver, error) {
+	// Get all park rivers and calculate distance to point
+	rows, err := s.DB.Query(`
+		SELECT r.name, r.length_km, r.discharge_cms, r.stream_order,
+		       r.centroid_lat, r.centroid_lon
+		FROM park_rivers pr
+		JOIN rivers r ON r.hyriv_id = pr.hyriv_id
+		WHERE pr.park_id = ? AND r.name != '' AND r.name IS NOT NULL
+		ORDER BY r.discharge_cms DESC
+		LIMIT 50
+	`, parkID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	
+	type riverWithDist struct {
+		river HydroRiver
+		dist  float64
+	}
+	var candidates []riverWithDist
+	
+	for rows.Next() {
+		var r HydroRiver
+		err := rows.Scan(&r.Name, &r.LengthKm, &r.DischargeCMS, &r.StreamOrder,
+		                 &r.CentroidLat, &r.CentroidLon)
+		if err != nil {
+			continue
+		}
+		// Calculate approximate distance
+		dist := haversineDistance(lat, lon, r.CentroidLat, r.CentroidLon)
+		r.DistanceKm = dist
+		candidates = append(candidates, riverWithDist{r, dist})
+	}
+	
+	// Sort by distance
+	sort.Slice(candidates, func(i, j int) bool {
+		return candidates[i].dist < candidates[j].dist
+	})
+	
+	// Return top N
+	var result []HydroRiver
+	for i := 0; i < limit && i < len(candidates); i++ {
+		result = append(result, candidates[i].river)
+	}
+	
+	return result, nil
+}
+
+// getRiverDescription returns a human-readable description of a river
+func getRiverDescription(r HydroRiver) string {
+	var desc string
+	if r.DischargeCMS > 1000 {
+		desc = "major river"
+	} else if r.DischargeCMS > 100 {
+		desc = "significant river"
+	} else if r.StreamOrder >= 5 {
+		desc = "river"
+	} else {
+		desc = "stream"
+	}
+	return desc
+}
+
+// countNearbyRoads counts roads within a buffer of a point
+func (s *Server) countNearbyRoads(parkID string, lat, lon float64, bufferKm float64) int {
+	bufferDeg := bufferKm / 111.0 // Approximate degrees
+	
+	var count int
+	s.DB.QueryRow(`
+		SELECT COUNT(*) FROM feature_geometries
+		WHERE park_id = ? AND feature_type = 'road_heigit'
+		AND json_extract(geojson, '$.coordinates[0][0]') BETWEEN ? AND ?
+		AND json_extract(geojson, '$.coordinates[0][1]') BETWEEN ? AND ?
+	`, parkID, lon-bufferDeg, lon+bufferDeg, lat-bufferDeg, lat+bufferDeg).Scan(&count)
+	
+	return count
+}
+
+// isNearRoad checks if a point is near any road
+func (s *Server) isNearRoad(parkID string, lat, lon float64, maxDistKm float64) bool {
+	return s.countNearbyRoads(parkID, lat, lon, maxDistKm) > 0
 }

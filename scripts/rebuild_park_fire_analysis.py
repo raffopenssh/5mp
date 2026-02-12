@@ -179,6 +179,17 @@ def classify_trajectory(traj):
         else:
             group_type = 'local_stationary'
     
+    # Include full trajectory with timestamps
+    trajectory_points = [
+        {
+            'date': pt['date'],
+            'lat': round(pt['lat'], 5),
+            'lon': round(pt['lon'], 5),
+            'fires': pt['fires']
+        }
+        for pt in traj
+    ]
+    
     metrics = {
         'days': days,
         'fires': total_fires,
@@ -193,7 +204,8 @@ def classify_trajectory(traj):
         'start_lat': round(start['lat'], 3),
         'start_lon': round(start['lon'], 3),
         'end_lat': round(end['lat'], 3),
-        'end_lon': round(end['lon'], 3)
+        'end_lon': round(end['lon'], 3),
+        'trajectory': trajectory_points  # Full daily trajectory with timestamps
     }
     
     return group_type, metrics

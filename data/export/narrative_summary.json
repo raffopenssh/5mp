@@ -1,9 +1,18 @@
 {
-  "generated_at": "2026-02-12T06:04:35.380781",
-  "fire_parks": 132,
-  "settlement_parks": 156,
-  "deforestation_parks": 79,
-  "total_fire_groups": 50899,
-  "total_settlements": 11559,
-  "total_deforestation_events": 1401
+  "generated_at": "2026-02-12T07:48:50.611693",
+  "fire": {
+    "parks": 153,
+    "total_groups": 130708,
+    "total_fires": 7125666
+  },
+  "settlement": {
+    "parks": 156,
+    "total_settlements": 11559,
+    "total_population": 13160409
+  },
+  "deforestation": {
+    "parks": 79,
+    "total_events": 1401,
+    "total_area_km2": 3344.27
+  }
 }
