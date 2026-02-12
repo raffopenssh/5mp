@@ -58,72 +58,10 @@ func (s *Server) StartResearchWorker(ctx context.Context) {
 	}
 }
 
-// runResearchSync processes a batch of PAs.
+// runResearchSync processes a batch of PAs using improved search.
 func (s *Server) runResearchSync(ctx context.Context) {
-	if s.AreaStore == nil {
-		return
-	}
-
-	q := dbgen.New(s.DB)
-
-	// Get PAs that haven't been synced yet
-	syncedPAs, _ := q.GetAllSyncedPAIDs(ctx)
-	syncedSet := make(map[string]bool)
-	for _, id := range syncedPAs {
-		syncedSet[id] = true
-	}
-
-	// paInfo stores ID, name, and country for sync
-	type paInfo struct {
-		ID      string
-		Name    string
-		Country string
-	}
-
-	// Find unsynced PAs first, then stale ones
-	var toSync []paInfo
-	for _, area := range s.AreaStore.Areas {
-		paID := area.WDPAID
-		if paID == "" {
-			paID = area.ID
-		}
-		if !syncedSet[paID] {
-			toSync = append(toSync, paInfo{ID: paID, Name: area.Name, Country: area.Country})
-			if len(toSync) >= 3 { // Process 3 new PAs per run
-				break
-			}
-		}
-	}
-
-	// If no new PAs, check for stale ones
-	if len(toSync) == 0 {
-		stale, _ := q.GetPAsNeedingPublicationSync(ctx, 3)
-		for _, id := range stale {
-			// Find name and country for this PA
-			for _, area := range s.AreaStore.Areas {
-				paID := area.WDPAID
-				if paID == "" {
-					paID = area.ID
-				}
-				if paID == id {
-					toSync = append(toSync, paInfo{ID: paID, Name: area.Name, Country: area.Country})
-					break
-				}
-			}
-		}
-	}
-
-	for _, pa := range toSync {
-		count, err := s.fetchPublicationsForPA(ctx, pa.ID, pa.Name, pa.Country)
-		if err != nil {
-			slog.Error("failed to fetch publications", "pa_id", pa.ID, "name", pa.Name, "error", err)
-			continue
-		}
-		slog.Info("fetched publications", "pa_id", pa.ID, "name", pa.Name, "count", count)
-
-		// Rate limit: wait between requests
-		time.Sleep(2 * time.Second)
-	}
+	// Use the improved research sync
+	s.RunImprovedResearchSync(ctx)
 }
 
 // Country name translations for better search coverage
