@@ -1,0 +1,27 @@
+[
+  {
+    "id": 38781,
+    "park_id": "TZA_Luganzo-Tongwe",
+    "lat": -5.297367909090909,
+    "lon": 38.718287636363634,
+    "area_m2": 272156.49,
+    "population_est": 181,
+    "households_est": 40,
+    "nearest_place": "",
+    "distance_to_place_km": null,
+    "direction_from_place": null,
+    "settlement_type": "permanent",
+    "in_buffer": 0,
+    "tile_row": null,
+    "tile_col": null,
+    "detected_at": "2026-02-10 19:35:46",
+    "classification": "village",
+    "classification_confidence": 0.75,
+    "narrative": "Established village with approximately 181 residents. Covers 27.2 hectares of built-up area.",
+    "fires_5km": 0,
+    "fire_seasonality": null,
+    "deforest_nearby_km2": 0.0,
+    "classified_at": null,
+    "polygon_ids": "settlement_TZA_Luganzo-Tongwe_0,settlement_TZA_Luganzo-Tongwe_1,settlement_TZA_Luganzo-Tongwe_10,settlement_TZA_Luganzo-Tongwe_2,settlement_TZA_Luganzo-Tongwe_3,settlement_TZA_Luganzo-Tongwe_4,settlement_TZA_Luganzo-Tongwe_5,settlement_TZA_Luganzo-Tongwe_6,settlement_TZA_Luganzo-Tongwe_7,settlement_TZA_Luganzo-Tongwe_8,settlement_TZA_Luganzo-Tongwe_9"
+  }
+]

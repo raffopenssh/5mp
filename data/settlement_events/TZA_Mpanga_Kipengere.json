@@ -1,0 +1,27 @@
+[
+  {
+    "id": 38841,
+    "park_id": "TZA_Mpanga_Kipengere",
+    "lat": -4.3658608333333335,
+    "lon": 38.005775166666666,
+    "area_m2": 236854.15,
+    "population_est": 4264,
+    "households_est": 947,
+    "nearest_place": "",
+    "distance_to_place_km": null,
+    "direction_from_place": null,
+    "settlement_type": "permanent",
+    "in_buffer": 0,
+    "tile_row": null,
+    "tile_col": null,
+    "detected_at": "2026-02-10 19:36:12",
+    "classification": "village",
+    "classification_confidence": 0.75,
+    "narrative": "Established village with approximately 4,264 residents. Covers 23.7 hectares of built-up area.",
+    "fires_5km": 0,
+    "fire_seasonality": null,
+    "deforest_nearby_km2": 0.0,
+    "classified_at": null,
+    "polygon_ids": "settlement_TZA_Mpanga_Kipengere_0,settlement_TZA_Mpanga_Kipengere_1,settlement_TZA_Mpanga_Kipengere_2,settlement_TZA_Mpanga_Kipengere_3,settlement_TZA_Mpanga_Kipengere_4,settlement_TZA_Mpanga_Kipengere_5"
+  }
+]
