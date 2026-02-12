@@ -669,6 +669,9 @@
         @keyframes text-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         @keyframes spin { to { transform: rotate(360deg); } }
         .pa-popup-section-empty { font-size: 10px; color: #555; font-style: italic; }
+        .narrative-row { transition: all 0.2s; }
+        .narrative-row:hover { background: rgba(255,255,255,0.05) !important; }
+        .narrative-row.pinned { background: rgba(34,197,94,0.15) !important; border: 1px solid rgba(34,197,94,0.3); opacity: 1 !important; }
         .pa-popup-mini-stat { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; }
         .pa-popup-mini-stat-label { color: #666; }
         .pa-popup-mini-stat-value { color: #22c55e; font-weight: 500; }
@@ -3735,7 +3738,7 @@
                         const fireFeatureId = data.park_id + '_' + (n.entry_date ? n.entry_date.substring(0,4) : data.year) + '_grp_' + n.group_num;
                         const isPinned = isSingleFeaturePinned(paId, 'fire', fireFeatureId);
                         const rowStyle = isPinned ? 'background: rgba(34,197,94,0.15); border-left: 2px solid #22c55e;' : 'background: rgba(0,0,0,0.2);';
-                        return `<div class="narrative-row" data-park="${paId}" data-type="fire" data-feature="${fireFeatureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(data.park_name || paId)}', 'fire', '${fireFeatureId}', this)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; ${rowStyle} border-radius: 4px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;" title="Click to pin on map. ${fullText.replace(/"/g, '&quot;')}"><span style="color: ${outcomeColor}; margin-right: 4px;">●</span> <span style="flex:1;">${text}</span></div>`;
+                        return `<div class="narrative-row" data-park="${paId}" data-type="fire" data-feature="${fireFeatureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(data.park_name || paId)}', 'fire', '${fireFeatureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; ${rowStyle} border-radius: 4px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;" title="Click to pin on map. ${fullText.replace(/"/g, '&quot;')}"><span style="color: ${outcomeColor}; margin-right: 4px;">●</span> <span style="flex:1;">${text}</span></div>`;
                     };
                     
                     // Render active fire groups alert
@@ -3854,7 +3857,7 @@
                         }
                         const name = s.name && s.name !== 'Unnamed settlement' ? s.name : `${s.lat.toFixed(3)}°, ${s.lon.toFixed(3)}°`;
                         const featureId = `settlement_${s.id || s.lat.toFixed(4)}_${s.lon.toFixed(4)}`;
-                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to pin on map">${formatArea(s.area_m2)} near ${name}${location}</div>`;
+                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to pin on map">${formatArea(s.area_m2)} near ${name}${location}</div>`;
                     };
                     
                     // Format classified settlement with narrative
@@ -3871,7 +3874,7 @@
                         const color = classColors[s.classification] || '#fbbf24';
                         const text = s.narrative || `${s.classification || 'Unknown'} settlement at ${s.lat?.toFixed(3) || '?'}°, ${s.lon?.toFixed(3) || '?'}°`;
                         const shortText = text.length > 120 ? text.substring(0, 117) + '...' : text;
-                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}"><span style="color: ${color}; flex-shrink: 0;">◻</span> <span style="flex:1;">${shortText}</span></div>`;
+                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}"><span style="color: ${color}; flex-shrink: 0;">◻</span> <span style="flex:1;">${shortText}</span></div>`;
                     };
                     
                     // Get settlements - prefer classified if available
@@ -4019,14 +4022,14 @@
                                 const color = classColors[e.classification] || '#a855f7';
                                 const text = e.narrative || `${e.classification || 'Unknown'} (${e.year}): ${e.area_km2?.toFixed(2) || '?'} km²`;
                                 const shortText = text.length > 150 ? text.substring(0, 147) + '...' : text;
-                                return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}"><span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${shortText}</span></div>`;
+                                return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}"><span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${shortText}</span></div>`;
                             };
                             
                             // Format yearly story without classified data
                             const formatYearlyStory = (y) => {
                                 const featureId = `deforestation_year_${y.year}`;
                                 const text = y.narrative || `${y.year}: ${y.area_km2.toFixed(2)} km² lost${y.nearby_places && y.nearby_places.length > 0 ? ' near ' + y.nearby_places[0] : ''}`;
-                                return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to pin on map">${text}</div>`;
+                                return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to pin on map">${text}</div>`;
                             };
                             
                             if (classifiedEvents.length > 0) {
@@ -4089,7 +4092,7 @@
                                         div.innerHTML = `<span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${shortText}</span>`;
                                         div.style.cssText = 'font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px;';
                                         div.title = 'Click to pin on map. ' + text;
-                                        div.onclick = () => toggleSingleFeaturePin(paId, '', 'deforestation', featureId, div);
+                                        div.onclick = (e) => toggleSingleFeaturePin(paId, '', 'deforestation', featureId, div, e);
                                         container.appendChild(div);
                                     });
                                     btn.remove();
@@ -6190,7 +6193,11 @@ ${starredItems.narratives.map(n => {
         return !!singlePinnedFeatures[getSinglePinKey(parkId, type, featureId)];
     }
     
-    async function toggleSingleFeaturePin(parkId, parkName, type, featureId, btn) {
+    async function toggleSingleFeaturePin(parkId, parkName, type, featureId, btn, e) {
+        // Stop propagation to prevent accordion from closing
+        if (e) e.stopPropagation();
+        if (window.event) window.event.stopPropagation();
+        
         const key = getSinglePinKey(parkId, type, featureId);
         
         // Get narrative from title attribute if available
