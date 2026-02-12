@@ -426,7 +426,15 @@ func (l *GPXLearner) processRoadSegment(ctx context.Context, parkID string, uplo
 		return
 	}
 
-	// Check if this matches existing vehicle tracks (±20m)
+	// First check if this matches a known HeiGIT road (reference data)
+	if matchedRef, refRoadInfo := l.matchHeiGITRoad(ctx, parkID, simplified); matchedRef {
+		// This road already exists in reference data - no need to learn it
+		// But we can update stats on road usage
+		slog.Debug("road segment matches HeiGIT reference road", "road", refRoadInfo)
+		return
+	}
+
+	// Check if this matches existing learned vehicle tracks (±20m)
 	matched, matchID := l.findMatchingTrack(ctx, parkID, simplified)
 
 	if matched {
@@ -2219,4 +2227,120 @@ func (l *GPXLearner) enrichWithContext(ctx context.Context, parkID string, segme
 			}
 		}
 	}
+}
+
+// matchHeiGITRoad checks if a track matches an existing HeiGIT reference road
+func (l *GPXLearner) matchHeiGITRoad(ctx context.Context, parkID string, track [][]float64) (bool, string) {
+	if len(track) < 2 {
+		return false, ""
+	}
+
+	// Get bounding box of track
+	minLat, maxLat := 90.0, -90.0
+	minLon, maxLon := 180.0, -180.0
+	for _, pt := range track {
+		if pt[1] < minLat {
+			minLat = pt[1]
+		}
+		if pt[1] > maxLat {
+			maxLat = pt[1]
+		}
+		if pt[0] < minLon {
+			minLon = pt[0]
+		}
+		if pt[0] > maxLon {
+			maxLon = pt[0]
+		}
+	}
+
+	// Query HeiGIT roads for this park
+	// Note: roads_heigit has highway_type, surface, passability from HeiGIT API
+	rows, err := l.db.QueryContext(ctx, `
+		SELECT osm_id, highway_type, surface, passability, geojson
+		FROM roads_heigit
+		WHERE park_id = ?
+		  AND geojson IS NOT NULL
+	`, parkID)
+	if err != nil {
+		return false, ""
+	}
+	defer rows.Close()
+
+	const matchThreshold = 30.0 // meters
+
+	for rows.Next() {
+		var osmID, geojsonStr string
+		var hwType, surface, passability sql.NullString
+		if err := rows.Scan(&osmID, &hwType, &surface, &passability, &geojsonStr); err != nil {
+			continue
+		}
+
+		// Parse road geometry
+		var gj struct {
+			Type        string      `json:"type"`
+			Coordinates [][]float64 `json:"coordinates"`
+		}
+		if err := json.Unmarshal([]byte(geojsonStr), &gj); err != nil {
+			continue
+		}
+
+		if gj.Type != "LineString" || len(gj.Coordinates) < 2 {
+			continue
+		}
+
+		// Quick bounding box check
+		roadMinLat, roadMaxLat := 90.0, -90.0
+		roadMinLon, roadMaxLon := 180.0, -180.0
+		for _, pt := range gj.Coordinates {
+			if pt[1] < roadMinLat {
+				roadMinLat = pt[1]
+			}
+			if pt[1] > roadMaxLat {
+				roadMaxLat = pt[1]
+			}
+			if pt[0] < roadMinLon {
+				roadMinLon = pt[0]
+			}
+			if pt[0] > roadMaxLon {
+				roadMaxLon = pt[0]
+			}
+		}
+
+		// Skip if bboxes don't overlap (with buffer)
+		buffer := 0.003 // ~300m
+		if roadMaxLat < minLat-buffer || roadMinLat > maxLat+buffer ||
+			roadMaxLon < minLon-buffer || roadMinLon > maxLon+buffer {
+			continue
+		}
+
+		// Check if track points are near the road
+		matchCount := 0
+		for _, pt := range track {
+			for _, rpt := range gj.Coordinates {
+				dist := haversineDistance(pt[1], pt[0], rpt[1], rpt[0])
+				if dist < matchThreshold {
+					matchCount++
+					break
+				}
+			}
+		}
+
+		matchRatio := float64(matchCount) / float64(len(track))
+		if matchRatio > 0.4 { // >40% of track points near reference road
+			// Build road info from HeiGIT attributes
+			roadInfo := "road"
+			if hwType.Valid && hwType.String != "" {
+				roadInfo = hwType.String
+			}
+			if surface.Valid && surface.String != "" {
+				roadInfo += "/" + surface.String
+			}
+			if passability.Valid && passability.String != "" {
+				roadInfo += " (" + passability.String + ")"
+			}
+			return true, roadInfo
+		}
+	}
+
+	return false, ""
 }
