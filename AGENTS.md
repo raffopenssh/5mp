@@ -107,20 +107,23 @@ curl -X POST "http://localhost:8000/api/upload/async?pwd=test2026" -F "gpx=@file
 | Table | Records | Description |
 |-------|---------|-------------|
 | fire_detections | 5.7M | VIIRS satellite fires (2018-2026) |
-| feature_geometries | 280K | GeoJSON polygons/lines |
-| park_settlements | 15K | GHSL built-up areas |
-| deforestation_events | 3.2K | Hansen forest loss |
-| osm_places | 10.6K | Place names for narratives |
+| feature_geometries | 443K | GeoJSON polygons/lines |
+| park_fire_analysis | 1,214 | Fire analysis by park/year (160 parks) |
+| park_rivers | 32,200 | HydroRIVERS data (161 parks) |
+| park_settlements | 15K | GHSL built-up areas (154 parks) |
+| deforestation_events | 3.2K | Hansen forest loss (149 parks) |
+| osm_places | 105K | Place names for narratives (141 parks) |
 | park_climate | 162 | Monthly climate/seasons |
 | park_species | 39.5K | IUCN mammal species |
-| park_waterbodies | 2.6K | Lake/reservoir polygons |
+| park_waterbodies | 2.6K | Lake/reservoir polygons (145 parks) |
+| fire_narrative_cache | 162 | Precomputed fire narratives |
 | fire_group_alerts | varies | Active fire group alerts |
 
 **Feature geometries by type:**
-- fire_trajectory: 50,899 (2018-2024)
-- deforestation: 153,980 (2001-2024)
+- deforestation: 221,277 (2001-2024)
+- fire_trajectory: 130,708 (2018-2024)
 - settlement: 64,016
-- road: 10,854
+- road: 26,550
 
 ---
 
