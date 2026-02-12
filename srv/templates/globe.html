@@ -4992,9 +4992,8 @@
                         return true;
                     }
                     
-                    // Normal click: show popup and zoom to park with buffer
+                    // Normal click: show popup (no zoom - user controls the view)
                     showPAPopup(props, lngLat);
-                    zoomToParkWithBuffer(props);
                     return true;
                 }
                 return false;
