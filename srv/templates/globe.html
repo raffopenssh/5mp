@@ -4008,7 +4008,7 @@
                             
                             // Format classified deforestation event with pinning
                             const formatClassifiedDefo = (e) => {
-                                const featureId = `deforestation_${e.id || e.year}`;
+                                const featureId = `deforest_${paId}_${e.year}_${e.id || 0}`;
                                 const classColors = {
                                     'slash_burn': '#f59e0b',
                                     'logging': '#ef4444',
@@ -4076,7 +4076,7 @@
                                     const container = document.getElementById(`deforest-stories-${paId}`);
                                     const events = window._deforestRemainingEvents[paId] || [];
                                     events.forEach(e => {
-                                        const featureId = `deforestation_${e.id || e.year}`;
+                                        const featureId = `deforest_${paId}_${e.year}_${e.id || 0}`;
                                         const classColors = {
                                             'slash_burn': '#f59e0b', 'logging': '#ef4444', 'mining': '#dc2626',
                                             'encroachment': '#fb923c', 'natural': '#22c55e'
@@ -6232,20 +6232,49 @@ ${starredItems.narratives.map(n => {
             
             const allFeatures = await response.json();
             
-            // Find the specific feature
-            const feature = allFeatures.features?.find(f => 
-                f.properties?.feature_id === featureId || 
-                f.properties?.id == featureId ||
-                (f.properties?.group_id && `${parkId}_${f.properties.year || ''}_grp_${f.properties.group_id}` === featureId)
-            );
+            // Find the specific feature(s)
+            let features = [];
             
-            if (!feature) {
+            // For deforestation/settlement, try to match by feature_id prefix or year
+            if (type === 'deforestation' || type === 'settlement') {
+                // Extract year from featureId if present (e.g., "deforest_CAF_Chinko_2001_0")
+                const yearMatch = featureId.match(/_(\d{4})_/);
+                const year = yearMatch ? yearMatch[1] : null;
+                
+                if (year) {
+                    // Get all polygons for this year
+                    features = allFeatures.features?.filter(f => 
+                        f.properties?.year == year || 
+                        f.properties?.feature_id?.includes(`_${year}_`)
+                    ) || [];
+                }
+                
+                if (features.length === 0) {
+                    // Fallback to single feature match
+                    const single = allFeatures.features?.find(f => 
+                        f.properties?.feature_id === featureId ||
+                        f.properties?.feature_id?.startsWith(featureId.replace(/_\d+$/, ''))
+                    );
+                    if (single) features = [single];
+                }
+            } else {
+                // Fire trajectory - single feature match
+                const single = allFeatures.features?.find(f => 
+                    f.properties?.feature_id === featureId || 
+                    f.properties?.id == featureId ||
+                    (f.properties?.group_id && `${parkId}_${f.properties.year || ''}_grp_${f.properties.group_id}` === featureId)
+                );
+                if (single) features = [single];
+            }
+            
+            if (features.length === 0) {
                 showToast(`Feature not found`, 'warning');
                 return;
             }
             
-            // Create a single-feature collection
-            const geojson = { type: 'FeatureCollection', features: [feature] };
+            // Create a feature collection (may have multiple polygons)
+            const geojson = { type: 'FeatureCollection', features };
+            const feature = features[0]; // For property access
             
             // Add to map with highlight style
             if (map.getSource(sourceId)) map.removeSource(sourceId);
