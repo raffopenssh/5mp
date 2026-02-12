@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -37,6 +38,26 @@ type GeoJSONGeometry struct {
 }
 
 // HandleAPIGrid returns grid cell effort data as GeoJSON FeatureCollection.
+// HandleAPIVersion returns version info and recent commits
+func (s *Server) HandleAPIVersion(w http.ResponseWriter, r *http.Request) {
+	commits := []string{}
+	
+	// Read commits from file generated at build time
+	if data, err := os.ReadFile(".git-commits.txt"); err == nil {
+		for _, line := range strings.Split(string(data), "\n") {
+			if line = strings.TrimSpace(line); line != "" {
+				commits = append(commits, line)
+			}
+		}
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"version": Version,
+		"commits": commits,
+	})
+}
+
 // Query params:
 //   - year: filter by year (optional, defaults to current year)
 //   - month: filter by month (optional, 1-12)

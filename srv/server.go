@@ -132,6 +132,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /admin/status", s.RequireAdmin(s.HandleProcessingStatus))
 	
 	// API routes
+	mux.HandleFunc("GET /api/version", s.HandleAPIVersion)
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)
 	mux.HandleFunc("GET /api/areas", s.HandleAPIAreas)
 	mux.HandleFunc("GET /api/areas/search", s.HandleAPIAreasSearch)
