@@ -4689,6 +4689,7 @@
             selectedPAIds.delete(id);
             updatePAHighlighting();
             updateSelectedParksDisplay();
+            updateCombinedBbox();  // Update bbox when park is removed
         }
         
         function flyToSelectedPark(id) {
@@ -4712,8 +4713,49 @@
             if (typeof bbox === 'string') { try { bbox = JSON.parse(bbox); } catch(e) { bbox = null; } }
             toggleParkSelection(paId, name, bbox, center);
             updateFilterAreaDisplay();
+            
+            // Update bounding box to encompass all selected parks
+            updateCombinedBbox();
+            
             var isNowSelected = selectedParks.some(function(p) { return p.id === paId; });
             showToast(isNowSelected ? 'Added "' + name + '" to selection' : 'Removed "' + name + '" from selection', 'info');
+        }
+        
+        // Calculate combined bounding box from all selected parks
+        function updateCombinedBbox() {
+            if (selectedParks.length === 0) {
+                currentBbox = null;
+                removeBboxFromMap();
+                return;
+            }
+            
+            let minLng = 180, minLat = 90, maxLng = -180, maxLat = -90;
+            selectedParks.forEach(park => {
+                if (park.bbox && park.bbox.length === 4) {
+                    minLng = Math.min(minLng, park.bbox[0]);
+                    minLat = Math.min(minLat, park.bbox[1]);
+                    maxLng = Math.max(maxLng, park.bbox[2]);
+                    maxLat = Math.max(maxLat, park.bbox[3]);
+                } else if (park.center && park.center.length === 2) {
+                    // Use center with small buffer if no bbox
+                    minLng = Math.min(minLng, park.center[0] - 0.5);
+                    minLat = Math.min(minLat, park.center[1] - 0.5);
+                    maxLng = Math.max(maxLng, park.center[0] + 0.5);
+                    maxLat = Math.max(maxLat, park.center[1] + 0.5);
+                }
+            });
+            
+            if (minLng < maxLng && minLat < maxLat) {
+                currentBbox = [minLng, minLat, maxLng, maxLat];
+                drawBboxOnMap();
+                
+                // Fit map to combined bbox
+                map.fitBounds([[minLng, minLat], [maxLng, maxLat]], {
+                    padding: { top: 100, bottom: 100, left: 50, right: 50 },
+                    duration: 1000,
+                    maxZoom: 12
+                });
+            }
         }
 
         // Zoom to a park with a reasonable buffer around it
