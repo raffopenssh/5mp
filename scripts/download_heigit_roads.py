@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
 """
 Download HeiGIT Planet road data for African countries.
 
-Downloads road surface data with attributes:
-- surface type, width, passability, etc.
+Downloads road surface data with rich attributes:
+- Surface type (paved/unpaved), highway class
+- Passability scores, surface change detection
+- Deep learning classifications
 
 Processes country by country for memory efficiency.
 Filters roads within park buffers and stores as JSON per park.
@@ -113,7 +116,7 @@ class RoadDownloader:
         print(f"  Downloading from {url}...")
         
         try:
-            response = requests.get(url, timeout=300, stream=True)
+            response = requests.get(url, timeout=600, stream=True)
             if response.status_code == 404:
                 print(f"  No data available for {country_code}")
                 return None
@@ -147,7 +150,7 @@ class RoadDownloader:
                     # Clip to buffer
                     clipped = road_geom.intersection(park_buffer)
                     if not clipped.is_empty:
-                        road_copy = road.copy()
+                        road_copy = dict(road)
                         road_copy['geometry'] = mapping(clipped)
                         filtered.append(road_copy)
             except Exception:
@@ -191,28 +194,33 @@ class RoadDownloader:
             park_roads = self._filter_roads_for_park(roads, buffer)
             
             if park_roads:
-                # Extract and save
+                # Extract and save with ALL attributes
                 output_file = OUTPUT_DIR / f"{park_id}.json"
                 
-                # Format roads with all attributes
                 formatted_roads = []
                 for road in park_roads:
                     props = road.get('properties', {})
                     formatted_roads.append({
                         'geometry': road['geometry'],
-                        'surface': props.get('surface'),
-                        'surface_source': props.get('surface_source'),
-                        'width': props.get('width'),
-                        'width_source': props.get('width_source'),
-                        'highway': props.get('highway'),
-                        'name': props.get('name'),
-                        'ref': props.get('ref'),
-                        'lanes': props.get('lanes'),
-                        'smoothness': props.get('smoothness'),
-                        'tracktype': props.get('tracktype'),
-                        'access': props.get('access'),
+                        # OSM attributes
                         'osm_id': props.get('osm_id'),
-                        'osm_type': props.get('osm_type')
+                        'highway': props.get('osm_tags_highway'),
+                        'surface': props.get('osm_tags_surface'),
+                        'osm_surface_class': props.get('OSM_surface_class'),
+                        'osm_length': props.get('OSM_length'),
+                        # Deep learning classifications
+                        'dl_class_2024': props.get('DL_road_class_2024'),
+                        'dl_class_2020': props.get('DL_road_class_2020'),
+                        'surface_change': props.get('surface_change_paved'),
+                        # Pixel counts for verification
+                        'paved_pixels_2024': props.get('paved_pixels_2024'),
+                        'unpaved_pixels_2024': props.get('unpaved_pixels_2024'),
+                        # Passability scores
+                        'passability_code': props.get('Passability_Alphanumeric_Code'),
+                        'passability_desc': props.get('Passability_Descriptive_Code'),
+                        'passability_risk': props.get('Passability_Numerical_Risk_Score'),
+                        # Road width class
+                        'rw_class': props.get('rw_class'),
                     })
                 
                 with open(output_file, 'w') as f:
@@ -244,7 +252,7 @@ class RoadDownloader:
             total += count
             
             # Small delay between countries
-            time.sleep(1)
+            time.sleep(2)
         
         print("\n" + "=" * 60)
         print(f"Complete! Total roads: {total}")
