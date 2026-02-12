@@ -140,6 +140,20 @@ type LearningResult struct {
 	PlaceTypes         map[string]int `json:"place_types"`
 	PlaceConfidence    float64        `json:"place_confidence_pct"`
 	Summary            string         `json:"summary"`
+	// Context enrichment from reference data
+	NearbyRivers      []NearbyFeature `json:"nearby_rivers,omitempty"`
+	NearbyRoads       []NearbyFeature `json:"nearby_roads,omitempty"`
+	NearbyPlaces      []NearbyFeature `json:"nearby_places,omitempty"`
+	NearbySettlements []NearbyFeature `json:"nearby_settlements,omitempty"`
+}
+
+// NearbyFeature represents a contextual feature near the track
+type NearbyFeature struct {
+	Name       string  `json:"name"`
+	Type       string  `json:"type,omitempty"`
+	DistanceKm float64 `json:"distance_km"`
+	Lat        float64 `json:"lat,omitempty"`
+	Lon        float64 `json:"lon,omitempty"`
 }
 
 // SpeedSample holds speed data for statistical analysis
@@ -346,6 +360,9 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	if len(segments) >= 2 {
 		l.processCrossTrackAnalysis(ctx, parkID, uploadID, segments, result)
 	}
+
+	// Enrich with context from reference data (rivers, roads, places, settlements)
+	l.enrichWithContext(ctx, parkID, segments, result)
 
 	// Generate summary
 	result.Summary = l.generateSummary(result)
@@ -959,11 +976,37 @@ func (l *GPXLearner) generateSummary(result *LearningResult) string {
 			strings.Join(placeTypes, ", "), result.PlaceConfidence))
 	}
 
+	// Add context info
+	var contextParts []string
+	if len(result.NearbyRivers) > 0 {
+		rivers := make([]string, 0, len(result.NearbyRivers))
+		for _, r := range result.NearbyRivers {
+			rivers = append(rivers, r.Name)
+		}
+		contextParts = append(contextParts, fmt.Sprintf("near rivers: %s", strings.Join(rivers, ", ")))
+	}
+	if len(result.NearbyPlaces) > 0 {
+		places := make([]string, 0, 3)
+		for i, p := range result.NearbyPlaces {
+			if i >= 3 {
+				break
+			}
+			places = append(places, p.Name)
+		}
+		contextParts = append(contextParts, fmt.Sprintf("near: %s", strings.Join(places, ", ")))
+	}
+	if len(result.NearbySettlements) > 0 {
+		contextParts = append(contextParts, fmt.Sprintf("%d settlements nearby", len(result.NearbySettlements)))
+	}
+	if len(contextParts) > 0 {
+		parts = append(parts, "Context: "+strings.Join(contextParts, "; "))
+	}
+
 	if len(parts) == 0 {
 		return "No new patterns detected"
 	}
 
-	return strings.Join(parts, "; ")
+	return strings.Join(parts, ". ")
 }
 
 func (l *GPXLearner) storeLearningResult(ctx context.Context, result *LearningResult) error {
@@ -2018,4 +2061,162 @@ func countSegmentsWithPoints(segments []ClassifiedSegment) int {
 		}
 	}
 	return count
+}
+
+// enrichWithContext adds nearby rivers, roads, places, and settlements to the result
+func (l *GPXLearner) enrichWithContext(ctx context.Context, parkID string, segments []ClassifiedSegment, result *LearningResult) {
+	if len(segments) == 0 {
+		return
+	}
+
+	// Collect all points from segments to find track extent
+	var minLat, maxLat, minLon, maxLon float64 = 90, -90, 180, -180
+	pointCount := 0
+	for _, seg := range segments {
+		for _, pt := range seg.Points {
+			if pt.Lat < minLat {
+				minLat = pt.Lat
+			}
+			if pt.Lat > maxLat {
+				maxLat = pt.Lat
+			}
+			if pt.Lon < minLon {
+				minLon = pt.Lon
+			}
+			if pt.Lon > maxLon {
+				maxLon = pt.Lon
+			}
+			pointCount++
+		}
+	}
+
+	if pointCount == 0 {
+		return
+	}
+
+	// Calculate center of track
+	centerLat := (minLat + maxLat) / 2
+	centerLon := (minLon + maxLon) / 2
+
+	// Buffer for searching (0.5 degree ~ 55km)
+	buffer := 0.5
+
+	// Find nearby rivers
+	riverRows, err := l.db.QueryContext(ctx, `
+		SELECT r.name, r.stream_order, pr.distance_km, 
+		       (pr.centroid_lat + ?) as lat, (pr.centroid_lon + ?) as lon
+		FROM park_rivers pr
+		JOIN rivers r ON r.hyriv_id = pr.hyriv_id
+		WHERE pr.park_id = ? 
+		  AND r.name IS NOT NULL AND r.name != ''
+		  AND pr.centroid_lat BETWEEN ? AND ?
+		  AND pr.centroid_lon BETWEEN ? AND ?
+		ORDER BY r.discharge_cms DESC
+		LIMIT 5
+	`, 0.0, 0.0, parkID, minLat-buffer, maxLat+buffer, minLon-buffer, maxLon+buffer)
+	if err == nil {
+		defer riverRows.Close()
+		for riverRows.Next() {
+			var name string
+			var order int
+			var dist, lat, lon float64
+			if err := riverRows.Scan(&name, &order, &dist, &lat, &lon); err == nil {
+				result.NearbyRivers = append(result.NearbyRivers, NearbyFeature{
+					Name:       name,
+					Type:       fmt.Sprintf("order-%d", order),
+					DistanceKm: dist,
+					Lat:        lat,
+					Lon:        lon,
+				})
+			}
+		}
+	}
+
+	// Find nearby OSM places
+	placeRows, err := l.db.QueryContext(ctx, `
+		SELECT name, place_type, lat, lon,
+		       (ABS(lat - ?) + ABS(lon - ?)) * 111 as approx_dist
+		FROM osm_places
+		WHERE park_id = ?
+		  AND lat BETWEEN ? AND ?
+		  AND lon BETWEEN ? AND ?
+		  AND name IS NOT NULL AND name != ''
+		ORDER BY approx_dist
+		LIMIT 10
+	`, centerLat, centerLon, parkID, minLat-buffer, maxLat+buffer, minLon-buffer, maxLon+buffer)
+	if err == nil {
+		defer placeRows.Close()
+		for placeRows.Next() {
+			var name, placeType string
+			var lat, lon, dist float64
+			if err := placeRows.Scan(&name, &placeType, &lat, &lon, &dist); err == nil {
+				result.NearbyPlaces = append(result.NearbyPlaces, NearbyFeature{
+					Name:       name,
+					Type:       placeType,
+					DistanceKm: dist,
+					Lat:        lat,
+					Lon:        lon,
+				})
+			}
+		}
+	}
+
+	// Find nearby HeiGIT roads
+	roadRows, err := l.db.QueryContext(ctx, `
+		SELECT highway_type, surface, passability, length_km
+		FROM roads_heigit
+		WHERE park_id = ?
+		LIMIT 10
+	`, parkID)
+	if err == nil {
+		defer roadRows.Close()
+		roadTypes := make(map[string]float64)
+		for roadRows.Next() {
+			var hwType, surface, pass string
+			var length float64
+			if err := roadRows.Scan(&hwType, &surface, &pass, &length); err == nil {
+				key := hwType
+				if surface != "" {
+					key += "/" + surface
+				}
+				roadTypes[key] += length
+			}
+		}
+		for roadType, totalKm := range roadTypes {
+			result.NearbyRoads = append(result.NearbyRoads, NearbyFeature{
+				Name:       roadType,
+				DistanceKm: totalKm, // Using distance field for total km
+			})
+		}
+	}
+
+	// Find nearby settlements
+	settlementRows, err := l.db.QueryContext(ctx, `
+		SELECT COALESCE(nearest_place, 'Unnamed'), lat, lon, population_est,
+		       (ABS(lat - ?) + ABS(lon - ?)) * 111 as approx_dist
+		FROM park_settlements
+		WHERE park_id = ?
+		  AND lat BETWEEN ? AND ?
+		  AND lon BETWEEN ? AND ?
+		ORDER BY approx_dist
+		LIMIT 5
+	`, centerLat, centerLon, parkID, minLat-buffer, maxLat+buffer, minLon-buffer, maxLon+buffer)
+	if err == nil {
+		defer settlementRows.Close()
+		for settlementRows.Next() {
+			var name string
+			var lat, lon float64
+			var pop int64
+			var dist float64
+			if err := settlementRows.Scan(&name, &lat, &lon, &pop, &dist); err == nil {
+				result.NearbySettlements = append(result.NearbySettlements, NearbyFeature{
+					Name:       name,
+					Type:       fmt.Sprintf("pop-%d", pop),
+					DistanceKm: dist,
+					Lat:        lat,
+					Lon:        lon,
+				})
+			}
+		}
+	}
 }
