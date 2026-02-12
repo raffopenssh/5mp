@@ -52,6 +52,7 @@ type FireHotspot struct {
 type FireTrendAnalysis struct {
 	Years              []FireYearSummary     `json:"years"`
 	Months             []FireMonthSummary    `json:"months,omitempty"`
+	Weeks              []FireWeekSummary     `json:"weeks,omitempty"`
 	TrendDirection     string                `json:"trend_direction"` // increasing, decreasing, stable
 	AvgResponseRate    float64               `json:"avg_response_rate"`
 	WorstYear          int                   `json:"worst_year"`
@@ -67,8 +68,15 @@ type FireTrendAnalysis struct {
 
 // FireMonthSummary provides per-month fire statistics
 type FireMonthSummary struct {
-	Month       string  `json:"month"`       // YYYY-MM format
-	Groups      int     `json:"groups"`
+	Month        string  `json:"month"`       // YYYY-MM format
+	Groups       int     `json:"groups"`
+	GroupsPerKm2 float64 `json:"groups_per_km2,omitempty"`
+}
+
+// FireWeekSummary provides per-week fire statistics
+type FireWeekSummary struct {
+	Week         string  `json:"week"`        // YYYY-Www format (ISO week)
+	Groups       int     `json:"groups"`
 	GroupsPerKm2 float64 `json:"groups_per_km2,omitempty"`
 }
 
@@ -2278,6 +2286,30 @@ func (s *Server) enrichTrendWithMonthlyData(parkID string, trend *FireTrendAnaly
 				trend.Seasonality = "Peak activity in " + strings.Join(trend.PeakMonths, ", ")
 			} else {
 				trend.Seasonality = fmt.Sprintf("Peak activity %s-%s", trend.PeakMonths[0], trend.PeakMonths[len(trend.PeakMonths)-1])
+			}
+		}
+	}
+
+	// Query weekly data (last 2 years for detail)
+	weekRows, err := s.DB.Query(`
+		SELECT strftime('%Y-W%W', start_date) as week, COUNT(*) as groups
+		FROM feature_geometries 
+		WHERE park_id = ? AND feature_type = 'fire_trajectory' 
+		  AND start_date IS NOT NULL AND start_date >= date('now', '-2 years')
+		GROUP BY week 
+		ORDER BY week
+	`, parkID)
+	if err == nil {
+		defer weekRows.Close()
+		for weekRows.Next() {
+			var week string
+			var groups int
+			if err := weekRows.Scan(&week, &groups); err == nil {
+				ws := FireWeekSummary{Week: week, Groups: groups}
+				if areaKm2 > 0 {
+					ws.GroupsPerKm2 = float64(groups) / areaKm2
+				}
+				trend.Weeks = append(trend.Weeks, ws)
 			}
 		}
 	}
