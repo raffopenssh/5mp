@@ -240,6 +240,25 @@ func (s *Server) buildFireSummary(parkName string, fromYear, toYear, yearCount, 
 func (s *Server) analyzeFireTrendFast(parkID string, currentYear int) *FireTrendAnalysis {
 	trend := &FireTrendAnalysis{}
 
+	// Get park area for groups_per_km2 calculation
+	var areaKm2 float64 = 1.0 // default to avoid division by zero
+	var parkLat float64 = 0
+	if s.AreaStore != nil {
+		for _, area := range s.AreaStore.Areas {
+			if area.ID == parkID {
+				if area.AreaKm2 > 0 {
+					areaKm2 = area.AreaKm2
+				}
+				// Get latitude from bbox center
+				if area.Geometry.Type != "" {
+					lat, _ := area.CenterLatLon()
+					parkLat = lat
+				}
+				break
+			}
+		}
+	}
+
 	// Query only from pre-computed table
 	rows, err := s.DB.Query(`
 		SELECT 
@@ -293,6 +312,78 @@ func (s *Server) analyzeFireTrendFast(parkID string, currentYear int) *FireTrend
 
 	if yearCount > 0 {
 		trend.AvgResponseRate = totalResponseRate / float64(yearCount)
+	}
+
+	// Calculate groups_per_km2 for each year
+	var totalGroupsPerKm2 float64
+	for i := range trend.Years {
+		if areaKm2 > 0 {
+			trend.Years[i].GroupsPerKm2 = float64(trend.Years[i].TotalGroups) / areaKm2
+			totalGroupsPerKm2 += trend.Years[i].GroupsPerKm2
+		}
+	}
+	if len(trend.Years) > 0 {
+		trend.AvgGroupsPerKm2 = totalGroupsPerKm2 / float64(len(trend.Years))
+	}
+
+	// Query monthly data from feature_geometries
+	monthRows, err := s.DB.Query(`
+		SELECT strftime('%Y-%m', start_date) as month, COUNT(*) as groups
+		FROM feature_geometries 
+		WHERE park_id = ? AND feature_type = 'fire_trajectory' AND start_date IS NOT NULL
+		GROUP BY month 
+		ORDER BY month
+	`, parkID)
+	if err == nil {
+		defer monthRows.Close()
+		monthCounts := make(map[int]int) // month number (1-12) -> total groups
+		for monthRows.Next() {
+			var month string
+			var groups int
+			if err := monthRows.Scan(&month, &groups); err == nil {
+				ms := FireMonthSummary{Month: month, Groups: groups}
+				if areaKm2 > 0 {
+					ms.GroupsPerKm2 = float64(groups) / areaKm2
+				}
+				trend.Months = append(trend.Months, ms)
+				
+				// Track by calendar month for seasonality
+				if len(month) >= 7 {
+					var m int
+					fmt.Sscanf(month[5:7], "%d", &m)
+					monthCounts[m] += groups
+				}
+			}
+		}
+		
+		// Determine peak months and seasonality
+		var maxGroups int
+		for _, g := range monthCounts {
+			if g > maxGroups {
+				maxGroups = g
+			}
+		}
+		threshold := maxGroups * 7 / 10 // 70% of peak
+		monthNames := []string{"", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
+		for m := 1; m <= 12; m++ {
+			if monthCounts[m] >= threshold {
+				trend.PeakMonths = append(trend.PeakMonths, monthNames[m])
+			}
+		}
+		
+		// Generate seasonality description
+		if len(trend.PeakMonths) > 0 {
+			if len(trend.PeakMonths) <= 3 {
+				trend.Seasonality = "Peak activity in " + joinWithAnd(trend.PeakMonths)
+			} else {
+				trend.Seasonality = fmt.Sprintf("Peak activity %s-%s", trend.PeakMonths[0], trend.PeakMonths[len(trend.PeakMonths)-1])
+			}
+		}
+	}
+
+	// Add latitude comparison
+	if parkLat != 0 && s.AreaStore != nil {
+		trend.LatitudeComparison = s.computeLatitudeComparison(parkID, parkLat, trend.AvgGroupsPerKm2)
 	}
 
 	// Determine trend direction
@@ -740,4 +831,94 @@ func (s *Server) GetCachedClassifiedDeforestation(parkID string) []ClassifiedDef
 		events = append(events, df)
 	}
 	return events
+}
+
+// joinWithAnd joins strings with commas and "and" before the last item
+func joinWithAnd(items []string) string {
+	switch len(items) {
+	case 0:
+		return ""
+	case 1:
+		return items[0]
+	case 2:
+		return items[0] + " and " + items[1]
+	default:
+		return strings.Join(items[:len(items)-1], ", ") + ", and " + items[len(items)-1]
+	}
+}
+
+// computeLatitudeComparison compares a park's fire activity to others at similar latitude
+func (s *Server) computeLatitudeComparison(parkID string, parkLat, avgGroupsPerKm2 float64) *LatitudeComparison {
+	if s.AreaStore == nil || avgGroupsPerKm2 == 0 {
+		return nil
+	}
+
+	// Define latitude band (±5 degrees)
+	latMin := parkLat - 5
+	latMax := parkLat + 5
+
+	// Get all parks in this latitude band with their fire data
+	var parksInBand []struct {
+		id           string
+		groupsPerKm2 float64
+	}
+
+	// Query groups per km2 for each park in the latitude band
+	for _, area := range s.AreaStore.Areas {
+		lat, _ := area.CenterLatLon()
+		if lat >= latMin && lat <= latMax && area.AreaKm2 > 0 {
+			// Get total groups for this park
+			var totalGroups int
+			s.DB.QueryRow(`
+				SELECT COALESCE(SUM(total_groups), 0) 
+				FROM park_group_infractions 
+				WHERE park_id = ?
+			`, area.ID).Scan(&totalGroups)
+			
+			if totalGroups > 0 {
+				gpk := float64(totalGroups) / area.AreaKm2 / 7.0 // Average per year (approx 7 years of data)
+				parksInBand = append(parksInBand, struct {
+					id           string
+					groupsPerKm2 float64
+				}{area.ID, gpk})
+			}
+		}
+	}
+
+	if len(parksInBand) < 3 {
+		return nil // Not enough data for meaningful comparison
+	}
+
+	// Calculate region average and percentile
+	var regionTotal float64
+	var betterCount int
+	for _, p := range parksInBand {
+		regionTotal += p.groupsPerKm2
+		if p.groupsPerKm2 < avgGroupsPerKm2 {
+			betterCount++
+		}
+	}
+	regionAvg := regionTotal / float64(len(parksInBand))
+	percentile := float64(betterCount) / float64(len(parksInBand)) * 100
+
+	// Determine latitude band name
+	bandName := "equatorial"
+	if parkLat > 10 {
+		bandName = "tropical north"
+	} else if parkLat > 5 {
+		bandName = "northern equatorial"
+	} else if parkLat < -10 {
+		bandName = "tropical south"
+	} else if parkLat < -5 {
+		bandName = "southern equatorial"
+	}
+
+	return &LatitudeComparison{
+		ParkLatitude:    parkLat,
+		AvgGroupsPerKm2: avgGroupsPerKm2,
+		RegionAvg:       regionAvg,
+		Percentile:      percentile,
+		ComparedParks:   len(parksInBand),
+		LatitudeBand:    bandName,
+	}
 }

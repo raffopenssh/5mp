@@ -50,20 +50,43 @@ type FireHotspot struct {
 
 // FireTrendAnalysis provides multi-year trend information
 type FireTrendAnalysis struct {
-	Years           []FireYearSummary `json:"years"`
-	TrendDirection  string            `json:"trend_direction"` // increasing, decreasing, stable
-	AvgResponseRate float64           `json:"avg_response_rate"`
-	WorstYear       int               `json:"worst_year"`
-	WorstYearGroups int               `json:"worst_year_groups"`
-	BestYear        int               `json:"best_year"`
-	BestYearRate    float64           `json:"best_year_rate"`
-	Narrative       string            `json:"narrative"`
+	Years              []FireYearSummary     `json:"years"`
+	Months             []FireMonthSummary    `json:"months,omitempty"`
+	TrendDirection     string                `json:"trend_direction"` // increasing, decreasing, stable
+	AvgResponseRate    float64               `json:"avg_response_rate"`
+	WorstYear          int                   `json:"worst_year"`
+	WorstYearGroups    int                   `json:"worst_year_groups"`
+	BestYear           int                   `json:"best_year"`
+	BestYearRate       float64               `json:"best_year_rate"`
+	Narrative          string                `json:"narrative"`
+	AvgGroupsPerKm2    float64               `json:"avg_groups_per_km2,omitempty"`
+	PeakMonths         []string              `json:"peak_months,omitempty"` // Months with highest activity
+	Seasonality        string                `json:"seasonality,omitempty"` // e.g., "dry season peaks Jun-Aug"
+	LatitudeComparison *LatitudeComparison   `json:"latitude_comparison,omitempty"`
+}
+
+// FireMonthSummary provides per-month fire statistics
+type FireMonthSummary struct {
+	Month       string  `json:"month"`       // YYYY-MM format
+	Groups      int     `json:"groups"`
+	GroupsPerKm2 float64 `json:"groups_per_km2,omitempty"`
+}
+
+// LatitudeComparison compares this park to others at similar latitude
+type LatitudeComparison struct {
+	ParkLatitude      float64 `json:"park_latitude"`
+	AvgGroupsPerKm2   float64 `json:"avg_groups_per_km2"`
+	RegionAvg         float64 `json:"region_avg"`
+	Percentile        float64 `json:"percentile"`   // 0-100, lower is better
+	ComparedParks     int     `json:"compared_parks"`
+	LatitudeBand      string  `json:"latitude_band"` // e.g., "equatorial", "tropical north", etc.
 }
 
 // FireYearSummary provides per-year fire statistics
 type FireYearSummary struct {
 	Year            int     `json:"year"`
 	TotalGroups     int     `json:"total_groups"`
+	GroupsPerKm2    float64 `json:"groups_per_km2,omitempty"`
 	StoppedInside   int     `json:"stopped_inside"`
 	Transited       int     `json:"transited"`
 	ResponseRate    float64 `json:"response_rate"`
@@ -2164,7 +2187,105 @@ func (s *Server) analyzeFireTrend(parkID string, currentYear int) *FireTrendAnal
 		trend.Narrative = narr.String()
 	}
 	
+	// Add monthly data and groups_per_km2
+	s.enrichTrendWithMonthlyData(parkID, trend)
+	
 	return trend
+}
+
+// enrichTrendWithMonthlyData adds monthly breakdown and groups_per_km2 calculations
+func (s *Server) enrichTrendWithMonthlyData(parkID string, trend *FireTrendAnalysis) {
+	if trend == nil {
+		return
+	}
+
+	// Get park area
+	var areaKm2 float64 = 1.0
+	var parkLat float64 = 0
+	if s.AreaStore != nil {
+		for _, area := range s.AreaStore.Areas {
+			if area.ID == parkID {
+				if area.AreaKm2 > 0 {
+					areaKm2 = area.AreaKm2
+				}
+				lat, _ := area.CenterLatLon()
+				parkLat = lat
+				break
+			}
+		}
+	}
+
+	// Calculate groups_per_km2 for each year
+	var totalGroupsPerKm2 float64
+	for i := range trend.Years {
+		if areaKm2 > 0 {
+			trend.Years[i].GroupsPerKm2 = float64(trend.Years[i].TotalGroups) / areaKm2
+			totalGroupsPerKm2 += trend.Years[i].GroupsPerKm2
+		}
+	}
+	if len(trend.Years) > 0 {
+		trend.AvgGroupsPerKm2 = totalGroupsPerKm2 / float64(len(trend.Years))
+	}
+
+	// Query monthly data
+	monthRows, err := s.DB.Query(`
+		SELECT strftime('%Y-%m', start_date) as month, COUNT(*) as groups
+		FROM feature_geometries 
+		WHERE park_id = ? AND feature_type = 'fire_trajectory' AND start_date IS NOT NULL
+		GROUP BY month 
+		ORDER BY month
+	`, parkID)
+	if err == nil {
+		defer monthRows.Close()
+		monthCounts := make(map[int]int) // month number (1-12) -> total groups
+		for monthRows.Next() {
+			var month string
+			var groups int
+			if err := monthRows.Scan(&month, &groups); err == nil {
+				ms := FireMonthSummary{Month: month, Groups: groups}
+				if areaKm2 > 0 {
+					ms.GroupsPerKm2 = float64(groups) / areaKm2
+				}
+				trend.Months = append(trend.Months, ms)
+
+				// Track by calendar month for seasonality
+				if len(month) >= 7 {
+					var m int
+					fmt.Sscanf(month[5:7], "%d", &m)
+					monthCounts[m] += groups
+				}
+			}
+		}
+
+		// Determine peak months and seasonality
+		var maxGroups int
+		for _, g := range monthCounts {
+			if g > maxGroups {
+				maxGroups = g
+			}
+		}
+		threshold := maxGroups * 7 / 10 // 70% of peak
+		monthNames := []string{"", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
+		for m := 1; m <= 12; m++ {
+			if monthCounts[m] >= threshold {
+				trend.PeakMonths = append(trend.PeakMonths, monthNames[m])
+			}
+		}
+
+		// Generate seasonality description
+		if len(trend.PeakMonths) > 0 {
+			if len(trend.PeakMonths) <= 3 {
+				trend.Seasonality = "Peak activity in " + strings.Join(trend.PeakMonths, ", ")
+			} else {
+				trend.Seasonality = fmt.Sprintf("Peak activity %s-%s", trend.PeakMonths[0], trend.PeakMonths[len(trend.PeakMonths)-1])
+			}
+		}
+	}
+
+	// Add latitude comparison if we have the data
+	if parkLat != 0 && s.AreaStore != nil && trend.AvgGroupsPerKm2 > 0 {
+		trend.LatitudeComparison = s.computeLatitudeComparison(parkID, parkLat, trend.AvgGroupsPerKm2)
+	}
 }
 
 // ============================================================================

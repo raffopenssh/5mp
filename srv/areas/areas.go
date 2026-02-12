@@ -506,3 +506,11 @@ func (a *ProtectedArea) GetBoundingBox() (latMin, latMax, lonMin, lonMax float64
 	}
 	return 0, 0, 0, 0
 }
+
+// CenterLatLon returns the center point of the protected area's bounding box
+func (a *ProtectedArea) CenterLatLon() (lat, lon float64) {
+	if a.bbox != nil {
+		return (a.bbox.LatMin + a.bbox.LatMax) / 2, (a.bbox.LonMin + a.bbox.LonMax) / 2
+	}
+	return 0, 0
+}
