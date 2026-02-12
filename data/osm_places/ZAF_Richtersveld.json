@@ -1,0 +1,2658 @@
+{
+  "park_id": "ZAF_Richtersveld",
+  "downloaded_at": "2026-02-08T13:23:57.955266+00:00",
+  "buffer_km": 50,
+  "place_count": 199,
+  "places": [
+    {
+      "place_type": "village",
+      "name": "Nababeep",
+      "lat": -29.5907651,
+      "lon": 17.7875853,
+      "osm_id": "node/243652300",
+      "osm_tags": {
+        "name": "Nababeep",
+        "place": "village",
+        "wikidata": "Q1925174",
+        "wikimedia_commons": "Category:Nababeep",
+        "wikipedia": "en:Nababeep"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Noordoewer",
+      "lat": -28.721967,
+      "lon": 17.6179768,
+      "osm_id": "node/243652939",
+      "osm_tags": {
+        "name": "Noordoewer",
+        "place": "village",
+        "wikidata": "Q1013958"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rosh Pinah",
+      "lat": -27.964239,
+      "lon": 16.761083,
+      "osm_id": "node/243660982",
+      "osm_tags": {
+        "name": "Rosh Pinah",
+        "place": "village",
+        "population": "2835",
+        "wikidata": "Q851674"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Eksteenfontein",
+      "lat": -28.824047,
+      "lon": 17.254935,
+      "osm_id": "node/260427643",
+      "osm_tags": {
+        "name": "Eksteenfontein",
+        "name:af": "Stinkfontein",
+        "place": "village",
+        "wikidata": "Q2390599",
+        "wikimedia_commons": "Category:Eksteenfontein",
+        "wikipedia": "en:Eksteenfontein"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Alexander Bay",
+      "lat": -28.594787,
+      "lon": 16.482647,
+      "osm_id": "node/262694682",
+      "osm_tags": {
+        "name": "Alexander Bay",
+        "name:af": "Alexanderbaai",
+        "name:en": "Alexander Bay",
+        "place": "village",
+        "sagns_id": "95583",
+        "source": "sagns",
+        "wikidata": "Q1856529",
+        "wikimedia_commons": "Category:Alexander Bay (South Africa)",
+        "wikipedia": "en:Alexander Bay, Northern Cape"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kleinsee",
+      "lat": -29.6777778,
+      "lon": 17.0708333,
+      "osm_id": "node/262707566",
+      "osm_tags": {
+        "alt_name": "Kleinzee",
+        "name": "Kleinsee",
+        "place": "village",
+        "population": "728",
+        "population:date": "2011",
+        "postal_code": "8282",
+        "sagns_id": "77044",
+        "source": "sagns",
+        "wikidata": "Q3642187",
+        "wikimedia_commons": "Category:Kleinzee",
+        "wikipedia": "af:Kleinsee"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuboes",
+      "lat": -28.4470694,
+      "lon": 16.9903196,
+      "osm_id": "node/262707729",
+      "osm_tags": {
+        "name": "Kuboes",
+        "place": "village",
+        "sagns_id": "76830",
+        "source": "sagns",
+        "wikidata": "Q13035233",
+        "wikimedia_commons": "Category:Kuboes",
+        "wikipedia": "en:Kuboes"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Port Nolloth",
+      "lat": -29.248889,
+      "lon": 16.870833,
+      "osm_id": "node/262714984",
+      "osm_tags": {
+        "name": "Port Nolloth",
+        "place": "village",
+        "sagns_id": "116277",
+        "source": "sagns",
+        "wikidata": "Q993170",
+        "wikimedia_commons": "File:Port_Nolloth_Main_street_-_panoramio.jpg",
+        "wikipedia": "en:Port Nolloth"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sendelingsdrif",
+      "lat": -28.1247527,
+      "lon": 16.8943489,
+      "osm_id": "node/262715907",
+      "osm_tags": {
+        "name": "Sendelingsdrif",
+        "place": "village",
+        "sagns_id": "71298",
+        "source": "sagns",
+        "wikipedia": "en:Sendelingsdrif"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Steinkopf",
+      "lat": -29.2625,
+      "lon": 17.7333333,
+      "osm_id": "node/262717545",
+      "osm_tags": {
+        "name": "Steinkopf",
+        "place": "village",
+        "sagns_id": "68055",
+        "source": "sagns",
+        "wikidata": "Q3642286",
+        "wikimedia_commons": "Category:Steinkopf, Northern Cape",
+        "wikipedia": "en:Steinkopf, Northern Cape"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vioolsdrif",
+      "lat": -28.770794,
+      "lon": 17.625584,
+      "osm_id": "node/339845951",
+      "osm_tags": {
+        "name": "Vioolsdrif",
+        "place": "village",
+        "wikidata": "Q1013975",
+        "wikipedia": "en:Vioolsdrif"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Devil's Tooth",
+      "lat": -28.465,
+      "lon": 17.2686111,
+      "osm_id": "node/345446900",
+      "osm_tags": {
+        "ele": "1042",
+        "name": "Devil's Tooth",
+        "natural": "peak",
+        "sagns_id": "89998",
+        "source": "sagns",
+        "wikidata": "Q31534256"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Claim Peak",
+      "lat": -28.3588889,
+      "lon": 17.1527778,
+      "osm_id": "node/345446907",
+      "osm_tags": {
+        "ele": "566.2",
+        "name": "Claim Peak",
+        "natural": "peak",
+        "sagns_id": "91257",
+        "source": "sagns",
+        "wikidata": "Q31411054"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Dolomite Peaks",
+      "lat": -28.68,
+      "lon": 17.0291667,
+      "osm_id": "node/345446940",
+      "osm_tags": {
+        "name": "Dolomite Peaks",
+        "natural": "peak",
+        "sagns_id": "89006",
+        "source": "sagns"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kodaspiek",
+      "lat": -28.2275115,
+      "lon": 16.9921615,
+      "osm_id": "node/345446994",
+      "osm_tags": {
+        "name": "Kodaspiek",
+        "natural": "peak",
+        "sagns_id": "76817",
+        "source": "sagns",
+        "wikidata": "Q31529438"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Talus Peak",
+      "lat": -28.4125,
+      "lon": 17.2583333,
+      "osm_id": "node/345447076",
+      "osm_tags": {
+        "ele": "852",
+        "name": "Talus Peak",
+        "natural": "peak",
+        "sagns_id": "66565",
+        "source": "sagns",
+        "wikidata": "Q31521823"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tatasberg",
+      "lat": -28.2991664,
+      "lon": 17.2624433,
+      "osm_id": "node/448472736",
+      "osm_tags": {
+        "ele": "1026",
+        "name": "Tatasberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Richtersberg",
+      "lat": -28.2772481,
+      "lon": 17.1924055,
+      "osm_id": "node/448473513",
+      "osm_tags": {
+        "ele": "678",
+        "name": "Richtersberg",
+        "natural": "peak",
+        "wikidata": "Q31525489"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rooiberg",
+      "lat": -28.1898324,
+      "lon": 17.1367872,
+      "osm_id": "node/448474406",
+      "osm_tags": {
+        "ele": "886",
+        "name": "Rooiberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Paradysberg",
+      "lat": -28.3201735,
+      "lon": 17.0327604,
+      "osm_id": "node/448476011",
+      "osm_tags": {
+        "ele": "795",
+        "name": "Paradysberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Die Toon",
+      "lat": -28.3119024,
+      "lon": 17.2842378,
+      "osm_id": "node/448478132",
+      "osm_tags": {
+        "name": "Die Toon",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Terror",
+      "lat": -28.4481888,
+      "lon": 17.2723648,
+      "osm_id": "node/448485842",
+      "osm_tags": {
+        "ele": "1227.5",
+        "name": "Mount Terror",
+        "natural": "peak",
+        "wikidata": "Q31521740"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rosyntjieberg",
+      "lat": -28.4679592,
+      "lon": 17.2107384,
+      "osm_id": "node/448491451",
+      "osm_tags": {
+        "name": "Rosyntjieberg",
+        "natural": "peak",
+        "wikidata": "Q31524797"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Hobas Camp",
+      "lat": -27.6189114,
+      "lon": 17.7159561,
+      "osm_id": "node/1375662579",
+      "osm_tags": {
+        "name": "Hobas Camp",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Aussenkehr",
+      "lat": -28.371317,
+      "lon": 17.412328,
+      "osm_id": "node/2034782874",
+      "osm_tags": {
+        "name": "Aussenkehr",
+        "place": "village",
+        "wikidata": "Q4822799",
+        "wikipedia": "en:Aussenkehr"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lekkersing",
+      "lat": -29.001338,
+      "lon": 17.096837,
+      "osm_id": "node/2258349451",
+      "osm_tags": {
+        "name": "Lekkersing",
+        "place": "village",
+        "wikidata": "Q13035278",
+        "wikipedia": "en:Lekkersing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u01c0Ai-\u01c0Ais",
+      "lat": -27.9198234,
+      "lon": 17.4898019,
+      "osm_id": "node/2477745743",
+      "osm_tags": {
+        "name": "\u01c0Ai-\u01c0Ais",
+        "name:fr": "\u01c0Ai-\u01c0Ais",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Oena Mine",
+      "lat": -28.0663961,
+      "lon": 17.0191109,
+      "osm_id": "node/2477850078",
+      "osm_tags": {
+        "name": "Oena Mine",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Cornellskop",
+      "lat": -28.4181106,
+      "lon": 16.886012,
+      "osm_id": "node/3502944261",
+      "osm_tags": {
+        "ele": "178",
+        "name": "Cornellskop",
+        "natural": "peak",
+        "source": "http://www.geonames.org/3369050/cornellskop.html",
+        "wikidata": "Q31534513"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Grootdermberg",
+      "lat": -28.5537472,
+      "lon": 16.6118323,
+      "osm_id": "node/3503154118",
+      "osm_tags": {
+        "ele": "191",
+        "name": "Grootdermberg",
+        "natural": "peak",
+        "source": "http://www.geonames.org/3367336/grootdermberg.html",
+        "wikidata": "Q31532069"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kwaggasnek",
+      "lat": -27.997895,
+      "lon": 17.6195112,
+      "osm_id": "node/3872945589",
+      "osm_tags": {
+        "name": "Kwaggasnek",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nigramoep",
+      "lat": -29.5283099,
+      "lon": 17.5852677,
+      "osm_id": "node/3975237346",
+      "osm_tags": {
+        "name": "Nigramoep",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bulletrap",
+      "lat": -29.4640197,
+      "lon": 17.7668242,
+      "osm_id": "node/3975252877",
+      "osm_tags": {
+        "name": "Bulletrap",
+        "place": "village",
+        "wikidata": "Q61361363",
+        "wikipedia": "af:Bulletrap"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Buffelsrivier",
+      "lat": -29.702178,
+      "lon": 17.603215,
+      "osm_id": "node/3975281915",
+      "osm_tags": {
+        "name": "Buffelsrivier",
+        "place": "village",
+        "population": "1123",
+        "population:date": "2001",
+        "wikidata": "Q15205637",
+        "wikipedia": "en:Buffelsrivier"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sanddrift",
+      "lat": -28.4103899,
+      "lon": 16.7764883,
+      "osm_id": "node/3975319333",
+      "osm_tags": {
+        "name": "Sanddrift",
+        "place": "village",
+        "wikidata": "Q15690558",
+        "wikipedia": "en:Sanddrif"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nasepberge",
+      "lat": -27.6335279,
+      "lon": 16.8109442,
+      "osm_id": "node/4226599872",
+      "osm_tags": {
+        "ele": "1647",
+        "man_made": "survey_point",
+        "name": "Nasepberge",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Anniskop",
+      "lat": -28.3875038,
+      "lon": 16.8756209,
+      "osm_id": "node/4697451321",
+      "osm_tags": {
+        "ele": "134",
+        "name": "Anniskop",
+        "natural": "peak",
+        "wikidata": "Q31536486"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Numeesberg",
+      "lat": -28.2855118,
+      "lon": 16.9722058,
+      "osm_id": "node/4697473570",
+      "osm_tags": {
+        "name": "Numeesberg",
+        "natural": "peak",
+        "wikidata": "Q31526973"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Dreigratberg",
+      "lat": -28.1100405,
+      "lon": 16.8726754,
+      "osm_id": "node/4698970039",
+      "osm_tags": {
+        "ele": "372",
+        "man_made": "survey_point",
+        "name": "Dreigratberg",
+        "natural": "peak",
+        "source": "http://scriptorium.cos.uni-heidelberg.de/php/gazet.p"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gemsbokvlei",
+      "lat": -29.2632338,
+      "lon": 17.0923504,
+      "osm_id": "node/4699219394",
+      "osm_tags": {
+        "name": "Gemsbokvlei",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Karoedap",
+      "lat": -29.0934821,
+      "lon": 17.0996494,
+      "osm_id": "node/4699244595",
+      "osm_tags": {
+        "name": "Karoedap",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Leikop",
+      "lat": -28.0408324,
+      "lon": 17.5901021,
+      "osm_id": "node/5315359706",
+      "osm_tags": {
+        "ele": "679",
+        "name": "Leikop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Cornellsberg",
+      "lat": -28.5937729,
+      "lon": 17.2035409,
+      "osm_id": "node/6147239574",
+      "osm_tags": {
+        "ele": "1370",
+        "name": "Cornellsberg",
+        "natural": "peak",
+        "prominence": "694",
+        "wikidata": "Q31534529"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Spie\u00eblberg",
+      "lat": -27.8548218,
+      "lon": 17.3639981,
+      "osm_id": "node/6147513575",
+      "osm_tags": {
+        "ele": "1340",
+        "name": "Spie\u00eblberg",
+        "name:de": "Spiegelberg",
+        "natural": "peak",
+        "note": "elevation source: topographic map 1:50000",
+        "prominence": "650",
+        "wikidata": "Q31782214"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "The Watchtower",
+      "lat": -28.5603806,
+      "lon": 17.0334259,
+      "osm_id": "node/6147631995",
+      "osm_tags": {
+        "ele": "1284",
+        "name": "The Watchtower",
+        "natural": "peak",
+        "prominence": "591"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Namusberg",
+      "lat": -27.960078,
+      "lon": 16.8938073,
+      "osm_id": "node/6251173198",
+      "osm_tags": {
+        "ele": "1228",
+        "man_made": "survey_point",
+        "name": "Namusberg",
+        "natural": "peak",
+        "prominence": "446"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Stormberg",
+      "lat": -28.2067,
+      "lon": 17.2283,
+      "osm_id": "node/6251173199",
+      "osm_tags": {
+        "ele": "915",
+        "name": "Stormberg",
+        "natural": "peak",
+        "prominence": "439"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rooiberg",
+      "lat": -28.1975,
+      "lon": 17.1408,
+      "osm_id": "node/6251173201",
+      "osm_tags": {
+        "ele": "858.9264000000001",
+        "name": "Rooiberg",
+        "natural": "peak",
+        "prominence": "466.03920000000005",
+        "sagns_id": "73344"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Umub",
+      "lat": -27.7402821,
+      "lon": 17.1662781,
+      "osm_id": "node/6251173205",
+      "osm_tags": {
+        "ele": "1650",
+        "man_made": "survey_point",
+        "name": "Umub",
+        "natural": "peak",
+        "prominence": "539"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nabas",
+      "lat": -28.2799173,
+      "lon": 17.3940713,
+      "osm_id": "node/6251173207",
+      "osm_tags": {
+        "ele": "689",
+        "man_made": "survey_point",
+        "name": "Nabas",
+        "natural": "peak",
+        "prominence": "477"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Namuskluft",
+      "lat": -27.8075437,
+      "lon": 16.8729493,
+      "osm_id": "node/6251173214",
+      "osm_tags": {
+        "ele": "1655",
+        "man_made": "survey_point",
+        "name": "Namuskluft",
+        "natural": "peak",
+        "prominence": "354"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Verneukberg",
+      "lat": -28.09,
+      "lon": 17.25,
+      "osm_id": "node/6251173215",
+      "osm_tags": {
+        "ele": "857",
+        "name": "Verneukberg",
+        "natural": "peak",
+        "prominence": "385"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Dreikop",
+      "lat": -28.0061813,
+      "lon": 17.5005361,
+      "osm_id": "node/6251173218",
+      "osm_tags": {
+        "ele": "1062",
+        "name": "Dreikop",
+        "natural": "peak",
+        "prominence": "451"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rooiberg",
+      "lat": -27.6504405,
+      "lon": 16.4689255,
+      "osm_id": "node/6253199186",
+      "osm_tags": {
+        "ele": "1125",
+        "man_made": "survey_point",
+        "name": "Rooiberg",
+        "natural": "peak",
+        "prominence": "279"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Witputzkuppe",
+      "lat": -27.5911524,
+      "lon": 16.736652,
+      "osm_id": "node/6253199187",
+      "osm_tags": {
+        "ele": "1351",
+        "man_made": "survey_point",
+        "name": "Witputzkuppe",
+        "natural": "peak",
+        "prominence": "239"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kuamsib",
+      "lat": -27.9717367,
+      "lon": 17.0818766,
+      "osm_id": "node/6253199188",
+      "osm_tags": {
+        "ele": "1187",
+        "name": "Kuamsib",
+        "natural": "peak",
+        "prominence": "326"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Huob",
+      "lat": -27.8103642,
+      "lon": 16.9749699,
+      "osm_id": "node/6253199189",
+      "osm_tags": {
+        "ele": "1649",
+        "man_made": "survey_point",
+        "name": "Huob",
+        "natural": "peak",
+        "prominence": "291"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Numaisspitze",
+      "lat": -27.8489148,
+      "lon": 16.7517849,
+      "osm_id": "node/6253199190",
+      "osm_tags": {
+        "ele": "1436",
+        "man_made": "survey_point",
+        "name": "Numaisspitze",
+        "natural": "peak",
+        "prominence": "254"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hohenzollernberg",
+      "lat": -27.8619427,
+      "lon": 17.2147697,
+      "osm_id": "node/6253199194",
+      "osm_tags": {
+        "ele": "1532",
+        "man_made": "survey_point",
+        "name": "Hohenzollernberg",
+        "natural": "peak",
+        "prominence": "236"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Arimasberg",
+      "lat": -27.7511419,
+      "lon": 16.9869811,
+      "osm_id": "node/6253199199",
+      "osm_tags": {
+        "ele": "1582",
+        "man_made": "survey_point",
+        "name": "Arimasberg",
+        "natural": "peak",
+        "prominence": "217"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Auchabspringe",
+      "lat": -27.697568,
+      "lon": 17.491782,
+      "osm_id": "node/6253199200",
+      "osm_tags": {
+        "ele": "1013",
+        "man_made": "survey_point",
+        "name": "Auchabspringe",
+        "natural": "peak",
+        "prominence": "254"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rooiberg",
+      "lat": -29.095,
+      "lon": 17.5917,
+      "osm_id": "node/6253199267",
+      "osm_tags": {
+        "ele": "1147.9",
+        "name": "Rooiberg",
+        "natural": "peak",
+        "prominence": "294.1",
+        "sagns_id": "73352",
+        "wikidata": "Q31525064"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tafelkop",
+      "lat": -29.1075,
+      "lon": 17.6092,
+      "osm_id": "node/6253199268",
+      "osm_tags": {
+        "ele": "1141.8",
+        "name": "Tafelkop",
+        "natural": "peak",
+        "prominence": "229.8",
+        "sagns_id": "66778",
+        "wikidata": "Q31521857"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Brandberg",
+      "lat": -29.6875,
+      "lon": 17.5608,
+      "osm_id": "node/6255278806",
+      "osm_tags": {
+        "ele": "648.9",
+        "name": "Brandberg",
+        "natural": "peak",
+        "prominence": "188.1",
+        "sagns_id": "92530",
+        "wikidata": "Q31535073"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Paradysberg",
+      "lat": -28.3275,
+      "lon": 17.0358,
+      "osm_id": "node/6255287975",
+      "osm_tags": {
+        "ele": "759.0",
+        "name": "Paradysberg",
+        "natural": "peak",
+        "prominence": "196.0",
+        "sagns_id": "114825",
+        "wikidata": "Q31526467"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gamkab",
+      "lat": -28.2042,
+      "lon": 17.3967,
+      "osm_id": "node/6255287982",
+      "osm_tags": {
+        "ele": "941",
+        "name": "Gamkab",
+        "natural": "peak",
+        "prominence": "214"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Harisberg",
+      "lat": -27.708654,
+      "lon": 16.7310387,
+      "osm_id": "node/6255288991",
+      "osm_tags": {
+        "ele": "1427",
+        "name": "Harisberg",
+        "natural": "peak",
+        "prominence": "193"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Peilkop",
+      "lat": -28.19,
+      "lon": 17.0225,
+      "osm_id": "node/6255288993",
+      "osm_tags": {
+        "ele": "923.8",
+        "name": "Peilkop",
+        "natural": "peak",
+        "prominence": "228.0",
+        "sagns_id": "114984",
+        "wikidata": "Q31526434"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Obibpeak",
+      "lat": -28.0398401,
+      "lon": 16.6720432,
+      "osm_id": "node/6255288999",
+      "osm_tags": {
+        "ele": "904",
+        "man_made": "survey_point",
+        "name": "Obibpeak",
+        "natural": "peak",
+        "prominence": "297"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tafelberg",
+      "lat": -28.2989551,
+      "lon": 17.5314173,
+      "osm_id": "node/6255289009",
+      "osm_tags": {
+        "ele": "946",
+        "man_made": "survey_point",
+        "name": "Tafelberg",
+        "natural": "peak",
+        "prominence": "276"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bluff",
+      "lat": -28.9292,
+      "lon": 17.4575,
+      "osm_id": "node/6255289072",
+      "osm_tags": {
+        "ele": "970.8",
+        "name": "Bluff",
+        "natural": "peak",
+        "prominence": "200.9",
+        "sagns_id": "94221",
+        "wikidata": "Q31535587"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rooiberg",
+      "lat": -28.7858,
+      "lon": 17.3567,
+      "osm_id": "node/6255289077",
+      "osm_tags": {
+        "ele": "912.9",
+        "name": "Rooiberg",
+        "natural": "peak",
+        "prominence": "299.0",
+        "sagns_id": "73345",
+        "wikidata": "Q31525082"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Seekop",
+      "lat": -28.9208,
+      "lon": 17.115,
+      "osm_id": "node/6255289082",
+      "osm_tags": {
+        "ele": "673.0",
+        "name": "Seekop",
+        "natural": "peak",
+        "prominence": "189.3",
+        "sagns_id": "71464",
+        "wikidata": "Q31524389"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Stewart",
+      "lat": -28.6358,
+      "lon": 17.3608,
+      "osm_id": "node/6255289084",
+      "osm_tags": {
+        "ele": "895.8",
+        "name": "Mount Stewart",
+        "natural": "peak",
+        "prominence": "271.9",
+        "sagns_id": "108300",
+        "wikidata": "Q31522613"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Springklipberg",
+      "lat": -28.6067,
+      "lon": 16.8725,
+      "osm_id": "node/6255289286",
+      "osm_tags": {
+        "ele": "667.8",
+        "name": "Springklipberg",
+        "natural": "peak",
+        "prominence": "285.9",
+        "sagns_id": "68315",
+        "wikidata": "Q31522841"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Narabberg",
+      "lat": -29.19,
+      "lon": 17.6533,
+      "osm_id": "node/6255289304",
+      "osm_tags": {
+        "ele": "1143.9",
+        "name": "Narabberg",
+        "natural": "peak",
+        "prominence": "204.2",
+        "sagns_id": "109858"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kabinaberg",
+      "lat": -29.1808,
+      "lon": 17.8017,
+      "osm_id": "node/6255337740",
+      "osm_tags": {
+        "ele": "1140.9",
+        "name": "Kabinaberg",
+        "natural": "peak",
+        "prominence": "99.1",
+        "sagns_id": "79274",
+        "wikidata": "Q31530792"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Skilpadberg",
+      "lat": -28.4618547,
+      "lon": 16.6682862,
+      "osm_id": "node/12209344729",
+      "osm_tags": {
+        "ele": "268",
+        "name": "Skilpadberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gumchavib",
+      "lat": -28.1380177,
+      "lon": 16.7778595,
+      "osm_id": "node/12212037968",
+      "osm_tags": {
+        "ele": "668",
+        "man_made": "survey_point",
+        "name": "Gumchavib",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gomtsawibberg",
+      "lat": -28.1413046,
+      "lon": 16.7875081,
+      "osm_id": "node/12212037969",
+      "osm_tags": {
+        "ele": "641",
+        "name": "Gomtsawibberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Dreigratberg North",
+      "lat": -28.067459,
+      "lon": 16.8829939,
+      "osm_id": "node/12212037977",
+      "osm_tags": {
+        "ele": "417",
+        "man_made": "survey_point",
+        "name": "Dreigratberg North",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Lorelei",
+      "lat": -28.0367964,
+      "lon": 16.9635799,
+      "osm_id": "node/12212037978",
+      "osm_tags": {
+        "ele": "741",
+        "name": "Lorelei",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Schlafkuppe",
+      "lat": -27.7699396,
+      "lon": 16.4986958,
+      "osm_id": "node/12230350365",
+      "osm_tags": {
+        "ele": "767",
+        "name": "Schlafkuppe",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Skorpionkuppe",
+      "lat": -27.7197233,
+      "lon": 16.4653829,
+      "osm_id": "node/12230350366",
+      "osm_tags": {
+        "ele": "786",
+        "name": "Skorpionkuppe",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Koivib",
+      "lat": -27.8196627,
+      "lon": 16.6582045,
+      "osm_id": "node/12230350373",
+      "osm_tags": {
+        "ele": "1146",
+        "name": "Koivib",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nudavib",
+      "lat": -27.7225689,
+      "lon": 16.6131484,
+      "osm_id": "node/12230350376",
+      "osm_tags": {
+        "ele": "1166",
+        "man_made": "survey_point",
+        "name": "Nudavib",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Uitsig",
+      "lat": -27.6270943,
+      "lon": 17.1736458,
+      "osm_id": "node/12232144166",
+      "osm_tags": {
+        "ele": "1521",
+        "man_made": "survey_point",
+        "name": "Uitsig",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Matenda",
+      "lat": -27.7251467,
+      "lon": 17.2252055,
+      "osm_id": "node/12232144168",
+      "osm_tags": {
+        "ele": "1513",
+        "man_made": "survey_point",
+        "name": "Matenda",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Amkas",
+      "lat": -27.6299747,
+      "lon": 17.3626156,
+      "osm_id": "node/12232144181",
+      "osm_tags": {
+        "ele": "1221",
+        "man_made": "survey_point",
+        "name": "Amkas",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "M\u00f6nchskopf",
+      "lat": -27.9755954,
+      "lon": 17.8068858,
+      "osm_id": "node/12232144191",
+      "osm_tags": {
+        "ele": "778",
+        "name": "M\u00f6nchskopf",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hochstein",
+      "lat": -27.8728304,
+      "lon": 17.6320968,
+      "osm_id": "node/12232144195",
+      "osm_tags": {
+        "ele": "998",
+        "name": "Hochstein",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bontberg",
+      "lat": -27.8556734,
+      "lon": 17.8391551,
+      "osm_id": "node/12232144196",
+      "osm_tags": {
+        "ele": "1218",
+        "name": "Bontberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kanebis",
+      "lat": -27.7702738,
+      "lon": 17.8210581,
+      "osm_id": "node/12235763147",
+      "osm_tags": {
+        "ele": "1185",
+        "man_made": "survey_point",
+        "name": "Kanebis",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rooiberg",
+      "lat": -27.7511601,
+      "lon": 17.8126727,
+      "osm_id": "node/12235763148",
+      "osm_tags": {
+        "ele": "1130",
+        "name": "Rooiberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Chudaub",
+      "lat": -27.7728165,
+      "lon": 17.5558573,
+      "osm_id": "node/12235763150",
+      "osm_tags": {
+        "ele": "797",
+        "man_made": "survey_point",
+        "name": "Chudaub",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Renosterkop",
+      "lat": -27.7435096,
+      "lon": 17.5932546,
+      "osm_id": "node/12235763153",
+      "osm_tags": {
+        "ele": "729",
+        "name": "Renosterkop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Sonberg",
+      "lat": -28.0058804,
+      "lon": 17.0095101,
+      "osm_id": "node/12235763174",
+      "osm_tags": {
+        "ele": "993",
+        "man_made": "survey_point",
+        "name": "Sonberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Klipbokkop",
+      "lat": -28.0479881,
+      "lon": 17.6618324,
+      "osm_id": "node/12235763175",
+      "osm_tags": {
+        "ele": "750",
+        "name": "Klipbokkop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gaibes",
+      "lat": -28.0975466,
+      "lon": 17.730624,
+      "osm_id": "node/12235763176",
+      "osm_tags": {
+        "ele": "667",
+        "name": "Gaibes",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Niederwall",
+      "lat": -28.1053755,
+      "lon": 17.8436775,
+      "osm_id": "node/12235763177",
+      "osm_tags": {
+        "ele": "739",
+        "man_made": "survey_point",
+        "name": "Niederwall",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ravine",
+      "lat": -28.2660807,
+      "lon": 17.5924487,
+      "osm_id": "node/12235763178",
+      "osm_tags": {
+        "ele": "797",
+        "man_made": "survey_point",
+        "name": "Ravine",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Hoenderknoppe",
+      "lat": -28.3233822,
+      "lon": 17.6380587,
+      "osm_id": "node/12235763179",
+      "osm_tags": {
+        "ele": "867",
+        "name": "Hoenderknoppe",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gemsbokberg",
+      "lat": -28.3551717,
+      "lon": 17.7734438,
+      "osm_id": "node/12235763181",
+      "osm_tags": {
+        "ele": "861",
+        "name": "Gemsbokberg",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Norotshama",
+      "lat": -28.3794175,
+      "lon": 17.6661055,
+      "osm_id": "node/12235763182",
+      "osm_tags": {
+        "ele": "859",
+        "man_made": "survey_point",
+        "name": "Norotshama",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Unabib",
+      "lat": -28.4744862,
+      "lon": 17.8257381,
+      "osm_id": "node/12235763193",
+      "osm_tags": {
+        "ele": "681",
+        "name": "Unabib",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Dikneus",
+      "lat": -28.4947713,
+      "lon": 17.5558614,
+      "osm_id": "node/12235763194",
+      "osm_tags": {
+        "ele": "844",
+        "name": "Dikneus",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Spitzkop",
+      "lat": -28.6054251,
+      "lon": 17.7356631,
+      "osm_id": "node/12235766004",
+      "osm_tags": {
+        "ele": "791",
+        "name": "Spitzkop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rooiwal 1",
+      "lat": -28.5925105,
+      "lon": 17.6099456,
+      "osm_id": "node/12235766014",
+      "osm_tags": {
+        "ele": "612",
+        "man_made": "survey_point",
+        "name": "Rooiwal 1",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Modderdrift 2",
+      "lat": -28.6593681,
+      "lon": 17.5331733,
+      "osm_id": "node/12235766029",
+      "osm_tags": {
+        "ele": "424",
+        "man_made": "survey_point",
+        "name": "Modderdrift 2",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rooiwal 2",
+      "lat": -28.6749156,
+      "lon": 17.577731,
+      "osm_id": "node/12235766031",
+      "osm_tags": {
+        "ele": "324",
+        "man_made": "survey_point",
+        "name": "Rooiwal 2",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Rooiwal 3",
+      "lat": -28.6961227,
+      "lon": 17.6205625,
+      "osm_id": "node/12235766032",
+      "osm_tags": {
+        "ele": "311",
+        "man_made": "survey_point",
+        "name": "Rooiwal 3",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Platkop",
+      "lat": -28.7104497,
+      "lon": 17.7119373,
+      "osm_id": "node/12235766033",
+      "osm_tags": {
+        "ele": "584",
+        "man_made": "survey_point",
+        "name": "Platkop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Swartkop",
+      "lat": -28.5569004,
+      "lon": 16.4952137,
+      "osm_id": "node/13096452742",
+      "osm_tags": {
+        "ele": "73",
+        "name": "Swartkop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Arnot se Kop",
+      "lat": -29.6054012,
+      "lon": 17.0866656,
+      "osm_id": "node/13288665741",
+      "osm_tags": {
+        "name": "Arnot se Kop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Schanzkopf",
+      "lat": -27.5905727,
+      "lon": 16.7060276,
+      "osm_id": "node/13368135998",
+      "osm_tags": {
+        "ele": "1066",
+        "name": "Schanzkopf",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orange River (Oranje)",
+      "lat": -28.4566691,
+      "lon": 17.5714838,
+      "osm_id": "way/5736112",
+      "osm_tags": {
+        "name": "Orange River (Oranje)",
+        "name:af": "Oranjerivier",
+        "name:de": "Oranje",
+        "name:en": "Orange River (Oranje)",
+        "name:nl": "Oranjerivier",
+        "source": "Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Konkiep",
+      "lat": -26.8306175,
+      "lon": 17.0981689,
+      "osm_id": "way/61861859",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Konkiep",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Fish River",
+      "lat": -27.3654475,
+      "lon": 17.6418345,
+      "osm_id": "way/96189483",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Fish River",
+        "name:af": "Visrivier",
+        "name:de": "Fischfluss",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oerknoep",
+      "lat": -29.0338269,
+      "lon": 17.8605879,
+      "osm_id": "way/123490649",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oerknoep",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.6361632,
+      "lon": 17.5160018,
+      "osm_id": "way/127719987",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "name:en": "Buffels",
+        "waterway": "river",
+        "wikidata": "Q13034439",
+        "wikipedia": "af:Buffelsrivier (Boesmanland)"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Annisrivier",
+      "lat": -28.4400118,
+      "lon": 16.9719514,
+      "osm_id": "way/149010818",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Annisrivier",
+        "waterway": "stream",
+        "wikidata": "Q34648479"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orange River (Oranje)",
+      "lat": -28.310945,
+      "lon": 16.7753211,
+      "osm_id": "way/168832928",
+      "osm_tags": {
+        "name": "Orange River (Oranje)",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orange River",
+      "lat": -28.6203477,
+      "lon": 16.4530361,
+      "osm_id": "way/193318341",
+      "osm_tags": {
+        "name": "Orange River",
+        "name:af": "Oranjerivier",
+        "name:ar": "\u0646\u0647\u0631 \u0623\u0648\u0631\u0627\u0646\u062c",
+        "name:azb": "\u0646\u0627\u0631\u06cc\u0646\u062c\u06cc \u0686\u0627\u06cc\u06cc",
+        "name:be": "\u0410\u0440\u0430\u043d\u0436\u0430\u0432\u0430\u044f",
+        "name:be-tarask": "\u0410\u0440\u0430\u043d\u0436\u0430\u0432\u0430\u044f",
+        "name:br": "Oranjerivier",
+        "name:de": "Oranje",
+        "name:en": "Orange River",
+        "name:es": "R\u00edo Orange",
+        "name:fy": "Oranjerivier",
+        "name:nl": "Oranjerivier",
+        "name:pl": "Oranje",
+        "name:sr": "\u041e\u0440\u0430\u045a\u0435",
+        "name:uk": "\u041e\u0440\u0430\u043d\u0436\u0435\u0432\u0430",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.6227775,
+      "lon": 17.153384,
+      "osm_id": "way/206653817",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Holoogberg",
+      "lat": -27.5946671,
+      "lon": 17.7278059,
+      "osm_id": "way/237453285",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Holoogberg",
+        "source": "bing",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orange River",
+      "lat": -28.5947056,
+      "lon": 16.4683598,
+      "osm_id": "way/238909033",
+      "osm_tags": {
+        "name": "Orange River",
+        "name:af": "Oranjerivier",
+        "name:ar": "\u0646\u0647\u0631 \u0623\u0648\u0631\u0627\u0646\u062c",
+        "name:azb": "\u0646\u0627\u0631\u06cc\u0646\u062c\u06cc \u0686\u0627\u06cc\u06cc",
+        "name:be": "\u0410\u0440\u0430\u043d\u0436\u0430\u0432\u0430\u044f",
+        "name:be-tarask": "\u0410\u0440\u0430\u043d\u0436\u0430\u0432\u0430\u044f",
+        "name:br": "Oranjerivier",
+        "name:de": "Oranje",
+        "name:en": "Orange River",
+        "name:es": "R\u00edo Orange",
+        "name:fy": "Oranjerivier",
+        "name:nl": "Oranjerivier",
+        "name:pl": "Oranje",
+        "name:sr": "\u041e\u0440\u0430\u045a\u0435",
+        "name:uk": "\u041e\u0440\u0430\u043d\u0436\u0435\u0432\u0430",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Boom",
+      "lat": -27.8768123,
+      "lon": 17.0053511,
+      "osm_id": "way/240015752",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Boom",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nuab",
+      "lat": -27.9219174,
+      "lon": 17.1270261,
+      "osm_id": "way/240015758",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nuab",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gamchab",
+      "lat": -28.0350688,
+      "lon": 17.9222634,
+      "osm_id": "way/244882486",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Gamchab",
+        "waterway": "river",
+        "wikidata": "Q1493009"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gamchab River Canyon",
+      "lat": -28.2671829,
+      "lon": 17.3857662,
+      "osm_id": "way/244882489",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Gamchab River Canyon",
+        "natural": "water",
+        "source": "bing",
+        "water": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rosyntjiebos",
+      "lat": -27.6902213,
+      "lon": 17.7342543,
+      "osm_id": "way/244917941",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rosyntjiebos",
+        "source": "bing",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kochas",
+      "lat": -27.7654672,
+      "lon": 17.4828883,
+      "osm_id": "way/244917948",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kochas",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Holgat",
+      "lat": -28.8123694,
+      "lon": 16.9412173,
+      "osm_id": "way/248764645",
+      "osm_tags": {
+        "name": "Holgat",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Arriesdrif",
+      "lat": -28.5055978,
+      "lon": 16.7037524,
+      "osm_id": "way/343469065",
+      "osm_tags": {
+        "name": "Arriesdrif",
+        "place": "hamlet",
+        "source": "http://www.fallingrain.com/world/SF/08/Arriesdrif.html"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Fish River",
+      "lat": -28.0069391,
+      "lon": 17.3294438,
+      "osm_id": "way/378658406",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Fish River",
+        "name:af": "Visrivier",
+        "name:de": "Fischfluss",
+        "name:en": "Fish River",
+        "tidal": "no",
+        "waterway": "river",
+        "wikidata": "Q1143836",
+        "wikipedia": "en:Fish River (Namibia)"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kowieprivier",
+      "lat": -28.7926716,
+      "lon": 17.6512237,
+      "osm_id": "way/393145476",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kowieprivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kowieprivier",
+      "lat": -28.7976263,
+      "lon": 17.650805,
+      "osm_id": "way/393145478",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kowieprivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kowieprivier",
+      "lat": -28.7817367,
+      "lon": 17.6425615,
+      "osm_id": "way/393145499",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Kowieprivier",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kowieprivier",
+      "lat": -28.7865949,
+      "lon": 17.6461033,
+      "osm_id": "way/393145506",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kowieprivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kowieprivier",
+      "lat": -28.77743,
+      "lon": 17.6433333,
+      "osm_id": "way/393145511",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kowieprivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kowieprivier",
+      "lat": -28.7945331,
+      "lon": 17.6496028,
+      "osm_id": "way/393145513",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kowieprivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.5563713,
+      "lon": 17.3704305,
+      "osm_id": "way/449131025",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.5791915,
+      "lon": 17.2758309,
+      "osm_id": "way/449131026",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.5604594,
+      "lon": 17.3355919,
+      "osm_id": "way/449131027",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.5706464,
+      "lon": 17.3280978,
+      "osm_id": "way/449131028",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Namuskluft",
+      "lat": -27.9053346,
+      "lon": 16.8312838,
+      "osm_id": "way/504346316",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Namuskluft",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kameelboom",
+      "lat": -27.8544361,
+      "lon": 17.4354314,
+      "osm_id": "way/504346325",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kameelboom",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oerknoep",
+      "lat": -29.1473204,
+      "lon": 17.7827775,
+      "osm_id": "way/506106151",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Oerknoep",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Helskloof",
+      "lat": -28.7363822,
+      "lon": 17.4673605,
+      "osm_id": "way/550582120",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Helskloof",
+        "name:en": "Hell's Kloof",
+        "natural": "valley",
+        "waterway": "river",
+        "wikidata": "Q31919655"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Helskloof",
+      "lat": -28.7835023,
+      "lon": 17.4579191,
+      "osm_id": "way/550582122",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Helskloof",
+        "name:en": "Hell's Kloof",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Orange River (Oranje)",
+      "lat": -28.6089495,
+      "lon": 16.4673578,
+      "osm_id": "way/761316691",
+      "osm_tags": {
+        "name": "Orange River (Oranje)",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.6714211,
+      "lon": 17.0673235,
+      "osm_id": "way/762667858",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.6745095,
+      "lon": 17.0591916,
+      "osm_id": "way/762667859",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "name:en": "Buffels",
+        "waterway": "river",
+        "wikidata": "Q96112953"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.6621217,
+      "lon": 17.0748053,
+      "osm_id": "way/762667862",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Buffels",
+      "lat": -29.6528209,
+      "lon": 17.0822961,
+      "osm_id": "way/762667863",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Buffels",
+        "name:af": "Buffelsrivier",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Tamagoab",
+      "lat": -28.2145614,
+      "lon": 17.7453713,
+      "osm_id": "way/900849790",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Tamagoab",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kouams",
+      "lat": -28.1155925,
+      "lon": 17.028248,
+      "osm_id": "way/1104186530",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kouams",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Holgat",
+      "lat": -28.9553038,
+      "lon": 16.7479073,
+      "osm_id": "way/1153609305",
+      "osm_tags": {
+        "name": "Holgat",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Holgat",
+      "lat": -28.9323371,
+      "lon": 16.7752945,
+      "osm_id": "way/1153609306",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Holgat",
+        "source": "Bing",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Rosyntjiebos",
+      "lat": -27.6230764,
+      "lon": 17.901419,
+      "osm_id": "way/1242241095",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rosyntjiebos",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Viools River",
+      "lat": -28.7688741,
+      "lon": 17.6279932,
+      "osm_id": "way/1332511722",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Viools River",
+        "seasonal": "yes",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Viools River",
+      "lat": -28.7781642,
+      "lon": 17.6254698,
+      "osm_id": "way/1410440252",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Viools River",
+        "seasonal": "yes",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Swartdood",
+      "lat": -27.9304879,
+      "lon": 16.9422756,
+      "osm_id": "way/1414908068",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Swartdood",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nuob",
+      "lat": -27.8783059,
+      "lon": 16.9239594,
+      "osm_id": "way/1414908069",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nuob",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nadas",
+      "lat": -27.5956329,
+      "lon": 16.7829772,
+      "osm_id": "way/1414953757",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nadas",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Uguchab",
+      "lat": -27.5805552,
+      "lon": 16.4349091,
+      "osm_id": "way/1414953760",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Uguchab",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kleinib",
+      "lat": -27.6261527,
+      "lon": 17.1432073,
+      "osm_id": "way/1415139469",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kleinib",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Aub",
+      "lat": -27.5623572,
+      "lon": 17.0442966,
+      "osm_id": "way/1415139470",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Aub",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Arimas",
+      "lat": -27.6515232,
+      "lon": 16.9962703,
+      "osm_id": "way/1415139471",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Arimas",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kanebis",
+      "lat": -27.7258153,
+      "lon": 17.7705708,
+      "osm_id": "way/1416554160",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kanebis",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kanebis",
+      "lat": -27.7478344,
+      "lon": 17.6533575,
+      "osm_id": "way/1416554161",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kanebis",
+        "source": "bing",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Holoogberg",
+      "lat": -27.6492462,
+      "lon": 17.7187196,
+      "osm_id": "way/1416554162",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Holoogberg",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Jam Pan",
+      "lat": -28.657207,
+      "lon": 16.5398128,
+      "osm_id": "way/1419099953",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Jam Pan",
+        "natural": "water",
+        "sagns_id": "79726",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Rietfonteinpan",
+      "lat": -28.8500232,
+      "lon": 16.6138527,
+      "osm_id": "way/1419100818",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rietfonteinpan",
+        "natural": "water",
+        "sagns_id": "58810",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Visagiespan",
+      "lat": -28.793655,
+      "lon": 16.6288851,
+      "osm_id": "way/1419101192",
+      "osm_tags": {
+        "name": "Visagiespan",
+        "natural": "water",
+        "sagns_id": "62802"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Langpan",
+      "lat": -29.1360768,
+      "lon": 16.849564,
+      "osm_id": "way/1419106555",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Langpan",
+        "natural": "water",
+        "sagns_id": "99629",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Goap se Pan",
+      "lat": -29.3023143,
+      "lon": 16.8952142,
+      "osm_id": "way/1419107098",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Goap se Pan",
+        "natural": "water",
+        "sagns_id": "84373",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Soutpan",
+      "lat": -29.3502107,
+      "lon": 16.954807,
+      "osm_id": "way/1419107810",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Soutpan",
+        "natural": "water",
+        "sagns_id": "69033",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Geelpan",
+      "lat": -28.8670763,
+      "lon": 16.9937438,
+      "osm_id": "way/1419108248",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Geelpan",
+        "natural": "water",
+        "sagns_id": "84656",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Karaspan",
+      "lat": -29.5775994,
+      "lon": 17.0302698,
+      "osm_id": "way/1419109582",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Karaspan",
+        "natural": "water",
+        "sagns_id": "78929",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Dreyerspan",
+      "lat": -29.5246799,
+      "lon": 17.0409312,
+      "osm_id": "way/1419111016",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Dreyerspan",
+        "natural": "water",
+        "sagns_id": "88744",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kompan",
+      "lat": -29.0384757,
+      "lon": 17.2861956,
+      "osm_id": "way/1419328537",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kompan",
+        "natural": "water",
+        "sagns_id": "76125",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Bloupan",
+      "lat": -29.5133518,
+      "lon": 17.0540562,
+      "osm_id": "way/1419329748",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Bloupan",
+        "natural": "water",
+        "sagns_id": "94157",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kabies se Pan",
+      "lat": -29.0801924,
+      "lon": 17.3087086,
+      "osm_id": "way/1419334442",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kabies se Pan",
+        "natural": "water",
+        "sagns_id": "79273",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Geelpan",
+      "lat": -29.1724555,
+      "lon": 17.329455,
+      "osm_id": "way/1419335953",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Geelpan",
+        "natural": "water",
+        "sagns_id": "84657",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ubub",
+      "lat": -28.14515,
+      "lon": 17.7799462,
+      "osm_id": "way/1421151098",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ubub",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Koeniab",
+      "lat": -28.0152381,
+      "lon": 17.7708849,
+      "osm_id": "way/1421151099",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Koeniab",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Karinauib",
+      "lat": -28.3742639,
+      "lon": 17.4914939,
+      "osm_id": "way/1421377174",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Karinauib",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Inaub",
+      "lat": -28.4001698,
+      "lon": 17.5205645,
+      "osm_id": "way/1421377175",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Inaub",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Inaub",
+      "lat": -28.4194819,
+      "lon": 17.4407851,
+      "osm_id": "way/1421377177",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Inaub",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Inaub",
+      "lat": -28.4199095,
+      "lon": 17.4454055,
+      "osm_id": "way/1421377178",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Inaub",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Sambok",
+      "lat": -28.5312459,
+      "lon": 17.4412578,
+      "osm_id": "way/1421377179",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Sambok",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kameelloop",
+      "lat": -27.9996417,
+      "lon": 17.8773051,
+      "osm_id": "way/1421377184",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kameelloop",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Duifie se Loop",
+      "lat": -28.6651222,
+      "lon": 17.580914,
+      "osm_id": "way/1421381007",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Duifie se Loop",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Uhabis",
+      "lat": -28.5486591,
+      "lon": 17.6659411,
+      "osm_id": "way/1421381008",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Uhabis",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Anichanub",
+      "lat": -28.4676481,
+      "lon": 17.7512777,
+      "osm_id": "way/1421381009",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Anichanub",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Pink Pan",
+      "lat": -28.6084175,
+      "lon": 16.4418413,
+      "osm_id": "way/1424804359",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Pink Pan",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Daberas Vlei",
+      "lat": -28.1863328,
+      "lon": 16.6924526,
+      "osm_id": "way/1424804362",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Daberas Vlei",
+        "natural": "water",
+        "water": "pan"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Helskloof",
+      "lat": -28.7098009,
+      "lon": 17.4618351,
+      "osm_id": "way/1435061314",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Helskloof",
+        "name:en": "Hell's Kloof",
+        "natural": "valley",
+        "waterway": "river",
+        "wikidata": "Q31919655"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1914 @@
+{
+  "park_id": "KEN_Melako",
+  "downloaded_at": "2026-02-08T09:10:38.683402+00:00",
+  "buffer_km": 50,
+  "place_count": 158,
+  "places": [
+    {
+      "place_type": "village",
+      "name": "Wamba",
+      "lat": 0.979156,
+      "lon": 37.323872,
+      "osm_id": "node/44910678",
+      "osm_tags": {
+        "name": "Wamba",
+        "place": "village",
+        "wikidata": "Q4018063"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Merti",
+      "lat": 1.0666,
+      "lon": 38.6666,
+      "osm_id": "node/44929223",
+      "osm_tags": {
+        "is_in": "Isiolo,Kenya",
+        "name": "Merti",
+        "place": "village",
+        "wikidata": "Q85784997",
+        "wikipedia:en": "Merti, Kenya"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Marsabit",
+      "lat": 2.3380612,
+      "lon": 37.991639,
+      "osm_id": "node/44929360",
+      "osm_tags": {
+        "is_in": "Marsabit,Kenya",
+        "name": "Marsabit",
+        "name:ru": "\u041c\u0430\u0440\u0441\u0430\u0431\u0438\u0442",
+        "place": "town",
+        "population": "5000",
+        "wikidata": "Q1709128",
+        "wikipedia": "en:Marsabit"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kom",
+      "lat": 1.0794598,
+      "lon": 38.0363416,
+      "osm_id": "node/44931218",
+      "osm_tags": {
+        "is_in": "Isiolo,Kenya",
+        "name": "Kom",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lodosoit",
+      "lat": 1.35,
+      "lon": 37.5666,
+      "osm_id": "node/44931372",
+      "osm_tags": {
+        "name": "Lodosoit",
+        "place": "village",
+        "wikidata": "Q6666468",
+        "wikipedia": "en:Lodosoit"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Log-Logo",
+      "lat": 1.9883415,
+      "lon": 37.9155612,
+      "osm_id": "node/44931379",
+      "osm_tags": {
+        "alt_name": "Logologo",
+        "is_in": "Marsabit, Kenya",
+        "name": "Log-Logo",
+        "place": "village",
+        "wikidata": "Q6666819"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Laisamis",
+      "lat": 1.590479,
+      "lon": 37.802513,
+      "osm_id": "node/44931682",
+      "osm_tags": {
+        "is_in": "Marsabit,Kenya",
+        "name": "Laisamis",
+        "place": "town",
+        "wikidata": "Q6474131",
+        "wikipedia": "en:Laisamis"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kauro",
+      "lat": 1.05,
+      "lon": 37.7,
+      "osm_id": "node/44995331",
+      "osm_tags": {
+        "name": "Kauro",
+        "place": "village",
+        "wikidata": "Q6378901"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kargi",
+      "lat": 2.5066593,
+      "lon": 37.5750073,
+      "osm_id": "node/44996495",
+      "osm_tags": {
+        "created_by": "JOSM",
+        "is_in": "Marsabit,Kenya",
+        "name": "Kargi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Choba",
+      "lat": 2.4333,
+      "lon": 38.05,
+      "osm_id": "node/45003482",
+      "osm_tags": {
+        "is_in": "Marsabit,Kenya",
+        "name": "Choba",
+        "place": "village",
+        "wikidata": "Q5103453"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Barchuma Guda",
+      "lat": 1.3833,
+      "lon": 38.2166,
+      "osm_id": "node/45006508",
+      "osm_tags": {
+        "created_by": "JOSM",
+        "is_in": "Isiolo,Kenya",
+        "name": "Barchuma Guda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nanteddu",
+      "lat": 0.8228849,
+      "lon": 37.2068448,
+      "osm_id": "node/345607472",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:id": "-2259542",
+        "GNS:modify_date": "2013-06-11",
+        "JOG": "NA37-13",
+        "name": "Nanteddu",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lodungokwe",
+      "lat": 0.8700681,
+      "lon": 37.0062567,
+      "osm_id": "node/1830094923",
+      "osm_tags": {
+        "name": "Lodungokwe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Arsim",
+      "lat": 1.7782001,
+      "lon": 37.2053237,
+      "osm_id": "node/1910951675",
+      "osm_tags": {
+        "name": "Arsim",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hula-hula",
+      "lat": 2.3125365,
+      "lon": 37.9408868,
+      "osm_id": "node/2137025406",
+      "osm_tags": {
+        "name": "Hula-hula",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lependera",
+      "lat": 1.8025468,
+      "lon": 37.354874,
+      "osm_id": "node/2420740805",
+      "osm_tags": {
+        "name": "Lependera",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Merille",
+      "lat": 1.4156821,
+      "lon": 37.722486,
+      "osm_id": "node/2431148516",
+      "osm_tags": {
+        "name": "Merille",
+        "place": "village",
+        "population": "3000",
+        "wikidata": "Q85784978",
+        "wikipedia:en": "Merille, Kenya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sereolipi",
+      "lat": 1.1268532,
+      "lon": 37.5997201,
+      "osm_id": "node/2431148517",
+      "osm_tags": {
+        "name": "Sereolipi",
+        "place": "village",
+        "population": "3500"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Korr",
+      "lat": 2.0039521,
+      "lon": 37.4996353,
+      "osm_id": "node/2435380884",
+      "osm_tags": {
+        "name": "Korr",
+        "place": "village",
+        "population": "6700"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngurunit",
+      "lat": 1.7414274,
+      "lon": 37.3129363,
+      "osm_id": "node/2435380885",
+      "osm_tags": {
+        "alt_name": "Ngornit",
+        "name": "Ngurunit",
+        "place": "village",
+        "population": "4400"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mpagas",
+      "lat": 1.6490824,
+      "lon": 37.3830075,
+      "osm_id": "node/2435396997",
+      "osm_tags": {
+        "name": "Mpagas",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kilabunyo",
+      "lat": 1.7304119,
+      "lon": 37.3034927,
+      "osm_id": "node/2440119833",
+      "osm_tags": {
+        "name": "Kilabunyo",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Poi",
+      "lat": 1.799922,
+      "lon": 37.2570077,
+      "osm_id": "node/2440156304",
+      "osm_tags": {
+        "ele": "1870",
+        "name": "Mount Poi",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Illaut",
+      "lat": 1.8665686,
+      "lon": 37.2400854,
+      "osm_id": "node/2440356269",
+      "osm_tags": {
+        "name": "Illaut",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Farakoren",
+      "lat": 1.9375887,
+      "lon": 37.2127037,
+      "osm_id": "node/2440662385",
+      "osm_tags": {
+        "name": "Farakoren",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Seren",
+      "lat": 1.8721915,
+      "lon": 37.0590956,
+      "osm_id": "node/2441090462",
+      "osm_tags": {
+        "name": "Seren",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Lonyeri Pesho",
+      "lat": 1.719476,
+      "lon": 37.3707433,
+      "osm_id": "node/2441393493",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_string": "hill",
+        "name": "Lonyeri Pesho",
+        "natural": "peak",
+        "source": "Bing; GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Baio",
+      "lat": 1.7666601,
+      "lon": 37.5425951,
+      "osm_id": "node/2441607252",
+      "osm_tags": {
+        "name": "Baio",
+        "natural": "peak",
+        "wikidata": "Q27198942"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ilim",
+      "lat": 1.8156004,
+      "lon": 37.6389154,
+      "osm_id": "node/2441607256",
+      "osm_tags": {
+        "name": "Ilim",
+        "natural": "peak",
+        "wikidata": "Q27197667"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lokuchula",
+      "lat": 1.8152916,
+      "lon": 37.5032233,
+      "osm_id": "node/2441607916",
+      "osm_tags": {
+        "alt_name": "Lekuchula",
+        "name": "Lokuchula",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kamotonyi",
+      "lat": 1.4319761,
+      "lon": 37.6894031,
+      "osm_id": "node/2442329413",
+      "osm_tags": {
+        "name": "Kamotonyi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nairibi",
+      "lat": 1.5478266,
+      "lon": 37.7209605,
+      "osm_id": "node/2442329857",
+      "osm_tags": {
+        "name": "Nairibi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lontolio",
+      "lat": 1.6026797,
+      "lon": 37.6719634,
+      "osm_id": "node/2442338685",
+      "osm_tags": {
+        "alt_name": "Londoilo",
+        "name": "Lontolio",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ndikir",
+      "lat": 1.683639,
+      "lon": 37.6972631,
+      "osm_id": "node/2442338854",
+      "osm_tags": {
+        "name": "Ndikir",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hill",
+      "name": "Losai Hills",
+      "lat": 1.6082309,
+      "lon": 37.713036,
+      "osm_id": "node/2442348014",
+      "osm_tags": {
+        "name": "Losai Hills",
+        "natural": "hill"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Lodermurt",
+      "lat": 1.7091568,
+      "lon": 37.7172522,
+      "osm_id": "node/2442348019",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_string": "hill",
+        "name": "Lodermurt",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Losidan",
+      "lat": 1.5700543,
+      "lon": 37.5955301,
+      "osm_id": "node/2442448967",
+      "osm_tags": {
+        "name": "Losidan",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lengima",
+      "lat": 1.7632638,
+      "lon": 37.5704346,
+      "osm_id": "node/2442560753",
+      "osm_tags": {
+        "name": "Lengima",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kaisut",
+      "lat": 1.8378689,
+      "lon": 37.918342,
+      "osm_id": "node/2455350064",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_string": "hill",
+        "name": "Kaisut",
+        "natural": "peak",
+        "source": "GNS; Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamboe",
+      "lat": 2.1028184,
+      "lon": 37.8935885,
+      "osm_id": "node/2458454773",
+      "osm_tags": {
+        "name": "Kamboe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Shurr",
+      "lat": 2.1348056,
+      "lon": 38.2769872,
+      "osm_id": "node/2463563386",
+      "osm_tags": {
+        "name": "Shurr",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Moile",
+      "lat": 1.5206266,
+      "lon": 37.7370671,
+      "osm_id": "node/2484595117",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_string": "hill",
+        "name": "Moile",
+        "natural": "peak",
+        "source": "GNS",
+        "wikidata": "Q27194180"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Naluwuru",
+      "lat": 1.5114316,
+      "lon": 37.7616107,
+      "osm_id": "node/2484595121",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_string": "hill",
+        "name": "Naluwuru",
+        "natural": "peak",
+        "source": "GNS",
+        "wikidata": "Q27192940"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gar Ilkaria",
+      "lat": 2.2218845,
+      "lon": 37.9011015,
+      "osm_id": "node/2484630990",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_string": "hill",
+        "name": "Gar Ilkaria",
+        "natural": "peak",
+        "source": "GNS; Bing"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gudas",
+      "lat": 1.992034,
+      "lon": 38.0873313,
+      "osm_id": "node/2484630991",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_string": "hill",
+        "name": "Gudas",
+        "natural": "peak",
+        "source": "GNS; Bing"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Karare",
+      "lat": 2.1522115,
+      "lon": 37.8550055,
+      "osm_id": "node/2484630992",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_string": "hill",
+        "name": "Karare",
+        "natural": "peak",
+        "source": "GNS; Bing",
+        "wikidata": "Q27196303"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Karare",
+      "lat": 2.2100227,
+      "lon": 37.8865053,
+      "osm_id": "node/2484630993",
+      "osm_tags": {
+        "name": "Karare",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Lawen",
+      "lat": 2.1403386,
+      "lon": 37.8290715,
+      "osm_id": "node/2484630995",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_string": "hill",
+        "name": "Lawen",
+        "natural": "peak",
+        "source": "GNS; Bing",
+        "wikidata": "Q27195289"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Lolajonga",
+      "lat": 2.124905,
+      "lon": 37.7579056,
+      "osm_id": "node/2484630997",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_string": "hill",
+        "name": "Lolajonga",
+        "natural": "peak",
+        "source": "GNS; Bing",
+        "wikidata": "Q27195456"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ret",
+      "lat": 2.1077325,
+      "lon": 37.8922803,
+      "osm_id": "node/2484631001",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_string": "hill",
+        "name": "Ret",
+        "natural": "peak",
+        "source": "GNS; Bing",
+        "wikidata": "Q27192009"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lmoti",
+      "lat": 1.7539452,
+      "lon": 37.3986408,
+      "osm_id": "node/2527726217",
+      "osm_tags": {
+        "name": "Lmoti",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Marti Dorop",
+      "lat": 1.6289534,
+      "lon": 37.301764,
+      "osm_id": "node/2528989660",
+      "osm_tags": {
+        "name": "Marti Dorop",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ballah",
+      "lat": 2.0323449,
+      "lon": 37.4633894,
+      "osm_id": "node/2534986176",
+      "osm_tags": {
+        "name": "Ballah",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Loolkuniyiani",
+      "lat": 1.0636424,
+      "lon": 37.2293218,
+      "osm_id": "node/4040043869",
+      "osm_tags": {
+        "name": "Loolkuniyiani",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Donyo Leuwa Mara",
+      "lat": 1.0712181,
+      "lon": 37.8449829,
+      "osm_id": "node/4404173155",
+      "osm_tags": {
+        "name": "Donyo Leuwa Mara",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Leuwa Mara",
+      "lat": 1.0535615,
+      "lon": 37.8508623,
+      "osm_id": "node/4404173156",
+      "osm_tags": {
+        "name": "Leuwa Mara",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Ololokwe",
+      "lat": 0.8457469,
+      "lon": 37.5320187,
+      "osm_id": "node/4424820013",
+      "osm_tags": {
+        "ele": "1956",
+        "name": "Mount Ololokwe",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Ololokwe",
+      "lat": 0.8244685,
+      "lon": 37.5376191,
+      "osm_id": "node/4424820014",
+      "osm_tags": {
+        "ele": "1970",
+        "name": "Mount Ololokwe",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nkadoru Murto (Cat and mouse)",
+      "lat": 0.8629433,
+      "lon": 37.5880554,
+      "osm_id": "node/4424821597",
+      "osm_tags": {
+        "name": "Nkadoru Murto (Cat and mouse)",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ngilai",
+      "lat": 1.1551554,
+      "lon": 37.2621628,
+      "osm_id": "node/4461777883",
+      "osm_tags": {
+        "name": "Ngilai",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Oromoidei",
+      "lat": 1.2702432,
+      "lon": 37.2040432,
+      "osm_id": "node/4461826511",
+      "osm_tags": {
+        "name": "Oromoidei",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Sheeps Head Rock",
+      "lat": 1.1770052,
+      "lon": 37.3684816,
+      "osm_id": "node/4463225118",
+      "osm_tags": {
+        "name": "Sheeps Head Rock",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Latakweni",
+      "lat": 1.546476,
+      "lon": 37.1035235,
+      "osm_id": "node/8066616830",
+      "osm_tags": {
+        "name": "Latakweni",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gatap",
+      "lat": 2.44779,
+      "lon": 36.998713,
+      "osm_id": "node/8409930222",
+      "osm_tags": {
+        "name": "Gatap",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndonyo Uasin",
+      "lat": 1.3586102,
+      "lon": 37.4373806,
+      "osm_id": "node/8445941570",
+      "osm_tags": {
+        "name": "Ndonyo Uasin",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kibartare",
+      "lat": 1.3626901,
+      "lon": 37.3633897,
+      "osm_id": "node/8445946267",
+      "osm_tags": {
+        "name": "Kibartare",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Marsabit",
+      "lat": 2.317267,
+      "lon": 37.9596071,
+      "osm_id": "node/9489231021",
+      "osm_tags": {
+        "ele": "1707",
+        "name": "Mount Marsabit",
+        "natural": "peak",
+        "wikidata": "Q1106320",
+        "wikipedia": "en:Mount Marsabit"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Lowua Werikoi",
+      "lat": 1.2002072,
+      "lon": 37.240053,
+      "osm_id": "node/11506041632",
+      "osm_tags": {
+        "name": "Lowua Werikoi",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Lolocheni",
+      "lat": 1.211519,
+      "lon": 37.2542823,
+      "osm_id": "node/11506044450",
+      "osm_tags": {
+        "ele": "1790",
+        "name": "Lolocheni",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Loolkanjao",
+      "lat": 0.8595437,
+      "lon": 37.76738,
+      "osm_id": "node/11511305976",
+      "osm_tags": {
+        "name": "Loolkanjao",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Loontopi",
+      "lat": 1.0914117,
+      "lon": 37.7876635,
+      "osm_id": "node/11511305980",
+      "osm_tags": {
+        "name": "Loontopi",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Lekat",
+      "lat": 0.8872485,
+      "lon": 37.4149186,
+      "osm_id": "node/11511306283",
+      "osm_tags": {
+        "name": "Lekat",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Loolera",
+      "lat": 0.9028688,
+      "lon": 37.4424065,
+      "osm_id": "node/11511306284",
+      "osm_tags": {
+        "name": "Loolera",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Loidikidiko",
+      "lat": 0.9066504,
+      "lon": 37.4766477,
+      "osm_id": "node/11511306285",
+      "osm_tags": {
+        "name": "Loidikidiko",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Songa",
+      "lat": 2.2398249,
+      "lon": 38.0086612,
+      "osm_id": "node/11649220831",
+      "osm_tags": {
+        "name": "Songa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Badassa",
+      "lat": 2.2554984,
+      "lon": 38.0357837,
+      "osm_id": "node/11649220832",
+      "osm_tags": {
+        "name": "Badassa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dirib Bombo",
+      "lat": 2.2876113,
+      "lon": 38.0570295,
+      "osm_id": "node/11649220833",
+      "osm_tags": {
+        "name": "Dirib Bombo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dukana",
+      "lat": 2.2898894,
+      "lon": 38.055439,
+      "osm_id": "node/11649220834",
+      "osm_tags": {
+        "name": "Dukana",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Biliqo",
+      "lat": 0.8940646,
+      "lon": 38.4826271,
+      "osm_id": "node/12435679489",
+      "osm_tags": {
+        "name": "Biliqo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bulesa",
+      "lat": 0.9634138,
+      "lon": 38.5364512,
+      "osm_id": "node/12435679490",
+      "osm_tags": {
+        "name": "Bulesa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malkadaka",
+      "lat": 0.8401497,
+      "lon": 38.4959326,
+      "osm_id": "node/12435718992",
+      "osm_tags": {
+        "name": "Malkadaka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gafarsa",
+      "lat": 0.9381272,
+      "lon": 38.5935138,
+      "osm_id": "node/12435718995",
+      "osm_tags": {
+        "name": "Gafarsa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muchuro",
+      "lat": 0.9616899,
+      "lon": 38.6330446,
+      "osm_id": "node/12441987096",
+      "osm_tags": {
+        "name": "Muchuro",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Marara",
+      "lat": 0.8783572,
+      "lon": 38.3992679,
+      "osm_id": "node/12441990939",
+      "osm_tags": {
+        "name": "Marara",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Goda",
+      "lat": 1.0046708,
+      "lon": 38.548298,
+      "osm_id": "node/12442157815",
+      "osm_tags": {
+        "name": "Goda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Awarsitu",
+      "lat": 1.0251307,
+      "lon": 38.5752192,
+      "osm_id": "node/12442157845",
+      "osm_tags": {
+        "name": "Awarsitu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mata Arba",
+      "lat": 1.1564526,
+      "lon": 38.7069073,
+      "osm_id": "node/12442158633",
+      "osm_tags": {
+        "name": "Mata Arba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Saleti",
+      "lat": 1.1927772,
+      "lon": 38.7528406,
+      "osm_id": "node/12442158644",
+      "osm_tags": {
+        "name": "Saleti",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Biliqi",
+      "lat": 1.2340372,
+      "lon": 38.8079061,
+      "osm_id": "node/12442158684",
+      "osm_tags": {
+        "name": "Biliqi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Korbesa",
+      "lat": 1.2119346,
+      "lon": 38.7888149,
+      "osm_id": "node/12443443047",
+      "osm_tags": {
+        "name": "Korbesa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ndonyo Nasipa",
+      "lat": 1.3262974,
+      "lon": 37.1259631,
+      "osm_id": "node/12462922222",
+      "osm_tags": {
+        "name": "Ndonyo Nasipa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Loodua",
+      "lat": 1.7197716,
+      "lon": 37.0080681,
+      "osm_id": "node/12463365701",
+      "osm_tags": {
+        "name": "Loodua",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Urah",
+      "lat": 1.752333,
+      "lon": 37.0754216,
+      "osm_id": "node/12463387306",
+      "osm_tags": {
+        "name": "Urah",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sererit",
+      "lat": 1.6795374,
+      "lon": 37.176229,
+      "osm_id": "node/12463387321",
+      "osm_tags": {
+        "name": "Sererit",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Louwa Mara",
+      "lat": 1.4281066,
+      "lon": 37.6586757,
+      "osm_id": "node/12471363426",
+      "osm_tags": {
+        "name": "Louwa Mara",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sukuroi",
+      "lat": 0.8528314,
+      "lon": 37.3091157,
+      "osm_id": "node/12471491040",
+      "osm_tags": {
+        "name": "Sukuroi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Koya",
+      "lat": 1.3860671,
+      "lon": 37.9571189,
+      "osm_id": "node/12471520957",
+      "osm_tags": {
+        "name": "Koya",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dimado",
+      "lat": 0.8931447,
+      "lon": 38.4411447,
+      "osm_id": "node/12486635003",
+      "osm_tags": {
+        "name": "Dimado",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kom B",
+      "lat": 1.1147363,
+      "lon": 38.1151664,
+      "osm_id": "node/12486635712",
+      "osm_tags": {
+        "name": "Kom B",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lakolle",
+      "lat": 1.146209,
+      "lon": 38.5826052,
+      "osm_id": "node/12492234418",
+      "osm_tags": {
+        "name": "Lakolle",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malkagala",
+      "lat": 1.2712509,
+      "lon": 38.7960974,
+      "osm_id": "node/12522722794",
+      "osm_tags": {
+        "name": "Malkagala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sionta",
+      "lat": 0.8797261,
+      "lon": 37.3154693,
+      "osm_id": "node/12538973474",
+      "osm_tags": {
+        "name": "Sionta",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nagoroworu",
+      "lat": 0.9529368,
+      "lon": 37.1887743,
+      "osm_id": "node/12636021421",
+      "osm_tags": {
+        "name": "Nagoroworu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Silango",
+      "lat": 0.9400258,
+      "lon": 37.2545124,
+      "osm_id": "node/12636021466",
+      "osm_tags": {
+        "name": "Silango",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lengarde",
+      "lat": 1.0507083,
+      "lon": 37.1407687,
+      "osm_id": "node/12636021514",
+      "osm_tags": {
+        "name": "Lengarde",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Naisunyai",
+      "lat": 0.8362703,
+      "lon": 37.3712158,
+      "osm_id": "node/12725329387",
+      "osm_tags": {
+        "name": "Naisunyai",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lkisin",
+      "lat": 1.0094647,
+      "lon": 37.2597835,
+      "osm_id": "node/13133968847",
+      "osm_tags": {
+        "name": "Lkisin",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Lepusi",
+      "lat": 1.3336664,
+      "lon": 37.9024593,
+      "osm_id": "node/13169226111",
+      "osm_tags": {
+        "name": "Lepusi",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Sasani",
+      "lat": 1.3889506,
+      "lon": 37.8143159,
+      "osm_id": "node/13169226112",
+      "osm_tags": {
+        "name": "Sasani",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Swari",
+      "lat": 1.1030378,
+      "lon": 37.0692103,
+      "osm_id": "node/13421504762",
+      "osm_tags": {
+        "name": "Swari",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ewaso Nyiro",
+      "lat": 0.779261,
+      "lon": 37.9769314,
+      "osm_id": "way/86500856",
+      "osm_tags": {
+        "name": "Ewaso Nyiro",
+        "source": "Landsat;Yahoo;Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Paradise",
+      "lat": 2.2625321,
+      "lon": 37.9344133,
+      "osm_id": "way/139173405",
+      "osm_tags": {
+        "name": "Lake Paradise",
+        "natural": "water",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Uaso Nyiro",
+      "lat": 1.0207854,
+      "lon": 38.6401072,
+      "osm_id": "way/172965994",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Uaso Nyiro",
+        "source": "Landsat;Yahoo;Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Uaso Nyiro",
+      "lat": 1.1248558,
+      "lon": 38.7396948,
+      "osm_id": "way/172965995",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Uaso Nyiro",
+        "source": "Landsat;Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Uaso Nyiro",
+      "lat": 0.8258149,
+      "lon": 38.2291397,
+      "osm_id": "way/173795044",
+      "osm_tags": {
+        "name": "Uaso Nyiro",
+        "source": "Landsat;Yahoo;Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Uaso Nyiro",
+      "lat": 0.8235276,
+      "lon": 38.199072,
+      "osm_id": "way/173795045",
+      "osm_tags": {
+        "name": "Uaso Nyiro",
+        "source": "Landsat;Yahoo;Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Serolevi River",
+      "lat": 1.1286546,
+      "lon": 37.6006429,
+      "osm_id": "way/235016009",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Serolevi River",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ngire",
+      "lat": 1.6225788,
+      "lon": 37.3907604,
+      "osm_id": "way/236095832",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Ngire",
+        "source": "Bing;Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Merille River",
+      "lat": 1.446326,
+      "lon": 37.8686376,
+      "osm_id": "way/236163287",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Merille River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Londoilo",
+      "lat": 1.6389591,
+      "lon": 37.677739,
+      "osm_id": "way/236164554",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_string": "intermittent stream",
+        "intermittent": "yes",
+        "name": "Londoilo",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Seralatubi",
+      "lat": 1.5556985,
+      "lon": 37.8120578,
+      "osm_id": "way/236166462",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_string": "intermittent stream",
+        "intermittent": "yes",
+        "name": "Seralatubi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Laisamis Lugga",
+      "lat": 1.6231884,
+      "lon": 38.0248806,
+      "osm_id": "way/239201462",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Laisamis Lugga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ladokublin",
+      "lat": 1.6965354,
+      "lon": 37.7719124,
+      "osm_id": "way/240461553",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_string": "intermittent stream",
+        "intermittent": "yes",
+        "name": "Ladokublin",
+        "source": "GNS; Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gof Bongole",
+      "lat": 2.2063023,
+      "lon": 37.9303002,
+      "osm_id": "way/240754103",
+      "osm_tags": {
+        "name": "Gof Bongole",
+        "natural": "water",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lbaa ogut",
+      "lat": 1.0457751,
+      "lon": 37.3097018,
+      "osm_id": "way/402873022",
+      "osm_tags": {
+        "name": "Lbaa ogut",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lbaa ogut 2",
+      "lat": 1.0458121,
+      "lon": 37.3036823,
+      "osm_id": "way/402873023",
+      "osm_tags": {
+        "name": "Lbaa ogut 2",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Tipito",
+      "lat": 1.0415275,
+      "lon": 37.2959913,
+      "osm_id": "way/402891577",
+      "osm_tags": {
+        "name": "Tipito",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Milgis Lugga",
+      "lat": 1.7969435,
+      "lon": 37.8342401,
+      "osm_id": "way/419268149",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Milgis Lugga",
+        "source": "Bing;Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lugga",
+      "lat": 1.060791,
+      "lon": 37.7440952,
+      "osm_id": "way/442728635",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lugga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lugga",
+      "lat": 1.1210904,
+      "lon": 37.7251455,
+      "osm_id": "way/442741468",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lugga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lugga",
+      "lat": 1.0889111,
+      "lon": 37.6985099,
+      "osm_id": "way/442741469",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lugga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lugga",
+      "lat": 1.0904211,
+      "lon": 37.6327811,
+      "osm_id": "way/442741470",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lugga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lugga",
+      "lat": 1.3218436,
+      "lon": 37.200395,
+      "osm_id": "way/454171985",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lugga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lugga",
+      "lat": 1.1627969,
+      "lon": 37.2686881,
+      "osm_id": "way/454173362",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lugga",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lugga",
+      "lat": 1.1474865,
+      "lon": 37.2333344,
+      "osm_id": "way/454173363",
+      "osm_tags": {
+        "name": "Lugga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lugga",
+      "lat": 1.2032398,
+      "lon": 37.1662128,
+      "osm_id": "way/454173364",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lugga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lugga",
+      "lat": 1.2395312,
+      "lon": 37.188048,
+      "osm_id": "way/454173365",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lugga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Milgis Lugga",
+      "lat": 1.7488528,
+      "lon": 37.6924561,
+      "osm_id": "way/878416556",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Milgis Lugga",
+        "source": "Bing;Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Milgis Lugga",
+      "lat": 1.7486742,
+      "lon": 37.6924723,
+      "osm_id": "way/878416557",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Milgis Lugga",
+        "source": "Bing;Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Sera",
+      "lat": 1.03342,
+      "lon": 37.9114086,
+      "osm_id": "way/935928615",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Sera",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Merille River",
+      "lat": 1.4960493,
+      "lon": 37.9144031,
+      "osm_id": "way/961717244",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Merille River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "nagorr oworu river",
+      "lat": 0.9840686,
+      "lon": 37.3379568,
+      "osm_id": "way/1043702556",
+      "osm_tags": {
+        "description": "drains its waters to river Ewaso Nyiro.",
+        "layer": "-1",
+        "name": "nagorr oworu river",
+        "source": "mathew ranges",
+        "tunnel": "passage",
+        "waterway": "river",
+        "wikipedia": "en:Nagorr oworu river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "nagorr owouru river",
+      "lat": 0.9894921,
+      "lon": 37.2859348,
+      "osm_id": "way/1043702557",
+      "osm_tags": {
+        "name": "nagorr owouru river",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "unknown line to be deleted",
+      "lat": 1.4545117,
+      "lon": 37.3544973,
+      "osm_id": "way/1047301116",
+      "osm_tags": {
+        "description": "delete me",
+        "intermittent": "yes",
+        "name": "unknown line to be deleted",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sere Olipi",
+      "lat": 1.1225757,
+      "lon": 37.5958231,
+      "osm_id": "way/1209092360",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Sere Olipi",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kamotonyi",
+      "lat": 1.4287476,
+      "lon": 37.6898421,
+      "osm_id": "way/1209092361",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Kamotonyi",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Log-Logo",
+      "lat": 1.9944784,
+      "lon": 37.9151899,
+      "osm_id": "way/1209092369",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Log-Logo",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lontolio",
+      "lat": 1.6033447,
+      "lon": 37.6727633,
+      "osm_id": "way/1209692914",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Lontolio",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Maynatta Lengima",
+      "lat": 1.7633183,
+      "lon": 37.5718895,
+      "osm_id": "way/1209735657",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Maynatta Lengima",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Naimarei",
+      "lat": 1.8362683,
+      "lon": 37.4542418,
+      "osm_id": "way/1209738777",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Naimarei",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Arsim",
+      "lat": 1.7794952,
+      "lon": 37.2020294,
+      "osm_id": "way/1209740901",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Arsim",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Arsim",
+      "lat": 1.7860945,
+      "lon": 37.1984645,
+      "osm_id": "way/1209740903",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Arsim",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lependera",
+      "lat": 1.803096,
+      "lon": 37.3549709,
+      "osm_id": "way/1210039636",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Lependera",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ilaut",
+      "lat": 1.8655817,
+      "lon": 37.2481239,
+      "osm_id": "way/1210039637",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Ilaut",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ilaut",
+      "lat": 1.8664316,
+      "lon": 37.2397249,
+      "osm_id": "way/1210039638",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Ilaut",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "added ford ans stream",
+      "lat": 1.9332014,
+      "lon": 38.2283171,
+      "osm_id": "way/1354182748",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "added ford ans stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Londoilo",
+      "lat": 1.713662,
+      "lon": 37.6876177,
+      "osm_id": "way/1354425265",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_string": "intermittent stream",
+        "intermittent": "yes",
+        "name": "Londoilo",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sera",
+      "lat": 1.103984,
+      "lon": 38.0866924,
+      "osm_id": "way/1362869080",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Sera",
+        "waterway": "river"
+      }
+    }
+  ]
+}

@@ -1,0 +1,582 @@
+{
+  "park_id": "MOZ_Banhine",
+  "downloaded_at": "2026-02-08T09:43:30.742739+00:00",
+  "buffer_km": 50,
+  "place_count": 45,
+  "places": [
+    {
+      "place_type": "village",
+      "name": "Machaila",
+      "lat": -22.254531,
+      "lon": 32.9146355,
+      "osm_id": "node/560641824",
+      "osm_tags": {
+        "name": "Machaila",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Domasse",
+      "lat": -22.488449,
+      "lon": 32.6126785,
+      "osm_id": "node/1426294326",
+      "osm_tags": {
+        "name": "Domasse",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Chicualacuala",
+      "lat": -22.0795548,
+      "lon": 31.6798288,
+      "osm_id": "node/1426302413",
+      "osm_tags": {
+        "alt_name": "Chiqualaquala",
+        "name": "Chicualacuala",
+        "official_name": "Vila Eduardo Mondlane",
+        "old_name": "Malvernia",
+        "place": "town",
+        "wikidata": "Q2165007"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Chigubo",
+      "lat": -22.8332714,
+      "lon": 33.5162059,
+      "osm_id": "node/1426302416",
+      "osm_tags": {
+        "name": "Chigubo",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kaalkop",
+      "lat": -23.704305,
+      "lon": 31.6598081,
+      "osm_id": "node/5273654822",
+      "osm_tags": {
+        "ele": "409",
+        "name": "Kaalkop",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bingo",
+      "lat": -23.7082529,
+      "lon": 32.0386103,
+      "osm_id": "node/5422586748",
+      "osm_tags": {
+        "name": "Bingo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sango",
+      "lat": -22.06766,
+      "lon": 31.6800601,
+      "osm_id": "node/6695933184",
+      "osm_tags": {
+        "name": "Sango",
+        "old_name": "Vila Salazar",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Estrada Juliao",
+      "lat": -22.4917004,
+      "lon": 31.9090829,
+      "osm_id": "node/6701482401",
+      "osm_tags": {
+        "name": "Estrada Juliao",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mapai",
+      "lat": -22.732827,
+      "lon": 32.0585873,
+      "osm_id": "node/6701482688",
+      "osm_tags": {
+        "name": "Mapai",
+        "old_name": "S\u00e3o Jorge do Limpopo",
+        "place": "town",
+        "wikidata": "Q1102602"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mapai-Ngala",
+      "lat": -22.8469091,
+      "lon": 31.9665307,
+      "osm_id": "node/6701482695",
+      "osm_tags": {
+        "name": "Mapai-Ngala",
+        "old_name": "Mapai",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiveguemba",
+      "lat": -22.8551802,
+      "lon": 31.9326316,
+      "osm_id": "node/6702416770",
+      "osm_tags": {
+        "name": "Chiveguemba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Maguaja",
+      "lat": -22.7388818,
+      "lon": 31.9092543,
+      "osm_id": "node/6702419888",
+      "osm_tags": {
+        "alt_name": "Maguajal",
+        "name": "Maguaja",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Regulo Mapai",
+      "lat": -22.8741114,
+      "lon": 31.9364846,
+      "osm_id": "node/6702419890",
+      "osm_tags": {
+        "name": "Regulo Mapai",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Muzamane",
+      "lat": -22.8247294,
+      "lon": 31.9562223,
+      "osm_id": "node/6702419906",
+      "osm_tags": {
+        "name": "Muzamane",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dindane",
+      "lat": -22.8112735,
+      "lon": 31.9522766,
+      "osm_id": "node/6702419907",
+      "osm_tags": {
+        "name": "Dindane",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cucuane",
+      "lat": -22.7763029,
+      "lon": 31.9294079,
+      "osm_id": "node/6702419908",
+      "osm_tags": {
+        "name": "Cucuane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lisenga",
+      "lat": -22.8044938,
+      "lon": 31.9129092,
+      "osm_id": "node/6702419959",
+      "osm_tags": {
+        "name": "Lisenga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sihogono",
+      "lat": -22.7464858,
+      "lon": 31.8709467,
+      "osm_id": "node/6702419960",
+      "osm_tags": {
+        "name": "Sihogono",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mapuule",
+      "lat": -22.7166084,
+      "lon": 31.8822031,
+      "osm_id": "node/6702419968",
+      "osm_tags": {
+        "name": "Mapuule",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Pachela",
+      "lat": -22.6987887,
+      "lon": 31.8669243,
+      "osm_id": "node/6702419969",
+      "osm_tags": {
+        "name": "Pachela",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndombe",
+      "lat": -22.6790357,
+      "lon": 31.8379787,
+      "osm_id": "node/6702419994",
+      "osm_tags": {
+        "name": "Ndombe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "R\u00e9gua",
+      "lat": -22.8534475,
+      "lon": 32.1347926,
+      "osm_id": "node/6703873991",
+      "osm_tags": {
+        "name": "R\u00e9gua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mepaze",
+      "lat": -23.0660303,
+      "lon": 32.2220875,
+      "osm_id": "node/6703874018",
+      "osm_tags": {
+        "name": "Mepaze",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "S\u00e3o Louren\u00e7o",
+      "lat": -23.0336294,
+      "lon": 32.2490169,
+      "osm_id": "node/6703874019",
+      "osm_tags": {
+        "fixme": "Very probable that this is a colonial name that was changed after independence. Please verify current placename.",
+        "name": "S\u00e3o Louren\u00e7o",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Malamule",
+      "lat": -22.9296482,
+      "lon": 33.7945905,
+      "osm_id": "node/7004361848",
+      "osm_tags": {
+        "name": "Malamule",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mathale",
+      "lat": -22.9655497,
+      "lon": 33.7322568,
+      "osm_id": "node/7004361852",
+      "osm_tags": {
+        "name": "Mathale",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Limpopo",
+      "lat": -22.9632437,
+      "lon": 32.0479993,
+      "osm_id": "way/184923986",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Limpopo",
+        "name:en": "Limpopo River",
+        "name:pt": "Rio Limpopo",
+        "name:ru": "\u041b\u0438\u043c\u043f\u043e\u043f\u043e",
+        "waterway": "river",
+        "wikidata": "Q173017",
+        "wikipedia": "pt:Rio Limpopo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Makhadzi",
+      "lat": -23.7229669,
+      "lon": 31.6328676,
+      "osm_id": "way/189854373",
+      "osm_tags": {
+        "name": "Makhadzi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Changane River",
+      "lat": -23.412876,
+      "lon": 33.8954083,
+      "osm_id": "way/248301608",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "intermittent": "yes",
+        "name": "Changane River",
+        "name:en": "Changane River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwenezi",
+      "lat": -22.4678755,
+      "lon": 31.6736992,
+      "osm_id": "way/260858838",
+      "osm_tags": {
+        "alt_name": "Nuanetzi",
+        "alt_name_1": "Manisi",
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Mwenezi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Changane River",
+      "lat": -22.4540158,
+      "lon": 33.4582652,
+      "osm_id": "way/286903246",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "intermittent": "yes",
+        "name": "Changane River",
+        "name:en": "Changane River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Massimbixe",
+      "lat": -22.5672868,
+      "lon": 32.7346562,
+      "osm_id": "way/341854900",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Massimbixe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Rio Chitseve",
+      "lat": -22.4722628,
+      "lon": 32.5583615,
+      "osm_id": "way/341854901",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Chitseve",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Maduze",
+      "lat": -23.546499,
+      "lon": 31.6806207,
+      "osm_id": "way/538527680",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Maduze",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Makhadzi",
+      "lat": -23.5884604,
+      "lon": 31.6329994,
+      "osm_id": "way/538545098",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Makhadzi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Shingwedzi",
+      "lat": -23.5596063,
+      "lon": 31.9237939,
+      "osm_id": "way/562508177",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Shingwedzi",
+        "name:af": "Shingwedzirivier",
+        "name:en": "Shingwedzi River",
+        "name:pt": "Rio Singu\u00e9dzi",
+        "name:ts": "Xingwidzi",
+        "name:ve": "Tshingwedzi",
+        "waterway": "river",
+        "wikidata": "Q1014118"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Massimbixe",
+      "lat": -22.5073492,
+      "lon": 32.5283297,
+      "osm_id": "way/700571001",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Massimbixe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lago Maxila",
+      "lat": -22.6798916,
+      "lon": 31.8289547,
+      "osm_id": "way/712955295",
+      "osm_tags": {
+        "name": "Lago Maxila",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Massimbixe",
+      "lat": -22.5077251,
+      "lon": 32.4628115,
+      "osm_id": "way/846419540",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Massimbixe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Changane River",
+      "lat": -23.0275107,
+      "lon": 33.730404,
+      "osm_id": "way/852002545",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "intermittent": "yes",
+        "name": "Changane River",
+        "name:en": "Changane River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwenezi",
+      "lat": -22.6037636,
+      "lon": 31.798988,
+      "osm_id": "way/852437189",
+      "osm_tags": {
+        "admin_level": "5",
+        "alt_name": "Nuanetzi;Manisi",
+        "boat": "no",
+        "boundary": "administrative",
+        "intermittent": "yes",
+        "name": "Mwenezi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Limpopo",
+      "lat": -22.5344713,
+      "lon": 31.5612388,
+      "osm_id": "way/852437190",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Rio Limpopo",
+        "name:en": "Limpopo River",
+        "name:pt": "Rio Limpopo",
+        "name:ru": "\u041b\u0438\u043c\u043f\u043e\u043f\u043e",
+        "waterway": "river",
+        "wikidata": "Q173017",
+        "wikipedia": "pt:Rio Limpopo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Limpopo",
+      "lat": -23.4307958,
+      "lon": 32.3744871,
+      "osm_id": "way/852437199",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Limpopo",
+        "name:en": "Limpopo River",
+        "name:pt": "Rio Limpopo",
+        "name:ru": "\u041b\u0438\u043c\u043f\u043e\u043f\u043e",
+        "waterway": "river",
+        "wikidata": "Q173017",
+        "wikipedia": "pt:Rio Limpopo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Limpopo",
+      "lat": -23.8153855,
+      "lon": 32.5388914,
+      "osm_id": "way/852437201",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Rio Limpopo",
+        "name:en": "Limpopo River",
+        "name:pt": "Rio Limpopo",
+        "name:ru": "\u041b\u0438\u043c\u043f\u043e\u043f\u043e",
+        "waterway": "river",
+        "wikidata": "Q173017",
+        "wikipedia": "pt:Rio Limpopo"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Changane River",
+      "lat": -23.1938205,
+      "lon": 33.8322366,
+      "osm_id": "way/1113702851",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "intermittent": "yes",
+        "name": "Changane River",
+        "name:en": "Changane River",
+        "waterway": "river"
+      }
+    }
+  ]
+}

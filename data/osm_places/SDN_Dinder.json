@@ -1,0 +1,6117 @@
+{
+  "park_id": "SDN_Dinder",
+  "downloaded_at": "2026-02-08T11:05:49.544443+00:00",
+  "buffer_km": 50,
+  "place_count": 367,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Shahadi",
+      "lat": 12.7799236,
+      "lon": 36.4046959,
+      "osm_id": "node/1150588806",
+      "osm_tags": {
+        "alt_name": "Maganan;Shehede;Shehedi",
+        "name": "Shahadi",
+        "name:ar": "\u0634\u062d\u064a\u062f\u064a",
+        "name:en": "Shahadi",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "\u1218\u1270\u121b / Metema",
+      "lat": 12.9538046,
+      "lon": 36.1563669,
+      "osm_id": "node/1150589403",
+      "osm_tags": {
+        "name": "\u1218\u1270\u121b / Metema",
+        "name:am": "\u1218\u1270\u121b",
+        "name:ar": "\u0627\u0644\u0645\u062a\u0645\u0629 \u0627\u0644\u0625\u062b\u064a\u0648\u0628\u064a\u0629",
+        "name:ca": "Al-Matamma",
+        "name:de": "Metemma",
+        "name:en": "Metemma",
+        "name:fr": "M\u00e9temma",
+        "name:it": "Metemma",
+        "name:ro": "Metemma",
+        "name:ru": "\u041c\u044d\u0442\u044d\u043c\u0430",
+        "name:sv": "Metemma",
+        "name:zh": "\u7c73\u63d0\u746a",
+        "name:zu": "Metemma",
+        "place": "town",
+        "short_name:ar": "\u0627\u0644\u0645\u062a\u0645\u0629",
+        "wikidata": "Q1246740",
+        "wikipedia": "am:\u1218\u1270\u121b"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kir",
+      "lat": 12.45,
+      "lon": 35.76667,
+      "osm_id": "node/1150881253",
+      "osm_tags": {
+        "name": "Kir",
+        "natural": "peak",
+        "wikidata": "Q24027865"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Angalo",
+      "lat": 12.6854129,
+      "lon": 36.3815061,
+      "osm_id": "node/1150882471",
+      "osm_tags": {
+        "ele": "1026",
+        "name": "Angalo",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Uadi Mena",
+      "lat": 12.58333,
+      "lon": 36.51667,
+      "osm_id": "node/1150888090",
+      "osm_tags": {
+        "name": "Uadi Mena",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kumer",
+      "lat": 12.8550458,
+      "lon": 36.2589693,
+      "osm_id": "node/1150890259",
+      "osm_tags": {
+        "alt_name": "Comar",
+        "name": "Kumer",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Assaf",
+      "lat": 12.9221202,
+      "lon": 36.2525901,
+      "osm_id": "node/1150893538",
+      "osm_tags": {
+        "name": "Assaf",
+        "name:ar": "\u0639\u0633\u0627\u0641",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Uadi Nefan",
+      "lat": 12.5077929,
+      "lon": 36.5970577,
+      "osm_id": "node/1150894690",
+      "osm_tags": {
+        "name": "Uadi Nefan",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Dangvur Mountains",
+      "lat": 11.3594298,
+      "lon": 35.9521422,
+      "osm_id": "node/1150899349",
+      "osm_tags": {
+        "addr:country": "ET",
+        "name": "Dangvur Mountains",
+        "natural": "peak",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Encheddiba",
+      "lat": 12.5935517,
+      "lon": 36.6302956,
+      "osm_id": "node/1150908310",
+      "osm_tags": {
+        "name": "Encheddiba",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0627\u0644\u0628\u062c\u0627\u064a\u0629",
+      "lat": 12.6926496,
+      "lon": 35.6952579,
+      "osm_id": "node/1150908663",
+      "osm_tags": {
+        "name": "\u0627\u0644\u0628\u062c\u0627\u064a\u0629",
+        "name:ar": "\u0627\u0644\u0628\u062c\u0627\u064a\u0629",
+        "name:en": "El Begaiya",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Aliamr",
+      "lat": 12.7515392,
+      "lon": 36.4747684,
+      "osm_id": "node/1150920529",
+      "osm_tags": {
+        "name": "Aliamr",
+        "name:it": "Monte Aliamr",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mengolf",
+      "lat": 11.350021,
+      "lon": 35.0810126,
+      "osm_id": "node/1150920804",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Mengolf",
+        "natural": "peak",
+        "place": "locality",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jebel Abu Remla",
+      "lat": 11.6892851,
+      "lon": 35.1087092,
+      "osm_id": "node/1150939265",
+      "osm_tags": {
+        "addr:country": "ET",
+        "name": "Jebel Abu Remla",
+        "natural": "peak",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ualad Nai",
+      "lat": 12.8959004,
+      "lon": 36.2883663,
+      "osm_id": "node/1150950777",
+      "osm_tags": {
+        "name": "Ualad Nai",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Negusawi Dawit",
+      "lat": 11.41667,
+      "lon": 36.1773028,
+      "osm_id": "node/1150957405",
+      "osm_tags": {
+        "addr:country": "ET",
+        "name": "Mount Negusawi Dawit",
+        "natural": "peak",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hallad Sahr Semir",
+      "lat": 12.8689488,
+      "lon": 36.2658384,
+      "osm_id": "node/1150959006",
+      "osm_tags": {
+        "name": "Hallad Sahr Semir",
+        "name:ar": "\u062d\u0644\u0627\u062f \u0633\u0627\u062d\u0631 \u0633\u0645\u064a\u0631",
+        "name:en": "Hallad Sahr Semir",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maganani",
+      "lat": 12.7460157,
+      "lon": 36.4439247,
+      "osm_id": "node/1150972403",
+      "osm_tags": {
+        "name": "Maganani",
+        "name:ar": "\u0645\u0627\u063a\u0627\u0646\u0627\u0646\u064a",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Manbuk",
+      "lat": 11.3000115,
+      "lon": 36.2475652,
+      "osm_id": "node/1771167686",
+      "osm_tags": {
+        "name": "Manbuk",
+        "place": "town",
+        "wikipedia": "en:Manuk"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Almahal",
+      "lat": 11.5463288,
+      "lon": 35.1568263,
+      "osm_id": "node/1790907821",
+      "osm_tags": {
+        "name": "Almahal",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Jawi",
+      "lat": 11.5649859,
+      "lon": 36.4881908,
+      "osm_id": "node/1795187966",
+      "osm_tags": {
+        "name": "Jawi",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Pawi",
+      "lat": 11.3250129,
+      "lon": 36.4088012,
+      "osm_id": "node/1795187968",
+      "osm_tags": {
+        "name": "Pawi",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "\u062c\u0632\u0648\u0644\u064a",
+      "lat": 13.0833541,
+      "lon": 35.8837129,
+      "osm_id": "node/2079932954",
+      "osm_tags": {
+        "name": "\u062c\u0632\u0648\u0644\u064a",
+        "name:en": "Jazolei",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tamra",
+      "lat": 13.119573,
+      "lon": 35.8709883,
+      "osm_id": "node/2079933005",
+      "osm_tags": {
+        "name": "Tamra",
+        "name:ar": "\u062a\u0645\u0631\u0629",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0643\u0631\u0645",
+      "lat": 11.5643489,
+      "lon": 34.466155,
+      "osm_id": "node/2095173813",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-8928",
+        "GNS:modify_date": "2009-06-08",
+        "name": "\u0643\u0631\u0645",
+        "name:ar": "\u0643\u0631\u0645",
+        "name:en": "Kirma",
+        "name:fr": "Karam",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Basunda",
+      "lat": 12.9860148,
+      "lon": 35.8448186,
+      "osm_id": "node/2522054333",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-3666",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Basunda",
+        "name:ar": "\u0628\u0633\u0646\u062f",
+        "name:en": "Basunda",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "\u0627\u0644\u062d\u0648\u0627\u062a\u0629",
+      "lat": 13.4176259,
+      "lon": 34.6336766,
+      "osm_id": "node/3121562429",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1823",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Al Hawatah;El Hawata;Al Hawwata;Al \u1e28aw\u0101tah",
+        "alt_name:ar": "\u0627\u0644\u0647\u0648\u0651\u062a",
+        "alt_name:en": "Al Hawatah",
+        "name": "\u0627\u0644\u062d\u0648\u0627\u062a\u0629",
+        "name:ar": "\u0627\u0644\u062d\u0648\u0627\u062a\u0629",
+        "name:en": "El Hawata",
+        "name:fr": "El Hawata",
+        "name:ml": "\u0d0e\u0d7d \u0d39\u0d35\u0d3e\u0d24\u0d4d\u0d24",
+        "name:ru": "\u042d\u043b\u044c-\u0425\u0430\u0432\u0430\u0442\u0430",
+        "name:uk": "\u0415\u043b\u044c-\u0425\u0430\u0432\u0430\u0442\u0430",
+        "place": "city",
+        "source": "http://www.geographic.org/geographic_names/name.php?uni=-8223&fid=5876&c=sudan",
+        "wikidata": "Q11684818",
+        "wikipedia": "ar:\u0627\u0644\u062d\u0648\u0627\u062a\u0629"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "B\u0101bikri",
+      "lat": 12.9956592,
+      "lon": 35.7647669,
+      "osm_id": "node/3207135813",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10461847",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "Babikri",
+        "name": "B\u0101bikri",
+        "name:ar": "\u0628\u0627\u0628\u0643\u0631",
+        "name:en": "Babikri",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shinfa",
+      "lat": 12.5707632,
+      "lon": 36.1307304,
+      "osm_id": "node/3219437442",
+      "osm_tags": {
+        "name": "Shinfa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mehadid",
+      "lat": 12.2980819,
+      "lon": 35.7632396,
+      "osm_id": "node/3226500421",
+      "osm_tags": {
+        "name": "Mehadid",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ghenga",
+      "lat": 12.8756682,
+      "lon": 36.2518745,
+      "osm_id": "node/3226751925",
+      "osm_tags": {
+        "name": "Ghenga",
+        "name:ar": "\u063a\u0646\u063a\u0627",
+        "name:en": "Ghenga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bermil",
+      "lat": 12.3936599,
+      "lon": 35.7367706,
+      "osm_id": "node/3226755066",
+      "osm_tags": {
+        "name": "Bermil",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Balos",
+      "lat": 13.3760343,
+      "lon": 34.9527455,
+      "osm_id": "node/3302642511",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-3428",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Balos",
+        "name:ar": "\u0628\u0644\u0648\u0633",
+        "name:en": "Balos",
+        "place": "town",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mugdeit",
+      "lat": 13.4095103,
+      "lon": 34.905692,
+      "osm_id": "node/3302642513",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-11503",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Mugdeit",
+        "name:ar": "\u0645\u0642\u062f\u064a\u062a",
+        "name:en": "Mugdeit",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0627\u0645 \u062e\u0631\u0627\u064a\u064a\u062a",
+      "lat": 13.1320955,
+      "lon": 35.9239186,
+      "osm_id": "node/3401743519",
+      "osm_tags": {
+        "name": "\u0627\u0645 \u062e\u0631\u0627\u064a\u064a\u062a",
+        "name:en": "Om Khrayeit",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuneina",
+      "lat": 13.0828348,
+      "lon": 36.0080885,
+      "osm_id": "node/3401758079",
+      "osm_tags": {
+        "name": "Kuneina",
+        "name:ar": "\u0643\u0646\u064a\u0646\u0629",
+        "note": "name ?",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u12ae\u12aa",
+      "lat": 12.8279955,
+      "lon": 36.309957,
+      "osm_id": "node/3520847432",
+      "osm_tags": {
+        "name": "\u12ae\u12aa",
+        "name:ar": "\u0643\u0648\u0643\u064a",
+        "name:en": "Koki",
+        "name:fr": "Koki",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nagara Chehib",
+      "lat": 12.6396074,
+      "lon": 36.5716136,
+      "osm_id": "node/3520847433",
+      "osm_tags": {
+        "name": "Nagara Chehib",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bazora",
+      "lat": 13.1049872,
+      "lon": 34.9323872,
+      "osm_id": "node/3803360022",
+      "osm_tags": {
+        "name": "Bazora",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "\u0627\u0644\u0642\u0644\u0627\u0628\u0627\u062a",
+      "lat": 12.9600399,
+      "lon": 36.1488802,
+      "osm_id": "node/4339052110",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-12849",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Qallabat;Al Qallabat;Gallabat;Qall\u0101b\u0101t",
+        "alt_name:ar": "\u0627\u0644\u0642\u0644\u0651\u0628\u062a;\u063a\u0623\u0644\u0651\u0628\u062a;\u0642\u0644\u0651\u0627\u0628\u0627\u062a",
+        "alt_name:en": "Qallabat",
+        "name": "\u0627\u0644\u0642\u0644\u0627\u0628\u0627\u062a",
+        "name:ar": "\u0627\u0644\u0642\u0644\u0627\u0628\u0627\u062a",
+        "name:en": "Gallabat",
+        "name:fr": "Gallabat",
+        "name:ml": "\u0d17\u0d32\u0d4d\u0d32\u0d2c\u0d3e\u0d24\u0d4d\u0d24\u0d4d",
+        "place": "town",
+        "wikidata": "Q1014416"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "\u0639\u0632\u0627\u0632\u0629",
+      "lat": 12.9629528,
+      "lon": 34.6404618,
+      "osm_id": "node/4357440937",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507081",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "\u0627\u0644\u0639\u0632\u0627\u0632",
+        "alt_name:ar": "\u0627\u0644\u0639\u0632\u0627\u0632",
+        "alt_name:en": "Al `Azaza",
+        "name": "\u0639\u0632\u0627\u0632\u0629",
+        "name:ar": "\u0639\u0632\u0627\u0632\u0629",
+        "name:en": "Al `Azaza,Al \u2018Az\u0101za",
+        "name:fr": "Azaza",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0646\u0648\u0631\u0627\u0644\u062c\u0644\u064a\u0644",
+      "lat": 12.9512621,
+      "lon": 34.6099826,
+      "osm_id": "node/4357440938",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-12249",
+        "GNS:modify_date": "2009-08-19",
+        "alt_name": "Nur al Jalil;Nur el Galil;N\u016br al Jal\u012bl;\u0646\u0648\u0631 \u0623\u062c \u062c\u0644\u064a\u0644",
+        "alt_name:ar": "\u0646\u0648\u0631 \u0627\u0644\u062c\u0644\u064a\u0644;\u0646\u0648\u0631 \u0623\u062c \u062c\u0644\u064a\u0644",
+        "alt_name:en": "Nur Aj Jalil",
+        "name": "\u0646\u0648\u0631\u0627\u0644\u062c\u0644\u064a\u0644",
+        "name:ar": "\u0646\u0648\u0631\u0627\u0644\u062c\u0644\u064a\u0644",
+        "name:en": "Nur Aj Jalil,Nur al Jalil,Nur el Galil,N\u016br Aj Jal\u012bl,N\u016br al Jal\u012bl",
+        "name:fr": "Noor Al-Jalil",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Famaka",
+      "lat": 11.3242283,
+      "lon": 34.7374236,
+      "osm_id": "node/4776976166",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:id": "-5675",
+        "MODIFY_DAT": "2009-08-18",
+        "name": "Famaka",
+        "place": "town",
+        "source:name": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Raba",
+      "lat": 11.3797303,
+      "lon": 34.6541887,
+      "osm_id": "node/4778617223",
+      "osm_tags": {
+        "name": "Raba",
+        "name:ar": "\u0631\u0627\u0628\u0647",
+        "name:en": "Raba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mari",
+      "lat": 11.3592315,
+      "lon": 34.6781409,
+      "osm_id": "node/4778617274",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-10847",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Mari",
+        "name:ar": "\u0645\u0631",
+        "name:en": "Mari",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u123d\u1218\u1208 \u130b\u122b",
+      "lat": 13.1007497,
+      "lon": 36.2538733,
+      "osm_id": "node/5393727135",
+      "osm_tags": {
+        "name": "\u123d\u1218\u1208 \u130b\u122b",
+        "name:en": "Shimele Gara",
+        "name:fr": "Shimele Gara",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u12a8\u1208\u120b",
+      "lat": 13.0823464,
+      "lon": 36.265543,
+      "osm_id": "node/5393727136",
+      "osm_tags": {
+        "name": "\u12a8\u1208\u120b",
+        "name:en": "Kelela",
+        "name:fr": "Kelela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u12c8\u12f2 \u1308\u121d\u12de",
+      "lat": 13.0188599,
+      "lon": 36.2828605,
+      "osm_id": "node/5393727137",
+      "osm_tags": {
+        "name": "\u12c8\u12f2 \u1308\u121d\u12de",
+        "name:en": "Wedi Gemzo",
+        "name:fr": "Wedi Gemzo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Delolo No 1",
+      "lat": 13.217778,
+      "lon": 36.1403062,
+      "osm_id": "node/5393906121",
+      "osm_tags": {
+        "name": "Delolo No 1",
+        "name:am": "\u12f0\u1208\u120e \u1241\u1325\u122d \u1241\u1325\u122d 1",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Addis Alem",
+      "lat": 13.1383654,
+      "lon": 36.1390828,
+      "osm_id": "node/5395261421",
+      "osm_tags": {
+        "name": "Addis Alem",
+        "name:am": "\u12a0\u12f2\u1235 \u12a0\u1208\u121d",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Amrakuba",
+      "lat": 12.395063,
+      "lon": 35.7127332,
+      "osm_id": "node/6204580136",
+      "osm_tags": {
+        "ele": "767",
+        "name": "Amrakuba",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Gelegu",
+      "lat": 12.2157154,
+      "lon": 35.8942115,
+      "osm_id": "node/6204783098",
+      "osm_tags": {
+        "alt_name": "Gelego",
+        "name": "Gelegu",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Belegumbo",
+      "lat": 11.433333,
+      "lon": 34.883333,
+      "osm_id": "node/7730418136",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-3761",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Belegumbo",
+        "name:en": "Belegumbo",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ab\u016b Qud\u0101f",
+      "lat": 11.483333,
+      "lon": 34.833333,
+      "osm_id": "node/7730418137",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-595",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Abu Qudaf;Abu Gedaf",
+        "name": "Ab\u016b Qud\u0101f",
+        "name:ar": "\u0623\u0628\u0648 \u0642\u062f\u0627\u0641",
+        "name:en": "Abu Qudaf",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Baitamaru",
+      "lat": 11.483333,
+      "lon": 34.833333,
+      "osm_id": "node/7730418152",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-3368",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Baitamaru",
+        "name:ar": "\u0628\u0625\u062a\u0645\u0631",
+        "name:en": "Baitamaru",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Shaeira",
+      "lat": 11.45,
+      "lon": 34.533333,
+      "osm_id": "node/7730423582",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-13949",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Shaeira",
+        "name:en": "Shaeira",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Arugo",
+      "lat": 11.533333,
+      "lon": 34.483333,
+      "osm_id": "node/7730423583",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-2806",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Arugo",
+        "name:ar": "\u0623\u0631\u063a\u0648",
+        "name:en": "Arugo",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Al Wala",
+      "lat": 11.466667,
+      "lon": 34.516667,
+      "osm_id": "node/7730423584",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-2280",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "El Wala",
+        "name": "Al Wala",
+        "name:ar": "\u0627\u0644\u0648\u0644",
+        "name:en": "Al Wala",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ab\u016b Sa\u2018\u012bd",
+      "lat": 12.616667,
+      "lon": 34.433333,
+      "osm_id": "node/7730424467",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-665",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Abu Sa`id",
+        "name": "Ab\u016b Sa\u2018\u012bd",
+        "name:ar": "\u0623\u0628\u0648 \u0633\u0639\u064a\u062f",
+        "name:en": "Abu Sa`id",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Suwayd\u0101\u2019",
+      "lat": 12.483333,
+      "lon": 35.033333,
+      "osm_id": "node/7730424475",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-14731",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Suwayda';Sueida",
+        "name": "Suwayd\u0101\u2019",
+        "name:ar": "\u0633\u0648\u064a\u062f\u0627\u0621",
+        "name:en": "Suwayda'",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wad al Bal\u016blah",
+      "lat": 12.933333,
+      "lon": 35.933333,
+      "osm_id": "node/7730424484",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-17044",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Wad al Balulah;Wad el Belula",
+        "name": "Wad al Bal\u016blah",
+        "name:ar": "\u0648\u062f \u0627\u0644\u0628\u0644\u0648\u0644\u0629",
+        "name:en": "Wad al Balulah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Karnekeila",
+      "lat": 13.0023051,
+      "lon": 35.9168172,
+      "osm_id": "node/7730424493",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-8487",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Karnekeila",
+        "name:en": "Karnekeila",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Saraf Sa\u2018\u012bd",
+      "lat": 13.2216282,
+      "lon": 35.863502,
+      "osm_id": "node/7730424494",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-13708",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Saraf Sa`id",
+        "name": "Saraf Sa\u2018\u012bd",
+        "name:ar": "\u0633\u0631\u0641 \u0633\u0639\u064a\u062f",
+        "name:en": "Saraf Sa`id",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Wad Kusaybah",
+      "lat": 13.233333,
+      "lon": 35.916667,
+      "osm_id": "node/7730424496",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-17236",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Wad Kuseiba",
+        "name": "Wad Kusaybah",
+        "name:ar": "\u0648\u062f \u0643\u0633\u064a\u0628\u0629",
+        "name:en": "Wad Kusaybah",
+        "place": "town",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "A\u1e11 \u1e10iresa",
+      "lat": 12.9677,
+      "lon": 35.0175,
+      "osm_id": "node/7730424679",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507257",
+        "GNS:modify_date": "2009-08-19",
+        "alt_name": "A\u1e11 \u1e10iresa",
+        "name": "A\u1e11 \u1e10iresa",
+        "name:en": "Ad Diresa",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0645\u0648\u0644",
+      "lat": 11.5663,
+      "lon": 34.4538,
+      "osm_id": "node/7730424698",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-10629",
+        "GNS:modify_date": "2009-06-08",
+        "alt_name": "Malua",
+        "alt_name:ar": "\u0645\u0644\u0623",
+        "name": "\u0645\u0648\u0644",
+        "name:ar": "\u0645\u0648\u0644",
+        "name:en": "Moula",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u2018Iref Ad D\u012bk",
+      "lat": 12.8096,
+      "lon": 34.7867,
+      "osm_id": "node/7730424736",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507254",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "\u2018Iref Ad D\u012bk",
+        "name": "\u2018Iref Ad D\u012bk",
+        "name:en": "`Iref Ad Dik",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u062c\u0627\u0644\u062f\u0648\u0643",
+      "lat": 12.9253,
+      "lon": 34.6434,
+      "osm_id": "node/7730424746",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507080",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u062c\u0627\u0644\u062f\u0648\u0643",
+        "name:ar": "\u062c\u0627\u0644\u062f\u0648\u0643",
+        "name:en": "Jalduk",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0648\u062f \u0627\u0644\u0641\u0627\u0636\u0644",
+      "lat": 12.9805,
+      "lon": 34.5102,
+      "osm_id": "node/7730424749",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507074",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0648\u062f \u0627\u0644\u0641\u0627\u0636\u0644",
+        "name:ar": "\u0648\u062f \u0627\u0644\u0641\u0627\u0636\u0644",
+        "name:en": "Wad Al Fadil",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0623\u0645 \u0643\u0643\u0631",
+      "lat": 12.8745,
+      "lon": 35.1638,
+      "osm_id": "node/7730424770",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507268",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0623\u0645 \u0643\u0643\u0631",
+        "name:ar": "\u0623\u0645 \u0643\u0643\u0631",
+        "name:en": "Um Kakar",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u062a\u0628\u0644\u062f\u064a\u0651",
+      "lat": 12.8854,
+      "lon": 35.1536,
+      "osm_id": "node/7730424771",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507266",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u062a\u0628\u0644\u062f\u064a\u0651",
+        "name:ar": "\u062a\u0628\u0644\u062f\u064a\u0651",
+        "name:en": "Tabaldiyya",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "\u0623\u0645 \u0643\u0631\u0627\u0639",
+      "lat": 12.8910235,
+      "lon": 35.1489383,
+      "osm_id": "node/7730424772",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507265",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0623\u0645 \u0643\u0631\u0627\u0639",
+        "name:ar": "\u0623\u0645 \u0643\u0631\u0627\u0639",
+        "name:en": "Um Kura`",
+        "place": "town",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0631\u0645\u0636\u0627\u0646",
+      "lat": 12.8874,
+      "lon": 35.1302,
+      "osm_id": "node/7730424813",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507287",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0631\u0645\u0636\u0627\u0646",
+        "name:ar": "\u0631\u0645\u0636\u0627\u0646",
+        "name:en": "Ramadan",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0643\u0627\u0643\u0645\u0648\u062a",
+      "lat": 12.7363,
+      "lon": 35.4506,
+      "osm_id": "node/7730424822",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507281",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0643\u0627\u0643\u0645\u0648\u062a",
+        "name:ar": "\u0643\u0627\u0643\u0645\u0648\u062a",
+        "name:en": "Kakamuta",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Umm Mufra\u2018",
+      "lat": 12.85,
+      "lon": 34.416667,
+      "osm_id": "node/7730427287",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-16515",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Umm Mufra`",
+        "name": "Umm Mufra\u2018",
+        "name:ar": "\u0623\u0645\u0651 \u0645\u0641\u0631\u0639",
+        "name:en": "Umm Mufra`",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ruwina",
+      "lat": 12.95,
+      "lon": 34.566667,
+      "osm_id": "node/7730427346",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-13430",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Ruwina",
+        "name:ar": "\u0631\u0648\u0646",
+        "name:en": "Ruwina",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Galegu",
+      "lat": 12.6,
+      "lon": 35.033333,
+      "osm_id": "node/7730427347",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-6061",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Jalequ",
+        "name": "Galegu",
+        "name:en": "Galegu",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wad a\u015f \u015earr\u0101f",
+      "lat": 13.033333,
+      "lon": 34.483333,
+      "osm_id": "node/7730427352",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-17119",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Wad as Sarraf;Wad es Sarraf;Wad es Sarra",
+        "name": "Wad a\u015f \u015earr\u0101f",
+        "name:ar": "\u0648\u062f \u0627\u0644\u0635\u0631\u0651\u0627\u0641",
+        "name:en": "Wad as Sarraf",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Hannu ash Shurayk",
+      "lat": 12.966667,
+      "lon": 34.666667,
+      "osm_id": "node/7730427353",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-7174",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Hannu esh Shereik",
+        "name": "Hannu ash Shurayk",
+        "name:ar": "\u0647\u0646\u0651 \u0627\u0644\u0634\u0631\u064a\u0643",
+        "name:en": "Hannu ash Shurayk",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Shurayk Murj\u0101n",
+      "lat": 12.95,
+      "lon": 34.666667,
+      "osm_id": "node/7730427354",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-14373",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Shurayk Murjan;Shereik Murgan;Shureik Murgan",
+        "name": "Shurayk Murj\u0101n",
+        "name:ar": "\u0634\u0631\u064a\u0643 \u0645\u0631\u062c\u0627\u0646",
+        "name:en": "Shurayk Murjan",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Shurayk N\u016br",
+      "lat": 12.933333,
+      "lon": 34.666667,
+      "osm_id": "node/7730427355",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-14374",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Shurayk Nur;Shereik Nur",
+        "name": "Shurayk N\u016br",
+        "name:ar": "\u0634\u0631\u064a\u0643 \u0646\u0648\u0631",
+        "name:en": "Shurayk Nur",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wad Abakr",
+      "lat": 12.933333,
+      "lon": 34.55,
+      "osm_id": "node/7730427356",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-17009",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Wad Abakr",
+        "name:ar": "\u0648\u062f \u0623\u0628\u0643\u0631",
+        "name:en": "Wad Abakr",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u2018Adal",
+      "lat": 12.966667,
+      "lon": 34.516667,
+      "osm_id": "node/7730427357",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-947",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "`Adal",
+        "name": "\u2018Adal",
+        "name:ar": "\u0639\u062f\u0644",
+        "name:en": "`Adal",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "As Su\u2018ayf",
+      "lat": 12.95,
+      "lon": 34.5,
+      "osm_id": "node/7730427358",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-2959",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "As Su`ayf;Es Su\u2018eif;Es Su`eif",
+        "name": "As Su\u2018ayf",
+        "name:ar": "\u0627\u0644\u0633\u0639\u064a\u0641",
+        "name:en": "As Su`ayf",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ab\u016b Ruqaybah",
+      "lat": 11.966667,
+      "lon": 34.733333,
+      "osm_id": "node/7730427362",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-658",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Abu Ruqaybah;Abu Ruqeiba;Abu Regeiba",
+        "name": "Ab\u016b Ruqaybah",
+        "name:ar": "\u0623\u0628\u0648 \u0631\u0642\u064a\u0628\u0629",
+        "name:en": "Abu Ruqaybah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mu\u1e29aylah",
+      "lat": 12.216667,
+      "lon": 34.5,
+      "osm_id": "node/7730427363",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-11544",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Muhaylah;Muheila",
+        "name": "Mu\u1e29aylah",
+        "name:ar": "\u0645\u062d\u064a\u0644\u0629",
+        "name:en": "Muhaylah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Maganu",
+      "lat": 11.833333,
+      "lon": 34.65,
+      "osm_id": "node/7730427364",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-10377",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Maganu",
+        "name:ar": "\u0645\u063a\u0623\u0646",
+        "name:en": "Maganu",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wad Daf\u2018 All\u0101h",
+      "lat": 11.816667,
+      "lon": 34.6,
+      "osm_id": "node/7730427365",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-17161",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Wad Daf` Allah;Wad Daf\u2018ullah;Wad Daf`ullah",
+        "alt_name:ar": "\u0648\u062f \u062f\u0641\u0639\u0644\u0651\u0629",
+        "name": "Wad Daf\u2018 All\u0101h",
+        "name:ar": "\u0648\u062f \u062f\u0641\u0639 \u0627\u0644\u0644\u0647",
+        "name:en": "Wad Daf` Allah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "La\u2018ota",
+      "lat": 11.833333,
+      "lon": 34.416667,
+      "osm_id": "node/7730427412",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-9749",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "La`ota",
+        "name": "La\u2018ota",
+        "name:ar": "\u0644\u0639\u0648\u062a",
+        "name:en": "La`ota",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Menze",
+      "lat": 11.533333,
+      "lon": 35.05,
+      "osm_id": "node/7730427414",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-11149",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Menze",
+        "name:ar": "\u0645\u0646\u0632\u0629",
+        "name:en": "Menze",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Woddel Gafar",
+      "lat": 11.5,
+      "lon": 35.016667,
+      "osm_id": "node/7730427415",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-17562",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Woddel Gafar",
+        "name:en": "Woddel Gafar",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Manchelung",
+      "lat": 11.466667,
+      "lon": 35.0,
+      "osm_id": "node/7730427416",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-10684",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Manchelung",
+        "name:en": "Manchelung",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nudoqay",
+      "lat": 11.466667,
+      "lon": 34.983333,
+      "osm_id": "node/7730427417",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-12212",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Nadogay",
+        "alt_name:ar": "\u0646\u062f\u0648\u063a\u0623\u064a",
+        "name": "Nudoqay",
+        "name:ar": "\u0646\u062f\u0648\u0642\u064a",
+        "name:en": "Nudoqay",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Masamoagha",
+      "lat": 11.5,
+      "lon": 34.916667,
+      "osm_id": "node/7730427418",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-10907",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Masambagha",
+        "alt_name:ar": "\u0645\u0633\u0645\u0628\u063a",
+        "name": "Masamoagha",
+        "name:ar": "\u0645\u0633\u0645\u0648\u063a",
+        "name:en": "Masamoagha",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Al Gana",
+      "lat": 11.4,
+      "lon": 34.933333,
+      "osm_id": "node/7730427419",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1720",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "El Gana",
+        "name": "Al Gana",
+        "name:ar": "\u0627\u0644\u063a\u0623\u0646",
+        "name:en": "Al Gana",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Butaba",
+      "lat": 11.833333,
+      "lon": 34.416667,
+      "osm_id": "node/7730427432",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-4233",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Butaba",
+        "name:ar": "\u0628\u062a\u0628",
+        "name:en": "Butaba",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Madue",
+      "lat": 11.45,
+      "lon": 35.0,
+      "osm_id": "node/7730427438",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-10361",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Madue",
+        "name:en": "Madue",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gishwe",
+      "lat": 11.483333,
+      "lon": 34.933333,
+      "osm_id": "node/7730427439",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-6490",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Gishwe",
+        "name:en": "Gishwe",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Amiri",
+      "lat": 11.4380842,
+      "lon": 34.9334638,
+      "osm_id": "node/7730427440",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-2381",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Amiri",
+        "name:ar": "\u0623\u0645\u0631",
+        "name:en": "Amiri",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gebbellat",
+      "lat": 11.416667,
+      "lon": 34.966667,
+      "osm_id": "node/7730427441",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-6213",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Gebellar",
+        "name": "Gebbellat",
+        "name:en": "Gebbellat",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Aradeiba",
+      "lat": 11.3,
+      "lon": 34.783333,
+      "osm_id": "node/7730428424",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-2621",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Aradeiba",
+        "name:en": "Aradeiba",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Maraiu",
+      "lat": 11.3,
+      "lon": 34.766667,
+      "osm_id": "node/7730428425",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-10811",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Maraiu",
+        "name:ar": "\u0645\u0631\u0625\u0623",
+        "name:en": "Maraiu",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Famakah",
+      "lat": 11.3,
+      "lon": 34.733333,
+      "osm_id": "node/7730428430",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-5675",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Famaka",
+        "alt_name:ar": "\u0641\u0645\u0643",
+        "name": "Famakah",
+        "name:ar": "\u0641\u0645\u0643\u0629",
+        "name:en": "Famakah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ab\u016b Shand\u012b",
+      "lat": 11.35,
+      "lon": 34.7,
+      "osm_id": "node/7730428432",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-734",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Abu Shandi;Abu Shendi",
+        "name": "Ab\u016b Shand\u012b",
+        "name:ar": "\u0623\u0628\u0648 \u0634\u0646\u062f\u064a",
+        "name:en": "Abu Shandi",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Khawr al Gana",
+      "lat": 11.4,
+      "lon": 34.683333,
+      "osm_id": "node/7730428433",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-8779",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Khor el Gana",
+        "name": "Khawr al Gana",
+        "name:ar": "\u062e\u0648\u0631 \u0627\u0644\u063a\u0623\u0646",
+        "name:en": "Khawr al Gana",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Shukr\u012byah",
+      "lat": 12.7,
+      "lon": 36.116667,
+      "osm_id": "node/7730428551",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-14347",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Shukriyah;Shu Kria",
+        "alt_name:ar": "\u0634 \u0643\u0631\u0623",
+        "name": "Shukr\u012byah",
+        "name:ar": "\u0634\u0643\u0631\u064a\u0651\u0629",
+        "name:en": "Shukriyah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wad al Khesheidi",
+      "lat": 13.366667,
+      "lon": 34.716667,
+      "osm_id": "node/7730428607",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-17075",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Wad el Khesheidi",
+        "name": "Wad al Khesheidi",
+        "name:en": "Wad al Khesheidi",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Shamm\u0101m",
+      "lat": 13.233333,
+      "lon": 34.833333,
+      "osm_id": "node/7730428608",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-14016",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Shammam;Ash Shammam",
+        "alt_name:ar": "\u0627\u0644\u0634\u0645\u0651\u0645",
+        "name": "Shamm\u0101m",
+        "name:ar": "\u0634\u0645\u0651\u0627\u0645",
+        "name:en": "Shammam",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u1e28\u0101jj a\u0163 \u0162\u0101hir",
+      "lat": 13.316667,
+      "lon": 34.75,
+      "osm_id": "node/7730428612",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-6953",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Hajj at Tahir;Hag et Tahir",
+        "name": "\u1e28\u0101jj a\u0163 \u0162\u0101hir",
+        "name:ar": "\u062d\u0627\u062c\u0651 \u0627\u0644\u0637\u0627\u0647\u0631",
+        "name:en": "Hajj at Tahir",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ab\u016b B\u0101b\u016bn",
+      "lat": 13.3,
+      "lon": 34.733333,
+      "osm_id": "node/7730428613",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-232",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Abu Babun",
+        "name": "Ab\u016b B\u0101b\u016bn",
+        "name:ar": "\u0623\u0628\u0648 \u0628\u0627\u0628\u0648\u0646",
+        "name:en": "Abu Babun",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Thurayy\u0101",
+      "lat": 11.5,
+      "lon": 34.533333,
+      "osm_id": "node/7730428620",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-15262",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Thurayya;Thuraiya",
+        "alt_name:ar": "\u062b\u0631\u0625\u064a",
+        "name": "Thurayy\u0101",
+        "name:ar": "\u062b\u0631\u064a\u0651\u0627",
+        "name:en": "Thurayya",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Surayfah",
+      "lat": 11.466667,
+      "lon": 34.533333,
+      "osm_id": "node/7730428621",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-14693",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Sereifa",
+        "name": "Surayfah",
+        "name:ar": "\u0633\u0631\u064a\u0641\u0629",
+        "name:en": "Surayfah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wad Bakr",
+      "lat": 13.266667,
+      "lon": 34.816667,
+      "osm_id": "node/7730428623",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-17135",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Wad Bakr",
+        "name:ar": "\u0648\u062f \u0628\u0643\u0631",
+        "name:en": "Wad Bakr",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wad Ab\u016b Ghaz\u0101l",
+      "lat": 13.2,
+      "lon": 34.816667,
+      "osm_id": "node/7730428624",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-17020",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Wad Abu Ghazal",
+        "name": "Wad Ab\u016b Ghaz\u0101l",
+        "name:ar": "\u0648\u062f \u0623\u0628\u0648 \u063a\u0632\u0627\u0644",
+        "name:en": "Wad Abu Ghazal",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u2018Am\u0101rat al Khal\u012bfah",
+      "lat": 13.4,
+      "lon": 34.666667,
+      "osm_id": "node/7730428625",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-2319",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "`Amarat al Khalifah;Wad el Guzuli;\u2018Amara el Khalifa Wad el Guzuli;`Amara el Khalifa Wad el Guzuli;\u2018Amara el Khalifa;`Amara el Khalifa",
+        "name": "\u2018Am\u0101rat al Khal\u012bfah",
+        "name:ar": "\u0639\u0645\u0627\u0631\u0629 \u0627\u0644\u062e\u0644\u064a\u0641\u0629",
+        "name:en": "`Amarat al Khalifah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Jaz\u012brat F\u0101\u0163imah",
+      "lat": 13.35,
+      "lon": 34.75,
+      "osm_id": "node/7730428626",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-7911",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Jazirat Fatimah;Gezirat Fatima",
+        "name": "Jaz\u012brat F\u0101\u0163imah",
+        "name:ar": "\u062c\u0632\u064a\u0631\u0629 \u0641\u0627\u0637\u0645\u0629",
+        "name:en": "Jazirat Fatimah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Umm \u2018Adara",
+      "lat": 13.383333,
+      "lon": 34.5,
+      "osm_id": "node/7730428630",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-15962",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Umm `Adara",
+        "name": "Umm \u2018Adara",
+        "name:ar": "\u0623\u0645\u0651 \u0639\u062f\u0631",
+        "name:en": "Umm `Adara",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u2018Abd ar Razz\u0101q",
+      "lat": 13.333333,
+      "lon": 34.75,
+      "osm_id": "node/7730428632",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-102",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "`Abd ar Razzaq;Abd er Razzaq",
+        "name": "\u2018Abd ar Razz\u0101q",
+        "name:ar": "\u0639\u0628\u062f \u0627\u0644\u0631\u0632\u0651\u0627\u0642",
+        "name:en": "`Abd ar Razzaq",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "D\u012bsah",
+      "lat": 12.933333,
+      "lon": 35.05,
+      "osm_id": "node/7730428686",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-4881",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Disah;Disa",
+        "alt_name:ar": "\u062f\u0633",
+        "name": "D\u012bsah",
+        "name:ar": "\u062f\u064a\u0633\u0629",
+        "name:en": "Disah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ab\u016b Shunaynah",
+      "lat": 11.383333,
+      "lon": 34.666667,
+      "osm_id": "node/7730428708",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-750",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Abu Shunaynah;Abu Shin\u0113na;Abu Shinena;Abu Sheneina",
+        "name": "Ab\u016b Shunaynah",
+        "name:ar": "\u0623\u0628\u0648 \u0634\u0646\u064a\u0646\u0629",
+        "name:en": "Abu Shunaynah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Amurdello",
+      "lat": 11.333333,
+      "lon": 34.7,
+      "osm_id": "node/7730428722",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-2410",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Amurdello",
+        "name:en": "Amurdello",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ar Ruhayd",
+      "lat": 11.3,
+      "lon": 34.683333,
+      "osm_id": "node/7730428723",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-2774",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Er Reheid",
+        "name": "Ar Ruhayd",
+        "name:ar": "\u0627\u0644\u0631\u0647\u064a\u062f",
+        "name:en": "Ar Ruhayd",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Rumaylah",
+      "lat": 12.942,
+      "lon": 35.0243,
+      "osm_id": "node/7730428861",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-13383",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "Rumela;Rumeila",
+        "name": "Rumaylah",
+        "name:ar": "\u0631\u0645\u064a\u0644\u0629",
+        "name:en": "Rumela",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u2018Aradeba",
+      "lat": 12.8125,
+      "lon": 35.2676,
+      "osm_id": "node/7730428945",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507286",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "\u2018Aradeba",
+        "name": "\u2018Aradeba",
+        "name:en": "`Aradeba",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0621\u0633 \u0623\u0628\u0631",
+      "lat": 12.7426,
+      "lon": 35.3916,
+      "osm_id": "node/7730428946",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507283",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0621\u0633 \u0623\u0628\u0631",
+        "name:ar": "\u0621\u0633 \u0623\u0628\u0631",
+        "name:en": "'As Ubri",
+        "name:fr": "As Ubri",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "\u0643\u0631\u0634 \u0627\u0644\u0641\u064a\u0644",
+      "lat": 12.7358,
+      "lon": 35.4673,
+      "osm_id": "node/7730428947",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507282",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0643\u0631\u0634 \u0627\u0644\u0641\u064a\u0644",
+        "name:ar": "\u0643\u0631\u0634 \u0627\u0644\u0641\u064a\u0644",
+        "name:en": "Karsh al Fil",
+        "place": "town",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u062f\u0631\u0651\u0627\u0628",
+      "lat": 12.9169,
+      "lon": 34.5053,
+      "osm_id": "node/7730428954",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-5177",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u062f\u0631\u0651\u0627\u0628",
+        "name:ar": "\u062f\u0631\u0651\u0627\u0628",
+        "name:en": "Durraba",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "As Sine\u0163",
+      "lat": 12.7573,
+      "lon": 34.8507,
+      "osm_id": "node/7730429034",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507253",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "As Sine\u0163",
+        "name": "As Sine\u0163",
+        "name:en": "As Sinet",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wad al \u2018Aj\u016bz",
+      "lat": 12.90041,
+      "lon": 35.92225,
+      "osm_id": "node/7730429829",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10461863",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "Wad al `Ajuz",
+        "name": "Wad al \u2018Aj\u016bz",
+        "name:ar": "\u0648\u062f \u0627\u0644\u0639\u062c\u0648\u0632",
+        "name:en": "Wad al `Ajuz",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "T\u0101ya",
+      "lat": 12.93513,
+      "lon": 35.98291,
+      "osm_id": "node/7730429835",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10461859",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "Taya",
+        "name": "T\u0101ya",
+        "name:ar": "\u062a\u0627\u064a",
+        "name:en": "Taya",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "At Tums\u0101h",
+      "lat": 12.70911,
+      "lon": 35.60207,
+      "osm_id": "node/7730429886",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10461878",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "At Tumsah",
+        "name": "At Tums\u0101h",
+        "name:ar": "\u0627\u0644\u062a\u0645\u0633\u0627\u0629",
+        "name:en": "At Tumsah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u2018Oda",
+      "lat": 12.71993,
+      "lon": 35.56603,
+      "osm_id": "node/7730429887",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10461876",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "`Oda",
+        "name": "\u2018Oda",
+        "name:ar": "\u0639\u0648\u062f",
+        "name:en": "`Oda",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Al Fazra",
+      "lat": 12.7193357,
+      "lon": 35.5937724,
+      "osm_id": "node/7730429888",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10461875",
+        "GNS:modify_date": "2009-03-30",
+        "name": "Al Fazra",
+        "name:ar": "\u0627\u0644\u0641\u0632\u0631",
+        "name:en": "Al Fazra",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0627\u0644\u063a\u0646\u0651\u0627\u0645",
+      "lat": 12.3748,
+      "lon": 34.4972,
+      "osm_id": "node/7730431705",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1734",
+        "GNS:modify_date": "2009-06-08",
+        "alt_name": "El Ghanama;Al Ghanamah",
+        "alt_name:ar": "\u0627\u0644\u063a\u0646\u0645\u0629",
+        "name": "\u0627\u0644\u063a\u0646\u0651\u0627\u0645",
+        "name:ar": "\u0627\u0644\u063a\u0646\u0651\u0627\u0645",
+        "name:en": "Al Ghannama",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0623\u0628 \u0642\u0645",
+      "lat": 11.504,
+      "lon": 34.4677,
+      "osm_id": "node/7730431752",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10512145",
+        "GNS:modify_date": "2009-06-08",
+        "name": "\u0623\u0628 \u0642\u0645",
+        "name:ar": "\u0623\u0628 \u0642\u0645",
+        "name:en": "Abu Qumi",
+        "name:fr": "Abu Qumi",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Buraysh",
+      "lat": 12.55,
+      "lon": 34.45,
+      "osm_id": "node/7730432146",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-4162",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Breish",
+        "name": "Buraysh",
+        "name:ar": "\u0628\u0631\u064a\u0634",
+        "name:en": "Buraysh",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Al Jubayn",
+      "lat": 12.116667,
+      "lon": 35.166667,
+      "osm_id": "node/7730432151",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1927",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "El Gebein",
+        "name": "Al Jubayn",
+        "name:ar": "\u0627\u0644\u062c\u0628\u064a\u0646",
+        "name:en": "Al Jubayn",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Al Eiwad",
+      "lat": 12.433333,
+      "lon": 35.05,
+      "osm_id": "node/7730432152",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1656",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "El Eiwad",
+        "name": "Al Eiwad",
+        "name:en": "Al Eiwad",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Fatah al B\u0101b",
+      "lat": 12.933333,
+      "lon": 36.083333,
+      "osm_id": "node/7730432193",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-5813",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Fatah al Bab;Fatah el Bab",
+        "name": "Fatah al B\u0101b",
+        "name:ar": "\u0641\u062a\u0629 \u0627\u0644\u0628\u0627\u0628",
+        "name:en": "Fatah al Bab",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Otrub",
+      "lat": 13.0030228,
+      "lon": 36.0814847,
+      "osm_id": "node/7730432196",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-12630",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Otrub",
+        "name:ar": "\u0648\u062a\u0631\u0628",
+        "name:en": "Otrub",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mal\u012b\u1e29ah",
+      "lat": 13.070973,
+      "lon": 35.8810277,
+      "osm_id": "node/7730432197",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-10604",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Malihah;Maliha",
+        "alt_name:ar": "\u0645\u0644\u0647",
+        "name": "Mal\u012b\u1e29ah",
+        "name:ar": "\u0645\u0644\u064a\u062d\u0629",
+        "name:en": "Malihah",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wad al Fak\u012b",
+      "lat": 12.933333,
+      "lon": 36.05,
+      "osm_id": "node/7730432198",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-17051",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Wad al Faki;Wad el Faki",
+        "name": "Wad al Fak\u012b",
+        "name:ar": "\u0648\u062f \u0627\u0644\u0641\u0643\u064a",
+        "name:en": "Wad al Faki",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Su\u2018ayfah",
+      "lat": 12.916667,
+      "lon": 35.983333,
+      "osm_id": "node/7730432199",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-14568",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Su`ayfah;Su\u2018eifa;Su`eifa",
+        "name": "Su\u2018ayfah",
+        "name:ar": "\u0633\u0639\u064a\u0641\u0629",
+        "name:en": "Su`ayfah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ab\u016b Jumayy",
+      "lat": 11.516667,
+      "lon": 34.5,
+      "osm_id": "node/7730432685",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-479",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Abu Jumayy;Ramadan;Abu Gemai",
+        "alt_name:ar": "\u0631\u0645\u062f\u0646",
+        "name": "Ab\u016b Jumayy",
+        "name:ar": "\u0623\u0628\u0648 \u062c\u0645\u064a\u0651",
+        "name:en": "Abu Jumayy",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Aghbash",
+      "lat": 12.983333,
+      "lon": 35.9,
+      "osm_id": "node/7730432689",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1237",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Aghbash",
+        "name:ar": "\u0623\u063a\u0628\u0634",
+        "name:en": "Aghbash",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Rumaylah",
+      "lat": 12.9593126,
+      "lon": 35.8676863,
+      "osm_id": "node/7730432690",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-13384",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Rumeila",
+        "name": "Rumaylah",
+        "name:ar": "\u0631\u0645\u064a\u0644\u0629",
+        "name:en": "Rumaylah",
+        "place": "town",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Hayafa",
+      "lat": 12.933333,
+      "lon": 35.883333,
+      "osm_id": "node/7730432695",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-7370",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Hayafa",
+        "name:ar": "\u0647\u064a\u0641",
+        "name:en": "Hayafa",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ab\u016b Zarad",
+      "lat": 12.966667,
+      "lon": 35.85,
+      "osm_id": "node/7730432696",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-891",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Abu Zarad",
+        "name": "Ab\u016b Zarad",
+        "name:ar": "\u0623\u0628\u0648 \u0632\u0631\u062f",
+        "name:en": "Abu Zarad",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kunaynah",
+      "lat": 13.083333,
+      "lon": 36.033333,
+      "osm_id": "node/7730432697",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-9393",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Kuneina",
+        "name": "Kunaynah",
+        "name:ar": "\u0643\u0646\u064a\u0646\u0629",
+        "name:en": "Kunaynah",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Midaqq",
+      "lat": 13.3320439,
+      "lon": 35.85106,
+      "osm_id": "node/7730432698",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-11217",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Madaqq",
+        "name": "Midaqq",
+        "name:ar": "\u0645\u062f\u0642\u0651",
+        "name:en": "Midaqq",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wad Ab\u016b Na\u1e29l",
+      "lat": 13.1380364,
+      "lon": 34.9126804,
+      "osm_id": "node/7730432699",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-17023",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Wad Abu Nahl",
+        "name": "Wad Ab\u016b Na\u1e29l",
+        "name:ar": "\u0648\u062f \u0623\u0628\u0648 \u0646\u062d\u0644",
+        "name:en": "Wad Abu Nahl",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wad N\u016brayn",
+      "lat": 13.066667,
+      "lon": 34.95,
+      "osm_id": "node/7730432700",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-17258",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Wad Nurayn;Wad Nurein",
+        "name": "Wad N\u016brayn",
+        "name:ar": "\u0648\u062f \u0646\u0648\u0631\u064a\u0646",
+        "name:en": "Wad Nurayn",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wad al M\u0101h\u012b",
+      "lat": 11.416667,
+      "lon": 34.616667,
+      "osm_id": "node/7730432726",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-17080",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Wad al Mahi",
+        "name": "Wad al M\u0101h\u012b",
+        "name:ar": "\u0648\u062f \u0627\u0644\u0645\u0627\u0647\u064a",
+        "name:en": "Wad al Mahi",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Abela",
+      "lat": 11.416667,
+      "lon": 34.583333,
+      "osm_id": "node/7730432728",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-122",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Abela",
+        "name:en": "Abela",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Akhoshali",
+      "lat": 11.533333,
+      "lon": 34.466667,
+      "osm_id": "node/7730432736",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1407",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Akhoshali",
+        "name:ar": "\u0623\u062e\u0648\u0634\u0644",
+        "name:en": "Akhoshali",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bash\u012br",
+      "lat": 11.4,
+      "lon": 34.6,
+      "osm_id": "node/7730432737",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-3651",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Bashir",
+        "name": "Bash\u012br",
+        "name:ar": "\u0628\u0634\u064a\u0631",
+        "name:en": "Bashir",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Marafa",
+      "lat": 11.333333,
+      "lon": 34.916667,
+      "osm_id": "node/7730432965",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-10799",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Morafa",
+        "alt_name:ar": "\u0645\u0648\u0631\u0641",
+        "name": "Marafa",
+        "name:ar": "\u0645\u0631\u0641",
+        "name:en": "Marafa",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bay\u1e11\u0101\u2019",
+      "lat": 12.9495,
+      "lon": 34.4824,
+      "osm_id": "node/7730433372",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-3697",
+        "GNS:modify_date": "2009-08-19",
+        "alt_name": "Be\u1e11a;Bayda';Beida",
+        "name": "Bay\u1e11\u0101\u2019",
+        "name:ar": "\u0628\u064a\u0636\u0627\u0621",
+        "name:en": "Beda",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bandaghau",
+      "lat": 12.8312742,
+      "lon": 35.2286726,
+      "osm_id": "node/7730433374",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-3453",
+        "GNS:modify_date": "2009-08-19",
+        "alt_name": "Bandighew;Mashra` Bandaghau;Meshra\u2018 Bandaghau;Meshra` Bandaghau",
+        "name": "Bandaghau",
+        "name:ar": "\u0628\u0627\u0646\u062f\u063a\u0648",
+        "name:en": "Bandighew",
+        "place": "town",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0623\u062c \u062c\u0645\u0651\u0627\u0645",
+      "lat": 12.9129,
+      "lon": 35.1081,
+      "osm_id": "node/7730433377",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507262",
+        "GNS:modify_date": "2009-08-19",
+        "name": "\u0623\u062c \u062c\u0645\u0651\u0627\u0645",
+        "name:ar": "\u0623\u062c \u062c\u0645\u0651\u0627\u0645",
+        "name:en": "Aj Jammam",
+        "name:fr": "Aj Jammam",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0628\u064a\u0631",
+      "lat": 12.9146,
+      "lon": 35.1051,
+      "osm_id": "node/7730433380",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507285",
+        "GNS:modify_date": "2009-08-19",
+        "name": "\u0628\u064a\u0631",
+        "name:ar": "\u0628\u064a\u0631",
+        "name:en": "Biri",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0642\u062f\u0651\u0648\u0631",
+      "lat": 13.0083352,
+      "lon": 34.9800666,
+      "osm_id": "node/7730433383",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-12826",
+        "GNS:modify_date": "2009-08-19",
+        "alt_name": "Qaddurah;Qadd\u016brah",
+        "alt_name:ar": "\u0642\u062f\u0651\u0648\u0631\u0629",
+        "name": "\u0642\u062f\u0651\u0648\u0631",
+        "name:ar": "\u0642\u062f\u0651\u0648\u0631",
+        "name:en": "Qaddura",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0627\u0644\u062f\u0627\u062e\u0644",
+      "lat": 11.6039,
+      "lon": 34.4151,
+      "osm_id": "node/7730433483",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10512141",
+        "GNS:modify_date": "2009-06-08",
+        "name": "\u0627\u0644\u062f\u0627\u062e\u0644",
+        "name:ar": "\u0627\u0644\u062f\u0627\u062e\u0644",
+        "name:en": "Ad Dakhla",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0627\u0644\u0637\u0627\u0631\u064a",
+      "lat": 11.5474,
+      "lon": 34.4845,
+      "osm_id": "node/7730433506",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10512144",
+        "GNS:modify_date": "2009-06-08",
+        "name": "\u0627\u0644\u0637\u0627\u0631\u064a",
+        "name:ar": "\u0627\u0644\u0637\u0627\u0631\u064a",
+        "name:en": "At Tarya",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0623\u0628 \u062f\u0648\u064a",
+      "lat": 11.5703,
+      "lon": 34.4701,
+      "osm_id": "node/7730433508",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-260",
+        "GNS:modify_date": "2009-06-08",
+        "alt_name": "Abu Dawayah;Abu Dawaia;Ab\u016b Daw\u0101yah",
+        "alt_name:ar": "\u0623\u0628\u0648 \u062f\u0648\u0627\u064a\u0629;\u0623\u0628 \u062f\u0648\u0625\u0623",
+        "name": "\u0623\u0628 \u062f\u0648\u064a",
+        "name:ar": "\u0623\u0628 \u062f\u0648\u064a",
+        "name:en": "Abu Dawaya",
+        "name:fr": "Abu Dawaya",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0623\u0628 \u0643\u0648\u0631\u062a\u0648\u062f",
+      "lat": 11.5875,
+      "lon": 34.4313,
+      "osm_id": "node/7730433509",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-484",
+        "GNS:modify_date": "2009-06-08",
+        "alt_name": "Abu Kartod;Ab\u016b Kartod",
+        "alt_name:ar": "\u0623\u0628\u0648 \u0643\u0631\u062a\u0648\u062f",
+        "name": "\u0623\u0628 \u0643\u0648\u0631\u062a\u0648\u062f",
+        "name:ar": "\u0623\u0628 \u0643\u0648\u0631\u062a\u0648\u062f",
+        "name:en": "Abu Kortod",
+        "name:fr": "Abu Kortod",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0627\u0644\u0639\u0632\u0627\u0632",
+      "lat": 11.8167,
+      "lon": 34.4783,
+      "osm_id": "node/7730433567",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10512119",
+        "GNS:modify_date": "2009-06-08",
+        "name": "\u0627\u0644\u0639\u0632\u0627\u0632",
+        "name:ar": "\u0627\u0644\u0639\u0632\u0627\u0632",
+        "name:en": "Al `Azaza",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0648\u062f \u0627\u0644\u062d\u0627\u062c",
+      "lat": 12.7338,
+      "lon": 34.8755,
+      "osm_id": "node/7730434615",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507255",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0648\u062f \u0627\u0644\u062d\u0627\u062c",
+        "name:ar": "\u0648\u062f \u0627\u0644\u062d\u0627\u062c",
+        "name:en": "Wad al Haj",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0634\u0628\u0639\u0627\u0646",
+      "lat": 12.8893,
+      "lon": 34.6271,
+      "osm_id": "node/7730434690",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507079",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0634\u0628\u0639\u0627\u0646",
+        "name:ar": "\u0634\u0628\u0639\u0627\u0646",
+        "name:en": "Shab`ana",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0628\u0631\u0651",
+      "lat": 12.9165,
+      "lon": 34.6058,
+      "osm_id": "node/7730434691",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507078",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0628\u0631\u0651",
+        "name:ar": "\u0628\u0631\u0651",
+        "name:en": "Barra",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0627\u0644\u0639\u0645\u0627\u0631",
+      "lat": 12.9063,
+      "lon": 34.5766,
+      "osm_id": "node/7730434708",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507077",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0627\u0644\u0639\u0645\u0627\u0631",
+        "name:ar": "\u0627\u0644\u0639\u0645\u0627\u0631",
+        "name:en": "Al `Amara",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0648\u062f \u0623\u062c \u062c\u0648\u0643",
+      "lat": 12.9431,
+      "lon": 34.5356,
+      "osm_id": "node/7730434744",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507075",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0648\u062f \u0623\u062c \u062c\u0648\u0643",
+        "name:ar": "\u0648\u062f \u0623\u062c \u062c\u0648\u0643",
+        "name:en": "Wad Aj Jok",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "As Sirefa",
+      "lat": 11.5148,
+      "lon": 34.5165,
+      "osm_id": "node/7730434774",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507644",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "As Sirefa",
+        "name": "As Sirefa",
+        "name:en": "As Sirefa",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0623\u0645 \u0633\u0644\u0627\u0644",
+      "lat": 12.8502788,
+      "lon": 35.1748449,
+      "osm_id": "node/7730434878",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507270",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0623\u0645 \u0633\u0644\u0627\u0644",
+        "name:ar": "\u0623\u0645 \u0633\u0644\u0627\u0644",
+        "name:en": "Um Salala",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u2018En Aj Jamal",
+      "lat": 12.8622877,
+      "lon": 35.1608679,
+      "osm_id": "node/7730434879",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507269",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "\u2018En Aj Jamal",
+        "name": "\u2018En Aj Jamal",
+        "name:en": "`En Aj Jamal",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u062e\u0634\u0645 \u0627\u0644\u0628\u0637\u0651",
+      "lat": 12.8985,
+      "lon": 35.1292,
+      "osm_id": "node/7730434880",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507264",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u062e\u0634\u0645 \u0627\u0644\u0628\u0637\u0651",
+        "name:ar": "\u062e\u0634\u0645 \u0627\u0644\u0628\u0637\u0651",
+        "name:en": "Khashm al Batta",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Han\u0101 Shitef",
+      "lat": 12.9063,
+      "lon": 35.1248,
+      "osm_id": "node/7730434881",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507263",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "Han\u0101 Shitef",
+        "name": "Han\u0101 Shitef",
+        "name:en": "Hana Shitef",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0647\u0646 \u0621\u0632\u0631\u0642",
+      "lat": 12.908153,
+      "lon": 35.0761823,
+      "osm_id": "node/7730434930",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507261",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0647\u0646 \u0621\u0632\u0631\u0642",
+        "name:ar": "\u0647\u0646 \u0621\u0632\u0631\u0642",
+        "name:en": "Hana 'Azraq",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0647\u0634\u064a\u0645",
+      "lat": 12.9117078,
+      "lon": 35.0592421,
+      "osm_id": "node/7730434931",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507260",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0647\u0634\u064a\u0645",
+        "name:ar": "\u0647\u0634\u064a\u0645",
+        "name:en": "Hashim",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0628\u0627\u0628\u0643\u0631",
+      "lat": 12.9125,
+      "lon": 35.0654,
+      "osm_id": "node/7730434932",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507259",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0628\u0627\u0628\u0643\u0631",
+        "name:ar": "\u0628\u0627\u0628\u0643\u0631",
+        "name:en": "Babikir",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0633\u0646\u0642\u0631",
+      "lat": 12.9361252,
+      "lon": 35.0483537,
+      "osm_id": "node/7730434933",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507258",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0633\u0646\u0642\u0631",
+        "name:ar": "\u0633\u0646\u0642\u0631",
+        "name:en": "Sanqir",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0647\u062c\u0627\u0631",
+      "lat": 12.7316844,
+      "lon": 35.4227405,
+      "osm_id": "node/7730435073",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507280",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0647\u062c\u0627\u0631",
+        "name:ar": "\u0647\u062c\u0627\u0631",
+        "name:en": "Hujara",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0643\u0631\u0646\u0643",
+      "lat": 12.7434,
+      "lon": 35.3857,
+      "osm_id": "node/7730435074",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507279",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0643\u0631\u0646\u0643",
+        "name:ar": "\u0643\u0631\u0646\u0643",
+        "name:en": "Karanka",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u062e\u0634\u0645 \u0627\u0644\u0628\u0637\u0651",
+      "lat": 12.7386,
+      "lon": 35.3654,
+      "osm_id": "node/7730435096",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507278",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u062e\u0634\u0645 \u0627\u0644\u0628\u0637\u0651",
+        "name:ar": "\u062e\u0634\u0645 \u0627\u0644\u0628\u0637\u0651",
+        "name:en": "Khashm al Batta",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Daleiba",
+      "lat": 12.7510081,
+      "lon": 35.3419441,
+      "osm_id": "node/7730435097",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507277",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "Daleba",
+        "name": "Daleiba",
+        "name:en": "Daleiba",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u2018Ibek",
+      "lat": 12.7715,
+      "lon": 35.3148,
+      "osm_id": "node/7730435098",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507276",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "\u2018Ibek",
+        "name": "\u2018Ibek",
+        "name:en": "`Ibek",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0623\u0628 \u0642\u0634",
+      "lat": 12.7913,
+      "lon": 35.2775,
+      "osm_id": "node/7730435099",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507275",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0623\u0628 \u0642\u0634",
+        "name:ar": "\u0623\u0628 \u0642\u0634",
+        "name:en": "Abu Qash",
+        "name:fr": "Abu Qash",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0623\u0631\u0651\u0642\u0627\u0628",
+      "lat": 12.7981,
+      "lon": 35.2394,
+      "osm_id": "node/7730435100",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507273",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0623\u0631\u0651\u0642\u0627\u0628",
+        "name:ar": "\u0623\u0631\u0651\u0642\u0627\u0628",
+        "name:en": "Arruqab",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0621\u0641\u0631\u0634 \u062a\u0648\u0628\u0643",
+      "lat": 12.8093,
+      "lon": 35.2244,
+      "osm_id": "node/7730435120",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507272",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0621\u0641\u0631\u0634 \u062a\u0648\u0628\u0643",
+        "name:ar": "\u0621\u0641\u0631\u0634 \u062a\u0648\u0628\u0643",
+        "name:en": "'Afrush Tobak",
+        "name:fr": "Afrush Tobak",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0643\u0631\u0651",
+      "lat": 11.8456,
+      "lon": 34.6332,
+      "osm_id": "node/7730435135",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10507609",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0643\u0631\u0651",
+        "name:ar": "\u0643\u0631\u0651",
+        "name:en": "Karri",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Fall\u0101ta",
+      "lat": 12.7388727,
+      "lon": 35.5512841,
+      "osm_id": "node/7730435182",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10461871",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "Fallata",
+        "name": "Fall\u0101ta",
+        "name:ar": "\u0641\u0644\u0651\u0627\u062a",
+        "name:en": "Fallata",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal al M\u016bt\u0101n",
+      "lat": 12.033333,
+      "lon": 35.316667,
+      "osm_id": "node/7731288872",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-11739",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Jabal al Mutan",
+        "name": "Jabal al M\u016bt\u0101n",
+        "name:ar": "\u062c\u0628\u0644 \u0627\u0644\u0645\u0648\u062a\u0627\u0646",
+        "name:en": "Jabal al Mutan",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Wad al \u1e28add\u0101d",
+      "lat": 12.933333,
+      "lon": 35.75,
+      "osm_id": "node/7731288880",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-17054",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Jabal Wad al Haddad;Jebel Wad el Haddad",
+        "name": "Jabal Wad al \u1e28add\u0101d",
+        "name:ar": "\u062c\u0628\u0644 \u0648\u062f \u0627\u0644\u062d\u062f\u0651\u0627\u062f",
+        "name:en": "Jabal Wad al Haddad",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Jubayl\u0101t",
+      "lat": 11.433333,
+      "lon": 34.8,
+      "osm_id": "node/7731288948",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-7981",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Jabal Jubaylat;Jebel Jubeilat",
+        "name": "Jabal Jubayl\u0101t",
+        "name:ar": "\u062c\u0628\u0644 \u062c\u0628\u064a\u0644\u0627\u062a",
+        "name:en": "Jabal Jubaylat",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u062c\u0628\u0644 \u0623\u0628 \u0633\u0628\u064a\u0643",
+      "lat": 12.9977,
+      "lon": 35.4509,
+      "osm_id": "node/7731288994",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-662",
+        "GNS:modify_date": "2009-08-19",
+        "alt_name": "Jabal Abu Sabikah;Jebel Abu Sabika;Jabal Ab\u016b Sab\u012bkah",
+        "alt_name:ar": "\u062c\u0628\u0644 \u0623\u0628\u0648 \u0633\u0628\u064a\u0643\u0629",
+        "name": "\u062c\u0628\u0644 \u0623\u0628 \u0633\u0628\u064a\u0643",
+        "name:ar": "\u062c\u0628\u0644 \u0623\u0628 \u0633\u0628\u064a\u0643",
+        "name:en": "Jabal Ab Sabika",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u062c\u0628\u0644 \u062d\u0641\u0651\u0627\u0631",
+      "lat": 12.9630603,
+      "lon": 35.476326,
+      "osm_id": "node/7731288995",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-6884",
+        "GNS:modify_date": "2009-08-19",
+        "alt_name": "Afar;Jebel Zurgwa;Jebel Haffar ez Zurgwa;Jebel Hafar;Jabal Haffar az Zurgwa",
+        "alt_name:ar": "\u062c\u0628\u0644 \u0647\u0641\u0651\u0631 \u0627\u0644\u0632\u0631\u063a\u0648;\u0623\u0641\u0631",
+        "name": "\u062c\u0628\u0644 \u062d\u0641\u0651\u0627\u0631",
+        "name:ar": "\u062c\u0628\u0644 \u062d\u0641\u0651\u0627\u0631",
+        "name:en": "Jabal Haffar",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u0642\u0644\u0639\u0629 \u0639\u0644\u064a\u0627\u0644 \u062d\u0645\u062f\u0627\u0646",
+      "lat": 11.5044,
+      "lon": 34.8675,
+      "osm_id": "node/7731289029",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507646",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0642\u0644\u0639\u0629 \u0639\u0644\u064a\u0627\u0644 \u062d\u0645\u062f\u0627\u0646",
+        "name:ar": "\u0642\u0644\u0639\u0629 \u0639\u0644\u064a\u0627\u0644 \u062d\u0645\u062f\u0627\u0646",
+        "name:en": "Qal`at `Lyal Hamdan",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u0642\u0644\u0639\u0629 \u0631\u0633 \u0623\u0644\u0641\u064a\u0644",
+      "lat": 11.8317,
+      "lon": 34.813,
+      "osm_id": "node/7731289032",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507618",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0642\u0644\u0639\u0629 \u0631\u0633 \u0623\u0644\u0641\u064a\u0644",
+        "name:ar": "\u0642\u0644\u0639\u0629 \u0631\u0633 \u0623\u0644\u0641\u064a\u0644",
+        "name:en": "Qal`at Ras Alfil",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u062c\u0628\u0644 \u0627\u0644\u0644\u0648\u062f\u0631",
+      "lat": 11.9781,
+      "lon": 34.9336,
+      "osm_id": "node/7731289033",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507612",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u062c\u0628\u0644 \u0627\u0644\u0644\u0648\u062f\u0631",
+        "name:ar": "\u062c\u0628\u0644 \u0627\u0644\u0644\u0648\u062f\u0631",
+        "name:en": "Jabal al Ludar",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u062c\u0628\u0644 \u0623\u0628 \u0643\u0631\u0643\u0631",
+      "lat": 11.8087,
+      "lon": 34.6223,
+      "osm_id": "node/7731289042",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507642",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u062c\u0628\u0644 \u0623\u0628 \u0643\u0631\u0643\u0631",
+        "name:ar": "\u062c\u0628\u0644 \u0623\u0628 \u0643\u0631\u0643\u0631",
+        "name:en": "Jabal Ab Kurkur",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Dagalish",
+      "lat": 12.716667,
+      "lon": 36.016667,
+      "osm_id": "node/7731289334",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-607838",
+        "GNS:modify_date": "1994-03-29",
+        "name": "Jabal Dagalish",
+        "name:ar": "\u062c\u0628\u0644 \u062f\u063a\u0623\u0644\u0634",
+        "name:en": "Jabal Dagalish",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Halawa",
+      "lat": 12.633333,
+      "lon": 35.666667,
+      "osm_id": "node/7731290055",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-6991",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Jebel Hawala",
+        "name": "Jabal Halawa",
+        "name:ar": "\u062c\u0628\u0644 \u0647\u0644\u0648",
+        "name:en": "Jabal Halawa",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal as Somati",
+      "lat": 12.15,
+      "lon": 35.3,
+      "osm_id": "node/7731290104",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-14532",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Jabal as Somati",
+        "name:ar": "\u062c\u0628\u0644 \u0627\u0644\u0633\u0648\u0645\u062a",
+        "name:en": "Jabal as Somati",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Ab\u016b Gerger",
+      "lat": 12.116667,
+      "lon": 34.966667,
+      "osm_id": "node/7731290105",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-325",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Jabal Abu Gerger",
+        "name": "Jabal Ab\u016b Gerger",
+        "name:en": "Jabal Abu Gerger",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Kawaka",
+      "lat": 12.15,
+      "lon": 34.933333,
+      "osm_id": "node/7731290106",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-8585",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Jabal Kawaka",
+        "name:ar": "\u062c\u0628\u0644 \u0643\u0648\u0643",
+        "name:en": "Jabal Kawaka",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal \u1e28ujayr\u0101t",
+      "lat": 12.166667,
+      "lon": 35.15,
+      "osm_id": "node/7731290107",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-7532",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Jabal Hujayrat;Somati;Jebel Hugeirat",
+        "alt_name:ar": "\u0633\u0648\u0645\u062a",
+        "name": "Jabal \u1e28ujayr\u0101t",
+        "name:ar": "\u062c\u0628\u0644 \u062d\u062c\u064a\u0631\u0627\u062a",
+        "name:en": "Jabal Hujayrat",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Shola",
+      "lat": 11.333333,
+      "lon": 34.95,
+      "osm_id": "node/7731290131",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-14305",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Medib",
+        "name": "Jabal Shola",
+        "name:ar": "\u062c\u0628\u0644 \u0634\u0648\u0644",
+        "name:en": "Jabal Shola",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Mirafa",
+      "lat": 12.733333,
+      "lon": 35.716667,
+      "osm_id": "node/7731290285",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-11272",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Qal\u2018at es Sunt;Qal`at es Sunt;Jebel Mirava",
+        "name": "Jabal Mirafa",
+        "name:ar": "\u062c\u0628\u0644 \u0645\u0631\u0641",
+        "name:en": "Jabal Mirafa",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal F\u0101zirah",
+      "lat": 12.75,
+      "lon": 35.616667,
+      "osm_id": "node/7731290286",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-5850",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Jabal Fazirah;Jebel Fazira;\u2018Ali Surur;`Ali Surur",
+        "alt_name:ar": "\u0639\u0644 \u0633\u0631\u0631",
+        "name": "Jabal F\u0101zirah",
+        "name:ar": "\u062c\u0628\u0644 \u0641\u0627\u0632\u0631\u0629",
+        "name:en": "Jabal Fazirah",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u062c\u0628\u0644 \u0627\u0644\u0634\u0631\u064a\u0641",
+      "lat": 11.7659,
+      "lon": 34.6542,
+      "osm_id": "node/7731290391",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507626",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u062c\u0628\u0644 \u0627\u0644\u0634\u0631\u064a\u0641",
+        "name:ar": "\u062c\u0628\u0644 \u0627\u0644\u0634\u0631\u064a\u0641",
+        "name:en": "Jabal ash Sharif",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u0642\u0644\u0639\u0629 \u0627\u0644\u0643\u0645\u0648\u0631",
+      "lat": 11.7328,
+      "lon": 34.6415,
+      "osm_id": "node/7731290393",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507639",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0642\u0644\u0639\u0629 \u0627\u0644\u0643\u0645\u0648\u0631",
+        "name:ar": "\u0642\u0644\u0639\u0629 \u0627\u0644\u0643\u0645\u0648\u0631",
+        "name:en": "Qal`at al Kumura",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Wad al Mak",
+      "lat": 12.683333,
+      "lon": 36.133333,
+      "osm_id": "node/7731291985",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-621446",
+        "GNS:modify_date": "1994-03-29",
+        "name": "Jabal Wad al Mak",
+        "name:ar": "\u062c\u0628\u0644 \u0648\u062f \u0627\u0644\u0645\u0643",
+        "name:en": "Jabal Wad al Mak",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Umm Doga",
+      "lat": 12.216667,
+      "lon": 35.416667,
+      "osm_id": "node/7731292466",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-16185",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Jabal Umm Doga",
+        "name:ar": "\u062c\u0628\u0644 \u0623\u0645\u0651 \u062f\u0648\u063a\u0623",
+        "name:en": "Jabal Umm Doga",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Bal\u016blah",
+      "lat": 12.9,
+      "lon": 36.066667,
+      "osm_id": "node/7731292480",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-3433",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Jabal Balulah;Jebel Belula",
+        "name": "Jabal Bal\u016blah",
+        "name:ar": "\u062c\u0628\u0644 \u0628\u0644\u0648\u0644\u0629",
+        "name:en": "Jabal Balulah",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u1e28ajar Tugula",
+      "lat": 12.95,
+      "lon": 36.016667,
+      "osm_id": "node/7731292481",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-15666",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Hajar Tugula",
+        "name": "\u1e28ajar Tugula",
+        "name:ar": "\u062d\u062c\u0631 \u062a\u063a\u0623\u0644",
+        "name:en": "Hajar Tugula",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Salmin",
+      "lat": 13.383333,
+      "lon": 35.116667,
+      "osm_id": "node/7731292499",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-13621",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Jabal Salmin",
+        "name:ar": "\u062c\u0628\u0644 \u0633\u0644\u0645\u0646",
+        "name:en": "Jabal Salmin",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Amadi",
+      "lat": 13.066667,
+      "lon": 35.933333,
+      "osm_id": "node/7731292500",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-2298",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Jabal Amadi",
+        "name:ar": "\u062c\u0628\u0644 \u0623\u0645\u062f",
+        "name:en": "Jabal Amadi",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Marghut",
+      "lat": 13.316667,
+      "lon": 35.9,
+      "osm_id": "node/7731292501",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-10842",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Jebel Mariud",
+        "name": "Jabal Marghut",
+        "name:ar": "\u062c\u0628\u0644 \u0645\u0631\u063a\u062a",
+        "name:en": "Jabal Marghut",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal ar Rumaylah",
+      "lat": 12.95,
+      "lon": 35.866667,
+      "osm_id": "node/7731292505",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-13389",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Jebel er Rumeila",
+        "name": "Jabal ar Rumaylah",
+        "name:ar": "\u062c\u0628\u0644 \u0627\u0644\u0631\u0645\u064a\u0644\u0629",
+        "name:en": "Jabal ar Rumaylah",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Bashem",
+      "lat": 12.833333,
+      "lon": 35.916667,
+      "osm_id": "node/7731292506",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-3649",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Jabal Bashem",
+        "name:en": "Jabal Bashem",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Dungo Jara",
+      "lat": 12.9,
+      "lon": 35.65,
+      "osm_id": "node/7731292507",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-5138",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Donga Nara",
+        "alt_name:ar": "\u062f\u0648\u0646\u063a\u0623 \u0646\u0631",
+        "name": "Jabal Dungo Jara",
+        "name:ar": "\u062c\u0628\u0644 \u062f\u0646\u063a\u0648 \u062c\u0631",
+        "name:en": "Jabal Dungo Jara",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Angtub",
+      "lat": 12.8,
+      "lon": 35.616667,
+      "osm_id": "node/7731292508",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-2482",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "\u2018Ali Bakhit;`Ali Bakhit",
+        "alt_name:ar": "\u0639\u0644 \u0628\u062e\u062a",
+        "name": "Jabal Angtub",
+        "name:ar": "\u062c\u0628\u0644 \u0623\u0646\u063a\u062a\u0628",
+        "name:en": "Jabal Angtub",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Wad Digeis",
+      "lat": 13.383333,
+      "lon": 35.283333,
+      "osm_id": "node/7731292509",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-17170",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Jabal Wad Digeis",
+        "name:en": "Jabal Wad Digeis",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Simsim",
+      "lat": 13.2072651,
+      "lon": 35.2163494,
+      "osm_id": "node/7731292510",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-14466",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Jabal Simsim",
+        "name:ar": "\u062c\u0628\u0644 \u0633\u0645\u0633\u0645",
+        "name:en": "Jabal Simsim",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u062c\u0628\u0644 \u0643\u0631\u0651",
+      "lat": 11.816,
+      "lon": 34.6607,
+      "osm_id": "node/7731292830",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-6315",
+        "GNS:modify_date": "2009-08-19",
+        "alt_name": "Jebel el Garri;Jabal al Gerri",
+        "name": "\u062c\u0628\u0644 \u0643\u0631\u0651",
+        "name:ar": "\u062c\u0628\u0644 \u0643\u0631\u0651",
+        "name:en": "Jabal Karri",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u062c\u0628\u0644 \u0645\u0627\u0628",
+      "lat": 11.6029,
+      "lon": 34.4613,
+      "osm_id": "node/7731292924",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10512142",
+        "GNS:modify_date": "2009-06-08",
+        "name": "\u062c\u0628\u0644 \u0645\u0627\u0628",
+        "name:ar": "\u062c\u0628\u0644 \u0645\u0627\u0628",
+        "name:en": "Jabal Maba",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u0642\u0644\u0639\u0629 \u0645\u0633\u0645\u0628\u063a",
+      "lat": 11.5548,
+      "lon": 34.8828,
+      "osm_id": "node/7731292972",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507652",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0642\u0644\u0639\u0629 \u0645\u0633\u0645\u0628\u063a",
+        "name:ar": "\u0642\u0644\u0639\u0629 \u0645\u0633\u0645\u0628\u063a",
+        "name:en": "Qal`at Masambagha",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u062c\u0628\u0644 \u0648\u0647\u0627\u062a",
+      "lat": 11.7767,
+      "lon": 34.6789,
+      "osm_id": "node/7731292975",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507625",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u062c\u0628\u0644 \u0648\u0647\u0627\u062a",
+        "name:ar": "\u062c\u0628\u0644 \u0648\u0647\u0627\u062a",
+        "name:en": "Jabal Wahati",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u062c\u0628\u0644 \u0648\u062f \u0632\u064a\u0643",
+      "lat": 11.8071,
+      "lon": 34.6685,
+      "osm_id": "node/7731292976",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507624",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u062c\u0628\u0644 \u0648\u062f \u0632\u064a\u0643",
+        "name:ar": "\u062c\u0628\u0644 \u0648\u062f \u0632\u064a\u0643",
+        "name:en": "Jabal Wad Ziku",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u062c\u0628\u0644 \u0623\u0645 \u0643\u062f\u0651",
+      "lat": 11.8367,
+      "lon": 34.651,
+      "osm_id": "node/7731292977",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507623",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u062c\u0628\u0644 \u0623\u0645 \u0643\u062f\u0651",
+        "name:ar": "\u062c\u0628\u0644 \u0623\u0645 \u0643\u062f\u0651",
+        "name:en": "Jabal Um Kudda",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u0642\u0644\u0639\u0629 \u0627\u0644\u0646\u0647\u0648\u062f",
+      "lat": 11.8171,
+      "lon": 34.8214,
+      "osm_id": "node/7731292978",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507619",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0642\u0644\u0639\u0629 \u0627\u0644\u0646\u0647\u0648\u062f",
+        "name:ar": "\u0642\u0644\u0639\u0629 \u0627\u0644\u0646\u0647\u0648\u062f",
+        "name:en": "Qal`at an Nihud",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u0642\u0644\u0639 \u0627\u0644\u0639\u062c\u0644",
+      "lat": 11.7571,
+      "lon": 34.8637,
+      "osm_id": "node/7731292984",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507615",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0642\u0644\u0639 \u0627\u0644\u0639\u062c\u0644",
+        "name:ar": "\u0642\u0644\u0639 \u0627\u0644\u0639\u062c\u0644",
+        "name:en": "Qala` al `Ijil",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u062c\u0628\u0644 \u0645\u062c\u0646",
+      "lat": 11.7853,
+      "lon": 34.872,
+      "osm_id": "node/7731292985",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507614",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u062c\u0628\u0644 \u0645\u062c\u0646",
+        "name:ar": "\u062c\u0628\u0644 \u0645\u062c\u0646",
+        "name:en": "Jabal Mijin",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u0642\u0644\u0639\u0629 \u0627\u0644\u0639\u062c\u0644",
+      "lat": 11.9122,
+      "lon": 34.9447,
+      "osm_id": "node/7731292986",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507613",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0642\u0644\u0639\u0629 \u0627\u0644\u0639\u062c\u0644",
+        "name:ar": "\u0642\u0644\u0639\u0629 \u0627\u0644\u0639\u062c\u0644",
+        "name:en": "Qal`at al `Ijil",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u0642\u0644\u0639\u0629 \u0643\u0644\u0645\u0628\u0648\u0631",
+      "lat": 11.8478,
+      "lon": 34.8162,
+      "osm_id": "node/7731292987",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "10507611",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u0642\u0644\u0639\u0629 \u0643\u0644\u0645\u0628\u0648\u0631",
+        "name:ar": "\u0642\u0644\u0639\u0629 \u0643\u0644\u0645\u0628\u0648\u0631",
+        "name:en": "Qal`at Kalambur",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "\u062c\u0628\u0644 \u0645\u063a\u0623\u0646",
+      "lat": 11.9647,
+      "lon": 34.9066,
+      "osm_id": "node/7731293012",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-10378",
+        "GNS:modify_date": "2009-05-27",
+        "name": "\u062c\u0628\u0644 \u0645\u063a\u0623\u0646",
+        "name:ar": "\u062c\u0628\u0644 \u0645\u063a\u0623\u0646",
+        "name:en": "Jabal Maganu",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal al Jar\u012b",
+      "lat": 11.666667,
+      "lon": 34.8,
+      "osm_id": "node/7731311336",
+      "osm_tags": {
+        "GNS:dsg_code": "MT",
+        "GNS:dsg_name": "mountain",
+        "GNS:id": "-7900",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Jabal al Jari;J. Aj Jari",
+        "name": "Jabal al Jar\u012b",
+        "name:ar": "\u062c\u0628\u0644 \u0627\u0644\u062c\u0631\u064a",
+        "name:en": "Jabal al Jari",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Wad al \u1e28add\u0101d",
+      "lat": 12.98288,
+      "lon": 35.83378,
+      "osm_id": "node/7731311513",
+      "osm_tags": {
+        "GNS:dsg_code": "MT",
+        "GNS:dsg_name": "mountain",
+        "GNS:id": "10461849",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "Jabal Wad al Haddad",
+        "name": "Jabal Wad al \u1e28add\u0101d",
+        "name:ar": "\u062c\u0628\u0644 \u0648\u062f \u0627\u0644\u062d\u062f\u0651\u0627\u062f",
+        "name:en": "Jabal Wad al Haddad",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Saror",
+      "lat": 12.76921,
+      "lon": 35.57983,
+      "osm_id": "node/7731311514",
+      "osm_tags": {
+        "GNS:dsg_code": "MT",
+        "GNS:dsg_name": "mountain",
+        "GNS:id": "10461867",
+        "GNS:modify_date": "2009-03-30",
+        "name": "Jabal Saror",
+        "name:ar": "\u062c\u0628\u0644 \u0633\u0631\u0648\u0631",
+        "name:en": "Jabal Saror",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal al Khabob",
+      "lat": 12.79427,
+      "lon": 35.60493,
+      "osm_id": "node/7731311515",
+      "osm_tags": {
+        "GNS:dsg_code": "MT",
+        "GNS:dsg_name": "mountain",
+        "GNS:id": "10461865",
+        "GNS:modify_date": "2009-03-30",
+        "name": "Jabal al Khabob",
+        "name:ar": "\u062c\u0628\u0644 \u0627\u0644\u062e\u0628\u0648\u0628",
+        "name:en": "Jabal al Khabob",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal B\u2018\u0101sh\u012bm",
+      "lat": 12.98654,
+      "lon": 35.96743,
+      "osm_id": "node/7731311517",
+      "osm_tags": {
+        "GNS:dsg_code": "MT",
+        "GNS:dsg_name": "mountain",
+        "GNS:id": "10461853",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "Jabal B`ashim",
+        "name": "Jabal B\u2018\u0101sh\u012bm",
+        "name:ar": "\u062c\u0628\u0644 \u0628\u0639\u0627\u0634\u064a\u0645",
+        "name:en": "Jabal B`ashim",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal H\u0101nt\u016bb",
+      "lat": 12.68838,
+      "lon": 35.62806,
+      "osm_id": "node/7731311538",
+      "osm_tags": {
+        "GNS:dsg_code": "MT",
+        "GNS:dsg_name": "mountain",
+        "GNS:id": "10461880",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "Jabal Hantub",
+        "name": "Jabal H\u0101nt\u016bb",
+        "name:ar": "\u062c\u0628\u0644 \u0647\u0627\u0646\u062a\u0648\u0628",
+        "name:en": "Jabal Hantub",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal \u2018Oda",
+      "lat": 12.73317,
+      "lon": 35.57634,
+      "osm_id": "node/7731311539",
+      "osm_tags": {
+        "GNS:dsg_code": "MT",
+        "GNS:dsg_name": "mountain",
+        "GNS:id": "10461873",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "Jabal `Oda",
+        "name": "Jabal \u2018Oda",
+        "name:ar": "\u062c\u0628\u0644 \u0639\u0648\u062f",
+        "name:en": "Jabal `Oda",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Umm \u2018Idla",
+      "lat": 11.95,
+      "lon": 35.283333,
+      "osm_id": "node/7731312292",
+      "osm_tags": {
+        "GNS:dsg_code": "MT",
+        "GNS:dsg_name": "mountain",
+        "GNS:id": "-16372",
+        "GNS:modify_date": "1994-03-29",
+        "alt_name": "Jabal Umm `Idla;Umm \u2018Idla;Umm `Idla;Gebel Umm Idla;Jebel Umldla",
+        "alt_name:ar": "\u0623\u0645\u0651 \u0639\u062f\u0644",
+        "name": "Jabal Umm \u2018Idla",
+        "name:ar": "\u062c\u0628\u0644 \u0623\u0645\u0651 \u0639\u062f\u0644",
+        "name:en": "Jabal Umm `Idla",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Maqbarah",
+      "lat": 12.683333,
+      "lon": 36.183333,
+      "osm_id": "node/7731312306",
+      "osm_tags": {
+        "GNS:dsg_code": "MT",
+        "GNS:dsg_name": "mountain",
+        "GNS:id": "-616561",
+        "GNS:modify_date": "1994-03-29",
+        "name": "Jabal Maqbarah",
+        "name:ar": "\u062c\u0628\u0644 \u0645\u0642\u0628\u0631\u0629",
+        "name:en": "Jabal Maqbarah",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jebel Dalasa",
+      "lat": 12.9,
+      "lon": 36.183333,
+      "osm_id": "node/7731312310",
+      "osm_tags": {
+        "GNS:dsg_code": "MT",
+        "GNS:dsg_name": "mountain",
+        "GNS:id": "-4427",
+        "GNS:modify_date": "1994-03-29",
+        "alt_name": "Delesa;Monte Delesa",
+        "name": "Jebel Dalasa",
+        "name:en": "Jebel Dalasa",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jib\u0101l ar Raqal",
+      "lat": 12.75973,
+      "lon": 35.59584,
+      "osm_id": "node/7731314560",
+      "osm_tags": {
+        "GNS:dsg_code": "MTS",
+        "GNS:dsg_name": "mountains",
+        "GNS:id": "10461869",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "Jibal ar Raqal",
+        "name": "Jib\u0101l ar Raqal",
+        "name:ar": "\u062c\u0628\u0627\u0644 \u0627\u0644\u0631\u0642\u0644",
+        "name:en": "Jibal ar Raqal",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jib\u0101l al Basham",
+      "lat": 12.7271,
+      "lon": 35.622,
+      "osm_id": "node/7731314563",
+      "osm_tags": {
+        "GNS:dsg_code": "MTS",
+        "GNS:dsg_name": "mountains",
+        "GNS:id": "10461855",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "Jibal al Basham",
+        "name": "Jib\u0101l al Basham",
+        "name:ar": "\u062c\u0628\u0627\u0644 \u0627\u0644\u0628\u0634\u0645",
+        "name:en": "Jibal al Basham",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Ab\u016b Takia",
+      "lat": 13.3,
+      "lon": 36.3,
+      "osm_id": "node/7731314830",
+      "osm_tags": {
+        "GNS:dsg_code": "MTS",
+        "GNS:dsg_name": "mountains",
+        "GNS:id": "-806",
+        "GNS:modify_date": "1994-03-29",
+        "alt_name": "Jabal Abu Takia",
+        "name": "Jabal Ab\u016b Takia",
+        "name:ar": "\u062c\u0628\u0644 \u0623\u0628\u0648 \u062a\u0643\u0623",
+        "name:en": "Jabal Abu Takia",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Khor Abu Zach\u016bli",
+      "lat": 11.5829,
+      "lon": 34.8091,
+      "osm_id": "node/7731503169",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "10507650",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "Khor Abu Zach\u016bli",
+        "intermittent": "yes",
+        "name": "Khor Abu Zach\u016bli",
+        "name:en": "Khor Abu Zachuli",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Khor Abu Khires",
+      "lat": 11.5221,
+      "lon": 34.7983,
+      "osm_id": "node/7731503172",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "10507617",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "Khor Abu Khires",
+        "intermittent": "yes",
+        "name": "Khor Abu Khires",
+        "name:en": "Khor Abu Khires",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Khor \u2018I\u0163esh",
+      "lat": 12.536472,
+      "lon": 35.394309,
+      "osm_id": "node/7731527974",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "10507274",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "Khor \u2018I\u0163esh",
+        "intermittent": "yes",
+        "name": "Khor \u2018I\u0163esh",
+        "name:en": "Khor `Itesh",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u062e\u0648\u0631 \u0623\u0628 \u062d\u0645\u0631",
+      "lat": 11.6348,
+      "lon": 34.5906,
+      "osm_id": "node/7731528093",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "10507640",
+        "GNS:modify_date": "2009-05-27",
+        "intermittent": "yes",
+        "name": "\u062e\u0648\u0631 \u0623\u0628 \u062d\u0645\u0631",
+        "name:ar": "\u062e\u0648\u0631 \u0623\u0628 \u062d\u0645\u0631",
+        "name:en": "Khor Abu Humur",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u062e\u0648\u0631 \u0623\u0645 \u0643\u0643\u0631",
+      "lat": 12.947034,
+      "lon": 34.961895,
+      "osm_id": "node/7731528174",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "10507252",
+        "GNS:modify_date": "2009-05-27",
+        "intermittent": "yes",
+        "name": "\u062e\u0648\u0631 \u0623\u0645 \u0643\u0643\u0631",
+        "name:ar": "\u062e\u0648\u0631 \u0623\u0645 \u0643\u0643\u0631",
+        "name:en": "Khor Um Kakar",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u062e\u0648\u0631 \u0623\u0645 \u0645\u0633\u0627\u0648\u064a\u0643",
+      "lat": 12.6026,
+      "lon": 35.0286,
+      "osm_id": "node/7731528199",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "-16499",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "Khawr Umm Masawik;Khor Umm Masawik;Khawr Umm Mas\u0101w\u012bk",
+        "alt_name:ar": "\u062e\u0648\u0631 \u0623\u0645\u0651 \u0645\u0633\u0627\u0648\u064a\u0643;\u062e\u0648\u0631 \u0623\u0645\u0651 \u0645\u0633\u0648\u0643",
+        "intermittent": "yes",
+        "name": "\u062e\u0648\u0631 \u0623\u0645 \u0645\u0633\u0627\u0648\u064a\u0643",
+        "name:ar": "\u062e\u0648\u0631 \u0623\u0645 \u0645\u0633\u0627\u0648\u064a\u0643",
+        "name:en": "Khor Um Masawik",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Khor Wad al \u2018Aj\u016bz",
+      "lat": 12.7394,
+      "lon": 35.7632,
+      "osm_id": "node/7731528326",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "10461851",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "Khor Wad al `Ajuz",
+        "intermittent": "yes",
+        "name": "Khor Wad al \u2018Aj\u016bz",
+        "name:ar": "\u062e\u0648\u0631 \u0648\u062f \u0627\u0644\u0639\u062c\u0648\u0632",
+        "name:en": "Khor Wad al `Ajuz",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Khor T\u0101ya",
+      "lat": 12.9012,
+      "lon": 35.9355,
+      "osm_id": "node/7731528335",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "10461861",
+        "GNS:modify_date": "2009-03-30",
+        "alt_name": "Khor Taya",
+        "intermittent": "yes",
+        "name": "Khor T\u0101ya",
+        "name:ar": "\u062e\u0648\u0631 \u062a\u0627\u064a",
+        "name:en": "Khor Taya",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u062e\u0648\u0631 \u0634\u0646\u0641\u0648\u0631",
+      "lat": 12.361048,
+      "lon": 34.486888,
+      "osm_id": "node/7731529334",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "10512290",
+        "GNS:modify_date": "2009-06-08",
+        "intermittent": "yes",
+        "name": "\u062e\u0648\u0631 \u0634\u0646\u0641\u0648\u0631",
+        "name:ar": "\u062e\u0648\u0631 \u0634\u0646\u0641\u0648\u0631",
+        "name:en": "Khor Shanfur",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Khor as Sirefa",
+      "lat": 11.5168,
+      "lon": 34.5217,
+      "osm_id": "node/7731529446",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "10507645",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "Khor as Sirefa",
+        "intermittent": "yes",
+        "name": "Khor as Sirefa",
+        "name:en": "Khor as Sirefa",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u062e\u0648\u0631 \u0623\u0628 \u0632\u063a\u0648\u0644",
+      "lat": 11.671922,
+      "lon": 34.495125,
+      "osm_id": "node/7731529447",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "10507643",
+        "GNS:modify_date": "2009-05-27",
+        "intermittent": "yes",
+        "name": "\u062e\u0648\u0631 \u0623\u0628 \u0632\u063a\u0648\u0644",
+        "name:ar": "\u062e\u0648\u0631 \u0623\u0628 \u0632\u063a\u0648\u0644",
+        "name:en": "Khor Ab Zaghuli",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u062e\u0648\u0631 \u0623\u0628 \u0642\u062f\u0651\u0627\u0641",
+      "lat": 11.5091,
+      "lon": 34.678,
+      "osm_id": "node/7731529453",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "10507649",
+        "GNS:modify_date": "2009-05-27",
+        "intermittent": "yes",
+        "name": "\u062e\u0648\u0631 \u0623\u0628 \u0642\u062f\u0651\u0627\u0641",
+        "name:ar": "\u062e\u0648\u0631 \u0623\u0628 \u0642\u062f\u0651\u0627\u0641",
+        "name:en": "Khor Abu Qaddaf",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u062e\u0648\u0631 \u0633\u0648\u0627\u0631",
+      "lat": 11.7208,
+      "lon": 34.8929,
+      "osm_id": "node/7731529472",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "10507616",
+        "GNS:modify_date": "2009-05-27",
+        "intermittent": "yes",
+        "name": "\u062e\u0648\u0631 \u0633\u0648\u0627\u0631",
+        "name:ar": "\u062e\u0648\u0631 \u0633\u0648\u0627\u0631",
+        "name:en": "Khor Suwar",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u062e\u0648\u0631 \u0623\u062c \u062c\u0645\u0651\u0627\u0645",
+      "lat": 12.917242,
+      "lon": 35.1036,
+      "osm_id": "node/7731529479",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "10507271",
+        "GNS:modify_date": "2009-05-27",
+        "intermittent": "yes",
+        "name": "\u062e\u0648\u0631 \u0623\u062c \u062c\u0645\u0651\u0627\u0645",
+        "name:ar": "\u062e\u0648\u0631 \u0623\u062c \u062c\u0645\u0651\u0627\u0645",
+        "name:en": "Khor aj Jammam",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u062e\u0648\u0631 \u0643\u0646\u0627\u0646",
+      "lat": 12.786,
+      "lon": 34.4094,
+      "osm_id": "node/7731529501",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "-8904",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "Khawr Kinanah;Khor Kenana;Khor Kanana;Khawr Kin\u0101nah",
+        "alt_name:ar": "\u062e\u0648\u0631 \u0643\u0646\u0627\u0646\u0629;\u062e\u0648\u0631 \u0643\u0646\u0646",
+        "intermittent": "yes",
+        "name": "\u062e\u0648\u0631 \u0643\u0646\u0627\u0646",
+        "name:ar": "\u062e\u0648\u0631 \u0643\u0646\u0627\u0646",
+        "name:en": "Khor Kinana",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u062e\u0648\u0631 \u0642\u0644\u0642",
+      "lat": 12.601,
+      "lon": 35.0196,
+      "osm_id": "node/7731529595",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "-6062",
+        "GNS:modify_date": "2009-05-27",
+        "alt_name": "Galegu;Khor Galegu;Gaiegu;Khawr Galegu",
+        "intermittent": "yes",
+        "name": "\u062e\u0648\u0631 \u0642\u0644\u0642",
+        "name:ar": "\u062e\u0648\u0631 \u0642\u0644\u0642",
+        "name:en": "Khor Qalaqu",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Khawr Tumat",
+      "lat": 11.316667,
+      "lon": 34.716667,
+      "osm_id": "node/7731529599",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "-15709",
+        "GNS:modify_date": "1994-03-29",
+        "alt_name": "Khor Tumit;Khor Tumat;Tumat;Hor Tumet Shet\u2019;Hor Tumet Shet'",
+        "alt_name:ar": "\u062a\u0645\u062a",
+        "intermittent": "yes",
+        "name": "Khawr Tumat",
+        "name:ar": "\u062e\u0648\u0631 \u062a\u0645\u062a",
+        "name:en": "Khawr Tumat",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Khawr Dadalla",
+      "lat": 13.2,
+      "lon": 36.05,
+      "osm_id": "node/7731529600",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "-4367",
+        "GNS:modify_date": "1994-03-29",
+        "alt_name": "Khor Dadalla;Torrente Dadalla",
+        "intermittent": "yes",
+        "name": "Khawr Dadalla",
+        "name:ar": "\u062e\u0648\u0631 \u062f\u062f\u0644\u0651",
+        "name:en": "Khawr Dadalla",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Al Ghanamah",
+      "lat": 12.333333,
+      "lon": 34.483333,
+      "osm_id": "node/7731805205",
+      "osm_tags": {
+        "GNS:dsg_code": "POOL",
+        "GNS:dsg_name": "pool(s)",
+        "GNS:id": "-1733",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "El Ghanama",
+        "name": "Al Ghanamah",
+        "name:ar": "\u0627\u0644\u063a\u0646\u0645\u0629",
+        "name:en": "Al Ghanamah",
+        "natural": "water",
+        "source": "GNS",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Su\u2018ayn\u0101t",
+      "lat": 12.166667,
+      "lon": 34.5,
+      "osm_id": "node/7731805344",
+      "osm_tags": {
+        "GNS:dsg_code": "POOL",
+        "GNS:dsg_name": "pool(s)",
+        "GNS:id": "-14571",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Su`aynat;Su\u2018einat;Su`einat",
+        "name": "Su\u2018ayn\u0101t",
+        "name:ar": "\u0633\u0639\u064a\u0646\u0627\u062a",
+        "name:en": "Su`aynat",
+        "natural": "water",
+        "source": "GNS",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Umm \u1e28asan",
+      "lat": 12.2,
+      "lon": 34.666667,
+      "osm_id": "node/7731805376",
+      "osm_tags": {
+        "GNS:dsg_code": "POOL",
+        "GNS:dsg_name": "pool(s)",
+        "GNS:id": "-16325",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Umm Hasan",
+        "name": "Umm \u1e28asan",
+        "name:ar": "\u0623\u0645\u0651 \u062d\u0633\u0646",
+        "name:en": "Umm Hasan",
+        "natural": "water",
+        "source": "GNS",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Haffeira",
+      "lat": 12.166667,
+      "lon": 34.533333,
+      "osm_id": "node/7731805377",
+      "osm_tags": {
+        "GNS:dsg_code": "POOL",
+        "GNS:dsg_name": "pool(s)",
+        "GNS:id": "-6885",
+        "GNS:modify_date": "2009-08-18",
+        "name": "Haffeira",
+        "name:en": "Haffeira",
+        "natural": "water",
+        "source": "GNS",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ar Ruda",
+      "lat": 12.3,
+      "lon": 34.45,
+      "osm_id": "node/7731805436",
+      "osm_tags": {
+        "GNS:dsg_code": "POOL",
+        "GNS:dsg_name": "pool(s)",
+        "GNS:id": "-2771",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Er Ruda",
+        "name": "Ar Ruda",
+        "name:ar": "\u0627\u0644\u0631\u062f",
+        "name:en": "Ar Ruda",
+        "natural": "water",
+        "source": "GNS",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "\u1e28ajl\u012bj",
+      "lat": 12.15,
+      "lon": 34.45,
+      "osm_id": "node/7731805437",
+      "osm_tags": {
+        "GNS:dsg_code": "POOL",
+        "GNS:dsg_name": "pool(s)",
+        "GNS:id": "-6962",
+        "GNS:modify_date": "2009-08-18",
+        "alt_name": "Hajlij;Heglig",
+        "name": "\u1e28ajl\u012bj",
+        "name:ar": "\u062d\u062c\u0644\u064a\u062c",
+        "name:en": "Hajlij",
+        "natural": "water",
+        "source": "GNS",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mashra Tula",
+      "lat": 13.3546317,
+      "lon": 36.0582288,
+      "osm_id": "node/8162688613",
+      "osm_tags": {
+        "name": "Mashra Tula",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Azaza",
+      "lat": 13.3306897,
+      "lon": 36.0322288,
+      "osm_id": "node/8162688670",
+      "osm_tags": {
+        "name": "Azaza",
+        "name:ar": "\u0639\u0632\u0627\u0632\u0629",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mashra Abilsila",
+      "lat": 13.3206469,
+      "lon": 36.0342626,
+      "osm_id": "node/8162688671",
+      "osm_tags": {
+        "name": "Mashra Abilsila",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sundus",
+      "lat": 13.3082174,
+      "lon": 36.0220455,
+      "osm_id": "node/8162688672",
+      "osm_tags": {
+        "name": "Sundus",
+        "name:ar": "\u0633\u0646\u062f\u0633",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ghenga",
+      "lat": 12.9568832,
+      "lon": 36.2395629,
+      "osm_id": "node/8162689152",
+      "osm_tags": {
+        "name": "Ghenga",
+        "name:ar": "\u063a\u0646\u063a\u0627",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0627\u0645 \u0645\u0644\u064a\u062d\u0629",
+      "lat": 13.0695146,
+      "lon": 35.8769767,
+      "osm_id": "node/11217376576",
+      "osm_tags": {
+        "name": "\u0627\u0645 \u0645\u0644\u064a\u062d\u0629",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mughla",
+      "lat": 11.5604889,
+      "lon": 34.8824703,
+      "osm_id": "node/12272035338",
+      "osm_tags": {
+        "name": "Mughla",
+        "name:ar": "\u0645\u063a\u0644\u0629",
+        "name:en": "Mughla",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "\u0627\u0644\u062f\u0647\u064a\u0645\u0629",
+      "lat": 13.2551603,
+      "lon": 35.1064119,
+      "osm_id": "node/12650771584",
+      "osm_tags": {
+        "name": "\u0627\u0644\u062f\u0647\u064a\u0645\u0629",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Seisiban",
+      "lat": 13.3275352,
+      "lon": 34.6748154,
+      "osm_id": "node/12657122500",
+      "osm_tags": {
+        "name": "Seisiban",
+        "name:ar": "\u0627\u0644\u0633\u064a\u0633\u0628\u0627\u0646",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u062d\u0644\u0629 \u0643\u0648\u0646\u0629",
+      "lat": 13.3815759,
+      "lon": 34.6170176,
+      "osm_id": "node/12657122525",
+      "osm_tags": {
+        "name": "\u062d\u0644\u0629 \u0643\u0648\u0646\u0629",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u062d\u0644\u0629 \u0628\u064a\u0644\u0648",
+      "lat": 13.4175652,
+      "lon": 34.6008881,
+      "osm_id": "node/12657122547",
+      "osm_tags": {
+        "name": "\u062d\u0644\u0629 \u0628\u064a\u0644\u0648",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0648\u062f\u0627\u0644\u0634\u0627\u0639\u0631",
+      "lat": 13.3988721,
+      "lon": 34.6064418,
+      "osm_id": "node/12657122571",
+      "osm_tags": {
+        "name": "\u0648\u062f\u0627\u0644\u0634\u0627\u0639\u0631",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0642\u0631\u064a\u0629 \u0627\u0644\u062c\u0631\u0645\u064a",
+      "lat": 13.3873071,
+      "lon": 34.6248149,
+      "osm_id": "node/12657122572",
+      "osm_tags": {
+        "name": "\u0642\u0631\u064a\u0629 \u0627\u0644\u062c\u0631\u0645\u064a",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0645\u0631\u064a\u0648\u062f",
+      "lat": 13.3004925,
+      "lon": 35.8963135,
+      "osm_id": "node/12669115477",
+      "osm_tags": {
+        "name": "\u0645\u0631\u064a\u0648\u062f",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mahla",
+      "lat": 13.3501488,
+      "lon": 35.9183431,
+      "osm_id": "node/12670269933",
+      "osm_tags": {
+        "name": "Mahla",
+        "name:ar": "\u0645\u0647\u0644\u0629",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Om cineibra",
+      "lat": 13.3795305,
+      "lon": 35.9150945,
+      "osm_id": "node/12670269934",
+      "osm_tags": {
+        "name": "Om cineibra",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0627\u0645 \u0639\u062f\u0627\u0631\u0629",
+      "lat": 13.2052994,
+      "lon": 35.4047229,
+      "osm_id": "node/12671012362",
+      "osm_tags": {
+        "name": "\u0627\u0645 \u0639\u062f\u0627\u0631\u0629",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Om Saqta",
+      "lat": 13.3292133,
+      "lon": 35.0638543,
+      "osm_id": "node/12673188824",
+      "osm_tags": {
+        "name": "Om Saqta",
+        "name:ar": "\u0627\u0645 \u0633\u0642\u0637\u0647",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0627\u0645 \u0628\u0631\u0648\u0634",
+      "lat": 13.2685101,
+      "lon": 34.9772117,
+      "osm_id": "node/12673338598",
+      "osm_tags": {
+        "name": "\u0627\u0645 \u0628\u0631\u0648\u0634",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u062d\u0644\u0629 \u0645\u0627\u0631\u0646",
+      "lat": 13.1465247,
+      "lon": 34.9069863,
+      "osm_id": "node/12673373443",
+      "osm_tags": {
+        "name": "\u062d\u0644\u0629 \u0645\u0627\u0631\u0646",
+        "name:en": "Helat Mazin",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0648\u062f\u0645\u0633\u0643\u064a\u0646 \u063a\u0631\u0628",
+      "lat": 13.1482227,
+      "lon": 34.8878565,
+      "osm_id": "node/12673461825",
+      "osm_tags": {
+        "name": "\u0648\u062f\u0645\u0633\u0643\u064a\u0646 \u063a\u0631\u0628",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0648\u062f\u0645\u0633\u0643\u064a\u0646  \u0634\u0631\u0642",
+      "lat": 13.1621338,
+      "lon": 34.8909879,
+      "osm_id": "node/12673461826",
+      "osm_tags": {
+        "name": "\u0648\u062f\u0645\u0633\u0643\u064a\u0646  \u0634\u0631\u0642",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Salmin",
+      "lat": 13.3831375,
+      "lon": 35.1280757,
+      "osm_id": "node/12687140960",
+      "osm_tags": {
+        "name": "Salmin",
+        "name:ar": "\u0633\u0627\u0644\u0645\u064a\u0646",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u062d\u0644\u0629 \u0642\u0648\u062c\u0627",
+      "lat": 13.1923725,
+      "lon": 35.2067704,
+      "osm_id": "node/12892290617",
+      "osm_tags": {
+        "name": "\u062d\u0644\u0629 \u0642\u0648\u062c\u0627",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0633\u0645\u0633\u0645",
+      "lat": 13.1962998,
+      "lon": 35.2419755,
+      "osm_id": "node/12892290618",
+      "osm_tags": {
+        "name": "\u0633\u0645\u0633\u0645",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u062d\u0644\u0629 \u0631\u0645\u0636\u0627\u0646",
+      "lat": 13.1601818,
+      "lon": 35.1954258,
+      "osm_id": "node/12892290619",
+      "osm_tags": {
+        "name": "\u062d\u0644\u0629 \u0631\u0645\u0636\u0627\u0646",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u062e\u0648\u0631 \u0627\u0644\u0634\u0647\u064a\u0628",
+      "lat": 13.1550856,
+      "lon": 35.3400685,
+      "osm_id": "node/12892290620",
+      "osm_tags": {
+        "name": "\u062e\u0648\u0631 \u0627\u0644\u0634\u0647\u064a\u0628",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0645\u0633\u0643\u064a\u0646 \u0627\u0646\u0627",
+      "lat": 12.9804461,
+      "lon": 35.4653479,
+      "osm_id": "node/12892290622",
+      "osm_tags": {
+        "name": "\u0645\u0633\u0643\u064a\u0646 \u0627\u0646\u0627",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u0645\u0634\u0631\u0648\u0639 \u0627\u0644\u0633\u0648\u062f\u0627\u0646\u064a \u0627\u0644\u0643\u0646\u062f\u064a",
+      "lat": 13.0291702,
+      "lon": 35.3514964,
+      "osm_id": "node/12892290623",
+      "osm_tags": {
+        "name": "\u0645\u0634\u0631\u0648\u0639 \u0627\u0644\u0633\u0648\u062f\u0627\u0646\u064a \u0627\u0644\u0643\u0646\u062f\u064a",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0647\u0628\u064a\u0644\u0627",
+      "lat": 13.3259287,
+      "lon": 35.3450204,
+      "osm_id": "node/12892290624",
+      "osm_tags": {
+        "name": "\u0647\u0628\u064a\u0644\u0627",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0648\u062f \u0641\u0631\u062a\u0648\u0643",
+      "lat": 13.3763583,
+      "lon": 35.3005467,
+      "osm_id": "node/12892290625",
+      "osm_tags": {
+        "name": "\u0648\u062f \u0641\u0631\u062a\u0648\u0643",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u062f\u0631\u0648\u062a",
+      "lat": 13.3128953,
+      "lon": 35.5391087,
+      "osm_id": "node/12892290626",
+      "osm_tags": {
+        "name": "\u062f\u0631\u0648\u062a",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0645\u0634\u0631\u0629 \u0648\u062f \u0634\u0648\u0634\u0629",
+      "lat": 12.7833333,
+      "lon": 35.3166667,
+      "osm_id": "node/13357137184",
+      "osm_tags": {
+        "name": "\u0645\u0634\u0631\u0629 \u0648\u062f \u0634\u0648\u0634\u0629",
+        "name:ar": "\u0645\u0634\u0631\u0629 \u0648\u062f \u0634\u0648\u0634\u0629",
+        "name:en": "Meshra Wad Shusha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0645\u0634\u0631\u0629 \u0639\u0642\u0631\u0628",
+      "lat": 13.3,
+      "lon": 36.0166667,
+      "osm_id": "node/13357165478",
+      "osm_tags": {
+        "name": "\u0645\u0634\u0631\u0629 \u0639\u0642\u0631\u0628",
+        "name:ar": "\u0645\u0634\u0631\u0629 \u0639\u0642\u0631\u0628",
+        "name:en": "Mashra Akrib",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0627\u0644\u0642\u0644\u0627\u0628\u0627\u062a",
+      "lat": 12.9666667,
+      "lon": 36.15,
+      "osm_id": "node/13357166113",
+      "osm_tags": {
+        "name": "\u0627\u0644\u0642\u0644\u0627\u0628\u0627\u062a",
+        "name:ar": "\u0627\u0644\u0642\u0644\u0627\u0628\u0627\u062a",
+        "name:en": "El Qallabat",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ban",
+      "lat": 13.4166667,
+      "lon": 34.9166667,
+      "osm_id": "node/13368767801",
+      "osm_tags": {
+        "name": "Ban",
+        "name:ar": "\u0628\u0627\u0646",
+        "name:en": "Ban",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Menze",
+      "lat": 11.52953,
+      "lon": 35.05523,
+      "osm_id": "node/13369992506",
+      "osm_tags": {
+        "name": "Menze",
+        "name:ar": "\u0645\u0646\u0632\u0629",
+        "name:en": "Menze",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "El Azaza",
+      "lat": 11.372,
+      "lon": 34.7008,
+      "osm_id": "node/13375402054",
+      "osm_tags": {
+        "name": "El Azaza",
+        "name:ar": "\u0627\u0644\u0639\u0632\u0627\u0632\u0629",
+        "name:en": "El Azaza",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0632\u0631\u0642",
+      "lat": 11.6359296,
+      "lon": 34.4516872,
+      "osm_id": "way/28322099",
+      "osm_tags": {
+        "name": "\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0632\u0631\u0642",
+        "name:am": "\u12d3\u1263\u12ed",
+        "name:ar": "\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0632\u0631\u0642",
+        "name:bg": "\u0421\u0438\u043d\u0438 \u041d\u0438\u043b",
+        "name:br": "Nil Glas",
+        "name:ca": "Nil Blau",
+        "name:cs": "Modr\u00fd Nil",
+        "name:da": "Bl\u00e5 Nil",
+        "name:de": "Blauer Nil",
+        "name:en": "Blue Nile",
+        "name:eo": "Blua Nilo",
+        "name:es": "Nilo Azul",
+        "name:et": "Sinine Niilus",
+        "name:fr": "Nil Bleu",
+        "name:he": "\u05d4\u05e0\u05d9\u05dc\u05d5\u05e1 \u05d4\u05db\u05d7\u05d5\u05dc",
+        "name:hi": "\u0928\u0940\u0932\u0940 \u0928\u0940\u0932",
+        "name:hr": "Plavi Nil",
+        "name:hu": "K\u00e9k-N\u00edlus",
+        "name:is": "Bl\u00e1a N\u00edl",
+        "name:it": "Nilo azzurro",
+        "name:ja": "\u9752\u30ca\u30a4\u30eb\u5ddd",
+        "name:jv": "Kali Nil Biru",
+        "name:ko": "\uccad\ub098\uc77c \uac15",
+        "name:lt": "\u017dydrasis Nilas",
+        "name:nl": "Blauwe Nijl",
+        "name:no": "Den bl\u00e5 Nil",
+        "name:pl": "Nil B\u0142\u0119kitny",
+        "name:pt": "Nilo Azul",
+        "name:ru": "\u0413\u043e\u043b\u0443\u0431\u043e\u0439 \u041d\u0438\u043b",
+        "name:sl": "Modri Nil",
+        "name:sw": "Nile ya buluu",
+        "name:ta": "\u0ba8\u0bc0\u0bb2 \u0ba8\u0bc8\u0bb2\u0bcd",
+        "name:uk": "\u0411\u043b\u0430\u043a\u0438\u0442\u043d\u0438\u0439 \u041d\u0456\u043b",
+        "name:ur": "\u0646\u06cc\u0644 \u0627\u0632\u0631\u0642",
+        "name:zh": "\u9752\u5c3c\u7f57\u6cb3",
+        "source": "Landsat",
+        "waterway": "river",
+        "wikidata": "Q882739",
+        "wikipedia": "de:Blauer Nil"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u1309\u12cb\u1295\u130d \u12c8\u1295\u12dd",
+      "lat": 12.6930938,
+      "lon": 36.8015077,
+      "osm_id": "way/29204469",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u1309\u12cb\u1295\u130d \u12c8\u1295\u12dd",
+        "name:am": "\u1309\u12cb\u1295\u130d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u063a\u0648\u0627\u0646\u063a",
+        "name:en": "Goangh River",
+        "name:fr": "Atbara",
+        "name:ru": "\u0413\u043e\u0430\u043d\u0433",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0646\u0647\u0631 \u0639\u0637\u0628\u0631\u0629",
+      "lat": 13.4581513,
+      "lon": 36.1686338,
+      "osm_id": "way/29205328",
+      "osm_tags": {
+        "alt_name": "Atbara;Bahr-el-Aswad;Black River",
+        "int_name": "Nahr 'Atbarah",
+        "name": "\u0646\u0647\u0631 \u0639\u0637\u0628\u0631\u0629",
+        "name:am": "\u12e8\u12a0\u1275\u1263\u122b \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0639\u0637\u0628\u0631\u0629",
+        "name:en": "Atbarah River",
+        "name:fr": "Atbara",
+        "name:ru": "\u0410\u0442\u0431\u0430\u0440\u0430",
+        "source": "landsat;PerryCasta\u00f1eda;wikipedia",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0646\u0647\u0631 \u0627\u0644\u062f\u0646\u062f\u0631",
+      "lat": 12.183971,
+      "lon": 35.1412598,
+      "osm_id": "way/29217189",
+      "osm_tags": {
+        "name": "\u0646\u0647\u0631 \u0627\u0644\u062f\u0646\u062f\u0631",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062f\u0646\u062f\u0631",
+        "name:en": "Nahir ad Dindar",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2604961",
+        "wikipedia": "ar:\u0646\u0647\u0631 \u0627\u0644\u062f\u0646\u062f\u0631"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahir ad Dindar",
+      "lat": 11.8069478,
+      "lon": 36.1756874,
+      "osm_id": "way/31661593",
+      "osm_tags": {
+        "boat": "no",
+        "fixme": "update with higher resolution imagery",
+        "name": "Nahir ad Dindar",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahir ad Dindar",
+      "lat": 12.9765329,
+      "lon": 34.444572,
+      "osm_id": "way/31668887",
+      "osm_tags": {
+        "name": "Nahir ad Dindar",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahir ad Dindar",
+      "lat": 12.7196466,
+      "lon": 34.7707599,
+      "osm_id": "way/31668889",
+      "osm_tags": {
+        "name": "Nahir ad Dindar",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Angarab",
+      "lat": 13.3702451,
+      "lon": 36.879182,
+      "osm_id": "way/115834535",
+      "osm_tags": {
+        "name": "Angarab",
+        "name:en": "Angereb",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kusa",
+      "lat": 11.2560928,
+      "lon": 36.3261287,
+      "osm_id": "way/165154540",
+      "osm_tags": {
+        "fixme": "improve alignment with better imagery",
+        "intermittent": "no",
+        "name": "Kusa",
+        "seasonal": "yes",
+        "waterway": "river",
+        "wikidata": "Q4783658",
+        "wikipedia": "en:Beles River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Atbarah River",
+      "lat": 13.0627042,
+      "lon": 36.3497991,
+      "osm_id": "way/204045084",
+      "osm_tags": {
+        "alt_name": "Atbara;Bahr-el-Aswad;Black River",
+        "name": "Atbarah River",
+        "name:ar": "\u0646\u0647\u0631 \u0639\u0637\u0628\u0631\u0629\u200e; Nahr 'Atbarah",
+        "source": "landsat;PerryCasta\u00f1eda;wikipedia",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u12e8\u12a0\u1275\u1263\u122b \u12c8\u1295\u12dd",
+      "lat": 13.0006976,
+      "lon": 36.2050227,
+      "osm_id": "way/204045086",
+      "osm_tags": {
+        "alt_name": "Atbara;Bahr-el-Aswad;Black River",
+        "intermittent": "yes",
+        "name": "\u12e8\u12a0\u1275\u1263\u122b \u12c8\u1295\u12dd",
+        "name:am": "\u12e8\u12a0\u1275\u1263\u122b \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0639\u0637\u0628\u0631\u0629",
+        "name:en": "Atbarah River",
+        "name:fr": "Atbara",
+        "name:ru": "\u0410\u0442\u0431\u0430\u0440\u0430",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0632\u0631\u0642",
+      "lat": 11.2696136,
+      "lon": 34.8297233,
+      "osm_id": "way/209695482",
+      "osm_tags": {
+        "name": "\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0632\u0631\u0642",
+        "name:br": "Nil Glas",
+        "name:fr": "Nil Bleu",
+        "source": "Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahir ad Dindar",
+      "lat": 12.0327779,
+      "lon": 35.8731253,
+      "osm_id": "way/306772655",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Nahir ad Dindar",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062f\u0646\u062f\u0631",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2604961"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahir ad Dindar",
+      "lat": 11.9231355,
+      "lon": 35.5302506,
+      "osm_id": "way/306772656",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Nahir ad Dindar",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062f\u0646\u062f\u0631",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q2604961"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Galegu",
+      "lat": 12.2308262,
+      "lon": 35.9766915,
+      "osm_id": "way/316524745",
+      "osm_tags": {
+        "fixme": "align with modern imagery - first steps done, not yet finished",
+        "name": "Galegu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asl-Fakari",
+      "lat": 12.906964,
+      "lon": 36.4857006,
+      "osm_id": "way/316528598",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Asl-Fakari",
+        "name:en": "Asl-Fakari",
+        "name:ru": "\u0410\u0441\u043b-\u0424\u0430\u043a\u0430\u0440\u0438",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Shinfa",
+      "lat": 12.4204018,
+      "lon": 36.1145761,
+      "osm_id": "way/324128525",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Shinfa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahir ad Dindar",
+      "lat": 12.4865418,
+      "lon": 35.0427224,
+      "osm_id": "way/324900593",
+      "osm_tags": {
+        "name": "Nahir ad Dindar",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Galagou",
+      "lat": 12.5478493,
+      "lon": 35.3288368,
+      "osm_id": "way/324908661",
+      "osm_tags": {
+        "name": "Galagou",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Khor \u1e10ubb\u0101na",
+      "lat": 12.7018492,
+      "lon": 35.5956311,
+      "osm_id": "way/324909239",
+      "osm_tags": {
+        "name": "Khor \u1e10ubb\u0101na",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+      "lat": 12.8869175,
+      "lon": 36.3143709,
+      "osm_id": "way/341640020",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:am": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:ar": "\u063a\u0627\u0646\u062f\u0648\u0623",
+        "name:en": "Gandua River",
+        "name:ru": "\u0413\u0430\u043d\u0434\u0443\u0430",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+      "lat": 12.8713648,
+      "lon": 36.3146981,
+      "osm_id": "way/341643045",
+      "osm_tags": {
+        "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:am": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:ar": "\u063a\u0627\u0646\u062f\u0648\u0623",
+        "name:en": "Gandua River",
+        "name:ru": "\u0413\u0430\u043d\u0434\u0443\u0430",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+      "lat": 12.843203,
+      "lon": 36.3379044,
+      "osm_id": "way/341643046",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:am": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:ar": "\u063a\u0627\u0646\u062f\u0648\u0623",
+        "name:en": "Gandua River",
+        "name:ru": "\u0413\u0430\u043d\u0434\u0443\u0430",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+      "lat": 12.739269,
+      "lon": 36.4397152,
+      "osm_id": "way/341648624",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:am": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:ar": "\u063a\u0627\u0646\u062f\u0648\u0623",
+        "name:en": "Gandua River",
+        "name:ru": "\u0413\u0430\u043d\u0434\u0443\u0430",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+      "lat": 12.6484471,
+      "lon": 36.5186309,
+      "osm_id": "way/344005361",
+      "osm_tags": {
+        "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:am": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:ar": "\u063a\u0627\u0646\u062f\u0648\u0623",
+        "name:en": "Gandua River",
+        "name:ru": "\u0413\u0430\u043d\u0434\u0443\u0430",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+      "lat": 12.6264554,
+      "lon": 36.5334998,
+      "osm_id": "way/344005362",
+      "osm_tags": {
+        "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:am": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:ar": "\u063a\u0627\u0646\u062f\u0648\u0623",
+        "name:en": "Gandua River",
+        "name:ru": "\u0413\u0430\u043d\u0434\u0443\u0430",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+      "lat": 12.5927207,
+      "lon": 36.5553812,
+      "osm_id": "way/344005363",
+      "osm_tags": {
+        "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:am": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:ar": "\u063a\u0627\u0646\u062f\u0648\u0623",
+        "name:en": "Gandua River",
+        "name:ru": "\u0413\u0430\u043d\u0434\u0443\u0430",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+      "lat": 12.560401,
+      "lon": 36.5785555,
+      "osm_id": "way/344007711",
+      "osm_tags": {
+        "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:am": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:ar": "\u063a\u0627\u0646\u062f\u0648\u0623",
+        "name:en": "Gandua River",
+        "name:ru": "\u0413\u0430\u043d\u0434\u0443\u0430",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+      "lat": 12.5417289,
+      "lon": 36.5944771,
+      "osm_id": "way/344007712",
+      "osm_tags": {
+        "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:am": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:ar": "\u063a\u0627\u0646\u062f\u0648\u0623",
+        "name:en": "Gandua River",
+        "name:ru": "\u0413\u0430\u043d\u0434\u0443\u0430",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+      "lat": 12.5290408,
+      "lon": 36.6136013,
+      "osm_id": "way/344007713",
+      "osm_tags": {
+        "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:am": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:ar": "\u063a\u0627\u0646\u062f\u0648\u0623",
+        "name:en": "Gandua River",
+        "name:ru": "\u0413\u0430\u043d\u0434\u0443\u0430",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+      "lat": 12.5088514,
+      "lon": 36.6772285,
+      "osm_id": "way/344009184",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:am": "\u130b\u1290\u12f1\u12a3 \u12c8\u1295\u12dd",
+        "name:ar": "\u063a\u0627\u0646\u062f\u0648\u0623",
+        "name:en": "Gandua River",
+        "name:ru": "\u0413\u0430\u043d\u0434\u0443\u0430",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Atbarah River",
+      "lat": 13.0179225,
+      "lon": 36.2866911,
+      "osm_id": "way/351671636",
+      "osm_tags": {
+        "alt_name": "Atbara;Bahr-el-Aswad;Black River",
+        "name": "Atbarah River",
+        "name:ar": "\u0646\u0647\u0631 \u0639\u0637\u0628\u0631\u0629",
+        "name:en1": "Nahr 'Atbarah",
+        "source": "landsat;PerryCasta\u00f1eda;wikipedia",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u0628\u0627\u0633\u0644\u0627\u0645",
+      "lat": 13.4800856,
+      "lon": 36.3510864,
+      "osm_id": "way/394411699",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u0628\u0627\u0633\u0644\u0627\u0645",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Beles",
+      "lat": 11.6198266,
+      "lon": 36.6857987,
+      "osm_id": "way/500758744",
+      "osm_tags": {
+        "fixme": "improve alignment with better imagery",
+        "name": "Beles",
+        "source": "bing",
+        "waterway": "river",
+        "wikidata": "Q4783658",
+        "wikipedia": "en:Beles River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Alatish",
+      "lat": 12.3281719,
+      "lon": 35.5570122,
+      "osm_id": "way/548197404",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Alatish",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Galagou",
+      "lat": 12.5261006,
+      "lon": 35.5620146,
+      "osm_id": "way/662772865",
+      "osm_tags": {
+        "name": "Galagou",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Galegu",
+      "lat": 12.4821477,
+      "lon": 35.6748251,
+      "osm_id": "way/662772869",
+      "osm_tags": {
+        "name": "Galegu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Galegu",
+      "lat": 12.3673894,
+      "lon": 35.7598048,
+      "osm_id": "way/663449247",
+      "osm_tags": {
+        "name": "Galegu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bermil",
+      "lat": 12.3874592,
+      "lon": 35.7391705,
+      "osm_id": "way/663449248",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Bermil",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Alatish",
+      "lat": 12.4883316,
+      "lon": 35.4267775,
+      "osm_id": "way/664062442",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Alatish",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Galagou",
+      "lat": 12.5467795,
+      "lon": 35.4636982,
+      "osm_id": "way/664222533",
+      "osm_tags": {
+        "name": "Galagou",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Galagou",
+      "lat": 12.5669248,
+      "lon": 35.1778431,
+      "osm_id": "way/671087834",
+      "osm_tags": {
+        "name": "Galagou",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u1309\u12cb\u1295\u130d \u12c8\u1295\u12dd",
+      "lat": 12.8966787,
+      "lon": 36.3262376,
+      "osm_id": "way/679561672",
+      "osm_tags": {
+        "name": "\u1309\u12cb\u1295\u130d \u12c8\u1295\u12dd",
+        "name:am": "\u1309\u12cb\u1295\u130d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u063a\u0648\u0627\u0646\u063a",
+        "name:en": "Goangh River",
+        "name:fr": "Atbara",
+        "name:ru": "\u0413\u043e\u0430\u043d\u0433",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u1309\u12cb\u1295\u130d \u12c8\u1295\u12dd",
+      "lat": 12.8910726,
+      "lon": 36.3421606,
+      "osm_id": "way/699288027",
+      "osm_tags": {
+        "name": "\u1309\u12cb\u1295\u130d \u12c8\u1295\u12dd",
+        "name:am": "\u1309\u12cb\u1295\u130d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u063a\u0648\u0627\u0646\u063a",
+        "name:en": "Goangh River",
+        "name:fr": "Atbara",
+        "name:ru": "\u0413\u043e\u0430\u043d\u0433",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u12e8\u12a0\u1275\u1263\u122b \u12c8\u1295\u12dd",
+      "lat": 12.9311803,
+      "lon": 36.2824258,
+      "osm_id": "way/699288028",
+      "osm_tags": {
+        "alt_name": "Atbara;Bahr-el-Aswad;Black River",
+        "intermittent": "yes",
+        "name": "\u12e8\u12a0\u1275\u1263\u122b \u12c8\u1295\u12dd",
+        "name:am": "\u12e8\u12a0\u1275\u1263\u122b \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0639\u0637\u0628\u0631\u0629",
+        "name:en": "Atbarah River",
+        "name:fr": "Atbara",
+        "name:ru": "\u0410\u0442\u0431\u0430\u0440\u0430",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u062e\u0648\u0631 \u0633\u0639\u064a\u0641\u0629",
+      "lat": 12.9154373,
+      "lon": 35.9527024,
+      "osm_id": "way/1014115197",
+      "osm_tags": {
+        "alt_name": "Khawr Su`ayfah;Khor Sueifa",
+        "intermittent": "yes",
+        "name": "\u062e\u0648\u0631 \u0633\u0639\u064a\u0641\u0629",
+        "name:ar": "\u062e\u0648\u0631 \u0633\u0639\u064a\u0641\u0629",
+        "name:en": "Khawr Su`ayfah",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Alatish",
+      "lat": 12.0625844,
+      "lon": 35.712066,
+      "osm_id": "way/1152971259",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Alatish",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Alatish",
+      "lat": 12.1783281,
+      "lon": 35.6388706,
+      "osm_id": "way/1152971260",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Alatish",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Alatish",
+      "lat": 12.4195305,
+      "lon": 35.491349,
+      "osm_id": "way/1152971261",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Alatish",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Shinfa",
+      "lat": 12.7514221,
+      "lon": 35.4648511,
+      "osm_id": "way/1289589081",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Shinfa",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "\u062e\u0648\u0631 \u062c\u0627\u0645\u0648\u0633",
+      "lat": 12.7342793,
+      "lon": 36.0893248,
+      "osm_id": "way/1365313312",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "\u062e\u0648\u0631 \u062c\u0627\u0645\u0648\u0633",
+        "name:en": "Khawr Jamus",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Khawr Dadalla",
+      "lat": 13.2016492,
+      "lon": 36.0607412,
+      "osm_id": "way/1369665873",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Khawr Dadalla",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u123d\u1295\u134b \u12c8\u1295\u12dd",
+      "lat": 12.0789001,
+      "lon": 36.5759765,
+      "osm_id": "way/1369749937",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "\u123d\u1295\u134b \u12c8\u1295\u12dd",
+        "name:am": "\u123d\u1295\u134b \u12c8\u1295\u12dd",
+        "name:en": "Shinfa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Shinfa",
+      "lat": 12.0250917,
+      "lon": 36.6358098,
+      "osm_id": "way/1369749938",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Shinfa",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Shinfa",
+      "lat": 12.1301571,
+      "lon": 36.481943,
+      "osm_id": "way/1370711849",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Shinfa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Khawr Kaf\u0101y",
+      "lat": 13.2692549,
+      "lon": 35.5790274,
+      "osm_id": "way/1425431145",
+      "osm_tags": {
+        "name": "Khawr Kaf\u0101y",
+        "name:ar": "\u062e\u0648\u0631 \u0643\u0641\u0627\u064a",
+        "waterway": "stream"
+      }
+    }
+  ]
+}

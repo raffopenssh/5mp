@@ -1,0 +1,1526 @@
+{
+  "park_id": "MOZ_Chimanimani",
+  "downloaded_at": "2026-02-08T09:46:06.906690+00:00",
+  "buffer_km": 50,
+  "place_count": 129,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Chipinge",
+      "lat": -20.188929,
+      "lon": 32.619425,
+      "osm_id": "node/305463169",
+      "osm_tags": {
+        "is_in": "Zimbabwe",
+        "name": "Chipinge",
+        "place": "town",
+        "population": "17458",
+        "wikidata": "Q994412"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Chimoio",
+      "lat": -19.1437458,
+      "lon": 33.4780059,
+      "osm_id": "node/331730931",
+      "osm_tags": {
+        "capital": "4",
+        "name": "Chimoio",
+        "name:de": "Chimoio",
+        "name:ko": "\uc2dc\ubaa8\uc774\uc6b0",
+        "name:ru": "\u0428\u0438\u043c\u043e\u0439\u043e",
+        "place": "city",
+        "population": "238976",
+        "source:population": "French Wikipedia",
+        "wikidata": "Q638509",
+        "wikipedia": "en:Chimoio"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Monte Binga",
+      "lat": -19.7762269,
+      "lon": 33.0625567,
+      "osm_id": "node/348205650",
+      "osm_tags": {
+        "alt_name": "Mount Binga",
+        "ele": "2436",
+        "name": "Monte Binga",
+        "name:fr": "Mont Binga",
+        "natural": "peak",
+        "note": "Mount Binga straddles the Zimbabwe-Mozambique border. Source: http://www.rgs.org/WhatsOn/Past+events/Travel+Events/Mozambique/Background.htm",
+        "wikidata": "Q1353678",
+        "wikipedia": "en:Monte Binga"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Chimanimani",
+      "lat": -19.804133,
+      "lon": 32.870727,
+      "osm_id": "node/1363423672",
+      "osm_tags": {
+        "int_name": "Chimanimani",
+        "name": "Chimanimani",
+        "old_name": "Melsetter",
+        "place": "town",
+        "population": "2752",
+        "wikidata": "Q1073089",
+        "wikipedia": "en:Chimanimani"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Espungabera",
+      "lat": -20.4482311,
+      "lon": 32.7744128,
+      "osm_id": "node/1426294380",
+      "osm_tags": {
+        "name": "Espungabera",
+        "place": "town",
+        "wikidata": "Q25048568"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Munhinga",
+      "lat": -19.4878176,
+      "lon": 33.2854889,
+      "osm_id": "node/2281184278",
+      "osm_tags": {
+        "name": "Munhinga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Sussundenga",
+      "lat": -19.4131859,
+      "lon": 33.2928636,
+      "osm_id": "node/2281184283",
+      "osm_tags": {
+        "name": "Sussundenga",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Domb\u00e9",
+      "lat": -19.9748098,
+      "lon": 33.3945825,
+      "osm_id": "node/2281984248",
+      "osm_tags": {
+        "name": "Domb\u00e9",
+        "place": "town",
+        "wikidata": "Q18593498"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Chibabava",
+      "lat": -20.2929789,
+      "lon": 33.6516796,
+      "osm_id": "node/2344416638",
+      "osm_tags": {
+        "alt_name": "Chibavava",
+        "name": "Chibabava",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chikore Mission",
+      "lat": -20.435014,
+      "lon": 32.4944133,
+      "osm_id": "node/2789904934",
+      "osm_tags": {
+        "name": "Chikore Mission",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chako",
+      "lat": -20.4289101,
+      "lon": 32.6809123,
+      "osm_id": "node/2791924057",
+      "osm_tags": {
+        "name": "Chako",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mount Selinda Mission",
+      "lat": -20.4239923,
+      "lon": 32.7083546,
+      "osm_id": "node/2791924081",
+      "osm_tags": {
+        "name": "Mount Selinda Mission",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Junction Gate",
+      "lat": -20.158667,
+      "lon": 32.782986,
+      "osm_id": "node/2792147652",
+      "osm_tags": {
+        "name": "Junction Gate",
+        "place": "village",
+        "wikidata": "Q10312940"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Landsdowne",
+      "lat": -20.1953261,
+      "lon": 32.7174584,
+      "osm_id": "node/2792210580",
+      "osm_tags": {
+        "name": "Landsdowne",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mayfield Estate",
+      "lat": -20.1256124,
+      "lon": 32.8393272,
+      "osm_id": "node/2792273706",
+      "osm_tags": {
+        "name": "Mayfield Estate",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chakohwa",
+      "lat": -19.547923,
+      "lon": 32.5184583,
+      "osm_id": "node/2886781563",
+      "osm_tags": {
+        "name": "Chakohwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nhedziwa",
+      "lat": -19.5542575,
+      "lon": 32.6523303,
+      "osm_id": "node/2886815069",
+      "osm_tags": {
+        "name": "Nhedziwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mutambara Mission",
+      "lat": -19.5296868,
+      "lon": 32.6889693,
+      "osm_id": "node/2886815175",
+      "osm_tags": {
+        "name": "Mutambara Mission",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cashel",
+      "lat": -19.5429431,
+      "lon": 32.7906831,
+      "osm_id": "node/4262496355",
+      "osm_tags": {
+        "name": "Cashel",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chitakatira Growth Point",
+      "lat": -19.1349134,
+      "lon": 32.6789859,
+      "osm_id": "node/5695190751",
+      "osm_tags": {
+        "name": "Chitakatira Growth Point",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Piki Village",
+      "lat": -19.128722,
+      "lon": 32.6400739,
+      "osm_id": "node/5767319660",
+      "osm_tags": {
+        "name": "Piki Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Melsetter Junction",
+      "lat": -19.531374,
+      "lon": 32.6484605,
+      "osm_id": "node/6344056553",
+      "osm_tags": {
+        "name": "Melsetter Junction",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Machongwe",
+      "lat": -19.9238305,
+      "lon": 32.8247851,
+      "osm_id": "node/6349742498",
+      "osm_tags": {
+        "name": "Machongwe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shinja",
+      "lat": -19.7461685,
+      "lon": 32.5932628,
+      "osm_id": "node/6399045095",
+      "osm_tags": {
+        "name": "Shinja",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sambanhe",
+      "lat": -19.9427706,
+      "lon": 33.5615167,
+      "osm_id": "node/6418409577",
+      "osm_tags": {
+        "name": "Sambanhe",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chieza",
+      "lat": -19.5097272,
+      "lon": 32.5651933,
+      "osm_id": "node/6487307590",
+      "osm_tags": {
+        "name": "Chieza",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chikuri",
+      "lat": -19.523416,
+      "lon": 32.6137899,
+      "osm_id": "node/6487307604",
+      "osm_tags": {
+        "name": "Chikuri",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mhandarume",
+      "lat": -19.5231304,
+      "lon": 32.587595,
+      "osm_id": "node/6487307605",
+      "osm_tags": {
+        "alt_name": "Mahandarume",
+        "name": "Mhandarume",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wengezi",
+      "lat": -19.5092995,
+      "lon": 32.5337308,
+      "osm_id": "node/6487307606",
+      "osm_tags": {
+        "alt_name": "Wengezi Junction",
+        "name": "Wengezi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mukono",
+      "lat": -19.5108398,
+      "lon": 32.5493797,
+      "osm_id": "node/6487307607",
+      "osm_tags": {
+        "name": "Mukono",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Neshire",
+      "lat": -19.5638812,
+      "lon": 32.505669,
+      "osm_id": "node/6487307608",
+      "osm_tags": {
+        "name": "Neshire",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chaseyama",
+      "lat": -19.6097579,
+      "lon": 32.5009938,
+      "osm_id": "node/6487307610",
+      "osm_tags": {
+        "name": "Chaseyama",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Beacon Hill",
+      "lat": -20.4860379,
+      "lon": 32.7089878,
+      "osm_id": "node/6498812921",
+      "osm_tags": {
+        "name": "Beacon Hill",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Zona",
+      "lat": -20.4437859,
+      "lon": 32.7269547,
+      "osm_id": "node/6498819287",
+      "osm_tags": {
+        "name": "Zona",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mpudzi",
+      "lat": -19.3690916,
+      "lon": 32.5805862,
+      "osm_id": "node/6507363699",
+      "osm_tags": {
+        "name": "Mpudzi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chimenga",
+      "lat": -19.3810043,
+      "lon": 32.57549,
+      "osm_id": "node/6507363700",
+      "osm_tags": {
+        "name": "Chimenga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muromo",
+      "lat": -19.3774386,
+      "lon": 32.5461877,
+      "osm_id": "node/6507363703",
+      "osm_tags": {
+        "name": "Muromo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Manzinde",
+      "lat": -19.4054984,
+      "lon": 32.5470814,
+      "osm_id": "node/6507363704",
+      "osm_tags": {
+        "name": "Manzinde",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Murari",
+      "lat": -19.6237364,
+      "lon": 32.6550324,
+      "osm_id": "node/6507613799",
+      "osm_tags": {
+        "name": "Murari",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chikwizi",
+      "lat": -19.8336913,
+      "lon": 32.5156337,
+      "osm_id": "node/6512657946",
+      "osm_tags": {
+        "name": "Chikwizi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mhakwe",
+      "lat": -19.814884,
+      "lon": 32.6264029,
+      "osm_id": "node/6512657947",
+      "osm_tags": {
+        "name": "Mhakwe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Matiashe",
+      "lat": -19.7672676,
+      "lon": 32.5433628,
+      "osm_id": "node/6514285191",
+      "osm_tags": {
+        "alt_name": "Matyashe",
+        "name": "Matiashe",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Chinyamatede",
+      "lat": -19.6097186,
+      "lon": 32.5067277,
+      "osm_id": "node/6540224083",
+      "osm_tags": {
+        "name": "Chinyamatede",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Chinyamapuna",
+      "lat": -19.6149038,
+      "lon": 32.5105328,
+      "osm_id": "node/6540224084",
+      "osm_tags": {
+        "name": "Chinyamapuna",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Zvokuitirwa",
+      "lat": -19.598381,
+      "lon": 32.5070754,
+      "osm_id": "node/6540252411",
+      "osm_tags": {
+        "alt_name": "Zvokvitirwa",
+        "name": "Zvokuitirwa",
+        "note": "alt_name from 1978 map from Surveyor General of Zimbabwe. I suspect the 'u' was mistaken for a 'v' in someone's handwriting",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Takaengwa",
+      "lat": -19.7553298,
+      "lon": 32.5546345,
+      "osm_id": "node/6543209464",
+      "osm_tags": {
+        "name": "Takaengwa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mwarutsa",
+      "lat": -19.7266148,
+      "lon": 32.6055801,
+      "osm_id": "node/6543222089",
+      "osm_tags": {
+        "name": "Mwarutsa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Zimunda",
+      "lat": -19.754333,
+      "lon": 32.5990021,
+      "osm_id": "node/6543222147",
+      "osm_tags": {
+        "name": "Zimunda",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Usunzanvura",
+      "lat": -19.5603566,
+      "lon": 32.5306705,
+      "osm_id": "node/6543441968",
+      "osm_tags": {
+        "ele": "770",
+        "name": "Usunzanvura",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nechitima",
+      "lat": -19.5942479,
+      "lon": 32.5549712,
+      "osm_id": "node/6543441990",
+      "osm_tags": {
+        "name": "Nechitima",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chizimo",
+      "lat": -19.5834643,
+      "lon": 32.5531091,
+      "osm_id": "node/6543441997",
+      "osm_tags": {
+        "name": "Chizimo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Duma",
+      "lat": -20.3028582,
+      "lon": 33.6672604,
+      "osm_id": "node/6615020341",
+      "osm_tags": {
+        "name": "Duma",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Marele",
+      "lat": -20.3002103,
+      "lon": 33.6808384,
+      "osm_id": "node/6615020342",
+      "osm_tags": {
+        "name": "Marele",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Caqui",
+      "lat": -20.2830481,
+      "lon": 33.678816,
+      "osm_id": "node/6615223937",
+      "osm_tags": {
+        "name": "Caqui",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Macundinharga",
+      "lat": -20.2780621,
+      "lon": 33.6831299,
+      "osm_id": "node/6615223972",
+      "osm_tags": {
+        "name": "Macundinharga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Buunhe",
+      "lat": -20.2657235,
+      "lon": 33.67496,
+      "osm_id": "node/6615223975",
+      "osm_tags": {
+        "name": "Buunhe",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bairro da Unidade",
+      "lat": -19.9427709,
+      "lon": 33.3687241,
+      "osm_id": "node/6741754555",
+      "osm_tags": {
+        "name": "Bairro da Unidade",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Zich\u00e3o 1",
+      "lat": -19.9487351,
+      "lon": 33.3499866,
+      "osm_id": "node/6741754561",
+      "osm_tags": {
+        "name": "Zich\u00e3o 1",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Zich\u00e3o 2",
+      "lat": -19.9616899,
+      "lon": 33.3326852,
+      "osm_id": "node/6741754585",
+      "osm_tags": {
+        "name": "Zich\u00e3o 2",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Manhandure",
+      "lat": -19.9185932,
+      "lon": 33.2999165,
+      "osm_id": "node/6741812398",
+      "osm_tags": {
+        "name": "Manhandure",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mutassa",
+      "lat": -19.918493,
+      "lon": 33.284589,
+      "osm_id": "node/6741812399",
+      "osm_tags": {
+        "name": "Mutassa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Zomba",
+      "lat": -19.8641286,
+      "lon": 33.2793905,
+      "osm_id": "node/6741812401",
+      "osm_tags": {
+        "name": "Zomba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muwawa",
+      "lat": -19.8475191,
+      "lon": 33.3052899,
+      "osm_id": "node/6741812405",
+      "osm_tags": {
+        "name": "Muwawa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Zibuia",
+      "lat": -19.8593166,
+      "lon": 33.278537,
+      "osm_id": "node/6741812407",
+      "osm_tags": {
+        "name": "Zibuia",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mount Selinda",
+      "lat": -20.4524861,
+      "lon": 32.7181063,
+      "osm_id": "node/7609564225",
+      "osm_tags": {
+        "ele": "1100",
+        "name": "Mount Selinda",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Dacata",
+      "lat": -20.2542255,
+      "lon": 32.9039211,
+      "osm_id": "node/7680250646",
+      "osm_tags": {
+        "name": "Dacata",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gogoi",
+      "lat": -20.3180133,
+      "lon": 32.9971795,
+      "osm_id": "node/8248429246",
+      "osm_tags": {
+        "name": "Gogoi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Pork Pie",
+      "lat": -19.7852457,
+      "lon": 32.874597,
+      "osm_id": "node/11050472506",
+      "osm_tags": {
+        "name": "Pork Pie",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Peza",
+      "lat": -19.7522518,
+      "lon": 33.007689,
+      "osm_id": "node/12752954402",
+      "osm_tags": {
+        "name": "Peza",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Msurussepo",
+      "lat": -19.7510037,
+      "lon": 33.032497,
+      "osm_id": "node/12752954403",
+      "osm_tags": {
+        "name": "Msurussepo",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Sphinx",
+      "lat": -19.7733012,
+      "lon": 32.9984754,
+      "osm_id": "node/12752954405",
+      "osm_tags": {
+        "name": "Sphinx",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lucite",
+      "lat": -19.9581327,
+      "lon": 33.6699411,
+      "osm_id": "way/30371064",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Lucite",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Musirizwi River",
+      "lat": -20.5191204,
+      "lon": 32.5392496,
+      "osm_id": "way/30371129",
+      "osm_tags": {
+        "alt_name": "Umsilizwi River",
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Musirizwi River",
+        "name:pt": "Rio Mossurise",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Revu\u00e9",
+      "lat": -19.3921987,
+      "lon": 33.3611141,
+      "osm_id": "way/30371154",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Revu\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Revu\u00e9",
+      "lat": -19.5730022,
+      "lon": 33.6169795,
+      "osm_id": "way/61834413",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Revu\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio B\u00fazi",
+      "lat": -20.1293204,
+      "lon": 33.6550444,
+      "osm_id": "way/225710935",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Rio B\u00fazi",
+        "name:en": "Buzi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio B\u00fazi",
+      "lat": -20.4373949,
+      "lon": 32.8460739,
+      "osm_id": "way/225710936",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Rio B\u00fazi",
+        "name:en": "Buzi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Mussapa",
+      "lat": -19.9422487,
+      "lon": 33.2554849,
+      "osm_id": "way/230149954",
+      "osm_tags": {
+        "name": "Rio Mussapa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lucite",
+      "lat": -19.9690108,
+      "lon": 33.4925803,
+      "osm_id": "way/230149959",
+      "osm_tags": {
+        "name": "Rio Lucite",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Mucutuco",
+      "lat": -19.7961963,
+      "lon": 33.1830014,
+      "osm_id": "way/244004963",
+      "osm_tags": {
+        "name": "Rio Mucutuco",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chikore Mission",
+      "lat": -20.4347569,
+      "lon": 32.4942448,
+      "osm_id": "way/274222265",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Chikore Mission",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lucite",
+      "lat": -20.0394695,
+      "lon": 33.2610789,
+      "osm_id": "way/304365204",
+      "osm_tags": {
+        "name": "Rio Lucite",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Muwengezi",
+      "lat": -19.4646216,
+      "lon": 32.6063092,
+      "osm_id": "way/304370127",
+      "osm_tags": {
+        "name": "Muwengezi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Odzi River",
+      "lat": -19.617662,
+      "lon": 32.4597158,
+      "osm_id": "way/304370132",
+      "osm_tags": {
+        "name": "Odzi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Changadzi",
+      "lat": -19.9423929,
+      "lon": 32.4615758,
+      "osm_id": "way/304370137",
+      "osm_tags": {
+        "name": "Changadzi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Odzi River",
+      "lat": -19.2132893,
+      "lon": 32.4524213,
+      "osm_id": "way/373634939",
+      "osm_tags": {
+        "name": "Odzi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Tembwe",
+      "lat": -19.1758628,
+      "lon": 33.3595286,
+      "osm_id": "way/390164034",
+      "osm_tags": {
+        "name": "Rio Tembwe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chikwizi",
+      "lat": -19.8155803,
+      "lon": 32.4605935,
+      "osm_id": "way/465687688",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chikwizi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lucite",
+      "lat": -20.0294019,
+      "lon": 33.0275989,
+      "osm_id": "way/465904341",
+      "osm_tags": {
+        "admin_level": "2",
+        "boundary": "administrative",
+        "name": "Rio Lucite",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lucite",
+      "lat": -20.0173634,
+      "lon": 33.0200044,
+      "osm_id": "way/465904342",
+      "osm_tags": {
+        "name": "Rio Lucite",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lucite",
+      "lat": -19.9274803,
+      "lon": 33.6564686,
+      "osm_id": "way/566267090",
+      "osm_tags": {
+        "name": "Rio Lucite",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mupudzi",
+      "lat": -19.1636758,
+      "lon": 32.6476269,
+      "osm_id": "way/598383447",
+      "osm_tags": {
+        "name": "Mupudzi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mashayamvura",
+      "lat": -19.4722511,
+      "lon": 32.5895785,
+      "osm_id": "way/677276967",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mashayamvura",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Umvumvumvu",
+      "lat": -19.5336386,
+      "lon": 32.5845902,
+      "osm_id": "way/677567308",
+      "osm_tags": {
+        "name": "Umvumvumvu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyanyadzi",
+      "lat": -19.7246173,
+      "lon": 32.6218193,
+      "osm_id": "way/677648095",
+      "osm_tags": {
+        "name": "Nyanyadzi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Mucutuco",
+      "lat": -19.7134675,
+      "lon": 32.940885,
+      "osm_id": "way/677958667",
+      "osm_tags": {
+        "name": "Rio Mucutuco",
+        "waterway": "river",
+        "width": "1"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bundi River",
+      "lat": -19.8831084,
+      "lon": 33.014981,
+      "osm_id": "way/678162710",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Bundi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lucite",
+      "lat": -20.0236743,
+      "lon": 33.0263349,
+      "osm_id": "way/678413613",
+      "osm_tags": {
+        "name": "Rio Lucite",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chipita River",
+      "lat": -20.0937784,
+      "lon": 32.8449207,
+      "osm_id": "way/678473198",
+      "osm_tags": {
+        "name": "Chipita River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Messangage",
+      "lat": -20.2838631,
+      "lon": 33.682894,
+      "osm_id": "way/681083457",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Messangage",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Jona",
+      "lat": -20.2961398,
+      "lon": 33.6678064,
+      "osm_id": "way/681083459",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Jona",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Macate",
+      "lat": -19.4169799,
+      "lon": 33.5129463,
+      "osm_id": "way/681166157",
+      "osm_tags": {
+        "name": "Macate",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "C\u00f3rrego",
+      "lat": -19.6482531,
+      "lon": 32.9647618,
+      "osm_id": "way/682448691",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "C\u00f3rrego",
+        "waterway": "stream",
+        "width": "< 1 meter"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Murare",
+      "lat": -19.5998894,
+      "lon": 32.5666133,
+      "osm_id": "way/682463540",
+      "osm_tags": {
+        "name": "Murare",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nhadza",
+      "lat": -19.6866427,
+      "lon": 32.5090655,
+      "osm_id": "way/682883674",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nhadza",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Pantano",
+      "lat": -19.6514169,
+      "lon": 32.6552269,
+      "osm_id": "way/683168239",
+      "osm_tags": {
+        "name": "Pantano",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nhadza",
+      "lat": -19.6868375,
+      "lon": 32.4792015,
+      "osm_id": "way/683175415",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nhadza",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Munanzi",
+      "lat": -19.5592137,
+      "lon": 32.5605326,
+      "osm_id": "way/683191023",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Munanzi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Rio Mucutuco",
+      "lat": -19.702747,
+      "lon": 32.9728997,
+      "osm_id": "way/683346888",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Mucutuco",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lucite",
+      "lat": -19.977819,
+      "lon": 33.4136668,
+      "osm_id": "way/683501163",
+      "osm_tags": {
+        "name": "Rio Lucite",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lucite",
+      "lat": -19.981221,
+      "lon": 33.3886239,
+      "osm_id": "way/683501164",
+      "osm_tags": {
+        "name": "Rio Lucite",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Odzi River",
+      "lat": -19.4875984,
+      "lon": 32.5093556,
+      "osm_id": "way/690773521",
+      "osm_tags": {
+        "name": "Odzi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Odzi River",
+      "lat": -19.4294819,
+      "lon": 32.5176979,
+      "osm_id": "way/690819440",
+      "osm_tags": {
+        "name": "Odzi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Odzi River",
+      "lat": -19.4331729,
+      "lon": 32.5180289,
+      "osm_id": "way/690819441",
+      "osm_tags": {
+        "name": "Odzi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Odzi River",
+      "lat": -19.4723594,
+      "lon": 32.5173642,
+      "osm_id": "way/690819442",
+      "osm_tags": {
+        "name": "Odzi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nhadza",
+      "lat": -19.6862361,
+      "lon": 32.5015782,
+      "osm_id": "way/695495190",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nhadza",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munanzi",
+      "lat": -19.5737466,
+      "lon": 32.5192831,
+      "osm_id": "way/696765467",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Munanzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Murare",
+      "lat": -19.5998513,
+      "lon": 32.539321,
+      "osm_id": "way/706008520",
+      "osm_tags": {
+        "name": "Murare",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio B\u00fazi",
+      "lat": -20.2810956,
+      "lon": 33.4938897,
+      "osm_id": "way/849004273",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio B\u00fazi",
+        "name:en": "Buzi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio B\u00fazi",
+      "lat": -20.4321995,
+      "lon": 33.2826548,
+      "osm_id": "way/849004275",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio B\u00fazi",
+        "name:en": "Buzi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Revu\u00e9",
+      "lat": -19.5227715,
+      "lon": 33.4560042,
+      "osm_id": "way/849025304",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Revu\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Revu\u00e9",
+      "lat": -19.2380632,
+      "lon": 33.2443648,
+      "osm_id": "way/849025310",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Revu\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Revu\u00e9",
+      "lat": -19.1862905,
+      "lon": 33.1762981,
+      "osm_id": "way/849025311",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Revu\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Revu\u00e9",
+      "lat": -19.380906,
+      "lon": 33.3534549,
+      "osm_id": "way/849025312",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Revu\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lucite",
+      "lat": -20.0670777,
+      "lon": 33.083455,
+      "osm_id": "way/851873466",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Lucite",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Gogoi",
+      "lat": -20.3197702,
+      "lon": 32.99779,
+      "osm_id": "way/887836537",
+      "osm_tags": {
+        "name": "Gogoi",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Revu\u00e9",
+      "lat": -19.5221243,
+      "lon": 33.4793052,
+      "osm_id": "way/1316988462",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Revu\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Revu\u00e9",
+      "lat": -19.5254399,
+      "lon": 33.492995,
+      "osm_id": "way/1316988463",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "layer": "-1",
+        "name": "Revu\u00e9",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Artouste Pool",
+      "lat": -19.7802891,
+      "lon": 33.026123,
+      "osm_id": "way/1377290916",
+      "osm_tags": {
+        "name": "Artouste Pool",
+        "natural": "water",
+        "water": "pond"
+      }
+    }
+  ]
+}

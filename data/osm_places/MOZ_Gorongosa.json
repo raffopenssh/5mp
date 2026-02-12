@@ -1,0 +1,2699 @@
+{
+  "park_id": "MOZ_Gorongosa",
+  "downloaded_at": "2026-02-08T09:51:04.295813+00:00",
+  "buffer_km": 50,
+  "place_count": 221,
+  "places": [
+    {
+      "place_type": "village",
+      "name": "Inhamitanga",
+      "lat": -18.2186664,
+      "lon": 35.1582573,
+      "osm_id": "node/331718801",
+      "osm_tags": {
+        "name": "Inhamitanga",
+        "place": "village",
+        "wikidata": "Q6033670"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Inhaminga",
+      "lat": -18.415196,
+      "lon": 35.023616,
+      "osm_id": "node/331719360",
+      "osm_tags": {
+        "name": "Inhaminga",
+        "place": "town",
+        "wikidata": "Q928765"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Dondo",
+      "lat": -19.616463,
+      "lon": 34.7435141,
+      "osm_id": "node/568083903",
+      "osm_tags": {
+        "name": "Dondo",
+        "place": "town",
+        "wikidata": "Q1241126"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Inchope",
+      "lat": -19.2073338,
+      "lon": 33.9329339,
+      "osm_id": "node/663184240",
+      "osm_tags": {
+        "name": "Inchope",
+        "place": "city",
+        "wikidata": "Q42555300"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muda",
+      "lat": -19.3303512,
+      "lon": 33.8281478,
+      "osm_id": "node/663191418",
+      "osm_tags": {
+        "name": "Muda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Gorongosa",
+      "lat": -18.6792336,
+      "lon": 34.072827,
+      "osm_id": "node/1418232180",
+      "osm_tags": {
+        "name": "Gorongosa",
+        "place": "town",
+        "wikidata": "Q14216746"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sande",
+      "lat": -19.1653082,
+      "lon": 33.823966,
+      "osm_id": "node/1425007844",
+      "osm_tags": {
+        "name": "Sande",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cambeca",
+      "lat": -19.2248865,
+      "lon": 33.821949,
+      "osm_id": "node/1425017562",
+      "osm_tags": {
+        "name": "Cambeca",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ximana",
+      "lat": -19.3583929,
+      "lon": 33.9500084,
+      "osm_id": "node/1425017564",
+      "osm_tags": {
+        "name": "Ximana",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Zinvari",
+      "lat": -19.2585974,
+      "lon": 33.7675324,
+      "osm_id": "node/1425017568",
+      "osm_tags": {
+        "name": "Zinvari",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Miguel",
+      "lat": -19.6003271,
+      "lon": 33.9534256,
+      "osm_id": "node/1425017570",
+      "osm_tags": {
+        "name": "Miguel",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matanda",
+      "lat": -18.6275922,
+      "lon": 34.0692916,
+      "osm_id": "node/1426006245",
+      "osm_tags": {
+        "name": "Matanda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sande",
+      "lat": -18.7860592,
+      "lon": 34.09974,
+      "osm_id": "node/1426006285",
+      "osm_tags": {
+        "name": "Sande",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Amatongas",
+      "lat": -19.1007439,
+      "lon": 33.7721023,
+      "osm_id": "node/1482295439",
+      "osm_tags": {
+        "name": "Amatongas",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Subw\u00e8",
+      "lat": -18.184079,
+      "lon": 34.5351052,
+      "osm_id": "node/2285976181",
+      "osm_tags": {
+        "name": "Subw\u00e8",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Savane",
+      "lat": -19.3865415,
+      "lon": 34.708612,
+      "osm_id": "node/2469486758",
+      "osm_tags": {
+        "name": "Savane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Nhamatanda",
+      "lat": -19.270297,
+      "lon": 34.20834,
+      "osm_id": "node/2470375864",
+      "osm_tags": {
+        "name": "Nhamatanda",
+        "old_name": "Vila Machado",
+        "place": "town",
+        "wikidata": "Q1390721"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vunduzi",
+      "lat": -18.4860694,
+      "lon": 34.2027054,
+      "osm_id": "node/2519008741",
+      "osm_tags": {
+        "name": "Vunduzi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chitengo",
+      "lat": -18.9792719,
+      "lon": 34.3522643,
+      "osm_id": "node/2528135608",
+      "osm_tags": {
+        "name": "Chitengo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maga\u00e7\u00e3o",
+      "lat": -19.5797754,
+      "lon": 34.7271425,
+      "osm_id": "node/3339624404",
+      "osm_tags": {
+        "name": "Maga\u00e7\u00e3o",
+        "place": "village",
+        "source": "www.geonames.org"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Reino",
+      "lat": -19.5043184,
+      "lon": 34.6092915,
+      "osm_id": "node/3341217638",
+      "osm_tags": {
+        "name": "Reino",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mafambisse",
+      "lat": -19.5460367,
+      "lon": 34.6325547,
+      "osm_id": "node/3341901708",
+      "osm_tags": {
+        "alt_name": "Mafambi\u00e7e",
+        "alt_name_1": "Mafambesi",
+        "name": "Mafambisse",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Tica",
+      "lat": -19.4025949,
+      "lon": 34.4349524,
+      "osm_id": "node/3723354796",
+      "osm_tags": {
+        "name": "Tica",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Monte Inchope",
+      "lat": -19.2215556,
+      "lon": 33.9292531,
+      "osm_id": "node/5206086714",
+      "osm_tags": {
+        "ele": "287",
+        "name": "Monte Inchope",
+        "natural": "peak",
+        "wikidata": "Q30832216"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gogogo",
+      "lat": -18.4050106,
+      "lon": 34.1058996,
+      "osm_id": "node/5725679778",
+      "osm_tags": {
+        "alt_name": "Mount Gorongosa",
+        "ele": "1863",
+        "name": "Gogogo",
+        "natural": "peak",
+        "wikidata": "Q55237011",
+        "wikipedia": "en:Mount Gorongosa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nhamataca",
+      "lat": -19.4563449,
+      "lon": 34.5882976,
+      "osm_id": "node/6367710506",
+      "osm_tags": {
+        "name": "Nhamataca",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Muanza",
+      "lat": -18.90686,
+      "lon": 34.7889268,
+      "osm_id": "node/6378818946",
+      "osm_tags": {
+        "name": "Muanza",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jasse",
+      "lat": -19.2338554,
+      "lon": 33.9966548,
+      "osm_id": "node/6412618237",
+      "osm_tags": {
+        "name": "Jasse",
+        "old_name": "Diakos",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Siluvo",
+      "lat": -19.2438018,
+      "lon": 34.0291037,
+      "osm_id": "node/6412618307",
+      "osm_tags": {
+        "alt_name": "Xiluvo",
+        "name": "Siluvo",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Pedreira",
+      "lat": -19.2530717,
+      "lon": 34.0544641,
+      "osm_id": "node/6412618308",
+      "osm_tags": {
+        "name": "Pedreira",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cherara",
+      "lat": -19.2311351,
+      "lon": 34.0839644,
+      "osm_id": "node/6412649219",
+      "osm_tags": {
+        "name": "Cherara",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nharichonga",
+      "lat": -19.2449571,
+      "lon": 34.1251063,
+      "osm_id": "node/6412649220",
+      "osm_tags": {
+        "alt_name": "Nharuchonga",
+        "alt_name_1": "Nhuruchongo",
+        "name": "Nharichonga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tomo",
+      "lat": -19.2529425,
+      "lon": 34.1180572,
+      "osm_id": "node/6412649221",
+      "osm_tags": {
+        "name": "Tomo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bofana",
+      "lat": -19.2932054,
+      "lon": 34.2071815,
+      "osm_id": "node/6412728155",
+      "osm_tags": {
+        "name": "Bofana",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lamego",
+      "lat": -19.333718,
+      "lon": 34.3157858,
+      "osm_id": "node/6412761542",
+      "osm_tags": {
+        "name": "Lamego",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muda",
+      "lat": -19.3786494,
+      "lon": 34.4031163,
+      "osm_id": "node/6412819077",
+      "osm_tags": {
+        "name": "Muda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Passopa",
+      "lat": -19.053268,
+      "lon": 34.1437618,
+      "osm_id": "node/6427297027",
+      "osm_tags": {
+        "name": "Passopa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Cazasse",
+      "lat": -19.0596971,
+      "lon": 34.1527559,
+      "osm_id": "node/6427297028",
+      "osm_tags": {
+        "name": "Cazasse",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Revu\u00e9",
+      "lat": -19.0340873,
+      "lon": 34.1663204,
+      "osm_id": "node/6427297029",
+      "osm_tags": {
+        "alt_name": "SP do Revu\u00e9",
+        "fixme": "Does SP stand for Santo Paulo?",
+        "name": "Revu\u00e9",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ant\u00f3nio",
+      "lat": -19.0269445,
+      "lon": 34.1733015,
+      "osm_id": "node/6427297030",
+      "osm_tags": {
+        "name": "Ant\u00f3nio",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Guengere",
+      "lat": -19.0633481,
+      "lon": 34.2166535,
+      "osm_id": "node/6427297032",
+      "osm_tags": {
+        "name": "Guengere",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vinho",
+      "lat": -19.0781076,
+      "lon": 34.260598,
+      "osm_id": "node/6427297033",
+      "osm_tags": {
+        "name": "Vinho",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Xerene",
+      "lat": -19.065555,
+      "lon": 34.2755887,
+      "osm_id": "node/6427297034",
+      "osm_tags": {
+        "name": "Xerene",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mafunga",
+      "lat": -19.0665369,
+      "lon": 34.2855523,
+      "osm_id": "node/6427297035",
+      "osm_tags": {
+        "name": "Mafunga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magocho",
+      "lat": -19.0534748,
+      "lon": 34.2842864,
+      "osm_id": "node/6427297040",
+      "osm_tags": {
+        "name": "Magocho",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lonquice",
+      "lat": -19.0287026,
+      "lon": 34.3068263,
+      "osm_id": "node/6427297041",
+      "osm_tags": {
+        "name": "Lonquice",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Alf\u00e2ndega",
+      "lat": -19.0105422,
+      "lon": 34.3117947,
+      "osm_id": "node/6427297042",
+      "osm_tags": {
+        "name": "Alf\u00e2ndega",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Samo",
+      "lat": -19.0262521,
+      "lon": 34.3148237,
+      "osm_id": "node/6427297043",
+      "osm_tags": {
+        "name": "Samo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bu\u00e9-Maria",
+      "lat": -19.0186734,
+      "lon": 34.169581,
+      "osm_id": "node/6427297044",
+      "osm_tags": {
+        "name": "Bu\u00e9-Maria",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Componi",
+      "lat": -19.0796204,
+      "lon": 34.1637419,
+      "osm_id": "node/6429295333",
+      "osm_tags": {
+        "name": "Componi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Amerim",
+      "lat": -19.1551315,
+      "lon": 34.2369232,
+      "osm_id": "node/6429393052",
+      "osm_tags": {
+        "name": "Amerim",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Negrier",
+      "lat": -19.1565804,
+      "lon": 34.25691,
+      "osm_id": "node/6429393053",
+      "osm_tags": {
+        "name": "Negrier",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pita",
+      "lat": -19.2364844,
+      "lon": 34.3214407,
+      "osm_id": "node/6429788135",
+      "osm_tags": {
+        "name": "Pita",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Daude",
+      "lat": -19.2604788,
+      "lon": 34.2738503,
+      "osm_id": "node/6429788137",
+      "osm_tags": {
+        "name": "Daude",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Carabandua",
+      "lat": -19.2258729,
+      "lon": 34.3320445,
+      "osm_id": "node/6429788138",
+      "osm_tags": {
+        "name": "Carabandua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nova Maceira",
+      "lat": -19.6396121,
+      "lon": 34.7516928,
+      "osm_id": "node/6431165452",
+      "osm_tags": {
+        "name": "Nova Maceira",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Anizai",
+      "lat": -19.3348277,
+      "lon": 34.4765038,
+      "osm_id": "node/6431339100",
+      "osm_tags": {
+        "name": "Anizai",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mucaicai",
+      "lat": -19.0813137,
+      "lon": 34.425114,
+      "osm_id": "node/6431530288",
+      "osm_tags": {
+        "name": "Mucaicai",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chango",
+      "lat": -19.0335927,
+      "lon": 34.3816262,
+      "osm_id": "node/6432069266",
+      "osm_tags": {
+        "name": "Chango",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Alf\u00e2ndega",
+      "lat": -19.0376909,
+      "lon": 34.3829023,
+      "osm_id": "node/6432069267",
+      "osm_tags": {
+        "name": "Alf\u00e2ndega",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Arangua",
+      "lat": -19.0596819,
+      "lon": 34.4007108,
+      "osm_id": "node/6432069403",
+      "osm_tags": {
+        "name": "Arangua",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Inhauranga",
+      "lat": -19.0745015,
+      "lon": 34.4441619,
+      "osm_id": "node/6432069421",
+      "osm_tags": {
+        "name": "Inhauranga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Micheu",
+      "lat": -19.0910182,
+      "lon": 34.4586787,
+      "osm_id": "node/6432069422",
+      "osm_tags": {
+        "name": "Micheu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyamakamba",
+      "lat": -19.2541515,
+      "lon": 33.9784394,
+      "osm_id": "node/6437001238",
+      "osm_tags": {
+        "fixme": "correct if you have more accurate data",
+        "name": "Nyamakamba",
+        "place": "village",
+        "sources": "gps"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yon Issa",
+      "lat": -19.2074506,
+      "lon": 34.0756589,
+      "osm_id": "node/6437012359",
+      "osm_tags": {
+        "fixme": "correct if you have more accurate data",
+        "name": "Yon Issa",
+        "place": "village",
+        "sources": "gps"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mavuna",
+      "lat": -19.1119445,
+      "lon": 34.4335832,
+      "osm_id": "node/6437358561",
+      "osm_tags": {
+        "name": "Mavuna",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mutua",
+      "lat": -19.4992246,
+      "lon": 34.5964774,
+      "osm_id": "node/6437397312",
+      "osm_tags": {
+        "name": "Mutua",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tambarara",
+      "lat": -19.4290286,
+      "lon": 34.5612161,
+      "osm_id": "node/6437397323",
+      "osm_tags": {
+        "name": "Tambarara",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chibinde",
+      "lat": -19.4079882,
+      "lon": 34.5668939,
+      "osm_id": "node/6437397324",
+      "osm_tags": {
+        "name": "Chibinde",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chissangue",
+      "lat": -19.3536809,
+      "lon": 34.5892507,
+      "osm_id": "node/6437397334",
+      "osm_tags": {
+        "name": "Chissangue",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chibuabuabua",
+      "lat": -19.358166,
+      "lon": 34.5696529,
+      "osm_id": "node/6437397335",
+      "osm_tags": {
+        "name": "Chibuabuabua",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mussatue",
+      "lat": -19.4408812,
+      "lon": 34.5866367,
+      "osm_id": "node/6437397344",
+      "osm_tags": {
+        "name": "Mussatue",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ponte do P\u00fangu\u00e8",
+      "lat": -19.4780395,
+      "lon": 34.5245729,
+      "osm_id": "node/6437546172",
+      "osm_tags": {
+        "name": "Ponte do P\u00fangu\u00e8",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Massequesse",
+      "lat": -19.4565854,
+      "lon": 34.5148403,
+      "osm_id": "node/6440047641",
+      "osm_tags": {
+        "alt_name": "Ma\u00e7eque\u00e7e",
+        "name": "Massequesse",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Manherenhere",
+      "lat": -19.4597009,
+      "lon": 34.3875553,
+      "osm_id": "node/6440070795",
+      "osm_tags": {
+        "name": "Manherenhere",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Jangada",
+      "lat": -19.4510192,
+      "lon": 34.5375774,
+      "osm_id": "node/6440070796",
+      "osm_tags": {
+        "name": "Jangada",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muda-Mufo",
+      "lat": -19.4343973,
+      "lon": 34.4022668,
+      "osm_id": "node/6441028024",
+      "osm_tags": {
+        "alt_name": "Mudamufo",
+        "name": "Muda-Mufo",
+        "old_name": "Guanha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nhamotiguingui",
+      "lat": -19.1319888,
+      "lon": 34.3627329,
+      "osm_id": "node/6443359278",
+      "osm_tags": {
+        "name": "Nhamotiguingui",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Macharote",
+      "lat": -19.6227342,
+      "lon": 34.7225048,
+      "osm_id": "node/6446634182",
+      "osm_tags": {
+        "alt_name": "Maxarote",
+        "name": "Macharote",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nhamainga",
+      "lat": -19.6500396,
+      "lon": 34.7532453,
+      "osm_id": "node/6446808302",
+      "osm_tags": {
+        "name": "Nhamainga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mezimbite",
+      "lat": -19.5599275,
+      "lon": 34.6649643,
+      "osm_id": "node/6446808303",
+      "osm_tags": {
+        "alt_name": "Muzimbiti",
+        "name": "Mezimbite",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Minonha",
+      "lat": -19.5294856,
+      "lon": 34.7225844,
+      "osm_id": "node/6447070300",
+      "osm_tags": {
+        "name": "Minonha",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Macopa",
+      "lat": -19.394625,
+      "lon": 34.4141668,
+      "osm_id": "node/6447070305",
+      "osm_tags": {
+        "name": "Macopa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "John Segredo",
+      "lat": -19.3560782,
+      "lon": 34.3570966,
+      "osm_id": "node/6447070321",
+      "osm_tags": {
+        "alt_name": "Jhon Souglio",
+        "name": "John Segredo",
+        "note": "Yes, that's the name of the town.\nhttps://af.reuters.com/article/worldNews/idAFKCN1R50Q3",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Metuchira",
+      "lat": -19.1747342,
+      "lon": 34.2089503,
+      "osm_id": "node/6447070323",
+      "osm_tags": {
+        "alt_name": "Metuchira-Lomaco",
+        "name": "Metuchira",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nhaufu",
+      "lat": -19.4024156,
+      "lon": 34.5934165,
+      "osm_id": "node/6447128774",
+      "osm_tags": {
+        "name": "Nhaufu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nhampoca",
+      "lat": -19.2324651,
+      "lon": 34.4637599,
+      "osm_id": "node/6447222972",
+      "osm_tags": {
+        "fixme": "Please confirm location - estimated based on MSF data",
+        "name": "Nhampoca",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nhamacunguer",
+      "lat": -19.2651855,
+      "lon": 34.5669804,
+      "osm_id": "node/6452849763",
+      "osm_tags": {
+        "alt_name": "Nhamacungwir",
+        "alt_name_1": "Nhamacuenguere",
+        "name": "Nhamacunguer",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nhamitenguere",
+      "lat": -19.3988346,
+      "lon": 34.7280504,
+      "osm_id": "node/6457071534",
+      "osm_tags": {
+        "name": "Nhamitenguere",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chinamacondo Sede",
+      "lat": -19.5791667,
+      "lon": 35.1201931,
+      "osm_id": "node/6469762878",
+      "osm_tags": {
+        "name": "Chinamacondo Sede",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Praia Farol",
+      "lat": -19.6490972,
+      "lon": 35.1781127,
+      "osm_id": "node/6469762879",
+      "osm_tags": {
+        "name": "Praia Farol",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sengo",
+      "lat": -19.5700208,
+      "lon": 35.2506933,
+      "osm_id": "node/6469762880",
+      "osm_tags": {
+        "name": "Sengo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Praia Nova",
+      "lat": -19.6147785,
+      "lon": 35.2162102,
+      "osm_id": "node/6469762881",
+      "osm_tags": {
+        "name": "Praia Nova",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mecano",
+      "lat": -19.5496184,
+      "lon": 35.0517348,
+      "osm_id": "node/6477020255",
+      "osm_tags": {
+        "name": "Mecano",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Semacueza",
+      "lat": -19.212203,
+      "lon": 34.7246745,
+      "osm_id": "node/6561782658",
+      "osm_tags": {
+        "name": "Semacueza",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mecuzi",
+      "lat": -19.3436195,
+      "lon": 34.0588132,
+      "osm_id": "node/6595653340",
+      "osm_tags": {
+        "alt_name": "Mecudze",
+        "alt_name_1": "Mecudzi",
+        "name": "Mecuzi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Xereze",
+      "lat": -19.2272128,
+      "lon": 34.2470599,
+      "osm_id": "node/6647890690",
+      "osm_tags": {
+        "name": "Xereze",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Metuchira Nharuchonga",
+      "lat": -19.1471238,
+      "lon": 34.0172992,
+      "osm_id": "node/6656047047",
+      "osm_tags": {
+        "name": "Metuchira Nharuchonga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Rua Domingos",
+      "lat": -19.191074,
+      "lon": 34.1301408,
+      "osm_id": "node/6656047068",
+      "osm_tags": {
+        "name": "Rua Domingos",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Milha 6",
+      "lat": -19.5068951,
+      "lon": 34.7185378,
+      "osm_id": "node/6666680343",
+      "osm_tags": {
+        "alt_name": "Milha",
+        "name": "Milha 6",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nhapalapala",
+      "lat": -19.4665478,
+      "lon": 34.7175402,
+      "osm_id": "node/6666752756",
+      "osm_tags": {
+        "name": "Nhapalapala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nhapuepue",
+      "lat": -19.5096898,
+      "lon": 34.8092555,
+      "osm_id": "node/6668069425",
+      "osm_tags": {
+        "name": "Nhapuepue",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Equasha",
+      "lat": -19.3193222,
+      "lon": 34.3553903,
+      "osm_id": "node/6668275163",
+      "osm_tags": {
+        "name": "Equasha",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ndeja",
+      "lat": -19.3098485,
+      "lon": 34.4035388,
+      "osm_id": "node/6668275168",
+      "osm_tags": {
+        "name": "Ndeja",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nhamfimbe",
+      "lat": -19.3465226,
+      "lon": 34.2998842,
+      "osm_id": "node/6668275169",
+      "osm_tags": {
+        "name": "Nhamfimbe",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nhansato",
+      "lat": -19.4180354,
+      "lon": 34.3844378,
+      "osm_id": "node/6668275170",
+      "osm_tags": {
+        "alt_name": "Nsato",
+        "name": "Nhansato",
+        "place": "hamlet",
+        "source": "www.prodel.gov.mz"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Campira",
+      "lat": -19.3903136,
+      "lon": 34.3756425,
+      "osm_id": "node/6672762608",
+      "osm_tags": {
+        "name": "Campira",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Macaraure",
+      "lat": -19.4056024,
+      "lon": 34.3333199,
+      "osm_id": "node/6672776089",
+      "osm_tags": {
+        "name": "Macaraure",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mosca de Sono",
+      "lat": -19.5095933,
+      "lon": 34.3373543,
+      "osm_id": "node/6679484029",
+      "osm_tags": {
+        "name": "Mosca de Sono",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sovim",
+      "lat": -19.5454568,
+      "lon": 34.2352542,
+      "osm_id": "node/6679484098",
+      "osm_tags": {
+        "name": "Sovim",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiadea",
+      "lat": -19.5631496,
+      "lon": 34.2640471,
+      "osm_id": "node/6679484099",
+      "osm_tags": {
+        "alt_name": "Chiadua",
+        "alt_name_1": "Chiadeia",
+        "name": "Chiadea",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nhandanga",
+      "lat": -19.2124713,
+      "lon": 33.9503596,
+      "osm_id": "node/6682191736",
+      "osm_tags": {
+        "name": "Nhandanga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bendecara",
+      "lat": -19.2002237,
+      "lon": 33.9679242,
+      "osm_id": "node/6682191737",
+      "osm_tags": {
+        "alt_name": "Bendicara",
+        "name": "Bendecara",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nhamessenguere 1",
+      "lat": -19.3196171,
+      "lon": 34.2041553,
+      "osm_id": "node/6693984776",
+      "osm_tags": {
+        "alt_name": "Nhamissenguere 1",
+        "name": "Nhamessenguere 1",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nhamessenguere 2",
+      "lat": -19.3276329,
+      "lon": 34.1834031,
+      "osm_id": "node/6693984777",
+      "osm_tags": {
+        "alt_name": "Nhamissenguere 2",
+        "name": "Nhamessenguere 2",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cundu\u00e9",
+      "lat": -18.7228266,
+      "lon": 34.8460302,
+      "osm_id": "node/9973379994",
+      "osm_tags": {
+        "name": "Cundu\u00e9",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Urema",
+      "lat": -19.2526766,
+      "lon": 34.5295702,
+      "osm_id": "way/61834403",
+      "osm_tags": {
+        "name": "Rio Urema",
+        "name:en": "Urema River",
+        "source": "Poca de Sofala",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Revu\u00e9",
+      "lat": -19.5730022,
+      "lon": 33.6169795,
+      "osm_id": "way/61834413",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Revu\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sambaz\u00f3",
+      "lat": -19.3430107,
+      "lon": 35.1928535,
+      "osm_id": "way/218490588",
+      "osm_tags": {
+        "name": "Sambaz\u00f3",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sangussi",
+      "lat": -19.4347914,
+      "lon": 35.0675306,
+      "osm_id": "way/218490589",
+      "osm_tags": {
+        "name": "Sangussi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Urema",
+      "lat": -19.3670467,
+      "lon": 34.5509794,
+      "osm_id": "way/239230641",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Urema",
+        "name:en": "Urema River",
+        "source": "Poca de Sofala",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Bigimite",
+      "lat": -19.5580013,
+      "lon": 34.5238289,
+      "osm_id": "way/239230654",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Bigimite",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Urema",
+      "lat": -19.0136842,
+      "lon": 34.5372963,
+      "osm_id": "way/244601665",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Urema",
+        "name:en": "Urema River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nhandugue",
+      "lat": -17.9532612,
+      "lon": 33.7972244,
+      "osm_id": "way/245665989",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nhandugue",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nhamacurra",
+      "lat": -18.0777402,
+      "lon": 33.8559346,
+      "osm_id": "way/344125268",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nhamacurra",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nhandugue",
+      "lat": -18.1934777,
+      "lon": 34.0501639,
+      "osm_id": "way/344125269",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "intermittent": "yes",
+        "name": "Nhandugue",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nhamacurra",
+      "lat": -18.0667217,
+      "lon": 33.8980567,
+      "osm_id": "way/344125270",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nhamacurra",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mecumbeze",
+      "lat": -18.0820394,
+      "lon": 34.0447672,
+      "osm_id": "way/344127729",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mecumbeze",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nhandugue",
+      "lat": -18.4566987,
+      "lon": 34.3717623,
+      "osm_id": "way/344130214",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nhandugue",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mucambezi",
+      "lat": -18.7741149,
+      "lon": 34.538912,
+      "osm_id": "way/344153674",
+      "osm_tags": {
+        "name": "Mucambezi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nhandare",
+      "lat": -18.5266234,
+      "lon": 34.0624926,
+      "osm_id": "way/344443042",
+      "osm_tags": {
+        "name": "Nhandare",
+        "seasonal": "yes",
+        "source": "Bing areal survey 26-06-16",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Vunduzi",
+      "lat": -18.722287,
+      "lon": 33.9713445,
+      "osm_id": "way/344453582",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Vunduzi",
+        "seasonal": "yes",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Nhamapaza",
+      "lat": -18.1689046,
+      "lon": 34.5555946,
+      "osm_id": "way/380319516",
+      "osm_tags": {
+        "alt_name": "Rio Mamapaza",
+        "intermittent": "yes",
+        "name": "Rio Nhamapaza",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Nhapherua",
+      "lat": -18.3160982,
+      "lon": 34.3420762,
+      "osm_id": "way/410097696",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Nhapherua",
+        "source": "Mapillary",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Muazi",
+      "lat": -18.2650114,
+      "lon": 33.6688157,
+      "osm_id": "way/427403887",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Muazi",
+        "seasonal": "yes",
+        "source": "Bing areal survey 26-06-16",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Vunduzi",
+      "lat": -18.4014187,
+      "lon": 33.8443533,
+      "osm_id": "way/427478842",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "intermittent": "yes",
+        "name": "Vunduzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msicadzi",
+      "lat": -18.8900114,
+      "lon": 34.3919151,
+      "osm_id": "way/604225045",
+      "osm_tags": {
+        "name": "Msicadzi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zaracambe",
+      "lat": -18.8521693,
+      "lon": 34.395568,
+      "osm_id": "way/604228965",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Zaracambe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Ru\u00edr",
+      "lat": -19.1376561,
+      "lon": 34.62024,
+      "osm_id": "way/604254901",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Ru\u00edr",
+        "note": "Name source is from 1968 JOG. Probably a colonial name for this river, changed since then",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Mueredzi",
+      "lat": -18.9573245,
+      "lon": 34.605745,
+      "osm_id": "way/604359491",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Mueredzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Madzize",
+      "lat": -19.6312852,
+      "lon": 34.979546,
+      "osm_id": "way/678070684",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Madzize",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Xereze",
+      "lat": -19.3386266,
+      "lon": 34.4501424,
+      "osm_id": "way/678369362",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Xereze",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Arumua",
+      "lat": -19.4023888,
+      "lon": 34.4573334,
+      "osm_id": "way/678369363",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Arumua",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Vunduzi",
+      "lat": -18.1078916,
+      "lon": 33.6806409,
+      "osm_id": "way/680035272",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Vunduzi",
+        "seasonal": "yes",
+        "source": "Bing areal survey 26-06-16",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mosca de Sono",
+      "lat": -19.5158312,
+      "lon": 34.3182366,
+      "osm_id": "way/680037546",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mosca de Sono",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Rio Sovim",
+      "lat": -19.5397661,
+      "lon": 34.2454174,
+      "osm_id": "way/680037555",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Sovim",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Nhamcune",
+      "lat": -19.4840557,
+      "lon": 34.4942559,
+      "osm_id": "way/680105775",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Nhamcune",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Rio Savane",
+      "lat": -19.4503,
+      "lon": 34.754779,
+      "osm_id": "way/680290140",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Savane",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nhandare",
+      "lat": -18.684342,
+      "lon": 34.0590813,
+      "osm_id": "way/680377528",
+      "osm_tags": {
+        "name": "Nhandare",
+        "seasonal": "yes",
+        "source": "Bing areal survey 26-06-16",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Dingu\u00e8 Dingu\u00e8",
+      "lat": -19.2771479,
+      "lon": 34.5555827,
+      "osm_id": "way/680403318",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Dingu\u00e8 Dingu\u00e8",
+        "name:en": "Dingu\u00e8 River",
+        "note": "Original route until mid 1970's",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Mussap\u00e1ssua",
+      "lat": -19.1839233,
+      "lon": 34.6255749,
+      "osm_id": "way/680415965",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Mussap\u00e1ssua",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Bigimite",
+      "lat": -19.5532162,
+      "lon": 34.4880449,
+      "osm_id": "way/681123725",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Bigimite",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Muda",
+      "lat": -19.4067124,
+      "lon": 34.273986,
+      "osm_id": "way/681171969",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Muda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -19.2319504,
+      "lon": 34.5087681,
+      "osm_id": "way/681202662",
+      "osm_tags": {
+        "alt_name": "Rio P\u00fango\u00e8",
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "M'tuchira",
+      "lat": -19.2843348,
+      "lon": 34.3703015,
+      "osm_id": "way/681205710",
+      "osm_tags": {
+        "alt_name": "Metuchira",
+        "name": "M'tuchira",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mecudzi",
+      "lat": -19.2445448,
+      "lon": 33.9206978,
+      "osm_id": "way/681225725",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mecudzi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Rio Savane",
+      "lat": -19.4082414,
+      "lon": 34.7279577,
+      "osm_id": "way/681321082",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Savane",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "3",
+      "lat": -19.2570705,
+      "lon": 33.9686966,
+      "osm_id": "way/681321815",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "3",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "M'tuchira",
+      "lat": -19.2692943,
+      "lon": 34.3292941,
+      "osm_id": "way/682082062",
+      "osm_tags": {
+        "alt_name": "Metuchira",
+        "intermittent": "yes",
+        "name": "M'tuchira",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -19.1432097,
+      "lon": 34.4759459,
+      "osm_id": "way/684255644",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Rio Jesiva",
+      "lat": -19.4991848,
+      "lon": 34.3649209,
+      "osm_id": "way/684538588",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Jesiva",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Rio Nhamitenguere",
+      "lat": -19.4398994,
+      "lon": 34.7759264,
+      "osm_id": "way/685776210",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Nhamitenguere",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nhamessenguere",
+      "lat": -19.3005704,
+      "lon": 34.1873242,
+      "osm_id": "way/685981366",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nhamessenguere",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Xereze",
+      "lat": -19.3582332,
+      "lon": 34.4694456,
+      "osm_id": "way/685999717",
+      "osm_tags": {
+        "name": "Xereze",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Xereze",
+      "lat": -19.3545386,
+      "lon": 34.4636527,
+      "osm_id": "way/685999718",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Xereze",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "M\u2019tuchira",
+      "lat": -19.3735462,
+      "lon": 34.4985911,
+      "osm_id": "way/685999719",
+      "osm_tags": {
+        "alt_name": "Metuchira",
+        "name": "M\u2019tuchira",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Arumua",
+      "lat": -19.3648934,
+      "lon": 34.4811588,
+      "osm_id": "way/685999720",
+      "osm_tags": {
+        "name": "Arumua",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Arumua",
+      "lat": -19.3779801,
+      "lon": 34.4640946,
+      "osm_id": "way/685999721",
+      "osm_tags": {
+        "name": "Arumua",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "M'tuchira",
+      "lat": -19.2988889,
+      "lon": 34.4262597,
+      "osm_id": "way/686005279",
+      "osm_tags": {
+        "alt_name": "Metuchira",
+        "intermittent": "yes",
+        "name": "M'tuchira",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "M'tuchira",
+      "lat": -19.2849617,
+      "lon": 34.3391976,
+      "osm_id": "way/686017224",
+      "osm_tags": {
+        "alt_name": "Metuchira",
+        "intermittent": "yes",
+        "name": "M'tuchira",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Muda",
+      "lat": -19.3864335,
+      "lon": 34.1805334,
+      "osm_id": "way/686097034",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Muda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -19.3790809,
+      "lon": 34.5179337,
+      "osm_id": "way/686153582",
+      "osm_tags": {
+        "alt_name": "Rio P\u00fango\u00e8",
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Dingu\u00e8 Dingu\u00e8",
+      "lat": -19.1091817,
+      "lon": 34.5129503,
+      "osm_id": "way/686172464",
+      "osm_tags": {
+        "name": "Rio Dingu\u00e8 Dingu\u00e8",
+        "name:en": "Dingu\u00e8 River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "M'tuchira",
+      "lat": -19.3419181,
+      "lon": 34.4768447,
+      "osm_id": "way/686191598",
+      "osm_tags": {
+        "alt_name": "Metuchira",
+        "intermittent": "yes",
+        "name": "M'tuchira",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Dingu\u00e8 Dingu\u00e8",
+      "lat": -19.235069,
+      "lon": 34.5343946,
+      "osm_id": "way/686660462",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "intermittent": "yes",
+        "name": "Rio Dingu\u00e8 Dingu\u00e8",
+        "name:en": "Dingu\u00e8 River",
+        "note": "Original riverbed until mid 1970's",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Nhamechindo",
+      "lat": -19.6098696,
+      "lon": 35.1450717,
+      "osm_id": "way/687563173",
+      "osm_tags": {
+        "name": "Rio Nhamechindo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nhamatanda",
+      "lat": -19.2956628,
+      "lon": 34.2263307,
+      "osm_id": "way/687689106",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nhamatanda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nhamatanda",
+      "lat": -19.2978889,
+      "lon": 34.27614,
+      "osm_id": "way/687693270",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nhamatanda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nhamatanda",
+      "lat": -19.2784558,
+      "lon": 34.1639386,
+      "osm_id": "way/687840193",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nhamatanda",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Bigimite",
+      "lat": -19.5662893,
+      "lon": 34.5242279,
+      "osm_id": "way/688091191",
+      "osm_tags": {
+        "admin_level": "5",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio Bigimite",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Urema",
+      "lat": -19.2070635,
+      "lon": 34.5121248,
+      "osm_id": "way/688185685",
+      "osm_tags": {
+        "name": "Rio Urema",
+        "name:en": "Urema River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Savane",
+      "lat": -19.4943658,
+      "lon": 34.8030353,
+      "osm_id": "way/688249825",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Savane",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Nhamitenguere",
+      "lat": -19.5032218,
+      "lon": 34.8339443,
+      "osm_id": "way/688352639",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Nhamitenguere",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "unkown",
+      "lat": -19.3932719,
+      "lon": 34.9182006,
+      "osm_id": "way/688360078",
+      "osm_tags": {
+        "name": "unkown",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "unkown",
+      "lat": -19.3922851,
+      "lon": 34.9187331,
+      "osm_id": "way/688360079",
+      "osm_tags": {
+        "name": "unkown",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "unkown",
+      "lat": -19.3921329,
+      "lon": 34.9188777,
+      "osm_id": "way/688360080",
+      "osm_tags": {
+        "name": "unkown",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Savane",
+      "lat": -19.5420084,
+      "lon": 34.8660786,
+      "osm_id": "way/688549187",
+      "osm_tags": {
+        "name": "Rio Savane",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Savane",
+      "lat": -19.5791699,
+      "lon": 34.9883856,
+      "osm_id": "way/688549188",
+      "osm_tags": {
+        "name": "Rio Savane",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Metuchira",
+      "lat": -19.178821,
+      "lon": 34.1565652,
+      "osm_id": "way/690675119",
+      "osm_tags": {
+        "alt_name": "M'tuchira",
+        "intermittent": "yes",
+        "name": "Metuchira",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lago Urema",
+      "lat": -18.8911976,
+      "lon": 34.4963957,
+      "osm_id": "way/693972663",
+      "osm_tags": {
+        "name": "Lago Urema",
+        "name:en": "Lake Urema",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Sambize",
+      "lat": -19.0951347,
+      "lon": 34.5662926,
+      "osm_id": "way/698681924",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Sambize",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Chula",
+      "lat": -19.1192802,
+      "lon": 34.5869346,
+      "osm_id": "way/698697378",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Chula",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Sambize",
+      "lat": -19.0530876,
+      "lon": 34.612415,
+      "osm_id": "way/698772417",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Sambize",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zaracambe",
+      "lat": -18.8595877,
+      "lon": 34.3955012,
+      "osm_id": "way/699979752",
+      "osm_tags": {
+        "name": "Zaracambe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "S\u00fang\u00fce",
+      "lat": -18.8670063,
+      "lon": 34.4354714,
+      "osm_id": "way/699979753",
+      "osm_tags": {
+        "name": "S\u00fang\u00fce",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Savane",
+      "lat": -19.6045985,
+      "lon": 35.1044569,
+      "osm_id": "way/704282963",
+      "osm_tags": {
+        "name": "Rio Savane",
+        "source": "BingSat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mosca de Sono",
+      "lat": -19.510528,
+      "lon": 34.3710713,
+      "osm_id": "way/710423653",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Mosca de Sono",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mosca de Sono",
+      "lat": -19.5123034,
+      "lon": 34.3723187,
+      "osm_id": "way/710423654",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mosca de Sono",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Sovim",
+      "lat": -19.5260708,
+      "lon": 34.2570207,
+      "osm_id": "way/711927824",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Sovim",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mecudzi",
+      "lat": -19.3062179,
+      "lon": 34.064857,
+      "osm_id": "way/712065019",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mecudzi",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -19.3466899,
+      "lon": 34.5261836,
+      "osm_id": "way/804511122",
+      "osm_tags": {
+        "alt_name": "Rio P\u00fango\u00e8",
+        "boat": "no",
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -19.2963503,
+      "lon": 34.521597,
+      "osm_id": "way/804511123",
+      "osm_tags": {
+        "alt_name": "Rio P\u00fango\u00e8",
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -19.0134334,
+      "lon": 34.2494214,
+      "osm_id": "way/804593968",
+      "osm_tags": {
+        "admin_level": "5",
+        "alt_name": "Rio P\u00fango\u00e8",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nhandugue",
+      "lat": -18.0922157,
+      "lon": 33.9287561,
+      "osm_id": "way/848985709",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nhandugue",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Revu\u00e9",
+      "lat": -19.6961463,
+      "lon": 33.7952217,
+      "osm_id": "way/849025303",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Revu\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -19.6516048,
+      "lon": 34.6115095,
+      "osm_id": "way/849197749",
+      "osm_tags": {
+        "admin_level": "5",
+        "alt_name": "Rio P\u00fango\u00e8",
+        "boat": "no",
+        "boundary": "administrative",
+        "intermittent": "no",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -19.6094962,
+      "lon": 34.5452911,
+      "osm_id": "way/849197750",
+      "osm_tags": {
+        "alt_name": "Rio P\u00fango\u00e8",
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Madzize",
+      "lat": -19.6397783,
+      "lon": 34.8314908,
+      "osm_id": "way/849337830",
+      "osm_tags": {
+        "name": "Rio Madzize",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Muazi",
+      "lat": -18.5161167,
+      "lon": 33.8640313,
+      "osm_id": "way/849337850",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "intermittent": "yes",
+        "name": "Muazi",
+        "seasonal": "yes",
+        "source": "Bing areal survey 26-06-16",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -18.7484636,
+      "lon": 33.7973988,
+      "osm_id": "way/849337886",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Rio P\u00fango\u00e8",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Urema",
+      "lat": -19.1686933,
+      "lon": 34.5353066,
+      "osm_id": "way/849533516",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Urema",
+        "name:en": "Urema River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Urema",
+      "lat": -19.187012,
+      "lon": 34.5254865,
+      "osm_id": "way/849533517",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Urema",
+        "name:en": "Urema River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Urema",
+      "lat": -19.1499868,
+      "lon": 34.5436629,
+      "osm_id": "way/849533518",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Urema",
+        "name:en": "Urema River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Urema",
+      "lat": -19.3068271,
+      "lon": 34.5553199,
+      "osm_id": "way/849533519",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Urema",
+        "name:en": "Urema River",
+        "source": "Poca de Sofala",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -19.4878401,
+      "lon": 34.5384983,
+      "osm_id": "way/849533520",
+      "osm_tags": {
+        "admin_level": "5",
+        "alt_name": "Rio P\u00fango\u00e8",
+        "boat": "no",
+        "boundary": "administrative",
+        "intermittent": "yes",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -19.5657977,
+      "lon": 34.5321026,
+      "osm_id": "way/849533521",
+      "osm_tags": {
+        "alt_name": "Rio P\u00fango\u00e8",
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -19.5842959,
+      "lon": 34.5282805,
+      "osm_id": "way/849533522",
+      "osm_tags": {
+        "admin_level": "5",
+        "alt_name": "Rio P\u00fango\u00e8",
+        "boat": "no",
+        "boundary": "administrative",
+        "intermittent": "yes",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Dingu\u00e8 Dingu\u00e8",
+      "lat": -19.0775587,
+      "lon": 34.4578237,
+      "osm_id": "way/851677230",
+      "osm_tags": {
+        "admin_level": "5",
+        "boundary": "administrative",
+        "name": "Rio Dingu\u00e8 Dingu\u00e8",
+        "name:en": "Dingu\u00e8 River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -18.8641114,
+      "lon": 33.94987,
+      "osm_id": "way/851677231",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Rio P\u00fango\u00e8",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio P\u00fangu\u00e8",
+      "lat": -18.6999198,
+      "lon": 33.6543349,
+      "osm_id": "way/851677232",
+      "osm_tags": {
+        "admin_level": "5",
+        "alt_name": "Rio P\u00fango\u00e8",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Rio P\u00fangu\u00e8",
+        "name:en": "Pungwe River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Rio Nhapherua",
+      "lat": -18.190987,
+      "lon": 34.2881906,
+      "osm_id": "way/1225567302",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Rio Nhapherua",
+        "source": "Mapillary",
+        "waterway": "stream"
+      }
+    }
+  ]
+}

@@ -1,0 +1,2569 @@
+{
+  "park_id": "SSD_Zeraf",
+  "downloaded_at": "2026-02-08T11:22:57.649305+00:00",
+  "buffer_km": 50,
+  "place_count": 192,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Mayiandi\u0331t",
+      "lat": 8.1344294,
+      "lon": 30.0050222,
+      "osm_id": "node/210314672",
+      "osm_tags": {
+        "name": "Mayiandi\u0331t",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "L\u025b\u0308r",
+      "lat": 8.3040834,
+      "lon": 30.1411544,
+      "osm_id": "node/210325994",
+      "osm_tags": {
+        "name": "L\u025b\u0308r",
+        "name:ar": "\u0644\u064a\u064a\u0631",
+        "name:de": "Leer",
+        "name:en": "Leer",
+        "name:es": "Leer",
+        "name:fr": "Leer",
+        "place": "city",
+        "population": "10486",
+        "population:date": "2015",
+        "wikidata": "Q3228987",
+        "wikipedia": "en:Leer, South Sudan"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Dok",
+      "lat": 8.1908607,
+      "lon": 30.3060981,
+      "osm_id": "node/210331520",
+      "osm_tags": {
+        "name": "Dok",
+        "name:ar": "\u0623\u062f\u0648\u0643",
+        "place": "town",
+        "wikidata": "Q2824691"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Rubkona Market",
+      "lat": 9.2894233,
+      "lon": 29.7895084,
+      "osm_id": "node/210338561",
+      "osm_tags": {
+        "alt_name": "Rubkona",
+        "name": "Rubkona Market",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Yi\u0331o\u0331d",
+      "lat": 8.1236035,
+      "lon": 31.4097976,
+      "osm_id": "node/238717535",
+      "osm_tags": {
+        "is_in:country": "South Sudan",
+        "is_in:country_code": "SS",
+        "name": "Yi\u0331o\u0331d",
+        "name:ar": "\u0623\u064a\u0648\u062f",
+        "name:de": "Ayod",
+        "name:en": "Ayod",
+        "name:es": "Ayod",
+        "name:fr": "Ayod",
+        "name:zh": "\u963f\u7ea6\u5fb7",
+        "place": "city",
+        "wikidata": "Q2874993",
+        "wikipedia": "zh:\u963f\u7ea6\u5fb7"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Duk Padiet",
+      "lat": 7.7497653,
+      "lon": 31.3959666,
+      "osm_id": "node/238717573",
+      "osm_tags": {
+        "name": "Duk Padiet",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Doleib Hill",
+      "lat": 9.3789823,
+      "lon": 31.5814391,
+      "osm_id": "node/243415872",
+      "osm_tags": {
+        "name": "Doleib Hill",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Paguir",
+      "lat": 9.119437,
+      "lon": 30.7665154,
+      "osm_id": "node/243451506",
+      "osm_tags": {
+        "created_by": "JOSM",
+        "name": "Paguir",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Tonga",
+      "lat": 9.4725767,
+      "lon": 31.0457442,
+      "osm_id": "node/2146406951",
+      "osm_tags": {
+        "name": "Tonga",
+        "place": "town",
+        "wikidata": "Q3531541"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "New Fangak",
+      "lat": 9.4073225,
+      "lon": 31.162239,
+      "osm_id": "node/2146809997",
+      "osm_tags": {
+        "alt_name": "Poum",
+        "name": "New Fangak",
+        "name:ar": "\u0641\u0627\u0646\u063a\u0627\u0643 \u062c\u062f\u064a\u062f",
+        "old_name": "Phom-el-Zeraf",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Old Fangak",
+      "lat": 9.0668934,
+      "lon": 30.8800267,
+      "osm_id": "node/2513118810",
+      "osm_tags": {
+        "name": "Old Fangak",
+        "name:ar": "\u0641\u0627\u0646\u063a\u0627\u0643 \u0642\u062f\u064a\u0645",
+        "note": "OCHA Logistics Location",
+        "place": "town",
+        "population": "55515",
+        "source": "OCHA South_Sudan_Situation_Report_No_77.pdf"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ko\u0331c",
+      "lat": 8.5931739,
+      "lon": 29.9952889,
+      "osm_id": "node/2588755678",
+      "osm_tags": {
+        "name": "Ko\u0331c",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mir Mir",
+      "lat": 8.4698416,
+      "lon": 30.101628,
+      "osm_id": "node/2588755897",
+      "osm_tags": {
+        "name": "Mir Mir",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Canal",
+      "lat": 9.3650172,
+      "lon": 31.5484834,
+      "osm_id": "node/2589942705",
+      "osm_tags": {
+        "name": "Canal",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Rier Market",
+      "lat": 8.7839173,
+      "lon": 30.0998957,
+      "osm_id": "node/2593389690",
+      "osm_tags": {
+        "name": "Rier Market",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kuerguini",
+      "lat": 9.2600768,
+      "lon": 29.8874249,
+      "osm_id": "node/2598170303",
+      "osm_tags": {
+        "fixme": "check if this village still exists, the area has been flooded, on imagery if March 2024 it is not clear",
+        "name": "Kuerguini",
+        "place": "hamlet",
+        "source": "OCHA South_Sudan_Situation_Report_No_77.pdf"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "B\u00ebntiw",
+      "lat": 9.2480864,
+      "lon": 29.8003988,
+      "osm_id": "node/2613802518",
+      "osm_tags": {
+        "admin_level": "6",
+        "capital": "4",
+        "name": "B\u00ebntiw",
+        "name:ar": "\u0628\u0627\u0646\u062a\u064a\u0648\u200e",
+        "name:de": "Bentiu",
+        "name:en": "Bentiu",
+        "name:es": "Bentiu",
+        "name:fr": "Bentiu",
+        "name:ko": "\ubca4\ud2f0\uc6b0",
+        "name:ru": "\u0411\u0430\u043d\u0442\u0438\u043e",
+        "name:uk": "\u0411\u0430\u043d\u0442\u0456\u043e",
+        "name:zh": "\u672c\u63d0\u4e4c",
+        "name:zh-Hans": "\u672c\u63d0\u4e4c",
+        "name:zh-Hant": "\u672c\u63d0\u70cf",
+        "place": "city",
+        "population": "6500",
+        "population:date": "2010",
+        "wikidata": "Q818284",
+        "wikipedia": "en:Bentiu"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kuernyang",
+      "lat": 9.3195216,
+      "lon": 30.8886612,
+      "osm_id": "node/2637581735",
+      "osm_tags": {
+        "name": "Kuernyang",
+        "place": "hamlet",
+        "source": "OCHA South_Sudan_Situation_Report_No_77.pdf"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuok",
+      "lat": 8.4390385,
+      "lon": 30.0699645,
+      "osm_id": "node/2657193344",
+      "osm_tags": {
+        "name": "Kuok",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Khorfulus",
+      "lat": 9.3145614,
+      "lon": 31.5847456,
+      "osm_id": "node/2805745231",
+      "osm_tags": {
+        "name": "Khorfulus",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Thaker",
+      "lat": 8.3942121,
+      "lon": 30.0541017,
+      "osm_id": "node/3045928384",
+      "osm_tags": {
+        "name": "Thaker",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Rupkuai",
+      "lat": 8.3902359,
+      "lon": 30.080375,
+      "osm_id": "node/3045967354",
+      "osm_tags": {
+        "name": "Rupkuai",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pillieny",
+      "lat": 8.2643409,
+      "lon": 30.2025947,
+      "osm_id": "node/3046195644",
+      "osm_tags": {
+        "name": "Pillieny",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Choatjak",
+      "lat": 8.4499365,
+      "lon": 30.0693014,
+      "osm_id": "node/3047312308",
+      "osm_tags": {
+        "name": "Choatjak",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dock",
+      "lat": 8.381752,
+      "lon": 30.0880334,
+      "osm_id": "node/3047312309",
+      "osm_tags": {
+        "name": "Dock",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Giel 1",
+      "lat": 8.3062948,
+      "lon": 30.123905,
+      "osm_id": "node/3047312310",
+      "osm_tags": {
+        "fixme": "survey needed",
+        "name": "Giel 1",
+        "name:ar": "\u062c\u064a\u0644 1",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Giel 2",
+      "lat": 8.3085539,
+      "lon": 30.1228726,
+      "osm_id": "node/3047312311",
+      "osm_tags": {
+        "fixme": "survey needed",
+        "name": "Giel 2",
+        "name:ar": "\u062c\u064a\u0644 2",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gier",
+      "lat": 8.3437798,
+      "lon": 30.1125965,
+      "osm_id": "node/3047312312",
+      "osm_tags": {
+        "name": "Gier",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaygaii",
+      "lat": 8.2827377,
+      "lon": 30.1755477,
+      "osm_id": "node/3047312313",
+      "osm_tags": {
+        "fixme": "survey needed",
+        "name": "Kaygaii",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nak East",
+      "lat": 8.2114639,
+      "lon": 30.2725851,
+      "osm_id": "node/3047312315",
+      "osm_tags": {
+        "name": "Nak East",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nak North",
+      "lat": 8.2261123,
+      "lon": 30.2535087,
+      "osm_id": "node/3047312316",
+      "osm_tags": {
+        "name": "Nak North",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyony",
+      "lat": 8.3345998,
+      "lon": 30.117341,
+      "osm_id": "node/3047312317",
+      "osm_tags": {
+        "name": "Nyony",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Payak",
+      "lat": 8.3218928,
+      "lon": 30.0961903,
+      "osm_id": "node/3047312318",
+      "osm_tags": {
+        "name": "Payak",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Riang",
+      "lat": 8.4510796,
+      "lon": 30.0820166,
+      "osm_id": "node/3047312320",
+      "osm_tags": {
+        "name": "Riang",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Thonyor",
+      "lat": 8.2201419,
+      "lon": 30.2208111,
+      "osm_id": "node/3047312322",
+      "osm_tags": {
+        "name": "Thonyor",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tutnyang",
+      "lat": 8.3589897,
+      "lon": 30.099538,
+      "osm_id": "node/3047312324",
+      "osm_tags": {
+        "name": "Tutnyang",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ulu",
+      "lat": 8.2576208,
+      "lon": 30.2188592,
+      "osm_id": "node/3047312325",
+      "osm_tags": {
+        "name": "Ulu",
+        "name:ar": "\u0623\u0648\u0644\u0648",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dablual",
+      "lat": 8.3122575,
+      "lon": 30.0152277,
+      "osm_id": "node/3047384445",
+      "osm_tags": {
+        "name": "Dablual",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Der",
+      "lat": 8.3309045,
+      "lon": 30.1760836,
+      "osm_id": "node/3047384446",
+      "osm_tags": {
+        "name": "Der",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dhornor",
+      "lat": 8.4682689,
+      "lon": 30.1450462,
+      "osm_id": "node/3047384447",
+      "osm_tags": {
+        "name": "Dhornor",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dortuol",
+      "lat": 8.3460016,
+      "lon": 30.1778577,
+      "osm_id": "node/3047384448",
+      "osm_tags": {
+        "name": "Dortuol",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Guat",
+      "lat": 8.4148387,
+      "lon": 30.1851253,
+      "osm_id": "node/3047384449",
+      "osm_tags": {
+        "name": "Guat",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jaguar",
+      "lat": 8.3847454,
+      "lon": 30.0356982,
+      "osm_id": "node/3047384451",
+      "osm_tags": {
+        "name": "Jaguar",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaang Koc",
+      "lat": 8.4099954,
+      "lon": 30.0774737,
+      "osm_id": "node/3047384452",
+      "osm_tags": {
+        "name": "Kaang Koc",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Loual",
+      "lat": 8.4233504,
+      "lon": 30.1907414,
+      "osm_id": "node/3047384454",
+      "osm_tags": {
+        "name": "Loual",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mirnyal",
+      "lat": 8.320624,
+      "lon": 30.0646669,
+      "osm_id": "node/3047384456",
+      "osm_tags": {
+        "name": "Mirnyal",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Padeah",
+      "lat": 8.4038931,
+      "lon": 30.1890425,
+      "osm_id": "node/3047384457",
+      "osm_tags": {
+        "name": "Padeah",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Siyang",
+      "lat": 8.3878295,
+      "lon": 30.1982091,
+      "osm_id": "node/3047384460",
+      "osm_tags": {
+        "name": "Siyang",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dindin",
+      "lat": 8.3031862,
+      "lon": 30.2312653,
+      "osm_id": "node/3050386037",
+      "osm_tags": {
+        "name": "Dindin",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Koulier",
+      "lat": 8.3094378,
+      "lon": 30.1550761,
+      "osm_id": "node/3050809258",
+      "osm_tags": {
+        "name": "Koulier",
+        "place": "village",
+        "population": "750"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Nimni",
+      "lat": 9.3066169,
+      "lon": 30.0296974,
+      "osm_id": "node/3315897327",
+      "osm_tags": {
+        "name": "Nimni",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wau",
+      "lat": 8.2476901,
+      "lon": 31.2916161,
+      "osm_id": "node/3390375662",
+      "osm_tags": {
+        "name": "Wau",
+        "note": "OCHA Logistics Location",
+        "place": "village",
+        "source": "OCHA South_Sudan_Situation_Report_No_77.pdf"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gorwai",
+      "lat": 8.1378373,
+      "lon": 31.192451,
+      "osm_id": "node/3433322321",
+      "osm_tags": {
+        "name": "Gorwai",
+        "name_1": "Gorwei",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Haat",
+      "lat": 8.5154453,
+      "lon": 30.6297626,
+      "osm_id": "node/3433362078",
+      "osm_tags": {
+        "name": "Haat",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jiech",
+      "lat": 8.3691166,
+      "lon": 31.1362454,
+      "osm_id": "node/3433386597",
+      "osm_tags": {
+        "name": "Jiech",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaldak",
+      "lat": 9.3469635,
+      "lon": 31.4891619,
+      "osm_id": "node/3433510268",
+      "osm_tags": {
+        "name": "Kaldak",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamel",
+      "lat": 9.2615416,
+      "lon": 31.5338248,
+      "osm_id": "node/3433535657",
+      "osm_tags": {
+        "name": "Kamel",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kandak",
+      "lat": 8.5743238,
+      "lon": 31.1226383,
+      "osm_id": "node/3433547348",
+      "osm_tags": {
+        "name": "Kandak",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katdalok",
+      "lat": 7.9886442,
+      "lon": 31.4822431,
+      "osm_id": "node/3433580571",
+      "osm_tags": {
+        "name": "Katdalok",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kurwai",
+      "lat": 9.244045,
+      "lon": 31.1824539,
+      "osm_id": "node/3433626754",
+      "osm_tags": {
+        "name": "Kurwai",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Menime",
+      "lat": 8.6093418,
+      "lon": 30.717653,
+      "osm_id": "node/3433939168",
+      "osm_tags": {
+        "name": "Menime",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mogok",
+      "lat": 8.4180563,
+      "lon": 31.329687,
+      "osm_id": "node/3433946698",
+      "osm_tags": {
+        "name": "Mogok",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyanapol",
+      "lat": 8.2043659,
+      "lon": 31.1842295,
+      "osm_id": "node/3434013876",
+      "osm_tags": {
+        "name": "Nyanapol",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pagil",
+      "lat": 8.7108207,
+      "lon": 31.2688034,
+      "osm_id": "node/3434116244",
+      "osm_tags": {
+        "name": "Pagil",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Panyi\u0331ji\u0331ar",
+      "lat": 7.4505124,
+      "lon": 30.2813144,
+      "osm_id": "node/3434117955",
+      "osm_tags": {
+        "name": "Panyi\u0331ji\u0331ar",
+        "place": "city"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Pariang",
+      "lat": 9.9190338,
+      "lon": 29.9816678,
+      "osm_id": "node/3849971357",
+      "osm_tags": {
+        "name": "Pariang",
+        "place": "town",
+        "source:name": "UNHCR"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Poktap",
+      "lat": 7.4566724,
+      "lon": 31.4117265,
+      "osm_id": "node/3974559451",
+      "osm_tags": {
+        "name": "Poktap",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dor Centre",
+      "lat": 9.4254708,
+      "lon": 31.2595046,
+      "osm_id": "node/3974560393",
+      "osm_tags": {
+        "name": "Dor Centre",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Takanno",
+      "lat": 9.4187339,
+      "lon": 31.2832046,
+      "osm_id": "node/3974560437",
+      "osm_tags": {
+        "name": "Takanno",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mathiang",
+      "lat": 7.5167732,
+      "lon": 31.4795737,
+      "osm_id": "node/3974587434",
+      "osm_tags": {
+        "name": "Mathiang",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ager",
+      "lat": 7.4907068,
+      "lon": 31.5139566,
+      "osm_id": "node/3974649532",
+      "osm_tags": {
+        "name": "Ager",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Duk Payuel",
+      "lat": 7.4829692,
+      "lon": 31.5171266,
+      "osm_id": "node/4045337491",
+      "osm_tags": {
+        "name": "Duk Payuel",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Batheng",
+      "lat": 7.4858094,
+      "lon": 31.5128458,
+      "osm_id": "node/4045337496",
+      "osm_tags": {
+        "name": "Batheng",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Takanno",
+      "lat": 9.3822429,
+      "lon": 31.2639682,
+      "osm_id": "node/4047418448",
+      "osm_tags": {
+        "name": "Takanno",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Niyagwado",
+      "lat": 9.4020115,
+      "lon": 31.1304687,
+      "osm_id": "node/4047418472",
+      "osm_tags": {
+        "name": "Niyagwado",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Diel",
+      "lat": 9.3773271,
+      "lon": 31.3081382,
+      "osm_id": "node/4047418518",
+      "osm_tags": {
+        "name": "Diel",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Konna",
+      "lat": 9.2991129,
+      "lon": 31.407616,
+      "osm_id": "node/4047418520",
+      "osm_tags": {
+        "name": "Konna",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nyiyar",
+      "lat": 9.283739,
+      "lon": 31.4051698,
+      "osm_id": "node/4047418584",
+      "osm_tags": {
+        "name": "Nyiyar",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Deng Gak",
+      "lat": 9.3773377,
+      "lon": 31.1303936,
+      "osm_id": "node/4047418751",
+      "osm_tags": {
+        "name": "Deng Gak",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wunawualian",
+      "lat": 9.2897955,
+      "lon": 31.3978742,
+      "osm_id": "node/4047418832",
+      "osm_tags": {
+        "name": "Wunawualian",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Adiang",
+      "lat": 9.2915064,
+      "lon": 31.4088259,
+      "osm_id": "node/4047419041",
+      "osm_tags": {
+        "name": "Adiang",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Atar",
+      "lat": 9.3374599,
+      "lon": 31.4078842,
+      "osm_id": "node/4047419111",
+      "osm_tags": {
+        "name": "Atar",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yiom",
+      "lat": 9.1806742,
+      "lon": 30.7857564,
+      "osm_id": "node/4047681978",
+      "osm_tags": {
+        "name": "Yiom",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tige",
+      "lat": 9.1555147,
+      "lon": 30.7653665,
+      "osm_id": "node/4047682037",
+      "osm_tags": {
+        "name": "Tige",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwoinlo",
+      "lat": 9.1697397,
+      "lon": 30.7685637,
+      "osm_id": "node/4047682712",
+      "osm_tags": {
+        "fixme": "location does not correspond with village on satellite imagery",
+        "name": "Kwoinlo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dedigo",
+      "lat": 9.410365,
+      "lon": 31.5593278,
+      "osm_id": "node/4063300047",
+      "osm_tags": {
+        "name": "Dedigo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Obai Dego",
+      "lat": 9.3872054,
+      "lon": 31.5287077,
+      "osm_id": "node/4063300195",
+      "osm_tags": {
+        "name": "Obai Dego",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Addidiang Paych",
+      "lat": 9.3960333,
+      "lon": 31.541003,
+      "osm_id": "node/4063300203",
+      "osm_tags": {
+        "name": "Addidiang Paych",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Patugo",
+      "lat": 9.417647,
+      "lon": 31.5651643,
+      "osm_id": "node/4063300278",
+      "osm_tags": {
+        "name": "Patugo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Owachi",
+      "lat": 9.40774,
+      "lon": 31.5531909,
+      "osm_id": "node/4063300526",
+      "osm_tags": {
+        "name": "Owachi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Agugo",
+      "lat": 9.3789595,
+      "lon": 31.5152967,
+      "osm_id": "node/4063300810",
+      "osm_tags": {
+        "name": "Agugo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Panidway",
+      "lat": 9.4049033,
+      "lon": 31.5457666,
+      "osm_id": "node/4063300993",
+      "osm_tags": {
+        "name": "Panidway",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Awaw",
+      "lat": 9.4454189,
+      "lon": 31.581043,
+      "osm_id": "node/4063300994",
+      "osm_tags": {
+        "name": "Awaw",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wit Dokott",
+      "lat": 9.4364282,
+      "lon": 31.5774917,
+      "osm_id": "node/4063301019",
+      "osm_tags": {
+        "name": "Wit Dokott",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Pakang",
+      "lat": 9.3621132,
+      "lon": 31.4547589,
+      "osm_id": "node/4063361745",
+      "osm_tags": {
+        "name": "Pakang",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Abujop",
+      "lat": 9.3685897,
+      "lon": 31.4656453,
+      "osm_id": "node/4063362532",
+      "osm_tags": {
+        "name": "Abujop",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyin Yar",
+      "lat": 9.3738528,
+      "lon": 31.3997522,
+      "osm_id": "node/4063401990",
+      "osm_tags": {
+        "name": "Nyin Yar",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ajaugo",
+      "lat": 9.3667498,
+      "lon": 31.4351788,
+      "osm_id": "node/4063402588",
+      "osm_tags": {
+        "name": "Ajaugo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nyilwak",
+      "lat": 9.4105457,
+      "lon": 31.3134655,
+      "osm_id": "node/4063446024",
+      "osm_tags": {
+        "name": "Nyilwak",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Neyalwal",
+      "lat": 9.3881219,
+      "lon": 31.3601949,
+      "osm_id": "node/4063446025",
+      "osm_tags": {
+        "name": "Neyalwal",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Odwoigo",
+      "lat": 9.3802756,
+      "lon": 31.3838466,
+      "osm_id": "node/4063446026",
+      "osm_tags": {
+        "name": "Odwoigo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dor",
+      "lat": 9.430608,
+      "lon": 31.2275651,
+      "osm_id": "node/4063448749",
+      "osm_tags": {
+        "name": "Dor",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gughan",
+      "lat": 9.848358,
+      "lon": 30.765348,
+      "osm_id": "node/7730427132",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-6627",
+        "GNS:modify_date": "2011-10-18",
+        "name": "Gughan",
+        "name:ar": "\u063a\u0623\u063a\u0646",
+        "name:en": "Gughan",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Defka",
+      "lat": 10.021623,
+      "lon": 30.903956,
+      "osm_id": "node/7731281674",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "11488104",
+        "GNS:modify_date": "2012-03-23",
+        "alt_name:ru": "Jebel' Debka",
+        "name": "Jabal Defka",
+        "name:en": "Jebel' Debka",
+        "name:ru": "Jebel\u2019 Debka",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jebel Kurondi",
+      "lat": 9.995754,
+      "lon": 30.63481,
+      "osm_id": "node/7731292006",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-9481",
+        "GNS:modify_date": "2012-03-26",
+        "alt_name": "Jabal Kurondi;Bum",
+        "alt_name:ar": "\u0628\u0645",
+        "name": "Jebel Kurondi",
+        "name:ar": "\u062c\u0628\u0644 \u0643\u0631\u0648\u0646\u062f",
+        "name:en": "Jebel Kurondi",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jabal Kuli",
+      "lat": 10.0214,
+      "lon": 30.65658,
+      "osm_id": "node/7731292082",
+      "osm_tags": {
+        "GNS:dsg_code": "HLL",
+        "GNS:dsg_name": "hill",
+        "GNS:id": "-9329",
+        "GNS:modify_date": "2012-03-26",
+        "name": "Jabal Kuli",
+        "name:ar": "\u062c\u0628\u0644 \u0643\u0644",
+        "name:en": "Jabal Kuli",
+        "natural": "peak",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Duk Payuel",
+      "lat": 7.6042773,
+      "lon": 31.4509177,
+      "osm_id": "node/7896441595",
+      "osm_tags": {
+        "name": "Duk Payuel",
+        "place": "hamlet",
+        "source": "MSFsurvey",
+        "source:date": "2016-10"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Gui\u0331t",
+      "lat": 9.1625559,
+      "lon": 29.9139909,
+      "osm_id": "node/9322194641",
+      "osm_tags": {
+        "alt_name": "Gwit",
+        "name": "Gui\u0331t",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Guit",
+      "lat": 9.1172787,
+      "lon": 29.92229,
+      "osm_id": "node/11594594051",
+      "osm_tags": {
+        "name": "Guit",
+        "place": "village",
+        "source": "MSFsurvey",
+        "source:date": "2024-01"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwaich",
+      "lat": 8.9777129,
+      "lon": 29.9529819,
+      "osm_id": "node/11594594052",
+      "osm_tags": {
+        "name": "Kwaich",
+        "place": "village",
+        "source": "MSFsurvey",
+        "source:date": "2024-01"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Juaib\u00f6r",
+      "lat": 9.3978482,
+      "lon": 30.6695715,
+      "osm_id": "node/12061855209",
+      "osm_tags": {
+        "name": "Juaib\u00f6r",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tar river",
+      "lat": 8.8746834,
+      "lon": 31.2256604,
+      "osm_id": "way/38121157",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Tar river",
+        "source": "Bing, Mapbox",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tar river",
+      "lat": 9.2403578,
+      "lon": 31.0631833,
+      "osm_id": "way/38121287",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Tar river",
+        "source": "Yahoo, mapbox",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el Zeraf",
+      "lat": 8.2045868,
+      "lon": 30.6642347,
+      "osm_id": "way/38121731",
+      "osm_tags": {
+        "name": "Bahr el Zeraf",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zeraf Cut 1",
+      "lat": 7.7686441,
+      "lon": 30.5652255,
+      "osm_id": "way/38121856",
+      "osm_tags": {
+        "name": "Zeraf Cut 1",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el Zeraf",
+      "lat": 7.9448186,
+      "lon": 30.6274977,
+      "osm_id": "way/38122016",
+      "osm_tags": {
+        "alt_name": "Phou",
+        "name": "Bahr el Zeraf",
+        "source": "Yahoo, Mapbox",
+        "waterway": "river",
+        "wikipedia": "en:Bahr el Zeraf"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Tayer",
+      "lat": 7.4338562,
+      "lon": 30.5822996,
+      "osm_id": "way/76765044",
+      "osm_tags": {
+        "name": "Lake Tayer",
+        "natural": "water",
+        "source": "Landsat",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr al Jabal (Mountain Nile)",
+      "lat": 9.21822,
+      "lon": 30.4828989,
+      "osm_id": "way/80419709",
+      "osm_tags": {
+        "alt_name:en": "Mountain Nile",
+        "alt_name:ru": "\u0413\u043e\u0440\u043d\u044b\u0439 \u041d\u0438\u043b",
+        "name": "Bahr al Jabal (Mountain Nile)",
+        "name:am": "\u1290\u132d \u12a0\u1263\u12ed",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u062c\u0628\u0644",
+        "name:br": "Nil Gwen",
+        "name:de": "Bahr al-Dschabal",
+        "name:en": "White Nile",
+        "name:fr": "Le Nil Blanc",
+        "name:kn": "\u0cac\u0cbf\u0cb3\u0cbf \u0ca8\u0cc0\u0cb2\u0ccd",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0414\u0436\u0435\u0431\u0435\u043b\u044c",
+        "source": "Landsat",
+        "waterway": "river",
+        "wikipedia": "en:White Nile"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Jonglei Canal",
+      "lat": 8.7042195,
+      "lon": 31.4304224,
+      "osm_id": "way/225527671",
+      "osm_tags": {
+        "construction:waterway": "Canal",
+        "name": "Jonglei Canal",
+        "name:de": "Jonglei-Kanal",
+        "name:en": "Jonglei Canal",
+        "waterway": "stream",
+        "width": "38",
+        "wikidata": "Q890162"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr al Jabal (Mountain Nile)",
+      "lat": 8.2302158,
+      "lon": 30.3850347,
+      "osm_id": "way/232212126",
+      "osm_tags": {
+        "alt_name:en": "Mountain Nile",
+        "alt_name:ru": "\u0413\u043e\u0440\u043d\u044b\u0439 \u041d\u0438\u043b",
+        "name": "Bahr al Jabal (Mountain Nile)",
+        "name:am": "\u1290\u132d \u12a0\u1263\u12ed",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u062c\u0628\u0644",
+        "name:br": "Nil Gwen",
+        "name:de": "Bahr al-Dschabal",
+        "name:en": "White Nile",
+        "name:es": "R\u00edo Nilo Blanco",
+        "name:fr": "Le Nil Blanc",
+        "name:kn": "\u0cac\u0cbf\u0cb3\u0cbf \u0ca8\u0cc0\u0cb2\u0ccd",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0414\u0436\u0435\u0431\u0435\u043b\u044c",
+        "source": "Landsat",
+        "waterway": "river",
+        "wikipedia": "en:White Nile"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el-Ghazal",
+      "lat": 9.4319772,
+      "lon": 30.1366705,
+      "osm_id": "way/253158210",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Bahr el-Ghazal",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u063a\u0632\u0627\u0644",
+        "name:de": "Bahr al-Ghazal",
+        "name:en": "Bahr el-Ghazal",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0413\u0430\u0437\u0430\u043b\u044c",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el-Ghazal",
+      "lat": 9.2874518,
+      "lon": 29.8084678,
+      "osm_id": "way/253158273",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Bahr el-Ghazal",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u063a\u0632\u0627\u0644",
+        "name:de": "Bahr al-Ghazal",
+        "name:en": "Bahr el-Ghazal",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0413\u0430\u0437\u0430\u043b\u044c",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el-Ghazal",
+      "lat": 9.3228815,
+      "lon": 29.8486741,
+      "osm_id": "way/253158286",
+      "osm_tags": {
+        "name": "Bahr el-Ghazal",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u063a\u0632\u0627\u0644",
+        "name:de": "Bahr al-Ghazal",
+        "name:en": "Bahr el-Ghazal",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0413\u0430\u0437\u0430\u043b\u044c",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Guit River",
+      "lat": 8.9303987,
+      "lon": 29.9363247,
+      "osm_id": "way/257694809",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Guit River",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u0628\u062d\u0631 \u0627\u0644\u063a\u0632\u0627\u0644",
+      "lat": 9.4589729,
+      "lon": 30.3418216,
+      "osm_id": "way/259205928",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "\u0628\u062d\u0631 \u0627\u0644\u063a\u0632\u0627\u0644",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u063a\u0632\u0627\u0644",
+        "name:de": "Bahr al-Ghazal",
+        "name:en": "Bahr el-Ghazal",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jiath",
+      "lat": 8.3463474,
+      "lon": 30.1836938,
+      "osm_id": "way/260234827",
+      "osm_tags": {
+        "boundary": "administrative",
+        "landuse": "residential",
+        "name": "Jiath",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Der",
+      "lat": 8.3338627,
+      "lon": 30.1654055,
+      "osm_id": "way/260234829",
+      "osm_tags": {
+        "boundary": "administrative",
+        "landuse": "residential",
+        "name": "Der",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Koulier",
+      "lat": 8.3097839,
+      "lon": 30.1562205,
+      "osm_id": "way/260234836",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Koulier",
+        "place": "village",
+        "population": "750",
+        "source": "MSF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tutnyang",
+      "lat": 8.3604365,
+      "lon": 30.0996476,
+      "osm_id": "way/260234867",
+      "osm_tags": {
+        "boundary": "administrative",
+        "landuse": "residential",
+        "name": "Tutnyang",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mir Mir",
+      "lat": 8.4696924,
+      "lon": 30.1007421,
+      "osm_id": "way/260236128",
+      "osm_tags": {
+        "boundary": "administrative",
+        "landuse": "residential",
+        "name": "Mir Mir",
+        "place": "town",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Choatjak",
+      "lat": 8.4490928,
+      "lon": 30.0681818,
+      "osm_id": "way/260236144",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Choatjak",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Nyal",
+      "lat": 7.7255531,
+      "lon": 30.2420099,
+      "osm_id": "way/299256646",
+      "osm_tags": {
+        "name": "Nyal",
+        "place": "town",
+        "population": "2000"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaang Koc",
+      "lat": 8.4080006,
+      "lon": 30.0777909,
+      "osm_id": "way/299871765",
+      "osm_tags": {
+        "boundary": "administrative",
+        "landuse": "residential",
+        "name": "Kaang Koc",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaygaii",
+      "lat": 8.2822443,
+      "lon": 30.1782843,
+      "osm_id": "way/299871766",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Kaygaii",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuok",
+      "lat": 8.439074,
+      "lon": 30.0703635,
+      "osm_id": "way/299871767",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Kuok",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nak East",
+      "lat": 8.2122765,
+      "lon": 30.2711413,
+      "osm_id": "way/299871773",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Nak East",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nak North",
+      "lat": 8.2267734,
+      "lon": 30.2538291,
+      "osm_id": "way/299871774",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Nak North",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyony",
+      "lat": 8.3352471,
+      "lon": 30.1270887,
+      "osm_id": "way/299871775",
+      "osm_tags": {
+        "boundary": "administrative",
+        "landuse": "residential",
+        "name": "Nyony",
+        "place": "village",
+        "source": "MSF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Paiyak",
+      "lat": 8.3201265,
+      "lon": 30.096652,
+      "osm_id": "way/299871776",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Paiyak",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Riang",
+      "lat": 8.448103,
+      "lon": 30.0816817,
+      "osm_id": "way/299871780",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Riang",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Thor",
+      "lat": 8.2416786,
+      "lon": 30.2395791,
+      "osm_id": "way/299871783",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Thor",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dhornor",
+      "lat": 8.4683353,
+      "lon": 30.1447062,
+      "osm_id": "way/300264287",
+      "osm_tags": {
+        "boundary": "administrative",
+        "landuse": "residential",
+        "name": "Dhornor",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dortuol",
+      "lat": 8.3410453,
+      "lon": 30.1774595,
+      "osm_id": "way/300302852",
+      "osm_tags": {
+        "boundary": "administrative",
+        "landuse": "residential",
+        "name": "Dortuol",
+        "note": "Not sure about the admin boundary tag that is here - there are a few in the area that seem to be strange shapes for admin divisisions and have no level applied",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Loual",
+      "lat": 8.4222463,
+      "lon": 30.1896274,
+      "osm_id": "way/300302855",
+      "osm_tags": {
+        "boundary": "administrative",
+        "landuse": "residential",
+        "name": "Loual",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Padeah",
+      "lat": 8.4017018,
+      "lon": 30.1876294,
+      "osm_id": "way/300302856",
+      "osm_tags": {
+        "boundary": "administrative",
+        "landuse": "residential",
+        "name": "Padeah",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Saruop",
+      "lat": 8.3637065,
+      "lon": 30.1995729,
+      "osm_id": "way/300302857",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Saruop",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dindin",
+      "lat": 8.3026117,
+      "lon": 30.2317014,
+      "osm_id": "way/300521226",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Dindin",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jaguar",
+      "lat": 8.3775361,
+      "lon": 30.0183445,
+      "osm_id": "way/300521231",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Jaguar",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jaguar",
+      "lat": 8.3848834,
+      "lon": 30.0350315,
+      "osm_id": "way/300521232",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Jaguar",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mirnyal",
+      "lat": 8.3179222,
+      "lon": 30.0570715,
+      "osm_id": "way/300521238",
+      "osm_tags": {
+        "boundary": "administrative",
+        "landuse": "residential",
+        "name": "Mirnyal",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Thaker",
+      "lat": 8.3971593,
+      "lon": 30.0517745,
+      "osm_id": "way/300521244",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Thaker",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Thonyor",
+      "lat": 8.2174367,
+      "lon": 30.2206848,
+      "osm_id": "way/300521246",
+      "osm_tags": {
+        "boundary": "administrative",
+        "name": "Thonyor",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dok River",
+      "lat": 8.2922911,
+      "lon": 30.1240234,
+      "osm_id": "way/300533954",
+      "osm_tags": {
+        "name": "Dok River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Koch River",
+      "lat": 8.5896708,
+      "lon": 29.9883452,
+      "osm_id": "way/314900152",
+      "osm_tags": {
+        "name": "Koch River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Koch River",
+      "lat": 8.5945275,
+      "lon": 29.9283567,
+      "osm_id": "way/314900153",
+      "osm_tags": {
+        "name": "Koch River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Koch River",
+      "lat": 8.5776994,
+      "lon": 30.0045067,
+      "osm_id": "way/324840428",
+      "osm_tags": {
+        "name": "Koch River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Koch River",
+      "lat": 8.4768049,
+      "lon": 30.1613575,
+      "osm_id": "way/326215700",
+      "osm_tags": {
+        "name": "Koch River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gel",
+      "lat": 7.9575436,
+      "lon": 29.7516199,
+      "osm_id": "way/341293436",
+      "osm_tags": {
+        "name": "River Gel",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el Zeraf",
+      "lat": 8.805846,
+      "lon": 30.8739498,
+      "osm_id": "way/402464329",
+      "osm_tags": {
+        "alt_name": "Phou",
+        "name": "Bahr el Zeraf",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u0632\u0631\u0627\u0641",
+        "source": "Yahoo, Mapbox",
+        "waterway": "river",
+        "wikipedia": "en:Bahr el Zeraf"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el Zeraf",
+      "lat": 9.4001463,
+      "lon": 31.138604,
+      "osm_id": "way/402464347",
+      "osm_tags": {
+        "alt_name": "Phou",
+        "name": "Bahr el Zeraf",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u0632\u0631\u0627\u0641",
+        "source": "Yahoo, Mapbox",
+        "waterway": "river",
+        "wikipedia": "en:Bahr el Zeraf"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lakey Mc Lakeface",
+      "lat": 8.5800747,
+      "lon": 31.166143,
+      "osm_id": "way/449428736",
+      "osm_tags": {
+        "name": "Lakey Mc Lakeface",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el-Ghazal",
+      "lat": 9.3958029,
+      "lon": 29.9537901,
+      "osm_id": "way/625731636",
+      "osm_tags": {
+        "name": "Bahr el-Ghazal",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u063a\u0632\u0627\u0644",
+        "name:de": "Bahr al-Ghazal",
+        "name:en": "Bahr el-Ghazal",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0413\u0430\u0437\u0430\u043b\u044c",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el-Ghazal",
+      "lat": 9.2261891,
+      "lon": 29.7305661,
+      "osm_id": "way/625731637",
+      "osm_tags": {
+        "name": "Bahr el-Ghazal",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u063a\u0632\u0627\u0644",
+        "name:de": "Bahr al-Ghazal",
+        "name:en": "Bahr el-Ghazal",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0413\u0430\u0437\u0430\u043b\u044c",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el-Ghazal",
+      "lat": 9.4737674,
+      "lon": 30.3971521,
+      "osm_id": "way/625731638",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Bahr el-Ghazal",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u063a\u0632\u0627\u0644",
+        "name:de": "Bahr al-Ghazal",
+        "name:en": "Bahr el-Ghazal",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0413\u0430\u0437\u0430\u043b\u044c",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el-Ghazal",
+      "lat": 9.4237999,
+      "lon": 30.2766868,
+      "osm_id": "way/625731640",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Bahr el-Ghazal",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u063a\u0632\u0627\u0644",
+        "name:de": "Bahr al-Ghazal",
+        "name:en": "Bahr el-Ghazal",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0413\u0430\u0437\u0430\u043b\u044c",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sobat River",
+      "lat": 9.3284793,
+      "lon": 31.660004,
+      "osm_id": "way/1008738999",
+      "osm_tags": {
+        "name": "Sobat River",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u0633\u0648\u0628\u0627\u0637",
+        "name:de": "Sobat",
+        "name:en": "Sobat River",
+        "name:fa": "\u0631\u0648\u062f \u0633\u0648\u0628\u0627\u0637",
+        "name:ru": "\u0421\u043e\u0431\u0430\u0442",
+        "waterway": "river",
+        "wikidata": "Q821911",
+        "wikipedia": "en:Sobat River",
+        "wikipedia:ar": "\u0646\u0647\u0631 \u0627\u0644\u0633\u0648\u0628\u0627\u0637"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "White Nile",
+      "lat": 9.449658,
+      "lon": 30.9599512,
+      "osm_id": "way/1008739000",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "White Nile",
+        "name:am": "\u1290\u132d \u12a0\u1263\u12ed",
+        "name:ar": "\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0628\u064a\u0636",
+        "name:br": "Nil Gwen",
+        "name:da": "Hvide Nil",
+        "name:de": "Wei\u00dfer Nil",
+        "name:en": "White Nile",
+        "name:es": "Nilo Blanco",
+        "name:fr": "Le Nil Blanc",
+        "name:hu": "Feh\u00e9r-N\u00edlus",
+        "name:it": "Nilo bianco",
+        "name:kn": "\u0cac\u0cbf\u0cb3\u0cbf \u0ca8\u0cc0\u0cb2\u0ccd",
+        "name:ku": "N\u00eela Sp\u00ee",
+        "name:nl": "Witte Nijl",
+        "name:ru": "\u0411\u0435\u043b\u044b\u0439 \u041d\u0438\u043b",
+        "name:uk": "\u0411\u0456\u043b\u0438\u0439 \u041d\u0456\u043b",
+        "waterway": "river",
+        "wikipedia": "ar:\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0628\u064a\u0636"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr al Jabal (Mountain Nile)",
+      "lat": 7.448484,
+      "lon": 30.6151973,
+      "osm_id": "way/1010071092",
+      "osm_tags": {
+        "alt_name:en": "Mountain Nile",
+        "alt_name:ru": "\u0413\u043e\u0440\u043d\u044b\u0439 \u041d\u0438\u043b",
+        "name": "Bahr al Jabal (Mountain Nile)",
+        "name:am": "\u1290\u132d \u12a0\u1263\u12ed",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u062c\u0628\u0644",
+        "name:br": "Nil Gwen",
+        "name:de": "Bahr al-Dschabal",
+        "name:en": "White Nile",
+        "name:es": "R\u00edo Nilo Blanco",
+        "name:fr": "Le Nil Blanc",
+        "name:kn": "\u0cac\u0cbf\u0cb3\u0cbf \u0ca8\u0cc0\u0cb2\u0ccd",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0414\u0436\u0435\u0431\u0435\u043b\u044c",
+        "source": "Landsat",
+        "waterway": "river",
+        "wikipedia": "en:White Nile"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr al Jabal (Mountain Nile)",
+      "lat": 8.7499314,
+      "lon": 30.2695816,
+      "osm_id": "way/1010077472",
+      "osm_tags": {
+        "alt_name:en": "Mountain Nile",
+        "alt_name:ru": "\u0413\u043e\u0440\u043d\u044b\u0439 \u041d\u0438\u043b",
+        "name": "Bahr al Jabal (Mountain Nile)",
+        "name:am": "\u1290\u132d \u12a0\u1263\u12ed",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u062c\u0628\u0644",
+        "name:br": "Nil Gwen",
+        "name:de": "Bahr al-Dschabal",
+        "name:en": "White Nile",
+        "name:es": "R\u00edo Nilo Blanco",
+        "name:fr": "Le Nil Blanc",
+        "name:kn": "\u0cac\u0cbf\u0cb3\u0cbf \u0ca8\u0cc0\u0cb2\u0ccd",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0414\u0436\u0435\u0431\u0435\u043b\u044c",
+        "source": "Landsat",
+        "waterway": "river",
+        "wikipedia": "en:White Nile"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr al Jabal (Mountain Nile)",
+      "lat": 8.5189153,
+      "lon": 30.3130088,
+      "osm_id": "way/1010347209",
+      "osm_tags": {
+        "alt_name:en": "Mountain Nile",
+        "alt_name:ru": "\u0413\u043e\u0440\u043d\u044b\u0439 \u041d\u0438\u043b",
+        "name": "Bahr al Jabal (Mountain Nile)",
+        "name:am": "\u1290\u132d \u12a0\u1263\u12ed",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u062c\u0628\u0644",
+        "name:br": "Nil Gwen",
+        "name:de": "Bahr al-Dschabal",
+        "name:en": "White Nile",
+        "name:es": "R\u00edo Nilo Blanco",
+        "name:fr": "Le Nil Blanc",
+        "name:kn": "\u0cac\u0cbf\u0cb3\u0cbf \u0ca8\u0cc0\u0cb2\u0ccd",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0414\u0436\u0435\u0431\u0435\u043b\u044c",
+        "source": "Landsat",
+        "waterway": "river",
+        "wikipedia": "en:White Nile"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr al Jabal (Mountain Nile)",
+      "lat": 7.8440446,
+      "lon": 30.4996312,
+      "osm_id": "way/1010724085",
+      "osm_tags": {
+        "alt_name:en": "Mountain Nile",
+        "alt_name:ru": "\u0413\u043e\u0440\u043d\u044b\u0439 \u041d\u0438\u043b",
+        "name": "Bahr al Jabal (Mountain Nile)",
+        "name:am": "\u1290\u132d \u12a0\u1263\u12ed",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u062c\u0628\u0644",
+        "name:br": "Nil Gwen",
+        "name:de": "Bahr al-Dschabal",
+        "name:en": "White Nile",
+        "name:es": "R\u00edo Nilo Blanco",
+        "name:fr": "Le Nil Blanc",
+        "name:kn": "\u0cac\u0cbf\u0cb3\u0cbf \u0ca8\u0cc0\u0cb2\u0ccd",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0414\u0436\u0435\u0431\u0435\u043b\u044c",
+        "source": "Landsat",
+        "waterway": "river",
+        "wikipedia": "en:White Nile"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr al Jabal (Mountain Nile)",
+      "lat": 8.5701582,
+      "lon": 30.2856449,
+      "osm_id": "way/1010730978",
+      "osm_tags": {
+        "alt_name:en": "Mountain Nile",
+        "alt_name:ru": "\u0413\u043e\u0440\u043d\u044b\u0439 \u041d\u0438\u043b",
+        "name": "Bahr al Jabal (Mountain Nile)",
+        "name:am": "\u1290\u132d \u12a0\u1263\u12ed",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u062c\u0628\u0644",
+        "name:br": "Nil Gwen",
+        "name:de": "Bahr al-Dschabal",
+        "name:en": "White Nile",
+        "name:es": "R\u00edo Nilo Blanco",
+        "name:fr": "Le Nil Blanc",
+        "name:kn": "\u0cac\u0cbf\u0cb3\u0cbf \u0ca8\u0cc0\u0cb2\u0ccd",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0414\u0436\u0435\u0431\u0435\u043b\u044c",
+        "source": "Landsat",
+        "waterway": "river",
+        "wikipedia": "en:White Nile"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tar river",
+      "lat": 9.2857854,
+      "lon": 31.2705669,
+      "osm_id": "way/1010774889",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Tar river",
+        "source": "Bing, Mapbox",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el Zeraf",
+      "lat": 9.3491054,
+      "lon": 31.0956196,
+      "osm_id": "way/1010774894",
+      "osm_tags": {
+        "alt_name": "Phou",
+        "name": "Bahr el Zeraf",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u0632\u0631\u0627\u0641",
+        "source": "Yahoo, Mapbox",
+        "waterway": "river",
+        "wikipedia": "en:Bahr el Zeraf"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "White Nile",
+      "lat": 9.3543266,
+      "lon": 31.4330837,
+      "osm_id": "way/1010774899",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "White Nile",
+        "name:am": "\u1290\u132d \u12a0\u1263\u12ed",
+        "name:ar": "\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0628\u064a\u0636",
+        "name:br": "Nil Gwen",
+        "name:da": "Hvide Nil",
+        "name:de": "Wei\u00dfer Nil",
+        "name:en": "White Nile",
+        "name:es": "Nilo Blanco",
+        "name:fr": "Le Nil Blanc",
+        "name:hu": "Feh\u00e9r-N\u00edlus",
+        "name:it": "Nilo bianco",
+        "name:kn": "\u0cac\u0cbf\u0cb3\u0cbf \u0ca8\u0cc0\u0cb2\u0ccd",
+        "name:ku": "N\u00eela Sp\u00ee",
+        "name:nl": "Witte Nijl",
+        "name:ru": "\u0411\u0435\u043b\u044b\u0439 \u041d\u0438\u043b",
+        "name:uk": "\u0411\u0456\u043b\u0438\u0439 \u041d\u0456\u043b",
+        "waterway": "river",
+        "wikipedia": "ar:\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0628\u064a\u0636"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Stream",
+      "lat": 9.0411395,
+      "lon": 29.797517,
+      "osm_id": "way/1056695889",
+      "osm_tags": {
+        "name": "Stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el Zeraf",
+      "lat": 7.6234327,
+      "lon": 30.6283084,
+      "osm_id": "way/1173862837",
+      "osm_tags": {
+        "alt_name": "Phou",
+        "name": "Bahr el Zeraf",
+        "source": "Yahoo, Mapbox",
+        "waterway": "river",
+        "wikipedia": "en:Bahr el Zeraf"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el Zeraf",
+      "lat": 7.7674167,
+      "lon": 30.583487,
+      "osm_id": "way/1173862839",
+      "osm_tags": {
+        "alt_name": "Phou",
+        "name": "Bahr el Zeraf",
+        "source": "Yahoo, Mapbox",
+        "waterway": "river",
+        "wikipedia": "en:Bahr el Zeraf"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "White Nile",
+      "lat": 9.4226281,
+      "lon": 31.5914628,
+      "osm_id": "way/1250916677",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "White Nile",
+        "name:am": "\u1290\u132d \u12a0\u1263\u12ed",
+        "name:ar": "\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0628\u064a\u0636",
+        "name:br": "Nil Gwen",
+        "name:da": "Hvide Nil",
+        "name:de": "Wei\u00dfer Nil",
+        "name:en": "White Nile",
+        "name:es": "Nilo Blanco",
+        "name:fr": "Le Nil Blanc",
+        "name:hu": "Feh\u00e9r-N\u00edlus",
+        "name:it": "Nilo bianco",
+        "name:kn": "\u0cac\u0cbf\u0cb3\u0cbf \u0ca8\u0cc0\u0cb2\u0ccd",
+        "name:ku": "N\u00eela Sp\u00ee",
+        "name:nl": "Witte Nijl",
+        "name:ru": "\u0411\u0435\u043b\u044b\u0439 \u041d\u0438\u043b",
+        "name:uk": "\u0411\u0456\u043b\u0438\u0439 \u041d\u0456\u043b",
+        "waterway": "river",
+        "wikipedia": "ar:\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0628\u064a\u0636"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Jonglei Canal",
+      "lat": 7.5295973,
+      "lon": 31.4047659,
+      "osm_id": "way/1302357961",
+      "osm_tags": {
+        "construction:waterway": "Canal",
+        "name": "Jonglei Canal",
+        "name:de": "Jonglei-Kanal",
+        "name:en": "Jonglei Canal",
+        "waterway": "stream",
+        "width": "38",
+        "wikidata": "Q890162"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Jonglei Canal",
+      "lat": 8.0461298,
+      "lon": 31.3041203,
+      "osm_id": "way/1302357962",
+      "osm_tags": {
+        "construction:waterway": "canal",
+        "layer": "-1",
+        "name": "Jonglei Canal",
+        "name:de": "Jonglei-Kanal",
+        "name:en": "Jonglei Canal",
+        "tunnel": "culvert",
+        "waterway": "stream",
+        "width": "38",
+        "wikidata": "Q890162"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "White Nile",
+      "lat": 9.3989142,
+      "lon": 31.2326476,
+      "osm_id": "way/1308741429",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "White Nile",
+        "name:am": "\u1290\u132d \u12a0\u1263\u12ed",
+        "name:ar": "\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0628\u064a\u0636",
+        "name:br": "Nil Gwen",
+        "name:da": "Hvide Nil",
+        "name:de": "Wei\u00dfer Nil",
+        "name:en": "White Nile",
+        "name:es": "Nilo Blanco",
+        "name:fr": "Le Nil Blanc",
+        "name:hu": "Feh\u00e9r-N\u00edlus",
+        "name:it": "Nilo bianco",
+        "name:kn": "\u0cac\u0cbf\u0cb3\u0cbf \u0ca8\u0cc0\u0cb2\u0ccd",
+        "name:ku": "N\u00eela Sp\u00ee",
+        "name:nl": "Witte Nijl",
+        "name:ru": "\u0411\u0435\u043b\u044b\u0439 \u041d\u0438\u043b",
+        "name:uk": "\u0411\u0456\u043b\u0438\u0439 \u041d\u0456\u043b",
+        "waterway": "river",
+        "wikipedia": "ar:\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0628\u064a\u0636"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr al Jabal (Mountain Nile)",
+      "lat": 7.6586421,
+      "lon": 30.518724,
+      "osm_id": "way/1315006127",
+      "osm_tags": {
+        "alt_name:en": "Mountain Nile",
+        "alt_name:ru": "\u0413\u043e\u0440\u043d\u044b\u0439 \u041d\u0438\u043b",
+        "name": "Bahr al Jabal (Mountain Nile)",
+        "name:am": "\u1290\u132d \u12a0\u1263\u12ed",
+        "name:ar": "\u0628\u062d\u0631 \u0627\u0644\u062c\u0628\u0644",
+        "name:br": "Nil Gwen",
+        "name:de": "Bahr al-Dschabal",
+        "name:en": "White Nile",
+        "name:es": "R\u00edo Nilo Blanco",
+        "name:fr": "Le Nil Blanc",
+        "name:kn": "\u0cac\u0cbf\u0cb3\u0cbf \u0ca8\u0cc0\u0cb2\u0ccd",
+        "name:ru": "\u0411\u0430\u0445\u0440-\u044d\u043b\u044c-\u0414\u0436\u0435\u0431\u0435\u043b\u044c",
+        "source": "Landsat",
+        "waterway": "river",
+        "wikipedia": "en:White Nile"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyony",
+      "lat": 8.3322523,
+      "lon": 30.1167131,
+      "osm_id": "way/1316866288",
+      "osm_tags": {
+        "boundary": "administrative",
+        "landuse": "residential",
+        "name": "Nyony",
+        "place": "village",
+        "source": "MSF"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "White Nile",
+      "lat": 9.3786376,
+      "lon": 31.3104638,
+      "osm_id": "way/1319550968",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "White Nile",
+        "name:am": "\u1290\u132d \u12a0\u1263\u12ed",
+        "name:ar": "\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0628\u064a\u0636",
+        "name:br": "Nil Gwen",
+        "name:da": "Hvide Nil",
+        "name:de": "Wei\u00dfer Nil",
+        "name:en": "White Nile",
+        "name:es": "Nilo Blanco",
+        "name:fr": "Le Nil Blanc",
+        "name:hu": "Feh\u00e9r-N\u00edlus",
+        "name:it": "Nilo bianco",
+        "name:kn": "\u0cac\u0cbf\u0cb3\u0cbf \u0ca8\u0cc0\u0cb2\u0ccd",
+        "name:ku": "N\u00eela Sp\u00ee",
+        "name:nl": "Witte Nijl",
+        "name:ru": "\u0411\u0435\u043b\u044b\u0439 \u041d\u0438\u043b",
+        "name:uk": "\u0411\u0456\u043b\u0438\u0439 \u041d\u0456\u043b",
+        "waterway": "river",
+        "wikipedia": "ar:\u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0628\u064a\u0636"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kol",
+      "lat": 7.6073423,
+      "lon": 30.2435085,
+      "osm_id": "way/1348302919",
+      "osm_tags": {
+        "name": "Kol",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el Zeraf",
+      "lat": 8.2996197,
+      "lon": 30.6819766,
+      "osm_id": "way/1467565019",
+      "osm_tags": {
+        "name": "Bahr el Zeraf",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el Zeraf",
+      "lat": 7.760564,
+      "lon": 30.5858827,
+      "osm_id": "way/1467565020",
+      "osm_tags": {
+        "name": "Bahr el Zeraf",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el Zeraf",
+      "lat": 7.7437527,
+      "lon": 30.5811739,
+      "osm_id": "way/1467565022",
+      "osm_tags": {
+        "alt_name": "Phou",
+        "name": "Bahr el Zeraf",
+        "source": "Yahoo, Mapbox",
+        "waterway": "river",
+        "wikipedia": "en:Bahr el Zeraf"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el Zeraf",
+      "lat": 7.5328548,
+      "lon": 30.7123634,
+      "osm_id": "way/1467565024",
+      "osm_tags": {
+        "alt_name": "Phou",
+        "name": "Bahr el Zeraf",
+        "source": "Yahoo, Mapbox",
+        "waterway": "river",
+        "wikipedia": "en:Bahr el Zeraf"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el Zeraf",
+      "lat": 7.5785487,
+      "lon": 30.6836611,
+      "osm_id": "way/1467574390",
+      "osm_tags": {
+        "alt_name": "Phou",
+        "name": "Bahr el Zeraf",
+        "source": "Yahoo, Mapbox",
+        "waterway": "river",
+        "wikipedia": "en:Bahr el Zeraf"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr el Zeraf",
+      "lat": 7.6994731,
+      "lon": 30.6042033,
+      "osm_id": "way/1467574400",
+      "osm_tags": {
+        "alt_name": "Phou",
+        "name": "Bahr el Zeraf",
+        "source": "Yahoo, Mapbox",
+        "waterway": "river",
+        "wikipedia": "en:Bahr el Zeraf"
+      }
+    }
+  ]
+}

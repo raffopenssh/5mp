@@ -1,0 +1,4580 @@
+{
+  "park_id": "TZA_Kilombero",
+  "downloaded_at": "2026-02-08T11:48:05.034038+00:00",
+  "buffer_km": 50,
+  "place_count": 341,
+  "places": [
+    {
+      "place_type": "city",
+      "name": "Ifakara",
+      "lat": -8.1321004,
+      "lon": 36.6848455,
+      "osm_id": "node/258135360",
+      "osm_tags": {
+        "name": "Ifakara",
+        "name:ru": "\u0418\u0444\u0430\u043a\u0430\u0440\u0430",
+        "name:uk": "\u0406\u0444\u0430\u043a\u0430\u0440\u0430",
+        "place": "city",
+        "population": "205843",
+        "source:population": "German Wikipedia https://de.wikipedia.org/wiki/Liste_der_St%C3%A4dte_in_Tansania",
+        "wikidata": "Q995454",
+        "wikipedia": "en:Ifakara"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mangula",
+      "lat": -7.8444354,
+      "lon": 36.8976599,
+      "osm_id": "node/918692148",
+      "osm_tags": {
+        "name": "Mangula",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malolo",
+      "lat": -7.3,
+      "lon": 36.5833333,
+      "osm_id": "node/965843931",
+      "osm_tags": {
+        "name": "Malolo",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kivukoni",
+      "lat": -8.2041639,
+      "lon": 36.6996276,
+      "osm_id": "node/965844053",
+      "osm_tags": {
+        "name": "Kivukoni",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbingu",
+      "lat": -8.1982997,
+      "lon": 36.2662524,
+      "osm_id": "node/965844110",
+      "osm_tags": {
+        "name": "Mbingu",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muhaga",
+      "lat": -8.1921341,
+      "lon": 36.0271805,
+      "osm_id": "node/965844503",
+      "osm_tags": {
+        "name": "Muhaga",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Itete",
+      "lat": -8.6598891,
+      "lon": 36.4279815,
+      "osm_id": "node/965844800",
+      "osm_tags": {
+        "name": "Itete",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lugalo",
+      "lat": -7.7463682,
+      "lon": 35.8685125,
+      "osm_id": "node/965844802",
+      "osm_tags": {
+        "name": "Lugalo",
+        "place": "village",
+        "wikidata": "Q836675",
+        "wikipedia": "en:Lugalo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nduli",
+      "lat": -7.666667,
+      "lon": 35.766667,
+      "osm_id": "node/965844902",
+      "osm_tags": {
+        "name": "Nduli",
+        "place": "village",
+        "source": "Africover - Towns (other towns)",
+        "wikidata": "Q6983842",
+        "wikipedia": "en:Nduli"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mahenge",
+      "lat": -8.6837495,
+      "lon": 36.718668,
+      "osm_id": "node/965845001",
+      "osm_tags": {
+        "name": "Mahenge",
+        "place": "town",
+        "source": "Africover - Towns (major towns)",
+        "wikidata": "Q3323087",
+        "wikipedia": "en:Mahenge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Comfort",
+      "lat": -7.6765189,
+      "lon": 36.2066082,
+      "osm_id": "node/1484695760",
+      "osm_tags": {
+        "name": "Comfort",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Igagala",
+      "lat": -7.5479006,
+      "lon": 36.6760609,
+      "osm_id": "node/1484695763",
+      "osm_tags": {
+        "name": "Igagala",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Igumbilo",
+      "lat": -7.7827694,
+      "lon": 35.7474144,
+      "osm_id": "node/1484695764",
+      "osm_tags": {
+        "name": "Igumbilo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ikokoto",
+      "lat": -7.6553454,
+      "lon": 36.1265565,
+      "osm_id": "node/1484695765",
+      "osm_tags": {
+        "name": "Ikokoto",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ilula",
+      "lat": -7.6773807,
+      "lon": 36.0388429,
+      "osm_id": "node/1484695769",
+      "osm_tags": {
+        "name": "Ilula",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Imalutwa",
+      "lat": -7.704073,
+      "lon": 36.005868,
+      "osm_id": "node/1484695776",
+      "osm_tags": {
+        "name": "Imalutwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kidayi 'A'",
+      "lat": -7.5230906,
+      "lon": 36.6562243,
+      "osm_id": "node/1484695786",
+      "osm_tags": {
+        "name": "Kidayi 'A'",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kidayi 'B'",
+      "lat": -7.5181135,
+      "lon": 36.6464846,
+      "osm_id": "node/1484695787",
+      "osm_tags": {
+        "name": "Kidayi 'B'",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kimamba",
+      "lat": -7.6617512,
+      "lon": 36.0800909,
+      "osm_id": "node/1484695791",
+      "osm_tags": {
+        "name": "Kimamba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kware",
+      "lat": -7.5067578,
+      "lon": 36.4586108,
+      "osm_id": "node/1484695793",
+      "osm_tags": {
+        "name": "Kware",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mahenge",
+      "lat": -7.6332255,
+      "lon": 36.2667893,
+      "osm_id": "node/1484695798",
+      "osm_tags": {
+        "name": "Mahenge",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mazombe",
+      "lat": -7.6951524,
+      "lon": 35.9661242,
+      "osm_id": "node/1484695807",
+      "osm_tags": {
+        "name": "Mazombe",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbigili",
+      "lat": -7.7237997,
+      "lon": 35.9064944,
+      "osm_id": "node/1484695809",
+      "osm_tags": {
+        "name": "Mbigili",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mikumi",
+      "lat": -7.4048524,
+      "lon": 36.9770319,
+      "osm_id": "node/1484695822",
+      "osm_tags": {
+        "name": "Mikumi",
+        "place": "town",
+        "wikidata": "Q6850269",
+        "wikipedia": "en:Mikumi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtandika 'A'",
+      "lat": -7.5396993,
+      "lon": 36.4292025,
+      "osm_id": "node/1484695825",
+      "osm_tags": {
+        "name": "Mtandika 'A'",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtandika 'B'",
+      "lat": -7.5564458,
+      "lon": 36.3856924,
+      "osm_id": "node/1484695828",
+      "osm_tags": {
+        "name": "Mtandika 'B'",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ruaha Darajani",
+      "lat": -7.4652053,
+      "lon": 36.5185711,
+      "osm_id": "node/1484695830",
+      "osm_tags": {
+        "name": "Ruaha Darajani",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ruaha Mbuyumi",
+      "lat": -7.4671164,
+      "lon": 36.51022,
+      "osm_id": "node/1484695832",
+      "osm_tags": {
+        "name": "Ruaha Mbuyumi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Viwenge",
+      "lat": -7.7846296,
+      "lon": 35.8146899,
+      "osm_id": "node/1484695840",
+      "osm_tags": {
+        "name": "Viwenge",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitwiru",
+      "lat": -7.8188855,
+      "lon": 35.6642678,
+      "osm_id": "node/1489195806",
+      "osm_tags": {
+        "name": "Kitwiru",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndiuka",
+      "lat": -7.7848824,
+      "lon": 35.7105844,
+      "osm_id": "node/1489195829",
+      "osm_tags": {
+        "name": "Ndiuka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chogo",
+      "lat": -8.513716,
+      "lon": 35.7517823,
+      "osm_id": "node/2823865433",
+      "osm_tags": {
+        "name": "Chogo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mapanda",
+      "lat": -8.4270906,
+      "lon": 35.7680894,
+      "osm_id": "node/2823865434",
+      "osm_tags": {
+        "name": "Mapanda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbigili",
+      "lat": -7.7124945,
+      "lon": 35.9273842,
+      "osm_id": "node/3200476979",
+      "osm_tags": {
+        "name": "Mbigili",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ipogolo",
+      "lat": -7.8030486,
+      "lon": 35.6911646,
+      "osm_id": "node/3200606117",
+      "osm_tags": {
+        "name": "Ipogolo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lupiro",
+      "lat": -8.3859632,
+      "lon": 36.6709441,
+      "osm_id": "node/3394975759",
+      "osm_tags": {
+        "is_in": "Morogoro, Tanzania",
+        "name": "Lupiro",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mngeta",
+      "lat": -8.317756,
+      "lon": 36.1289182,
+      "osm_id": "node/4058399917",
+      "osm_tags": {
+        "name": "Mngeta",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukani",
+      "lat": -8.0789033,
+      "lon": 35.8169796,
+      "osm_id": "node/4373312790",
+      "osm_tags": {
+        "name": "Lukani",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kilolo",
+      "lat": -8.0045421,
+      "lon": 35.8439233,
+      "osm_id": "node/4373317389",
+      "osm_tags": {
+        "name": "Kilolo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kihesa Mgagao",
+      "lat": -8.1803691,
+      "lon": 35.781575,
+      "osm_id": "node/4373533604",
+      "osm_tags": {
+        "name": "Kihesa Mgagao",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pomerini",
+      "lat": -8.0983797,
+      "lon": 35.7703898,
+      "osm_id": "node/4373535097",
+      "osm_tags": {
+        "name": "Pomerini",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwatasi",
+      "lat": -8.2528967,
+      "lon": 35.8031455,
+      "osm_id": "node/4373626590",
+      "osm_tags": {
+        "name": "Mwatasi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bomalang'ombe",
+      "lat": -8.2287635,
+      "lon": 35.8811931,
+      "osm_id": "node/4373628391",
+      "osm_tags": {
+        "name": "Bomalang'ombe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kihorogota",
+      "lat": -7.4463448,
+      "lon": 35.8226724,
+      "osm_id": "node/4385089889",
+      "osm_tags": {
+        "name": "Kihorogota",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Isimani",
+      "lat": -7.4709793,
+      "lon": 35.8009801,
+      "osm_id": "node/4385269796",
+      "osm_tags": {
+        "name": "Isimani",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkungugu",
+      "lat": -7.5364684,
+      "lon": 35.7715138,
+      "osm_id": "node/4385401414",
+      "osm_tags": {
+        "name": "Mkungugu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndolela",
+      "lat": -7.4913212,
+      "lon": 35.7928928,
+      "osm_id": "node/4385529592",
+      "osm_tags": {
+        "name": "Ndolela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mgongo",
+      "lat": -7.7044008,
+      "lon": 35.7246941,
+      "osm_id": "node/4385530602",
+      "osm_tags": {
+        "name": "Mgongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kising'a",
+      "lat": -7.5888406,
+      "lon": 35.7689839,
+      "osm_id": "node/4385542200",
+      "osm_tags": {
+        "name": "Kising'a",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Igingilanyi",
+      "lat": -7.61752,
+      "lon": 35.7632682,
+      "osm_id": "node/4385546992",
+      "osm_tags": {
+        "name": "Igingilanyi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kilimahewa",
+      "lat": -7.6877647,
+      "lon": 35.747099,
+      "osm_id": "node/4385629490",
+      "osm_tags": {
+        "name": "Kilimahewa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mapanda",
+      "lat": -7.6793515,
+      "lon": 35.7479445,
+      "osm_id": "node/4385656989",
+      "osm_tags": {
+        "name": "Mapanda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ikuvilo",
+      "lat": -7.9065156,
+      "lon": 35.6654154,
+      "osm_id": "node/4391691189",
+      "osm_tags": {
+        "name": "Ikuvilo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tagamenda",
+      "lat": -7.808312,
+      "lon": 35.7358736,
+      "osm_id": "node/4407912998",
+      "osm_tags": {
+        "name": "Tagamenda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ng'enza",
+      "lat": -7.9530406,
+      "lon": 35.675514,
+      "osm_id": "node/4407996600",
+      "osm_tags": {
+        "name": "Ng'enza",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyabula",
+      "lat": -7.86855,
+      "lon": 35.7282354,
+      "osm_id": "node/4408003594",
+      "osm_tags": {
+        "name": "Nyabula",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kikayawa",
+      "lat": -7.8339224,
+      "lon": 35.7458865,
+      "osm_id": "node/4408027390",
+      "osm_tags": {
+        "name": "Kikayawa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Igunda",
+      "lat": -7.4683948,
+      "lon": 36.3141203,
+      "osm_id": "node/4460387437",
+      "osm_tags": {
+        "name": "Igunda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyanzwa",
+      "lat": -7.3487561,
+      "lon": 36.2866108,
+      "osm_id": "node/4460387438",
+      "osm_tags": {
+        "name": "Nyanzwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mgowelo",
+      "lat": -7.344633,
+      "lon": 36.3131269,
+      "osm_id": "node/4460387439",
+      "osm_tags": {
+        "name": "Mgowelo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyang'oro",
+      "lat": -7.4230739,
+      "lon": 35.7976857,
+      "osm_id": "node/4540649533",
+      "osm_tags": {
+        "name": "Nyang'oro",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Izazi",
+      "lat": -7.2413753,
+      "lon": 35.7218788,
+      "osm_id": "node/4540652997",
+      "osm_tags": {
+        "name": "Izazi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwanzi",
+      "lat": -8.0716766,
+      "lon": 35.6882405,
+      "osm_id": "node/4557088782",
+      "osm_tags": {
+        "name": "Mwanzi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ukumbi",
+      "lat": -8.1048399,
+      "lon": 35.7247286,
+      "osm_id": "node/4557127748",
+      "osm_tags": {
+        "name": "Ukumbi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masalali",
+      "lat": -8.1406517,
+      "lon": 35.724155,
+      "osm_id": "node/4557151670",
+      "osm_tags": {
+        "name": "Masalali",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masege",
+      "lat": -8.1837629,
+      "lon": 35.7514767,
+      "osm_id": "node/4557192857",
+      "osm_tags": {
+        "name": "Masege",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mitanzi",
+      "lat": -8.238874,
+      "lon": 35.7448766,
+      "osm_id": "node/4557249896",
+      "osm_tags": {
+        "name": "Mitanzi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msitu wa Duma",
+      "lat": -8.2514651,
+      "lon": 35.7306585,
+      "osm_id": "node/4557270238",
+      "osm_tags": {
+        "name": "Msitu wa Duma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kibengu",
+      "lat": -8.2652638,
+      "lon": 35.7269032,
+      "osm_id": "node/4557283216",
+      "osm_tags": {
+        "name": "Kibengu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Usokami",
+      "lat": -8.2266381,
+      "lon": 35.6872299,
+      "osm_id": "node/4557306433",
+      "osm_tags": {
+        "name": "Usokami",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ugele",
+      "lat": -7.7048224,
+      "lon": 35.6799318,
+      "osm_id": "node/4613952892",
+      "osm_tags": {
+        "name": "Ugele",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matassi",
+      "lat": -7.6784783,
+      "lon": 36.2148374,
+      "osm_id": "node/5121834736",
+      "osm_tags": {
+        "name": "Matassi",
+        "place": "village",
+        "source": "Africover - Towns (other towns)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ilogombe",
+      "lat": -8.3348513,
+      "lon": 35.8157301,
+      "osm_id": "node/5375455141",
+      "osm_tags": {
+        "name": "Ilogombe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kipanga",
+      "lat": -8.4611701,
+      "lon": 35.8664252,
+      "osm_id": "node/5375470218",
+      "osm_tags": {
+        "name": "Kipanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uhafiwa",
+      "lat": -8.5093684,
+      "lon": 35.8503199,
+      "osm_id": "node/5375470221",
+      "osm_tags": {
+        "name": "Uhafiwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ihimbo",
+      "lat": -8.4612139,
+      "lon": 35.8663005,
+      "osm_id": "node/5375475781",
+      "osm_tags": {
+        "name": "Ihimbo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kipanga",
+      "lat": -8.4033897,
+      "lon": 35.8702004,
+      "osm_id": "node/5375480121",
+      "osm_tags": {
+        "name": "Kipanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Igeleke",
+      "lat": -8.3109763,
+      "lon": 35.7494044,
+      "osm_id": "node/5375483674",
+      "osm_tags": {
+        "name": "Igeleke",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wind Farm",
+      "lat": -8.2159821,
+      "lon": 35.6820488,
+      "osm_id": "node/5375488393",
+      "osm_tags": {
+        "name": "Wind Farm",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Isipii",
+      "lat": -8.5812077,
+      "lon": 35.6465724,
+      "osm_id": "node/5375616022",
+      "osm_tags": {
+        "name": "Isipii",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwenga Power",
+      "lat": -8.5993959,
+      "lon": 35.6709564,
+      "osm_id": "node/5375671558",
+      "osm_tags": {
+        "fixme": "name is very questionable for a village, the Mwenga power plant is 3 km further SE",
+        "name": "Mwenga Power",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Udagaji",
+      "lat": -8.6031916,
+      "lon": 35.8922798,
+      "osm_id": "node/5825892541",
+      "osm_tags": {
+        "is_in:ward": "Chita",
+        "name": "Udagaji",
+        "place": "village",
+        "population": "2377",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Merera",
+      "lat": -8.545569,
+      "lon": 36.0235,
+      "osm_id": "node/5825892542",
+      "osm_tags": {
+        "is_in:ward": "Chita",
+        "name": "Merera",
+        "place": "village",
+        "population": "4919",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chita",
+      "lat": -8.5189176,
+      "lon": 35.9452563,
+      "osm_id": "node/5825892543",
+      "osm_tags": {
+        "is_in:ward": "Chita",
+        "name": "Chita",
+        "place": "village",
+        "population": "15367",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Idete",
+      "lat": -8.0881145,
+      "lon": 36.4868204,
+      "osm_id": "node/5827859523",
+      "osm_tags": {
+        "is_in:ward": "Idete",
+        "name": "Idete",
+        "place": "village",
+        "population": "6543",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lipangalala",
+      "lat": -8.1503935,
+      "lon": 36.6842143,
+      "osm_id": "node/5827891752",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Lipangalala",
+        "place": "village",
+        "population": "10825",
+        "region": "Morogoro",
+        "source": "OpenData-NBS2012",
+        "ward": "Ifakara"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Viwanja Sitini",
+      "lat": -8.1248294,
+      "lon": 36.682915,
+      "osm_id": "node/5827892579",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Viwanja Sitini",
+        "place": "village",
+        "population": "17008",
+        "region": "Morogoro",
+        "source": "OpenData-NBS2012",
+        "ward": "Ifakara"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mlabani",
+      "lat": -8.1469655,
+      "lon": 36.6904947,
+      "osm_id": "node/5827892580",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mlabani",
+        "place": "village",
+        "population": "10943",
+        "region": "Morogoro",
+        "source": "OpenData-NBS2012",
+        "ward": "Ifakara"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Iragua",
+      "lat": -8.5438423,
+      "lon": 36.5138168,
+      "osm_id": "node/5830516689",
+      "osm_tags": {
+        "is_in:ward": "Iragua",
+        "name": "Iragua",
+        "place": "village",
+        "population": "8076",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sagamaganga",
+      "lat": -8.0630408,
+      "lon": 36.8022971,
+      "osm_id": "node/5830589944",
+      "osm_tags": {
+        "is_in:ward": "Kiberege",
+        "name": "Sagamaganga",
+        "place": "village",
+        "population": "1795",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Siginali",
+      "lat": -8.0165757,
+      "lon": 36.8321192,
+      "osm_id": "node/5830589945",
+      "osm_tags": {
+        "is_in:ward": "Kiberege",
+        "name": "Siginali",
+        "place": "village",
+        "population": "6465",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "kiberege",
+      "lat": -7.9555867,
+      "lon": 36.8570882,
+      "osm_id": "node/5830589946",
+      "osm_tags": {
+        "is_in:ward": "Kiberege",
+        "name": "kiberege",
+        "place": "village",
+        "population": "10968",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkamba",
+      "lat": -7.6825967,
+      "lon": 36.9676652,
+      "osm_id": "node/5830649874",
+      "osm_tags": {
+        "is_in:ward": "Kidatu",
+        "name": "Mkamba",
+        "place": "village",
+        "population": "16809",
+        "source": "Opendata-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "kidatu",
+      "lat": -7.7042392,
+      "lon": 36.9522632,
+      "osm_id": "node/5830657009",
+      "osm_tags": {
+        "is_in:ward": "Kidatu",
+        "name": "kidatu",
+        "place": "village",
+        "population": "7496",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tundu",
+      "lat": -7.5973842,
+      "lon": 36.9972283,
+      "osm_id": "node/5830711605",
+      "osm_tags": {
+        "name": "Tundu",
+        "place": "village",
+        "population": "3332",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Iwemba",
+      "lat": -7.5832809,
+      "lon": 37.0028335,
+      "osm_id": "node/5830711607",
+      "osm_tags": {
+        "name": "Iwemba",
+        "place": "village",
+        "population": "2150",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msolwa",
+      "lat": -7.2882001,
+      "lon": 36.7518885,
+      "osm_id": "node/5833341928",
+      "osm_tags": {
+        "is_in:ward": "Kisanga",
+        "name": "Msolwa",
+        "place": "village",
+        "population": "6404",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kisanga",
+      "lat": -7.3478393,
+      "lon": 36.7347655,
+      "osm_id": "node/5833341930",
+      "osm_tags": {
+        "is_in:ward": "Kisanga",
+        "name": "Kisanga",
+        "place": "village",
+        "population": "5805",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msalise",
+      "lat": -7.8579874,
+      "lon": 36.9549568,
+      "osm_id": "node/5836122069",
+      "osm_tags": {
+        "is_in:ward": "Mang'ula",
+        "name": "Msalise",
+        "place": "village",
+        "population": "1825",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mgudeni",
+      "lat": -7.8625631,
+      "lon": 36.8939589,
+      "osm_id": "node/5836122070",
+      "osm_tags": {
+        "is_in:ward": "Mang'ula",
+        "name": "Mgudeni",
+        "place": "village",
+        "population": "8575",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mang'ula B",
+      "lat": -7.854818,
+      "lon": 36.8940492,
+      "osm_id": "node/5836122071",
+      "osm_tags": {
+        "is_in:ward": "Mang'ula",
+        "name": "Mang'ula B",
+        "place": "village",
+        "population": "5418",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mang'ula A",
+      "lat": -7.8362413,
+      "lon": 36.9102368,
+      "osm_id": "node/5836122072",
+      "osm_tags": {
+        "is_in:ward": "Mang'ula",
+        "name": "Mang'ula A",
+        "place": "village",
+        "population": "3060",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkula",
+      "lat": -7.8027754,
+      "lon": 36.9030037,
+      "osm_id": "node/5836238923",
+      "osm_tags": {
+        "is_in:ward": "Mkula",
+        "name": "Mkula",
+        "place": "village",
+        "population": "1844",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msufini",
+      "lat": -7.7880438,
+      "lon": 36.9044602,
+      "osm_id": "node/5836238924",
+      "osm_tags": {
+        "is_in:ward": "Mkula",
+        "name": "Msufini",
+        "place": "village",
+        "population": "1492",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magombera",
+      "lat": -7.8069439,
+      "lon": 36.953885,
+      "osm_id": "node/5836238925",
+      "osm_tags": {
+        "is_in:ward": "Mkula",
+        "name": "Magombera",
+        "place": "village",
+        "population": "949",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katurukila",
+      "lat": -7.8230121,
+      "lon": 36.9448387,
+      "osm_id": "node/5836238926",
+      "osm_tags": {
+        "is_in:ward": "Mkula",
+        "name": "Katurukila",
+        "place": "village",
+        "population": "2786",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sole",
+      "lat": -7.819609,
+      "lon": 36.8989879,
+      "osm_id": "node/5836238928",
+      "osm_tags": {
+        "is_in:ward": "Mkula",
+        "name": "Sole",
+        "place": "village",
+        "population": "2020",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Miwangani",
+      "lat": -7.7668798,
+      "lon": 36.9600684,
+      "osm_id": "node/5836248101",
+      "osm_tags": {
+        "is_in:ward": "Sanje",
+        "name": "Miwangani",
+        "place": "village",
+        "population": "1289",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msolwa ujamaa",
+      "lat": -7.7382788,
+      "lon": 36.9293302,
+      "osm_id": "node/5836248102",
+      "osm_tags": {
+        "is_in:ward": "Sanje",
+        "name": "Msolwa ujamaa",
+        "place": "village",
+        "population": "5680",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kisawasawa",
+      "lat": -7.8969853,
+      "lon": 36.8730195,
+      "osm_id": "node/5836276615",
+      "osm_tags": {
+        "is_in:ward": "Kisawasawa",
+        "name": "Kisawasawa",
+        "place": "village",
+        "population": "3118",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ichonde",
+      "lat": -7.8770379,
+      "lon": 36.878784,
+      "osm_id": "node/5836276616",
+      "osm_tags": {
+        "is_in:ward": "Kisawasawa",
+        "name": "Ichonde",
+        "place": "village",
+        "population": "2164",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpanga",
+      "lat": -7.9827915,
+      "lon": 36.9876271,
+      "osm_id": "node/5836276617",
+      "osm_tags": {
+        "is_in:ward": "Kisawasawa",
+        "name": "Mpanga",
+        "place": "village",
+        "population": "2624",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ruaha",
+      "lat": -7.6566379,
+      "lon": 36.9828649,
+      "osm_id": "node/5837047685",
+      "osm_tags": {
+        "is_in:district": "Kilosa",
+        "is_in:ward": "Ruaha",
+        "name": "Ruaha",
+        "place": "village",
+        "population": "21459",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Igota",
+      "lat": -8.4051815,
+      "lon": 36.6773508,
+      "osm_id": "node/5838873319",
+      "osm_tags": {
+        "is_in:ward": "Lupiro",
+        "name": "Igota",
+        "place": "village",
+        "population": "1917",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malolo B",
+      "lat": -7.3283761,
+      "lon": 36.534649,
+      "osm_id": "node/5840357937",
+      "osm_tags": {
+        "is_in:ward": "Malolo",
+        "name": "Malolo B",
+        "place": "village",
+        "population": "4475",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malolo A",
+      "lat": -7.3184983,
+      "lon": 36.553567,
+      "osm_id": "node/5840357938",
+      "osm_tags": {
+        "is_in:ward": "Malolo",
+        "name": "Malolo A",
+        "place": "village",
+        "population": "3111",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mgogozi",
+      "lat": -7.3008442,
+      "lon": 36.5691685,
+      "osm_id": "node/5840357939",
+      "osm_tags": {
+        "is_in:ward": "Malolo",
+        "name": "Mgogozi",
+        "place": "village",
+        "population": "1397",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chabi",
+      "lat": -7.270761,
+      "lon": 36.5302401,
+      "osm_id": "node/5840357940",
+      "osm_tags": {
+        "is_in:ward": "Malolo",
+        "name": "Chabi",
+        "place": "village",
+        "population": "1767",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpofu",
+      "lat": -8.1794699,
+      "lon": 36.2183498,
+      "osm_id": "node/5840435788",
+      "osm_tags": {
+        "is_in:ward": "Mbingu",
+        "name": "Mpofu",
+        "place": "village",
+        "population": "3282",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkangawalo",
+      "lat": -8.3755746,
+      "lon": 36.0917799,
+      "osm_id": "node/5840480763",
+      "osm_tags": {
+        "is_in:ward": "Mchombe",
+        "name": "Mkangawalo",
+        "place": "village",
+        "population": "9449",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ikule",
+      "lat": -8.4090869,
+      "lon": 36.0136103,
+      "osm_id": "node/5840480764",
+      "osm_tags": {
+        "is_in:ward": "Mchombe",
+        "name": "Ikule",
+        "place": "village",
+        "population": "5287",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mchombe",
+      "lat": -8.3141874,
+      "lon": 36.1191024,
+      "osm_id": "node/5840480765",
+      "osm_tags": {
+        "is_in:ward": "Mchombe",
+        "name": "Mchombe",
+        "place": "village",
+        "population": "7562",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msimba",
+      "lat": -7.4269554,
+      "lon": 36.9307309,
+      "osm_id": "node/5841679945",
+      "osm_tags": {
+        "is_in:ward": "Mikumi",
+        "name": "Msimba",
+        "place": "village",
+        "population": "3201",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ihombwe",
+      "lat": -7.3463106,
+      "lon": 36.8548021,
+      "osm_id": "node/5841679946",
+      "osm_tags": {
+        "is_in:ward": "Mikumi",
+        "name": "Ihombwe",
+        "place": "village",
+        "population": "2208",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Minepa",
+      "lat": -8.2592348,
+      "lon": 36.6832293,
+      "osm_id": "node/5841684538",
+      "osm_tags": {
+        "is_in:ward": "Minepa",
+        "name": "Minepa",
+        "place": "village",
+        "population": "4739",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mofu",
+      "lat": -8.2866092,
+      "lon": 36.3392889,
+      "osm_id": "node/5841731382",
+      "osm_tags": {
+        "is_in:ward": "Mofu",
+        "name": "Mofu",
+        "place": "village",
+        "population": "9777",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ikwambi",
+      "lat": -8.2979519,
+      "lon": 36.3516061,
+      "osm_id": "node/5841731383",
+      "osm_tags": {
+        "is_in:ward": "Mofu",
+        "name": "Ikwambi",
+        "place": "village",
+        "population": "1945",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chikuti",
+      "lat": -8.6006395,
+      "lon": 36.730857,
+      "osm_id": "node/5841746758",
+      "osm_tags": {
+        "is_in:ward": "Msogezi",
+        "name": "Chikuti",
+        "place": "village",
+        "population": "1747",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbagula",
+      "lat": -8.6631208,
+      "lon": 36.7068383,
+      "osm_id": "node/5847004949",
+      "osm_tags": {
+        "is_in:ward": "Vigoi",
+        "name": "Mbagula",
+        "place": "village",
+        "population": "1271",
+        "source": "OpenData-NBS2012"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Chonwe",
+      "lat": -7.5835869,
+      "lon": 36.9335315,
+      "osm_id": "node/6480145868",
+      "osm_tags": {
+        "name": "Chonwe",
+        "name:de": "Liyunge (in alten deutschen Quellen)",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tikiwiki",
+      "lat": -7.5361747,
+      "lon": 35.789291,
+      "osm_id": "node/7132741389",
+      "osm_tags": {
+        "name": "Tikiwiki",
+        "place": "hamlet",
+        "population": "24"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kigonzile",
+      "lat": -7.7309242,
+      "lon": 35.7540962,
+      "osm_id": "node/7448555805",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Urban",
+        "name": "Kigonzile",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Nduli"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Epanko",
+      "lat": -8.711406,
+      "lon": 36.6795504,
+      "osm_id": "node/7544800946",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Epanko",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mahenge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uponera",
+      "lat": -8.6840644,
+      "lon": 36.7275647,
+      "osm_id": "node/7544800947",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Uponera",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Vigoi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makanga",
+      "lat": -8.6608794,
+      "lon": 36.7257623,
+      "osm_id": "node/7544800948",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Makanga",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Vigoi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbagula",
+      "lat": -8.6577186,
+      "lon": 36.7050772,
+      "osm_id": "node/7544800949",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Mbagula",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Msogezi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ipera Asilia",
+      "lat": -8.644159,
+      "lon": 36.3446615,
+      "osm_id": "node/7544829820",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Ipera Asilia",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Itete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Njiwa Juu",
+      "lat": -8.6736632,
+      "lon": 36.409559,
+      "osm_id": "node/7544829821",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Njiwa Juu",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Itete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Njiwa Kati",
+      "lat": -8.6712712,
+      "lon": 36.4039917,
+      "osm_id": "node/7544829822",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Njiwa Kati",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Itete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Njiwa",
+      "lat": -8.6786604,
+      "lon": 36.4028373,
+      "osm_id": "node/7544829823",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Njiwa",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Itete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Alabama",
+      "lat": -8.6539507,
+      "lon": 36.4124854,
+      "osm_id": "node/7544829824",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Alabama",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Itete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namhanga",
+      "lat": -8.4548846,
+      "lon": 36.5062261,
+      "osm_id": "node/7544829825",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Namhanga",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Iragua"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magereza",
+      "lat": -8.5315719,
+      "lon": 36.5103222,
+      "osm_id": "node/7544829826",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Magereza",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Iragua"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kidugalo",
+      "lat": -8.509834,
+      "lon": 36.5236273,
+      "osm_id": "node/7544829827",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Kidugalo",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Iragua"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Milola",
+      "lat": -8.3317278,
+      "lon": 36.6705926,
+      "osm_id": "node/7544829829",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Milola",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Minepa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbuyuni",
+      "lat": -8.2456274,
+      "lon": 36.6875275,
+      "osm_id": "node/7544829830",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Mbuyuni",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Minepa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kichangani",
+      "lat": -8.4335902,
+      "lon": 36.6858805,
+      "osm_id": "node/7544829831",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Kichangani",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kichangani"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madibira",
+      "lat": -8.387838,
+      "lon": 36.6638082,
+      "osm_id": "node/7544829832",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Madibira",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Lupiro"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Igumbiro",
+      "lat": -8.3537161,
+      "lon": 36.6731907,
+      "osm_id": "node/7544829833",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Igumbiro",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Minepa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kichangani",
+      "lat": -8.4227295,
+      "lon": 36.6801557,
+      "osm_id": "node/7544829834",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Kichangani",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Lupiro"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ikungua",
+      "lat": -8.4633844,
+      "lon": 36.6872531,
+      "osm_id": "node/7544829835",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Ikungua",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kichangani"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mavimba",
+      "lat": -8.3135185,
+      "lon": 36.6795012,
+      "osm_id": "node/7544829836",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Mavimba",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Minepa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nakafulu",
+      "lat": -8.4095364,
+      "lon": 36.6262993,
+      "osm_id": "node/7544829837",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Nakafulu",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Lupiro"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chikuti",
+      "lat": -8.5919624,
+      "lon": 36.7266049,
+      "osm_id": "node/7544829838",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Chikuti",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Msogezi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mdindo",
+      "lat": -8.6301643,
+      "lon": 36.6862836,
+      "osm_id": "node/7544829839",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Mdindo",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Msogezi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msogezi",
+      "lat": -8.6258107,
+      "lon": 36.6370041,
+      "osm_id": "node/7544829840",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Msogezi",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Msogezi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makanga",
+      "lat": -8.6472138,
+      "lon": 36.7169951,
+      "osm_id": "node/7544829841",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Ulanga",
+        "name": "Makanga",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Msogezi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ukami",
+      "lat": -8.5536168,
+      "lon": 35.8219437,
+      "osm_id": "node/7637310364",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mufindi",
+        "name": "Ukami",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Mapanda"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Idodoma",
+      "lat": -7.2964656,
+      "lon": 36.3641129,
+      "osm_id": "node/7833535493",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mpwapwa",
+        "name": "Idodoma",
+        "place": "village",
+        "region": "Dodoma",
+        "ward": "Malolo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nzugilo",
+      "lat": -7.2251933,
+      "lon": 36.4315419,
+      "osm_id": "node/7833535540",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Mpwapwa",
+        "name": "Nzugilo",
+        "place": "village",
+        "region": "Dodoma",
+        "ward": "Malolo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lyamgungwe",
+      "lat": -7.9753678,
+      "lon": 35.645682,
+      "osm_id": "node/7921760754",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Lyamgungwe",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Lyamgungwe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Igunda",
+      "lat": -7.9267104,
+      "lon": 35.6505492,
+      "osm_id": "node/7921760758",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Igunda",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Lyamgungwe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mangawe",
+      "lat": -7.4106265,
+      "lon": 35.842419,
+      "osm_id": "node/7921760760",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Mangawe",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Nyang'oro"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mawindi",
+      "lat": -7.510398,
+      "lon": 35.670756,
+      "osm_id": "node/7921760770",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Mawindi",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Nyang'oro"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Iguluba",
+      "lat": -7.3954576,
+      "lon": 35.9187958,
+      "osm_id": "node/7921760771",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Iguluba",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Malenga Makali"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mikomwi",
+      "lat": -7.5275578,
+      "lon": 35.8574786,
+      "osm_id": "node/7921760772",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Mikomwi",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Kihorogota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitapilimwa",
+      "lat": -7.63797,
+      "lon": 35.6538761,
+      "osm_id": "node/7921760773",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Kitapilimwa",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Kiwere"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chamdindi",
+      "lat": -7.4313958,
+      "lon": 35.7432511,
+      "osm_id": "node/7921760776",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Chamdindi",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Nyang'oro"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makulula",
+      "lat": -7.289071,
+      "lon": 36.019058,
+      "osm_id": "node/7921760780",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Makulula",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Malenga Makali"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Itagutwa",
+      "lat": -7.6210094,
+      "lon": 35.7078766,
+      "osm_id": "node/7921760781",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Itagutwa",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Kiwere"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyabula",
+      "lat": -7.8638495,
+      "lon": 35.7279401,
+      "osm_id": "node/7921843085",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Nyabula",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Luhota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uhominyi",
+      "lat": -7.5026626,
+      "lon": 35.8092732,
+      "osm_id": "node/7921843090",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Uhominyi",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Kihorogota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitayawa",
+      "lat": -7.8638726,
+      "lon": 35.7820985,
+      "osm_id": "node/7921843091",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Kitayawa",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Luhota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makadupa",
+      "lat": -7.3422623,
+      "lon": 36.0105461,
+      "osm_id": "node/7921843096",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Makadupa",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Malenga Makali"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Holo",
+      "lat": -7.351097,
+      "lon": 35.851854,
+      "osm_id": "node/7921843099",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Holo",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Nyang'oro"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngano",
+      "lat": -7.4687602,
+      "lon": 35.8683974,
+      "osm_id": "node/7921843100",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Ngano",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Kihorogota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ikuvilo",
+      "lat": -7.8747591,
+      "lon": 35.6943917,
+      "osm_id": "node/7921843103",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Ikuvilo",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Luhota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mlanda",
+      "lat": -7.9120291,
+      "lon": 35.739462,
+      "osm_id": "node/7921843104",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Mlanda",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Maguliwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Usolanga",
+      "lat": -7.3424392,
+      "lon": 35.9390853,
+      "osm_id": "node/7921843107",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Usolanga",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Malenga Makali"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyakavangala",
+      "lat": -7.2870724,
+      "lon": 36.0569137,
+      "osm_id": "node/7921843112",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Nyakavangala",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Malenga Makali"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Igula",
+      "lat": -7.427173,
+      "lon": 35.8786794,
+      "osm_id": "node/7921843114",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Igula",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Kihorogota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tagamenda",
+      "lat": -7.8169025,
+      "lon": 35.7390463,
+      "osm_id": "node/7921843116",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Tagamenda",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Luhota"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magulilwa",
+      "lat": -7.9592488,
+      "lon": 35.7415396,
+      "osm_id": "node/7921843118",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Magulilwa",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Maguliwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ikengeza",
+      "lat": -7.4953041,
+      "lon": 35.6997452,
+      "osm_id": "node/7921843121",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Iringa Rural",
+        "name": "Ikengeza",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Nyang'oro"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kikwaraza",
+      "lat": -7.4031704,
+      "lon": 36.9926007,
+      "osm_id": "node/7922086998",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilosa",
+        "name": "Kikwaraza",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mikumi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kifinga",
+      "lat": -7.6235742,
+      "lon": 36.99203,
+      "osm_id": "node/7922086999",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilosa",
+        "name": "Kifinga",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Ruaha"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kidoma",
+      "lat": -7.4125646,
+      "lon": 36.9793691,
+      "osm_id": "node/7922087008",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilosa",
+        "name": "Kidoma",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mikumi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tambuka Reli",
+      "lat": -7.3963092,
+      "lon": 36.9894084,
+      "osm_id": "node/7922087009",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilosa",
+        "name": "Tambuka Reli",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mikumi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mshikamano",
+      "lat": -7.8465893,
+      "lon": 36.9037687,
+      "osm_id": "node/7922632390",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mshikamano",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mkula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kiberege",
+      "lat": -7.9725605,
+      "lon": 36.8521782,
+      "osm_id": "node/7922632391",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Kiberege",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kiberege"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mang`Ula A",
+      "lat": -7.8340167,
+      "lon": 36.9039406,
+      "osm_id": "node/7922632392",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mang`Ula A",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mkula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mhelule",
+      "lat": -7.863054,
+      "lon": 36.9406402,
+      "osm_id": "node/7922632393",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mhelule",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mkula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwaya",
+      "lat": -7.8545401,
+      "lon": 36.8970774,
+      "osm_id": "node/7922632394",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mwaya",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mkula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sululu",
+      "lat": -7.990863,
+      "lon": 36.8331622,
+      "osm_id": "node/7922632395",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Sululu",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kiberege"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpanga",
+      "lat": -7.9318605,
+      "lon": 36.9183031,
+      "osm_id": "node/7922632397",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mpanga",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mang'ula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mikoleko",
+      "lat": -7.91813,
+      "lon": 36.9375475,
+      "osm_id": "node/7922632398",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mikoleko",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mang'ula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mang'Ula B",
+      "lat": -7.8418116,
+      "lon": 36.893488,
+      "osm_id": "node/7922632399",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mang'Ula B",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mkula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sonjo",
+      "lat": -7.8063018,
+      "lon": 36.8966064,
+      "osm_id": "node/7922632400",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Sonjo",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Sanje"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanyenja",
+      "lat": -7.8595739,
+      "lon": 36.9953637,
+      "osm_id": "node/7922632401",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Kanyenja",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kidatu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkasu",
+      "lat": -7.9397963,
+      "lon": 36.8659144,
+      "osm_id": "node/7922632402",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mkasu",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mang'ula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanolo",
+      "lat": -7.9068451,
+      "lon": 36.8718674,
+      "osm_id": "node/7922632403",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Kanolo",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mang'ula"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kilama",
+      "lat": -8.0566622,
+      "lon": 36.7192528,
+      "osm_id": "node/7922632404",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Kilama",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kibaoni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndundu",
+      "lat": -8.1007225,
+      "lon": 36.4849461,
+      "osm_id": "node/7922632405",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Ndundu",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Idete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Idete",
+      "lat": -8.0976651,
+      "lon": 36.5215312,
+      "osm_id": "node/7922632407",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Idete",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Lumemo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Miwangani",
+      "lat": -8.1659344,
+      "lon": 36.5145023,
+      "osm_id": "node/7922632408",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Miwangani",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Lumemo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukolongo",
+      "lat": -8.3221148,
+      "lon": 36.1329503,
+      "osm_id": "node/7922632409",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Lukolongo",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mchombe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mofu",
+      "lat": -8.2608176,
+      "lon": 36.3547003,
+      "osm_id": "node/7922632410",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mofu",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Idete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ihanga",
+      "lat": -8.0841854,
+      "lon": 36.5844382,
+      "osm_id": "node/7922632411",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Ihanga",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Lumemo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbasa",
+      "lat": -8.1089381,
+      "lon": 36.6915793,
+      "osm_id": "node/7922632412",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mbasa",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kibaoni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanga",
+      "lat": -8.1628376,
+      "lon": 36.3613775,
+      "osm_id": "node/7922632413",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Kanga",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kanga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kilama",
+      "lat": -8.0487322,
+      "lon": 36.7347267,
+      "osm_id": "node/7922632414",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Kilama",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kiberege"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Machipi",
+      "lat": -8.0639343,
+      "lon": 36.6518958,
+      "osm_id": "node/7922632415",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Machipi",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kibaoni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Njage",
+      "lat": -8.2362306,
+      "lon": 36.1776642,
+      "osm_id": "node/7922632416",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Njage",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mbingu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kining'Ina",
+      "lat": -8.1058497,
+      "lon": 36.6682083,
+      "osm_id": "node/7922632417",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Kining'Ina",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kibaoni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Michenga",
+      "lat": -8.112459,
+      "lon": 36.6519376,
+      "osm_id": "node/7922632418",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Michenga",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kibaoni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbuga",
+      "lat": -8.0957092,
+      "lon": 36.7494685,
+      "osm_id": "node/7922632421",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mbuga",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mbuga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katindiuka",
+      "lat": -8.1302427,
+      "lon": 36.7035119,
+      "osm_id": "node/7922632422",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Katindiuka",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kibaoni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kikwawila",
+      "lat": -8.0897398,
+      "lon": 36.7079261,
+      "osm_id": "node/7922632423",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Kikwawila",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kibaoni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namwawala",
+      "lat": -8.1592141,
+      "lon": 36.3918352,
+      "osm_id": "node/7922632424",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Namwawala",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Idete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lungongole",
+      "lat": -8.0714144,
+      "lon": 36.7658832,
+      "osm_id": "node/7922632426",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Lungongole",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kiberege"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kisegese",
+      "lat": -8.1594032,
+      "lon": 36.3411553,
+      "osm_id": "node/7922632428",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Kisegese",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Idete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kikwawila",
+      "lat": -8.084375,
+      "lon": 36.7465421,
+      "osm_id": "node/7922632429",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Kikwawila",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kiberege"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mahutanga",
+      "lat": -8.1406886,
+      "lon": 36.6498465,
+      "osm_id": "node/7922632430",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mahutanga",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kibaoni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lumemo",
+      "lat": -8.1379084,
+      "lon": 36.6667067,
+      "osm_id": "node/7922632431",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Lumemo",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Kibaoni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Igima",
+      "lat": -8.2131285,
+      "lon": 36.2304362,
+      "osm_id": "node/7922632432",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Igima",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Mbingu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chisano",
+      "lat": -8.6704122,
+      "lon": 35.8705482,
+      "osm_id": "node/7922632434",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Chisano",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Chita"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mgugwe",
+      "lat": -8.6586126,
+      "lon": 35.8473325,
+      "osm_id": "node/7922632441",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilombero",
+        "name": "Mgugwe",
+        "place": "village",
+        "region": "Morogoro",
+        "ward": "Chisano"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kipaduka",
+      "lat": -7.5991543,
+      "lon": 36.0422822,
+      "osm_id": "node/7922632442",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Kipaduka",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Uhambingeto"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Iwungi",
+      "lat": -7.478538,
+      "lon": 35.9740925,
+      "osm_id": "node/7922632443",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Iwungi",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Uhambingeto"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malolo",
+      "lat": -7.5701168,
+      "lon": 36.0859078,
+      "osm_id": "node/7922632444",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Malolo",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Malolo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ikuka",
+      "lat": -7.5087165,
+      "lon": 36.0178112,
+      "osm_id": "node/7922632445",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Ikuka",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Uhambingeto"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ilawa",
+      "lat": -7.540916,
+      "lon": 36.1099853,
+      "osm_id": "node/7922632446",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Ilawa",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Image"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ilambo",
+      "lat": -7.3743942,
+      "lon": 36.1676143,
+      "osm_id": "node/7922632447",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Ilambo",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ibumu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uhambingeto",
+      "lat": -7.5462927,
+      "lon": 35.9427433,
+      "osm_id": "node/7922632448",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Uhambingeto",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Uhambingeto"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mgowelo",
+      "lat": -7.4691895,
+      "lon": 36.3150532,
+      "osm_id": "node/7922632449",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Mgowelo",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Mahenge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Iyai",
+      "lat": -7.5593404,
+      "lon": 36.1388751,
+      "osm_id": "node/7922632450",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Iyai",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Image"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kilubwa",
+      "lat": -7.4888295,
+      "lon": 36.1154502,
+      "osm_id": "node/7922632451",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Kilubwa",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ibumu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtandika",
+      "lat": -7.5457459,
+      "lon": 36.4013309,
+      "osm_id": "node/7922632452",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Mtandika",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ruaha Mbuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ibumu",
+      "lat": -7.4629138,
+      "lon": 36.1254181,
+      "osm_id": "node/7922632453",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Ibumu",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ibumu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Image",
+      "lat": -7.601111,
+      "lon": 36.1117749,
+      "osm_id": "node/7922632454",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Image",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Image"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magana",
+      "lat": -7.5505783,
+      "lon": 36.2362064,
+      "osm_id": "node/7922632455",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Magana",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Mahenge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vitono",
+      "lat": -7.6168686,
+      "lon": 35.9698139,
+      "osm_id": "node/7922632456",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Vitono",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Uhambingeto"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msosa",
+      "lat": -7.5059307,
+      "lon": 36.5202618,
+      "osm_id": "node/7922632457",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Msosa",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ruaha Mbuyuni"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uhominyi",
+      "lat": -7.5646811,
+      "lon": 36.1096685,
+      "osm_id": "node/7922632458",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Uhominyi",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Image"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ilindi",
+      "lat": -7.577607,
+      "lon": 36.2514357,
+      "osm_id": "node/7922632459",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Ilindi",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Mahenge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "K/Kidewa",
+      "lat": -7.5103792,
+      "lon": 36.1125864,
+      "osm_id": "node/7922632460",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "K/Kidewa",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ibumu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lyasa",
+      "lat": -7.5266554,
+      "lon": 36.1082782,
+      "osm_id": "node/7922632461",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Lyasa",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Image"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Igunda",
+      "lat": -7.3403908,
+      "lon": 36.2936881,
+      "osm_id": "node/7922632462",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Igunda",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Mahenge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kising'A",
+      "lat": -7.9095688,
+      "lon": 35.9841315,
+      "osm_id": "node/7922632463",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Kising'A",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ukwega"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ifua",
+      "lat": -7.7942725,
+      "lon": 36.2507165,
+      "osm_id": "node/7922632464",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Ifua",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Udekwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wotalisoli",
+      "lat": -7.825687,
+      "lon": 36.2054702,
+      "osm_id": "node/7922632465",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Wotalisoli",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Udekwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ihimbo",
+      "lat": -7.9134,
+      "lon": 35.8208938,
+      "osm_id": "node/7922632466",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Ihimbo",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ihimbo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Udekwa",
+      "lat": -7.7527608,
+      "lon": 36.3844989,
+      "osm_id": "node/7922632467",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Udekwa",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Udekwa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkalanga",
+      "lat": -7.8999923,
+      "lon": 36.1362075,
+      "osm_id": "node/7922632468",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Mkalanga",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ukwega"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitumbuka",
+      "lat": -7.7237246,
+      "lon": 35.842684,
+      "osm_id": "node/7922632469",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Kitumbuka",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Irole"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Isagwa",
+      "lat": -7.8326411,
+      "lon": 36.1133041,
+      "osm_id": "node/7922632470",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Isagwa",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Mlafu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mawala",
+      "lat": -7.6774406,
+      "lon": 35.8912558,
+      "osm_id": "node/7922632471",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Mawala",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Irole"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ipalamwa",
+      "lat": -7.9406065,
+      "lon": 36.1009556,
+      "osm_id": "node/7922632472",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Ipalamwa",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ukwega"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Italula",
+      "lat": -7.928156,
+      "lon": 35.8119257,
+      "osm_id": "node/7922632473",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Italula",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ihimbo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mlafu",
+      "lat": -7.7763372,
+      "lon": 36.1358037,
+      "osm_id": "node/7922632474",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Mlafu",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Mlafu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makungu",
+      "lat": -7.8909255,
+      "lon": 36.0635475,
+      "osm_id": "node/7922632475",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Makungu",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ukwega"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mahenge",
+      "lat": -7.6309296,
+      "lon": 36.2667303,
+      "osm_id": "node/7922632476",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Mahenge",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Mahenge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Irole",
+      "lat": -7.6997402,
+      "lon": 35.8498378,
+      "osm_id": "node/7922632477",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Irole",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Irole"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masalali",
+      "lat": -8.1168872,
+      "lon": 35.7265465,
+      "osm_id": "node/7922632478",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Masalali",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ukumbi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwatasi",
+      "lat": -8.2618849,
+      "lon": 35.8158035,
+      "osm_id": "node/7922632479",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Mwatasi",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Boma la Ng'ombe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madege",
+      "lat": -8.1830059,
+      "lon": 35.9828611,
+      "osm_id": "node/7922632480",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Madege",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Idete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lyamko",
+      "lat": -8.2234927,
+      "lon": 35.8693024,
+      "osm_id": "node/7922632482",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Lyamko",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Boma la Ng'ombe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitowo",
+      "lat": -8.0528911,
+      "lon": 35.7394187,
+      "osm_id": "node/7922632483",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Kitowo",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ukumbi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kidabaga",
+      "lat": -8.1051941,
+      "lon": 35.9016408,
+      "osm_id": "node/7922632484",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Kidabaga",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Dabaga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Idegenda",
+      "lat": -8.2718968,
+      "lon": 35.9323521,
+      "osm_id": "node/7922697185",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Idegenda",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Masisiwe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wangama",
+      "lat": -8.2514984,
+      "lon": 35.8051796,
+      "osm_id": "node/7922697186",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Wangama",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Boma la Ng'ombe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ilamba",
+      "lat": -8.0760568,
+      "lon": 35.8840395,
+      "osm_id": "node/7922697187",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Ilamba",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Dabaga"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ng'uruhe",
+      "lat": -8.1032035,
+      "lon": 35.7709643,
+      "osm_id": "node/7922697188",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Ng'uruhe",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ng'uruhe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtitu",
+      "lat": -8.0290129,
+      "lon": 35.7705235,
+      "osm_id": "node/7922697189",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Mtitu",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Mtitu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kiwalamo",
+      "lat": -8.1324247,
+      "lon": 36.0344716,
+      "osm_id": "node/7922697190",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Kiwalamo",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Idete"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Isanga",
+      "lat": -8.2596154,
+      "lon": 35.9320254,
+      "osm_id": "node/7922697191",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Isanga",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Masisiwe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ng'Ingula",
+      "lat": -8.2802492,
+      "lon": 35.8673291,
+      "osm_id": "node/7922697192",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Ng'Ingula",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Boma la Ng'ombe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mawambala",
+      "lat": -8.0955468,
+      "lon": 35.674505,
+      "osm_id": "node/7922697193",
+      "osm_tags": {
+        "country": "TZ",
+        "district": "Kilolo",
+        "name": "Mawambala",
+        "place": "village",
+        "region": "Iringa",
+        "ward": "Ukumbi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kidilo",
+      "lat": -7.7768165,
+      "lon": 36.29835,
+      "osm_id": "node/8244855294",
+      "osm_tags": {
+        "name": "Kidilo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kinywang'Anga",
+      "lat": -7.5769857,
+      "lon": 35.7289767,
+      "osm_id": "node/10760296585",
+      "osm_tags": {
+        "name": "Kinywang'Anga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Iringa",
+      "lat": -7.778902,
+      "lon": 35.6970649,
+      "osm_id": "node/11070723589",
+      "osm_tags": {
+        "name": "Iringa",
+        "place": "city",
+        "population": "202490",
+        "source:population": "German Wikipedia https://de.wikipedia.org/wiki/Liste_der_St%C3%A4dte_in_Tansania",
+        "wikidata": "Q735609",
+        "wikipedia": "en:Iringa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Isaka",
+      "lat": -7.3055478,
+      "lon": 36.1468622,
+      "osm_id": "node/12183570459",
+      "osm_tags": {
+        "name": "Isaka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ulanga River",
+      "lat": -8.2163166,
+      "lon": 36.9566672,
+      "osm_id": "way/32138374",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ulanga River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Great Ruaha",
+      "lat": -7.2951719,
+      "lon": 36.2525206,
+      "osm_id": "way/32216049",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Great Ruaha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilombero River",
+      "lat": -8.403321,
+      "lon": 36.3052959,
+      "osm_id": "way/78222544",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Kilombero River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilombero River",
+      "lat": -8.1578773,
+      "lon": 36.8177626,
+      "osm_id": "way/78222574",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Kilombero River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Great Ruaha",
+      "lat": -7.7727123,
+      "lon": 37.0563504,
+      "osm_id": "way/135171095",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Great Ruaha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kidatu Lake",
+      "lat": -7.6404409,
+      "lon": 36.8373383,
+      "osm_id": "way/135171102",
+      "osm_tags": {
+        "name": "Kidatu Lake",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruipa",
+      "lat": -7.6744046,
+      "lon": 36.2880518,
+      "osm_id": "way/135171103",
+      "osm_tags": {
+        "fixme": "name?",
+        "name": "Ruipa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Sanje",
+      "lat": -7.7828131,
+      "lon": 36.9573479,
+      "osm_id": "way/135171104",
+      "osm_tags": {
+        "level": "-1",
+        "name": "Sanje",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sanjo",
+      "lat": -7.8080624,
+      "lon": 36.8963976,
+      "osm_id": "way/135171105",
+      "osm_tags": {
+        "name": "Sanjo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruaha River",
+      "lat": -7.8008567,
+      "lon": 35.7438892,
+      "osm_id": "way/159145233",
+      "osm_tags": {
+        "name": "Ruaha River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namwawala",
+      "lat": -8.1571627,
+      "lon": 36.3980064,
+      "osm_id": "way/209666271",
+      "osm_tags": {
+        "alt_name": "Namwalala",
+        "landuse": "residential",
+        "name": "Namwawala",
+        "place": "village",
+        "source": "bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sanje",
+      "lat": -7.769742,
+      "lon": 36.9169687,
+      "osm_id": "way/209666273",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Sanje",
+        "place": "village",
+        "source": "bing"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilombero River",
+      "lat": -8.1666061,
+      "lon": 36.7261156,
+      "osm_id": "way/223273366",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Kilombero River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilombero River",
+      "lat": -8.2761266,
+      "lon": 36.4952049,
+      "osm_id": "way/223275367",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Kilombero River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilombero River",
+      "lat": -8.3500108,
+      "lon": 36.3778046,
+      "osm_id": "way/223275368",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Kilombero River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Njokamoni",
+      "lat": -7.8397497,
+      "lon": 36.8997678,
+      "osm_id": "way/246068848",
+      "osm_tags": {
+        "name": "Njokamoni",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kihansi Reservoir",
+      "lat": -8.5682769,
+      "lon": 35.8502871,
+      "osm_id": "way/247911439",
+      "osm_tags": {
+        "name": "Kihansi Reservoir",
+        "natural": "water",
+        "source": "bing2013",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kihansi River",
+      "lat": -8.6010637,
+      "lon": 35.8576989,
+      "osm_id": "way/247911443",
+      "osm_tags": {
+        "name": "Kihansi River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruaha River",
+      "lat": -7.7863775,
+      "lon": 35.7083752,
+      "osm_id": "way/276692490",
+      "osm_tags": {
+        "name": "Ruaha River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kihansi River",
+      "lat": -8.5499042,
+      "lon": 35.8509167,
+      "osm_id": "way/278041968",
+      "osm_tags": {
+        "name": "Kihansi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbungu River",
+      "lat": -7.3087681,
+      "lon": 36.0741023,
+      "osm_id": "way/282644966",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mbungu River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruaha River",
+      "lat": -7.8120246,
+      "lon": 35.6476568,
+      "osm_id": "way/313358508",
+      "osm_tags": {
+        "name": "Ruaha River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kihansi River",
+      "lat": -8.5682043,
+      "lon": 35.850957,
+      "osm_id": "way/313410094",
+      "osm_tags": {
+        "name": "Kihansi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruaha River",
+      "lat": -7.8234495,
+      "lon": 35.8095934,
+      "osm_id": "way/313522807",
+      "osm_tags": {
+        "name": "Ruaha River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruaha River",
+      "lat": -7.883244,
+      "lon": 35.7983062,
+      "osm_id": "way/313522808",
+      "osm_tags": {
+        "name": "Ruaha River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruaha River",
+      "lat": -7.8267338,
+      "lon": 35.8107467,
+      "osm_id": "way/313522809",
+      "osm_tags": {
+        "name": "Ruaha River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruaha River",
+      "lat": -7.8821272,
+      "lon": 35.8190223,
+      "osm_id": "way/313522810",
+      "osm_tags": {
+        "name": "Ruaha River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lundamatwe",
+      "lat": -7.7898731,
+      "lon": 35.7918453,
+      "osm_id": "way/382224004",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Lundamatwe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kihesa Kilolo Bwawani",
+      "lat": -7.734093,
+      "lon": 35.7171895,
+      "osm_id": "way/384966281",
+      "osm_tags": {
+        "name": "Kihesa Kilolo Bwawani",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Great Ruaha",
+      "lat": -7.6471826,
+      "lon": 36.8818639,
+      "osm_id": "way/410971351",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Great Ruaha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruipa",
+      "lat": -7.510877,
+      "lon": 36.4628235,
+      "osm_id": "way/526763775",
+      "osm_tags": {
+        "name": "Ruipa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ruipa",
+      "lat": -7.8675651,
+      "lon": 36.1221269,
+      "osm_id": "way/606412349",
+      "osm_tags": {
+        "fixme": "name?",
+        "name": "Ruipa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kilwilw",
+      "lat": -8.0988797,
+      "lon": 36.5142036,
+      "osm_id": "way/642629069",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Kilwilw",
+        "place": "village",
+        "source": "bing"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Njokamoni",
+      "lat": -7.8367216,
+      "lon": 36.8924951,
+      "osm_id": "way/643409062",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Njokamoni",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Njokamoni",
+      "lat": -7.8369578,
+      "lon": 36.8919836,
+      "osm_id": "way/643409064",
+      "osm_tags": {
+        "name": "Njokamoni",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Njokamoni",
+      "lat": -7.8384479,
+      "lon": 36.8965388,
+      "osm_id": "way/643409070",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Njokamoni",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Njokamoni",
+      "lat": -7.8375462,
+      "lon": 36.8945267,
+      "osm_id": "way/643409071",
+      "osm_tags": {
+        "name": "Njokamoni",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sanje",
+      "lat": -7.7683376,
+      "lon": 36.9025172,
+      "osm_id": "way/643409073",
+      "osm_tags": {
+        "level": "-1",
+        "name": "Sanje",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sanje",
+      "lat": -7.7677463,
+      "lon": 36.8989574,
+      "osm_id": "way/643409074",
+      "osm_tags": {
+        "name": "Sanje",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Great Ruaha",
+      "lat": -7.6666288,
+      "lon": 36.9864259,
+      "osm_id": "way/852399301",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Great Ruaha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Great Ruaha",
+      "lat": -7.5579689,
+      "lon": 36.6551362,
+      "osm_id": "way/852419620",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Great Ruaha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "LUMEMO",
+      "lat": -7.9900361,
+      "lon": 36.7002543,
+      "osm_id": "way/921868684",
+      "osm_tags": {
+        "name": "LUMEMO",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "river channel",
+      "lat": -8.1745495,
+      "lon": 36.719352,
+      "osm_id": "way/1070997818",
+      "osm_tags": {
+        "name": "river channel",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilombero River",
+      "lat": -8.201288,
+      "lon": 36.6492542,
+      "osm_id": "way/1073535018",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Kilombero River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ikela River",
+      "lat": -7.7073498,
+      "lon": 36.9679631,
+      "osm_id": "way/1158476597",
+      "osm_tags": {
+        "name": "Ikela River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ikela River",
+      "lat": -7.6997038,
+      "lon": 36.9537258,
+      "osm_id": "way/1158476598",
+      "osm_tags": {
+        "name": "Ikela River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ikela River",
+      "lat": -7.7020577,
+      "lon": 36.9550053,
+      "osm_id": "way/1158476599",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Ikela River",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msolwa river",
+      "lat": -7.7178344,
+      "lon": 36.9278367,
+      "osm_id": "way/1160668620",
+      "osm_tags": {
+        "name": "Msolwa river",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sumbugulu river",
+      "lat": -7.7246088,
+      "lon": 36.9356116,
+      "osm_id": "way/1160668621",
+      "osm_tags": {
+        "name": "Sumbugulu river",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msolwa river",
+      "lat": -7.7228412,
+      "lon": 36.9334511,
+      "osm_id": "way/1160668622",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Msolwa river",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "msolwa river",
+      "lat": -7.7251064,
+      "lon": 36.9429208,
+      "osm_id": "way/1160668623",
+      "osm_tags": {
+        "name": "msolwa river",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "msolwa river",
+      "lat": -7.719522,
+      "lon": 36.9607796,
+      "osm_id": "way/1160669321",
+      "osm_tags": {
+        "name": "msolwa river",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "msolwa river",
+      "lat": -7.7175034,
+      "lon": 36.9630414,
+      "osm_id": "way/1160669322",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "msolwa river",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "msolwa river",
+      "lat": -7.7163023,
+      "lon": 36.9715386,
+      "osm_id": "way/1225641186",
+      "osm_tags": {
+        "name": "msolwa river",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ulanga River",
+      "lat": -8.2032075,
+      "lon": 36.9304132,
+      "osm_id": "way/1225641190",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ulanga River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ulanga River",
+      "lat": -8.2066904,
+      "lon": 36.9313949,
+      "osm_id": "way/1225641191",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ulanga River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ulanga River",
+      "lat": -8.1667302,
+      "lon": 36.9205449,
+      "osm_id": "way/1225641192",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ulanga River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilombero River",
+      "lat": -8.2498992,
+      "lon": 36.5347093,
+      "osm_id": "way/1225865583",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Kilombero River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ikela River",
+      "lat": -7.700672,
+      "lon": 36.9672668,
+      "osm_id": "way/1356911658",
+      "osm_tags": {
+        "name": "Ikela River",
+        "waterway": "stream"
+      }
+    }
+  ]
+}

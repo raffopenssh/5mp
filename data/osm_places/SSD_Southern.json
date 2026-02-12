@@ -1,0 +1,2507 @@
+{
+  "park_id": "SSD_Southern",
+  "downloaded_at": "2026-02-08T11:20:29.003569+00:00",
+  "buffer_km": 50,
+  "place_count": 205,
+  "places": [
+    {
+      "place_type": "village",
+      "name": "Akot",
+      "lat": 6.5452923,
+      "lon": 30.0377043,
+      "osm_id": "node/210366226",
+      "osm_tags": {
+        "name": "Akot",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Maridi",
+      "lat": 4.9143633,
+      "lon": 29.4645282,
+      "osm_id": "node/217893617",
+      "osm_tags": {
+        "name": "Maridi",
+        "name:ar": "\u0645\u0627\u0631\u064a\u062f\u064a",
+        "name:ru": "\u041c\u0430\u0440\u0438\u0434\u0438",
+        "place": "town",
+        "wikidata": "Q3132444",
+        "wikipedia": "en:Maridi"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mvolo",
+      "lat": 6.0607554,
+      "lon": 29.9567643,
+      "osm_id": "node/217939859",
+      "osm_tags": {
+        "name": "Mvolo",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nagasi",
+      "lat": 4.9228312,
+      "lon": 28.0331218,
+      "osm_id": "node/240447970",
+      "osm_tags": {
+        "name": "Nagasi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Tambura",
+      "lat": 5.609579,
+      "lon": 27.4683476,
+      "osm_id": "node/241501075",
+      "osm_tags": {
+        "GNS:id": "-14891",
+        "alt_name": "Tumbura;Tembura",
+        "alt_name:fr": "Tambura;Tumbura;Tembura",
+        "name": "Tambura",
+        "name:ar": "\u062a\u0648\u0645\u0628\u0648\u0631\u0627",
+        "name:fr": "Tamboura",
+        "name:ru": "\u0422\u0430\u043c\u0431\u0443\u0440\u0430",
+        "place": "town",
+        "wikidata": "Q1681204",
+        "wikipedia": "en:Tumbura"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malou-Pech",
+      "lat": 7.0633134,
+      "lon": 29.0938476,
+      "osm_id": "node/243414698",
+      "osm_tags": {
+        "name": "Malou-Pech",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dongoll",
+      "lat": 6.0225387,
+      "lon": 29.9339906,
+      "osm_id": "node/243450695",
+      "osm_tags": {
+        "fixme": "Two towns nearby with the exact same name seems fishy.",
+        "name": "Dongoll",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ezo",
+      "lat": 5.0857047,
+      "lon": 27.466719,
+      "osm_id": "node/435516605",
+      "osm_tags": {
+        "name": "Ezo",
+        "name:fr": "Ezo",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mambe",
+      "lat": 5.0242656,
+      "lon": 29.7129773,
+      "osm_id": "node/435797976",
+      "osm_tags": {
+        "name": "Mambe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bangalu",
+      "lat": 4.99331,
+      "lon": 27.40093,
+      "osm_id": "node/1157841696",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Ndolomo",
+        "is_in:territoire": "Dungu",
+        "name": "Bangalu",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yeri",
+      "lat": 5.7861354,
+      "lon": 30.1066372,
+      "osm_id": "node/2589925593",
+      "osm_tags": {
+        "name": "Yeri",
+        "place": "village",
+        "source": "Logistics Cluster"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kotobi",
+      "lat": 5.2488933,
+      "lon": 30.2037687,
+      "osm_id": "node/2618467526",
+      "osm_tags": {
+        "name": "Kotobi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yangiri",
+      "lat": 5.1832187,
+      "lon": 27.9553618,
+      "osm_id": "node/2767091425",
+      "osm_tags": {
+        "name": "Yangiri",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mopai",
+      "lat": 5.470779,
+      "lon": 27.6580635,
+      "osm_id": "node/2767100800",
+      "osm_tags": {
+        "name": "Mopai",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Diabio",
+      "lat": 4.9728686,
+      "lon": 28.025693,
+      "osm_id": "node/2767107029",
+      "osm_tags": {
+        "name": "Diabio",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ringasi",
+      "lat": 4.9274742,
+      "lon": 28.1785323,
+      "osm_id": "node/2767107603",
+      "osm_tags": {
+        "name": "Ringasi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Binawaw",
+      "lat": 6.8120323,
+      "lon": 29.7383488,
+      "osm_id": "node/3250058110",
+      "osm_tags": {
+        "name": "Binawaw",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Akol Jal",
+      "lat": 6.7924699,
+      "lon": 29.7545639,
+      "osm_id": "node/3250058111",
+      "osm_tags": {
+        "name": "Akol Jal",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wuntau",
+      "lat": 6.8077255,
+      "lon": 29.7919875,
+      "osm_id": "node/3250058112",
+      "osm_tags": {
+        "name": "Wuntau",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pacong",
+      "lat": 6.7236365,
+      "lon": 29.7458336,
+      "osm_id": "node/3250058114",
+      "osm_tags": {
+        "name": "Pacong",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Awuk",
+      "lat": 6.8030212,
+      "lon": 29.7276609,
+      "osm_id": "node/3257849999",
+      "osm_tags": {
+        "name": "Awuk",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Wulu",
+      "lat": 6.5114833,
+      "lon": 29.6278427,
+      "osm_id": "node/3257850000",
+      "osm_tags": {
+        "name": "Wulu",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pachong",
+      "lat": 6.6945716,
+      "lon": 29.780415,
+      "osm_id": "node/3257850001",
+      "osm_tags": {
+        "name": "Pachong",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Adol",
+      "lat": 6.7844725,
+      "lon": 29.7563054,
+      "osm_id": "node/3259594756",
+      "osm_tags": {
+        "name": "Adol",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Adukan",
+      "lat": 6.7899474,
+      "lon": 29.7147675,
+      "osm_id": "node/3259594757",
+      "osm_tags": {
+        "name": "Adukan",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Akol'gal'",
+      "lat": 6.7529525,
+      "lon": 29.8011619,
+      "osm_id": "node/3259594758",
+      "osm_tags": {
+        "name": "Akol'gal'",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cuei Chok",
+      "lat": 6.7586438,
+      "lon": 29.7310667,
+      "osm_id": "node/3259594759",
+      "osm_tags": {
+        "name": "Cuei Chok",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Daldiva",
+      "lat": 6.7311309,
+      "lon": 29.7503045,
+      "osm_id": "node/3259594760",
+      "osm_tags": {
+        "name": "Daldiva",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gorok",
+      "lat": 6.7410373,
+      "lon": 29.7121178,
+      "osm_id": "node/3259594861",
+      "osm_tags": {
+        "name": "Gorok",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kakor",
+      "lat": 6.7379416,
+      "lon": 29.8226254,
+      "osm_id": "node/3259594862",
+      "osm_tags": {
+        "name": "Kakor",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kurur",
+      "lat": 6.7650439,
+      "lon": 29.7527516,
+      "osm_id": "node/3259594863",
+      "osm_tags": {
+        "name": "Kurur",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kwek Makur",
+      "lat": 6.6763636,
+      "lon": 29.8134758,
+      "osm_id": "node/3259594864",
+      "osm_tags": {
+        "name": "Kwek Makur",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malek Agok",
+      "lat": 6.725868,
+      "lon": 29.7587212,
+      "osm_id": "node/3259594865",
+      "osm_tags": {
+        "name": "Malek Agok",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malou",
+      "lat": 6.697076,
+      "lon": 29.7872443,
+      "osm_id": "node/3259594866",
+      "osm_tags": {
+        "name": "Malou",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maud",
+      "lat": 6.7533903,
+      "lon": 29.7231314,
+      "osm_id": "node/3259594867",
+      "osm_tags": {
+        "name": "Maud",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Medenkwoin",
+      "lat": 6.7548132,
+      "lon": 29.8207551,
+      "osm_id": "node/3259594868",
+      "osm_tags": {
+        "name": "Medenkwoin",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Meninger",
+      "lat": 6.7766369,
+      "lon": 29.8107798,
+      "osm_id": "node/3259594869",
+      "osm_tags": {
+        "name": "Meninger",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Monar",
+      "lat": 6.7848008,
+      "lon": 29.7640203,
+      "osm_id": "node/3259594870",
+      "osm_tags": {
+        "name": "Monar",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Adull",
+      "lat": 6.6178911,
+      "lon": 29.9447658,
+      "osm_id": "node/3259606887",
+      "osm_tags": {
+        "name": "Adull",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ajijuit",
+      "lat": 6.9206735,
+      "lon": 29.6095658,
+      "osm_id": "node/3259606888",
+      "osm_tags": {
+        "name": "Ajijuit",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Akwoing",
+      "lat": 6.8841705,
+      "lon": 29.7663494,
+      "osm_id": "node/3259606889",
+      "osm_tags": {
+        "name": "Akwoing",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Amit",
+      "lat": 6.7499964,
+      "lon": 29.8706446,
+      "osm_id": "node/3259606890",
+      "osm_tags": {
+        "name": "Amit",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Anip",
+      "lat": 6.9836534,
+      "lon": 29.8539341,
+      "osm_id": "node/3259606891",
+      "osm_tags": {
+        "name": "Anip",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Arieri",
+      "lat": 6.8765265,
+      "lon": 29.7782486,
+      "osm_id": "node/3259606892",
+      "osm_tags": {
+        "name": "Arieri",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Atiaba",
+      "lat": 6.5879929,
+      "lon": 29.9512987,
+      "osm_id": "node/3259606893",
+      "osm_tags": {
+        "name": "Atiaba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Atiabba",
+      "lat": 6.5743179,
+      "lon": 29.9799967,
+      "osm_id": "node/3259606894",
+      "osm_tags": {
+        "name": "Atiabba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bar Pakum",
+      "lat": 6.9250955,
+      "lon": 29.6673088,
+      "osm_id": "node/3259606895",
+      "osm_tags": {
+        "name": "Bar Pakum",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dial",
+      "lat": 6.9260076,
+      "lon": 30.0109952,
+      "osm_id": "node/3259606896",
+      "osm_tags": {
+        "name": "Dial",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Faiu",
+      "lat": 6.6498917,
+      "lon": 29.9000426,
+      "osm_id": "node/3259606897",
+      "osm_tags": {
+        "name": "Faiu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Golmayen",
+      "lat": 6.9077967,
+      "lon": 29.7913143,
+      "osm_id": "node/3259606898",
+      "osm_tags": {
+        "name": "Golmayen",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lang",
+      "lat": 6.6304062,
+      "lon": 30.047192,
+      "osm_id": "node/3259606899",
+      "osm_tags": {
+        "name": "Lang",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lang",
+      "lat": 6.922077,
+      "lon": 29.987898,
+      "osm_id": "node/3259606900",
+      "osm_tags": {
+        "name": "Lang",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lang",
+      "lat": 6.9233152,
+      "lon": 29.7908477,
+      "osm_id": "node/3259606901",
+      "osm_tags": {
+        "name": "Lang",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Langcok",
+      "lat": 6.9244733,
+      "lon": 29.6935544,
+      "osm_id": "node/3259606902",
+      "osm_tags": {
+        "name": "Langcok",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makol`",
+      "lat": 6.8568368,
+      "lon": 29.7656494,
+      "osm_id": "node/3259606903",
+      "osm_tags": {
+        "name": "Makol`",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makuag",
+      "lat": 6.9404197,
+      "lon": 30.0096753,
+      "osm_id": "node/3259606904",
+      "osm_tags": {
+        "name": "Makuag",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Marial",
+      "lat": 6.5745496,
+      "lon": 29.9657643,
+      "osm_id": "node/3259606905",
+      "osm_tags": {
+        "name": "Marial",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mayelic",
+      "lat": 6.7198745,
+      "lon": 29.8806772,
+      "osm_id": "node/3259606906",
+      "osm_tags": {
+        "name": "Mayelic",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Megak",
+      "lat": 6.7168622,
+      "lon": 29.9355068,
+      "osm_id": "node/3259606907",
+      "osm_tags": {
+        "name": "Megak",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Naam",
+      "lat": 6.6556854,
+      "lon": 29.8594454,
+      "osm_id": "node/3259606908",
+      "osm_tags": {
+        "name": "Naam",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ninong",
+      "lat": 6.8994751,
+      "lon": 29.9928474,
+      "osm_id": "node/3259606909",
+      "osm_tags": {
+        "name": "Ninong",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pan-Awach",
+      "lat": 6.6679677,
+      "lon": 29.845213,
+      "osm_id": "node/3259606910",
+      "osm_tags": {
+        "name": "Pan-Awach",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Powing",
+      "lat": 6.9856184,
+      "lon": 29.9694202,
+      "osm_id": "node/3259606911",
+      "osm_tags": {
+        "name": "Powing",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tiit Agok",
+      "lat": 6.56551,
+      "lon": 29.9827965,
+      "osm_id": "node/3259606912",
+      "osm_tags": {
+        "name": "Tiit Agok",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wereboi",
+      "lat": 6.950644,
+      "lon": 29.6998099,
+      "osm_id": "node/3259606913",
+      "osm_tags": {
+        "name": "Wereboi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Rumbek",
+      "lat": 6.8063901,
+      "lon": 29.6767488,
+      "osm_id": "node/3275722461",
+      "osm_tags": {
+        "name": "Rumbek",
+        "name:ar": "\u0631\u0645\u0628\u0643",
+        "name:de": "Rumbik",
+        "name:ko": "\ub8f8\ubca0\ud06c",
+        "name:pl": "Rumbek",
+        "name:ru": "\u0420\u0443\u043c\u0431\u0435\u043a",
+        "name:uk": "\u0420\u0443\u043c\u0431\u0435\u043a",
+        "name:zh": "\u4f26\u62dc\u514b",
+        "name:zh-Hans": "\u4f26\u62dc\u514b",
+        "name:zh-Hant": "\u502b\u62dc\u514b",
+        "place": "city",
+        "wikidata": "Q607336",
+        "wikipedia": "en:Rumbek"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kerika",
+      "lat": 5.1285155,
+      "lon": 30.0339994,
+      "osm_id": "node/3999117452",
+      "osm_tags": {
+        "name": "Kerika",
+        "place": "village",
+        "source": "MSF survey"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Senekpuro",
+      "lat": 5.5938086,
+      "lon": 27.4106384,
+      "osm_id": "node/4997603208",
+      "osm_tags": {
+        "name": "Senekpuro",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gira",
+      "lat": 6.0264257,
+      "lon": 29.9245811,
+      "osm_id": "node/8995858192",
+      "osm_tags": {
+        "name": "Gira",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mayewe",
+      "lat": 5.6800537,
+      "lon": 30.1277253,
+      "osm_id": "node/9027165274",
+      "osm_tags": {
+        "name": "Mayewe",
+        "place": "village",
+        "source": "Logistics Cluster"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbara",
+      "lat": 5.5747676,
+      "lon": 30.1634858,
+      "osm_id": "node/9027165283",
+      "osm_tags": {
+        "name": "Mbara",
+        "place": "village",
+        "source": "Logistics Cluster"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gullu",
+      "lat": 5.3689502,
+      "lon": 30.1585071,
+      "osm_id": "node/9027165303",
+      "osm_tags": {
+        "name": "Gullu",
+        "place": "village",
+        "source": "Logistics Cluster"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Korana",
+      "lat": 5.5022105,
+      "lon": 30.1227064,
+      "osm_id": "node/9027165305",
+      "osm_tags": {
+        "name": "Korana",
+        "place": "hamlet",
+        "source": "Logistics Cluster"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kulundulu",
+      "lat": 5.7022823,
+      "lon": 30.1142615,
+      "osm_id": "node/9027171110",
+      "osm_tags": {
+        "name": "Kulundulu",
+        "place": "hamlet",
+        "source": "Logistics Cluster"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Teri",
+      "lat": 5.7756737,
+      "lon": 30.1054224,
+      "osm_id": "node/9027171111",
+      "osm_tags": {
+        "name": "Teri",
+        "place": "hamlet",
+        "source": "Logistics Cluster"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kozi",
+      "lat": 5.3634224,
+      "lon": 29.6201785,
+      "osm_id": "node/9027171112",
+      "osm_tags": {
+        "name": "Kozi",
+        "place": "village",
+        "source": "Logistics Cluster"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ringwa",
+      "lat": 5.3156778,
+      "lon": 29.5675121,
+      "osm_id": "node/9027171113",
+      "osm_tags": {
+        "name": "Ringwa",
+        "place": "hamlet",
+        "source": "Logistics Cluster"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mula",
+      "lat": 5.3291272,
+      "lon": 29.5845817,
+      "osm_id": "node/9027171114",
+      "osm_tags": {
+        "name": "Mula",
+        "place": "hamlet",
+        "source": "Logistics Cluster"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bani",
+      "lat": 5.4541679,
+      "lon": 29.6949797,
+      "osm_id": "node/9027171115",
+      "osm_tags": {
+        "name": "Bani",
+        "place": "village",
+        "source": "Logistics Cluster"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mungan",
+      "lat": 5.3765768,
+      "lon": 29.636747,
+      "osm_id": "node/9027171116",
+      "osm_tags": {
+        "name": "Mungan",
+        "place": "hamlet",
+        "source": "Logistics Cluster"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Onayo",
+      "lat": 5.5087727,
+      "lon": 29.7118492,
+      "osm_id": "node/9027171117",
+      "osm_tags": {
+        "name": "Onayo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Abdulla",
+      "lat": 5.6512956,
+      "lon": 29.7747003,
+      "osm_id": "node/9027171118",
+      "osm_tags": {
+        "name": "Abdulla",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Aduel",
+      "lat": 6.6268581,
+      "lon": 29.8976072,
+      "osm_id": "node/9051746796",
+      "osm_tags": {
+        "name": "Aduel",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Cueibet",
+      "lat": 7.0146876,
+      "lon": 29.2470254,
+      "osm_id": "node/9051787336",
+      "osm_tags": {
+        "name": "Cueibet",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Nagero",
+      "lat": 6.3939673,
+      "lon": 27.7696995,
+      "osm_id": "node/9053753882",
+      "osm_tags": {
+        "name": "Nagero",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Agangrial",
+      "lat": 6.8511802,
+      "lon": 29.224239,
+      "osm_id": "node/12055628616",
+      "osm_tags": {
+        "name": "Agangrial",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngogola",
+      "lat": 5.9513053,
+      "lon": 27.3784125,
+      "osm_id": "node/13282816800",
+      "osm_tags": {
+        "name": "Ngogola",
+        "place": "village",
+        "source": "Map of South Sudan 1955"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bandala",
+      "lat": 6.1062691,
+      "lon": 27.6770174,
+      "osm_id": "node/13282833302",
+      "osm_tags": {
+        "name": "Bandala",
+        "place": "village",
+        "source": "Map of South Sudan 1955"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nadiangere",
+      "lat": 5.5209391,
+      "lon": 28.415215,
+      "osm_id": "node/13282833303",
+      "osm_tags": {
+        "name": "Nadiangere",
+        "place": "village",
+        "source": "Map of South Sudan 1955"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bagidi",
+      "lat": 5.1804054,
+      "lon": 27.6767707,
+      "osm_id": "node/13282833304",
+      "osm_tags": {
+        "name": "Bagidi",
+        "place": "village",
+        "source": "Map of South Sudan 1955"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yangiri",
+      "lat": 5.3434107,
+      "lon": 27.7160436,
+      "osm_id": "node/13282833305",
+      "osm_tags": {
+        "name": "Yangiri",
+        "place": "village",
+        "source": "Map of South Sudan 1955"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 6.085172,
+      "lon": 27.8322314,
+      "osm_id": "way/29228766",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source": "landsat;PerryCastta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wahko",
+      "lat": 7.2438841,
+      "lon": 29.4042354,
+      "osm_id": "way/112673353",
+      "osm_tags": {
+        "name": "Wahko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibba",
+      "lat": 6.1456645,
+      "lon": 28.440637,
+      "osm_id": "way/112675714",
+      "osm_tags": {
+        "name": "Ibba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bo River",
+      "lat": 6.7038579,
+      "lon": 27.8788598,
+      "osm_id": "way/122157206",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_string": "stream",
+        "GNS:id": "-4031",
+        "GNS:modify_date": "2011-07-13",
+        "intermittent": "yes",
+        "name": "Bo River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mbomou",
+      "lat": 5.142337,
+      "lon": 27.2200129,
+      "osm_id": "way/133182054",
+      "osm_tags": {
+        "admin_level": "2",
+        "alt_name": "Bomu",
+        "boundary": "administrative",
+        "intermittent": "no",
+        "name": "Mbomou",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 7.3525901,
+      "lon": 28.0789022,
+      "osm_id": "way/173520090",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source": "landsat;PerryCastta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 6.4874876,
+      "lon": 27.9377566,
+      "osm_id": "way/173520097",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source": "landsat;PerryCastta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 6.9353459,
+      "lon": 27.9783904,
+      "osm_id": "way/173526040",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source": "landsat;PerryCastta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Numatinna",
+      "lat": 7.0605335,
+      "lon": 27.5671411,
+      "osm_id": "way/254791180",
+      "osm_tags": {
+        "name": "Numatinna",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wahko",
+      "lat": 5.91242,
+      "lon": 29.3390282,
+      "osm_id": "way/281981422",
+      "osm_tags": {
+        "name": "Wahko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.8128583,
+      "lon": 29.3908711,
+      "osm_id": "way/321748436",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.9598432,
+      "lon": 29.4695892,
+      "osm_id": "way/321748437",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.2160251,
+      "lon": 29.5580254,
+      "osm_id": "way/321748438",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 7.0548243,
+      "lon": 29.5776682,
+      "osm_id": "way/321748439",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.2438843,
+      "lon": 29.568201,
+      "osm_id": "way/321748440",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 7.1511056,
+      "lon": 29.6479473,
+      "osm_id": "way/321748441",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.4604011,
+      "lon": 29.5390577,
+      "osm_id": "way/321748442",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.278239,
+      "lon": 29.5757951,
+      "osm_id": "way/321748443",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.4309335,
+      "lon": 29.5566769,
+      "osm_id": "way/321748444",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.2985325,
+      "lon": 29.5823411,
+      "osm_id": "way/321748445",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.3287428,
+      "lon": 29.5897874,
+      "osm_id": "way/321748446",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.3849924,
+      "lon": 29.5802994,
+      "osm_id": "way/321748447",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.9260507,
+      "lon": 29.4692831,
+      "osm_id": "way/321748448",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 7.2315992,
+      "lon": 29.6994867,
+      "osm_id": "way/321748449",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.559429,
+      "lon": 29.4808419,
+      "osm_id": "way/321748450",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.9704358,
+      "lon": 29.4947872,
+      "osm_id": "way/321748451",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.1501422,
+      "lon": 29.5415783,
+      "osm_id": "way/321748453",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.7559022,
+      "lon": 29.3410511,
+      "osm_id": "way/321748454",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 7.1823022,
+      "lon": 29.6795788,
+      "osm_id": "way/321748455",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.515499,
+      "lon": 29.5060699,
+      "osm_id": "way/321748456",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.8665648,
+      "lon": 29.459116,
+      "osm_id": "way/321748457",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.5969605,
+      "lon": 29.439596,
+      "osm_id": "way/321748458",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Gulnam",
+      "lat": 6.6804597,
+      "lon": 29.3727971,
+      "osm_id": "way/321748459",
+      "osm_tags": {
+        "name": "River Gulnam",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibba",
+      "lat": 7.0129373,
+      "lon": 28.5338078,
+      "osm_id": "way/372482527",
+      "osm_tags": {
+        "name": "Ibba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibba River",
+      "lat": 7.2611112,
+      "lon": 28.6828716,
+      "osm_id": "way/372482528",
+      "osm_tags": {
+        "name": "Ibba River",
+        "name:ar": "\u0646\u0647\u0631 \u062a\u0648\u0646\u062c",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River Rohl",
+      "lat": 6.1428468,
+      "lon": 29.8087404,
+      "osm_id": "way/453643847",
+      "osm_tags": {
+        "name": "River Rohl",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.1638703,
+      "lon": 28.1641387,
+      "osm_id": "way/455469138",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.087768,
+      "lon": 28.2186896,
+      "osm_id": "way/455469140",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.2823142,
+      "lon": 28.1227121,
+      "osm_id": "way/455473522",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.3810766,
+      "lon": 28.0835974,
+      "osm_id": "way/455473856",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.4404984,
+      "lon": 28.0685985,
+      "osm_id": "way/455474797",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.4952573,
+      "lon": 28.0469692,
+      "osm_id": "way/455474934",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.5168916,
+      "lon": 28.0613458,
+      "osm_id": "way/455474959",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.5793394,
+      "lon": 28.0460036,
+      "osm_id": "way/455490321",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.6835102,
+      "lon": 27.9556721,
+      "osm_id": "way/455490406",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.7439265,
+      "lon": 27.9136982,
+      "osm_id": "way/455490730",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.7046329,
+      "lon": 27.9509354,
+      "osm_id": "way/455490731",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.7004214,
+      "lon": 27.9526574,
+      "osm_id": "way/455490732",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.884319,
+      "lon": 27.8476274,
+      "osm_id": "way/455494742",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.8430342,
+      "lon": 27.8537964,
+      "osm_id": "way/455494745",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.8121352,
+      "lon": 27.8542149,
+      "osm_id": "way/455494746",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.8121885,
+      "lon": 27.8541947,
+      "osm_id": "way/455494747",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.7994917,
+      "lon": 27.8653299,
+      "osm_id": "way/455494748",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0339291,
+      "lon": 28.3738974,
+      "osm_id": "way/455506189",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source:name": "PerryCasta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0082357,
+      "lon": 28.7278742,
+      "osm_id": "way/455510068",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 4.9932396,
+      "lon": 28.7819195,
+      "osm_id": "way/455513272",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 4.9622286,
+      "lon": 28.8023201,
+      "osm_id": "way/455514501",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Numatinna",
+      "lat": 6.6847315,
+      "lon": 27.3540909,
+      "osm_id": "way/520548454",
+      "osm_tags": {
+        "name": "Numatinna",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mbomou",
+      "lat": 5.0473324,
+      "lon": 27.4448041,
+      "osm_id": "way/531428434",
+      "osm_tags": {
+        "admin_level": "2",
+        "alt_name": "Bomu",
+        "boundary": "administrative",
+        "intermittent": "no",
+        "layer": "1",
+        "name": "Mbomou",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 6.7664517,
+      "lon": 28.0333324,
+      "osm_id": "way/535540402",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source": "landsat;PerryCastta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibba",
+      "lat": 6.6203242,
+      "lon": 28.4742728,
+      "osm_id": "way/535540406",
+      "osm_tags": {
+        "name": "Ibba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibba",
+      "lat": 5.1941957,
+      "lon": 29.0239248,
+      "osm_id": "way/535540407",
+      "osm_tags": {
+        "name": "Ibba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.6451741,
+      "lon": 27.9884233,
+      "osm_id": "way/535540411",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wahko",
+      "lat": 7.0603432,
+      "lon": 29.2015873,
+      "osm_id": "way/535564500",
+      "osm_tags": {
+        "name": "Wahko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wahko",
+      "lat": 7.1372494,
+      "lon": 29.3117005,
+      "osm_id": "way/535564524",
+      "osm_tags": {
+        "name": "Wahko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yei River",
+      "lat": 6.1233497,
+      "lon": 30.2385429,
+      "osm_id": "way/596722569",
+      "osm_tags": {
+        "name": "Yei River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0028358,
+      "lon": 28.7599225,
+      "osm_id": "way/614133409",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Busseri River",
+      "lat": 7.3693978,
+      "lon": 27.7958088,
+      "osm_id": "way/625709467",
+      "osm_tags": {
+        "name": "Busseri River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 4.7712209,
+      "lon": 28.8701594,
+      "osm_id": "way/689095927",
+      "osm_tags": {
+        "fixme": "accuracy",
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wahko",
+      "lat": 6.7443532,
+      "lon": 29.1983164,
+      "osm_id": "way/707656912",
+      "osm_tags": {
+        "name": "Wahko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wahko",
+      "lat": 6.4225688,
+      "lon": 29.2910046,
+      "osm_id": "way/707822917",
+      "osm_tags": {
+        "name": "Wahko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wahko",
+      "lat": 6.33529,
+      "lon": 29.299188,
+      "osm_id": "way/707827544",
+      "osm_tags": {
+        "name": "Wahko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wahko",
+      "lat": 6.2596419,
+      "lon": 29.3214368,
+      "osm_id": "way/707832801",
+      "osm_tags": {
+        "name": "Wahko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wahko",
+      "lat": 6.1013174,
+      "lon": 29.3498414,
+      "osm_id": "way/707832802",
+      "osm_tags": {
+        "name": "Wahko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0507837,
+      "lon": 28.3012565,
+      "osm_id": "way/770641296",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source:name": "PerryCasta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0203022,
+      "lon": 28.4521517,
+      "osm_id": "way/770641297",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source:name": "PerryCasta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0166446,
+      "lon": 28.5387001,
+      "osm_id": "way/770641298",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source:name": "PerryCasta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0674007,
+      "lon": 28.2640318,
+      "osm_id": "way/770641299",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source:name": "PerryCasta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0164308,
+      "lon": 28.6395107,
+      "osm_id": "way/770641300",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source:name": "PerryCasta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibba",
+      "lat": 5.8301527,
+      "lon": 28.588881,
+      "osm_id": "way/770744591",
+      "osm_tags": {
+        "name": "Ibba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibba",
+      "lat": 5.2630781,
+      "lon": 28.9555348,
+      "osm_id": "way/770744592",
+      "osm_tags": {
+        "name": "Ibba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibba",
+      "lat": 5.114657,
+      "lon": 29.0609049,
+      "osm_id": "way/770744593",
+      "osm_tags": {
+        "name": "Ibba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibba",
+      "lat": 5.5575765,
+      "lon": 28.8547491,
+      "osm_id": "way/770744594",
+      "osm_tags": {
+        "name": "Ibba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibba",
+      "lat": 5.3752179,
+      "lon": 28.9200774,
+      "osm_id": "way/770744595",
+      "osm_tags": {
+        "name": "Ibba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibba",
+      "lat": 5.7237231,
+      "lon": 28.7214285,
+      "osm_id": "way/770744596",
+      "osm_tags": {
+        "name": "Ibba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibba",
+      "lat": 5.9496987,
+      "lon": 28.4886881,
+      "osm_id": "way/770747919",
+      "osm_tags": {
+        "name": "Ibba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Busseri",
+      "lat": 7.1048073,
+      "lon": 27.4638209,
+      "osm_id": "way/776087854",
+      "osm_tags": {
+        "name": "Busseri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rohl",
+      "lat": 5.8003866,
+      "lon": 29.9505073,
+      "osm_id": "way/776149712",
+      "osm_tags": {
+        "name": "Rohl",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 6.8326977,
+      "lon": 28.0236632,
+      "osm_id": "way/814563114",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source": "landsat;PerryCastta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bo River",
+      "lat": 6.7769861,
+      "lon": 27.9129967,
+      "osm_id": "way/814582530",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_string": "stream",
+        "GNS:id": "-4031",
+        "GNS:modify_date": "2011-07-13",
+        "intermittent": "yes",
+        "name": "Bo River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bo River",
+      "lat": 6.6005812,
+      "lon": 27.803877,
+      "osm_id": "way/814582531",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_string": "stream",
+        "GNS:id": "-4031",
+        "GNS:modify_date": "2011-07-13",
+        "intermittent": "yes",
+        "name": "Bo River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bo River",
+      "lat": 6.816096,
+      "lon": 27.9584167,
+      "osm_id": "way/814582533",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_string": "stream",
+        "GNS:id": "-4031",
+        "GNS:modify_date": "2011-07-13",
+        "intermittent": "yes",
+        "name": "Bo River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bo River",
+      "lat": 6.5486703,
+      "lon": 27.7371436,
+      "osm_id": "way/814590217",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_string": "stream",
+        "GNS:id": "-4031",
+        "GNS:modify_date": "2011-07-13",
+        "intermittent": "yes",
+        "name": "Bo River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bo River",
+      "lat": 6.5089453,
+      "lon": 27.7059391,
+      "osm_id": "way/814590218",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_string": "stream",
+        "GNS:id": "-4031",
+        "GNS:modify_date": "2011-07-13",
+        "intermittent": "yes",
+        "name": "Bo River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bo River",
+      "lat": 6.4630575,
+      "lon": 27.6671444,
+      "osm_id": "way/814590219",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_string": "stream",
+        "GNS:id": "-4031",
+        "GNS:modify_date": "2011-07-13",
+        "intermittent": "yes",
+        "name": "Bo River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bo River",
+      "lat": 6.3961046,
+      "lon": 27.6099838,
+      "osm_id": "way/814590220",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_string": "stream",
+        "GNS:id": "-4031",
+        "GNS:modify_date": "2011-07-13",
+        "intermittent": "yes",
+        "name": "Bo River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bo River",
+      "lat": 6.3345468,
+      "lon": 27.5668432,
+      "osm_id": "way/814590221",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_string": "stream",
+        "GNS:id": "-4031",
+        "GNS:modify_date": "2011-07-13",
+        "intermittent": "yes",
+        "name": "Bo River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.8141458,
+      "lon": 27.8547178,
+      "osm_id": "way/822272155",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.8126528,
+      "lon": 27.8546964,
+      "osm_id": "way/822272156",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "sd",
+      "lat": 4.9629691,
+      "lon": 27.6325406,
+      "osm_id": "way/967131113",
+      "osm_tags": {
+        "name": "sd",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "sd",
+      "lat": 4.9766308,
+      "lon": 27.6319244,
+      "osm_id": "way/967131114",
+      "osm_tags": {
+        "name": "sd",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "sd",
+      "lat": 4.9946781,
+      "lon": 27.6152787,
+      "osm_id": "way/967131115",
+      "osm_tags": {
+        "name": "sd",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wahko",
+      "lat": 5.5923419,
+      "lon": 29.3383916,
+      "osm_id": "way/992209274",
+      "osm_tags": {
+        "name": "Wahko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 6.801645,
+      "lon": 28.0448103,
+      "osm_id": "way/1008182437",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source": "landsat;PerryCastta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 6.189634,
+      "lon": 27.8271833,
+      "osm_id": "way/1008661724",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source": "landsat;PerryCastta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.9596223,
+      "lon": 27.8418655,
+      "osm_id": "way/1008661726",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source": "landsat;PerryCastta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.6561152,
+      "lon": 27.9738856,
+      "osm_id": "way/1008665101",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.6414187,
+      "lon": 28.0137481,
+      "osm_id": "way/1008670056",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0446493,
+      "lon": 28.3263995,
+      "osm_id": "way/1008681355",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source:name": "PerryCasta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0137749,
+      "lon": 28.7041305,
+      "osm_id": "way/1008685799",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source:name": "PerryCasta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wahko",
+      "lat": 5.4578362,
+      "lon": 29.3632019,
+      "osm_id": "way/1008690558",
+      "osm_tags": {
+        "name": "Wahko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wahko",
+      "lat": 5.4841052,
+      "lon": 29.3474388,
+      "osm_id": "way/1008690559",
+      "osm_tags": {
+        "name": "Wahko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wahko",
+      "lat": 5.7516431,
+      "lon": 29.3257632,
+      "osm_id": "way/1008690562",
+      "osm_tags": {
+        "name": "Wahko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Numatinna",
+      "lat": 6.848278,
+      "lon": 27.4540079,
+      "osm_id": "way/1047520560",
+      "osm_tags": {
+        "name": "Numatinna",
+        "waterway": "river"
+      }
+    }
+  ]
+}

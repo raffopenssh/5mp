@@ -1,0 +1,3042 @@
+{
+  "park_id": "ZMB_Liuwa_Plain",
+  "downloaded_at": "2026-02-08T13:36:39.314335+00:00",
+  "buffer_km": 50,
+  "place_count": 229,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Limulunga",
+      "lat": -15.1291893,
+      "lon": 23.1475454,
+      "osm_id": "node/560750827",
+      "osm_tags": {
+        "name": "Limulunga",
+        "place": "town",
+        "wikidata": "Q624670"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mongu",
+      "lat": -15.2668751,
+      "lon": 23.1365365,
+      "osm_id": "node/560852878",
+      "osm_tags": {
+        "name": "Mongu",
+        "place": "town",
+        "population": "179585",
+        "wikidata": "Q644799",
+        "wikipedia": "en:Mongu"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Kalabo",
+      "lat": -14.9950389,
+      "lon": 22.6745467,
+      "osm_id": "node/2216208072",
+      "osm_tags": {
+        "name": "Kalabo",
+        "place": "town",
+        "wikidata": "Q1015056"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Lukulu",
+      "lat": -14.3768,
+      "lon": 23.23903,
+      "osm_id": "node/3208593192",
+      "osm_tags": {
+        "name": "Lukulu",
+        "place": "town",
+        "wikidata": "Q1629398",
+        "wikipedia": "en:Lukulu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nangole",
+      "lat": -14.9699822,
+      "lon": 22.7537561,
+      "osm_id": "node/5502468181",
+      "osm_tags": {
+        "name": "Nangole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mulinga",
+      "lat": -14.9150118,
+      "lon": 22.7762645,
+      "osm_id": "node/5502468182",
+      "osm_tags": {
+        "name": "Mulinga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Salunda",
+      "lat": -14.9228369,
+      "lon": 22.6427116,
+      "osm_id": "node/5502468183",
+      "osm_tags": {
+        "name": "Salunda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Silai",
+      "lat": -14.9071926,
+      "lon": 22.6223135,
+      "osm_id": "node/5502468184",
+      "osm_tags": {
+        "name": "Silai",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Molokwa",
+      "lat": -14.8896361,
+      "lon": 22.606696,
+      "osm_id": "node/5502468185",
+      "osm_tags": {
+        "name": "Molokwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makaka",
+      "lat": -14.8776799,
+      "lon": 22.5951691,
+      "osm_id": "node/5502468186",
+      "osm_tags": {
+        "name": "Makaka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanjambanjamba",
+      "lat": -14.8581593,
+      "lon": 22.5820778,
+      "osm_id": "node/5502468187",
+      "osm_tags": {
+        "name": "Kanjambanjamba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lumei",
+      "lat": -14.8365969,
+      "lon": 22.5649763,
+      "osm_id": "node/5502468188",
+      "osm_tags": {
+        "name": "Lumei",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katongo",
+      "lat": -14.8279729,
+      "lon": 22.5575394,
+      "osm_id": "node/5502468189",
+      "osm_tags": {
+        "name": "Katongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lombo",
+      "lat": -14.7799443,
+      "lon": 22.5115751,
+      "osm_id": "node/5502468191",
+      "osm_tags": {
+        "name": "Lombo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Loke East",
+      "lat": -14.7774276,
+      "lon": 22.5103435,
+      "osm_id": "node/5502468192",
+      "osm_tags": {
+        "name": "Loke East",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalabo",
+      "lat": -14.7632266,
+      "lon": 22.5039831,
+      "osm_id": "node/5502468193",
+      "osm_tags": {
+        "name": "Kalabo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Singanda",
+      "lat": -14.7494429,
+      "lon": 22.5107952,
+      "osm_id": "node/5502468194",
+      "osm_tags": {
+        "name": "Singanda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mabola",
+      "lat": -14.7108076,
+      "lon": 22.4565009,
+      "osm_id": "node/5502468195",
+      "osm_tags": {
+        "name": "Mabola",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tusheshe",
+      "lat": -14.6860133,
+      "lon": 22.4240253,
+      "osm_id": "node/5502468196",
+      "osm_tags": {
+        "name": "Tusheshe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kafula",
+      "lat": -14.6683424,
+      "lon": 22.4061731,
+      "osm_id": "node/5502468197",
+      "osm_tags": {
+        "name": "Kafula",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nwange",
+      "lat": -14.6591521,
+      "lon": 22.3998334,
+      "osm_id": "node/5502468198",
+      "osm_tags": {
+        "name": "Nwange",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Liwunga",
+      "lat": -14.6275415,
+      "lon": 22.3616396,
+      "osm_id": "node/5502468201",
+      "osm_tags": {
+        "name": "Liwunga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mfungwa",
+      "lat": -14.6125815,
+      "lon": 22.3500151,
+      "osm_id": "node/5502468202",
+      "osm_tags": {
+        "name": "Mfungwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makanga",
+      "lat": -14.5888509,
+      "lon": 22.3311124,
+      "osm_id": "node/5502468203",
+      "osm_tags": {
+        "name": "Makanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Monule",
+      "lat": -14.5737998,
+      "lon": 22.3089682,
+      "osm_id": "node/5502468204",
+      "osm_tags": {
+        "name": "Monule",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Munde",
+      "lat": -14.6828402,
+      "lon": 22.7014933,
+      "osm_id": "node/5502475539",
+      "osm_tags": {
+        "name": "Munde",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuuli",
+      "lat": -14.6542801,
+      "lon": 22.8560832,
+      "osm_id": "node/5502475541",
+      "osm_tags": {
+        "name": "Kuuli",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Munde",
+      "lat": -14.7092299,
+      "lon": 22.76342,
+      "osm_id": "node/5502475543",
+      "osm_tags": {
+        "name": "Munde",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mishulundu",
+      "lat": -14.7793854,
+      "lon": 22.8117206,
+      "osm_id": "node/5502475545",
+      "osm_tags": {
+        "name": "Mishulundu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukondondo",
+      "lat": -14.5348287,
+      "lon": 22.763742,
+      "osm_id": "node/5502476953",
+      "osm_tags": {
+        "name": "Lukondondo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muchicha",
+      "lat": -14.4567447,
+      "lon": 22.7585206,
+      "osm_id": "node/5502476954",
+      "osm_tags": {
+        "name": "Muchicha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sililo",
+      "lat": -14.2532933,
+      "lon": 22.4981746,
+      "osm_id": "node/5502476956",
+      "osm_tags": {
+        "name": "Sililo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sipakopako",
+      "lat": -14.2423982,
+      "lon": 22.2715618,
+      "osm_id": "node/5502476958",
+      "osm_tags": {
+        "name": "Sipakopako",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukena",
+      "lat": -14.2686813,
+      "lon": 22.0948026,
+      "osm_id": "node/5502476959",
+      "osm_tags": {
+        "name": "Lukena",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mushukula",
+      "lat": -14.3783396,
+      "lon": 22.1494159,
+      "osm_id": "node/5502476962",
+      "osm_tags": {
+        "name": "Mushukula",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katondo",
+      "lat": -14.4328832,
+      "lon": 22.1511019,
+      "osm_id": "node/5502476963",
+      "osm_tags": {
+        "name": "Katondo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalumbu",
+      "lat": -14.4718485,
+      "lon": 22.1697193,
+      "osm_id": "node/5502476964",
+      "osm_tags": {
+        "name": "Kalumbu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Essungu",
+      "lat": -14.542076,
+      "lon": 22.2679164,
+      "osm_id": "node/5502476965",
+      "osm_tags": {
+        "name": "Essungu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Luola",
+      "lat": -14.5435244,
+      "lon": 22.2779313,
+      "osm_id": "node/5502476966",
+      "osm_tags": {
+        "name": "Luola",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kasindu",
+      "lat": -14.5520909,
+      "lon": 22.2888193,
+      "osm_id": "node/5502476967",
+      "osm_tags": {
+        "name": "Kasindu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kondola",
+      "lat": -14.5559687,
+      "lon": 22.2917325,
+      "osm_id": "node/5502476968",
+      "osm_tags": {
+        "name": "Kondola",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Libonda",
+      "lat": -14.9820886,
+      "lon": 22.9507506,
+      "osm_id": "node/5660111785",
+      "osm_tags": {
+        "name": "Libonda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lealui",
+      "lat": -15.2241399,
+      "lon": 23.0189913,
+      "osm_id": "node/5660449861",
+      "osm_tags": {
+        "name": "Lealui",
+        "place": "village",
+        "wikidata": "Q624506",
+        "wikipedia": "en:Lealui"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Chitokoloki",
+      "lat": -13.8325795,
+      "lon": 23.2124215,
+      "osm_id": "node/7518470816",
+      "osm_tags": {
+        "name": "Chitokoloki",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kucheka",
+      "lat": -13.7789262,
+      "lon": 22.9002835,
+      "osm_id": "node/9465380728",
+      "osm_tags": {
+        "name": "Kucheka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ushaa",
+      "lat": -14.9541879,
+      "lon": 23.2849103,
+      "osm_id": "node/9470682554",
+      "osm_tags": {
+        "name": "Ushaa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sikongo",
+      "lat": -15.03795,
+      "lon": 22.1557189,
+      "osm_id": "node/9471270694",
+      "osm_tags": {
+        "name": "Sikongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yuka",
+      "lat": -14.9867041,
+      "lon": 22.613105,
+      "osm_id": "node/9471270696",
+      "osm_tags": {
+        "name": "Yuka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mussuma",
+      "lat": -14.2008238,
+      "lon": 21.9103069,
+      "osm_id": "node/9638827288",
+      "osm_tags": {
+        "name": "Mussuma",
+        "place": "hamlet",
+        "source:name": "http://maps.lib.utexas.edu/maps/onc/txu-pclmaps-oclc-8322829_n_4.jpg"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chawama",
+      "lat": -15.2030849,
+      "lon": 22.2501506,
+      "osm_id": "node/12003269769",
+      "osm_tags": {
+        "name": "Chawama",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Uwawameyu",
+      "lat": -14.4990742,
+      "lon": 22.1207494,
+      "osm_id": "node/12008994169",
+      "osm_tags": {
+        "name": "Uwawameyu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -13.8934938,
+      "lon": 23.2087631,
+      "osm_id": "way/31522215",
+      "osm_tags": {
+        "alt_name:br": "Ar Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -15.0479122,
+      "lon": 22.9633974,
+      "osm_id": "way/31580756",
+      "osm_tags": {
+        "alt_name": "Zambesi",
+        "alt_name:br": "Ar Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:ru": "\u0417\u0430\u043c\u0431\u0435\u0437\u0438",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -14.3557661,
+      "lon": 23.1815443,
+      "osm_id": "way/42700515",
+      "osm_tags": {
+        "alt_name": "Zambesi",
+        "alt_name:br": "Ar Zambezi",
+        "boat": "yes",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:ru": "\u0417\u0430\u043c\u0431\u0435\u0437\u0438",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -14.6803126,
+      "lon": 23.0626445,
+      "osm_id": "way/42700516",
+      "osm_tags": {
+        "alt_name": "Zambesi",
+        "alt_name:br": "Ar Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:ru": "\u0417\u0430\u043c\u0431\u0435\u0437\u0438",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -13.6898748,
+      "lon": 23.1745166,
+      "osm_id": "way/42700517",
+      "osm_tags": {
+        "alt_name": "Zambesi",
+        "alt_name:br": "Ar Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:ru": "\u0417\u0430\u043c\u0431\u0435\u0437\u0438",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -15.4209011,
+      "lon": 23.0300009,
+      "osm_id": "way/44122292",
+      "osm_tags": {
+        "alt_name": "Zambesi",
+        "alt_name:br": "Ar Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:ru": "\u0417\u0430\u043c\u0431\u0435\u0437\u0438",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lungwebungu",
+      "lat": -14.3031752,
+      "lon": 23.1610681,
+      "osm_id": "way/44123557",
+      "osm_tags": {
+        "alt_name": "Lungwevungu",
+        "boat": "no",
+        "name": "Lungwebungu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lungwebungu",
+      "lat": -14.2262918,
+      "lon": 23.0395751,
+      "osm_id": "way/44123558",
+      "osm_tags": {
+        "alt_name": "Lungwevungu",
+        "name": "Lungwebungu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Southern Kashiji",
+      "lat": -14.2578512,
+      "lon": 23.1027981,
+      "osm_id": "way/44123563",
+      "osm_tags": {
+        "name": "Southern Kashiji",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lungwebungu",
+      "lat": -14.0616219,
+      "lon": 22.8459517,
+      "osm_id": "way/44123587",
+      "osm_tags": {
+        "alt_name": "Lungwevungu",
+        "name": "Lungwebungu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lungwebungu",
+      "lat": -13.9794932,
+      "lon": 22.6746166,
+      "osm_id": "way/44125231",
+      "osm_tags": {
+        "alt_name": "Lungwevungu",
+        "name": "Lungwebungu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lungwebungu",
+      "lat": -13.7500405,
+      "lon": 22.4741746,
+      "osm_id": "way/44125254",
+      "osm_tags": {
+        "alt_name": "Lungwevungu",
+        "name": "Lungwebungu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -15.1834202,
+      "lon": 22.9069532,
+      "osm_id": "way/44126542",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kabompo",
+      "lat": -14.1204044,
+      "lon": 23.4096387,
+      "osm_id": "way/44145165",
+      "osm_tags": {
+        "name": "Kabompo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.7248608,
+      "lon": 22.4265843,
+      "osm_id": "way/202273167",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mussuma",
+      "lat": -14.1939954,
+      "lon": 21.9785764,
+      "osm_id": "way/202273169",
+      "osm_tags": {
+        "name": "Mussuma",
+        "name:en": "Mussuma River",
+        "name:pt": "Rio Mussuma",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga (Canal)",
+      "lat": -14.7669593,
+      "lon": 22.4414061,
+      "osm_id": "way/202273173",
+      "osm_tags": {
+        "name": "Luanginga (Canal)",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.6778394,
+      "lon": 22.4000219,
+      "osm_id": "way/202273176",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "note:en": "rough estimated",
+        "source": "Bing LoRes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.2404425,
+      "lon": 22.0290451,
+      "osm_id": "way/217800965",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.1558114,
+      "lon": 21.9650261,
+      "osm_id": "way/217800966",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.1106062,
+      "lon": 21.9539624,
+      "osm_id": "way/217800967",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.1529032,
+      "lon": 21.9638284,
+      "osm_id": "way/217800968",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.1273946,
+      "lon": 21.9499513,
+      "osm_id": "way/217800971",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -15.0537854,
+      "lon": 22.7553599,
+      "osm_id": "way/279726501",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luachi",
+      "lat": -14.9810145,
+      "lon": 22.6283579,
+      "osm_id": "way/279727731",
+      "osm_tags": {
+        "name": "Luachi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.8493811,
+      "lon": 22.5293406,
+      "osm_id": "way/279728462",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "source": "bing2012",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.5318746,
+      "lon": 22.1822694,
+      "osm_id": "way/279730019",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Little River",
+      "lat": -15.3592495,
+      "lon": 23.0401178,
+      "osm_id": "way/280269861",
+      "osm_tags": {
+        "name": "Little River",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sishekano",
+      "lat": -14.8390994,
+      "lon": 22.8054828,
+      "osm_id": "way/363573327",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Sishekano",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Palm Tree Pools",
+      "lat": -14.681897,
+      "lon": 22.5919203,
+      "osm_id": "way/385676634",
+      "osm_tags": {
+        "name": "Palm Tree Pools",
+        "natural": "water",
+        "salt": "yes"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -14.3622307,
+      "lon": 22.7036401,
+      "osm_id": "way/572770127",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.4190071,
+      "lon": 22.1408429,
+      "osm_id": "way/572771141",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Namunda Pools",
+      "lat": -14.7279879,
+      "lon": 22.6296641,
+      "osm_id": "way/572773574",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Namunda Pools",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Namunda Pools",
+      "lat": -14.7294997,
+      "lon": 22.6347109,
+      "osm_id": "way/572773603",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Namunda Pools",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0777858,
+      "lon": 21.9624872,
+      "osm_id": "way/577997853",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0779165,
+      "lon": 21.9491931,
+      "osm_id": "way/577997856",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0792374,
+      "lon": 21.956515,
+      "osm_id": "way/577998566",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0634443,
+      "lon": 21.9442606,
+      "osm_id": "way/577998567",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0623393,
+      "lon": 21.9415346,
+      "osm_id": "way/577998568",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0494683,
+      "lon": 21.9429406,
+      "osm_id": "way/578001764",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0140033,
+      "lon": 21.9385622,
+      "osm_id": "way/578003144",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luena",
+      "lat": -14.7355006,
+      "lon": 23.4117519,
+      "osm_id": "way/589382599",
+      "osm_tags": {
+        "name": "Luena",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lukulu",
+      "lat": -14.2900432,
+      "lon": 23.4400465,
+      "osm_id": "way/593243080",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lukulu",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -14.6092905,
+      "lon": 22.8920746,
+      "osm_id": "way/595472192",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.9938516,
+      "lon": 22.6909501,
+      "osm_id": "way/617641831",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.6060181,
+      "lon": 22.2811556,
+      "osm_id": "way/619401107",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.6030192,
+      "lon": 22.2727224,
+      "osm_id": "way/619471986",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luachi",
+      "lat": -14.9773373,
+      "lon": 22.5678112,
+      "osm_id": "way/619697153",
+      "osm_tags": {
+        "name": "Luachi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luachi",
+      "lat": -14.9759005,
+      "lon": 22.5561347,
+      "osm_id": "way/619699594",
+      "osm_tags": {
+        "name": "Luachi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.4574199,
+      "lon": 22.1483517,
+      "osm_id": "way/620267501",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.4823774,
+      "lon": 22.1721013,
+      "osm_id": "way/620267504",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nengo",
+      "lat": -14.4537088,
+      "lon": 22.0537108,
+      "osm_id": "way/620291899",
+      "osm_tags": {
+        "name": "Nengo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nengo",
+      "lat": -14.4484831,
+      "lon": 21.9842729,
+      "osm_id": "way/620299246",
+      "osm_tags": {
+        "name": "Nengo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nengo",
+      "lat": -14.4515583,
+      "lon": 22.1190304,
+      "osm_id": "way/620335267",
+      "osm_tags": {
+        "name": "Nengo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.2735098,
+      "lon": 22.054418,
+      "osm_id": "way/620339767",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.1994694,
+      "lon": 22.0004829,
+      "osm_id": "way/620339768",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.2112732,
+      "lon": 22.0005973,
+      "osm_id": "way/620341182",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0529283,
+      "lon": 21.9396509,
+      "osm_id": "way/620621820",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0945382,
+      "lon": 21.9586873,
+      "osm_id": "way/620623243",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0579706,
+      "lon": 21.9487898,
+      "osm_id": "way/620623244",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0676152,
+      "lon": 21.9624746,
+      "osm_id": "way/620625175",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0572751,
+      "lon": 21.9635582,
+      "osm_id": "way/620625176",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mussuma",
+      "lat": -14.1803556,
+      "lon": 21.893406,
+      "osm_id": "way/620670269",
+      "osm_tags": {
+        "name": "Mussuma",
+        "name:en": "Mussuma River",
+        "name:pt": "Rio Mussuma",
+        "note:en": "rough estimated",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.2775726,
+      "lon": 22.0551664,
+      "osm_id": "way/620670275",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.4997568,
+      "lon": 22.1943422,
+      "osm_id": "way/620820230",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.4966096,
+      "lon": 22.1926519,
+      "osm_id": "way/620825911",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.5529997,
+      "lon": 22.2266131,
+      "osm_id": "way/623471490",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.5203944,
+      "lon": 22.2067527,
+      "osm_id": "way/623756879",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.534353,
+      "lon": 22.2046962,
+      "osm_id": "way/623766456",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.5428637,
+      "lon": 22.2086235,
+      "osm_id": "way/623839815",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.5682997,
+      "lon": 22.2525924,
+      "osm_id": "way/624189868",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.5884718,
+      "lon": 22.2627151,
+      "osm_id": "way/624232083",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lutende",
+      "lat": -15.2548129,
+      "lon": 23.3633723,
+      "osm_id": "way/624239871",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Lutende",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembwe",
+      "lat": -13.9146938,
+      "lon": 22.5354684,
+      "osm_id": "way/631516437",
+      "osm_tags": {
+        "name": "Lutembwe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -15.0140844,
+      "lon": 22.7052402,
+      "osm_id": "way/632817499",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembwe",
+      "lat": -13.8646479,
+      "lon": 22.4347204,
+      "osm_id": "way/632975365",
+      "osm_tags": {
+        "name": "Lutembwe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembwe",
+      "lat": -13.8426112,
+      "lon": 22.4026502,
+      "osm_id": "way/632990735",
+      "osm_tags": {
+        "name": "Lutembwe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembwe",
+      "lat": -13.8192669,
+      "lon": 22.3723181,
+      "osm_id": "way/633017415",
+      "osm_tags": {
+        "name": "Lutembwe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembwe",
+      "lat": -13.8014816,
+      "lon": 22.337376,
+      "osm_id": "way/633031943",
+      "osm_tags": {
+        "name": "Lutembwe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembwe",
+      "lat": -13.7748574,
+      "lon": 22.2977882,
+      "osm_id": "way/633031945",
+      "osm_tags": {
+        "name": "Lutembwe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembwe",
+      "lat": -13.7544023,
+      "lon": 22.2123974,
+      "osm_id": "way/633678429",
+      "osm_tags": {
+        "name": "Lutembwe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembwe",
+      "lat": -13.7657404,
+      "lon": 22.1714723,
+      "osm_id": "way/633682849",
+      "osm_tags": {
+        "name": "Lutembwe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembwe",
+      "lat": -13.7531881,
+      "lon": 22.1044922,
+      "osm_id": "way/633687950",
+      "osm_tags": {
+        "name": "Lutembwe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.6671372,
+      "lon": 22.3766987,
+      "osm_id": "way/654254956",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.6645049,
+      "lon": 22.3866951,
+      "osm_id": "way/654254963",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.6554596,
+      "lon": 22.377816,
+      "osm_id": "way/654257841",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.6552545,
+      "lon": 22.3719607,
+      "osm_id": "way/654257842",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.658689,
+      "lon": 22.3630032,
+      "osm_id": "way/654259050",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.6550288,
+      "lon": 22.3408591,
+      "osm_id": "way/654260789",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.6551507,
+      "lon": 22.3354948,
+      "osm_id": "way/654260790",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.6341671,
+      "lon": 22.3284326,
+      "osm_id": "way/654260792",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.6172897,
+      "lon": 22.3280704,
+      "osm_id": "way/655955125",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.2873261,
+      "lon": 22.0726088,
+      "osm_id": "way/662815698",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.3002689,
+      "lon": 22.0894719,
+      "osm_id": "way/662815700",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.2814807,
+      "lon": 22.0841248,
+      "osm_id": "way/662816023",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.3228642,
+      "lon": 22.1137861,
+      "osm_id": "way/663220683",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.3471903,
+      "lon": 22.1257756,
+      "osm_id": "way/663243100",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.3789077,
+      "lon": 22.1332079,
+      "osm_id": "way/663247304",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.4227127,
+      "lon": 22.1227595,
+      "osm_id": "way/663249801",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0096169,
+      "lon": 21.9249136,
+      "osm_id": "way/683144288",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -14.0342757,
+      "lon": 21.9420651,
+      "osm_id": "way/684821350",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanginga",
+      "lat": -13.9098251,
+      "lon": 21.818235,
+      "osm_id": "way/684821352",
+      "osm_tags": {
+        "alt_name": "Luangingu",
+        "name": "Luanginga",
+        "name:en": "Luanginga River",
+        "name:pt": "Rio Luanginga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kabompo",
+      "lat": -14.1750979,
+      "lon": 23.2003317,
+      "osm_id": "way/685393193",
+      "osm_tags": {
+        "name": "Kabompo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lungwebungu",
+      "lat": -13.8978979,
+      "lon": 22.5787608,
+      "osm_id": "way/769406222",
+      "osm_tags": {
+        "alt_name": "Lungwevungu",
+        "boat": "no",
+        "name": "Lungwebungu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -14.0990018,
+      "lon": 23.2101424,
+      "osm_id": "way/769406231",
+      "osm_tags": {
+        "alt_name:br": "Ar Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -14.7517336,
+      "lon": 22.8662015,
+      "osm_id": "way/769598267",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -14.8786973,
+      "lon": 22.9974,
+      "osm_id": "way/769598268",
+      "osm_tags": {
+        "alt_name": "Zambesi",
+        "alt_name:br": "Ar Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:ru": "\u0417\u0430\u043c\u0431\u0435\u0437\u0438",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -15.2140552,
+      "lon": 22.9196345,
+      "osm_id": "way/769601039",
+      "osm_tags": {
+        "alt_name": "Zambesi",
+        "alt_name:br": "Ar Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:ru": "\u0417\u0430\u043c\u0431\u0435\u0437\u0438",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luena",
+      "lat": -14.8779286,
+      "lon": 23.0885585,
+      "osm_id": "way/769611666",
+      "osm_tags": {
+        "name": "Luena",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -14.8420155,
+      "lon": 23.0041775,
+      "osm_id": "way/769637115",
+      "osm_tags": {
+        "alt_name": "Zambesi",
+        "alt_name:br": "Ar Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:ru": "\u0417\u0430\u043c\u0431\u0435\u0437\u0438",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -15.1937874,
+      "lon": 22.9335923,
+      "osm_id": "way/769637117",
+      "osm_tags": {
+        "alt_name": "Zambesi",
+        "alt_name:br": "Ar Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:ru": "\u0417\u0430\u043c\u0431\u0435\u0437\u0438",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lwandilu",
+      "lat": -14.5575993,
+      "lon": 22.7578889,
+      "osm_id": "way/778960611",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lwandilu",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mayamba",
+      "lat": -14.4512389,
+      "lon": 22.7517307,
+      "osm_id": "way/779171841",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Mayamba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lwakoyi",
+      "lat": -14.5959058,
+      "lon": 22.7363942,
+      "osm_id": "way/779416728",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lwakoyi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -14.7940351,
+      "lon": 22.8412815,
+      "osm_id": "way/780245523",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -14.8504483,
+      "lon": 22.8144273,
+      "osm_id": "way/780247634",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -14.9523952,
+      "lon": 22.7929857,
+      "osm_id": "way/782446755",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Malay",
+      "lat": -14.233682,
+      "lon": 22.3077701,
+      "osm_id": "way/783747536",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Malay",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mulonga",
+      "lat": -14.2337899,
+      "lon": 22.4479974,
+      "osm_id": "way/783749729",
+      "osm_tags": {
+        "name": "Mulonga",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mulonga",
+      "lat": -14.2056628,
+      "lon": 22.3555684,
+      "osm_id": "way/783749730",
+      "osm_tags": {
+        "name": "Mulonga",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mulonga",
+      "lat": -14.2112271,
+      "lon": 22.3656052,
+      "osm_id": "way/783749731",
+      "osm_tags": {
+        "name": "Mulonga",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Malai",
+      "lat": -14.226541,
+      "lon": 22.3290736,
+      "osm_id": "way/783749732",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Malai",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mulonga",
+      "lat": -14.2443449,
+      "lon": 22.4915714,
+      "osm_id": "way/783749882",
+      "osm_tags": {
+        "name": "Mulonga",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -14.1827704,
+      "lon": 22.4740093,
+      "osm_id": "way/783750154",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -14.236944,
+      "lon": 22.5269014,
+      "osm_id": "way/783750155",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mutunda",
+      "lat": -14.2273253,
+      "lon": 22.3389042,
+      "osm_id": "way/783751975",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Mutunda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mulonga",
+      "lat": -14.1880533,
+      "lon": 22.3375332,
+      "osm_id": "way/783808313",
+      "osm_tags": {
+        "name": "Mulonga",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Sibako",
+      "lat": -14.5256476,
+      "lon": 22.7504923,
+      "osm_id": "way/786353075",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Sibako",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Pelican Pan Waterhole",
+      "lat": -14.6640304,
+      "lon": 22.6056468,
+      "osm_id": "way/787692595",
+      "osm_tags": {
+        "name": "Pelican Pan Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Silenge",
+      "lat": -14.2178365,
+      "lon": 22.5639117,
+      "osm_id": "way/787883998",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Silenge",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Miyanda Pools",
+      "lat": -14.4237105,
+      "lon": 22.6599213,
+      "osm_id": "way/788026262",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Miyanda Pools",
+        "name:en": "Miyanda Pools",
+        "natural": "water",
+        "tourism": "viewpoint",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luachi",
+      "lat": -14.9789723,
+      "lon": 22.5014082,
+      "osm_id": "way/790685112",
+      "osm_tags": {
+        "name": "Luachi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Northern Lueti",
+      "lat": -14.9838671,
+      "lon": 22.4149284,
+      "osm_id": "way/790795973",
+      "osm_tags": {
+        "name": "Northern Lueti",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luachi",
+      "lat": -14.9777474,
+      "lon": 22.4443375,
+      "osm_id": "way/790796206",
+      "osm_tags": {
+        "name": "Luachi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Northern Lueti",
+      "lat": -14.9785025,
+      "lon": 22.2870111,
+      "osm_id": "way/790798618",
+      "osm_tags": {
+        "name": "Northern Lueti",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Northern Lueti",
+      "lat": -14.9737089,
+      "lon": 22.3292023,
+      "osm_id": "way/790798619",
+      "osm_tags": {
+        "name": "Northern Lueti",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Northern Lueti",
+      "lat": -14.9948409,
+      "lon": 22.2514343,
+      "osm_id": "way/790798620",
+      "osm_tags": {
+        "name": "Northern Lueti",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nengo",
+      "lat": -14.4655023,
+      "lon": 22.1441989,
+      "osm_id": "way/790959475",
+      "osm_tags": {
+        "name": "Nengo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nengo",
+      "lat": -14.4574224,
+      "lon": 22.1075575,
+      "osm_id": "way/790959477",
+      "osm_tags": {
+        "name": "Nengo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nakasheke",
+      "lat": -14.3242385,
+      "lon": 22.6642996,
+      "osm_id": "way/790997008",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nakasheke",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwanduwani",
+      "lat": -15.1763948,
+      "lon": 22.8404206,
+      "osm_id": "way/791220240",
+      "osm_tags": {
+        "name": "Mwanduwani",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mulonga",
+      "lat": -14.2217936,
+      "lon": 22.4061334,
+      "osm_id": "way/791461184",
+      "osm_tags": {
+        "name": "Mulonga",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Northern Lueti",
+      "lat": -15.0189527,
+      "lon": 22.1854305,
+      "osm_id": "way/791814102",
+      "osm_tags": {
+        "name": "Northern Lueti",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Northern Lueti",
+      "lat": -15.029416,
+      "lon": 22.0833778,
+      "osm_id": "way/791815275",
+      "osm_tags": {
+        "name": "Northern Lueti",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -14.0947057,
+      "lon": 22.3963119,
+      "osm_id": "way/792855435",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -14.0474268,
+      "lon": 22.3540135,
+      "osm_id": "way/792861755",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -14.0247963,
+      "lon": 22.3093781,
+      "osm_id": "way/792861756",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -14.0005558,
+      "lon": 22.2704163,
+      "osm_id": "way/792936034",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -13.9907123,
+      "lon": 22.2501066,
+      "osm_id": "way/792936035",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -13.970164,
+      "lon": 22.2143474,
+      "osm_id": "way/792942964",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luambimba",
+      "lat": -15.0568662,
+      "lon": 22.7990113,
+      "osm_id": "way/792951723",
+      "osm_tags": {
+        "name": "Luambimba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mbumi",
+      "lat": -14.2255989,
+      "lon": 22.7976003,
+      "osm_id": "way/793229588",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mbumi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mbumi",
+      "lat": -14.3259252,
+      "lon": 22.7953829,
+      "osm_id": "way/793229592",
+      "osm_tags": {
+        "name": "Mbumi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Sipuma",
+      "lat": -14.1965201,
+      "lon": 22.6484668,
+      "osm_id": "way/793230965",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Sipuma",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luachi",
+      "lat": -14.9262851,
+      "lon": 22.4213402,
+      "osm_id": "way/794382641",
+      "osm_tags": {
+        "name": "Luachi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luachi",
+      "lat": -14.84096,
+      "lon": 22.3616866,
+      "osm_id": "way/794395931",
+      "osm_tags": {
+        "name": "Luachi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Luachi",
+      "lat": -14.7140556,
+      "lon": 22.1977365,
+      "osm_id": "way/794404552",
+      "osm_tags": {
+        "name": "Luachi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luachi",
+      "lat": -14.757775,
+      "lon": 22.2778273,
+      "osm_id": "way/794404553",
+      "osm_tags": {
+        "name": "Luachi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chise",
+      "lat": -14.2152755,
+      "lon": 23.1041139,
+      "osm_id": "way/799841384",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chise",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kabula",
+      "lat": -14.0272402,
+      "lon": 23.1909823,
+      "osm_id": "way/803412020",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kabula",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Southern Kashiji",
+      "lat": -14.1823167,
+      "lon": 23.0937472,
+      "osm_id": "way/806896316",
+      "osm_tags": {
+        "name": "Southern Kashiji",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chinwangombe",
+      "lat": -14.1959769,
+      "lon": 23.1083384,
+      "osm_id": "way/807137001",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chinwangombe",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Southern Kashiji",
+      "lat": -14.1282478,
+      "lon": 23.0764496,
+      "osm_id": "way/807159734",
+      "osm_tags": {
+        "name": "Southern Kashiji",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Southern Kashiji",
+      "lat": -14.070871,
+      "lon": 23.0486432,
+      "osm_id": "way/807270752",
+      "osm_tags": {
+        "name": "Southern Kashiji",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chinonwe",
+      "lat": -14.0480361,
+      "lon": 23.0140909,
+      "osm_id": "way/807449434",
+      "osm_tags": {
+        "name": "Chinonwe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katowa",
+      "lat": -14.0378546,
+      "lon": 23.0549898,
+      "osm_id": "way/807449438",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Katowa",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chinonwe",
+      "lat": -13.9468403,
+      "lon": 22.8422258,
+      "osm_id": "way/807469169",
+      "osm_tags": {
+        "name": "Chinonwe",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kawelele",
+      "lat": -13.924565,
+      "lon": 22.7830133,
+      "osm_id": "way/807469176",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kawelele",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chinonwe",
+      "lat": -13.9089253,
+      "lon": 22.7901641,
+      "osm_id": "way/807469177",
+      "osm_tags": {
+        "name": "Chinonwe",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chinonwe",
+      "lat": -13.7882461,
+      "lon": 22.6855981,
+      "osm_id": "way/807469178",
+      "osm_tags": {
+        "name": "Chinonwe",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chinonwe",
+      "lat": -14.0066287,
+      "lon": 22.9558173,
+      "osm_id": "way/807469179",
+      "osm_tags": {
+        "name": "Chinonwe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chinonwe",
+      "lat": -13.9746695,
+      "lon": 22.9017627,
+      "osm_id": "way/807469512",
+      "osm_tags": {
+        "name": "Chinonwe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Litapi",
+      "lat": -13.750951,
+      "lon": 22.5386237,
+      "osm_id": "way/807691344",
+      "osm_tags": {
+        "name": "Litapi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Litapi",
+      "lat": -13.8888822,
+      "lon": 22.6515553,
+      "osm_id": "way/807712337",
+      "osm_tags": {
+        "name": "Litapi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mukumba",
+      "lat": -13.9981195,
+      "lon": 23.062073,
+      "osm_id": "way/884634395",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mukumba",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Southern Kashiji",
+      "lat": -13.95081,
+      "lon": 23.0027962,
+      "osm_id": "way/884634404",
+      "osm_tags": {
+        "name": "Southern Kashiji",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Southern Kashiji",
+      "lat": -13.8116106,
+      "lon": 22.9299689,
+      "osm_id": "way/885929438",
+      "osm_tags": {
+        "name": "Southern Kashiji",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ndanda",
+      "lat": -14.9173282,
+      "lon": 23.5553326,
+      "osm_id": "way/1028612611",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ndanda",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    }
+  ]
+}
