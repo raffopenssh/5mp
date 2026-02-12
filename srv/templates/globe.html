@@ -1344,6 +1344,7 @@
         
         // Global state - declared early for use in multiple functions
         let currentPAPopup = null;
+        let currentPAPopupData = null;  // Track current popup's park data {paId, props, lngLat}
         let selectedParks = [];
         let selectedPAIds = new Set();  // Track PA IDs selected via bbox or clicks
         
@@ -3517,6 +3518,9 @@
                 currentPAPopup.remove();
             }
             
+            // Track current popup data for refresh on filter changes
+            currentPAPopupData = { props, lngLat };
+            
             const name = props.name || 'Protected Area';
             const country = props.country || 'Unknown';
             const areaKm2 = props.area_km2 || props.area;
@@ -3651,6 +3655,11 @@
                 .setHTML(popupContent)
                 .addTo(map);
             
+            // Clear popup data when popup is closed
+            currentPAPopup.on('close', () => {
+                currentPAPopupData = null;
+            });
+            
             // Fetch all section data
             if (paId) {
                 fetchPopupFireData(paId);
@@ -3661,6 +3670,24 @@
                 fetchPopupClimateData(paId);
                 fetchPopupSpeciesData(paId);
                 fetchPopupLegalData(paId);
+            }
+        }
+        
+        // Refresh popup data when filters change (time range, etc.)
+        function refreshPopupData() {
+            if (!currentPAPopupData) return;
+            
+            const { props } = currentPAPopupData;
+            const paId = props.id || props.wdpa_id || props.wdpaid;
+            const name = props.name || 'Protected Area';
+            
+            if (paId) {
+                // Refresh time-sensitive sections
+                fetchPopupFireData(paId);
+                fetchPopupDeforestData(paId);
+                // Update date range label in header if present
+                const rangeLabel = formatDateRangeLabel(dateFrom, dateTo);
+                // Fire and deforestation sections will update their own labels
             }
         }
         
@@ -5278,6 +5305,11 @@
             
             // Reload data
             reloadGridData();
+            
+            // Refresh open popup if any
+            if (typeof refreshPopupData === 'function') {
+                refreshPopupData();
+            }
         }
         
         function initTicks() {
