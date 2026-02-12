@@ -206,7 +206,7 @@ class NarrativeGenerator:
         cursor = self.conn.execute('''
             SELECT park_id, id, lat, lon, area_m2, population_est,
                    nearest_place, classification, classification_confidence, 
-                   narrative, polygon_ids
+                   narrative
             FROM park_settlements
             ORDER BY park_id, population_est DESC
         ''')
@@ -222,8 +222,7 @@ class NarrativeGenerator:
                 'nearest_place': row['nearest_place'],
                 'classification': row['classification'],
                 'confidence': row['classification_confidence'],
-                'narrative': row['narrative'],
-                'polygon_ids': row['polygon_ids']
+                'narrative': row['narrative']
             })
         
         narratives = {}
@@ -268,7 +267,7 @@ class NarrativeGenerator:
         cursor = self.conn.execute('''
             SELECT park_id, id, year, lat, lon, area_km2,
                    classification, classification_confidence, 
-                   narrative, polygon_ids
+                   narrative
             FROM deforestation_events
             ORDER BY park_id, year DESC
         ''')
@@ -283,8 +282,7 @@ class NarrativeGenerator:
                 'area_km2': row['area_km2'],
                 'classification': row['classification'],
                 'confidence': row['classification_confidence'],
-                'narrative': row['narrative'],
-                'polygon_ids': row['polygon_ids']
+                'narrative': row['narrative']
             })
         
         narratives = {}

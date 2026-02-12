@@ -1286,6 +1286,64 @@
             return Math.abs(num) >= 1000 ? num.toLocaleString() : String(num);
         }
         
+        // Render fire trend sparkline chart with regional median
+        function renderFireTrendChart(trendData, paId) {
+            if (!trendData.years || trendData.years.length < 2) return '';
+            
+            const years = trendData.years;
+            const w = 200, h = 60, pad = 4;
+            const chartW = w - pad * 2, chartH = h - pad * 2 - 12; // Leave room for x-axis labels
+            
+            // Get groups_per_km2 values, multiply by 1000 for readability
+            const values = years.map(y => (y.groups_per_km2 || 0) * 1000);
+            const maxVal = Math.max(...values, 0.001); // Avoid division by zero
+            const minVal = 0;
+            
+            // Regional median (from latitude_comparison.region_avg)
+            const regionAvg = trendData.latitude_comparison ? (trendData.latitude_comparison.region_avg || 0) * 1000 : null;
+            
+            // Calculate points for the line
+            const points = values.map((v, i) => {
+                const x = pad + (i / (values.length - 1)) * chartW;
+                const y = pad + chartH - ((v - minVal) / (maxVal - minVal)) * chartH;
+                return `${x.toFixed(1)},${y.toFixed(1)}`;
+            }).join(' ');
+            
+            // Median line y position
+            const medianY = regionAvg !== null ? (pad + chartH - ((regionAvg - minVal) / (maxVal - minVal)) * chartH) : null;
+            
+            // Determine trend color based on recent direction
+            const recentYears = values.slice(-3);
+            const trendUp = recentYears.length >= 2 && recentYears[recentYears.length-1] > recentYears[0] * 1.1;
+            const trendDown = recentYears.length >= 2 && recentYears[recentYears.length-1] < recentYears[0] * 0.9;
+            const lineColor = trendUp ? '#f59e0b' : trendDown ? '#22c55e' : '#60a5fa';
+            
+            // Year labels (show first, middle, last)
+            const yearLabels = [];
+            if (years.length >= 1) yearLabels.push({x: pad, yr: years[0].year});
+            if (years.length >= 3) yearLabels.push({x: pad + chartW/2, yr: years[Math.floor(years.length/2)].year});
+            if (years.length >= 2) yearLabels.push({x: pad + chartW, yr: years[years.length-1].year});
+            
+            return `
+                <div style="margin-top: 8px;">
+                    <div style="font-size: 9px; color: #666; margin-bottom: 4px;">📈 Fire groups trend (per 1000 km²/year)</div>
+                    <svg width="${w}" height="${h}" style="background: rgba(0,0,0,0.2); border-radius: 4px;">
+                        ${medianY !== null && medianY > 0 && medianY < h ? `
+                            <line x1="${pad}" y1="${medianY.toFixed(1)}" x2="${w-pad}" y2="${medianY.toFixed(1)}" stroke="#888" stroke-width="1" stroke-dasharray="3,3" />
+                            <text x="${w-pad-2}" y="${Math.max(10, medianY-3).toFixed(1)}" fill="#888" font-size="8" text-anchor="end">regional median</text>
+                        ` : ''}
+                        <polyline points="${points}" fill="none" stroke="${lineColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        ${values.map((v, i) => {
+                            const x = pad + (i / (values.length - 1)) * chartW;
+                            const y = pad + chartH - ((v - minVal) / (maxVal - minVal)) * chartH;
+                            return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${lineColor}" />`;
+                        }).join('')}
+                        ${yearLabels.map(l => `<text x="${l.x}" y="${h-2}" fill="#666" font-size="8" text-anchor="${l.x === pad ? 'start' : l.x === pad + chartW ? 'end' : 'middle'}">${l.yr}</text>`).join('')}
+                    </svg>
+                </div>
+            `;
+        }
+        
         // Format date range for display - show actual dates, not just years
         function formatDateRangeLabel(fromStr, toStr) {
             if (!fromStr || !toStr) return 'All time';
@@ -3820,6 +3878,7 @@
                             ${trendData.seasonality ? `<div style="font-size: 10px; color: #888; margin-bottom: 4px;">🔥 ${trendData.seasonality}</div>` : ''}
                             ${trendData.avg_groups_per_km2 ? `<div style="font-size: 10px; color: #888; margin-bottom: 4px;">📊 ${(trendData.avg_groups_per_km2 * 1000).toFixed(1)} groups per 1000 km² per year</div>` : ''}
                             ${trendData.latitude_comparison ? `<div style="font-size: 10px; color: ${trendData.latitude_comparison.percentile > 70 ? '#f59e0b' : trendData.latitude_comparison.percentile < 30 ? '#22c55e' : '#888'}; margin-bottom: 4px;">🌍 ${trendData.latitude_comparison.percentile > 70 ? 'Higher' : trendData.latitude_comparison.percentile < 30 ? 'Lower' : 'Similar'} fire activity than ${100 - Math.round(trendData.latitude_comparison.percentile)}% of ${trendData.latitude_comparison.latitude_band} parks</div>` : ''}
+                            ${trendData.years && trendData.years.length > 2 ? renderFireTrendChart(trendData, paId) : ''}
                         </div>` : ''}
                         
                         ${initialNarratives.length > 0 ? `

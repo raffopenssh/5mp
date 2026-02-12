@@ -512,6 +512,123 @@ def print_summary(conn):
             log(f"  {table}: error - {e}")
 
 
+
+def import_group_infractions(conn):
+    """Import park_group_infractions from fire_trajectories JSON files.
+    
+    Computes outcome (STOPPED_INSIDE vs TRANSITED) based on whether
+    the trajectory's last point is inside the park boundary.
+    """
+    log("\n=== Park Group Infractions ===")
+    
+    traj_dir = DATA_DIR / 'fire_trajectories'
+    keystones_file = DATA_DIR / 'keystones_with_boundaries.json'
+    
+    if not traj_dir.exists():
+        log("  Skipping: fire_trajectories directory not found")
+        return 0
+    
+    # Load park boundaries
+    park_bounds = {}
+    if keystones_file.exists():
+        with open(keystones_file) as f:
+            for park in json.load(f):
+                pid = park.get('id')
+                geom = park.get('geometry')
+                if pid and geom:
+                    park_bounds[pid] = geom
+    
+    # Try to use shapely for boundary checks
+    try:
+        from shapely.geometry import shape, Point
+        HAS_SHAPELY = True
+    except ImportError:
+        HAS_SHAPELY = False
+        log("  Warning: shapely not available, assuming all points inside")
+    
+    def point_in_park(lat, lon, park_id):
+        if not HAS_SHAPELY or park_id not in park_bounds:
+            return True
+        try:
+            geom = shape(park_bounds[park_id])
+            return geom.contains(Point(lon, lat))
+        except:
+            return True
+    
+    def get_outcome(traj, park_id):
+        coords = traj.get('coordinates', [])
+        if not coords:
+            cwt = traj.get('coordinates_with_time', [])
+            if cwt:
+                last = cwt[-1]
+                lat, lon = last.get('lat'), last.get('lon')
+            else:
+                return 'UNKNOWN'
+        else:
+            last = coords[-1]
+            lon, lat = last[0], last[1]
+        
+        if point_in_park(lat, lon, park_id):
+            return 'STOPPED_INSIDE'
+        return 'TRANSITED'
+    
+    # Clear existing and rebuild
+    conn.execute("DELETE FROM park_group_infractions")
+    
+    # Process all trajectory files
+    from collections import defaultdict
+    stats = defaultdict(lambda: defaultdict(lambda: {
+        'total': 0, 'stopped': 0, 'transited': 0, 'fires': 0, 'days_sum': 0
+    }))
+    
+    file_count = 0
+    for traj_file in sorted(traj_dir.glob('*.json')):
+        park_id = traj_file.stem
+        file_count += 1
+        
+        with open(traj_file) as f:
+            trajectories = json.load(f)
+        
+        for traj in trajectories:
+            year = traj.get('year')
+            if not year:
+                continue
+            
+            outcome = get_outcome(traj, park_id)
+            s = stats[park_id][year]
+            s['total'] += 1
+            s['fires'] += traj.get('fires_total', 0)
+            s['days_sum'] += traj.get('days', 0)
+            
+            if outcome == 'STOPPED_INSIDE':
+                s['stopped'] += 1
+            elif outcome == 'TRANSITED':
+                s['transited'] += 1
+    
+    # Insert into database
+    inserted = 0
+    for park_id, years in stats.items():
+        for year, data in years.items():
+            avg_days = data['days_sum'] / data['total'] if data['total'] > 0 else 0
+            conn.execute("""
+                INSERT INTO park_group_infractions 
+                (park_id, year, total_groups, groups_stopped_inside, groups_transited, 
+                 total_fires_inside, avg_days_burning)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (park_id, year, data['total'], data['stopped'], data['transited'], 
+                  data['fires'], avg_days))
+            inserted += 1
+    
+    conn.commit()
+    
+    # Verify
+    cursor = conn.execute("SELECT COUNT(DISTINCT park_id), COUNT(*), SUM(total_groups) FROM park_group_infractions")
+    parks, records, total_groups = cursor.fetchone()
+    log(f"  ✓ {records} records for {parks} parks ({total_groups:,} total groups)")
+    
+    return inserted
+
+
 def main():
     log("Starting JSON to Database Import")
     log(f"Database: {DB_PATH}")
@@ -532,6 +649,7 @@ def main():
         
         # Other tables (additive)
         import_fire_analysis(conn)
+        import_group_infractions(conn)
         import_osm_places(conn)
         import_climate(conn)
         import_waterbodies(conn)

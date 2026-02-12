@@ -122,10 +122,13 @@ sudo systemctl restart srv
 This script:
 1. Syncs `feature_geometries` table with JSON files (exact match)
 2. Imports `park_fire_analysis` from fire_analysis/*.json
-3. Imports `osm_places` from osm_places/*.json  
-4. Imports `park_climate` from climate/park_climate.json
-5. Imports `park_waterbodies` from waterbodies/*.json
-6. Verifies all counts match source files
+3. Imports `park_group_infractions` from fire_trajectories/*.json (with computed outcomes)
+4. Imports `osm_places` from osm_places/*.json  
+5. Imports `park_climate` from climate/park_climate.json
+6. Imports `park_waterbodies` from waterbodies/*.json
+7. Verifies all counts match source files
+
+**Note:** JSON files in `data/` are the source of truth. They were generated on the build VM and should not be regenerated locally unless fire_detections data changes.
 
 ### Complete Rebuild (regenerate from raw data)
 ```bash
