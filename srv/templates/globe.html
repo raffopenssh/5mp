@@ -822,6 +822,37 @@
             /* Even more compact footer */
             .footer-attribution { font-size: 8px; padding: 2px 6px; right: 50px; }
         }
+        
+        /* Toast notification for background tasks */
+        .toast-notification {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(18,18,18,0.95);
+            border: 1px solid rgba(59,130,246,0.5);
+            border-radius: 8px;
+            padding: 12px 16px;
+            z-index: 1000;
+            font-size: 12px;
+            color: #fff;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            max-width: 320px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+            animation: slideIn 0.3s ease;
+        }
+        .toast-notification.active { display: flex; }
+        .toast-notification.success { border-color: rgba(34,197,94,0.5); }
+        .toast-notification.error { border-color: rgba(239,68,68,0.5); }
+        .toast-title { font-weight: 500; margin-bottom: 4px; }
+        .toast-message { color: #aaa; font-size: 11px; }
+        .toast-action { background: #3b82f6; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; white-space: nowrap; }
+        .toast-action:hover { background: #2563eb; }
+        .toast-close { color: #666; cursor: pointer; font-size: 18px; line-height: 1; margin-left: auto; }
+        .toast-close:hover { color: #fff; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -1040,7 +1071,7 @@
     <div class="footer-attribution">
         <span id="page-views-footer" class="desktop-only">0 views</span>
         <span class="footer-sep desktop-only">|</span>
-        <span id="version-link" style="cursor: pointer;" onclick="showVersionModal()" title="Click to see recent changes">v{{.Version}}</span>
+        <span id="version-link" style="cursor: pointer;" onclick="showVersionModal()" title="Click to see recent changes">{{.Version}}</span>
         <span class="footer-sep desktop-only">|</span>
         <a href="https://github.com/raffopenssh/5mp" target="_blank" title="View on GitHub" class="github-link desktop-only">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -1793,6 +1824,36 @@
             }
         }
         
+        // Toast notification system
+        let toastActionCallback = null;
+        function showToast(title, message, actionText, actionCallback, type = '') {
+            const toast = document.getElementById('task-toast');
+            document.getElementById('toast-title').textContent = title;
+            document.getElementById('toast-message').textContent = message;
+            const actionBtn = document.getElementById('toast-action');
+            if (actionText && actionCallback) {
+                actionBtn.textContent = actionText;
+                actionBtn.style.display = 'block';
+                toastActionCallback = actionCallback;
+            } else {
+                actionBtn.style.display = 'none';
+                toastActionCallback = null;
+            }
+            toast.className = 'toast-notification active ' + type;
+            // Auto-hide after 30 seconds if no action needed
+            if (!actionCallback) {
+                setTimeout(hideToast, 5000);
+            }
+        }
+        function hideToast() {
+            document.getElementById('task-toast').classList.remove('active');
+            toastActionCallback = null;
+        }
+        function handleToastAction() {
+            if (toastActionCallback) toastActionCallback();
+            hideToast();
+        }
+        
         function selectMBTilesSource(source) {
             document.querySelectorAll('.mbtiles-source-btn').forEach(btn => {
                 btn.classList.toggle('selected', btn.dataset.source === source);
@@ -1934,6 +1995,15 @@
                     updateMBTilesButton();
                     hideMBTilesNotificationHint();
                     
+                    // Show toast notification with download link
+                    showToast(
+                        'MBTiles Ready',
+                        `Offline tiles for ${currentMBTilesParkName} ready to download.`,
+                        'Download',
+                        () => downloadMBTiles(),
+                        'success'
+                    );
+                    
                     // Browser notification
                     if (Notification.permission === 'granted') {
                         new Notification('MBTiles Ready', {
@@ -1947,6 +2017,9 @@
                     mbtilesState = 'idle';
                     updateMBTilesButton();
                     hideMBTilesNotificationHint();
+                    
+                    // Show error toast
+                    showToast('MBTiles Failed', job.error || 'Generation failed', null, null, 'error');
                     document.getElementById('mbtiles-estimate').innerHTML = `<span style="color: #ef4444;">Failed: ${job.error}</span>`;
                 }
             } catch (err) {
@@ -2436,7 +2509,15 @@
                 
                 const csvContent = rows.join('\n');
                 const dateStr = new Date().toISOString().split('T')[0];
-                const filterSuffix = currentCountryFilter ? currentCountryFilter.replace(/[^a-zA-Z0-9]/g, '_') : (currentBbox ? 'bbox' : 'all');
+                // Build filter suffix with all active filters
+                const filterParts = [];
+                if (currentCountryFilter) filterParts.push(currentCountryFilter.replace(/[^a-zA-Z0-9]/g, '_'));
+                if (currentBbox) filterParts.push('bbox');
+                if (dateFrom) filterParts.push('from_' + dateFrom);
+                if (dateTo) filterParts.push('to_' + dateTo);
+                const movementFilter = document.querySelector('input[name="movement-filter"]:checked');
+                if (movementFilter && movementFilter.value !== 'all') filterParts.push(movementFilter.value);
+                const filterSuffix = filterParts.length > 0 ? filterParts.join('_') : 'all';
                 const filename = `5mp_parks_${filterSuffix}_${dateStr}.csv`;
                 
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -3886,7 +3967,7 @@
                         <div class="pa-popup-name" style="display: flex; align-items: center; justify-content: space-between;">
                             <span>${escapeHtml(name)}</span>
                             <span style="display: flex; gap: 4px; align-items: center;">
-                                <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}.kml" title="Download KML for Google Earth" style="text-decoration: none; font-size: 10px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 3px; color: #888;">KML</a>
+                                <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}${dateFrom ? '_from_' + dateFrom : ''}${dateTo ? '_to_' + dateTo : ''}.kml" title="Download KML for Google Earth" style="text-decoration: none; font-size: 10px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 3px; color: #888;">KML</a>
                                 <button onclick="showMBTilesDialog('${paId}', '${escapeHtml(name)}')" title="Download offline satellite tiles" style="font-size: 10px; padding: 2px 6px; background: rgba(255,255,255,0.1); border: none; border-radius: 3px; color: #888; cursor: pointer;" id="mbtiles-btn-${paId}">MBTiles</button>
                                 ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
                             </span>
@@ -8279,7 +8360,16 @@ ${starredItems.narratives.map(n => {
     }
     </script>
 
-    <!-- Star Modal -->
+    <!-- Toast Notification for Background Tasks -->
+    <div class="toast-notification" id="task-toast">
+        <div style="flex: 1;">
+            <div class="toast-title" id="toast-title">Task Complete</div>
+            <div class="toast-message" id="toast-message">Your file is ready.</div>
+        </div>
+        <button class="toast-action" id="toast-action" onclick="handleToastAction()">Download</button>
+        <span class="toast-close" onclick="hideToast()">&times;</span>
+    </div>
+    
     <!-- Pinned GeoJSON Indicator -->
     <div class="pinned-indicator" id="pinned-indicator" onclick="clearAllPinnedLayers()" title="Click to clear all">
         <div class="pinned-indicator-icon">
