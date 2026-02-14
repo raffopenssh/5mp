@@ -221,6 +221,7 @@ func (s *Server) Serve(addr string) error {
 
 	// RSS Feed for starred items
 	mux.HandleFunc("GET /api/feed", s.HandleAPIFeed)
+	mux.HandleFunc("GET /test/pinning", s.HandleTestPinning)
 
 	// Notifications
 	mux.HandleFunc("GET /api/notifications", s.HandleGetNotifications)
