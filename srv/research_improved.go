@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 )
@@ -196,35 +195,10 @@ func (s *Server) searchOpenAlex(ctx context.Context, query string) ([]OpenAlexWo
 	return result.Results, nil
 }
 
-// loadGADMRegions loads GADM level 1 region names from JSON
-func (s *Server) loadGADMRegions() map[string][]string {
-	regions := make(map[string][]string)
-
-	// Load from data/gadm_africa.json
-	type GADMData struct {
-		Regions []struct {
-			Name        string `json:"name"`
-			CountryCode string `json:"country_code"`
-		} `json:"regions"`
-	}
-
-	data, err := os.ReadFile("data/gadm_africa.json")
-	if err != nil {
-		slog.Error("Failed to load GADM data", "error", err)
-		return regions
-	}
-
-	var gadm GADMData
-	if err := json.Unmarshal(data, &gadm); err != nil {
-		slog.Error("Failed to parse GADM data", "error", err)
-		return regions
-	}
-
-	for _, r := range gadm.Regions {
-		regions[r.CountryCode] = append(regions[r.CountryCode], r.Name)
-	}
-
-	return regions
+// getParkRegionNames returns all GADM region names (level 1 + level 2) for a park
+// This includes province names, district names, and variant names for comprehensive search
+func (s *Server) getParkRegionNames(parkID string) []string {
+	return GetAllRegionNames(parkID)
 }
 
 // getCountryNames returns multilingual country names for an ISO3 code
@@ -241,10 +215,10 @@ func (s *Server) RunImprovedPublicationSync(ctx context.Context) {
 		return
 	}
 
-	slog.Info("Starting improved publication sync with GADM regions and multilingual names")
+	slog.Info("Starting improved publication sync with GADM regions (level 1+2) and multilingual names")
 
-	// Load GADM regions data
-	gadmRegions := s.loadGADMRegions()
+	// Ensure GADM regions are loaded
+	LoadParkRegions()
 
 	for _, area := range s.AreaStore.Areas {
 		select {
@@ -263,14 +237,14 @@ func (s *Server) RunImprovedPublicationSync(ctx context.Context) {
 		// Get species for this park
 		species, keySpecies := s.getSpeciesForPark(area.ID)
 
-		// Build search config with GADM regions and multilingual names
+		// Build search config with GADM regions (level 1 + 2) and multilingual names
 		search := ImprovedPublicationSearch{
 			ParkID:       area.ID,
 			ParkName:     area.Name,
 			Country:      area.Country,
 			CountryISO:   countryISO,
 			CountryNames: getCountryNames(countryISO),
-			RegionNames:  gadmRegions[countryISO],
+			RegionNames:  s.getParkRegionNames(area.ID), // Now includes level 1+2 regions
 			Species:      species,
 			KeySpecies:   keySpecies,
 		}

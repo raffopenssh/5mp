@@ -322,25 +322,54 @@ func extractCountryCode(parkID string) string {
 	return ""
 }
 
+// uniqueStringsFaolex returns unique strings from a slice
+func uniqueStringsFaolex(strs []string) []string {
+	seen := make(map[string]bool)
+	result := make([]string, 0, len(strs))
+	for _, s := range strs {
+		if s != "" && !seen[s] {
+			seen[s] = true
+			result = append(result, s)
+		}
+	}
+	return result
+}
+
+// minInt returns the minimum of two integers
+func minIntFaolex(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 // RunFAOLEXSync syncs legal documents for all parks
 func (s *Server) RunFAOLEXSync(ctx context.Context) {
 	if s.AreaStore == nil {
 		return
 	}
 
-	slog.Info("Starting FAOLEX legal document sync")
+	slog.Info("Starting FAOLEX legal document sync with GADM regions")
+
+	// Ensure GADM regions are loaded
+	LoadParkRegions()
 
 	scraper := NewFAOLEXScraper()
 
-	// Get unique countries from parks
+	// Get unique countries and regions from parks
 	countries := make(map[string]bool)
 	parksByCountry := make(map[string][]string)
+	regionsByCountry := make(map[string][]string) // GADM region names for legal search
 
 	for _, area := range s.AreaStore.Areas {
 		countryCode := extractCountryCode(area.ID)
 		if countryCode != "" {
 			countries[countryCode] = true
 			parksByCountry[countryCode] = append(parksByCountry[countryCode], area.Name)
+			
+			// Add GADM region names for this park
+			regionNames := GetAllRegionNames(area.ID)
+			regionsByCountry[countryCode] = append(regionsByCountry[countryCode], regionNames...)
 		}
 	}
 
@@ -377,6 +406,21 @@ func (s *Server) RunFAOLEXSync(ctx context.Context) {
 			parkDocs, err := scraper.SearchFAOLEX(ctx, parkParams)
 			if err == nil {
 				docs = append(docs, parkDocs...)
+			}
+			time.Sleep(scraper.rateLimit)
+		}
+
+		// Search by GADM region names (provinces/districts) - important for governor-signed laws
+		regionNames := uniqueStringsFaolex(regionsByCountry[countryCode])
+		for _, regionName := range regionNames[:minIntFaolex(10, len(regionNames))] { // Limit to avoid too many requests
+			regionParams := FAOLEXSearchParams{
+				Country:  countryCode,
+				Keywords: []string{regionName, "protected area"},
+			}
+
+			regionDocs, err := scraper.SearchFAOLEX(ctx, regionParams)
+			if err == nil {
+				docs = append(docs, regionDocs...)
 			}
 			time.Sleep(scraper.rateLimit)
 		}

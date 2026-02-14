@@ -1,0 +1,5122 @@
+{
+  "AGO_Cameia": {
+    "country_iso": "AGO",
+    "level1_regions": [
+      "LundaSul",
+      "Moxico"
+    ],
+    "level1_ids": [
+      "AGO.13_1",
+      "AGO.15_1"
+    ],
+    "level2_regions": [
+      "Dala",
+      "Muconda",
+      "AltoZambeze",
+      "Cameia",
+      "L\u00e9ua",
+      "Lucano",
+      "Moxico"
+    ],
+    "level2_ids": [
+      "AGO.13.2_1",
+      "AGO.13.3_1",
+      "AGO.15.1_1",
+      "AGO.15.3_1",
+      "AGO.15.4_1",
+      "AGO.15.6_1",
+      "AGO.15.9_1"
+    ],
+    "level2_varnames": [
+      "Luakano",
+      "Mukonda",
+      "Leua",
+      "Kameia",
+      "NA"
+    ]
+  },
+  "AGO_Iona": {
+    "country_iso": "AGO",
+    "level1_regions": [
+      "Cunene",
+      "Hu\u00edla",
+      "Namibe"
+    ],
+    "level1_ids": [
+      "AGO.8_1",
+      "AGO.10_1",
+      "AGO.16_1"
+    ],
+    "level2_regions": [
+      "Curoca",
+      "Tombwa",
+      "Virei"
+    ],
+    "level2_ids": [
+      "AGO.8.3_1",
+      "AGO.16.4_1",
+      "AGO.16.5_1"
+    ],
+    "level2_varnames": [
+      "Kuroka",
+      "Tombua",
+      "NA"
+    ]
+  },
+  "AGO_Luando": {
+    "country_iso": "AGO",
+    "level1_regions": [
+      "Bi\u00e9",
+      "CuanzaSul",
+      "Huambo",
+      "LundaNorte",
+      "Malanje",
+      "Moxico"
+    ],
+    "level1_ids": [
+      "AGO.3_1",
+      "AGO.7_1",
+      "AGO.9_1",
+      "AGO.12_1",
+      "AGO.14_1",
+      "AGO.15_1"
+    ],
+    "level2_regions": [
+      "Andulo",
+      "Camacupa",
+      "Catabola",
+      "Cuemba",
+      "Cunhinga",
+      "Nharea",
+      "Mussende",
+      "Bailundo",
+      "Mungo",
+      "X\u00e1Muteba",
+      "Cambundi-Catembo",
+      "Cangandala",
+      "Luquembo",
+      "Quirima"
+    ],
+    "level2_ids": [
+      "AGO.3.1_1",
+      "AGO.3.2_1",
+      "AGO.3.3_1",
+      "AGO.3.6_1",
+      "AGO.3.7_1",
+      "AGO.3.9_1",
+      "AGO.7.6_1",
+      "AGO.9.1_1",
+      "AGO.9.8_1",
+      "AGO.12.9_1",
+      "AGO.14.3_1",
+      "AGO.14.4_1",
+      "AGO.14.8_1",
+      "AGO.14.14_1"
+    ],
+    "level2_varnames": [
+      "Kuemba",
+      "NevesFerreira",
+      "Kirima",
+      "Katabola",
+      "Xa-Muteba",
+      "Lukembo",
+      "Kunhinga",
+      "Kamakupa",
+      "GeneralMachado",
+      "Kangandala",
+      "Kambundi-Katembo",
+      "NA"
+    ]
+  },
+  "AGO_Luengue-Luiana": {
+    "country_iso": "AGO",
+    "level1_regions": [
+      "CuandoCubango"
+    ],
+    "level1_ids": [
+      "AGO.5_1"
+    ],
+    "level2_regions": [
+      "Dirico",
+      "Mavinga",
+      "Rivungo"
+    ],
+    "level2_ids": [
+      "AGO.5.5_1",
+      "AGO.5.6_1",
+      "AGO.5.9_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "BEN_Pendjari": {
+    "country_iso": "BEN",
+    "level1_regions": [
+      "Atakora"
+    ],
+    "level1_ids": [
+      "BEN.2_1"
+    ],
+    "level2_regions": [
+      "Cobly",
+      "Kouand\u00e9",
+      "Mat\u00e9ri",
+      "Tangui\u00e9ta",
+      "Toucountouna"
+    ],
+    "level2_ids": [
+      "BEN.2.2_1",
+      "BEN.2.4_1",
+      "BEN.2.5_1",
+      "BEN.2.8_1",
+      "BEN.2.9_1"
+    ],
+    "level2_varnames": [
+      "Cobli",
+      "Tchoukoutouna",
+      "NA"
+    ]
+  },
+  "BEN_W_Benin": {
+    "country_iso": "BEN",
+    "level1_regions": [
+      "Alibori",
+      "Atakora"
+    ],
+    "level1_ids": [
+      "BEN.1_1",
+      "BEN.2_1"
+    ],
+    "level2_regions": [
+      "Banikoara",
+      "Kandi",
+      "Karimama",
+      "Malanville",
+      "K\u00e9rou"
+    ],
+    "level2_ids": [
+      "BEN.1.1_1",
+      "BEN.1.3_1",
+      "BEN.1.4_1",
+      "BEN.1.5_1",
+      "BEN.2.3_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "BWA_Central_Kalahari": {
+    "country_iso": "BWA",
+    "level1_regions": [
+      "Central",
+      "Ghanzi",
+      "Kgalagadi",
+      "Kweneng",
+      "North-West"
+    ],
+    "level1_ids": [
+      "BWA.1_1",
+      "BWA.5_1",
+      "BWA.7_1",
+      "BWA.9_1",
+      "BWA.12_1"
+    ],
+    "level2_regions": [
+      "Lethlakane",
+      "Mahalapye",
+      "Serowe",
+      "Tutume",
+      "Ghanzi",
+      "Hukunsti",
+      "KwenengNorth",
+      "KwenengSouth",
+      "NgamilandEast",
+      "NgamilandWest"
+    ],
+    "level2_ids": [
+      "BWA.1.2_1",
+      "BWA.1.4_1",
+      "BWA.1.6_1",
+      "BWA.1.8_1",
+      "BWA.5.1_1",
+      "BWA.7.2_1",
+      "BWA.9.1_1",
+      "BWA.9.2_1",
+      "BWA.12.1_1",
+      "BWA.12.2_1"
+    ],
+    "level2_varnames": [
+      "NgamilandSouth",
+      "Orapa",
+      "KwenengEast",
+      "KgalagadiNorth",
+      "NgamilandNorth",
+      "KwenengWest",
+      "NA"
+    ]
+  },
+  "BWA_Chobe": {
+    "country_iso": "BWA",
+    "level1_regions": [
+      "Central",
+      "Chobe",
+      "North-West"
+    ],
+    "level1_ids": [
+      "BWA.1_1",
+      "BWA.2_1",
+      "BWA.12_1"
+    ],
+    "level2_regions": [
+      "Tutume",
+      "Chobe",
+      "NgamilandEast"
+    ],
+    "level2_ids": [
+      "BWA.1.8_1",
+      "BWA.2.1_1",
+      "BWA.12.1_1"
+    ],
+    "level2_varnames": [
+      "NgamilandNorth",
+      "NA"
+    ]
+  },
+  "BWA_Gemsbok": {
+    "country_iso": "BWA",
+    "level1_regions": [
+      "Kgalagadi"
+    ],
+    "level1_ids": [
+      "BWA.7_1"
+    ],
+    "level2_regions": [
+      "Gemsbok",
+      "Hukunsti",
+      "Tshabong"
+    ],
+    "level2_ids": [
+      "BWA.7.1_1",
+      "BWA.7.2_1",
+      "BWA.7.3_1"
+    ],
+    "level2_varnames": [
+      "KgalagadiNorth",
+      "KgalagadiSouth",
+      "NA"
+    ]
+  },
+  "CAF_Bamingui-Bangoran": {
+    "country_iso": "CAF",
+    "level1_regions": [
+      "Bamingui-Bangoran",
+      "Nana-Gr\u00e9bizi",
+      "Ouaka",
+      "Ouham"
+    ],
+    "level1_ids": [
+      "CAF.1_1",
+      "CAF.10_1",
+      "CAF.13_1",
+      "CAF.15_1"
+    ],
+    "level2_regions": [
+      "Bamingui",
+      "Nd\u00e9l\u00e9",
+      "Kaga-Bandoro",
+      "Mbr\u00e8s",
+      "Kabo"
+    ],
+    "level2_ids": [
+      "CAF.1.1_1",
+      "CAF.1.2_1",
+      "CAF.10.1_1",
+      "CAF.10.2_1",
+      "CAF.15.4_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "CAF_Chinko": {
+    "country_iso": "CAF",
+    "level1_regions": [
+      "Haut-Mbomou",
+      "Haute-Kotto",
+      "Mbomou"
+    ],
+    "level1_ids": [
+      "CAF.4_1",
+      "CAF.5_1",
+      "CAF.9_1"
+    ],
+    "level2_regions": [
+      "Djemah",
+      "Z\u00e9mio",
+      "Ouadda",
+      "Yalinga",
+      "Bakouma",
+      "Bangassou",
+      "Rafa\u00ef"
+    ],
+    "level2_ids": [
+      "CAF.4.1_1",
+      "CAF.4.3_1",
+      "CAF.5.2_1",
+      "CAF.5.3_1",
+      "CAF.9.1_1",
+      "CAF.9.2_1",
+      "CAF.9.4_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "CAF_Dzanga_Park": {
+    "country_iso": "CAF",
+    "level1_regions": [
+      "Sangha-Mba\u00e9r\u00e9"
+    ],
+    "level1_ids": [
+      "CAF.16_1"
+    ],
+    "level2_regions": [
+      "Nola"
+    ],
+    "level2_ids": [
+      "CAF.16.2_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "CAF_Manovo_Gounda_St_Floris": {
+    "country_iso": "CAF",
+    "level1_regions": [
+      "Bamingui-Bangoran",
+      "Haute-Kotto",
+      "Vakaga"
+    ],
+    "level1_ids": [
+      "CAF.1_1",
+      "CAF.5_1",
+      "CAF.17_1"
+    ],
+    "level2_regions": [
+      "Bamingui",
+      "Nd\u00e9l\u00e9",
+      "Ouadda",
+      "Yalinga",
+      "Birao",
+      "OuandaDjall\u00e9"
+    ],
+    "level2_ids": [
+      "CAF.1.1_1",
+      "CAF.1.2_1",
+      "CAF.5.2_1",
+      "CAF.5.3_1",
+      "CAF.17.1_1",
+      "CAF.17.2_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "CIV_Comoe": {
+    "country_iso": "CIV",
+    "level1_regions": [
+      "Savanes",
+      "Vall\u00e9eduBandama",
+      "Zanzan"
+    ],
+    "level1_ids": [
+      "CIV.10_1",
+      "CIV.11_1",
+      "CIV.14_1"
+    ],
+    "level2_regions": [
+      "Tchologo",
+      "Hambol",
+      "Bounkani",
+      "Gontougo"
+    ],
+    "level2_ids": [
+      "CIV.10.3_1",
+      "CIV.11.2_1",
+      "CIV.14.1_1",
+      "CIV.14.2_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "CIV_Ta\u00ef": {
+    "country_iso": "CIV",
+    "level1_regions": [
+      "Bas-Sassandra",
+      "Montagnes",
+      "Sassandra-Marahou\u00e9"
+    ],
+    "level1_ids": [
+      "CIV.2_1",
+      "CIV.8_1",
+      "CIV.9_1"
+    ],
+    "level2_regions": [
+      "Nawa",
+      "San-P\u00e9dro",
+      "Cavally",
+      "Gu\u00e9mon",
+      "Haut-Sassandra"
+    ],
+    "level2_ids": [
+      "CIV.2.2_1",
+      "CIV.2.3_1",
+      "CIV.8.1_1",
+      "CIV.8.2_1",
+      "CIV.9.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "CMR_Bouba_Ndjida": {
+    "country_iso": "CMR",
+    "level1_regions": [
+      "Nord"
+    ],
+    "level1_ids": [
+      "CMR.7_1"
+    ],
+    "level2_regions": [
+      "MayoRey"
+    ],
+    "level2_ids": [
+      "CMR.7.4_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "CMR_Boumba_Bek": {
+    "country_iso": "CMR",
+    "level1_regions": [
+      "Est"
+    ],
+    "level1_ids": [
+      "CMR.3_1"
+    ],
+    "level2_regions": [
+      "BoumbaetNgoko"
+    ],
+    "level2_ids": [
+      "CMR.3.1_1"
+    ],
+    "level2_varnames": [
+      "Boumba-Nkogo",
+      "Bumba-Nkogo",
+      "Boumba-"
+    ]
+  },
+  "CMR_Boumba-Djombi": {
+    "country_iso": "CMR",
+    "level1_regions": [
+      "Nord"
+    ],
+    "level1_ids": [
+      "CMR.7_1"
+    ],
+    "level2_regions": [
+      "MayoRey"
+    ],
+    "level2_ids": [
+      "CMR.7.4_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "CMR_Campo-Ma'an": {
+    "country_iso": "CMR",
+    "level1_regions": [
+      "Sud"
+    ],
+    "level1_ids": [
+      "CMR.10_1"
+    ],
+    "level2_regions": [
+      "Mvila",
+      "Oc\u00e9an",
+      "Vall\u00e9eduNtem"
+    ],
+    "level2_ids": [
+      "CMR.10.2_1",
+      "CMR.10.3_1",
+      "CMR.10.4_1"
+    ],
+    "level2_varnames": [
+      "Ocean",
+      "NA",
+      "Vallee-du-Ntem"
+    ]
+  },
+  "CMR_Dja": {
+    "country_iso": "CMR",
+    "level1_regions": [
+      "Centre",
+      "Est",
+      "Sud"
+    ],
+    "level1_ids": [
+      "CMR.2_1",
+      "CMR.3_1",
+      "CMR.10_1"
+    ],
+    "level2_regions": [
+      "NyongetMfoumou",
+      "HautNyong",
+      "DjaetLobo"
+    ],
+    "level2_ids": [
+      "CMR.2.9_1",
+      "CMR.3.2_1",
+      "CMR.10.1_1"
+    ],
+    "level2_varnames": [
+      "UpperNyong",
+      "MyongandMfoumou",
+      "Dja-and-L",
+      "Ja-and-Lobo",
+      "JaetLobo",
+      "NyongetMfoum"
+    ]
+  },
+  "CMR_Faro": {
+    "country_iso": "CMR",
+    "level1_regions": [
+      "Adamaoua",
+      "Nord"
+    ],
+    "level1_ids": [
+      "CMR.1_1",
+      "CMR.7_1"
+    ],
+    "level2_regions": [
+      "FaroetD\u00e9o",
+      "Vina",
+      "B\u00e9nou\u00e9",
+      "Faro",
+      "MayoRey"
+    ],
+    "level2_ids": [
+      "CMR.1.2_1",
+      "CMR.1.5_1",
+      "CMR.7.1_1",
+      "CMR.7.2_1",
+      "CMR.7.4_1"
+    ],
+    "level2_varnames": [
+      "Benoue",
+      "FaroD\u00e9o",
+      "NA"
+    ]
+  },
+  "CMR_Lob\u00e9k\u00e9": {
+    "country_iso": "CMR",
+    "level1_regions": [
+      "Est"
+    ],
+    "level1_ids": [
+      "CMR.3_1"
+    ],
+    "level2_regions": [
+      "BoumbaetNgoko"
+    ],
+    "level2_ids": [
+      "CMR.3.1_1"
+    ],
+    "level2_varnames": [
+      "Boumba-Nkogo",
+      "Bumba-Nkogo",
+      "Boumba-"
+    ]
+  },
+  "CMR_Mbam_et_Djerem": {
+    "country_iso": "CMR",
+    "level1_regions": [
+      "Adamaoua",
+      "Centre",
+      "Est"
+    ],
+    "level1_ids": [
+      "CMR.1_1",
+      "CMR.2_1",
+      "CMR.3_1"
+    ],
+    "level2_regions": [
+      "Djerem",
+      "MbametKim",
+      "LometDjerem"
+    ],
+    "level2_ids": [
+      "CMR.1.1_1",
+      "CMR.2.4_1",
+      "CMR.3.4_1"
+    ],
+    "level2_varnames": [
+      "Jerem",
+      "LometJerem",
+      "Lom-and-Jerem",
+      "Lom-a",
+      "NA"
+    ]
+  },
+  "CMR_Mont_Cameroun": {
+    "country_iso": "CMR",
+    "level1_regions": [
+      "Sud-Ouest"
+    ],
+    "level1_ids": [
+      "CMR.9_1"
+    ],
+    "level2_regions": [
+      "Fako",
+      "Meme",
+      "Ndian"
+    ],
+    "level2_ids": [
+      "CMR.9.1_1",
+      "CMR.9.5_1",
+      "CMR.9.6_1"
+    ],
+    "level2_varnames": [
+      "Ndiang",
+      "Ndan",
+      "Indian",
+      "NA"
+    ]
+  },
+  "CMR_Nki": {
+    "country_iso": "CMR",
+    "level1_regions": [
+      "Est"
+    ],
+    "level1_ids": [
+      "CMR.3_1"
+    ],
+    "level2_regions": [
+      "BoumbaetNgoko",
+      "HautNyong"
+    ],
+    "level2_ids": [
+      "CMR.3.1_1",
+      "CMR.3.2_1"
+    ],
+    "level2_varnames": [
+      "UpperNyong",
+      "Boumba-Nkogo",
+      "Bumba-Nkogo",
+      "Boumba-"
+    ]
+  },
+  "CMR_Takamanda": {
+    "country_iso": "CMR",
+    "level1_regions": [
+      "Sud-Ouest"
+    ],
+    "level1_ids": [
+      "CMR.9_1"
+    ],
+    "level2_regions": [
+      "Manyu"
+    ],
+    "level2_ids": [
+      "CMR.9.4_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "CMR_Waza": {
+    "country_iso": "CMR",
+    "level1_regions": [
+      "Extr\u00eame-Nord"
+    ],
+    "level1_ids": [
+      "CMR.4_1"
+    ],
+    "level2_regions": [
+      "Diamar\u00e9",
+      "LogoneetChari",
+      "MayoDanay",
+      "MayoSava"
+    ],
+    "level2_ids": [
+      "CMR.4.1_1",
+      "CMR.4.2_1",
+      "CMR.4.3_1",
+      "CMR.4.5_1"
+    ],
+    "level2_varnames": [
+      "Mayo-Danai",
+      "Diamare",
+      "Logone-and-Chari",
+      "NA"
+    ]
+  },
+  "COD_Abumonbazi": {
+    "country_iso": "COD",
+    "level1_regions": [
+      "Nord-Ubangi",
+      "Sud-Ubangi"
+    ],
+    "level1_ids": [
+      "COD.20_1",
+      "COD.23_1"
+    ],
+    "level2_regions": [
+      "Businga",
+      "Gbadolite",
+      "Mobayi-Mbongo",
+      "Yakoma"
+    ],
+    "level2_ids": [
+      "COD.20.2_1",
+      "COD.20.3_1",
+      "COD.20.4_1",
+      "COD.20.6_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COD_Bili-Uere": {
+    "country_iso": "COD",
+    "level1_regions": [
+      "Bas-Uele",
+      "Haut-Uele",
+      "Nord-Ubangi"
+    ],
+    "level1_ids": [
+      "COD.1_1",
+      "COD.5_1",
+      "COD.20_1"
+    ],
+    "level2_regions": [
+      "Ango",
+      "Bondo",
+      "Poko",
+      "Dungu",
+      "Niangara",
+      "Yakoma"
+    ],
+    "level2_ids": [
+      "COD.1.3_1",
+      "COD.1.5_1",
+      "COD.1.10_1",
+      "COD.5.2_1",
+      "COD.5.6_1",
+      "COD.20.6_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COD_Garamba": {
+    "country_iso": "COD",
+    "level1_regions": [
+      "Haut-Uele"
+    ],
+    "level1_ids": [
+      "COD.5_1"
+    ],
+    "level2_regions": [
+      "Dungu",
+      "Faradje"
+    ],
+    "level2_ids": [
+      "COD.5.2_1",
+      "COD.5.4_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COD_Itombwe": {
+    "country_iso": "COD",
+    "level1_regions": [
+      "Maniema",
+      "Sud-Kivu"
+    ],
+    "level1_ids": [
+      "COD.17_1",
+      "COD.22_1"
+    ],
+    "level2_regions": [
+      "Kabambare",
+      "Fizi",
+      "Kamituga",
+      "Mwenga",
+      "Shabunda",
+      "Uvira",
+      "Walungu"
+    ],
+    "level2_ids": [
+      "COD.17.1_1",
+      "COD.22.3_1",
+      "COD.22.7_1",
+      "COD.22.8_1",
+      "COD.22.9_1",
+      "COD.22.11_1",
+      "COD.22.13_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COD_Kahuzi-Biega": {
+    "country_iso": "COD",
+    "level1_regions": [
+      "Maniema",
+      "Nord-Kivu",
+      "Sud-Kivu",
+      "Tshopo"
+    ],
+    "level1_ids": [
+      "COD.17_1",
+      "COD.19_1",
+      "COD.22_1",
+      "COD.25_1"
+    ],
+    "level2_regions": [
+      "Punia",
+      "Masisi",
+      "Walikale",
+      "Bukavu",
+      "Kabare",
+      "Kalehe",
+      "Shabunda",
+      "Walungu"
+    ],
+    "level2_ids": [
+      "COD.17.12_1",
+      "COD.19.5_1",
+      "COD.19.11_1",
+      "COD.22.2_1",
+      "COD.22.5_1",
+      "COD.22.6_1",
+      "COD.22.9_1",
+      "COD.22.13_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COD_Kundelungu": {
+    "country_iso": "COD",
+    "level1_regions": [
+      "Haut-Katanga",
+      "Haut-Lomami",
+      "Lualaba"
+    ],
+    "level1_ids": [
+      "COD.3_1",
+      "COD.4_1",
+      "COD.15_1"
+    ],
+    "level2_regions": [
+      "Kambove",
+      "Kasenga",
+      "Kipushi",
+      "Mitwaba",
+      "Pweto",
+      "Lubudi"
+    ],
+    "level2_ids": [
+      "COD.3.1_1",
+      "COD.3.2_1",
+      "COD.3.3_1",
+      "COD.3.7_1",
+      "COD.3.8_1",
+      "COD.15.5_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COD_Lomami": {
+    "country_iso": "COD",
+    "level1_regions": [
+      "Maniema",
+      "Sankuru",
+      "Tshopo"
+    ],
+    "level1_ids": [
+      "COD.17_1",
+      "COD.21_1",
+      "COD.25_1"
+    ],
+    "level2_regions": [
+      "Kailo",
+      "Katako-Kombe",
+      "Lomela",
+      "Opala",
+      "Ubundu"
+    ],
+    "level2_ids": [
+      "COD.17.2_1",
+      "COD.21.2_1",
+      "COD.21.6_1",
+      "COD.25.8_1",
+      "COD.25.9_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COD_Maiko": {
+    "country_iso": "COD",
+    "level1_regions": [
+      "Maniema",
+      "Nord-Kivu",
+      "Tshopo"
+    ],
+    "level1_ids": [
+      "COD.17_1",
+      "COD.19_1",
+      "COD.25_1"
+    ],
+    "level2_regions": [
+      "Lubutu",
+      "Lubero",
+      "Masisi",
+      "Walikale",
+      "Bafwasende"
+    ],
+    "level2_ids": [
+      "COD.17.8_1",
+      "COD.19.4_1",
+      "COD.19.5_1",
+      "COD.19.11_1",
+      "COD.25.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COD_Okapis": {
+    "country_iso": "COD",
+    "level1_regions": [
+      "Haut-Uele",
+      "Ituri",
+      "Tshopo"
+    ],
+    "level1_ids": [
+      "COD.5_1",
+      "COD.6_1",
+      "COD.25_1"
+    ],
+    "level2_regions": [
+      "Rungu",
+      "Wamba",
+      "Wamba(ville)",
+      "Watsa",
+      "Mambasa",
+      "Bafwasende"
+    ],
+    "level2_ids": [
+      "COD.5.7_1",
+      "COD.5.8_1",
+      "COD.5.9_1",
+      "COD.5.10_1",
+      "COD.6.10_1",
+      "COD.25.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COD_Salonga": {
+    "country_iso": "COD",
+    "level1_regions": [
+      "\u00c9quateur",
+      "Kasa\u00ef",
+      "Kwilu",
+      "Mai-Ndombe",
+      "Sankuru",
+      "Tshopo",
+      "Tshuapa"
+    ],
+    "level1_ids": [
+      "COD.2_1",
+      "COD.9_1",
+      "COD.13_1",
+      "COD.16_1",
+      "COD.21_1",
+      "COD.25_1",
+      "COD.26_1"
+    ],
+    "level2_regions": [
+      "Ingende",
+      "Dekese",
+      "Oshwe",
+      "Kole",
+      "Lomela",
+      "Boende",
+      "Bokungu",
+      "Ikela",
+      "Monkoto"
+    ],
+    "level2_ids": [
+      "COD.2.6_1",
+      "COD.9.1_1",
+      "COD.16.10_1",
+      "COD.21.3_1",
+      "COD.21.6_1",
+      "COD.26.2_1",
+      "COD.26.4_1",
+      "COD.26.6_1",
+      "COD.26.7_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COD_Tumba-Lediima": {
+    "country_iso": "COD",
+    "level1_regions": [
+      "\u00c9quateur",
+      "Mai-Ndombe"
+    ],
+    "level1_ids": [
+      "COD.2_1",
+      "COD.16_1"
+    ],
+    "level2_regions": [
+      "Bikoro",
+      "Lukolela",
+      "Bolobo",
+      "Inongo",
+      "Mushie",
+      "Yumbi"
+    ],
+    "level2_ids": [
+      "COD.2.3_1",
+      "COD.2.7_1",
+      "COD.16.1_1",
+      "COD.16.3_1",
+      "COD.16.8_1",
+      "COD.16.11_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COD_Upemba": {
+    "country_iso": "COD",
+    "level1_regions": [
+      "Haut-Katanga",
+      "Haut-Lomami",
+      "Lualaba",
+      "Tanganyika"
+    ],
+    "level1_ids": [
+      "COD.3_1",
+      "COD.4_1",
+      "COD.15_1",
+      "COD.24_1"
+    ],
+    "level2_regions": [
+      "Kasenga",
+      "Mitwaba",
+      "Bukama",
+      "Kamina",
+      "Malemba-Nkulu",
+      "Lubudi",
+      "Manono"
+    ],
+    "level2_ids": [
+      "COD.3.2_1",
+      "COD.3.7_1",
+      "COD.4.1_1",
+      "COD.4.3_1",
+      "COD.4.6_1",
+      "COD.15.5_1",
+      "COD.24.7_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COD_Virunga": {
+    "country_iso": "COD",
+    "level1_regions": [
+      "Ituri",
+      "Nord-Kivu",
+      "Sud-Kivu"
+    ],
+    "level1_ids": [
+      "COD.6_1",
+      "COD.19_1",
+      "COD.22_1"
+    ],
+    "level2_regions": [
+      "Irumu",
+      "Mambasa",
+      "Beni",
+      "Butembo",
+      "Goma",
+      "Lubero",
+      "Masisi",
+      "Nyiragongo",
+      "Oicha",
+      "O\u00efcha(ville)",
+      "Rutshuru",
+      "Rutshuru(ville)",
+      "Walikale",
+      "Idjwi",
+      "Kalehe"
+    ],
+    "level2_ids": [
+      "COD.6.7_1",
+      "COD.6.10_1",
+      "COD.19.1_1",
+      "COD.19.2_1",
+      "COD.19.3_1",
+      "COD.19.4_1",
+      "COD.19.5_1",
+      "COD.19.6_1",
+      "COD.19.7_1",
+      "COD.19.8_1",
+      "COD.19.9_1",
+      "COD.19.10_1",
+      "COD.19.11_1",
+      "COD.22.4_1",
+      "COD.22.6_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COG_Conkouati-Douli": {
+    "country_iso": "COG",
+    "level1_regions": [
+      "Kouilou",
+      "Niari"
+    ],
+    "level1_ids": [
+      "COG.5_1",
+      "COG.8_1"
+    ],
+    "level2_regions": [
+      "Kakamoeka",
+      "Loandjili",
+      "Madingo-Kayes"
+    ],
+    "level2_ids": [
+      "COG.5.1_1",
+      "COG.5.2_1",
+      "COG.5.3_1"
+    ],
+    "level2_varnames": [
+      "PointeNoire",
+      "NA"
+    ]
+  },
+  "COG_Lac_T\u00e9l\u00e9": {
+    "country_iso": "COG",
+    "level1_regions": [
+      "Likouala",
+      "Sangha"
+    ],
+    "level1_ids": [
+      "COG.7_1",
+      "COG.12_1"
+    ],
+    "level2_regions": [
+      "Ep\u00e9na",
+      "Ouesso"
+    ],
+    "level2_ids": [
+      "COG.7.2_1",
+      "COG.12.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COG_Lessio-Louna": {
+    "country_iso": "COG",
+    "level1_regions": [
+      "Plateaux",
+      "Pool"
+    ],
+    "level1_ids": [
+      "COG.9_1",
+      "COG.11_1"
+    ],
+    "level2_regions": [
+      "Djambala",
+      "Mayama",
+      "Ngab\u00e9",
+      "Ngamaba"
+    ],
+    "level2_ids": [
+      "COG.9.2_1",
+      "COG.11.4_1",
+      "COG.11.6_1",
+      "COG.11.7_1"
+    ],
+    "level2_varnames": [
+      "Brazzaville",
+      "NA"
+    ]
+  },
+  "COG_L\u00e9fini": {
+    "country_iso": "COG",
+    "level1_regions": [
+      "Plateaux",
+      "Pool"
+    ],
+    "level1_ids": [
+      "COG.9_1",
+      "COG.11_1"
+    ],
+    "level2_regions": [
+      "Djambala",
+      "Gamboma",
+      "Mayama",
+      "Ngab\u00e9"
+    ],
+    "level2_ids": [
+      "COG.9.2_1",
+      "COG.9.3_1",
+      "COG.11.4_1",
+      "COG.11.6_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COG_Nouabal\u00e9-Ndoki": {
+    "country_iso": "COG",
+    "level1_regions": [
+      "Likouala",
+      "Sangha"
+    ],
+    "level1_ids": [
+      "COG.7_1",
+      "COG.12_1"
+    ],
+    "level2_regions": [
+      "Dongou",
+      "Ep\u00e9na",
+      "Ouesso"
+    ],
+    "level2_ids": [
+      "COG.7.1_1",
+      "COG.7.2_1",
+      "COG.12.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COG_Ntokou-Pikounda": {
+    "country_iso": "COG",
+    "level1_regions": [
+      "Cuvette",
+      "Likouala",
+      "Sangha"
+    ],
+    "level1_ids": [
+      "COG.4_1",
+      "COG.7_1",
+      "COG.12_1"
+    ],
+    "level2_regions": [
+      "Makoua",
+      "Mossaka",
+      "Ouesso"
+    ],
+    "level2_ids": [
+      "COG.4.3_1",
+      "COG.4.4_1",
+      "COG.12.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "COG_Odzala_Kokoua": {
+    "country_iso": "COG",
+    "level1_regions": [
+      "Cuvette",
+      "Cuvette-Ouest",
+      "Sangha"
+    ],
+    "level1_ids": [
+      "COG.4_1",
+      "COG.3_1",
+      "COG.12_1"
+    ],
+    "level2_regions": [
+      "Makoua",
+      "K\u00e9ll\u00e9",
+      "Mbomo",
+      "Ouesso",
+      "Semb\u00e9",
+      "Souank\u00e9"
+    ],
+    "level2_ids": [
+      "COG.4.3_1",
+      "COG.3.2_1",
+      "COG.3.3_1",
+      "COG.12.1_1",
+      "COG.12.2_1",
+      "COG.12.3_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "DZA_Ahaggar": {
+    "country_iso": "DZA",
+    "level1_regions": [
+      "Adrar",
+      "Illizi",
+      "Tamanghasset"
+    ],
+    "level1_ids": [
+      "DZA.1_1",
+      "DZA.22_1",
+      "DZA.41_1"
+    ],
+    "level2_regions": [],
+    "level2_ids": [],
+    "level2_varnames": []
+  },
+  "ETH_Bale_Mountains": {
+    "country_iso": "ETH",
+    "level1_regions": [
+      "Oromia",
+      "Somali"
+    ],
+    "level1_ids": [
+      "ETH.8_1",
+      "ETH.9_1"
+    ],
+    "level2_regions": [
+      "Bale",
+      "Borena",
+      "MirabArsi"
+    ],
+    "level2_ids": [
+      "ETH.8.2_1",
+      "ETH.8.3_1",
+      "ETH.8.10_1"
+    ],
+    "level2_varnames": [
+      "WestArsi",
+      "NA"
+    ]
+  },
+  "ETH_Borana": {
+    "country_iso": "ETH",
+    "level1_regions": [
+      "Oromia",
+      "Somali",
+      "SouthernNations,Nationalities"
+    ],
+    "level1_ids": [
+      "ETH.8_1",
+      "ETH.9_1",
+      "ETH.10_1"
+    ],
+    "level2_regions": [
+      "Borena",
+      "Guji",
+      "Liben",
+      "Burji",
+      "DebubOmo",
+      "Konso"
+    ],
+    "level2_ids": [
+      "ETH.8.3_1",
+      "ETH.8.5_1",
+      "ETH.9.6_1",
+      "ETH.10.6_1",
+      "ETH.10.8_1",
+      "ETH.10.16_1"
+    ],
+    "level2_varnames": [
+      "SegenPeoples",
+      "SouthOmo",
+      "NA"
+    ]
+  },
+  "ETH_Gambella": {
+    "country_iso": "ETH",
+    "level1_regions": [
+      "GambelaPeoples",
+      "Oromia"
+    ],
+    "level1_ids": [
+      "ETH.6_1",
+      "ETH.8_1"
+    ],
+    "level2_regions": [
+      "Agnuak",
+      "Nuer",
+      "KelemWellega"
+    ],
+    "level2_ids": [
+      "ETH.6.1_1",
+      "ETH.6.3_1",
+      "ETH.8.9_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "GAB_Ivindo": {
+    "country_iso": "GAB",
+    "level1_regions": [
+      "Haut-Ogoou\u00e9",
+      "Ogoou\u00e9-Ivindo",
+      "Ogoou\u00e9-Lolo",
+      "Wouleu-Ntem"
+    ],
+    "level1_ids": [
+      "GAB.2_1",
+      "GAB.6_1",
+      "GAB.7_1",
+      "GAB.9_1"
+    ],
+    "level2_regions": [
+      "Ivindo",
+      "Lop\u00e9",
+      "Mvoung",
+      "Mouloudnou",
+      "Okano"
+    ],
+    "level2_ids": [
+      "GAB.6.1_1",
+      "GAB.6.2_1",
+      "GAB.6.3_1",
+      "GAB.7.3_1",
+      "GAB.9.4_1"
+    ],
+    "level2_varnames": [
+      "Booue",
+      "Makokou",
+      "Mouloundou",
+      "Latoursville",
+      "Mitzik",
+      "Oveng"
+    ]
+  },
+  "GAB_Loango": {
+    "country_iso": "GAB",
+    "level1_regions": [
+      "Ogoou\u00e9-Maritime"
+    ],
+    "level1_ids": [
+      "GAB.8_1"
+    ],
+    "level2_regions": [
+      "\u00c9timbou\u00e9",
+      "Ndougou"
+    ],
+    "level2_ids": [
+      "GAB.8.2_1",
+      "GAB.8.3_1"
+    ],
+    "level2_varnames": [
+      "Omboue",
+      "Gamba"
+    ]
+  },
+  "GAB_Lop\u00e9": {
+    "country_iso": "GAB",
+    "level1_regions": [
+      "Moyen-Ogoou\u00e9",
+      "Ngouni\u00e9",
+      "Ogoou\u00e9-Ivindo",
+      "Ogoou\u00e9-Lolo"
+    ],
+    "level1_ids": [
+      "GAB.3_1",
+      "GAB.4_1",
+      "GAB.6_1",
+      "GAB.7_1"
+    ],
+    "level2_regions": [
+      "Abanga-Bign\u00e9",
+      "Ogoulou",
+      "Lop\u00e9",
+      "LoloBouenguidi"
+    ],
+    "level2_ids": [
+      "GAB.3.1_1",
+      "GAB.4.6_1",
+      "GAB.6.2_1",
+      "GAB.7.1_1"
+    ],
+    "level2_varnames": [
+      "Booue",
+      "Mimongo",
+      "Ndjole",
+      "Koula.",
+      "Lolo-Bouenguidi"
+    ]
+  },
+  "GAB_Minkebe": {
+    "country_iso": "GAB",
+    "level1_regions": [
+      "Ogoou\u00e9-Ivindo",
+      "Wouleu-Ntem"
+    ],
+    "level1_ids": [
+      "GAB.6_1",
+      "GAB.9_1"
+    ],
+    "level2_regions": [
+      "Ivindo",
+      "Haut-Ntem",
+      "Okano",
+      "Woleu"
+    ],
+    "level2_ids": [
+      "GAB.6.1_1",
+      "GAB.9.2_1",
+      "GAB.9.4_1",
+      "GAB.9.5_1"
+    ],
+    "level2_varnames": [
+      "Minvoul",
+      "Oyem",
+      "Makokou",
+      "Mitzik"
+    ]
+  },
+  "GAB_Monts_Birougou": {
+    "country_iso": "GAB",
+    "level1_regions": [
+      "Ngouni\u00e9",
+      "Ogoou\u00e9-Lolo"
+    ],
+    "level1_ids": [
+      "GAB.4_1",
+      "GAB.7_1"
+    ],
+    "level2_regions": [
+      "Boumi-lowetsi",
+      "LoloBouenguidi",
+      "Lombo-Bouenguidi",
+      "Mouloudnou"
+    ],
+    "level2_ids": [
+      "GAB.4.1_1",
+      "GAB.7.1_1",
+      "GAB.7.2_1",
+      "GAB.7.3_1"
+    ],
+    "level2_varnames": [
+      "Mbigou",
+      "Mouloundou",
+      "Latoursville",
+      "Pana",
+      "Koula.",
+      "Boumi-Louetsi",
+      "Lolo-Bouenguidi"
+    ]
+  },
+  "GAB_Monts_de_Cristal": {
+    "country_iso": "GAB",
+    "level1_regions": [
+      "Estuaire",
+      "Wouleu-Ntem"
+    ],
+    "level1_ids": [
+      "GAB.1_1",
+      "GAB.9_1"
+    ],
+    "level2_regions": [
+      "Komo",
+      "Noya",
+      "Haut-Como"
+    ],
+    "level2_ids": [
+      "GAB.1.1_1",
+      "GAB.1.3_1",
+      "GAB.9.1_1"
+    ],
+    "level2_varnames": [
+      "Cocobeach",
+      "Medouneu",
+      "Kango",
+      "Haut-Komo"
+    ]
+  },
+  "GAB_Moukalaba-Doudou": {
+    "country_iso": "GAB",
+    "level1_regions": [
+      "Ngouni\u00e9",
+      "Nyanga",
+      "Ogoou\u00e9-Maritime"
+    ],
+    "level1_ids": [
+      "GAB.4_1",
+      "GAB.5_1",
+      "GAB.8_1"
+    ],
+    "level2_regions": [
+      "DouyaOnoye",
+      "Ndolou",
+      "BasseBanio",
+      "Douigny",
+      "Mougoutsi",
+      "\u00c9timbou\u00e9",
+      "Ndougou"
+    ],
+    "level2_ids": [
+      "GAB.4.3_1",
+      "GAB.4.5_1",
+      "GAB.5.1_1",
+      "GAB.5.2_1",
+      "GAB.5.4_1",
+      "GAB.8.2_1",
+      "GAB.8.3_1"
+    ],
+    "level2_varnames": [
+      "Tchibanga",
+      "Gamba",
+      "Douigni",
+      "Basse-Banio",
+      "Mandji",
+      "Mayumba",
+      "Douya-Onoy",
+      "Omboue",
+      "Moabi",
+      "Mouila"
+    ]
+  },
+  "GAB_Plateaux_Bat\u00e9k": {
+    "country_iso": "GAB",
+    "level1_regions": [
+      "Haut-Ogoou\u00e9"
+    ],
+    "level1_ids": [
+      "GAB.2_1"
+    ],
+    "level2_regions": [
+      "Mpassa",
+      "Plateaux"
+    ],
+    "level2_ids": [
+      "GAB.2.4_1",
+      "GAB.2.5_1"
+    ],
+    "level2_varnames": [
+      "Lekoni",
+      "Franceville"
+    ]
+  },
+  "GAB_Wonga-Wongu\u00e9": {
+    "country_iso": "GAB",
+    "level1_regions": [
+      "Estuaire",
+      "Moyen-Ogoou\u00e9",
+      "Ngouni\u00e9",
+      "Ogoou\u00e9-Maritime"
+    ],
+    "level1_ids": [
+      "GAB.1_1",
+      "GAB.3_1",
+      "GAB.4_1",
+      "GAB.8_1"
+    ],
+    "level2_regions": [
+      "Komo",
+      "Komo-Mondah",
+      "Ogoou\u00e9etdesLacs",
+      "Bendj\u00e9"
+    ],
+    "level2_ids": [
+      "GAB.1.1_1",
+      "GAB.1.2_1",
+      "GAB.3.2_1",
+      "GAB.8.1_1"
+    ],
+    "level2_varnames": [
+      "Kango",
+      "Ntoum",
+      "PortGentil",
+      "Lambar."
+    ]
+  },
+  "GHA_Mole": {
+    "country_iso": "GHA",
+    "level1_regions": [
+      "NorthEast",
+      "Northern",
+      "Savannah",
+      "UpperWest"
+    ],
+    "level1_ids": [
+      "GHA8_2",
+      "GHA9_2",
+      "GHA11_2",
+      "GHA13_2"
+    ],
+    "level2_regions": [
+      "MampruguMoagduri",
+      "Tolon",
+      "Bole",
+      "CentralGonja",
+      "NorthGonja",
+      "Sawla-Tuna-Kalba",
+      "WestGonja",
+      "WaEast"
+    ],
+    "level2_ids": [
+      "GHA8.4_2",
+      "GHA9.14_2",
+      "GHA11.1_2",
+      "GHA11.2_2",
+      "GHA11.5_2",
+      "GHA11.6_2",
+      "GHA11.7_2",
+      "GHA13.10_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "GNQ_Monte_Al\u00e9n": {
+    "country_iso": "GNQ",
+    "level1_regions": [
+      "CentroSur",
+      "Ki\u00e9-Ntem",
+      "Litoral"
+    ],
+    "level1_ids": [
+      "GNQ.4_1",
+      "GNQ.5_1",
+      "GNQ.6_1"
+    ],
+    "level2_regions": [
+      "Acurenam",
+      "Bicurga",
+      "Evinayong",
+      "Niefang",
+      "Bata",
+      "Bitica",
+      "Cogo",
+      "Mbini"
+    ],
+    "level2_ids": [
+      "GNQ.4.1_1",
+      "GNQ.4.2_1",
+      "GNQ.4.3_1",
+      "GNQ.4.4_1",
+      "GNQ.6.1_1",
+      "GNQ.6.2_1",
+      "GNQ.6.3_1",
+      "GNQ.6.6_1"
+    ],
+    "level2_varnames": [
+      "Kogo",
+      "Akurenam",
+      "NA",
+      "Bitika"
+    ]
+  },
+  "KEN_Aberdare": {
+    "country_iso": "KEN",
+    "level1_regions": [
+      "Laikipia",
+      "Murang'a",
+      "Nakuru",
+      "Nyandarua",
+      "Nyeri"
+    ],
+    "level1_ids": [
+      "KEN.20_1",
+      "KEN.29_1",
+      "KEN.31_1",
+      "KEN.35_1",
+      "KEN.36_1"
+    ],
+    "level2_regions": [
+      "LaikipiaEast",
+      "Gatanga",
+      "Kangema",
+      "Kigumo",
+      "Kiharu",
+      "Mathioya",
+      "Naivasha",
+      "Kinangop",
+      "Kipipiri",
+      "Ndaragwa",
+      "Kieni",
+      "NyeriTown",
+      "Othaya",
+      "Tetu"
+    ],
+    "level2_ids": [
+      "KEN.20.1_1",
+      "KEN.29.1_1",
+      "KEN.29.3_1",
+      "KEN.29.4_1",
+      "KEN.29.5_1",
+      "KEN.29.7_1",
+      "KEN.31.6_1",
+      "KEN.35.1_1",
+      "KEN.35.2_1",
+      "KEN.35.3_1",
+      "KEN.36.1_1",
+      "KEN.36.4_1",
+      "KEN.36.5_1",
+      "KEN.36.6_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "KEN_Masai_Mara": {
+    "country_iso": "KEN",
+    "level1_regions": [
+      "Narok"
+    ],
+    "level1_ids": [
+      "KEN.33_1"
+    ],
+    "level2_regions": [
+      "Kilgoris",
+      "NarokWest"
+    ],
+    "level2_ids": [
+      "KEN.33.2_1",
+      "KEN.33.6_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "KEN_Melako": {
+    "country_iso": "KEN",
+    "level1_regions": [
+      "Isiolo",
+      "Marsabit",
+      "Samburu"
+    ],
+    "level1_ids": [
+      "KEN.9_1",
+      "KEN.25_1",
+      "KEN.37_1"
+    ],
+    "level2_regions": [
+      "IsioloNorth",
+      "Laisamis",
+      "NorthHorr",
+      "SamburuEast"
+    ],
+    "level2_ids": [
+      "KEN.9.1_1",
+      "KEN.25.1_1",
+      "KEN.25.3_1",
+      "KEN.37.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "KEN_Mount_Kenya": {
+    "country_iso": "KEN",
+    "level1_regions": [
+      "Embu",
+      "Isiolo",
+      "Kirinyaga",
+      "Kitui",
+      "Laikipia",
+      "Meru",
+      "Nyeri",
+      "Tharaka-Nithi"
+    ],
+    "level1_ids": [
+      "KEN.6_1",
+      "KEN.9_1",
+      "KEN.15_1",
+      "KEN.18_1",
+      "KEN.20_1",
+      "KEN.26_1",
+      "KEN.36_1",
+      "KEN.41_1"
+    ],
+    "level2_regions": [
+      "Manyatta",
+      "MbeereNorth",
+      "Runyenjes",
+      "Gichugu",
+      "KirinyagaCentral",
+      "Ndia",
+      "LaikipiaEast",
+      "LaikipiaNorth",
+      "Buuri",
+      "CentralImenti",
+      "NorthImenti",
+      "SouthImenti",
+      "TiganiaEast",
+      "TiganiaWest",
+      "Kieni",
+      "Mathira",
+      "NyeriTown",
+      "Tetu",
+      "Chuka/Igambang'Ombe",
+      "Maara"
+    ],
+    "level2_ids": [
+      "KEN.6.1_1",
+      "KEN.6.2_1",
+      "KEN.6.4_1",
+      "KEN.15.1_1",
+      "KEN.15.2_1",
+      "KEN.15.4_1",
+      "KEN.20.1_1",
+      "KEN.20.2_1",
+      "KEN.26.1_1",
+      "KEN.26.2_1",
+      "KEN.26.6_1",
+      "KEN.26.7_1",
+      "KEN.26.8_1",
+      "KEN.26.9_1",
+      "KEN.36.1_1",
+      "KEN.36.2_1",
+      "KEN.36.4_1",
+      "KEN.36.6_1",
+      "KEN.41.1_1",
+      "KEN.41.3_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "KEN_Sera_Community_Conservancy": {
+    "country_iso": "KEN",
+    "level1_regions": [
+      "Isiolo",
+      "Marsabit",
+      "Meru",
+      "Samburu"
+    ],
+    "level1_ids": [
+      "KEN.9_1",
+      "KEN.25_1",
+      "KEN.26_1",
+      "KEN.37_1"
+    ],
+    "level2_regions": [
+      "IsioloNorth",
+      "IsioloSouth",
+      "Laisamis",
+      "IgembeNorth",
+      "SamburuEast"
+    ],
+    "level2_ids": [
+      "KEN.9.1_1",
+      "KEN.9.2_1",
+      "KEN.25.1_1",
+      "KEN.26.4_1",
+      "KEN.37.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "KEN_Sibiloi": {
+    "country_iso": "KEN",
+    "level1_regions": [
+      "Marsabit",
+      "Turkana"
+    ],
+    "level1_ids": [
+      "KEN.25_1",
+      "KEN.43_1"
+    ],
+    "level2_regions": [
+      "NorthHorr",
+      "TurkanaCentral"
+    ],
+    "level2_ids": [
+      "KEN.25.3_1",
+      "KEN.43.2_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "KEN_Tsavo_East": {
+    "country_iso": "KEN",
+    "level1_regions": [
+      "Garissa",
+      "Kilifi",
+      "Kitui",
+      "Kwale",
+      "Makueni",
+      "TaitaTaveta",
+      "TanaRiver"
+    ],
+    "level1_ids": [
+      "KEN.7_1",
+      "KEN.14_1",
+      "KEN.18_1",
+      "KEN.19_1",
+      "KEN.23_1",
+      "KEN.39_1",
+      "KEN.40_1"
+    ],
+    "level2_regions": [
+      "Ganze",
+      "Magarini",
+      "KituiSouth",
+      "Kinango",
+      "KibweziEast",
+      "Mwatate",
+      "Taveta",
+      "Voi",
+      "Wundanyi",
+      "Garsen"
+    ],
+    "level2_ids": [
+      "KEN.14.1_1",
+      "KEN.14.5_1",
+      "KEN.18.4_1",
+      "KEN.19.1_1",
+      "KEN.23.2_1",
+      "KEN.39.1_1",
+      "KEN.39.2_1",
+      "KEN.39.3_1",
+      "KEN.39.4_1",
+      "KEN.40.3_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "KEN_Tsavo_West": {
+    "country_iso": "KEN",
+    "level1_regions": [
+      "Kajiado",
+      "Kitui",
+      "Kwale",
+      "Makueni",
+      "TaitaTaveta",
+      "TanaRiver"
+    ],
+    "level1_ids": [
+      "KEN.10_1",
+      "KEN.18_1",
+      "KEN.19_1",
+      "KEN.23_1",
+      "KEN.39_1",
+      "KEN.40_1"
+    ],
+    "level2_regions": [
+      "KajiadoSouth",
+      "KituiSouth",
+      "Kinango",
+      "KibweziEast",
+      "Mwatate",
+      "Taveta",
+      "Voi",
+      "Wundanyi"
+    ],
+    "level2_ids": [
+      "KEN.10.4_1",
+      "KEN.18.4_1",
+      "KEN.19.1_1",
+      "KEN.23.2_1",
+      "KEN.39.1_1",
+      "KEN.39.2_1",
+      "KEN.39.3_1",
+      "KEN.39.4_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "LBR_Sapo": {
+    "country_iso": "LBR",
+    "level1_regions": [
+      "GrandGedeh",
+      "RiverGee",
+      "Sinoe"
+    ],
+    "level1_ids": [
+      "LBR.6_1",
+      "LBR.14_1",
+      "LBR.15_1"
+    ],
+    "level2_regions": [
+      "Konobo",
+      "Gbeapo",
+      "JaedaeJaedepo",
+      "Juarzon",
+      "Kpayan",
+      "Pyneston"
+    ],
+    "level2_ids": [
+      "LBR.6.2_1",
+      "LBR.14.1_1",
+      "LBR.15.4_1",
+      "LBR.15.5_1",
+      "LBR.15.6_1",
+      "LBR.15.7_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "LSO_Maloti_Drakensberg": {
+    "country_iso": "LSO",
+    "level1_regions": [
+      "Butha-Buthe",
+      "Leribe",
+      "Mohale'sHoek",
+      "Mokhotlong",
+      "Qacha'sNek",
+      "Thaba-Tseka"
+    ],
+    "level1_ids": [
+      "LSO.2_1",
+      "LSO.3_1",
+      "LSO.6_1",
+      "LSO.7_1",
+      "LSO.8_1",
+      "LSO.10_1"
+    ],
+    "level2_regions": [],
+    "level2_ids": [],
+    "level2_varnames": []
+  },
+  "MLI_Gourma": {
+    "country_iso": "MLI",
+    "level1_regions": [
+      "Gao",
+      "Mopti",
+      "Timbuktu"
+    ],
+    "level1_ids": [
+      "MLI.2_1",
+      "MLI.6_1",
+      "MLI.9_1"
+    ],
+    "level2_regions": [
+      "Bandiagara",
+      "Douentza",
+      "Goundam",
+      "Gourma-Rharous",
+      "Niafunk\u00e9"
+    ],
+    "level2_ids": [
+      "MLI.6.1_1",
+      "MLI.6.4_1",
+      "MLI.9.2_1",
+      "MLI.9.3_1",
+      "MLI.9.4_1"
+    ],
+    "level2_varnames": [
+      "Niafunke",
+      "NA"
+    ]
+  },
+  "MOZ_Banhine": {
+    "country_iso": "MOZ",
+    "level1_regions": [
+      "Gaza",
+      "Inhambane"
+    ],
+    "level1_ids": [
+      "MOZ.2_1",
+      "MOZ.3_1"
+    ],
+    "level2_regions": [
+      "Chicualacuala",
+      "Chigubo",
+      "Mabalane",
+      "Massingir",
+      "Mabote"
+    ],
+    "level2_ids": [
+      "MOZ.2.3_1",
+      "MOZ.2.4_1",
+      "MOZ.2.7_1",
+      "MOZ.2.10_1",
+      "MOZ.3.7_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "MOZ_Chimanimani": {
+    "country_iso": "MOZ",
+    "level1_regions": [
+      "Manica"
+    ],
+    "level1_ids": [
+      "MOZ.4_1"
+    ],
+    "level2_regions": [
+      "Mossurize",
+      "Sussundenga"
+    ],
+    "level2_ids": [
+      "MOZ.4.7_1",
+      "MOZ.4.8_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "MOZ_Gil\u00e9": {
+    "country_iso": "MOZ",
+    "level1_regions": [
+      "Nampula",
+      "Zambezia"
+    ],
+    "level1_ids": [
+      "MOZ.7_1",
+      "MOZ.11_1"
+    ],
+    "level2_regions": [
+      "Gile",
+      "MaganjadaCosta",
+      "Pebane"
+    ],
+    "level2_ids": [
+      "MOZ.11.3_1",
+      "MOZ.11.8_1",
+      "MOZ.11.16_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "MOZ_Gorongosa": {
+    "country_iso": "MOZ",
+    "level1_regions": [
+      "Manica",
+      "Sofala"
+    ],
+    "level1_ids": [
+      "MOZ.4_1",
+      "MOZ.9_1"
+    ],
+    "level2_regions": [
+      "Macossa",
+      "Cheringoma",
+      "Dondo",
+      "Gorongosa",
+      "Muanza",
+      "Nhamatanda"
+    ],
+    "level2_ids": [
+      "MOZ.4.5_1",
+      "MOZ.9.4_1",
+      "MOZ.9.6_1",
+      "MOZ.9.7_1",
+      "MOZ.9.11_1",
+      "MOZ.9.12_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "MOZ_Limpopo": {
+    "country_iso": "MOZ",
+    "level1_regions": [
+      "Gaza"
+    ],
+    "level1_ids": [
+      "MOZ.2_1"
+    ],
+    "level2_regions": [
+      "Chicualacuala",
+      "Chigubo",
+      "Ch\u00f3kw\u00e8",
+      "Mabalane",
+      "Massingir"
+    ],
+    "level2_ids": [
+      "MOZ.2.3_1",
+      "MOZ.2.4_1",
+      "MOZ.2.5_1",
+      "MOZ.2.7_1",
+      "MOZ.2.10_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "MOZ_Niassa": {
+    "country_iso": "MOZ",
+    "level1_regions": [
+      "CaboDelgado",
+      "Nassa"
+    ],
+    "level1_ids": [
+      "MOZ.1_1",
+      "MOZ.8_1"
+    ],
+    "level2_regions": [
+      "Balama",
+      "Montepuez",
+      "Mueda",
+      "Lichinga",
+      "Majune",
+      "Marrupa",
+      "Mavago",
+      "Mecula",
+      "Muembe",
+      "Sanga"
+    ],
+    "level2_ids": [
+      "MOZ.1.2_1",
+      "MOZ.1.8_1",
+      "MOZ.1.9_1",
+      "MOZ.8.3_1",
+      "MOZ.8.4_1",
+      "MOZ.8.6_1",
+      "MOZ.8.8_1",
+      "MOZ.8.10_1",
+      "MOZ.8.12_1",
+      "MOZ.8.15_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "MOZ_Tchuma_tchato": {
+    "country_iso": "MOZ",
+    "level1_regions": [
+      "Manica",
+      "Tete"
+    ],
+    "level1_ids": [
+      "MOZ.4_1",
+      "MOZ.10_1"
+    ],
+    "level2_regions": [
+      "Guro",
+      "CahoraBassa",
+      "Changara",
+      "Chifunde",
+      "Chiuta",
+      "Macanga",
+      "Magoe",
+      "Maravia",
+      "Zumbu"
+    ],
+    "level2_ids": [
+      "MOZ.4.3_1",
+      "MOZ.10.2_1",
+      "MOZ.10.3_1",
+      "MOZ.10.4_1",
+      "MOZ.10.5_1",
+      "MOZ.10.6_1",
+      "MOZ.10.7_1",
+      "MOZ.10.8_1",
+      "MOZ.10.12_1"
+    ],
+    "level2_varnames": [
+      "Zumbo",
+      "Cahora-Bassa",
+      "NA"
+    ]
+  },
+  "MOZ_Zinave": {
+    "country_iso": "MOZ",
+    "level1_regions": [
+      "Gaza",
+      "Inhambane",
+      "Manica",
+      "Sofala"
+    ],
+    "level1_ids": [
+      "MOZ.2_1",
+      "MOZ.3_1",
+      "MOZ.4_1",
+      "MOZ.9_1"
+    ],
+    "level2_regions": [
+      "Chicualacuala",
+      "Chigubo",
+      "Massangena",
+      "Govuro",
+      "Mabote",
+      "Machaze",
+      "Machanga"
+    ],
+    "level2_ids": [
+      "MOZ.2.3_1",
+      "MOZ.2.4_1",
+      "MOZ.2.9_1",
+      "MOZ.3.2_1",
+      "MOZ.3.7_1",
+      "MOZ.4.4_1",
+      "MOZ.9.8_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "MWI_Liwonde": {
+    "country_iso": "MWI",
+    "level1_regions": [
+      "Balaka",
+      "Machinga",
+      "Mangochi"
+    ],
+    "level1_ids": [
+      "MWI.1_1",
+      "MWI.12_1",
+      "MWI.13_1"
+    ],
+    "level2_regions": [
+      "TAKalembo",
+      "LiwondaNationalPark",
+      "LiwondeTown",
+      "SCSitola",
+      "TALiwonde",
+      "LakeMalombe",
+      "SCChowe",
+      "SCMbwanaNyambi",
+      "TAChimwala",
+      "TAMponda"
+    ],
+    "level2_ids": [
+      "MWI.1.2_1",
+      "MWI.12.3_1",
+      "MWI.12.4_1",
+      "MWI.12.11_1",
+      "MWI.12.13_1",
+      "MWI.13.2_1",
+      "MWI.13.5_1",
+      "MWI.13.6_1",
+      "MWI.13.8_1",
+      "MWI.13.12_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "MWI_Mulanje_mountain": {
+    "country_iso": "MWI",
+    "level1_regions": [
+      "Mulanje",
+      "Phalombe"
+    ],
+    "level1_ids": [
+      "MWI.15_1",
+      "MWI.24_1"
+    ],
+    "level2_regions": [
+      "MulanjeBoma",
+      "MulanjeMountainForestReserve",
+      "SCJuma",
+      "SCLastonNjema",
+      "TAChikumbu",
+      "TAMabuka",
+      "TANkanda",
+      "TAMkhumba",
+      "TANazombe"
+    ],
+    "level2_ids": [
+      "MWI.15.1_1",
+      "MWI.15.2_1",
+      "MWI.15.3_1",
+      "MWI.15.4_1",
+      "MWI.15.5_1",
+      "MWI.15.6_1",
+      "MWI.15.7_1",
+      "MWI.24.2_1",
+      "MWI.24.3_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "MWI_Nyika": {
+    "country_iso": "MWI",
+    "level1_regions": [
+      "Chitipa",
+      "Karonga",
+      "NkhataBay",
+      "Rumphi"
+    ],
+    "level1_ids": [
+      "MWI.5_1",
+      "MWI.8_1",
+      "MWI.19_1",
+      "MWI.25_1"
+    ],
+    "level2_regions": [
+      "NyikaN.P.-Chitipa",
+      "TAMwenewenya",
+      "TANthalire",
+      "LakeMalawi",
+      "NyipaN.P.-Karonga",
+      "SCMwirang'ombe",
+      "TAKyungu",
+      "TAWasambo",
+      "LakeMalawi",
+      "NyikaNationalPark-Rumphi",
+      "SCKachulu",
+      "SCMwahenga",
+      "SCMwalweni",
+      "SCMwankhunikira",
+      "TAChikulamayembe",
+      "TAKatumbi",
+      "VwazaMarshGameReserve-Rumph"
+    ],
+    "level2_ids": [
+      "MWI.5.2_1",
+      "MWI.5.6_1",
+      "MWI.5.7_1",
+      "MWI.8.2_1",
+      "MWI.8.3_1",
+      "MWI.8.5_1",
+      "MWI.8.7_1",
+      "MWI.8.8_1",
+      "MWI.19.1_1",
+      "MWI.25.2_1",
+      "MWI.25.5_1",
+      "MWI.25.6_1",
+      "MWI.25.7_1",
+      "MWI.25.8_1",
+      "MWI.25.9_1",
+      "MWI.25.10_1",
+      "MWI.25.12_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "NAM_Ai-Ais_Hot_Springs": {
+    "country_iso": "NAM",
+    "level1_regions": [
+      "!Karas"
+    ],
+    "level1_ids": [
+      "NAM.1_1"
+    ],
+    "level2_regions": [
+      "Berseba",
+      "Karas",
+      "KeetmanshoopRural",
+      "Luderitz",
+      "Oranjemund"
+    ],
+    "level2_ids": [
+      "NAM.1.1_1",
+      "NAM.1.2_1",
+      "NAM.1.3_1",
+      "NAM.1.5_1",
+      "NAM.1.6_1"
+    ],
+    "level2_varnames": [
+      "Karasburg",
+      "NA"
+    ]
+  },
+  "NAM_Bwabwata": {
+    "country_iso": "NAM",
+    "level1_regions": [
+      "Kavango",
+      "Zambezi"
+    ],
+    "level1_ids": [
+      "NAM.4_1",
+      "NAM.13_1"
+    ],
+    "level2_regions": [
+      "Mukwe",
+      "Kongola",
+      "Linyandi"
+    ],
+    "level2_ids": [
+      "NAM.4.5_1",
+      "NAM.13.4_1",
+      "NAM.13.5_1"
+    ],
+    "level2_varnames": [
+      "Linyanti",
+      "NA"
+    ]
+  },
+  "NAM_Etosha": {
+    "country_iso": "NAM",
+    "level1_regions": [
+      "Kunene",
+      "Omusati",
+      "Oshana",
+      "Oshikoto",
+      "Otjozondjupa"
+    ],
+    "level1_ids": [
+      "NAM.6_1",
+      "NAM.9_1",
+      "NAM.10_1",
+      "NAM.11_1",
+      "NAM.12_1"
+    ],
+    "level2_regions": [
+      "Kamanjab",
+      "Opuwo",
+      "Outjo",
+      "Sesfontein",
+      "Okahao",
+      "Otamanzi",
+      "Ruacana",
+      "Uuvudhiya",
+      "Engodi",
+      "Guinas",
+      "Omuntele",
+      "Omuthiyagwipundi",
+      "Otavi"
+    ],
+    "level2_ids": [
+      "NAM.6.2_1",
+      "NAM.6.4_1",
+      "NAM.6.5_1",
+      "NAM.6.6_1",
+      "NAM.9.5_1",
+      "NAM.9.9_1",
+      "NAM.9.11_1",
+      "NAM.10.10_1",
+      "NAM.11.1_1",
+      "NAM.11.2_1",
+      "NAM.11.5_1",
+      "NAM.11.6_1",
+      "NAM.12.5_1"
+    ],
+    "level2_varnames": [
+      "Omuthiyagwiipundi",
+      "Eengodi",
+      "Raucana",
+      "NA"
+    ]
+  },
+  "NAM_Namib-Naukluft": {
+    "country_iso": "NAM",
+    "level1_regions": [
+      "!Karas",
+      "Erongo",
+      "Hardap",
+      "Khomas"
+    ],
+    "level1_ids": [
+      "NAM.1_1",
+      "NAM.2_1",
+      "NAM.3_1",
+      "NAM.5_1"
+    ],
+    "level2_regions": [
+      "Berseba",
+      "Luderitz",
+      "Arandis",
+      "Karibib",
+      "Swakopmund",
+      "WalvisbayRural",
+      "WalvisbayUrban",
+      "Gibeon",
+      "RehobothRural",
+      "WindhoekRural"
+    ],
+    "level2_ids": [
+      "NAM.1.1_1",
+      "NAM.1.5_1",
+      "NAM.2.1_1",
+      "NAM.2.3_1",
+      "NAM.2.5_1",
+      "NAM.2.6_1",
+      "NAM.2.7_1",
+      "NAM.3.1_1",
+      "NAM.3.5_1",
+      "NAM.5.9_1"
+    ],
+    "level2_varnames": [
+      "WalvisBayRural",
+      "WalvisBayUrban",
+      "NA"
+    ]
+  },
+  "NAM_Skeleton_Coast": {
+    "country_iso": "NAM",
+    "level1_regions": [
+      "Erongo",
+      "Kunene"
+    ],
+    "level1_ids": [
+      "NAM.2_1",
+      "NAM.6_1"
+    ],
+    "level2_regions": [
+      "Arandis",
+      "Daures",
+      "Epupa",
+      "Khorixas",
+      "Opuwo",
+      "Sesfontein"
+    ],
+    "level2_ids": [
+      "NAM.2.1_1",
+      "NAM.2.2_1",
+      "NAM.6.1_1",
+      "NAM.6.3_1",
+      "NAM.6.4_1",
+      "NAM.6.6_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "NER_Termit_et_Tin-Toumma": {
+    "country_iso": "NER",
+    "level1_regions": [
+      "Agadez",
+      "Diffa",
+      "Maradi",
+      "Zinder"
+    ],
+    "level1_ids": [
+      "NER.1_1",
+      "NER.2_1",
+      "NER.4_1",
+      "NER.8_1"
+    ],
+    "level2_regions": [
+      "Arlit",
+      "Bilma",
+      "Tchighozerine",
+      "N'Guigmi",
+      "Gour\u00e9",
+      "Tanout"
+    ],
+    "level2_ids": [
+      "NER.1.1_1",
+      "NER.1.2_1",
+      "NER.1.3_1",
+      "NER.2.3_1",
+      "NER.8.1_1",
+      "NER.8.5_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "NGA_Cross_River": {
+    "country_iso": "NGA",
+    "level1_regions": [
+      "AkwaIbom",
+      "Benue",
+      "CrossRiver",
+      "Ebonyi"
+    ],
+    "level1_ids": [
+      "NGA.3_1",
+      "NGA.7_1",
+      "NGA.9_1",
+      "NGA.11_1"
+    ],
+    "level2_regions": [
+      "Kwande",
+      "Akamkpa",
+      "Akpabuyo",
+      "Boki",
+      "Etung",
+      "Ikom",
+      "Obanliku",
+      "Obubra",
+      "Obudu",
+      "Odukpani",
+      "Ogoja",
+      "Yala",
+      "Abakaliki",
+      "Ikwo",
+      "Izzi"
+    ],
+    "level2_ids": [
+      "NGA.7.11_1",
+      "NGA.9.2_1",
+      "NGA.9.3_1",
+      "NGA.9.7_1",
+      "NGA.9.10_1",
+      "NGA.9.11_1",
+      "NGA.9.12_1",
+      "NGA.9.13_1",
+      "NGA.9.14_1",
+      "NGA.9.15_1",
+      "NGA.9.16_1",
+      "NGA.9.18_1",
+      "NGA.11.1_1",
+      "NGA.11.7_1",
+      "NGA.11.10_1"
+    ],
+    "level2_varnames": [
+      "YalaCross",
+      "NA"
+    ]
+  },
+  "NGA_Gashaka-Gumti": {
+    "country_iso": "NGA",
+    "level1_regions": [
+      "Adamawa",
+      "Taraba"
+    ],
+    "level1_ids": [
+      "NGA.2_1",
+      "NGA.35_1"
+    ],
+    "level2_regions": [
+      "Teungo",
+      "Bali",
+      "Gashaka",
+      "Gassol",
+      "Sardauna"
+    ],
+    "level2_ids": [
+      "NGA.2.19_1",
+      "NGA.35.2_1",
+      "NGA.35.4_1",
+      "NGA.35.5_1",
+      "NGA.35.11_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "NGA_Kainji_Lake": {
+    "country_iso": "NGA",
+    "level1_regions": [
+      "Kebbi",
+      "Kwara",
+      "Niger"
+    ],
+    "level1_ids": [
+      "NGA.22_1",
+      "NGA.24_1",
+      "NGA.27_1"
+    ],
+    "level2_regions": [
+      "Ngaski",
+      "Baruten",
+      "Kaiama",
+      "Borgu",
+      "Kontagora",
+      "Lavun",
+      "Magama",
+      "Mashegu"
+    ],
+    "level2_ids": [
+      "NGA.22.16_1",
+      "NGA.24.2_1",
+      "NGA.24.11_1",
+      "NGA.27.4_1",
+      "NGA.27.11_1",
+      "NGA.27.13_1",
+      "NGA.27.14_1",
+      "NGA.27.16_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "NGA_Yankari": {
+    "country_iso": "NGA",
+    "level1_regions": [
+      "Bauchi",
+      "Gombe",
+      "Plateau",
+      "Taraba"
+    ],
+    "level1_ids": [
+      "NGA.5_1",
+      "NGA.16_1",
+      "NGA.32_1",
+      "NGA.35_1"
+    ],
+    "level2_regions": [
+      "Alkaleri",
+      "Bauchi",
+      "Akko",
+      "Kanam",
+      "KarimLamido"
+    ],
+    "level2_ids": [
+      "NGA.5.1_1",
+      "NGA.5.2_1",
+      "NGA.16.1_1",
+      "NGA.32.7_1",
+      "NGA.35.8_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "RWA_Akagera": {
+    "country_iso": "RWA",
+    "level1_regions": [
+      "Iburasirazuba"
+    ],
+    "level1_ids": [
+      "RWA.3_1"
+    ],
+    "level2_regions": [
+      "Gatsibo",
+      "Kayonza",
+      "Nyagatare"
+    ],
+    "level2_ids": [
+      "RWA.3.2_1",
+      "RWA.3.3_1",
+      "RWA.3.6_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "RWA_Nyungwe": {
+    "country_iso": "RWA",
+    "level1_regions": [
+      "Amajyepfo",
+      "Iburengerazuba"
+    ],
+    "level1_ids": [
+      "RWA.2_1",
+      "RWA.4_1"
+    ],
+    "level2_regions": [
+      "Nyamagabe",
+      "Nyaruguru",
+      "Karongi",
+      "Nyamasheke",
+      "Rusizi"
+    ],
+    "level2_ids": [
+      "RWA.2.5_1",
+      "RWA.2.7_1",
+      "RWA.4.1_1",
+      "RWA.4.4_1",
+      "RWA.4.6_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "RWA_Volcans": {
+    "country_iso": "RWA",
+    "level1_regions": [
+      "Amajyaruguru",
+      "Iburengerazuba"
+    ],
+    "level1_ids": [
+      "RWA.1_1",
+      "RWA.4_1"
+    ],
+    "level2_regions": [
+      "Burera",
+      "Gakenke",
+      "Musanze",
+      "Nyabihu",
+      "Rubavu"
+    ],
+    "level2_ids": [
+      "RWA.1.1_1",
+      "RWA.1.2_1",
+      "RWA.1.4_1",
+      "RWA.4.3_1",
+      "RWA.4.5_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "SDN_Dinder": {
+    "country_iso": "SDN",
+    "level1_regions": [
+      "AlQadarif",
+      "BlueNile",
+      "Sennar"
+    ],
+    "level1_ids": [
+      "SDN.2_1",
+      "SDN.3_1",
+      "SDN.13_1"
+    ],
+    "level2_regions": [
+      "AlGalabat",
+      "AlRahd",
+      "AlRoseires",
+      "AdDinder"
+    ],
+    "level2_ids": [
+      "SDN.2.4_1",
+      "SDN.2.5_1",
+      "SDN.3.3_1",
+      "SDN.13.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "SEN_Niokolo_Koba": {
+    "country_iso": "SEN",
+    "level1_regions": [
+      "K\u00e9dougou",
+      "Kolda",
+      "Tambacounda"
+    ],
+    "level1_ids": [
+      "SEN.6_1",
+      "SEN.7_1",
+      "SEN.12_1"
+    ],
+    "level2_regions": [
+      "K\u00e9dougou",
+      "Sal\u00e9mata",
+      "Saraya",
+      "V\u00e9lingara",
+      "Bakel",
+      "Goudiry",
+      "Tambacounda"
+    ],
+    "level2_ids": [
+      "SEN.6.1_1",
+      "SEN.6.2_1",
+      "SEN.6.3_1",
+      "SEN.7.3_1",
+      "SEN.12.1_1",
+      "SEN.12.2_1",
+      "SEN.12.4_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "SSD_Badingilo": {
+    "country_iso": "SSD",
+    "level1_regions": [
+      "CentralEquatoria",
+      "EasternEquatoria",
+      "Jungoli",
+      "Lakes"
+    ],
+    "level1_ids": [
+      "SSD.1_1",
+      "SSD.2_1",
+      "SSD.3_1",
+      "SSD.4_1"
+    ],
+    "level2_regions": [
+      "BahralJabal",
+      "Terkaka",
+      "Amatonge",
+      "Bor",
+      "Pibor",
+      "Aliab"
+    ],
+    "level2_ids": [
+      "SSD.1.1_1",
+      "SSD.1.4_1",
+      "SSD.2.1_1",
+      "SSD.3.3_1",
+      "SSD.3.6_1",
+      "SSD.4.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "SSD_Boma": {
+    "country_iso": "SSD",
+    "level1_regions": [
+      "EasternEquatoria",
+      "Jungoli"
+    ],
+    "level1_ids": [
+      "SSD.2_1",
+      "SSD.3_1"
+    ],
+    "level2_regions": [
+      "Amatonge",
+      "Kapoeta",
+      "NahrAtiem",
+      "Pibor"
+    ],
+    "level2_ids": [
+      "SSD.2.1_1",
+      "SSD.2.2_1",
+      "SSD.3.5_1",
+      "SSD.3.6_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "SSD_Southern": {
+    "country_iso": "SSD",
+    "level1_regions": [
+      "Lakes",
+      "Warap",
+      "WestBahr-al-Ghazal",
+      "WestEquatoria"
+    ],
+    "level1_ids": [
+      "SSD.4_1",
+      "SSD.8_1",
+      "SSD.9_1",
+      "SSD.10_1"
+    ],
+    "level2_regions": [
+      "Rumbek",
+      "Shobet",
+      "Tonj",
+      "Wau",
+      "Meridi",
+      "Mundri",
+      "Tombura",
+      "Yambio"
+    ],
+    "level2_ids": [
+      "SSD.4.2_1",
+      "SSD.4.3_1",
+      "SSD.8.3_1",
+      "SSD.9.2_1",
+      "SSD.10.1_1",
+      "SSD.10.2_1",
+      "SSD.10.3_1",
+      "SSD.10.4_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "SSD_Zeraf": {
+    "country_iso": "SSD",
+    "level1_regions": [
+      "Jungoli",
+      "Unity",
+      "UpperNile"
+    ],
+    "level1_ids": [
+      "SSD.3_1",
+      "SSD.6_1",
+      "SSD.7_1"
+    ],
+    "level2_regions": [
+      "Ayod",
+      "FamalZaraf",
+      "AlLeiri",
+      "Faring",
+      "Rabkona",
+      "Tonga"
+    ],
+    "level2_ids": [
+      "SSD.3.2_1",
+      "SSD.3.4_1",
+      "SSD.6.1_1",
+      "SSD.6.3_1",
+      "SSD.6.4_1",
+      "SSD.7.8_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TCD_Aouk": {
+    "country_iso": "TCD",
+    "level1_regions": [
+      "Gu\u00e9ra",
+      "Moyen-Chari",
+      "Salamat",
+      "Sila"
+    ],
+    "level1_ids": [
+      "TCD.7_1",
+      "TCD.16_1",
+      "TCD.18_1",
+      "TCD.19_1"
+    ],
+    "level2_regions": [
+      "Gu\u00e9ra",
+      "BarhK\u00f6h",
+      "GrandeSido",
+      "LacIro",
+      "Aboude\u00efa",
+      "BarhAzoum",
+      "HarazeMangueigne"
+    ],
+    "level2_ids": [
+      "TCD.7.3_1",
+      "TCD.16.1_1",
+      "TCD.16.2_1",
+      "TCD.16.3_1",
+      "TCD.18.1_1",
+      "TCD.18.2_1",
+      "TCD.18.3_1"
+    ],
+    "level2_varnames": [
+      "Melfi",
+      "Maro",
+      "Kyab\u00e9",
+      "Sarh",
+      "AbouDeia",
+      "Kyabe",
+      "AmTiman",
+      "NA"
+    ]
+  },
+  "TCD_Ennedi": {
+    "country_iso": "TCD",
+    "level1_regions": [
+      "EnnediEst",
+      "EnnediOuest"
+    ],
+    "level1_ids": [
+      "TCD.5_1",
+      "TCD.6_1"
+    ],
+    "level2_regions": [
+      "EnnediEst",
+      "EnnediOuest"
+    ],
+    "level2_ids": [
+      "TCD.5.1_1",
+      "TCD.6.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TCD_Ouadi_Rim\u00e9-Ouadi_Achim": {
+    "country_iso": "TCD",
+    "level1_regions": [
+      "BarhelGhazel",
+      "Batha",
+      "Borkou",
+      "EnnediOuest",
+      "Ouadda\u00ef",
+      "Tibesti",
+      "WadiFira"
+    ],
+    "level1_ids": [
+      "TCD.1_1",
+      "TCD.2_1",
+      "TCD.3_1",
+      "TCD.6_1",
+      "TCD.17_1",
+      "TCD.21_1",
+      "TCD.23_1"
+    ],
+    "level2_regions": [
+      "BarhElGazel",
+      "BathaEst",
+      "Fitri",
+      "Borkou",
+      "EnnediOuest",
+      "Ouara",
+      "Tibesti",
+      "Biltine"
+    ],
+    "level2_ids": [
+      "TCD.1.1_1",
+      "TCD.2.1_1",
+      "TCD.2.3_1",
+      "TCD.3.1_1",
+      "TCD.6.1_1",
+      "TCD.17.3_1",
+      "TCD.21.1_1",
+      "TCD.23.1_1"
+    ],
+    "level2_varnames": [
+      "Djedaa",
+      "Abeche",
+      "Ab\u00e9ch\u00e9",
+      "Moussoro",
+      "Oum-Hadjer",
+      "NA"
+    ]
+  },
+  "TCD_Zakouma": {
+    "country_iso": "TCD",
+    "level1_regions": [
+      "Gu\u00e9ra",
+      "Moyen-Chari",
+      "Salamat",
+      "Sila"
+    ],
+    "level1_ids": [
+      "TCD.7_1",
+      "TCD.16_1",
+      "TCD.18_1",
+      "TCD.19_1"
+    ],
+    "level2_regions": [
+      "Gu\u00e9ra",
+      "LacIro",
+      "Aboude\u00efa",
+      "BarhAzoum",
+      "HarazeMangueigne"
+    ],
+    "level2_ids": [
+      "TCD.7.3_1",
+      "TCD.16.3_1",
+      "TCD.18.1_1",
+      "TCD.18.2_1",
+      "TCD.18.3_1"
+    ],
+    "level2_varnames": [
+      "Melfi",
+      "Kyab\u00e9",
+      "AbouDeia",
+      "Kyabe",
+      "AmTiman",
+      "NA"
+    ]
+  },
+  "TGO_Fazao-Malfakassa": {
+    "country_iso": "TGO",
+    "level1_regions": [
+      "Centre",
+      "Kara",
+      "Plateaux"
+    ],
+    "level1_ids": [
+      "TGO.1_1",
+      "TGO.2_1",
+      "TGO.4_1"
+    ],
+    "level2_regions": [
+      "Blitta",
+      "M\u00f4",
+      "Sotouboua",
+      "Tchaudjo",
+      "Bassar"
+    ],
+    "level2_ids": [
+      "TGO.1.1_2",
+      "TGO.1.2_2",
+      "TGO.1.3_2",
+      "TGO.1.5_2",
+      "TGO.2.2_1"
+    ],
+    "level2_varnames": [
+      "Tchaoudjo",
+      "Sokod\u00e9",
+      "NA",
+      "Bassari"
+    ]
+  },
+  "TZA_Katavi": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Katavi",
+      "Kigoma",
+      "Rukwa",
+      "Tabora"
+    ],
+    "level1_ids": [
+      "TZA.7_1",
+      "TZA.8_1",
+      "TZA.21_1",
+      "TZA.26_1"
+    ],
+    "level2_regions": [
+      "Mlele",
+      "MpandaRural",
+      "LakeTanganyika",
+      "Nkasi"
+    ],
+    "level2_ids": [
+      "TZA.7.3_1",
+      "TZA.7.5_1",
+      "TZA.21.3_1",
+      "TZA.21.4_1"
+    ],
+    "level2_varnames": [
+      "Mpanda",
+      "Nkansi",
+      "NA"
+    ]
+  },
+  "TZA_Kilimanjaro": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Arusha",
+      "Kilimanjaro"
+    ],
+    "level1_ids": [
+      "TZA.1_1",
+      "TZA.9_1"
+    ],
+    "level2_regions": [
+      "Longido",
+      "Meru",
+      "Hai",
+      "MoshiRural",
+      "Rombo",
+      "Siha"
+    ],
+    "level2_ids": [
+      "TZA.1.6_1",
+      "TZA.1.7_1",
+      "TZA.9.1_1",
+      "TZA.9.2_1",
+      "TZA.9.5_1",
+      "TZA.9.7_1"
+    ],
+    "level2_varnames": [
+      "Moshi",
+      "NA"
+    ]
+  },
+  "TZA_Kilombero": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Iringa",
+      "Morogoro"
+    ],
+    "level1_ids": [
+      "TZA.5_1",
+      "TZA.14_1"
+    ],
+    "level2_regions": [
+      "IringaRural",
+      "Kilolo",
+      "Kilombero",
+      "Kilosa",
+      "Ulanga"
+    ],
+    "level2_ids": [
+      "TZA.5.1_1",
+      "TZA.5.3_1",
+      "TZA.14.2_1",
+      "TZA.14.3_1",
+      "TZA.14.7_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Kitulo_Plateau": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Mbeya",
+      "Njombe"
+    ],
+    "level1_ids": [
+      "TZA.13_1",
+      "TZA.17_1"
+    ],
+    "level2_regions": [
+      "MbeyaRural",
+      "Rungwe",
+      "Makete"
+    ],
+    "level2_ids": [
+      "TZA.13.6_1",
+      "TZA.13.10_1",
+      "TZA.17.3_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Kitwai": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Kilimanjaro",
+      "Manyara",
+      "Tanga"
+    ],
+    "level1_ids": [
+      "TZA.9_1",
+      "TZA.11_1",
+      "TZA.27_1"
+    ],
+    "level2_regions": [
+      "Same",
+      "Kiteto",
+      "Simanjiro",
+      "Handeni",
+      "HandeniTown",
+      "Kilindi",
+      "Korogwe"
+    ],
+    "level2_ids": [
+      "TZA.9.6_1",
+      "TZA.11.4_1",
+      "TZA.11.7_1",
+      "TZA.27.2_1",
+      "TZA.27.1_1",
+      "TZA.27.3_1",
+      "TZA.27.5_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Luasi": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Katavi",
+      "Rukwa",
+      "Songwe"
+    ],
+    "level1_ids": [
+      "TZA.7_1",
+      "TZA.21_1",
+      "TZA.31_1"
+    ],
+    "level2_regions": [
+      "LakeRukwa",
+      "Mlele",
+      "LakeRukwa",
+      "SumbawangaRural",
+      "LakeRukwa",
+      "Songwe"
+    ],
+    "level2_ids": [
+      "TZA.7.1_1",
+      "TZA.7.3_1",
+      "TZA.21.2_1",
+      "TZA.21.5_1",
+      "TZA.31.4_1",
+      "TZA.31.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Luganzo-Tongwe": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Tanga"
+    ],
+    "level1_ids": [
+      "TZA.27_1"
+    ],
+    "level2_regions": [
+      "Handeni",
+      "Korogwe",
+      "Muheza",
+      "Pangani"
+    ],
+    "level2_ids": [
+      "TZA.27.2_1",
+      "TZA.27.5_1",
+      "TZA.27.8_1",
+      "TZA.27.9_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Mahale_Mts": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Katavi",
+      "Kigoma"
+    ],
+    "level1_ids": [
+      "TZA.7_1",
+      "TZA.8_1"
+    ],
+    "level2_regions": [
+      "MpandaRural",
+      "LakeTanganyika",
+      "Uvinza"
+    ],
+    "level2_ids": [
+      "TZA.7.5_1",
+      "TZA.8.8_1",
+      "TZA.8.9_1"
+    ],
+    "level2_varnames": [
+      "Nkansi",
+      "Mpanda",
+      "NA"
+    ]
+  },
+  "TZA_Mkomazi": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Kilimanjaro",
+      "Manyara",
+      "Tanga"
+    ],
+    "level1_ids": [
+      "TZA.9_1",
+      "TZA.11_1",
+      "TZA.27_1"
+    ],
+    "level2_regions": [
+      "Mwanga",
+      "Same",
+      "Simanjiro",
+      "Korogwe",
+      "Lushoto",
+      "Mkinga"
+    ],
+    "level2_ids": [
+      "TZA.9.4_1",
+      "TZA.9.6_1",
+      "TZA.11.7_1",
+      "TZA.27.5_1",
+      "TZA.27.6_1",
+      "TZA.27.7_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Moyowosi": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Geita",
+      "Kagera",
+      "Kigoma",
+      "Tabora"
+    ],
+    "level1_ids": [
+      "TZA.4_1",
+      "TZA.6_1",
+      "TZA.8_1",
+      "TZA.26_1"
+    ],
+    "level2_regions": [
+      "Bukombe",
+      "Chato",
+      "Biharamulo",
+      "Kakonko",
+      "Kasulu",
+      "Kibondo",
+      "Uvinza",
+      "Kaliua"
+    ],
+    "level2_ids": [
+      "TZA.4.1_1",
+      "TZA.4.2_1",
+      "TZA.6.1_1",
+      "TZA.8.2_1",
+      "TZA.8.4_1",
+      "TZA.8.5_1",
+      "TZA.8.9_1",
+      "TZA.26.2_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Mpanga_Kipengere": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Kilimanjaro",
+      "Manyara",
+      "Tanga"
+    ],
+    "level1_ids": [
+      "TZA.9_1",
+      "TZA.11_1",
+      "TZA.27_1"
+    ],
+    "level2_regions": [
+      "Same",
+      "Simanjiro"
+    ],
+    "level2_ids": [
+      "TZA.9.6_1",
+      "TZA.11.7_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Ngorongoro": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Arusha",
+      "Manyara",
+      "Mara",
+      "Simiyu"
+    ],
+    "level1_ids": [
+      "TZA.1_1",
+      "TZA.11_1",
+      "TZA.12_1",
+      "TZA.24_1"
+    ],
+    "level2_regions": [
+      "Karatu",
+      "LakeEyasi",
+      "LakeManyara",
+      "Longido",
+      "Monduli",
+      "Ngorongoro",
+      "Babati",
+      "LakeManyara",
+      "Mbulu",
+      "Serengeti",
+      "Bariadi",
+      "Itilima",
+      "LakeEyasi",
+      "Meatu"
+    ],
+    "level2_ids": [
+      "TZA.1.3_1",
+      "TZA.1.4_1",
+      "TZA.1.5_1",
+      "TZA.1.6_1",
+      "TZA.1.8_1",
+      "TZA.1.9_1",
+      "TZA.11.2_1",
+      "TZA.11.5_1",
+      "TZA.11.6_1",
+      "TZA.12.7_1",
+      "TZA.24.1_1",
+      "TZA.24.3_1",
+      "TZA.24.4_1",
+      "TZA.24.7_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Nyerere": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Dodoma",
+      "Iringa",
+      "Lindi",
+      "Morogoro",
+      "Mtwara",
+      "Pwani",
+      "Ruvuma"
+    ],
+    "level1_ids": [
+      "TZA.3_1",
+      "TZA.5_1",
+      "TZA.10_1",
+      "TZA.14_1",
+      "TZA.15_1",
+      "TZA.20_1",
+      "TZA.22_1"
+    ],
+    "level2_regions": [
+      "Mpwapwa",
+      "IringaRural",
+      "Kilolo",
+      "Kilwa",
+      "Liwale",
+      "Nachingwea",
+      "Kilombero",
+      "Kilosa",
+      "MorogoroRural",
+      "Mvomero",
+      "Ulanga",
+      "Masasi",
+      "Kisarawe",
+      "Rufiji",
+      "Namtumbo",
+      "Tunduru"
+    ],
+    "level2_ids": [
+      "TZA.3.7_1",
+      "TZA.5.1_1",
+      "TZA.5.3_1",
+      "TZA.10.1_1",
+      "TZA.10.4_1",
+      "TZA.10.5_1",
+      "TZA.14.2_1",
+      "TZA.14.3_1",
+      "TZA.14.4_1",
+      "TZA.14.6_1",
+      "TZA.14.7_1",
+      "TZA.15.2_1",
+      "TZA.20.4_1",
+      "TZA.20.7_1",
+      "TZA.22.2_1",
+      "TZA.22.6_1"
+    ],
+    "level2_varnames": [
+      "Morogoro",
+      "NA"
+    ]
+  },
+  "TZA_Ruaha": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Dodoma",
+      "Iringa",
+      "Mbeya",
+      "Morogoro",
+      "Njombe",
+      "Singida",
+      "Songwe",
+      "Tabora"
+    ],
+    "level1_ids": [
+      "TZA.3_1",
+      "TZA.5_1",
+      "TZA.13_1",
+      "TZA.14_1",
+      "TZA.17_1",
+      "TZA.25_1",
+      "TZA.31_1",
+      "TZA.26_1"
+    ],
+    "level2_regions": [
+      "Chamwino",
+      "IringaRural",
+      "MafingaTown",
+      "Mufindi",
+      "Chunya",
+      "Mbarali",
+      "MbeyaRural",
+      "Kilombero",
+      "Wanging'ombe",
+      "Manyoni",
+      "Sikonge"
+    ],
+    "level2_ids": [
+      "TZA.3.2_1",
+      "TZA.5.1_1",
+      "TZA.5.4_1",
+      "TZA.5.5_1",
+      "TZA.13.1_1",
+      "TZA.13.5_1",
+      "TZA.13.6_1",
+      "TZA.14.2_1",
+      "TZA.17.6_1",
+      "TZA.25.3_1",
+      "TZA.26.4_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Rungwa": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Mbeya"
+    ],
+    "level1_ids": [
+      "TZA.13_1"
+    ],
+    "level2_regions": [
+      "MbeyaRural",
+      "Rungwe"
+    ],
+    "level2_ids": [
+      "TZA.13.6_1",
+      "TZA.13.10_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Saadani": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Pwani",
+      "Tanga"
+    ],
+    "level1_ids": [
+      "TZA.20_1",
+      "TZA.27_1"
+    ],
+    "level2_regions": [
+      "Bagamoyo",
+      "Handeni",
+      "Pangani"
+    ],
+    "level2_ids": [
+      "TZA.20.1_1",
+      "TZA.27.2_1",
+      "TZA.27.9_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Selous": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Dodoma",
+      "Iringa",
+      "Lindi",
+      "Morogoro",
+      "Mtwara",
+      "Pwani",
+      "Ruvuma"
+    ],
+    "level1_ids": [
+      "TZA.3_1",
+      "TZA.5_1",
+      "TZA.10_1",
+      "TZA.14_1",
+      "TZA.15_1",
+      "TZA.20_1",
+      "TZA.22_1"
+    ],
+    "level2_regions": [
+      "Mpwapwa",
+      "IringaRural",
+      "Kilolo",
+      "Kilwa",
+      "Liwale",
+      "Nachingwea",
+      "Ruangwa",
+      "Kilombero",
+      "Kilosa",
+      "MorogoroRural",
+      "Mvomero",
+      "Ulanga",
+      "Masasi",
+      "Kisarawe",
+      "Rufiji",
+      "Namtumbo",
+      "Tunduru"
+    ],
+    "level2_ids": [
+      "TZA.3.7_1",
+      "TZA.5.1_1",
+      "TZA.5.3_1",
+      "TZA.10.1_1",
+      "TZA.10.4_1",
+      "TZA.10.5_1",
+      "TZA.10.6_1",
+      "TZA.14.2_1",
+      "TZA.14.3_1",
+      "TZA.14.4_1",
+      "TZA.14.6_1",
+      "TZA.14.7_1",
+      "TZA.15.2_1",
+      "TZA.20.4_1",
+      "TZA.20.7_1",
+      "TZA.22.2_1",
+      "TZA.22.6_1"
+    ],
+    "level2_varnames": [
+      "Morogoro",
+      "NA"
+    ]
+  },
+  "TZA_Serengeti": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Arusha",
+      "Mara",
+      "Shinyanga",
+      "Simiyu"
+    ],
+    "level1_ids": [
+      "TZA.1_1",
+      "TZA.12_1",
+      "TZA.23_1",
+      "TZA.24_1"
+    ],
+    "level2_regions": [
+      "Karatu",
+      "Ngorongoro",
+      "Bunda",
+      "Butiama",
+      "LakeVictoria",
+      "Rorya",
+      "Serengeti",
+      "Tarime",
+      "Kishapu",
+      "Bariadi",
+      "Busega",
+      "Itilima",
+      "Maswa",
+      "Meatu"
+    ],
+    "level2_ids": [
+      "TZA.1.3_1",
+      "TZA.1.9_1",
+      "TZA.12.1_1",
+      "TZA.12.2_1",
+      "TZA.12.3_1",
+      "TZA.12.6_1",
+      "TZA.12.7_1",
+      "TZA.12.8_1",
+      "TZA.23.3_1",
+      "TZA.24.1_1",
+      "TZA.24.2_1",
+      "TZA.24.3_1",
+      "TZA.24.6_1",
+      "TZA.24.7_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Tarangire": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Arusha",
+      "Dodoma",
+      "Manyara"
+    ],
+    "level1_ids": [
+      "TZA.1_1",
+      "TZA.3_1",
+      "TZA.11_1"
+    ],
+    "level2_regions": [
+      "Karatu",
+      "Monduli",
+      "Kondoa",
+      "Babati",
+      "Kiteto",
+      "LakeManyara",
+      "Simanjiro"
+    ],
+    "level2_ids": [
+      "TZA.1.3_1",
+      "TZA.1.8_1",
+      "TZA.3.5_1",
+      "TZA.11.2_1",
+      "TZA.11.4_1",
+      "TZA.11.5_1",
+      "TZA.11.7_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Udzungwa_Mountain": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Iringa",
+      "Lindi",
+      "Morogoro"
+    ],
+    "level1_ids": [
+      "TZA.5_1",
+      "TZA.10_1",
+      "TZA.14_1"
+    ],
+    "level2_regions": [
+      "Kilolo",
+      "Liwale",
+      "Kilombero",
+      "Kilosa"
+    ],
+    "level2_ids": [
+      "TZA.5.3_1",
+      "TZA.10.4_1",
+      "TZA.14.2_1",
+      "TZA.14.3_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Ugalla": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Katavi",
+      "Kigoma",
+      "Tabora"
+    ],
+    "level1_ids": [
+      "TZA.7_1",
+      "TZA.8_1",
+      "TZA.26_1"
+    ],
+    "level2_regions": [
+      "Mlele",
+      "Kaliua",
+      "Sikonge",
+      "Urambo",
+      "Uyui"
+    ],
+    "level2_ids": [
+      "TZA.7.3_1",
+      "TZA.26.2_1",
+      "TZA.26.4_1",
+      "TZA.26.6_1",
+      "TZA.26.7_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "TZA_Uluguru": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Morogoro"
+    ],
+    "level1_ids": [
+      "TZA.14_1"
+    ],
+    "level2_regions": [
+      "MorogoroRural",
+      "MorogoroUrban",
+      "Mvomero"
+    ],
+    "level2_ids": [
+      "TZA.14.4_1",
+      "TZA.14.5_1",
+      "TZA.14.6_1"
+    ],
+    "level2_varnames": [
+      "Morogoro",
+      "NA"
+    ]
+  },
+  "TZA_Uzungwa_Scarp": {
+    "country_iso": "TZA",
+    "level1_regions": [
+      "Iringa",
+      "Morogoro"
+    ],
+    "level1_ids": [
+      "TZA.5_1",
+      "TZA.14_1"
+    ],
+    "level2_regions": [
+      "IringaRural",
+      "Kilolo",
+      "Mufindi",
+      "Kilombero",
+      "Ulanga"
+    ],
+    "level2_ids": [
+      "TZA.5.1_1",
+      "TZA.5.3_1",
+      "TZA.5.5_1",
+      "TZA.14.2_1",
+      "TZA.14.7_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "UGA_Bwindi_Impenetrable": {
+    "country_iso": "UGA",
+    "level1_regions": [
+      "Kabale",
+      "Kanungu",
+      "Kisoro",
+      "Rukungiri"
+    ],
+    "level1_ids": [
+      "UGA.12_1",
+      "UGA.19_1",
+      "UGA.26_1",
+      "UGA.52_1"
+    ],
+    "level2_regions": [
+      "Rubanda",
+      "Kinkiizi",
+      "Kisoro",
+      "Bufumbira"
+    ],
+    "level2_ids": [
+      "UGA.12.3_1",
+      "UGA.19.1_1",
+      "UGA.26.1_1",
+      "UGA.52.1_1"
+    ],
+    "level2_varnames": [
+      "NA",
+      "Bujumbura"
+    ]
+  },
+  "UGA_Kidepo_Valley": {
+    "country_iso": "UGA",
+    "level1_regions": [
+      "Kitgum",
+      "Kotido"
+    ],
+    "level1_ids": [
+      "UGA.27_1",
+      "UGA.28_1"
+    ],
+    "level2_regions": [
+      "Chua",
+      "Dodoth"
+    ],
+    "level2_ids": [
+      "UGA.27.1_1",
+      "UGA.28.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "UGA_Mount_Elgon": {
+    "country_iso": "UGA",
+    "level1_regions": [
+      "Kapchorwa",
+      "Kumi",
+      "Mbale",
+      "Nakapiripirit",
+      "Sironko",
+      "Tororo"
+    ],
+    "level1_ids": [
+      "UGA.20_1",
+      "UGA.29_1",
+      "UGA.38_1",
+      "UGA.45_1",
+      "UGA.54_1",
+      "UGA.56_1"
+    ],
+    "level2_regions": [
+      "Kongasis",
+      "Kween",
+      "Tingey",
+      "Bukedea",
+      "Bubulo",
+      "Bungokho",
+      "Manjiya",
+      "Pokot",
+      "Budadiri",
+      "Bulambuli",
+      "Mt.ElgonNp",
+      "Tororo"
+    ],
+    "level2_ids": [
+      "UGA.20.1_1",
+      "UGA.20.2_1",
+      "UGA.20.3_1",
+      "UGA.29.1_1",
+      "UGA.38.1_1",
+      "UGA.38.2_1",
+      "UGA.38.3_1",
+      "UGA.45.3_1",
+      "UGA.54.1_1",
+      "UGA.54.2_1",
+      "UGA.54.3_1",
+      "UGA.56.4_1"
+    ],
+    "level2_varnames": [
+      "Upe",
+      "NA"
+    ]
+  },
+  "UGA_Murchison_Falls": {
+    "country_iso": "UGA",
+    "level1_regions": [
+      "Apac",
+      "Arua",
+      "Gulu",
+      "LakeAlbert",
+      "Masindi",
+      "Nebbi"
+    ],
+    "level1_ids": [
+      "UGA.2_1",
+      "UGA.3_1",
+      "UGA.8_1",
+      "UGA.31_1",
+      "UGA.36_1",
+      "UGA.47_1"
+    ],
+    "level2_regions": [
+      "Maruzi",
+      "Oyam",
+      "Madi-Okollo",
+      "Nwoya",
+      "Omoro",
+      "LakeAlbert",
+      "Bujenje",
+      "Bujenje(?)",
+      "Buruli",
+      "Kibanda",
+      "Jonam"
+    ],
+    "level2_ids": [
+      "UGA.2.3_1",
+      "UGA.2.4_1",
+      "UGA.3.4_1",
+      "UGA.8.4_1",
+      "UGA.8.5_1",
+      "UGA.31.1_1",
+      "UGA.36.2_1",
+      "UGA.36.1_1",
+      "UGA.36.3_1",
+      "UGA.36.4_1",
+      "UGA.47.1_1"
+    ],
+    "level2_varnames": [
+      "Buruli",
+      "NA"
+    ]
+  },
+  "UGA_Pian_Upe": {
+    "country_iso": "UGA",
+    "level1_regions": [
+      "Kapchorwa",
+      "Katakwi",
+      "Kumi",
+      "Moroto",
+      "Nakapiripirit",
+      "Sironko"
+    ],
+    "level1_ids": [
+      "UGA.20_1",
+      "UGA.22_1",
+      "UGA.29_1",
+      "UGA.40_1",
+      "UGA.45_1",
+      "UGA.54_1"
+    ],
+    "level2_regions": [
+      "Kween",
+      "Usuk",
+      "Bukedea",
+      "Kumi",
+      "Bokora",
+      "Matheniko",
+      "Chekwii",
+      "Pian",
+      "Pokot",
+      "Bulambuli"
+    ],
+    "level2_ids": [
+      "UGA.20.2_1",
+      "UGA.22.3_1",
+      "UGA.29.1_1",
+      "UGA.29.2_1",
+      "UGA.40.1_1",
+      "UGA.40.2_1",
+      "UGA.45.1_1",
+      "UGA.45.2_1",
+      "UGA.45.3_1",
+      "UGA.54.2_1"
+    ],
+    "level2_varnames": [
+      "Upe",
+      "NA"
+    ]
+  },
+  "UGA_Queen_Elizabeth": {
+    "country_iso": "UGA",
+    "level1_regions": [
+      "Bushenyi",
+      "Kamwenge",
+      "Kanungu",
+      "Kasese",
+      "Mbarara",
+      "Ntungamo",
+      "Rukungiri"
+    ],
+    "level1_ids": [
+      "UGA.6_1",
+      "UGA.18_1",
+      "UGA.19_1",
+      "UGA.21_1",
+      "UGA.39_1",
+      "UGA.48_1",
+      "UGA.52_1"
+    ],
+    "level2_regions": [
+      "Buhweju",
+      "Bunyaruguru",
+      "Igara",
+      "Ruhinda",
+      "Sheema",
+      "Kibale",
+      "Kitagwenda",
+      "Kinkiizi",
+      "Bukonjo",
+      "Busongora",
+      "Ibanda",
+      "Rwampara",
+      "Ruhaama",
+      "Bufumbira"
+    ],
+    "level2_ids": [
+      "UGA.6.1_1",
+      "UGA.6.2_1",
+      "UGA.6.3_1",
+      "UGA.6.4_1",
+      "UGA.6.5_1",
+      "UGA.18.1_1",
+      "UGA.18.2_1",
+      "UGA.19.1_1",
+      "UGA.21.1_1",
+      "UGA.21.2_1",
+      "UGA.39.2_1",
+      "UGA.39.8_1",
+      "UGA.48.2_1",
+      "UGA.52.1_1"
+    ],
+    "level2_varnames": [
+      "NA",
+      "Bujumbura"
+    ]
+  },
+  "UGA_Rwenzori_Mountains": {
+    "country_iso": "UGA",
+    "level1_regions": [
+      "Bundibugyo",
+      "Kabarole",
+      "Kasese"
+    ],
+    "level1_ids": [
+      "UGA.5_1",
+      "UGA.13_1",
+      "UGA.21_1"
+    ],
+    "level2_regions": [
+      "Bwamba",
+      "Ntoroko",
+      "Bunyangabu",
+      "Burahya",
+      "Bukonjo",
+      "Busongora"
+    ],
+    "level2_ids": [
+      "UGA.5.1_1",
+      "UGA.5.2_1",
+      "UGA.13.1_1",
+      "UGA.13.2_1",
+      "UGA.21.1_1",
+      "UGA.21.2_1"
+    ],
+    "level2_varnames": [
+      "Ntoroka",
+      "NA"
+    ]
+  },
+  "ZAF_Kalahari_Gemsbok": {
+    "country_iso": "ZAF",
+    "level1_regions": [
+      "NorthernCape"
+    ],
+    "level1_ids": [
+      "ZAF.8_1"
+    ],
+    "level2_regions": [
+      "Siyanda"
+    ],
+    "level2_ids": [
+      "ZAF.8.5_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZAF_Kruger": {
+    "country_iso": "ZAF",
+    "level1_regions": [
+      "Limpopo",
+      "Mpumalanga"
+    ],
+    "level1_ids": [
+      "ZAF.5_1",
+      "ZAF.6_1"
+    ],
+    "level2_regions": [
+      "Mopani",
+      "Vhembe",
+      "Ehlanzeni"
+    ],
+    "level2_ids": [
+      "ZAF.5.2_1",
+      "ZAF.5.4_1",
+      "ZAF.6.1_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZAF_Mountain_Zebra-Camdeboo": {
+    "country_iso": "ZAF",
+    "level1_regions": [
+      "EasternCape",
+      "NorthernCape",
+      "WesternCape"
+    ],
+    "level1_ids": [
+      "ZAF.1_1",
+      "ZAF.8_1",
+      "ZAF.9_1"
+    ],
+    "level2_regions": [
+      "Amathole",
+      "BuffaloCity",
+      "Cacadu",
+      "ChrisHani",
+      "O.R.Tambo",
+      "PixleykaSeme",
+      "CentralKaroo"
+    ],
+    "level2_ids": [
+      "ZAF.1.2_1",
+      "ZAF.1.3_1",
+      "ZAF.1.4_1",
+      "ZAF.1.5_1",
+      "ZAF.1.8_1",
+      "ZAF.8.4_1",
+      "ZAF.9.2_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZAF_Namaqua": {
+    "country_iso": "ZAF",
+    "level1_regions": [
+      "NorthernCape",
+      "WesternCape"
+    ],
+    "level1_ids": [
+      "ZAF.8_1",
+      "ZAF.9_1"
+    ],
+    "level2_regions": [
+      "Namakwa",
+      "WestCoast"
+    ],
+    "level2_ids": [
+      "ZAF.8.3_1",
+      "ZAF.9.6_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZAF_Richtersveld": {
+    "country_iso": "ZAF",
+    "level1_regions": [
+      "NorthernCape"
+    ],
+    "level1_ids": [
+      "ZAF.8_1"
+    ],
+    "level2_regions": [
+      "Namakwa"
+    ],
+    "level2_ids": [
+      "ZAF.8.3_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZAF_Sederberg": {
+    "country_iso": "ZAF",
+    "level1_regions": [
+      "NorthernCape",
+      "WesternCape"
+    ],
+    "level1_ids": [
+      "ZAF.8_1",
+      "ZAF.9_1"
+    ],
+    "level2_regions": [
+      "Namakwa",
+      "CapeWinelands",
+      "WestCoast"
+    ],
+    "level2_ids": [
+      "ZAF.8.3_1",
+      "ZAF.9.1_1",
+      "ZAF.9.6_1"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZMB_Bangweulu": {
+    "country_iso": "ZMB",
+    "level1_regions": [
+      "Central",
+      "Eastern",
+      "Luapula",
+      "Muchinga",
+      "Northern"
+    ],
+    "level1_ids": [
+      "ZMB.1_1",
+      "ZMB.3_1",
+      "ZMB.4_1",
+      "ZMB.6_1",
+      "ZMB.8_1"
+    ],
+    "level2_regions": [
+      "Chitambo",
+      "Chifunabuli",
+      "Lunga",
+      "Samfya",
+      "Kanchibiya",
+      "Lavushimanda",
+      "Chilubi"
+    ],
+    "level2_ids": [
+      "ZMB.1.3_2",
+      "ZMB.4.3_2",
+      "ZMB.4.6_2",
+      "ZMB.4.12_2",
+      "ZMB.6.4_2",
+      "ZMB.6.5_2",
+      "ZMB.8.1_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZMB_Kafue": {
+    "country_iso": "ZMB",
+    "level1_regions": [
+      "Central",
+      "North-Western",
+      "Southern",
+      "Western"
+    ],
+    "level1_ids": [
+      "ZMB.1_1",
+      "ZMB.7_1",
+      "ZMB.9_1",
+      "ZMB.10_1"
+    ],
+    "level2_regions": [
+      "Itezhi-tezhi",
+      "Mumbwa",
+      "Kasempa",
+      "Mufumbwe",
+      "Choma",
+      "Kalomo",
+      "Kazungula",
+      "Namwala",
+      "Luampa",
+      "Mulobezi",
+      "Nkeyema"
+    ],
+    "level2_ids": [
+      "ZMB.1.4_2",
+      "ZMB.1.9_2",
+      "ZMB.7.5_2",
+      "ZMB.7.7_2",
+      "ZMB.9.2_2",
+      "ZMB.9.4_2",
+      "ZMB.9.5_2",
+      "ZMB.9.9_2",
+      "ZMB.10.4_2",
+      "ZMB.10.8_2",
+      "ZMB.10.11_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZMB_Liuwa_Plain": {
+    "country_iso": "ZMB",
+    "level1_regions": [
+      "North-Western",
+      "Western"
+    ],
+    "level1_ids": [
+      "ZMB.7_1",
+      "ZMB.10_1"
+    ],
+    "level2_regions": [
+      "Kalabo",
+      "Mitete",
+      "Sikongo"
+    ],
+    "level2_ids": [
+      "ZMB.10.1_2",
+      "ZMB.10.6_2",
+      "ZMB.10.15_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZMB_Lower_Zambezi": {
+    "country_iso": "ZMB",
+    "level1_regions": [
+      "Central",
+      "Lusaka"
+    ],
+    "level1_ids": [
+      "ZMB.1_1",
+      "ZMB.5_1"
+    ],
+    "level2_regions": [
+      "Kafue",
+      "Luangwa",
+      "Rufunsa"
+    ],
+    "level2_ids": [
+      "ZMB.5.4_2",
+      "ZMB.5.5_2",
+      "ZMB.5.7_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZMB_Lunga_Luswishi": {
+    "country_iso": "ZMB",
+    "level1_regions": [
+      "Central",
+      "Copperbelt",
+      "North-Western"
+    ],
+    "level1_ids": [
+      "ZMB.1_1",
+      "ZMB.2_1",
+      "ZMB.7_1"
+    ],
+    "level2_regions": [
+      "Chibombo",
+      "Mumbwa",
+      "Ngabwe",
+      "Lufwanyama",
+      "Mpongwe",
+      "Kasempa",
+      "Solwezi"
+    ],
+    "level2_ids": [
+      "ZMB.1.1_2",
+      "ZMB.1.9_2",
+      "ZMB.1.10_2",
+      "ZMB.2.6_2",
+      "ZMB.2.8_2",
+      "ZMB.7.5_2",
+      "ZMB.7.10_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZMB_Musalangu": {
+    "country_iso": "ZMB",
+    "level1_regions": [
+      "Eastern",
+      "Muchinga",
+      "Northern"
+    ],
+    "level1_ids": [
+      "ZMB.3_1",
+      "ZMB.6_1",
+      "ZMB.8_1"
+    ],
+    "level2_regions": [
+      "Chasefu",
+      "Lumezi",
+      "Lundazi",
+      "Chama",
+      "Chinsali",
+      "Isoka",
+      "Mafinga",
+      "Mpika",
+      "Shiwamg'andu",
+      "Mungwi"
+    ],
+    "level2_ids": [
+      "ZMB.3.2_2",
+      "ZMB.3.7_2",
+      "ZMB.3.8_2",
+      "ZMB.6.1_2",
+      "ZMB.6.2_2",
+      "ZMB.6.3_2",
+      "ZMB.6.6_2",
+      "ZMB.6.7_2",
+      "ZMB.6.9_2",
+      "ZMB.8.10_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZMB_Mweru_Wantipa": {
+    "country_iso": "ZMB",
+    "level1_regions": [
+      "Luapula",
+      "Northern"
+    ],
+    "level1_ids": [
+      "ZMB.4_1",
+      "ZMB.8_1"
+    ],
+    "level2_regions": [
+      "Chiengi",
+      "Kaputa",
+      "Nsama"
+    ],
+    "level2_ids": [
+      "ZMB.4.2_2",
+      "ZMB.8.2_2",
+      "ZMB.8.11_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZMB_North_Luangwa": {
+    "country_iso": "ZMB",
+    "level1_regions": [
+      "Eastern",
+      "Muchinga",
+      "Northern"
+    ],
+    "level1_ids": [
+      "ZMB.3_1",
+      "ZMB.6_1",
+      "ZMB.8_1"
+    ],
+    "level2_regions": [
+      "Lumezi",
+      "Chama",
+      "Lavushimanda",
+      "Mpika",
+      "Shiwamg'andu"
+    ],
+    "level2_ids": [
+      "ZMB.3.7_2",
+      "ZMB.6.1_2",
+      "ZMB.6.5_2",
+      "ZMB.6.7_2",
+      "ZMB.6.9_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZMB_Nsumbu": {
+    "country_iso": "ZMB",
+    "level1_regions": [
+      "Luapula",
+      "Northern"
+    ],
+    "level1_ids": [
+      "ZMB.4_1",
+      "ZMB.8_1"
+    ],
+    "level2_regions": [
+      "Kaputa",
+      "Mpulungu",
+      "Nsama"
+    ],
+    "level2_ids": [
+      "ZMB.8.2_2",
+      "ZMB.8.9_2",
+      "ZMB.8.11_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZMB_South_Luangwa": {
+    "country_iso": "ZMB",
+    "level1_regions": [
+      "Central",
+      "Eastern",
+      "Muchinga"
+    ],
+    "level1_ids": [
+      "ZMB.1_1",
+      "ZMB.3_1",
+      "ZMB.6_1"
+    ],
+    "level2_regions": [
+      "Chitambo",
+      "Serenje",
+      "Kasenengwa",
+      "Katete",
+      "Lumezi",
+      "Mambwe",
+      "Petauke",
+      "Lavushimanda",
+      "Mpika"
+    ],
+    "level2_ids": [
+      "ZMB.1.3_2",
+      "ZMB.1.11_2",
+      "ZMB.3.5_2",
+      "ZMB.3.6_2",
+      "ZMB.3.7_2",
+      "ZMB.3.9_2",
+      "ZMB.3.11_2",
+      "ZMB.6.5_2",
+      "ZMB.6.7_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZWE_Chimanimani": {
+    "country_iso": "ZWE",
+    "level1_regions": [
+      "Manicaland"
+    ],
+    "level1_ids": [
+      "ZWE.3_1"
+    ],
+    "level2_regions": [
+      "Chimanimani"
+    ],
+    "level2_ids": [
+      "ZWE.3.2_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZWE_Chizarira": {
+    "country_iso": "ZWE",
+    "level1_regions": [
+      "MashonalandWest",
+      "MatabelelandNorth",
+      "Midlands"
+    ],
+    "level1_ids": [
+      "ZWE.6_1",
+      "ZWE.8_1",
+      "ZWE.10_1"
+    ],
+    "level2_regions": [
+      "Binga",
+      "GokweNorth",
+      "GokweSouth"
+    ],
+    "level2_ids": [
+      "ZWE.8.1_2",
+      "ZWE.10.2_2",
+      "ZWE.10.3_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZWE_Gonarezhou": {
+    "country_iso": "ZWE",
+    "level1_regions": [
+      "Manicaland",
+      "Masvingo"
+    ],
+    "level1_ids": [
+      "ZWE.3_1",
+      "ZWE.7_1"
+    ],
+    "level2_regions": [
+      "Chipinge",
+      "Chiredzi",
+      "Mwenezi"
+    ],
+    "level2_ids": [
+      "ZWE.3.3_2",
+      "ZWE.7.2_2",
+      "ZWE.7.8_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZWE_Hwange": {
+    "country_iso": "ZWE",
+    "level1_regions": [
+      "MatabelelandNorth",
+      "MatabelelandSouth"
+    ],
+    "level1_ids": [
+      "ZWE.8_1",
+      "ZWE.9_1"
+    ],
+    "level2_regions": [
+      "Binga",
+      "Hwange",
+      "Lupane",
+      "Tsholotsho",
+      "Bulilima"
+    ],
+    "level2_ids": [
+      "ZWE.8.1_2",
+      "ZWE.8.3_2",
+      "ZWE.8.5_2",
+      "ZWE.8.7_2",
+      "ZWE.9.3_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZWE_Mana_Pools": {
+    "country_iso": "ZWE",
+    "level1_regions": [
+      "MashonalandWest"
+    ],
+    "level1_ids": [
+      "ZWE.6_1"
+    ],
+    "level2_regions": [
+      "Hurungwe",
+      "Makonde"
+    ],
+    "level2_ids": [
+      "ZWE.6.4_2",
+      "ZWE.6.9_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZWE_Matetsi": {
+    "country_iso": "ZWE",
+    "level1_regions": [
+      "MatabelelandNorth"
+    ],
+    "level1_ids": [
+      "ZWE.8_1"
+    ],
+    "level2_regions": [
+      "Hwange",
+      "VictoriaFalls"
+    ],
+    "level2_ids": [
+      "ZWE.8.3_2",
+      "ZWE.8.9_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  },
+  "ZWE_Matusadona": {
+    "country_iso": "ZWE",
+    "level1_regions": [
+      "MashonalandWest",
+      "MatabelelandNorth",
+      "Midlands"
+    ],
+    "level1_ids": [
+      "ZWE.6_1",
+      "ZWE.8_1",
+      "ZWE.10_1"
+    ],
+    "level2_regions": [
+      "Kariba",
+      "GokweNorth"
+    ],
+    "level2_ids": [
+      "ZWE.6.6_2",
+      "ZWE.10.2_2"
+    ],
+    "level2_varnames": [
+      "NA"
+    ]
+  }
+}
