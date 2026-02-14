@@ -4382,8 +4382,10 @@
                     const trendClass = data.trend_direction === 'improving' ? ' good' : 
                                       data.trend_direction === 'worsening' ? ' bad' : '';
                     
-                    // Get yearly narratives
+                    // Get yearly narratives and classified events (declared in outer scope for later use)
                     const yearlyStories = data.yearly_stories || [];
+                    const classifiedEvents = data.classified_events || [];
+                    const parkName = data.park_name || paId;
                     
                     el.innerHTML = `
                         <div class="pa-popup-mini-stat">
@@ -4406,9 +4408,7 @@
                         ${data.summary ? `<div style="margin-top: 8px; font-size: 10px; color: #aaa; line-height: 1.4;">${data.summary}</div>` : ''}
                         
                         ${(() => {
-                            // Check for classified events first
-                            const classifiedEvents = data.classified_events || [];
-                            const parkName = data.park_name || paId;
+                            // Use classifiedEvents and parkName from outer scope
                             
                             // Format classified deforestation event with pinning
                             const formatClassifiedDefo = (e) => {
