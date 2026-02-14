@@ -60,8 +60,14 @@ func (s *Server) StartResearchWorker(ctx context.Context) {
 
 // runResearchSync processes a batch of PAs using improved search.
 func (s *Server) runResearchSync(ctx context.Context) {
-	// Use the improved research sync
-	s.RunImprovedResearchSync(ctx)
+	// Use the improved publication sync (OpenAlex)
+	s.RunImprovedPublicationSync(ctx)
+	
+	// Also run FAOLEX legal document sync (weekly)
+	// Check if it's Sunday (day 0) for weekly sync
+	if time.Now().Weekday() == time.Sunday {
+		s.RunFAOLEXSync(ctx)
+	}
 }
 
 // Country name translations for better search coverage

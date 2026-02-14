@@ -7,19 +7,84 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
-
-	"srv.exe.dev/db/dbgen"
 )
+
+// MultilingualCountryNames maps ISO3 codes to country names in multiple languages
+// Based on WOS query patterns: de, ar, fr, en, es, ru, zh
+var MultilingualCountryNames = map[string][]string{
+	"AGO": {"Angola", "Republica de Angola", "République d'Angola"},
+	"BEN": {"Benin", "Bénin", "République du Bénin"},
+	"BWA": {"Botswana", "Republic of Botswana"},
+	"BFA": {"Burkina Faso", "Burkina"},
+	"BDI": {"Burundi", "République du Burundi"},
+	"CMR": {"Cameroon", "Cameroun", "République du Cameroun", "Kamerun"},
+	"CAF": {"Central African Republic", "République centrafricaine", "Centrafrique"},
+	"TCD": {"Chad", "Tchad", "République du Tchad", "Tschad", "تشاد"},
+	"COD": {"Democratic Republic of the Congo", "DRC", "Congo-Kinshasa", "Zaire", "République démocratique du Congo", "Demokratische Republik Kongo", "جمهورية الكونغو الديمقراطي"},
+	"COG": {"Republic of the Congo", "Congo-Brazzaville", "Congo", "République du Congo"},
+	"CIV": {"Côte d'Ivoire", "Ivory Coast", "Cote d'Ivoire"},
+	"DJI": {"Djibouti", "République de Djibouti"},
+	"EGY": {"Egypt", "Égypte", "مصر", "Ägypten"},
+	"GNQ": {"Equatorial Guinea", "Guinée équatoriale", "Guinea Ecuatorial"},
+	"ERI": {"Eritrea", "État d'Érythrée"},
+	"SWZ": {"Eswatini", "Swaziland"},
+	"ETH": {"Ethiopia", "Éthiopie", "إثيوبيا"},
+	"GAB": {"Gabon", "République gabonaise"},
+	"GMB": {"Gambia", "The Gambia"},
+	"GHA": {"Ghana", "Republic of Ghana"},
+	"GIN": {"Guinea", "Guinée", "République de Guinée"},
+	"GNB": {"Guinea-Bissau", "Guinée-Bissau"},
+	"KEN": {"Kenya", "Republic of Kenya"},
+	"LSO": {"Lesotho", "Kingdom of Lesotho"},
+	"LBR": {"Liberia", "Republic of Liberia"},
+	"LBY": {"Libya", "Libye", "ليبيا"},
+	"MDG": {"Madagascar", "République de Madagascar"},
+	"MWI": {"Malawi", "Republic of Malawi"},
+	"MLI": {"Mali", "République du Mali"},
+	"MRT": {"Mauritania", "Mauritanie", "موريتانيا"},
+	"MUS": {"Mauritius"},
+	"MAR": {"Morocco", "Maroc", "المغرب"},
+	"MOZ": {"Mozambique", "Moçambique"},
+	"NAM": {"Namibia", "Republic of Namibia"},
+	"NER": {"Niger", "République du Niger"},
+	"NGA": {"Nigeria", "Federal Republic of Nigeria"},
+	"RWA": {"Rwanda", "République du Rwanda"},
+	"STP": {"São Tomé and Príncipe", "Sao Tome and Principe"},
+	"SEN": {"Senegal", "Sénégal", "République du Sénégal"},
+	"SYC": {"Seychelles"},
+	"SLE": {"Sierra Leone"},
+	"SOM": {"Somalia", "Somalie", "الصومال"},
+	"ZAF": {"South Africa", "Afrique du Sud", "Südafrika"},
+	"SSD": {"South Sudan", "Soudan du Sud"},
+	"SDN": {"Sudan", "Soudan", "السودان"},
+	"TZA": {"Tanzania", "Tanzanie", "United Republic of Tanzania"},
+	"TGO": {"Togo", "République togolaise"},
+	"TUN": {"Tunisia", "Tunisie", "تونس"},
+	"UGA": {"Uganda", "République d'Ouganda"},
+	"ZMB": {"Zambia", "Republic of Zambia"},
+	"ZWE": {"Zimbabwe", "Republic of Zimbabwe"},
+}
+
+// ConservationCategories from WOS: ecology, environment, evolution, biology, geography, zoology, ornithology, plant sciences, biodiversity conservation
+var ConservationCategories = []string{
+	"ecology", "environmental science", "biology", "evolution",
+	"zoology", "ornithology", "botany", "mammalogy", "geography",
+	"conservation biology", "biodiversity", "wildlife",
+}
 
 // ImprovedPublicationSearch searches for publications using multiple strategies
 type ImprovedPublicationSearch struct {
-	ParkID      string
-	ParkName    string
-	Country     string
-	Species     []string // Latin binomial names
-	KeySpecies  []string // High-profile species (CR/EN status)
+	ParkID       string
+	ParkName     string
+	Country      string
+	CountryISO   string
+	CountryNames []string // Multilingual country names
+	RegionNames  []string // GADM level 1 (province) names
+	Species      []string // Latin binomial names
+	KeySpecies   []string // High-profile species (CR/EN status)
 }
 
 // buildSearchQueries creates multiple search queries for OpenAlex
@@ -28,7 +93,6 @@ func (s *Server) buildSearchQueries(search ImprovedPublicationSearch) []string {
 	queries := []string{}
 
 	parkNameClean := cleanSearchTerm(search.ParkName)
-	countryClean := cleanSearchTerm(search.Country)
 
 	// 1. Park name exact match (most specific)
 	if parkNameClean != "" {
@@ -43,198 +107,76 @@ func (s *Server) buildSearchQueries(search ImprovedPublicationSearch) []string {
 		}
 	}
 
-	// 3. Park name + country
-	if parkNameClean != "" && countryClean != "" {
-		queries = append(queries, fmt.Sprintf(`"%s" %s`, parkNameClean, countryClean))
-	}
-
-	// 4. Park name + ecology/biology keywords
-	scienceKeywords := []string{"ecology", "habitat", "ecosystem", "species"}
+	// 3. Park name + all country name variants
 	if parkNameClean != "" {
-		for _, kw := range scienceKeywords {
-			queries = append(queries, fmt.Sprintf(`"%s" %s`, parkNameClean, kw))
+		for _, countryName := range search.CountryNames {
+			queries = append(queries, fmt.Sprintf(`"%s" %s`, parkNameClean, countryName))
 		}
 	}
 
-	// 5. Key species + park name (for flagship species)
-	for _, species := range search.KeySpecies {
-		if species != "" && parkNameClean != "" {
-			queries = append(queries, fmt.Sprintf(`"%s" "%s"`, species, parkNameClean))
+	// 4. Park name + GADM region names (provinces)
+	if parkNameClean != "" {
+		for _, regionName := range search.RegionNames {
+			queries = append(queries, fmt.Sprintf(`"%s" %s`, parkNameClean, regionName))
 		}
 	}
 
-	// 6. Key species + country + conservation
+	// 5. Key species (CR/EN) + country - very specific
 	for _, species := range search.KeySpecies {
-		if species != "" && countryClean != "" {
-			queries = append(queries, fmt.Sprintf(`"%s" %s conservation`, species, countryClean))
+		if len(search.CountryNames) > 0 {
+			queries = append(queries, fmt.Sprintf(`"%s" %s`, species, search.CountryNames[0]))
 		}
+	}
+
+	// 6. Key species + region names
+	for _, species := range search.KeySpecies[:minInt(3, len(search.KeySpecies))] {
+		for _, region := range search.RegionNames[:minInt(3, len(search.RegionNames))] {
+			queries = append(queries, fmt.Sprintf(`"%s" %s`, species, region))
+		}
+	}
+
+	// 7. All species with park name
+	for _, species := range search.Species[:minInt(5, len(search.Species))] {
+		queries = append(queries, fmt.Sprintf(`"%s" "%s"`, species, parkNameClean))
 	}
 
 	return queries
 }
 
+// minInt returns the minimum of two ints
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 // cleanSearchTerm prepares a term for search
 func cleanSearchTerm(s string) string {
 	s = strings.TrimSpace(s)
-	// Remove problematic characters but keep hyphens and apostrophes
-	s = strings.ReplaceAll(s, `"`, "")
-	s = strings.ReplaceAll(s, `\`, "")
+	s = strings.ReplaceAll(s, "_", " ")
 	return s
 }
 
-// fetchPublicationsImproved uses multiple search strategies
-func (s *Server) fetchPublicationsImproved(ctx context.Context, paID, name, country string) (int, error) {
-	// Get key species (CR and EN) for this park
-	keySpecies := []string{}
-	rows, err := s.DB.QueryContext(ctx, `
-		SELECT binomial FROM park_species 
-		WHERE park_id = ? AND status IN ('CR', 'EN')
-		ORDER BY CASE status WHEN 'CR' THEN 1 WHEN 'EN' THEN 2 END
-		LIMIT 10
-	`, paID)
-	if err == nil {
-		defer rows.Close()
-		for rows.Next() {
-			var binomial string
-			if rows.Scan(&binomial) == nil && binomial != "" {
-				keySpecies = append(keySpecies, binomial)
-			}
-		}
-	}
+// searchOpenAlex performs a single OpenAlex API search
+func (s *Server) searchOpenAlex(ctx context.Context, query string) ([]OpenAlexWork, error) {
+	baseURL := "https://api.openalex.org/works"
+	params := url.Values{}
+	params.Set("search", query)
+	params.Set("filter", "is_oa:true,type:article")
+	params.Set("sort", "publication_date:desc")
+	params.Set("per-page", "25")
+	params.Set("mailto", "research@5mp.globe")
 
-	search := ImprovedPublicationSearch{
-		ParkID:     paID,
-		ParkName:   name,
-		Country:    country,
-		KeySpecies: keySpecies,
-	}
+	reqURL := baseURL + "?" + params.Encode()
 
-	queries := s.buildSearchQueries(search)
-	
-	q := dbgen.New(s.DB)
-	totalCount := 0
-	seenIDs := make(map[string]bool)
-
-	// Get existing publication IDs to detect new ones
-	existingIDs := make(map[string]bool)
-	existingRows, _ := s.DB.QueryContext(ctx, `SELECT openalex_id FROM pa_publications WHERE pa_id = ?`, paID)
-	if existingRows != nil {
-		defer existingRows.Close()
-		for existingRows.Next() {
-			var id string
-			if existingRows.Scan(&id) == nil {
-				existingIDs[id] = true
-			}
-		}
-	}
-
-	newPublications := []struct {
-		Title  string
-		Year   int
-		DOI    string
-	}{}
-
-	for _, query := range queries {
-		if ctx.Err() != nil {
-			break
-		}
-
-		works, err := s.searchOpenAlex(ctx, query, name)
-		if err != nil {
-			slog.Warn("OpenAlex query failed", "query", query, "error", err)
-			continue
-		}
-
-		for _, work := range works {
-			// Extract OpenAlex ID
-			openalexID := work.ID
-			if idx := strings.LastIndex(work.ID, "/"); idx >= 0 {
-				openalexID = work.ID[idx+1:]
-			}
-
-			// Skip duplicates
-			if seenIDs[openalexID] {
-				continue
-			}
-			seenIDs[openalexID] = true
-
-			// Check if this is a new publication
-			isNew := !existingIDs[openalexID]
-
-			// Extract authors
-			authors := make([]string, 0, len(work.Authorships))
-			for _, a := range work.Authorships {
-				if a.Author.DisplayName != "" {
-					authors = append(authors, a.Author.DisplayName)
-				}
-			}
-			authorsJSON, _ := json.Marshal(authors)
-
-			// Get URL
-			workURL := work.PrimaryLocation.LandingPageURL
-			if workURL == "" && work.DOI != "" {
-				workURL = work.DOI
-			}
-
-			// Reconstruct abstract
-			abstract := reconstructAbstract(work.AbstractInvertedIndex)
-
-			err := q.InsertPublication(ctx, dbgen.InsertPublicationParams{
-				PaID:         paID,
-				OpenalexID:   openalexID,
-				Title:        work.Title,
-				Authors:      ptr(string(authorsJSON)),
-				Year:         ptr(int64(work.PublicationYear)),
-				Doi:          ptrIfNotEmpty(work.DOI),
-				Url:          ptrIfNotEmpty(workURL),
-				Abstract:     ptrIfNotEmpty(abstract),
-				CitedByCount: ptr(int64(work.CitedByCount)),
-			})
-			if err == nil {
-				totalCount++
-				if isNew && work.PublicationYear >= time.Now().Year()-1 {
-					newPublications = append(newPublications, struct {
-						Title string
-						Year  int
-						DOI   string
-					}{work.Title, work.PublicationYear, work.DOI})
-				}
-			}
-		}
-
-		// Rate limit between queries
-		time.Sleep(500 * time.Millisecond)
-	}
-
-	// Create notifications for new recent publications
-	for _, pub := range newPublications {
-		s.createPublicationNotification(ctx, paID, name, pub.Title, pub.Year, pub.DOI)
-	}
-
-	// Update sync status
-	q.UpsertPAPublicationSync(ctx, dbgen.UpsertPAPublicationSyncParams{
-		PaID:        paID,
-		ResultCount: int64(totalCount),
-	})
-
-	return totalCount, nil
-}
-
-// searchOpenAlex performs a single OpenAlex search and filters results
-func (s *Server) searchOpenAlex(ctx context.Context, query, parkName string) ([]OpenAlexWork, error) {
-	// Build API URL with conservation/ecology filter
-	apiURL := fmt.Sprintf(
-		"https://api.openalex.org/works?search=%s&filter=type:article&per_page=50&sort=publication_year:desc",
-		url.QueryEscape(query),
-	)
-
-	req, err := http.NewRequestWithContext(ctx, "GET", apiURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "5mp-conservation-monitoring/1.0 (https://five-megapixel-conservation.exe.xyz)")
 
-	resp, err := http.DefaultClient.Do(req)
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -244,126 +186,260 @@ func (s *Server) searchOpenAlex(ctx context.Context, query, parkName string) ([]
 		return nil, fmt.Errorf("OpenAlex API returned status %d", resp.StatusCode)
 	}
 
-	var data OpenAlexResponse
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+	var result struct {
+		Results []OpenAlexWork `json:"results"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
 
-	// Filter results - park name or species must appear in title/abstract
-	filtered := []OpenAlexWork{}
-	parkNameLower := strings.ToLower(parkName)
-	parkNameShort := strings.TrimSuffix(parkNameLower, " national park")
-	parkNameShort = strings.TrimSuffix(parkNameShort, " game reserve")
-	parkNameShort = strings.TrimSuffix(parkNameShort, " reserve")
-
-	for _, work := range data.Results {
-		titleLower := strings.ToLower(work.Title)
-		abstract := reconstructAbstract(work.AbstractInvertedIndex)
-		abstractLower := strings.ToLower(abstract)
-
-		// Check if park name appears
-		if strings.Contains(titleLower, parkNameLower) ||
-			strings.Contains(titleLower, parkNameShort) ||
-			strings.Contains(abstractLower, parkNameLower) ||
-			strings.Contains(abstractLower, parkNameShort) {
-			filtered = append(filtered, work)
-		}
-	}
-
-	return filtered, nil
+	return result.Results, nil
 }
 
-// createPublicationNotification creates a notification for a new publication
-func (s *Server) createPublicationNotification(ctx context.Context, paID, parkName, title string, year int, doi string) {
-	// Truncate title if too long
-	if len(title) > 200 {
-		title = title[:197] + "..."
+// loadGADMRegions loads GADM level 1 region names from JSON
+func (s *Server) loadGADMRegions() map[string][]string {
+	regions := make(map[string][]string)
+
+	// Load from data/gadm_africa.json
+	type GADMData struct {
+		Regions []struct {
+			Name        string `json:"name"`
+			CountryCode string `json:"country_code"`
+		} `json:"regions"`
 	}
 
-	message := fmt.Sprintf("New publication (%d): %s", year, title)
-	notifTitle := fmt.Sprintf("New Research: %s", parkName)
-	refURL := ""
-	if doi != "" {
-		refURL = doi
-	}
-	
-	_, err := s.DB.ExecContext(ctx, `
-		INSERT INTO notifications (park_id, notification_type, title, message, reference_url, created_at)
-		VALUES (?, 'new_publication', ?, ?, ?, CURRENT_TIMESTAMP)
-	`, paID, notifTitle, message, refURL)
-	
+	data, err := os.ReadFile("data/gadm_africa.json")
 	if err != nil {
-		slog.Warn("Failed to create publication notification", "park_id", paID, "error", err)
+		slog.Error("Failed to load GADM data", "error", err)
+		return regions
 	}
+
+	var gadm GADMData
+	if err := json.Unmarshal(data, &gadm); err != nil {
+		slog.Error("Failed to parse GADM data", "error", err)
+		return regions
+	}
+
+	for _, r := range gadm.Regions {
+		regions[r.CountryCode] = append(regions[r.CountryCode], r.Name)
+	}
+
+	return regions
 }
 
-// RunImprovedResearchSync runs the improved publication sync
-func (s *Server) RunImprovedResearchSync(ctx context.Context) {
+// getCountryNames returns multilingual country names for an ISO3 code
+func getCountryNames(iso3 string) []string {
+	if names, ok := MultilingualCountryNames[iso3]; ok {
+		return names
+	}
+	return []string{iso3}
+}
+
+// RunImprovedPublicationSync runs the enhanced publication search for all parks
+func (s *Server) RunImprovedPublicationSync(ctx context.Context) {
 	if s.AreaStore == nil {
 		return
 	}
 
-	q := dbgen.New(s.DB)
+	slog.Info("Starting improved publication sync with GADM regions and multilingual names")
 
-	// Get PAs that need syncing (never synced or stale > 7 days)
-	type paInfo struct {
-		ID      string
-		Name    string
-		Country string
-	}
-
-	var toSync []paInfo
-
-	// First: never synced
-	syncedPAs, _ := q.GetAllSyncedPAIDs(ctx)
-	syncedSet := make(map[string]bool)
-	for _, id := range syncedPAs {
-		syncedSet[id] = true
-	}
+	// Load GADM regions data
+	gadmRegions := s.loadGADMRegions()
 
 	for _, area := range s.AreaStore.Areas {
-		paID := area.WDPAID
-		if paID == "" {
-			paID = area.ID
-		}
-		if !syncedSet[paID] {
-			toSync = append(toSync, paInfo{ID: paID, Name: area.Name, Country: area.Country})
-			if len(toSync) >= 5 {
-				break
-			}
-		}
-	}
-
-	// If no new PAs, check for stale ones
-	if len(toSync) == 0 {
-		stale, _ := q.GetPAsNeedingPublicationSync(ctx, 5)
-		for _, id := range stale {
-			for _, area := range s.AreaStore.Areas {
-				paID := area.WDPAID
-				if paID == "" {
-					paID = area.ID
-				}
-				if paID == id {
-					toSync = append(toSync, paInfo{ID: paID, Name: area.Name, Country: area.Country})
-					break
-				}
-			}
-		}
-	}
-
-	for _, pa := range toSync {
-		if ctx.Err() != nil {
-			break
+		select {
+		case <-ctx.Done():
+			return
+		default:
 		}
 
-		count, err := s.fetchPublicationsImproved(ctx, pa.ID, pa.Name, pa.Country)
-		if err != nil {
-			slog.Error("failed to fetch publications", "pa_id", pa.ID, "name", pa.Name, "error", err)
+		// Extract country code from park ID (e.g., "TCD_Zakouma" -> "TCD")
+		parts := strings.Split(area.ID, "_")
+		if len(parts) == 0 {
 			continue
 		}
-		slog.Info("fetched publications (improved)", "pa_id", pa.ID, "name", pa.Name, "count", count)
+		countryISO := parts[0]
 
-		// Rate limit between parks
-		time.Sleep(2 * time.Second)
+		// Get species for this park
+		species, keySpecies := s.getSpeciesForPark(area.ID)
+
+		// Build search config with GADM regions and multilingual names
+		search := ImprovedPublicationSearch{
+			ParkID:       area.ID,
+			ParkName:     area.Name,
+			Country:      area.Country,
+			CountryISO:   countryISO,
+			CountryNames: getCountryNames(countryISO),
+			RegionNames:  gadmRegions[countryISO],
+			Species:      species,
+			KeySpecies:   keySpecies,
+		}
+
+		// Run all queries
+		allWorks := make(map[string]OpenAlexWork) // dedupe by ID
+		queries := s.buildSearchQueries(search)
+
+		for _, query := range queries {
+			works, err := s.searchOpenAlex(ctx, query)
+			if err != nil {
+				slog.Debug("OpenAlex search failed", "query", query, "error", err)
+				continue
+			}
+
+			for _, work := range works {
+				if _, exists := allWorks[work.ID]; !exists {
+					// Filter for relevance to conservation
+					if s.isRelevantToConservation(work, search) {
+						allWorks[work.ID] = work
+					}
+				}
+			}
+
+			// Rate limiting - be nice to OpenAlex
+			time.Sleep(100 * time.Millisecond)
+		}
+
+		// Store results and create notifications for new ones
+		for _, work := range allWorks {
+			isNew, err := s.storePublicationIfNew(ctx, area.ID, work)
+			if err != nil {
+				slog.Error("Failed to store publication", "error", err)
+				continue
+			}
+
+			if isNew {
+				s.createPublicationNotificationV2(ctx, area.ID, area.Name, work)
+			}
+		}
+
+		slog.Debug("Publication sync completed for park", "park", area.ID, "found", len(allWorks))
+	}
+
+	slog.Info("Improved publication sync completed")
+}
+
+// getSpeciesForPark returns species and key species (CR/EN) for a park
+func (s *Server) getSpeciesForPark(parkID string) ([]string, []string) {
+	var species []string
+	var keySpecies []string
+
+	rows, err := s.DB.Query(`
+		SELECT binomial, status FROM park_species 
+		WHERE park_id = ?
+		LIMIT 50
+	`, parkID)
+	if err != nil {
+		return species, keySpecies
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var binomial, status string
+		if err := rows.Scan(&binomial, &status); err == nil {
+			species = append(species, binomial)
+			if status == "CR" || status == "EN" {
+				keySpecies = append(keySpecies, binomial)
+			}
+		}
+	}
+
+	return species, keySpecies
+}
+
+// isRelevantToConservation checks if a work is relevant to conservation
+func (s *Server) isRelevantToConservation(work OpenAlexWork, search ImprovedPublicationSearch) bool {
+	titleLower := strings.ToLower(work.Title)
+
+	// Check for park name in title
+	parkNameLower := strings.ToLower(search.ParkName)
+	if strings.Contains(titleLower, parkNameLower) {
+		return true
+	}
+
+	// Check for conservation keywords
+	conservationKeywords := []string{
+		"conservation", "biodiversity", "wildlife", "protected area",
+		"ecology", "ecosystem", "habitat", "endangered", "species",
+		"national park", "game reserve", "forest", "savanna",
+	}
+	for _, kw := range conservationKeywords {
+		if strings.Contains(titleLower, kw) {
+			return true
+		}
+	}
+
+	// Check for species names in title
+	for _, sp := range search.Species {
+		if strings.Contains(titleLower, strings.ToLower(sp)) {
+			return true
+		}
+	}
+
+	// Check for country names
+	for _, country := range search.CountryNames {
+		if strings.Contains(titleLower, strings.ToLower(country)) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// storePublicationIfNew stores a publication and returns true if it's new
+func (s *Server) storePublicationIfNew(ctx context.Context, parkID string, work OpenAlexWork) (bool, error) {
+	// Check if exists by OpenAlex ID
+	var exists int
+	err := s.DB.QueryRowContext(ctx, "SELECT 1 FROM pa_publications WHERE openalex_id = ?", work.ID).Scan(&exists)
+	if err == nil {
+		return false, nil // Already exists
+	}
+
+	// Extract year from publication date
+	year := 0
+	if work.PublicationYear > 0 {
+		year = work.PublicationYear
+	}
+
+	// Store new publication
+	authors := ""
+	for i, auth := range work.Authorships {
+		if i > 0 {
+			authors += ", "
+		}
+		authors += auth.Author.DisplayName
+		if i >= 4 {
+			authors += " et al."
+			break
+		}
+	}
+
+	_, err = s.DB.ExecContext(ctx, `
+		INSERT INTO pa_publications (pa_id, openalex_id, title, authors, year, doi, url, abstract, source, cited_by_count, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+	`, parkID, work.ID, work.Title, authors, year, work.DOI, work.ID, "", "", work.CitedByCount)
+
+	return err == nil, err
+}
+
+// createPublicationNotificationV2 creates a notification for a new publication
+func (s *Server) createPublicationNotificationV2(ctx context.Context, parkID, parkName string, work OpenAlexWork) {
+	year := work.PublicationYear
+	if year == 0 {
+		year = time.Now().Year()
+	}
+
+	title := fmt.Sprintf("New Research: %s", parkName)
+	message := fmt.Sprintf("New publication (%d): %s", year, work.Title)
+	if len(message) > 200 {
+		message = message[:197] + "..."
+	}
+
+	_, err := s.DB.ExecContext(ctx, `
+		INSERT INTO notifications (park_id, notification_type, title, message, link, created_at)
+		VALUES (?, 'new_publication', ?, ?, ?, datetime('now'))
+	`, parkID, title, message, work.ID)
+
+	if err != nil {
+		slog.Error("Failed to create publication notification", "error", err)
 	}
 }

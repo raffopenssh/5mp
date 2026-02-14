@@ -177,6 +177,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/parks/{id}/species", s.HandleAPIParkSpecies)
 	mux.HandleFunc("GET /api/parks/{id}/settlement-intensity", s.HandleAPISettlementIntensity)
 	mux.HandleFunc("GET /api/parks/{id}/publications", s.HandleAPIPublications)
+	mux.HandleFunc("GET /api/parks/{id}/legal", s.HandleAPILegalDocuments)
 	mux.HandleFunc("GET /api/parks/{id}/checklist", s.HandleAPIGetParkChecklist)
 	mux.HandleFunc("GET /api/parks/{id}/stats", s.HandleAPIParkStats)
 	mux.HandleFunc("GET /api/parks/{id}/documents", s.HandleAPIParkDocuments)
