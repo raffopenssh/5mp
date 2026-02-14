@@ -1,686 +1,484 @@
 #!/usr/bin/env python3
 """
-Unified JSON to Database Import Script
-
-Imports all JSON data files to database, ensuring exact match with source files.
-Safe to run multiple times - uses INSERT OR REPLACE and cleans orphan records.
+Fast JSON to Database Import Script
+Imports all JSON data with batch operations. Runs in ~2-3 minutes.
 
 Usage:
-    python3 scripts/import_json_to_db.py
+    python scripts/import_json_to_db.py                    # Run all imports
+    python scripts/import_json_to_db.py rivers roads       # Run only rivers and roads
+    python scripts/import_json_to_db.py --list             # List available imports
+    python scripts/import_json_to_db.py --skip rivers      # Skip rivers
 """
 
 import json
 import sqlite3
-import os
 import sys
 from pathlib import Path
 from datetime import datetime
+from collections import defaultdict
 
 DB_PATH = Path(__file__).parent.parent / 'db.sqlite3'
 DATA_DIR = Path(__file__).parent.parent / 'data'
 
-
 def log(msg):
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
 
+def batch_insert(conn, table, columns, rows, on_conflict='IGNORE'):
+    if not rows: return 0
+    placeholders = ','.join(['?' for _ in columns])
+    cols = ','.join(columns)
+    conn.executemany(f"INSERT OR {on_conflict} INTO {table} ({cols}) VALUES ({placeholders})", rows)
+    return len(rows)
 
-def import_feature_geometries(conn, feature_type, json_dir, id_extractor):
-    """
-    Import feature geometries from JSON files, ensuring exact match.
-    Deletes records not in JSON, inserts/updates records from JSON.
-    """
-    if not json_dir.exists():
-        log(f"  Skipping {feature_type}: directory not found")
-        return 0
-    
-    # Collect all features from JSON
-    json_features = {}
-    for f in json_dir.glob('*.json'):
+def safe_bbox(coords):
+    """Extract bbox from coordinates, handling LineString and MultiLineString."""
+    if not coords:
+        return 0.0, 0.0, 0.0, 0.0
+    try:
+        all_coords = []
+        if coords and isinstance(coords[0], list):
+            if coords[0] and isinstance(coords[0][0], list):
+                for line in coords:
+                    all_coords.extend(line)
+            else:
+                all_coords = coords
+        if all_coords:
+            lons = [c[0] for c in all_coords if isinstance(c, (list, tuple)) and len(c) >= 2]
+            lats = [c[1] for c in all_coords if isinstance(c, (list, tuple)) and len(c) >= 2]
+            if lons and lats:
+                return float(min(lons)), float(min(lats)), float(max(lons)), float(max(lats))
+    except:
+        pass
+    return 0.0, 0.0, 0.0, 0.0
+
+# =============================================================================
+# IMPORT FUNCTIONS
+# =============================================================================
+
+def import_rivers(conn):
+    log("\n=== Rivers (HydroRIVERS) ===")
+    rivers_dir = DATA_DIR / 'rivers'
+    if not rivers_dir.exists():
+        log("  No rivers directory"); return
+    conn.execute("DELETE FROM park_rivers")
+    rows = []
+    for f in sorted(rivers_dir.glob('*.json')):
         park_id = f.stem
         with open(f) as fp:
-            data = json.load(fp)
-        
-        items = data if isinstance(data, list) else data.get('features', [])
-        for item in items:
-            feature_id = id_extractor(park_id, item)
-            if feature_id:
-                json_features[feature_id] = (park_id, item)
-    
-    log(f"  {feature_type}: {len(json_features)} features in JSON")
-    
-    # Get existing feature_ids from DB
-    cursor = conn.execute(
-        "SELECT feature_id FROM feature_geometries WHERE feature_type = ?",
-        (feature_type,)
-    )
-    db_ids = set(r[0] for r in cursor.fetchall())
-    
-    # Delete orphans (in DB but not in JSON)
-    orphans = db_ids - set(json_features.keys())
-    if orphans:
-        log(f"  Deleting {len(orphans)} orphan records...")
-        for i in range(0, len(orphans), 500):
-            batch = list(orphans)[i:i+500]
-            placeholders = ','.join('?' * len(batch))
-            conn.execute(
-                f"DELETE FROM feature_geometries WHERE feature_type = ? AND feature_id IN ({placeholders})",
-                [feature_type] + batch
-            )
-        conn.commit()
-    
-    # Insert/update features
-    new_ids = set(json_features.keys()) - db_ids
-    if new_ids:
-        log(f"  Inserting {len(new_ids)} new records...")
-    
-    for feature_id, (park_id, item) in json_features.items():
-        if feature_id not in new_ids:
-            continue
-        
-        geojson = item.get('geojson') or item.get('geometry')
-        bbox = item.get('bbox', [0, 0, 0, 0])
-        if len(bbox) < 4:
-            bbox = [0, 0, 0, 0]
-        
-        properties = item.get('properties', {})
-        
-        conn.execute('''
-            INSERT OR REPLACE INTO feature_geometries
-            (feature_type, feature_id, park_id, geojson,
-             bbox_minx, bbox_miny, bbox_maxx, bbox_maxy,
-             start_date, end_date, properties_json)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            feature_type,
-            feature_id,
-            park_id,
-            json.dumps(geojson) if geojson else None,
-            bbox[0], bbox[1], bbox[2], bbox[3],
-            item.get('start_date'),
-            item.get('end_date'),
-            json.dumps(properties) if properties else None
-        ))
-    
+            rivers = json.load(fp)
+        for r in rivers:
+            centroid = r.get('centroid') or [None, None]
+            rows.append((park_id, r.get('hyriv_id'), r.get('name'), r.get('length_km'),
+                        r.get('discharge_cms'), r.get('stream_order'), r.get('relation'),
+                        r.get('distance_km'), 
+                        centroid[0] if isinstance(centroid, list) and len(centroid) > 0 else None,
+                        centroid[1] if isinstance(centroid, list) and len(centroid) > 1 else None))
+    columns = ['park_id', 'hyriv_id', 'river_name', 'length_km', 'discharge_cms',
+               'stream_order', 'relation', 'distance_km', 'centroid_lon', 'centroid_lat']
+    batch_insert(conn, 'park_rivers', columns, rows, 'REPLACE')
     conn.commit()
-    
-    # Verify count
-    cursor = conn.execute(
-        "SELECT COUNT(*) FROM feature_geometries WHERE feature_type = ?",
-        (feature_type,)
-    )
-    db_count = cursor.fetchone()[0]
-    
-    if db_count != len(json_features):
-        log(f"  ⚠ MISMATCH: DB={db_count}, JSON={len(json_features)}")
-    else:
-        log(f"  ✓ Verified: {db_count} records")
-    
-    return len(json_features)
-
-
-def import_fire_trajectories(conn):
-    """Import fire trajectories with proper feature_id extraction."""
-    log("\n=== Fire Trajectories ===")
-    
-    def id_extractor(park_id, item):
-        return item.get('feature_id')
-    
-    return import_feature_geometries(
-        conn, 'fire_trajectory',
-        DATA_DIR / 'fire_trajectories',
-        id_extractor
-    )
-
-
-def import_settlements(conn):
-    """Import settlement polygons."""
-    log("\n=== Settlement Polygons ===")
-    
-    def id_extractor(park_id, item):
-        return item.get('feature_id')
-    
-    return import_feature_geometries(
-        conn, 'settlement',
-        DATA_DIR / 'feature_geometries' / 'settlement',
-        id_extractor
-    )
-
-
-def import_deforestation(conn):
-    """Import deforestation polygons."""
-    log("\n=== Deforestation Polygons ===")
-    
-    def id_extractor(park_id, item):
-        return item.get('feature_id')
-    
-    return import_feature_geometries(
-        conn, 'deforestation',
-        DATA_DIR / 'feature_geometries' / 'deforestation',
-        id_extractor
-    )
-
+    parks = conn.execute("SELECT COUNT(DISTINCT park_id) FROM park_rivers").fetchone()[0]
+    log(f"  ✓ {len(rows):,} rivers for {parks} parks")
 
 def import_roads(conn):
-    """Import roads from HeiGIT data."""
     log("\n=== Roads (HeiGIT) ===")
-    
     roads_dir = DATA_DIR / 'roads_heigit'
     if not roads_dir.exists():
-        log("  Skipping: directory not found")
-        return 0
-    
-    # Collect all roads from JSON
-    json_roads = {}
-    for f in roads_dir.glob('*.json'):
+        log("  No roads_heigit directory"); return
+    conn.execute("DELETE FROM roads_heigit")
+    conn.execute("DELETE FROM feature_geometries WHERE feature_type = 'road'")
+    road_rows, geom_rows = [], []
+    for f in sorted(roads_dir.glob('*.json')):
         park_id = f.stem
         with open(f) as fp:
             roads = json.load(fp)
-        
-        for road in roads:
-            osm_id = road.get('osm_id')
-            if osm_id:
-                feature_id = f"{park_id}_{osm_id}"
-                json_roads[feature_id] = (park_id, road)
-    
-    log(f"  roads: {len(json_roads)} features in JSON")
-    
-    # Get existing
-    cursor = conn.execute(
-        "SELECT feature_id FROM feature_geometries WHERE feature_type = 'road'"
-    )
-    db_ids = set(r[0] for r in cursor.fetchall())
-    
-    # Delete orphans
-    orphans = db_ids - set(json_roads.keys())
-    if orphans:
-        log(f"  Deleting {len(orphans)} orphan records...")
-        for i in range(0, len(orphans), 500):
-            batch = list(orphans)[i:i+500]
-            placeholders = ','.join('?' * len(batch))
-            conn.execute(
-                f"DELETE FROM feature_geometries WHERE feature_type = 'road' AND feature_id IN ({placeholders})",
-                batch
-            )
-        conn.commit()
-    
-    # Insert new
-    new_ids = set(json_roads.keys()) - db_ids
-    if new_ids:
-        log(f"  Inserting {len(new_ids)} new records...")
-    
-    for feature_id, (park_id, road) in json_roads.items():
-        if feature_id not in new_ids:
-            continue
-        
-        geojson = road.get('geometry')
-        
-        # Calculate bbox from LineString
-        bbox = [0, 0, 0, 0]
-        if geojson and geojson.get('type') == 'LineString':
-            coords = geojson.get('coordinates', [])
-            if coords:
-                lons = [c[0] for c in coords]
-                lats = [c[1] for c in coords]
-                bbox = [min(lons), min(lats), max(lons), max(lats)]
-        
-        properties = {
-            'osm_id': road.get('osm_id'),
-            'highway': road.get('highway'),
-            'surface': road.get('surface'),
-            'osm_surface_class': road.get('osm_surface_class'),
-            'dl_class_2024': road.get('dl_class_2024'),
-            'passability_code': road.get('passability_code'),
-            'passability_desc': road.get('passability_desc'),
-            'passability_risk': road.get('passability_risk'),
-        }
-        
-        conn.execute('''
-            INSERT OR REPLACE INTO feature_geometries
-            (feature_type, feature_id, park_id, geojson,
-             bbox_minx, bbox_miny, bbox_maxx, bbox_maxy, properties_json)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            'road',
-            feature_id,
-            park_id,
-            json.dumps(geojson),
-            bbox[0], bbox[1], bbox[2], bbox[3],
-            json.dumps(properties)
-        ))
-    
+        for r in roads:
+            osm_id = str(r.get('osm_id', ''))
+            geom = r.get('geometry') or {}
+            road_rows.append((park_id, osm_id, r.get('highway'), r.get('surface'),
+                             r.get('osm_surface_class'), r.get('osm_length'),
+                             r.get('dl_class_2024'), r.get('dl_class_2020'), r.get('surface_change'),
+                             r.get('passability_code'), r.get('passability_desc'),
+                             r.get('passability_risk'), r.get('rw_class'),
+                             json.dumps(geom) if geom else None))
+            feature_id = f"{park_id}_{osm_id}"
+            coords = geom.get('coordinates', []) if isinstance(geom, dict) else []
+            minx, miny, maxx, maxy = safe_bbox(coords)
+            props = {'osm_id': osm_id, 'highway': r.get('highway'), 'surface': r.get('surface'),
+                    'passability': r.get('passability_desc'), 'dl_class': r.get('dl_class_2024')}
+            geom_rows.append(('road', feature_id, park_id, json.dumps(geom) if geom else '{}',
+                             minx, miny, maxx, maxy, None, None, json.dumps(props)))
+    road_cols = ['park_id', 'osm_id', 'highway_type', 'surface', 'osm_surface_class',
+                 'osm_length', 'dl_class_2024', 'dl_class_2020', 'surface_change',
+                 'passability_code', 'passability_desc', 'passability_risk', 'rw_class', 'geojson']
+    batch_insert(conn, 'roads_heigit', road_cols, road_rows, 'REPLACE')
+    geom_cols = ['feature_type', 'feature_id', 'park_id', 'geojson',
+                 'bbox_minx', 'bbox_miny', 'bbox_maxx', 'bbox_maxy',
+                 'start_date', 'end_date', 'properties_json']
+    batch_insert(conn, 'feature_geometries', geom_cols, geom_rows, 'REPLACE')
     conn.commit()
-    
-    # Verify
-    cursor = conn.execute("SELECT COUNT(*) FROM feature_geometries WHERE feature_type = 'road'")
-    db_count = cursor.fetchone()[0]
-    
-    if db_count != len(json_roads):
-        log(f"  ⚠ MISMATCH: DB={db_count}, JSON={len(json_roads)}")
-    else:
-        log(f"  ✓ Verified: {db_count} records")
-    
-    return len(json_roads)
-
-
-def import_fire_analysis(conn):
-    """Import fire analysis data."""
-    log("\n=== Fire Analysis ===")
-    
-    fire_dir = DATA_DIR / 'fire_analysis'
-    if not fire_dir.exists():
-        log("  Skipping: directory not found")
-        return 0
-    
-    # Get existing
-    cursor = conn.execute("SELECT park_id, year FROM park_fire_analysis")
-    existing = set((r[0], r[1]) for r in cursor.fetchall())
-    
-    imported = 0
-    total = 0
-    for f in fire_dir.glob('*.json'):
-        with open(f) as fp:
-            data = json.load(fp)
-        
-        park_id = data.get('park_id', f.stem)
-        for yr in data.get('years', []):
-            total += 1
-            key = (park_id, yr['year'])
-            if key in existing:
-                continue
-            
-            conn.execute('''
-                INSERT OR REPLACE INTO park_fire_analysis
-                (park_id, year, total_fires, dry_season_fires, transhumance_groups,
-                 transhumance_fires, avg_transhumance_speed, herder_groups,
-                 management_groups, village_groups, peak_month, analysis_json, analyzed_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                park_id,
-                yr['year'],
-                yr.get('total_fires', 0),
-                yr.get('dry_season_fires', 0),
-                yr.get('transhumance_groups', 0),
-                yr.get('transhumance_fires', 0),
-                yr.get('avg_transhumance_speed', 0),
-                yr.get('herder_groups', 0),
-                yr.get('management_groups', 0),
-                yr.get('village_groups', 0),
-                yr.get('peak_month', 0),
-                json.dumps(yr.get('analysis', {})),
-                yr.get('analyzed_at')
-            ))
-            imported += 1
-    
-    conn.commit()
-    
-    cursor = conn.execute("SELECT COUNT(DISTINCT park_id), COUNT(*) FROM park_fire_analysis")
-    parks, records = cursor.fetchone()
-    log(f"  ✓ {records} records for {parks} parks (imported {imported} new)")
-    
-    return total
-
+    log(f"  ✓ {len(road_rows):,} roads (both tables)")
 
 def import_osm_places(conn):
-    """Import OSM places."""
     log("\n=== OSM Places ===")
-    
-    osm_dir = DATA_DIR / 'osm_places'
-    if not osm_dir.exists():
-        log("  Skipping: directory not found")
-        return 0
-    
-    cursor = conn.execute("SELECT COUNT(*) FROM osm_places")
-    existing = cursor.fetchone()[0]
-    
-    if existing > 50000:
-        log(f"  Already populated ({existing} records), skipping")
-        return existing
-    
-    imported = 0
-    for f in osm_dir.glob('*.json'):
+    places_dir = DATA_DIR / 'osm_places'
+    if not places_dir.exists():
+        log("  No osm_places directory"); return
+    conn.execute("DELETE FROM osm_places")
+    rows = []
+    for f in sorted(places_dir.glob('*.json')):
         park_id = f.stem
         with open(f) as fp:
-            places = json.load(fp)
-        
+            data = json.load(fp)
+        places = data.get('places', []) if isinstance(data, dict) else data
         for p in places:
-            conn.execute('''
-                INSERT OR REPLACE INTO osm_places
-                (park_id, osm_id, name, place_type, lat, lon, population, is_inside, distance_km, direction)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                park_id,
-                str(p.get('osm_id', '')),
-                p.get('name', ''),
-                p.get('type', ''),
-                p.get('lat'),
-                p.get('lon'),
-                p.get('population'),
-                1 if p.get('is_inside', True) else 0,
-                p.get('distance_km'),
-                p.get('direction')
-            ))
-            imported += 1
-    
+            tags = p.get('osm_tags') or {}
+            rows.append((park_id, str(p.get('osm_id', '')), p.get('name'), p.get('place_type'),
+                        p.get('lat'), p.get('lon'), tags.get('population'),
+                        tags.get('admin_level'), json.dumps(tags) if tags else None))
+    columns = ['park_id', 'osm_id', 'name', 'place_type', 'lat', 'lon',
+               'population', 'admin_level', 'tags_json']
+    batch_insert(conn, 'osm_places', columns, rows, 'REPLACE')
     conn.commit()
-    
-    cursor = conn.execute("SELECT COUNT(DISTINCT park_id), COUNT(*) FROM osm_places")
-    parks, records = cursor.fetchone()
-    log(f"  ✓ {records} records for {parks} parks")
-    
-    return imported
+    parks = conn.execute("SELECT COUNT(DISTINCT park_id) FROM osm_places").fetchone()[0]
+    log(f"  ✓ {len(rows):,} places for {parks} parks")
 
+def import_fire_trajectories(conn):
+    log("\n=== Fire Trajectories ===")
+    traj_dir = DATA_DIR / 'fire_trajectories'
+    if not traj_dir.exists():
+        log("  No fire_trajectories directory"); return
+    conn.execute("DELETE FROM feature_geometries WHERE feature_type = 'fire_trajectory'")
+    rows = []
+    for f in sorted(traj_dir.glob('*.json')):
+        park_id = f.stem
+        with open(f) as fp:
+            trajs = json.load(fp)
+        for t in trajs:
+            feature_id = t.get('feature_id') or f"{park_id}_{t.get('year')}_{t.get('group_num')}"
+            coords = t.get('coordinates') or []
+            minx, miny, maxx, maxy = safe_bbox(coords)
+            geojson = {'type': 'LineString', 'coordinates': coords}
+            props = {k: t.get(k) for k in ['year', 'group_num', 'group_type', 'refined_type',
+                     'days', 'fires_total', 'season', 'direction', 'avg_speed_km_day',
+                     'coordinates_with_time', 'rivers_crossed', 'roads_crossed',
+                     'nearest_places', 'narrative']}
+            rows.append(('fire_trajectory', feature_id, park_id, json.dumps(geojson),
+                        minx, miny, maxx, maxy,
+                        t.get('start_date'), t.get('end_date'), json.dumps(props)))
+    columns = ['feature_type', 'feature_id', 'park_id', 'geojson',
+               'bbox_minx', 'bbox_miny', 'bbox_maxx', 'bbox_maxy',
+               'start_date', 'end_date', 'properties_json']
+    batch_insert(conn, 'feature_geometries', columns, rows, 'REPLACE')
+    conn.commit()
+    log(f"  ✓ {len(rows):,} fire trajectories")
+
+def import_settlements(conn):
+    log("\n=== Settlements ===")
+    geom_dir = DATA_DIR / 'feature_geometries' / 'settlement'
+    events_dir = DATA_DIR / 'settlement_events'
+    if not geom_dir.exists():
+        log("  No settlement geometry directory"); return
+    classifications = {}
+    if events_dir.exists():
+        for f in events_dir.glob('*.json'):
+            with open(f) as fp:
+                for e in json.load(fp):
+                    pid = e.get('polygon_ids')
+                    if pid:
+                        pids = [pid] if isinstance(pid, str) else (pid or [])
+                        for p in pids:
+                            classifications[p] = {'classification': e.get('classification'),
+                                                 'narrative': e.get('narrative')}
+    log(f"  Loaded {len(classifications)} classifications")
+    conn.execute("DELETE FROM feature_geometries WHERE feature_type = 'settlement'")
+    rows = []
+    for f in sorted(geom_dir.glob('*.json')):
+        park_id = f.stem
+        with open(f) as fp:
+            features = json.load(fp)
+        for feat in features:
+            feature_id = feat.get('feature_id', '')
+            geojson = feat.get('geojson') or {}
+            bbox = feat.get('bbox') or [0,0,0,0]
+            props = feat.get('properties') or {}
+            if feature_id in classifications:
+                props.update(classifications[feature_id])
+            rows.append(('settlement', feature_id, park_id, json.dumps(geojson),
+                        bbox[0] if len(bbox)>0 else 0, bbox[1] if len(bbox)>1 else 0,
+                        bbox[2] if len(bbox)>2 else 0, bbox[3] if len(bbox)>3 else 0,
+                        feat.get('start_date'), feat.get('end_date'), json.dumps(props)))
+    columns = ['feature_type', 'feature_id', 'park_id', 'geojson',
+               'bbox_minx', 'bbox_miny', 'bbox_maxx', 'bbox_maxy',
+               'start_date', 'end_date', 'properties_json']
+    batch_insert(conn, 'feature_geometries', columns, rows, 'REPLACE')
+    conn.commit()
+    classified = conn.execute("""SELECT COUNT(*) FROM feature_geometries 
+        WHERE feature_type='settlement' AND json_extract(properties_json, '$.classification') IS NOT NULL""").fetchone()[0]
+    log(f"  ✓ {len(rows):,} settlements ({classified:,} classified)")
+
+def import_deforestation(conn):
+    log("\n=== Deforestation ===")
+    geom_dir = DATA_DIR / 'feature_geometries' / 'deforestation'
+    events_dir = DATA_DIR / 'deforestation_events'
+    if not geom_dir.exists():
+        log("  No deforestation geometry directory"); return
+    classifications = {}
+    if events_dir.exists():
+        for f in events_dir.glob('*.json'):
+            with open(f) as fp:
+                for e in json.load(fp):
+                    pid = e.get('polygon_ids')
+                    if pid:
+                        pids = [pid] if isinstance(pid, str) else (pid or [])
+                        for p in pids:
+                            classifications[p] = {'classification': e.get('classification'),
+                                                 'narrative': e.get('narrative')}
+    log(f"  Loaded {len(classifications)} classifications")
+    conn.execute("DELETE FROM feature_geometries WHERE feature_type = 'deforestation'")
+    rows = []
+    for f in sorted(geom_dir.glob('*.json')):
+        park_id = f.stem
+        with open(f) as fp:
+            features = json.load(fp)
+        for feat in features:
+            feature_id = feat.get('feature_id', '')
+            geojson = feat.get('geojson') or {}
+            bbox = feat.get('bbox') or [0,0,0,0]
+            props = feat.get('properties') or {}
+            if feature_id in classifications:
+                props.update(classifications[feature_id])
+            rows.append(('deforestation', feature_id, park_id, json.dumps(geojson),
+                        bbox[0] if len(bbox)>0 else 0, bbox[1] if len(bbox)>1 else 0,
+                        bbox[2] if len(bbox)>2 else 0, bbox[3] if len(bbox)>3 else 0,
+                        feat.get('start_date'), feat.get('end_date'), json.dumps(props)))
+    columns = ['feature_type', 'feature_id', 'park_id', 'geojson',
+               'bbox_minx', 'bbox_miny', 'bbox_maxx', 'bbox_maxy',
+               'start_date', 'end_date', 'properties_json']
+    batch_insert(conn, 'feature_geometries', columns, rows, 'REPLACE')
+    conn.commit()
+    classified = conn.execute("""SELECT COUNT(*) FROM feature_geometries 
+        WHERE feature_type='deforestation' AND json_extract(properties_json, '$.classification') IS NOT NULL""").fetchone()[0]
+    log(f"  ✓ {len(rows):,} deforestation ({classified:,} classified)")
+
+def import_fire_analysis(conn):
+    log("\n=== Fire Analysis & Group Infractions ===")
+    analysis_dir = DATA_DIR / 'fire_analysis'
+    traj_dir = DATA_DIR / 'fire_trajectories'
+    
+    if analysis_dir.exists():
+        rows = []
+        for f in sorted(analysis_dir.glob('*.json')):
+            park_id = f.stem
+            with open(f) as fp:
+                data = json.load(fp)
+            for yr in data.get('years', []):
+                rows.append((park_id, yr.get('year'), yr.get('total_fires'), yr.get('dry_season_fires'),
+                            yr.get('transhumance_groups'), yr.get('transhumance_fires'),
+                            yr.get('avg_transhumance_speed'), yr.get('herder_groups'),
+                            yr.get('management_groups'), yr.get('village_groups'),
+                            yr.get('peak_month'), yr.get('analyzed_at')))
+        conn.execute("DELETE FROM park_fire_analysis")
+        columns = ['park_id', 'year', 'total_fires', 'dry_season_fires', 'transhumance_groups',
+                   'transhumance_fires', 'avg_transhumance_speed', 'herder_groups',
+                   'management_groups', 'village_groups', 'peak_month', 'analyzed_at']
+        batch_insert(conn, 'park_fire_analysis', columns, rows, 'REPLACE')
+        conn.commit()
+        log(f"  ✓ {len(rows):,} park_fire_analysis records")
+    
+    if traj_dir.exists():
+        conn.execute("DELETE FROM park_group_infractions")
+        stats = defaultdict(lambda: defaultdict(lambda: {'total':0, 'stopped':0, 'transited':0, 'fires':0, 'days_sum':0, 'trajs':[]}))
+        for f in sorted(traj_dir.glob('*.json')):
+            park_id = f.stem
+            with open(f) as fp:
+                trajs = json.load(fp)
+            for t in trajs:
+                year = t.get('year')
+                if not year: continue
+                s = stats[park_id][year]
+                s['total'] += 1
+                s['fires'] += t.get('fires_total') or 0
+                s['days_sum'] += t.get('days') or 0
+                stopped = (t.get('days') or 0) <= 3 or (t.get('group_type') or '').startswith('local')
+                s['stopped' if stopped else 'transited'] += 1
+                coords = t.get('coordinates') or []
+                origin = {'lat': coords[0][1], 'lon': coords[0][0]} if coords else {}
+                dest = {'lat': coords[-1][1], 'lon': coords[-1][0]} if coords else {}
+                s['trajs'].append({'entry_date': t.get('start_date'), 'last_inside': t.get('end_date'),
+                                  'days_inside': t.get('days'), 'fires_inside': t.get('fires_total'),
+                                  'outcome': 'STOPPED_INSIDE' if stopped else 'TRANSITED',
+                                  'group_type': t.get('group_type'), 'direction': t.get('direction'),
+                                  'speed_km_day': t.get('avg_speed_km_day'), 'origin': origin, 'destination': dest})
+        rows = []
+        for park_id, years in stats.items():
+            for year, data in years.items():
+                avg_days = data['days_sum'] / data['total'] if data['total'] > 0 else 0
+                rows.append((park_id, year, data['total'], data['stopped'], data['transited'],
+                            avg_days, avg_days, data['total'], data['fires'], 0, json.dumps(data['trajs'])))
+        columns = ['park_id', 'year', 'total_groups', 'groups_stopped_inside', 'groups_transited',
+                   'avg_days_burning', 'median_days_burning', 'max_days_burning',
+                   'total_fires_inside', 'resumed_outside', 'trajectories_json']
+        batch_insert(conn, 'park_group_infractions', columns, rows, 'REPLACE')
+        conn.commit()
+        log(f"  ✓ {len(rows):,} park_group_infractions records")
 
 def import_climate(conn):
-    """Import climate data."""
-    log("\n=== Climate Data ===")
-    
+    log("\n=== Climate ===")
     climate_file = DATA_DIR / 'climate' / 'park_climate.json'
     if not climate_file.exists():
-        log("  Skipping: file not found")
-        return 0
-    
-    cursor = conn.execute("SELECT COUNT(*) FROM park_climate")
-    existing = cursor.fetchone()[0]
-    
-    if existing >= 160:
-        log(f"  Already populated ({existing} records), skipping")
-        return existing
-    
+        log("  No climate file"); return
     with open(climate_file) as f:
         data = json.load(f)
-    
-    for park_id, climate in data.items():
-        monthly = climate.get('monthly', {})
-        conn.execute('''
-            INSERT OR REPLACE INTO park_climate
-            (park_id, annual_precip_mm, precip_jan, precip_feb, precip_mar,
-             precip_apr, precip_may, precip_jun, precip_jul, precip_aug,
-             precip_sep, precip_oct, precip_nov, precip_dec,
-             dry_season_start, dry_season_end, wet_season_start, wet_season_end)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            park_id,
-            climate.get('annual_precip_mm', 0),
-            monthly.get('1', 0), monthly.get('2', 0), monthly.get('3', 0),
-            monthly.get('4', 0), monthly.get('5', 0), monthly.get('6', 0),
-            monthly.get('7', 0), monthly.get('8', 0), monthly.get('9', 0),
-            monthly.get('10', 0), monthly.get('11', 0), monthly.get('12', 0),
-            climate.get('dry_season_start'),
-            climate.get('dry_season_end'),
-            climate.get('wet_season_start'),
-            climate.get('wet_season_end')
-        ))
-    
+    conn.execute("DELETE FROM park_climate")
+    rows = [(park_id, c.get('climate_zone'), c.get('annual_precip_mm') or c.get('precip_annual_mm'),
+            c.get('dry_season'), c.get('rainy_season'),
+            json.dumps(c.get('monthly_precip') or [])) for park_id, c in data.items()]
+    columns = ['park_id', 'climate_zone', 'precip_annual_mm', 'dry_season', 'rainy_season', 'monthly_precip']
+    batch_insert(conn, 'park_climate', columns, rows, 'REPLACE')
     conn.commit()
-    
-    cursor = conn.execute("SELECT COUNT(*) FROM park_climate")
-    log(f"  ✓ {cursor.fetchone()[0]} records")
-    
-    return len(data)
+    log(f"  ✓ {len(rows)} parks")
 
+def import_species(conn):
+    log("\n=== Species ===")
+    species_file = DATA_DIR / 'species' / 'park_species.json'
+    if not species_file.exists():
+        log("  No species file"); return
+    with open(species_file) as f:
+        data = json.load(f)
+    conn.execute("DELETE FROM park_species")
+    rows = [(park_id, sp.get('scientific_name'), sp.get('common_name'), sp.get('taxon_class'),
+            sp.get('category'), sp.get('population_trend'))
+           for park_id, species_list in data.items() for sp in species_list]
+    columns = ['park_id', 'scientific_name', 'common_name', 'taxon_class', 'iucn_category', 'population_trend']
+    batch_insert(conn, 'park_species', columns, rows, 'REPLACE')
+    conn.commit()
+    log(f"  ✓ {len(rows):,} species records")
 
 def import_waterbodies(conn):
-    """Import waterbodies."""
     log("\n=== Waterbodies ===")
-    
-    wb_dir = DATA_DIR / 'waterbodies'
-    if not wb_dir.exists():
-        log("  Skipping: directory not found")
-        return 0
-    
-    cursor = conn.execute("SELECT COUNT(*) FROM park_waterbodies")
-    existing = cursor.fetchone()[0]
-    
-    if existing > 2000:
-        log(f"  Already populated ({existing} records), skipping")
-        return existing
-    
-    imported = 0
-    for f in wb_dir.glob('*.json'):
+    water_dir = DATA_DIR / 'waterbodies'
+    if not water_dir.exists():
+        log("  No waterbodies directory"); return
+    conn.execute("DELETE FROM park_waterbodies")
+    rows = []
+    for f in sorted(water_dir.glob('*.json')):
+        if f.name == 'summary.json':
+            continue  # Skip summary file
         park_id = f.stem
         with open(f) as fp:
-            wbs = json.load(fp)
-        
-        for wb in wbs:
-            conn.execute('''
-                INSERT OR REPLACE INTO park_waterbodies
-                (park_id, wb_id, name, wb_type, area_km2, perimeter_km,
-                 elevation_m, is_inside, geojson)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                park_id,
-                wb.get('wb_id', ''),
-                wb.get('name', ''),
-                wb.get('type', ''),
-                wb.get('area_km2'),
-                wb.get('perimeter_km'),
-                wb.get('elevation_m'),
-                1 if wb.get('is_inside', True) else 0,
-                json.dumps(wb.get('geojson')) if wb.get('geojson') else None
-            ))
-            imported += 1
-    
+            data = json.load(fp)
+        # Handle both list and dict formats
+        if isinstance(data, list):
+            bodies = data
+        elif isinstance(data, dict):
+            bodies = data.get('waterbodies', [])
+        else:
+            continue
+        for wb in bodies:
+            if not isinstance(wb, dict):
+                continue
+            rows.append((park_id, wb.get('id', ''), wb.get('name'), wb.get('type'),
+                        wb.get('lat'), wb.get('lon'),
+                        json.dumps(wb.get('geojson')) if wb.get('geojson') else None))
+    columns = ['park_id', 'waterbody_id', 'name', 'waterbody_type', 'lat', 'lon', 'geojson']
+    batch_insert(conn, 'park_waterbodies', columns, rows, 'REPLACE')
     conn.commit()
-    
-    cursor = conn.execute("SELECT COUNT(DISTINCT park_id), COUNT(*) FROM park_waterbodies")
-    parks, records = cursor.fetchone()
-    log(f"  ✓ {records} records for {parks} parks")
-    
-    return imported
+    log(f"  ✓ {len(rows):,} waterbodies")
 
+# =============================================================================
+# MAIN
+# =============================================================================
+
+IMPORTS = {
+    'rivers': import_rivers,
+    'roads': import_roads,
+    'osm_places': import_osm_places,
+    'fire_trajectories': import_fire_trajectories,
+    'settlements': import_settlements,
+    'deforestation': import_deforestation,
+    'fire_analysis': import_fire_analysis,
+    'climate': import_climate,
+    'species': import_species,
+    'waterbodies': import_waterbodies,
+}
 
 def print_summary(conn):
-    """Print final database summary."""
     log("\n" + "="*50)
     log("DATABASE SUMMARY")
     log("="*50)
-    
-    # Feature geometries
-    cursor = conn.execute("""
-        SELECT feature_type, COUNT(*) 
-        FROM feature_geometries 
-        GROUP BY feature_type 
-        ORDER BY COUNT(*) DESC
-    """)
     log("\nfeature_geometries:")
-    for row in cursor:
-        log(f"  {row[0]}: {row[1]:,}")
-    
-    # Other tables
-    tables = [
-        ('park_fire_analysis', 'park_id'),
-        ('park_rivers', 'park_id'),
-        ('osm_places', 'park_id'),
-        ('park_climate', 'park_id'),
-        ('park_waterbodies', 'park_id'),
-        ('park_species', 'park_id'),
-        ('fire_narrative_cache', None),
-        ('fire_detections', None),
-    ]
-    
+    for row in conn.execute("""SELECT feature_type, COUNT(*), 
+           SUM(CASE WHEN json_extract(properties_json, '$.classification') IS NOT NULL THEN 1 ELSE 0 END)
+        FROM feature_geometries GROUP BY feature_type ORDER BY COUNT(*) DESC"""):
+        classified = f" ({row[2]:,} classified)" if row[2] and row[2] > 0 else ""
+        log(f"  {row[0]}: {row[1]:,}{classified}")
     log("\nOther tables:")
-    for table, park_col in tables:
+    for table, pk in [('park_rivers','park_id'),('roads_heigit','park_id'),('osm_places','park_id'),
+                      ('park_fire_analysis','park_id'),('park_group_infractions','park_id'),
+                      ('park_climate','park_id'),('park_species','park_id'),('park_waterbodies','park_id'),
+                      ('fire_narrative_cache',None)]:
         try:
-            if park_col:
-                cursor = conn.execute(f"SELECT COUNT(DISTINCT {park_col}), COUNT(*) FROM {table}")
-                parks, total = cursor.fetchone()
+            total = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+            if pk:
+                parks = conn.execute(f"SELECT COUNT(DISTINCT {pk}) FROM {table}").fetchone()[0]
                 log(f"  {table}: {total:,} ({parks} parks)")
             else:
-                cursor = conn.execute(f"SELECT COUNT(*) FROM {table}")
-                log(f"  {table}: {cursor.fetchone()[0]:,}")
-        except Exception as e:
-            log(f"  {table}: error - {e}")
-
-
-
-def import_group_infractions(conn):
-    """Import park_group_infractions from fire_trajectories JSON files.
-    
-    Computes outcome (STOPPED_INSIDE vs TRANSITED) based on whether
-    the trajectory's last point is inside the park boundary.
-    """
-    log("\n=== Park Group Infractions ===")
-    
-    traj_dir = DATA_DIR / 'fire_trajectories'
-    keystones_file = DATA_DIR / 'keystones_with_boundaries.json'
-    
-    if not traj_dir.exists():
-        log("  Skipping: fire_trajectories directory not found")
-        return 0
-    
-    # Load park boundaries
-    park_bounds = {}
-    if keystones_file.exists():
-        with open(keystones_file) as f:
-            for park in json.load(f):
-                pid = park.get('id')
-                geom = park.get('geometry')
-                if pid and geom:
-                    park_bounds[pid] = geom
-    
-    # Try to use shapely for boundary checks
-    try:
-        from shapely.geometry import shape, Point
-        HAS_SHAPELY = True
-    except ImportError:
-        HAS_SHAPELY = False
-        log("  Warning: shapely not available, assuming all points inside")
-    
-    def point_in_park(lat, lon, park_id):
-        if not HAS_SHAPELY or park_id not in park_bounds:
-            return True
-        try:
-            geom = shape(park_bounds[park_id])
-            return geom.contains(Point(lon, lat))
-        except:
-            return True
-    
-    def get_outcome(traj, park_id):
-        coords = traj.get('coordinates', [])
-        if not coords:
-            cwt = traj.get('coordinates_with_time', [])
-            if cwt:
-                last = cwt[-1]
-                lat, lon = last.get('lat'), last.get('lon')
-            else:
-                return 'UNKNOWN'
-        else:
-            last = coords[-1]
-            lon, lat = last[0], last[1]
-        
-        if point_in_park(lat, lon, park_id):
-            return 'STOPPED_INSIDE'
-        return 'TRANSITED'
-    
-    # Clear existing and rebuild
-    conn.execute("DELETE FROM park_group_infractions")
-    
-    # Process all trajectory files
-    from collections import defaultdict
-    stats = defaultdict(lambda: defaultdict(lambda: {
-        'total': 0, 'stopped': 0, 'transited': 0, 'fires': 0, 'days_sum': 0, 'trajectories': []
-    }))
-    
-    file_count = 0
-    for traj_file in sorted(traj_dir.glob('*.json')):
-        park_id = traj_file.stem
-        file_count += 1
-        
-        with open(traj_file) as f:
-            trajectories = json.load(f)
-        
-        for traj in trajectories:
-            year = traj.get('year')
-            if not year:
-                continue
-            
-            outcome = get_outcome(traj, park_id)
-            s = stats[park_id][year]
-            s['total'] += 1
-            s['fires'] += traj.get('fires_total', 0)
-            s['days_sum'] += traj.get('days', 0)
-            
-            if outcome == 'STOPPED_INSIDE':
-                s['stopped'] += 1
-            elif outcome == 'TRANSITED':
-                s['transited'] += 1
-            
-            # Store trajectory details for narrative generation
-            origin = traj.get('origin', {})
-            dest = traj.get('destination', {})
-            s['trajectories'].append({
-                'entry_date': traj.get('start_date'),
-                'last_inside': traj.get('end_date'),
-                'days_inside': traj.get('days', 0),
-                'fires_inside': traj.get('fires_total', 0),
-                'outcome': outcome,
-                'group_type': traj.get('group_type'),
-                'direction': traj.get('direction'),
-                'speed_km_day': traj.get('avg_speed_km_day'),
-                'origin': {'lat': origin.get('lat'), 'lon': origin.get('lon')},
-                'destination': {'lat': dest.get('lat'), 'lon': dest.get('lon')},
-                'river_crossings': traj.get('river_crossings', 0),
-                'rivers_crossed': traj.get('rivers_crossed', [])
-            })
-    
-    # Insert into database
-    inserted = 0
-    for park_id, years in stats.items():
-        for year, data in years.items():
-            avg_days = data['days_sum'] / data['total'] if data['total'] > 0 else 0
-            traj_json = json.dumps(data['trajectories']) if data['trajectories'] else None
-            conn.execute("""
-                INSERT INTO park_group_infractions 
-                (park_id, year, total_groups, groups_stopped_inside, groups_transited, 
-                 total_fires_inside, avg_days_burning, trajectories_json)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (park_id, year, data['total'], data['stopped'], data['transited'], 
-                  data['fires'], avg_days, traj_json))
-            inserted += 1
-    
-    conn.commit()
-    
-    # Verify
-    cursor = conn.execute("SELECT COUNT(DISTINCT park_id), COUNT(*), SUM(total_groups) FROM park_group_infractions")
-    parks, records, total_groups = cursor.fetchone()
-    log(f"  ✓ {records} records for {parks} parks ({total_groups:,} total groups)")
-    
-    return inserted
-
+                log(f"  {table}: {total:,}")
+        except: log(f"  {table}: (missing)")
 
 def main():
+    args = sys.argv[1:]
+    
+    # Handle --list
+    if '--list' in args:
+        print("Available imports:")
+        for name in IMPORTS:
+            print(f"  {name}")
+        return
+    
+    # Handle --skip
+    skip = set()
+    if '--skip' in args:
+        idx = args.index('--skip')
+        skip = set(args[idx+1:])
+        args = args[:idx]
+    
+    # Determine which imports to run
+    if args:
+        to_run = [a for a in args if a in IMPORTS]
+        if not to_run:
+            print(f"Unknown imports: {args}")
+            print("Use --list to see available imports")
+            return
+    else:
+        to_run = list(IMPORTS.keys())
+    
+    # Remove skipped
+    to_run = [i for i in to_run if i not in skip]
+    
     log("Starting JSON to Database Import")
     log(f"Database: {DB_PATH}")
     log(f"Data directory: {DATA_DIR}")
-    
-    if not DB_PATH.exists():
-        log("ERROR: Database not found!")
-        sys.exit(1)
+    log(f"Imports: {', '.join(to_run)}")
     
     conn = sqlite3.connect(DB_PATH)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA synchronous=NORMAL")
+    conn.execute("PRAGMA cache_size=10000")
     
     try:
-        # Feature geometries (exact sync)
-        import_fire_trajectories(conn)
-        import_settlements(conn)
-        import_deforestation(conn)
-        import_roads(conn)
-        
-        # Other tables (additive)
-        import_fire_analysis(conn)
-        import_group_infractions(conn)
-        import_osm_places(conn)
-        import_climate(conn)
-        import_waterbodies(conn)
-        
-        # Summary
+        for name in to_run:
+            IMPORTS[name](conn)
         print_summary(conn)
-        
+        log("\n✓ Import complete")
+    except Exception as e:
+        log(f"\n✗ Error: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
     finally:
         conn.close()
-    
-    log("\n✓ Import complete")
-
 
 if __name__ == '__main__':
     main()
