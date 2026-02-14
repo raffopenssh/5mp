@@ -102,7 +102,7 @@ class NarrativeGenerator:
                     'direction': t.get('direction', {}).get('direction'),
                     'distance_km': t.get('total_distance_km'),
                     'avg_speed': t.get('avg_speed_km_day'),
-                    'rivers_crossed': t.get('rivers_crossed', []),
+                    'rivers_crossed': [r.get('river') for r in t.get('river_crossings', [])],
                     'origin_place': t.get('origin', {}).get('nearest_place', {}).get('name') if t.get('origin', {}).get('nearest_place') else None,
                     'origin_river': t.get('origin', {}).get('nearest_river', {}).get('name') if t.get('origin', {}).get('nearest_river') else None,
                     'narrative': narrative,
@@ -252,31 +252,60 @@ class NarrativeGenerator:
         origin = traj.get('origin', {})
         origin_place = origin.get('nearest_place')
         origin_river = origin.get('nearest_river')
+        origin_road = origin.get('nearest_road')
         origin_settlement = origin.get('nearest_settlement')
         
-        if origin_place:
-            parts.append(f"Fire group originated {origin_place['distance_km']}km from {origin_place['name']} ({origin_place['type']})")
-        elif origin_river:
-            parts.append(f"Fire group originated {origin_river['distance_km']}km from {origin_river['name']}")
-        else:
-            parts.append(f"Fire group originated at ({traj['coordinates'][0][1]:.2f}°, {traj['coordinates'][0][0]:.2f}°)")
+        dest = traj.get('destination', {})
+        dest_place = dest.get('nearest_place')
+        dest_river = dest.get('nearest_river')
         
+        # Origin description
+        if origin_place:
+            parts.append(f"Fire group originated {origin_place.get('distance_km', 0):.1f}km from {origin_place.get('name')} ({origin_place.get('type')})")
+        elif origin_river:
+            parts.append(f"Fire group originated {origin_river.get('distance_km', 0):.1f}km from {origin_river.get('name')} river")
+        else:
+            coords = traj.get('coordinates', [[0,0]])
+            parts.append(f"Fire group originated at ({coords[0][1]:.2f}°, {coords[0][0]:.2f}°)")
+        
+        # Nearby road at origin
+        if origin_road and origin_road.get('distance_km', 999) < 10:
+            road_info = f"{origin_road.get('surface', 'unknown')} road"
+            if origin_road.get('name'):
+                road_info = f"{origin_road.get('name')} ({road_info})"
+            parts.append(f"near {road_info}")
+        
+        # Direction and date
         direction = traj.get('direction', {})
         if direction:
             parts.append(f"moving {direction.get('direction', 'unknown')} (bearing {direction.get('bearing', 0):.0f}°)")
         
-        parts.append(f"on {traj['start_date']}")
+        parts.append(f"on {traj.get('start_date', 'unknown date')}")
         if traj.get('season'):
-            parts.append(f"({traj['season']} season)")
+            parts.append(f"({traj.get('season')} season)")
         
-        parts.append(f"Burned for {traj['days']} days ({traj['fires_total']} fire detections).")
+        # Duration and fires
+        parts.append(f"Burned for {traj.get('days', 0)} days ({traj.get('fires_total', 0)} fire detections).")
         
-        rivers = traj.get('rivers_crossed', [])
-        if rivers:
-            parts.append(f"Crossed {', '.join(rivers)}.")
+        # River crossings (use river_crossings list, not rivers_crossed)
+        river_crossings = traj.get('river_crossings', [])
+        if river_crossings:
+            rivers = list(set(r.get('river') for r in river_crossings if r.get('river')))
+            if rivers:
+                parts.append(f"Crossed {', '.join(rivers)}.")
         
+        # Destination
+        if dest_place:
+            parts.append(f"Ended {dest_place.get('distance_km', 0):.1f}km from {dest_place.get('name')}.")
+        elif dest_river:
+            parts.append(f"Ended {dest_river.get('distance_km', 0):.1f}km from {dest_river.get('name')} river.")
+        
+        # Nearby settlement at origin
         if origin_settlement and origin_settlement.get('distance_km', 999) < 15:
-            parts.append(f"Near {origin_settlement.get('name', 'settlement')} ({origin_settlement.get('class', 'unknown')}, pop ~{origin_settlement.get('population', 0)}).")
+            settle_name = origin_settlement.get('name', 'settlement')
+            settle_class = origin_settlement.get('class', 'unknown')
+            settle_pop = origin_settlement.get('population', 0)
+            parts.append(f"Near {settle_name} ({settle_class}, pop ~{settle_pop}).")
         
         return ' '.join(parts)
     
