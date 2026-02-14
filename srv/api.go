@@ -1445,9 +1445,9 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 	s.DB.QueryRow(`SELECT COUNT(*) FROM park_waterbodies WHERE park_id = ?`, internalID).Scan(&waterbodyCount)
 	stats.Waterbodies = waterbodyCount
 	
-	// Count rivers from osm_places
+	// Count rivers from park_rivers
 	var riverCount int
-	s.DB.QueryRow(`SELECT COUNT(*) FROM osm_places WHERE park_id = ? AND place_type IN ('river', 'stream', 'lake')`, internalID).Scan(&riverCount)
+	s.DB.QueryRow(`SELECT COUNT(*) FROM park_rivers WHERE park_id = ?`, internalID).Scan(&riverCount)
 	stats.Rivers = riverCount
 
 	// Settlement classifications
@@ -3487,6 +3487,149 @@ func (s *Server) HandleAPIClassifiedDeforestation(w http.ResponseWriter, r *http
 		"area_by_class":  areaByClass,
 		"events":         events,
 	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// HandleAPIParkInfrastructure returns comprehensive infrastructure data for a park
+// GET /api/parks/{id}/infrastructure
+func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+	ctx := r.Context()
+	
+	// Map WDPA ID to internal park_id if needed
+	internalID := parkID
+	if s.AreaStore != nil {
+		for _, area := range s.AreaStore.Areas {
+			if area.WDPAID == parkID {
+				internalID = area.ID
+				break
+			}
+		}
+	}
+	
+	type River struct {
+		HyrivID      int64   `json:"hyriv_id"`
+		Name         string  `json:"name"`
+		LengthKm     float64 `json:"length_km"`
+		DischargeCms float64 `json:"discharge_cms,omitempty"`
+		StreamOrder  int     `json:"stream_order,omitempty"`
+		Relation     string  `json:"relation"` // inside, crosses, nearby
+		DistanceKm   float64 `json:"distance_km,omitempty"`
+	}
+	
+	type Road struct {
+		OsmID       string  `json:"osm_id"`
+		HighwayType string  `json:"highway_type"`
+		Surface     string  `json:"surface,omitempty"`
+		Passability string  `json:"passability,omitempty"`
+		LengthKm    float64 `json:"length_km"`
+	}
+	
+	type Place struct {
+		Name      string  `json:"name"`
+		PlaceType string  `json:"place_type"`
+		Lat       float64 `json:"lat"`
+		Lon       float64 `json:"lon"`
+	}
+	
+	type InfraResponse struct {
+		Rivers       []River `json:"rivers"`
+		Roads        []Road  `json:"roads"`
+		Places       []Place `json:"places"`
+		Summary      struct {
+			TotalRivers     int     `json:"total_rivers"`
+			TotalRoads      int     `json:"total_roads"`
+			TotalPlaces     int     `json:"total_places"`
+			TotalRoadKm     float64 `json:"total_road_km"`
+			MajorRivers     []string `json:"major_rivers,omitempty"`
+			RoadSurfaces    map[string]int `json:"road_surfaces,omitempty"`
+		} `json:"summary"`
+	}
+	
+	response := InfraResponse{
+		Rivers: []River{},
+		Roads:  []Road{},
+		Places: []Place{},
+	}
+	response.Summary.RoadSurfaces = make(map[string]int)
+	
+	// Get rivers (top 20 by discharge)
+	rows, err := s.DB.QueryContext(ctx, `
+		SELECT hyriv_id, COALESCE(river_name, ''), COALESCE(length_km, 0), 
+		       COALESCE(discharge_cms, 0), COALESCE(stream_order, 0), relation, COALESCE(distance_km, 0)
+		FROM park_rivers 
+		WHERE park_id = ?
+		ORDER BY discharge_cms DESC
+		LIMIT 20
+	`, internalID)
+	if err == nil {
+		defer rows.Close()
+		majorRivers := []string{}
+		for rows.Next() {
+			var r River
+			if rows.Scan(&r.HyrivID, &r.Name, &r.LengthKm, &r.DischargeCms, &r.StreamOrder, &r.Relation, &r.DistanceKm) == nil {
+				response.Rivers = append(response.Rivers, r)
+				if r.Name != "" && r.DischargeCms > 100 {
+					majorRivers = append(majorRivers, r.Name)
+				}
+			}
+		}
+		response.Summary.MajorRivers = majorRivers
+	}
+	
+	// Count total rivers
+	s.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM park_rivers WHERE park_id = ?`, internalID).Scan(&response.Summary.TotalRivers)
+	
+	// Get roads with HeiGIT attributes
+	roadRows, err := s.DB.QueryContext(ctx, `
+		SELECT osm_id, COALESCE(highway_type, ''), COALESCE(surface, ''), 
+		       COALESCE(passability, ''), COALESCE(length_km, 0)
+		FROM roads_heigit 
+		WHERE park_id = ?
+		ORDER BY length_km DESC
+		LIMIT 50
+	`, internalID)
+	if err == nil {
+		defer roadRows.Close()
+		var totalRoadKm float64
+		for roadRows.Next() {
+			var rd Road
+			if roadRows.Scan(&rd.OsmID, &rd.HighwayType, &rd.Surface, &rd.Passability, &rd.LengthKm) == nil {
+				response.Roads = append(response.Roads, rd)
+				totalRoadKm += rd.LengthKm
+				if rd.Surface != "" {
+					response.Summary.RoadSurfaces[rd.Surface]++
+				}
+			}
+		}
+		response.Summary.TotalRoadKm = totalRoadKm
+	}
+	
+	// Count total roads
+	s.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM roads_heigit WHERE park_id = ?`, internalID).Scan(&response.Summary.TotalRoads)
+	
+	// Get OSM places (top 50)
+	placeRows, err := s.DB.QueryContext(ctx, `
+		SELECT name, place_type, lat, lon
+		FROM osm_places 
+		WHERE park_id = ?
+		ORDER BY place_type, name
+		LIMIT 50
+	`, internalID)
+	if err == nil {
+		defer placeRows.Close()
+		for placeRows.Next() {
+			var p Place
+			if placeRows.Scan(&p.Name, &p.PlaceType, &p.Lat, &p.Lon) == nil {
+				response.Places = append(response.Places, p)
+			}
+		}
+	}
+	
+	// Count total places
+	s.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM osm_places WHERE park_id = ?`, internalID).Scan(&response.Summary.TotalPlaces)
 	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
