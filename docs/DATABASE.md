@@ -437,3 +437,32 @@ FROM osm_roadless_data
 ORDER BY roadless_percentage DESC
 LIMIT 10;
 ```
+
+## Learner Data Storage
+
+### Learned Features
+| Table | Description |
+|-------|-------------|
+| `learned_places` | Camps, headquarters, outposts detected from GPX patterns |
+| `learned_roads` | Roads detected from vehicle tracks |
+| `learned_airstrips` | Airstrips detected from vehicle movement patterns |
+
+### Key Columns in learned_places
+- `place_type`: headquarters, camp, outpost
+- `visit_count`: Number of times visited
+- `avg_duration_minutes`: Average stay duration
+- `confidence_pct`: Detection confidence (0-100)
+- `status`: pending, approved, rejected
+
+### Settlement/Visit Tracking
+| Table | Description |
+|-------|-------------|
+| `settlement_visits` | Individual visits to settlement polygons |
+| `subcell_visits` | Grid-based patrol coverage tracking |
+
+### settlement_visits Columns
+- `settlement_id`: FK to park_settlements
+- `visit_date`, `visit_start`, `visit_end`: When visited
+- `duration_minutes`: How long
+- `movement_type`: foot, vehicle
+- `arriving_from`, `departing_to`: Direction context
