@@ -7021,6 +7021,56 @@ ${starredItems.narratives.map(n => {
                             'icon-opacity': 0.9
                         }
                     });
+                    
+                    // Add pulsing marker at the fire front (last point of trajectory)
+                    const coords = feature.geometry?.coordinates;
+                    if (coords && coords.length > 0) {
+                        const lastPoint = coords[coords.length - 1];
+                        const frontSourceId = sourceId + '-front';
+                        const frontLayerId = layerId + '-front';
+                        const frontGlowId = layerId + '-front-glow';
+                        
+                        map.addSource(frontSourceId, {
+                            type: 'geojson',
+                            data: {
+                                type: 'Feature',
+                                geometry: { type: 'Point', coordinates: lastPoint },
+                                properties: { name: 'Fire Front' }
+                            }
+                        });
+                        
+                        // Outer pulsing glow
+                        map.addLayer({
+                            id: frontGlowId,
+                            type: 'circle',
+                            source: frontSourceId,
+                            paint: {
+                                'circle-radius': 18,
+                                'circle-color': '#ff4444',
+                                'circle-opacity': 0.3,
+                                'circle-blur': 0.5
+                            }
+                        });
+                        
+                        // Inner fire front marker
+                        map.addLayer({
+                            id: frontLayerId,
+                            type: 'circle',
+                            source: frontSourceId,
+                            paint: {
+                                'circle-radius': 8,
+                                'circle-color': '#ff4444',
+                                'circle-stroke-width': 3,
+                                'circle-stroke-color': '#ffffff'
+                            }
+                        });
+                        
+                        // Store for cleanup
+                        singlePinnedFeatures[key] = singlePinnedFeatures[key] || {};
+                        singlePinnedFeatures[key].frontSourceId = frontSourceId;
+                        singlePinnedFeatures[key].frontLayerId = frontLayerId;
+                        singlePinnedFeatures[key].frontGlowId = frontGlowId;
+                    }
                 }
             } else if (geomType.includes('Polygon')) {
                 map.addLayer({
@@ -7155,6 +7205,11 @@ ${starredItems.narratives.map(n => {
         if (map.getLayer(pin.layerId + '-glow')) map.removeLayer(pin.layerId + '-glow');
         if (map.getLayer(pin.layerId)) map.removeLayer(pin.layerId);
         if (map.getSource(pin.sourceId)) map.removeSource(pin.sourceId);
+        
+        // Remove fire front marker layers if they exist
+        if (pin.frontGlowId && map.getLayer(pin.frontGlowId)) map.removeLayer(pin.frontGlowId);
+        if (pin.frontLayerId && map.getLayer(pin.frontLayerId)) map.removeLayer(pin.frontLayerId);
+        if (pin.frontSourceId && map.getSource(pin.frontSourceId)) map.removeSource(pin.frontSourceId);
         
         delete singlePinnedFeatures[key];
     }

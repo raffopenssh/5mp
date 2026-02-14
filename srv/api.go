@@ -3074,8 +3074,8 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	}
 	kml.WriteString("</Folder>\n")
 
-	// Roads folder
-	kml.WriteString("<Folder><name>Roads</name>\n")
+	// Roads folder (from feature_geometries)
+	kml.WriteString("<Folder><name>Roads (Patrol Data)</name>\n")
 	roadRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'road' LIMIT 500`, parkID)
 	if roadRows != nil {
 		defer roadRows.Close()
@@ -3089,6 +3089,62 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 				name = n
 			}
 			writeGeoJSONToKML(&kml, geojson, "road", name)
+		}
+	}
+	kml.WriteString("</Folder>\n")
+
+	// HeiGIT Roads folder (from roads_heigit - official road network)
+	kml.WriteString("<Folder><name>Roads (HeiGIT)</name>\n")
+	heigitRows, _ := s.DB.Query(`SELECT osm_id, highway_type, surface, length_km, geojson FROM roads_heigit WHERE park_id = ? AND geojson IS NOT NULL LIMIT 1000`, parkID)
+	if heigitRows != nil {
+		defer heigitRows.Close()
+		for heigitRows.Next() {
+			var osmID, hwType, geojson string
+			var surface sql.NullString
+			var lengthKm sql.NullFloat64
+			heigitRows.Scan(&osmID, &hwType, &surface, &lengthKm, &geojson)
+			
+			// Build name
+			name := hwType
+			if surface.Valid && surface.String != "" {
+				name = fmt.Sprintf("%s (%s)", hwType, surface.String)
+			}
+			if lengthKm.Valid && lengthKm.Float64 > 0 {
+				name = fmt.Sprintf("%s - %.1f km", name, lengthKm.Float64)
+			}
+			writeGeoJSONToKML(&kml, geojson, "road", name)
+		}
+	}
+	kml.WriteString("</Folder>\n")
+
+	// HydroRIVERS folder (from park_rivers)
+	kml.WriteString("<Folder><name>Rivers (HydroRIVERS)</name>\n")
+	riverDataRows, _ := s.DB.Query(`SELECT hyriv_id, river_name, length_km, discharge_cms, stream_order, centroid_lon, centroid_lat FROM park_rivers WHERE park_id = ? ORDER BY discharge_cms DESC LIMIT 500`, parkID)
+	if riverDataRows != nil {
+		defer riverDataRows.Close()
+		for riverDataRows.Next() {
+			var hyrivID int64
+			var riverName sql.NullString
+			var lengthKm, dischargeCms sql.NullFloat64
+			var streamOrder sql.NullInt64
+			var centroidLon, centroidLat float64
+			riverDataRows.Scan(&hyrivID, &riverName, &lengthKm, &dischargeCms, &streamOrder, &centroidLon, &centroidLat)
+			
+			// Build name
+			name := "River"
+			if riverName.Valid && riverName.String != "" {
+				name = riverName.String
+			}
+			if dischargeCms.Valid && dischargeCms.Float64 > 0 {
+				name = fmt.Sprintf("%s (%.1f m³/s)", name, dischargeCms.Float64)
+			}
+			if streamOrder.Valid {
+				name = fmt.Sprintf("%s [order %d]", name, streamOrder.Int64)
+			}
+			
+			// Create point for river centroid
+			pointGeoJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, centroidLon, centroidLat)
+			writeGeoJSONToKML(&kml, pointGeoJSON, "water", name)
 		}
 	}
 	kml.WriteString("</Folder>\n")
