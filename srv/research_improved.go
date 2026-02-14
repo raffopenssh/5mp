@@ -388,9 +388,9 @@ func (s *Server) storePublicationIfNew(ctx context.Context, parkID string, work 
 	}
 
 	_, err = s.DB.ExecContext(ctx, `
-		INSERT INTO pa_publications (pa_id, openalex_id, title, authors, year, doi, url, abstract, source, cited_by_count, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-	`, parkID, work.ID, work.Title, authors, year, work.DOI, work.ID, "", "", work.CitedByCount)
+		INSERT INTO pa_publications (pa_id, openalex_id, title, authors, year, doi, url, abstract, cited_by_count, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+	`, parkID, work.ID, work.Title, authors, year, work.DOI, work.ID, "", work.CitedByCount)
 
 	return err == nil, err
 }
