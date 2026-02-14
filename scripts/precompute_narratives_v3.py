@@ -137,19 +137,102 @@ class NarrativeGenerator:
             
             park_climate = self.climate.get(park_id, {})
             
+            # Compute yearly statistics for trend
+            years_summary = []
+            park_area_km2 = 10000  # default
+            try:
+                with open(DATA_DIR / 'keystones_with_boundaries.json') as kf:
+                    for p in json.load(kf):
+                        if p['id'] == park_id:
+                            park_area_km2 = p.get('area_km2', 10000)
+                            break
+            except:
+                pass
+            
+            for year in sorted(by_year.keys()):
+                year_trajs = by_year[year]
+                total_year_groups = len(year_trajs)
+                stopped = sum(1 for t in year_trajs if t.get('outcome') == 'stopped_inside')
+                total_year_fires = sum(t.get('fires_total', 0) for t in year_trajs)
+                avg_days = sum(t.get('days', 0) for t in year_trajs) / max(1, total_year_groups)
+                
+                years_summary.append({
+                    'year': year,
+                    'total_groups': total_year_groups,
+                    'groups_per_km2': round(total_year_groups / park_area_km2 * 1000, 4) if park_area_km2 > 0 else 0,
+                    'stopped_inside': stopped,
+                    'transited': total_year_groups - stopped,
+                    'response_rate': round(stopped / max(1, total_year_groups) * 100, 1),
+                    'total_fires': total_year_fires,
+                    'avg_days_burning': round(avg_days, 1)
+                })
+            
+            # Determine trend direction
+            if len(years_summary) >= 3:
+                recent = years_summary[-2:]
+                older = years_summary[:-2]
+                recent_avg = sum(y['total_groups'] for y in recent) / len(recent)
+                older_avg = sum(y['total_groups'] for y in older) / len(older)
+                if recent_avg > older_avg * 1.2:
+                    trend_direction = 'increasing'
+                elif recent_avg < older_avg * 0.8:
+                    trend_direction = 'decreasing'
+                else:
+                    trend_direction = 'stable'
+            else:
+                trend_direction = 'insufficient_data'
+            
+            # Peak month
+            month_counts = defaultdict(int)
+            for t in trajectories:
+                sd = t.get('start_date', '')
+                if sd:
+                    try:
+                        from datetime import datetime
+                        dt = datetime.strptime(sd, '%Y-%m-%d')
+                        month_counts[dt.strftime('%B')] += 1
+                    except:
+                        pass
+            peak_month = max(month_counts, key=month_counts.get) if month_counts else None
+            
+            # Get park name
+            park_name = park_id.split('_', 1)[1].replace('_', ' ') if '_' in park_id else park_id
+            
+            # Summary text
+            response_rate = sum(1 for t in trajectories if t.get('outcome') == 'stopped_inside') / max(1, total_groups) * 100
+            summary = f"From {min(by_year.keys())}-{max(by_year.keys())}, {park_name} experienced {total_fires:,} fire detections across {total_groups} fire groups."
+            if response_rate > 50:
+                summary += f" {round(response_rate)}% of groups were stopped inside the park."
+            if peak_month:
+                summary += f" Peak fire activity occurs in {peak_month}."
+            if park_climate.get('dry_season'):
+                summary += f" Dry season: {park_climate.get('dry_season')}."
+            
             narratives[park_id] = {
                 'park_id': park_id,
+                'park_name': park_name,
+                'summary': summary,
                 'total_fires': total_fires,
                 'total_groups': total_groups,
+                'response_rate': round(response_rate, 1),
+                'peak_month': peak_month,
                 'group_types': dict(type_counts),
                 'seasons': dict(seasons),
                 'directions': dict(directions),
                 'rivers_crossed': list(all_rivers),
-                'climate_zone': park_climate.get('climate_zone'),
-                'dry_season': park_climate.get('dry_season'),
-                'rainy_season': park_climate.get('rainy_season'),
-                'years': sorted(by_year.keys()),
-                'trajectories': traj_narratives
+                'trend': {
+                    'years': years_summary,
+                    'trend_direction': trend_direction,
+                    'avg_response_rate': round(sum(y['response_rate'] for y in years_summary) / max(1, len(years_summary)), 1) if years_summary else 0
+                },
+                'climate': {
+                    'climate_zone': park_climate.get('climate_zone'),
+                    'dry_season': park_climate.get('dry_season'),
+                    'rainy_season': park_climate.get('rainy_season'),
+                    'temp_annual_c': park_climate.get('temp_annual_c'),
+                    'precip_annual_mm': park_climate.get('precip_annual_mm')
+                },
+                'narratives': traj_narratives
             }
             
             print(f"[FIRE {idx}/{total_files}] {park_id}: {total_groups} groups, {total_fires} fires, {len(traj_narratives)} narratives")
