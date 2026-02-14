@@ -62,7 +62,7 @@ type KeystonePA struct {
 	Donor       *string `json:"donor"`
 	Performance *string `json:"performance"`
 	WDPAID      string  `json:"wdpa_id"`
-	AreaKm2     *int    `json:"area_km2"`
+	AreaKm2     *float64 `json:"area_km2"`
 	Coordinates struct {
 		Lat float64 `json:"lat"`
 		Lon float64 `json:"lon"`
@@ -175,7 +175,7 @@ func loadKeystonesWithBoundaries(path string) (*AreaStore, error) {
 				BufferKm:    5.0, // 5km buffer for matching
 			}
 			if ks.AreaKm2 != nil {
-				area.AreaKm2 = float64(*ks.AreaKm2)
+				area.AreaKm2 = *ks.AreaKm2
 			}
 		} else {
 			// Fall back to circle approximation
@@ -193,7 +193,7 @@ func keystoneToArea(ks KeystonePA) ProtectedArea {
 	// Calculate radius from area (A = πr²)
 	areaKm2 := 1000.0 // Default 1000 km² if not specified
 	if ks.AreaKm2 != nil {
-		areaKm2 = float64(*ks.AreaKm2)
+		areaKm2 = *ks.AreaKm2
 	}
 
 	radiusKm := math.Sqrt(areaKm2 / math.Pi)
