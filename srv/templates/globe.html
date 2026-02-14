@@ -83,7 +83,7 @@
         .mbtiles-source-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .mbtiles-action-btn { position: relative; width: 100%; padding: 10px 16px; border: none; border-radius: 6px; background: #3b82f6; color: #fff; cursor: pointer; font-weight: 500; font-size: 13px; overflow: hidden; transition: all 0.2s; }
         .mbtiles-action-btn:hover { background: #2563eb; }
-        .mbtiles-action-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .mbtiles-action-btn:disabled { opacity: 0.5; cursor: not-allowed; background: #555 !important; }
         .mbtiles-action-btn.generating { background: #1e3a5f; }
         .mbtiles-action-btn.complete { background: #166534; }
         .mbtiles-btn-progress { position: absolute; left: 0; top: 0; height: 100%; background: rgba(59,130,246,0.5); transition: width 0.3s; z-index: 0; }
@@ -1829,11 +1829,16 @@
                 
                 estimateEl.innerHTML = `~${sizeStr} &middot; ~${mins} min`;
                 
+                // Check for sufficient storage space
                 if (!data.sufficient_space) {
-                    estimateEl.innerHTML += ' <span style="color: #ef4444;">Insufficient space</span>';
+                    const availMB = data.available_space_mb || 0;
+                    const availStr = availMB >= 1024 ? `${(availMB / 1024).toFixed(1)} GB` : `${availMB} MB`;
+                    estimateEl.innerHTML = `<span style="color: #ef4444;">Insufficient storage</span><br><span style="font-size: 11px; color: #666;">Need ${sizeStr}, have ${availStr}</span>`;
                     actionBtn.disabled = true;
+                    actionBtn.title = 'Insufficient storage space for this tile set';
                 } else {
-                    actionBtn.disabled = false;
+                    actionBtn.disabled = mbtilesState === 'generating';
+                    actionBtn.title = '';
                 }
             } catch (err) {
                 estimateEl.textContent = 'Failed to estimate';
