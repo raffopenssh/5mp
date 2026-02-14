@@ -74,7 +74,7 @@
 
         #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1; }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(8px); }
         /* MBTiles Dialog */
         .mbtiles-dialog { background: #1e1e1e; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 16px; max-width: 300px; }
         .mbtiles-source-btn { padding: 6px 12px; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; background: rgba(255,255,255,0.05); color: #888; cursor: pointer; transition: all 0.2s; font-size: 11px; }
@@ -241,7 +241,7 @@
         .star-inline { display: inline-flex; align-items: center; margin-left: 6px; vertical-align: middle; }
 
         /* Star modal styles */
-        .star-modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+        .star-modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); }
         .star-modal.active { display: flex; align-items: center; justify-content: center; }
         .star-modal-content { width: 90%; max-width: 800px; max-height: 85vh; background: rgba(18,18,18,0.98); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
         .star-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.2); }
@@ -416,7 +416,7 @@
         .admin-btn-group { display: flex; gap: 6px; }
         
         /* Feature detail modal */
-        .feature-modal { display: none; position: fixed; inset: 0; z-index: 2100; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        .feature-modal { display: none; position: fixed; inset: 0; z-index: 2100; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
         .feature-modal.active { display: flex; }
         .feature-modal-content { width: 90%; max-width: 700px; max-height: 85vh; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
         .feature-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.3); }
@@ -7747,15 +7747,21 @@ ${starredItems.narratives.map(n => {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">Loading...</td></tr>';
         
         try {
-            const res = await fetch(`/api/admin/learned-features?park=${encodeURIComponent(parkCode)}`);
+            const res = await fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(parkCode)}&pwd=${encodeURIComponent(getPwd())}`);
             const data = await res.json();
             
-            if (!data.features || data.features.length === 0) {
+            // Combine all feature types into a single array
+            const features = [];
+            if (data.roads) data.roads.forEach(r => features.push({...r, type: 'road', name: r.name || 'Road ' + r.id, confidence: r.confidence_pct, hit_count: r.match_count}));
+            if (data.places) data.places.forEach(p => features.push({...p, type: 'place', name: p.name || p.place_type, confidence: p.confidence_pct, hit_count: p.visit_count}));
+            if (data.airstrips) data.airstrips.forEach(a => features.push({...a, type: 'airstrip', name: a.name || 'Airstrip ' + a.id, confidence: a.confidence_pct, hit_count: a.detection_count}));
+            
+            if (features.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#888;">No learned features for this park</td></tr>';
                 return;
             }
             
-            tbody.innerHTML = data.features.map(f => `
+            tbody.innerHTML = features.map(f => `
                 <tr onclick="showFeatureDetail('${f.type}',${f.id})" style="cursor:pointer;">
                     <td><span class="feature-type-badge type-${f.type}">${f.type}</span></td>
                     <td>${escapeHtml(f.name || 'Unnamed')}</td>
