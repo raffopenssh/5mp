@@ -514,3 +514,13 @@ func (a *ProtectedArea) CenterLatLon() (lat, lon float64) {
 	}
 	return 0, 0
 }
+
+// GetByID returns a protected area by ID
+func (s *AreaStore) GetByID(id string) *ProtectedArea {
+	for i := range s.Areas {
+		if s.Areas[i].ID == id {
+			return &s.Areas[i]
+		}
+	}
+	return nil
+}

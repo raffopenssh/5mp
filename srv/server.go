@@ -173,6 +173,13 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/parks/{id}/features", s.HandleAPIParkFeatures)
 	mux.HandleFunc("GET /api/parks/{id}/feature-stats", s.HandleAPIParkFeatureStats)
 	mux.HandleFunc("GET /api/parks/{id}/export.kml", s.HandleAPIParkKML)
+	
+	// MBTiles generation endpoints
+	mux.HandleFunc("POST /api/parks/{id}/mbtiles", s.HandleAPIMBTilesCreate)
+	mux.HandleFunc("GET /api/parks/{id}/mbtiles/estimate", s.HandleAPIMBTilesEstimate)
+	mux.HandleFunc("GET /api/mbtiles/{id}/status", s.HandleAPIMBTilesStatus)
+	mux.HandleFunc("GET /api/mbtiles/{id}/download", s.HandleAPIMBTilesDownload)
+	mux.HandleFunc("GET /api/mbtiles", s.HandleAPIMBTilesList)
 	mux.HandleFunc("GET /api/parks/{id}/climate", s.HandleAPIParkClimate)
 	mux.HandleFunc("GET /api/parks/{id}/species", s.HandleAPIParkSpecies)
 	mux.HandleFunc("GET /api/parks/{id}/settlement-intensity", s.HandleAPISettlementIntensity)
@@ -222,6 +229,9 @@ func (s *Server) Serve(addr string) error {
 
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
+	
+	// Initialize MBTiles queue
+	InitMBTilesQueue("data/mbtiles_output")
 	
 	slog.Info("starting server", "addr", addr)
 	

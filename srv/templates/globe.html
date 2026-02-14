@@ -75,6 +75,14 @@
         #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
+        /* MBTiles Dialog */
+        .mbtiles-dialog { background: #1e1e1e; border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; padding: 16px; max-width: 320px; }
+        .mbtiles-source-btn { padding: 8px 12px; margin: 4px; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; background: rgba(255,255,255,0.05); color: #ccc; cursor: pointer; transition: all 0.2s; }
+        .mbtiles-source-btn:hover { background: rgba(59,130,246,0.2); border-color: rgba(59,130,246,0.5); }
+        .mbtiles-source-btn.selected { background: rgba(59,130,246,0.3); border-color: #3b82f6; color: #fff; }
+        .mbtiles-source-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .mbtiles-progress { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 12px; overflow: hidden; }
+        .mbtiles-progress-bar { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); width: 0%; transition: width 0.3s; }
         .modal-overlay.active { display: flex; }
         .modal { background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 100%; max-width: 420px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
@@ -1706,6 +1714,175 @@
         }
         function hideVersionModal() {
             document.getElementById('version-modal').style.display = 'none';
+        }
+
+        // MBTiles Dialog Functions
+        let currentMBTilesParkId = null;
+        let currentMBTilesJobId = null;
+        let mbtilesPollingInterval = null;
+        
+        async function showMBTilesDialog(parkId, parkName) {
+            currentMBTilesParkId = parkId;
+            document.getElementById('mbtiles-park-name').textContent = parkName;
+            document.getElementById('mbtiles-dialog').style.display = 'flex';
+            document.getElementById('mbtiles-status').style.display = 'none';
+            document.getElementById('mbtiles-progress').style.display = 'none';
+            document.getElementById('mbtiles-download-link').style.display = 'none';
+            document.getElementById('mbtiles-generate-btn').disabled = false;
+            document.getElementById('mbtiles-generate-btn').textContent = 'Generate MBTiles';
+            
+            // Setup source buttons
+            document.querySelectorAll('.mbtiles-source-btn').forEach(btn => {
+                btn.onclick = () => selectMBTilesSource(btn.dataset.source);
+            });
+            
+            // Fetch estimate
+            await fetchMBTilesEstimate();
+        }
+        
+        function hideMBTilesDialog() {
+            document.getElementById('mbtiles-dialog').style.display = 'none';
+            if (mbtilesPollingInterval) {
+                clearInterval(mbtilesPollingInterval);
+                mbtilesPollingInterval = null;
+            }
+        }
+        
+        function selectMBTilesSource(source) {
+            document.querySelectorAll('.mbtiles-source-btn').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.source === source);
+            });
+            fetchMBTilesEstimate();
+        }
+        
+        function getSelectedSource() {
+            const selected = document.querySelector('.mbtiles-source-btn.selected');
+            return selected ? selected.dataset.source : 'esri';
+        }
+        
+        async function fetchMBTilesEstimate() {
+            const estimateEl = document.getElementById('mbtiles-estimate');
+            const generateBtn = document.getElementById('mbtiles-generate-btn');
+            
+            try {
+                const resp = await fetch(`/api/parks/${currentMBTilesParkId}/mbtiles/estimate?pwd=${encodeURIComponent(getPwd())}`);
+                const data = await resp.json();
+                
+                const mins = Math.ceil(data.estimated_seconds / 60);
+                estimateEl.innerHTML = `
+                    <div>📊 ${data.total_tiles.toLocaleString()} tiles (zoom 1-15)</div>
+                    <div>💾 ~${data.estimated_size_mb} MB</div>
+                    <div>⏱️ ~${mins} minute${mins > 1 ? 's' : ''}</div>
+                `;
+                
+                if (!data.sufficient_space) {
+                    estimateEl.innerHTML += '<div style="color: #ef4444;">⚠️ Insufficient disk space</div>';
+                    generateBtn.disabled = true;
+                } else {
+                    generateBtn.disabled = false;
+                }
+            } catch (err) {
+                estimateEl.textContent = 'Failed to get estimate';
+            }
+        }
+        
+        async function generateMBTiles() {
+            const source = getSelectedSource();
+            const generateBtn = document.getElementById('mbtiles-generate-btn');
+            const statusEl = document.getElementById('mbtiles-status');
+            const progressEl = document.getElementById('mbtiles-progress');
+            const progressBar = document.getElementById('mbtiles-progress-bar');
+            
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Starting...';
+            statusEl.style.display = 'block';
+            statusEl.textContent = 'Creating job...';
+            
+            try {
+                const resp = await fetch(`/api/parks/${currentMBTilesParkId}/mbtiles?source=${source}&pwd=${encodeURIComponent(getPwd())}`, {
+                    method: 'POST'
+                });
+                
+                if (!resp.ok) {
+                    throw new Error(await resp.text());
+                }
+                
+                const data = await resp.json();
+                currentMBTilesJobId = data.job_id;
+                
+                statusEl.textContent = 'Job queued. Downloading tiles...';
+                progressEl.style.display = 'block';
+                generateBtn.textContent = 'Processing...';
+                
+                // Start polling for status
+                mbtilesPollingInterval = setInterval(pollMBTilesStatus, 3000);
+            } catch (err) {
+                statusEl.style.color = '#ef4444';
+                statusEl.textContent = 'Error: ' + err.message;
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Generate MBTiles';
+            }
+        }
+        
+        async function pollMBTilesStatus() {
+            if (!currentMBTilesJobId) return;
+            
+            const statusEl = document.getElementById('mbtiles-status');
+            const progressBar = document.getElementById('mbtiles-progress-bar');
+            const downloadLinkEl = document.getElementById('mbtiles-download-link');
+            const downloadUrl = document.getElementById('mbtiles-download-url');
+            const generateBtn = document.getElementById('mbtiles-generate-btn');
+            
+            try {
+                const resp = await fetch(`/api/mbtiles/${currentMBTilesJobId}/status?pwd=${encodeURIComponent(getPwd())}`);
+                const job = await resp.json();
+                
+                progressBar.style.width = job.progress + '%';
+                statusEl.textContent = `${job.status}: ${job.downloaded_tiles.toLocaleString()}/${job.total_tiles.toLocaleString()} tiles (${job.progress.toFixed(1)}%)`;
+                
+                if (job.status === 'completed') {
+                    clearInterval(mbtilesPollingInterval);
+                    mbtilesPollingInterval = null;
+                    statusEl.style.color = '#22c55e';
+                    statusEl.textContent = '✅ Complete! Ready to download.';
+                    
+                    downloadLinkEl.style.display = 'block';
+                    downloadUrl.href = `/api/mbtiles/${currentMBTilesJobId}/download?pwd=${encodeURIComponent(getPwd())}`;
+                    downloadUrl.textContent = `Download ${currentMBTilesParkId}_${getSelectedSource()}.mbtiles`;
+                    
+                    generateBtn.textContent = 'Generate MBTiles';
+                    generateBtn.disabled = false;
+                    
+                    // Create notification
+                    if (Notification.permission === 'granted') {
+                        new Notification('MBTiles Ready', {
+                            body: `Offline tiles for ${document.getElementById('mbtiles-park-name').textContent} are ready to download.`,
+                            icon: '/static/icon.png'
+                        });
+                    }
+                } else if (job.status === 'failed') {
+                    clearInterval(mbtilesPollingInterval);
+                    mbtilesPollingInterval = null;
+                    statusEl.style.color = '#ef4444';
+                    statusEl.textContent = '❌ Failed: ' + job.error;
+                    generateBtn.textContent = 'Retry';
+                    generateBtn.disabled = false;
+                }
+            } catch (err) {
+                console.error('Error polling status:', err);
+            }
+        }
+        
+        function copyMBTilesLink() {
+            const url = currentMBTilesJobId 
+                ? `${window.location.origin}/api/mbtiles/${currentMBTilesJobId}/status?pwd=${encodeURIComponent(getPwd())}`
+                : `${window.location.origin}/api/parks/${currentMBTilesParkId}/mbtiles/estimate?pwd=${encodeURIComponent(getPwd())}`;
+            
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = document.getElementById('mbtiles-copy-btn');
+                btn.textContent = '✓';
+                setTimeout(() => btn.textContent = '📋', 1500);
+            });
         }
 
         async function handleLogin(e) {
@@ -3627,6 +3804,7 @@
                             <span>${escapeHtml(name)}</span>
                             <span style="display: flex; gap: 4px; align-items: center;">
                                 <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}.kml" title="Download KML for Google Earth" style="text-decoration: none; font-size: 10px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 3px; color: #888;">KML</a>
+                                <button onclick="showMBTilesDialog('${paId}', '${escapeHtml(name)}')" title="Download offline satellite tiles (MBTiles)" style="font-size: 10px; padding: 2px 6px; background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.4); border-radius: 3px; color: #60a5fa; cursor: pointer;" id="mbtiles-btn-${paId}">🛰️ Tiles</button>
                                 ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
                             </span>
                         </div>
@@ -8179,6 +8357,35 @@ ${starredItems.narratives.map(n => {
                     <button class="star-report-btn secondary" onclick="clearAllStars()">Clear All</button>
                     <button class="star-report-btn" onclick="printStarredReport()">Print Report</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MBTiles Dialog -->
+    <div id="mbtiles-dialog" class="modal-overlay" onclick="if(event.target===this)hideMBTilesDialog()">
+        <div class="mbtiles-dialog">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span style="font-weight: 600; color: #fff;">🛰️ Offline Satellite Tiles</span>
+                <button onclick="hideMBTilesDialog()" style="background: none; border: none; color: #888; cursor: pointer; font-size: 18px;">&times;</button>
+            </div>
+            <div id="mbtiles-park-name" style="color: #60a5fa; font-size: 14px; margin-bottom: 12px;"></div>
+            <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Select satellite imagery source:</div>
+            <div id="mbtiles-sources" style="display: flex; flex-wrap: wrap; gap: 4px;">
+                <button class="mbtiles-source-btn selected" data-source="esri">ESRI</button>
+                <button class="mbtiles-source-btn" data-source="bing">Bing</button>
+                <button class="mbtiles-source-btn" data-source="google">Google</button>
+            </div>
+            <div id="mbtiles-estimate" style="margin-top: 12px; font-size: 11px; color: #888;"></div>
+            <div id="mbtiles-status" style="margin-top: 8px; font-size: 11px; color: #22c55e; display: none;"></div>
+            <div class="mbtiles-progress" id="mbtiles-progress" style="display: none;">
+                <div class="mbtiles-progress-bar" id="mbtiles-progress-bar"></div>
+            </div>
+            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                <button id="mbtiles-generate-btn" onclick="generateMBTiles()" style="flex: 1; padding: 8px 16px; background: #3b82f6; border: none; border-radius: 6px; color: #fff; cursor: pointer; font-weight: 500;">Generate MBTiles</button>
+                <button id="mbtiles-copy-btn" onclick="copyMBTilesLink()" style="padding: 8px 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #ccc; cursor: pointer;" title="Copy status link">📋</button>
+            </div>
+            <div id="mbtiles-download-link" style="margin-top: 8px; display: none;">
+                <a href="#" id="mbtiles-download-url" style="color: #60a5fa; font-size: 12px;">Download MBTiles</a>
             </div>
         </div>
     </div>
