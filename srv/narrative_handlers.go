@@ -145,6 +145,7 @@ type DeforestationYearStory struct {
 	PatternType    string   `json:"pattern_type"`
 	Classification string   `json:"classification,omitempty"`
 	GeoJSONID      int64    `json:"geojson_id,omitempty"`
+	PolygonIDs     string   `json:"polygon_ids,omitempty"`
 	Narrative      string   `json:"narrative"`
 	NearbyPlaces   []string `json:"nearby_places"`
 }
@@ -183,8 +184,10 @@ type SettlementNarrative struct {
 type SettlementDetail struct {
 	ID                int64   `json:"id,omitempty"`
 	GeoJSONID         int64   `json:"geojson_id,omitempty"`
+	PolygonIDs        string  `json:"polygon_ids,omitempty"`
 	Name              string  `json:"name"`
 	Classification    string  `json:"classification,omitempty"`
+	Narrative         string  `json:"narrative,omitempty"`
 	AreaM2            float64 `json:"area_m2"`
 	PopulationEst     int64   `json:"population_est,omitempty"`
 	Population2030    int64   `json:"population_2030,omitempty"`
@@ -1113,21 +1116,20 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		return
 	}
 	
-	// Get largest settlements with geojson_id, classification, and population data
+	// Get largest settlements with polygon_ids, classification, and narrative
 	largestRows, err := s.DB.Query(`
 		SELECT 
 			s.id,
 			COALESCE(s.nearest_place, 'Unnamed settlement') as name,
 			COALESCE(s.classification, '') as classification,
+			COALESCE(s.narrative, '') as narrative,
+			COALESCE(s.polygon_ids, '') as polygon_ids,
 			COALESCE(s.area_m2, 0) as area_m2,
 			COALESCE(s.population_est, 0) as pop_est,
-			COALESCE(s.population_2030, 0) as pop_2030,
 			s.lat, s.lon,
 			COALESCE(s.direction_from_place, '') as direction,
-			COALESCE(s.distance_to_place_km, 0) as distance_km,
-			fg.id as geojson_id
+			COALESCE(s.distance_to_place_km, 0) as distance_km
 		FROM park_settlements s
-		LEFT JOIN feature_geometries fg ON fg.feature_id = 'settlement_' || s.id AND fg.feature_type = 'settlement'
 		WHERE s.park_id = ?
 		ORDER BY s.area_m2 DESC
 	`, internalID)
@@ -1137,12 +1139,11 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		for largestRows.Next() {
 			var sd SettlementDetail
 			var distKm float64
-			var geojsonID sql.NullInt64
-			if err := largestRows.Scan(&sd.ID, &sd.Name, &sd.Classification, &sd.AreaM2, &sd.PopulationEst, &sd.Population2030, &sd.Lat, &sd.Lon, &sd.Direction, &distKm, &geojsonID); err == nil {
+			var settNarrative, polygonIDs string
+			if err := largestRows.Scan(&sd.ID, &sd.Name, &sd.Classification, &settNarrative, &polygonIDs, &sd.AreaM2, &sd.PopulationEst, &sd.Lat, &sd.Lon, &sd.Direction, &distKm); err == nil {
 				sd.NearestBoundaryKm = distKm
-				if geojsonID.Valid {
-					sd.GeoJSONID = geojsonID.Int64
-				}
+				sd.Narrative = settNarrative
+				sd.PolygonIDs = polygonIDs
 				narrative.LargestSettlements = append(narrative.LargestSettlements, sd)
 			}
 		}
