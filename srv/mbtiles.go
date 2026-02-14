@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"srv.exe.dev/srv/areas"
@@ -437,8 +438,13 @@ func initMBTilesSchema(db *sql.DB, job *MBTilesJob, source TileSource) error {
 
 // getAvailableDiskSpace returns available disk space in bytes
 func getAvailableDiskSpace(path string) uint64 {
-	// Simple estimation - in production would use syscall.Statfs
-	return 10 * 1024 * 1024 * 1024 // Assume 10GB available
+	var stat syscall.Statfs_t
+	if err := syscall.Statfs(path, &stat); err != nil {
+		slog.Warn("failed to get disk space", "path", path, "error", err)
+		return 10 * 1024 * 1024 * 1024 // Fallback to 10GB
+	}
+	// Available blocks * block size
+	return stat.Bavail * uint64(stat.Bsize)
 }
 
 // estimateMBTilesSize estimates the output file size
