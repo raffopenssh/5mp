@@ -686,9 +686,10 @@
         @keyframes text-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         @keyframes spin { to { transform: rotate(360deg); } }
         .pa-popup-section-empty { font-size: 10px; color: #555; font-style: italic; }
-        .narrative-row { transition: all 0.2s; }
+        .narrative-row { transition: all 0.2s; border: 1px solid transparent; }
         .narrative-row:hover { background: rgba(255,255,255,0.05) !important; }
         .narrative-row.pinned { background: rgba(34,197,94,0.15) !important; border: 1px solid rgba(34,197,94,0.3); opacity: 1 !important; }
+        .narrative-row:focus { outline: none; }
         .pa-popup-mini-stat { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; }
         .pa-popup-mini-stat-label { color: #666; }
         .pa-popup-mini-stat-value { color: #22c55e; font-weight: 500; }
@@ -920,14 +921,7 @@
             </div>
         </div>
         
-        <!-- Globe Reset Button -->
-        <button class="toolbar-btn" id="globe-reset" onclick="resetGlobeView()" title="Reset view to Africa">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <ellipse cx="12" cy="12" rx="4" ry="10"></ellipse>
-                <path d="M2 12h20"></path>
-            </svg>
-        </button>
+        <!-- Globe Reset Button removed - users can reset via home key or double-click -->
         
         <!-- Starred Items Button -->
         <button class="toolbar-btn" id="toolbar-stars" onclick="toggleStarModal()" title="Starred items">
@@ -1415,7 +1409,10 @@
             console.error('MapLibre error:', e.error);
         });
         
-        map.addControl(new maplibregl.NavigationControl(), 'top-right');
+        // Navigation control removed - users control with mouse/touch
+        // Disable rotation
+        map.dragRotate.disable();
+        map.touchZoomRotate.disableRotation();
         
         // Global state - declared early for use in multiple functions
         let currentPAPopup = null;
@@ -1706,12 +1703,18 @@
                 document.getElementById('version-display').textContent = data.version;
                 if (data.commits && data.commits.length > 0) {
                     commitsList.innerHTML = data.commits.map((c, i) => {
+                        // Parse: hash date time message (e.g. "abc123 2026-02-12 08:30:45 Fix bug")
                         const parts = c.split(' ');
                         const hash = parts[0];
-                        const msg = parts.slice(1).join(' ');
+                        const date = parts[1] || '';
+                        const time = parts[2] || '';
+                        let msg = parts.slice(3).join(' ');
+                        // Remove emojis and clean up
+                        msg = msg.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
                         const isLatest = i === 0;
+                        const datetime = date && time ? `<span style="color: #666; font-size: 9px; margin-left: 8px;">${date} ${time}</span>` : '';
                         return `<div style="padding: 6px 8px; margin-bottom: 4px; background: ${isLatest ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.03)'}; border-radius: 4px; border-left: 2px solid ${isLatest ? '#22c55e' : '#333'};">
-                            <span style="color: #f59e0b;">${hash}</span> <span style="color: #ccc;">${msg}</span>
+                            <span style="color: #f59e0b;">${hash}</span>${datetime}<br><span style="color: #ccc;">${msg}</span>
                         </div>`;
                     }).join('');
                 } else {
