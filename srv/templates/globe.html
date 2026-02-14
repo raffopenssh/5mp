@@ -2651,9 +2651,12 @@
             document.body.classList.remove('bbox-selecting');
             
             // Update filter panel display
+            var activeFilters = document.getElementById('active-filters');
             var filterArea = document.getElementById('filter-area');
             var filterAreaValue = document.getElementById('filter-area-value');
             if (filterArea && filterAreaValue) {
+                // Show the active-filters container
+                if (activeFilters) activeFilters.style.display = 'block';
                 filterArea.style.display = 'flex';
                 // Calculate approximate area size
                 var latDiff = Math.abs(maxLat - minLat);
@@ -5259,10 +5262,12 @@
 
         // Update filter area display to show names instead of bbox coordinates
         function updateFilterAreaDisplay() {
+            var activeFilters = document.getElementById('active-filters');
             var filterArea = document.getElementById('filter-area');
             var filterAreaValue = document.getElementById('filter-area-value');
             if (!filterAreaValue) return;
             if (selectedParks.length > 0) {
+                if (activeFilters) activeFilters.style.display = 'block';
                 if (filterArea) filterArea.style.display = 'flex';
                 if (selectedParks.length === 1) {
                     filterAreaValue.textContent = selectedParks[0].name;
@@ -5272,9 +5277,11 @@
                     filterAreaValue.textContent = selectedParks[0].name + ' + ' + (selectedParks.length - 1) + ' more parks';
                 }
             } else if (currentCountryFilter) {
+                if (activeFilters) activeFilters.style.display = 'block';
                 if (filterArea) filterArea.style.display = 'flex';
                 filterAreaValue.textContent = currentCountryFilter;
             } else if (currentBbox) {
+                if (activeFilters) activeFilters.style.display = 'block';
                 if (filterArea) filterArea.style.display = 'flex';
                 var latDiff = Math.abs(currentBbox[3] - currentBbox[1]);
                 var lngDiff = Math.abs(currentBbox[2] - currentBbox[0]);
@@ -5282,6 +5289,10 @@
                 filterAreaValue.textContent = formatNumber(approxKm) + ' km\u00b2 region';
             } else {
                 if (filterArea) filterArea.style.display = 'none';
+                // Hide active-filters container if no filter items are visible
+                if (activeFilters && !document.querySelector('#active-filters .active-filter-item[style*="display: flex"]')) {
+                    activeFilters.style.display = 'none';
+                }
             }
         }
 
