@@ -42,3 +42,6 @@ srv/static/downloads/
 data/export/fire_narratives.json
 data/export/fire_narratives/
 data/fire_realtime/
+data/export/deforestation_narratives.json
+data/export/settlement_narratives.json
+data/export/narrative_summary.json
