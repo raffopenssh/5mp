@@ -23,32 +23,50 @@ type ImprovedPublicationSearch struct {
 }
 
 // buildSearchQueries creates multiple search queries for OpenAlex
+// Based on rwosconsindex keywords: ecology, environment, biodiversity conservation
 func (s *Server) buildSearchQueries(search ImprovedPublicationSearch) []string {
 	queries := []string{}
 
-	// 1. Park name exact match (most specific)
 	parkNameClean := cleanSearchTerm(search.ParkName)
+	countryClean := cleanSearchTerm(search.Country)
+
+	// 1. Park name exact match (most specific)
 	if parkNameClean != "" {
 		queries = append(queries, fmt.Sprintf(`"%s"`, parkNameClean))
 	}
 
-	// 2. Park name + country
-	if parkNameClean != "" && search.Country != "" {
-		countryClean := cleanSearchTerm(search.Country)
+	// 2. Park name + conservation keywords
+	conservationKeywords := []string{"conservation", "biodiversity", "wildlife", "protected area"}
+	if parkNameClean != "" {
+		for _, kw := range conservationKeywords {
+			queries = append(queries, fmt.Sprintf(`"%s" %s`, parkNameClean, kw))
+		}
+	}
+
+	// 3. Park name + country
+	if parkNameClean != "" && countryClean != "" {
 		queries = append(queries, fmt.Sprintf(`"%s" %s`, parkNameClean, countryClean))
 	}
 
-	// 3. Key species + park name (for flagship species)
+	// 4. Park name + ecology/biology keywords
+	scienceKeywords := []string{"ecology", "habitat", "ecosystem", "species"}
+	if parkNameClean != "" {
+		for _, kw := range scienceKeywords {
+			queries = append(queries, fmt.Sprintf(`"%s" %s`, parkNameClean, kw))
+		}
+	}
+
+	// 5. Key species + park name (for flagship species)
 	for _, species := range search.KeySpecies {
-		if species != "" {
+		if species != "" && parkNameClean != "" {
 			queries = append(queries, fmt.Sprintf(`"%s" "%s"`, species, parkNameClean))
 		}
 	}
 
-	// 4. Key species + country (broader search for important species)
+	// 6. Key species + country + conservation
 	for _, species := range search.KeySpecies {
-		if species != "" && search.Country != "" {
-			queries = append(queries, fmt.Sprintf(`"%s" %s conservation`, species, search.Country))
+		if species != "" && countryClean != "" {
+			queries = append(queries, fmt.Sprintf(`"%s" %s conservation`, species, countryClean))
 		}
 	}
 
