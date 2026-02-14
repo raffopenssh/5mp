@@ -37,3 +37,8 @@ live_globe.html
 .vscode/
 *.swp
 srv/static/downloads/
+
+# Large precomputed data files (served locally, not pushed to git)
+data/export/fire_narratives.json
+data/export/fire_narratives/
+data/fire_realtime/
