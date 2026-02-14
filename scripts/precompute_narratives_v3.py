@@ -310,32 +310,41 @@ class NarrativeGenerator:
         return ' '.join(parts)
     
     def generate_settlement_narratives(self):
-        """Generate settlement narratives"""
+        """Generate settlement narratives from JSON files"""
         print("\n" + "=" * 70)
         print("[SETTLEMENT NARRATIVES]")
         print("=" * 70)
         
-        cursor = self.conn.execute('''
-            SELECT park_id, id, lat, lon, area_m2, population_est,
-                   nearest_place, classification, classification_confidence, 
-                   narrative
-            FROM park_settlements
-            ORDER BY park_id, population_est DESC
-        ''')
+        SETTLE_DIR = Path('data/settlement_events')
         
         by_park = defaultdict(list)
-        for row in cursor:
-            by_park[row['park_id']].append({
-                'id': row['id'],
-                'lat': row['lat'],
-                'lon': row['lon'],
-                'area_m2': row['area_m2'],
-                'population': row['population_est'],
-                'nearest_place': row['nearest_place'],
-                'classification': row['classification'],
-                'confidence': row['classification_confidence'],
-                'narrative': row['narrative']
-            })
+        
+        # Load from JSON files (richer data)
+        for json_file in SETTLE_DIR.glob('*.json'):
+            park_id = json_file.stem
+            with open(json_file) as f:
+                settlements = json.load(f)
+            for s in settlements:
+                by_park[park_id].append({
+                    'id': s.get('id'),
+                    'lat': s.get('lat'),
+                    'lon': s.get('lon'),
+                    'area_m2': s.get('area_m2'),
+                    'population': s.get('population_est'),
+                    'households': s.get('households_est'),
+                    'nearest_place': s.get('nearest_place'),
+                    'distance_to_place_km': s.get('distance_to_place_km'),
+                    'direction_from_place': s.get('direction_from_place'),
+                    'settlement_type': s.get('settlement_type'),
+                    'in_buffer': s.get('in_buffer'),
+                    'classification': s.get('classification'),
+                    'confidence': s.get('classification_confidence'),
+                    'narrative': s.get('narrative'),
+                    'fires_5km': s.get('fires_5km'),
+                    'fire_seasonality': s.get('fire_seasonality'),
+                    'deforest_nearby_km2': s.get('deforest_nearby_km2'),
+                    'polygon_ids': s.get('polygon_ids')
+                })
         
         narratives = {}
         parks = sorted(by_park.keys())
@@ -347,11 +356,36 @@ class NarrativeGenerator:
             class_counts = defaultdict(int)
             total_pop = 0
             total_area = 0
+            fires_total = 0
+            deforest_total = 0
             
             for s in settlements:
-                class_counts[s['classification'] or 'unknown'] += 1
-                total_pop += s['population'] or 0
-                total_area += s['area_m2'] or 0
+                class_counts[s.get('classification') or 'unknown'] += 1
+                total_pop += s.get('population') or 0
+                total_area += s.get('area_m2') or 0
+                fires_total += s.get('fires_5km') or 0
+                deforest_total += s.get('deforest_nearby_km2') or 0
+            
+            # Sort by population for top settlements
+            top_settlements = sorted(settlements, key=lambda x: x.get('population') or 0, reverse=True)[:50]
+            settlement_list = [{
+                'id': s.get('id'),
+                'lat': s.get('lat'),
+                'lon': s.get('lon'),
+                'area_m2': s.get('area_m2'),
+                'population': s.get('population'),
+                'households': s.get('households'),
+                'nearest_place': s.get('nearest_place'),
+                'distance_to_place_km': s.get('distance_to_place_km'),
+                'settlement_type': s.get('settlement_type'),
+                'in_buffer': s.get('in_buffer'),
+                'classification': s.get('classification'),
+                'confidence': s.get('confidence'),
+                'narrative': s.get('narrative'),
+                'fires_5km': s.get('fires_5km'),
+                'deforest_nearby_km2': s.get('deforest_nearby_km2'),
+                'polygon_ids': s.get('polygon_ids')
+            } for s in top_settlements]
             
             narratives[park_id] = {
                 'park_id': park_id,
@@ -371,31 +405,37 @@ class NarrativeGenerator:
         return narratives
     
     def generate_deforestation_narratives(self):
-        """Generate deforestation narratives"""
+        """Generate deforestation narratives from JSON files"""
         print("\n" + "=" * 70)
         print("[DEFORESTATION NARRATIVES]")
         print("=" * 70)
         
-        cursor = self.conn.execute('''
-            SELECT park_id, id, year, lat, lon, area_km2,
-                   classification, classification_confidence, 
-                   narrative
-            FROM deforestation_events
-            ORDER BY park_id, year DESC
-        ''')
+        DEFOREST_DIR = Path('data/deforestation_events')
         
         by_park = defaultdict(list)
-        for row in cursor:
-            by_park[row['park_id']].append({
-                'id': row['id'],
-                'year': row['year'],
-                'lat': row['lat'],
-                'lon': row['lon'],
-                'area_km2': row['area_km2'],
-                'classification': row['classification'],
-                'confidence': row['classification_confidence'],
-                'narrative': row['narrative']
-            })
+        
+        # Load from JSON files (richer data)
+        for json_file in DEFOREST_DIR.glob('*.json'):
+            park_id = json_file.stem
+            with open(json_file) as f:
+                events = json.load(f)
+            for e in events:
+                by_park[park_id].append({
+                    'id': e.get('id'),
+                    'year': e.get('year'),
+                    'lat': e.get('lat'),
+                    'lon': e.get('lon'),
+                    'area_km2': e.get('area_km2'),
+                    'pattern_type': e.get('pattern_type'),
+                    'pixel_count': e.get('pixel_count'),
+                    'classification': e.get('classification'),
+                    'confidence': e.get('classification_confidence'),
+                    'narrative': e.get('narrative'),
+                    'fires_same_year': e.get('fires_same_year'),
+                    'fire_ratio': e.get('fire_ratio'),
+                    'nearest_settlement_km': e.get('nearest_settlement_km'),
+                    'polygon_ids': e.get('polygon_ids')
+                })
         
         narratives = {}
         parks = sorted(by_park.keys())
@@ -423,6 +463,23 @@ class NarrativeGenerator:
                 trend_pct = ((late_area - early_area) / early_area) * 100 if early_area > 0 else 0
             else:
                 trend_pct = 0
+            
+            # Include top events with full details
+            top_events = sorted(events, key=lambda x: x['area_km2'] or 0, reverse=True)[:50]
+            event_list = [{
+                'id': e['id'],
+                'year': e['year'],
+                'lat': e['lat'],
+                'lon': e['lon'],
+                'area_km2': e['area_km2'],
+                'pattern_type': e.get('pattern_type'),
+                'pixel_count': e.get('pixel_count'),
+                'classification': e.get('classification'),
+                'confidence': e.get('confidence'),
+                'narrative': e.get('narrative'),
+                'fires_same_year': e.get('fires_same_year'),
+                'polygon_ids': e.get('polygon_ids')
+            } for e in top_events]
             
             narratives[park_id] = {
                 'park_id': park_id,
