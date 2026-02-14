@@ -214,7 +214,7 @@ func (q *MBTilesQueue) generateMBTiles(job *MBTilesJob, outputPath string) error
 	}
 	
 	// Create SQLite database with MBTiles schema
-	db, err := sql.Open("sqlite3", outputPath)
+	db, err := sql.Open("sqlite", outputPath)
 	if err != nil {
 		return fmt.Errorf("failed to create database: %w", err)
 	}
