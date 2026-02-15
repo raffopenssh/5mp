@@ -829,10 +829,11 @@ func (s *Server) GetCachedClassifiedDeforestation(parkID string) []ClassifiedDef
 		SELECT id, park_id, year, area_km2, lat, lon,
 			COALESCE(classification, 'unknown'), COALESCE(classification_confidence, 0),
 			COALESCE(narrative, ''), COALESCE(pattern_type, ''),
-			COALESCE(fires_same_year, 0), COALESCE(fire_ratio, 0), COALESCE(nearest_settlement_km, 0)
+			COALESCE(fires_same_year, 0), COALESCE(fire_ratio, 0), COALESCE(nearest_settlement_km, 0),
+			COALESCE(polygon_ids, '')
 		FROM deforestation_events
 		WHERE park_id = ?
-		ORDER BY year DESC
+		ORDER BY year DESC, area_km2 DESC
 	`, parkID)
 	if err != nil {
 		return nil
@@ -844,7 +845,7 @@ func (s *Server) GetCachedClassifiedDeforestation(parkID string) []ClassifiedDef
 		var df ClassifiedDeforestation
 		err := rows.Scan(&df.ID, &df.ParkID, &df.Year, &df.AreaKm2, &df.Lat, &df.Lon,
 			&df.Classification, &df.Confidence, &df.Narrative, &df.OriginalPattern,
-			&df.FiresSameYear, &df.FireRatio, &df.NearestSettlement)
+			&df.FiresSameYear, &df.FireRatio, &df.NearestSettlement, &df.PolygonIDs)
 		if err != nil {
 			continue
 		}

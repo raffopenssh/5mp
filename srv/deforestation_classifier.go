@@ -30,6 +30,7 @@ type ClassifiedDeforestation struct {
 	Confidence      float64 `json:"confidence"`
 	Narrative       string  `json:"narrative"`
 	OriginalPattern string  `json:"original_pattern"`
+	PolygonIDs      string  `json:"polygon_ids,omitempty"` // Links to feature_geometries
 	
 	// Context
 	NearestPlace      string  `json:"nearest_place,omitempty"`
