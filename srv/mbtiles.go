@@ -227,7 +227,7 @@ func (q *MBTilesQueue) createNotification(parkID, notifType, title, message, lin
 		return
 	}
 	_, err := q.db.Exec(`
-		INSERT INTO notifications (park_id, notification_type, title, message, link, created_at)
+		INSERT INTO notifications (park_id, notification_type, title, message, reference_url, created_at)
 		VALUES (?, ?, ?, ?, ?, datetime('now'))
 	`, parkID, notifType, title, message, link)
 	if err != nil {
