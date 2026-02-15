@@ -464,23 +464,6 @@ class NarrativeGenerator:
             else:
                 trend_pct = 0
             
-            # Include top events with full details
-            top_events = sorted(events, key=lambda x: x['area_km2'] or 0, reverse=True)[:50]
-            event_list = [{
-                'id': e['id'],
-                'year': e['year'],
-                'lat': e['lat'],
-                'lon': e['lon'],
-                'area_km2': e['area_km2'],
-                'pattern_type': e.get('pattern_type'),
-                'pixel_count': e.get('pixel_count'),
-                'classification': e.get('classification'),
-                'confidence': e.get('confidence'),
-                'narrative': e.get('narrative'),
-                'fires_same_year': e.get('fires_same_year'),
-                'polygon_ids': e.get('polygon_ids')
-            } for e in top_events]
-            
             narratives[park_id] = {
                 'park_id': park_id,
                 'event_count': len(events),
