@@ -15,7 +15,7 @@ DATA_DIR = Path(__file__).parent.parent / 'data'
 def create_tables(conn):
     """Create or update tables for new data"""
     
-    # Rivers table
+    # Rivers table (legacy - point data only)
     conn.execute('''
         CREATE TABLE IF NOT EXISTS rivers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,7 +29,7 @@ def create_tables(conn):
         )
     ''')
     
-    # Park-river links
+    # Park-river links (legacy)
     conn.execute('''
         CREATE TABLE IF NOT EXISTS park_rivers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,12 +41,45 @@ def create_tables(conn):
         )
     ''')
     
-    # Roads table (HeiGIT)
+    # HydroRIVERS with geometry (new - 50km buffer)
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS park_rivers_hydro (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            park_id TEXT NOT NULL,
+            hyriv_id INTEGER NOT NULL,
+            name TEXT,
+            stream_order INTEGER,
+            ord_flow INTEGER,
+            length_km REAL,
+            geojson TEXT,
+            UNIQUE(park_id, hyriv_id)
+        )
+    ''')
+    
+    # HydroLAKES with geometry (new - 50km buffer)
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS park_lakes_hydro (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            park_id TEXT NOT NULL,
+            hylak_id INTEGER NOT NULL,
+            name TEXT,
+            lake_type INTEGER,
+            elevation INTEGER,
+            area_km2 REAL,
+            centroid_lon REAL,
+            centroid_lat REAL,
+            geojson TEXT,
+            UNIQUE(park_id, hylak_id)
+        )
+    ''')
+    
+    # Roads table (HeiGIT) - updated with more fields
     conn.execute('''
         CREATE TABLE IF NOT EXISTS roads_heigit (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             park_id TEXT NOT NULL,
             osm_id TEXT,
+            name TEXT,
             highway_type TEXT,
             surface TEXT,
             smoothness TEXT,
@@ -55,6 +88,15 @@ def create_tables(conn):
             passability TEXT,
             length_km REAL,
             geojson TEXT,
+            osm_surface_class TEXT,
+            osm_length REAL,
+            dl_class_2024 TEXT,
+            dl_class_2020 TEXT,
+            surface_change TEXT,
+            passability_code TEXT,
+            passability_desc TEXT,
+            passability_risk TEXT,
+            rw_class TEXT,
             UNIQUE(park_id, osm_id)
         )
     ''')
@@ -62,6 +104,9 @@ def create_tables(conn):
     # Create indexes
     conn.execute('CREATE INDEX IF NOT EXISTS idx_rivers_name ON rivers(name)')
     conn.execute('CREATE INDEX IF NOT EXISTS idx_park_rivers_park ON park_rivers(park_id)')
+    conn.execute('CREATE INDEX IF NOT EXISTS idx_rivers_hydro_park ON park_rivers_hydro(park_id)')
+    conn.execute('CREATE INDEX IF NOT EXISTS idx_rivers_hydro_order ON park_rivers_hydro(stream_order)')
+    conn.execute('CREATE INDEX IF NOT EXISTS idx_lakes_hydro_park ON park_lakes_hydro(park_id)')
     conn.execute('CREATE INDEX IF NOT EXISTS idx_roads_heigit_park ON roads_heigit(park_id)')
     
     conn.commit()
@@ -116,19 +161,112 @@ def load_rivers(conn):
     conn.commit()
     return river_count, link_count
 
-def load_roads_heigit(conn):
-    """Load HeiGIT road data"""
-    roads_dir = DATA_DIR / 'roads_heigit'
-    if not roads_dir.exists():
-        print("  No roads_heigit directory found")
+def load_rivers_hydro(conn):
+    """Load HydroRIVERS data with geometry (50km buffer)"""
+    rivers_dir = DATA_DIR / 'rivers_hydro'
+    if not rivers_dir.exists():
+        print("  No rivers_hydro directory found")
         return 0
     
+    # Clear existing data
+    conn.execute("DELETE FROM park_rivers_hydro")
+    
     count = 0
-    for json_file in roads_dir.glob('*.json'):
+    for json_file in sorted(rivers_dir.glob('*.json')):
         park_id = json_file.stem
         try:
             with open(json_file) as f:
-                roads = json.load(f)
+                data = json.load(f)
+            
+            for r in data.get('rivers', []):
+                conn.execute('''
+                    INSERT OR REPLACE INTO park_rivers_hydro 
+                    (park_id, hyriv_id, name, stream_order, ord_flow, length_km, geojson)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    park_id,
+                    r.get('hyriv_id'),
+                    r.get('name'),
+                    r.get('stream_order'),
+                    r.get('ord_flow'),
+                    r.get('length_km'),
+                    json.dumps(r.get('geometry')) if r.get('geometry') else None
+                ))
+                count += 1
+            
+            if count % 50000 == 0:
+                print(f"    Imported {count} rivers...")
+                conn.commit()
+        except Exception as e:
+            print(f"  Error loading rivers for {park_id}: {e}")
+    
+    conn.commit()
+    return count
+
+def load_lakes_hydro(conn):
+    """Load HydroLAKES data with geometry (50km buffer)"""
+    lakes_dir = DATA_DIR / 'lakes_hydro'
+    if not lakes_dir.exists():
+        print("  No lakes_hydro directory found")
+        return 0
+    
+    # Clear existing data
+    conn.execute("DELETE FROM park_lakes_hydro")
+    
+    count = 0
+    for json_file in sorted(lakes_dir.glob('*.json')):
+        park_id = json_file.stem
+        try:
+            with open(json_file) as f:
+                data = json.load(f)
+            
+            for lake in data.get('lakes', []):
+                conn.execute('''
+                    INSERT OR REPLACE INTO park_lakes_hydro 
+                    (park_id, hylak_id, name, lake_type, elevation, area_km2,
+                     centroid_lon, centroid_lat, geojson)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    park_id,
+                    lake.get('hylak_id'),
+                    lake.get('name'),
+                    lake.get('lake_type'),
+                    lake.get('elevation'),
+                    lake.get('area_km2'),
+                    lake.get('centroid_lon'),
+                    lake.get('centroid_lat'),
+                    json.dumps(lake.get('geometry')) if lake.get('geometry') else None
+                ))
+                count += 1
+        except Exception as e:
+            print(f"  Error loading lakes for {park_id}: {e}")
+    
+    conn.commit()
+    return count
+
+def load_roads_heigit(conn):
+    """Load HeiGIT road data from processed directory (with geometry)"""
+    # Prefer processed roads (with 50km buffer clipping and names)
+    roads_dir = DATA_DIR / 'roads_processed'
+    if not roads_dir.exists():
+        # Fall back to original roads_heigit
+        roads_dir = DATA_DIR / 'roads_heigit'
+        if not roads_dir.exists():
+            print("  No roads directory found")
+            return 0
+    
+    # Clear existing data
+    conn.execute("DELETE FROM roads_heigit")
+    
+    count = 0
+    for json_file in sorted(roads_dir.glob('*.json')):
+        park_id = json_file.stem
+        try:
+            with open(json_file) as f:
+                data = json.load(f)
+            
+            # Handle both formats: list or {roads: [...]}
+            roads = data.get('roads', data) if isinstance(data, dict) else data
             
             for r in roads:
                 props = r.get('properties', r)
@@ -136,19 +274,32 @@ def load_roads_heigit(conn):
                 
                 conn.execute('''
                     INSERT OR REPLACE INTO roads_heigit 
-                    (park_id, osm_id, highway_type, surface, smoothness, width, lanes, passability, length_km, geojson)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (park_id, osm_id, name, highway_type, surface, smoothness, 
+                     width, lanes, passability, length_km, geojson,
+                     osm_surface_class, dl_class_2024, dl_class_2020,
+                     surface_change, passability_code, passability_desc,
+                     passability_risk, rw_class)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     park_id,
                     props.get('osm_id') or props.get('@id'),
-                    props.get('highway'),
+                    props.get('name'),
+                    props.get('highway') or props.get('highway_type'),
                     props.get('surface'),
                     props.get('smoothness'),
                     props.get('width'),
                     props.get('lanes'),
                     props.get('passability'),
                     props.get('length_km'),
-                    json.dumps(geom) if geom else None
+                    json.dumps(geom) if geom else None,
+                    props.get('osm_surface_class'),
+                    props.get('dl_class_2024'),
+                    props.get('dl_class_2020'),
+                    props.get('surface_change'),
+                    props.get('passability_code'),
+                    props.get('passability_desc'),
+                    props.get('passability_risk'),
+                    props.get('rw_class')
                 ))
                 count += 1
         except Exception as e:
@@ -401,38 +552,48 @@ def main():
     print("\n[0] Creating/updating tables...")
     create_tables(conn)
     
-    # Load rivers
-    print("\n[1] Loading HydroRIVERS data...")
+    # Load rivers (legacy - point data)
+    print("\n[1] Loading legacy HydroRIVERS data (point data)...")
     rivers, links = load_rivers(conn)
     print(f"    Loaded {rivers} river segments, {links} park-river links")
     
+    # Load HydroRIVERS with geometry (new)
+    print("\n[2] Loading HydroRIVERS with geometry (50km buffer)...")
+    rivers_hydro = load_rivers_hydro(conn)
+    print(f"    Loaded {rivers_hydro} river segments with geometry")
+    
+    # Load HydroLAKES with geometry (new)
+    print("\n[3] Loading HydroLAKES with geometry (50km buffer)...")
+    lakes_hydro = load_lakes_hydro(conn)
+    print(f"    Loaded {lakes_hydro} lakes with geometry")
+    
     # Load roads
-    print("\n[2] Loading HeiGIT road data...")
+    print("\n[4] Loading HeiGIT road data (with geometry)...")
     roads = load_roads_heigit(conn)
     print(f"    Loaded {roads} road segments")
     
     # Load OSM places
-    print("\n[3] Loading OSM places...")
+    print("\n[5] Loading OSM places...")
     places = load_osm_places(conn)
     print(f"    Loaded {places} places")
     
     # Load fire trajectories
-    print("\n[4] Loading enhanced fire trajectories...")
+    print("\n[6] Loading enhanced fire trajectories...")
     trajectories = load_fire_trajectories(conn)
     print(f"    Loaded {trajectories} trajectories")
     
     # Load settlement events
-    print("\n[5] Updating settlement classifications...")
+    print("\n[7] Updating settlement classifications...")
     settlements = load_settlement_events(conn)
     print(f"    Updated {settlements} settlement records")
     
     # Load deforestation events
-    print("\n[6] Updating deforestation classifications...")
+    print("\n[8] Updating deforestation classifications...")
     deforest = load_deforestation_events(conn)
     print(f"    Updated {deforest} deforestation records")
     
     # Load fire narratives
-    print("\n[7] Loading fire narratives to cache...")
+    print("\n[9] Loading fire narratives to cache...")
     narratives = load_fire_narratives(conn)
     print(f"    Loaded {narratives} narrative caches")
     
@@ -440,9 +601,13 @@ def main():
     print("\n" + "=" * 60)
     print("Import complete! Summary:")
     cursor = conn.execute("SELECT COUNT(*) FROM rivers")
-    print(f"  Rivers: {cursor.fetchone()[0]}")
+    print(f"  Rivers (legacy): {cursor.fetchone()[0]}")
     cursor = conn.execute("SELECT COUNT(*) FROM park_rivers")
-    print(f"  Park-river links: {cursor.fetchone()[0]}")
+    print(f"  Park-river links (legacy): {cursor.fetchone()[0]}")
+    cursor = conn.execute("SELECT COUNT(*) FROM park_rivers_hydro")
+    print(f"  Rivers with geometry (HydroRIVERS): {cursor.fetchone()[0]}")
+    cursor = conn.execute("SELECT COUNT(*) FROM park_lakes_hydro")
+    print(f"  Lakes with geometry (HydroLAKES): {cursor.fetchone()[0]}")
     cursor = conn.execute("SELECT COUNT(*) FROM roads_heigit")
     print(f"  Road segments (HeiGIT): {cursor.fetchone()[0]}")
     cursor = conn.execute("SELECT COUNT(*) FROM osm_places")
