@@ -4139,10 +4139,10 @@
             try {
                 // Use fire-narrative endpoint with time slider range for richer data
                 let url = `/api/parks/${encodeURIComponent(paId)}/fire-narrative`;
-                const params = [];
+                const params = ['pwd=' + encodeURIComponent(getPwd())];
                 if (dateFrom) params.push('from=' + dateFrom);
                 if (dateTo) params.push('to=' + dateTo);
-                if (params.length > 0) url += '?' + params.join('&');
+                url += '?' + params.join('&');
                 
                 const resp = await fetch(url);
                 const data = await resp.json();
@@ -4150,7 +4150,7 @@
                 // Also fetch real-time fire groups
                 let realtimeData = null;
                 try {
-                    const rtResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/fire-realtime?days=28`);
+                    const rtResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/fire-realtime?days=28&pwd=${encodeURIComponent(getPwd())}`);
                     if (rtResp.ok) realtimeData = await rtResp.json();
                 } catch (e) { console.log('Fire realtime not available'); }
 
@@ -4316,7 +4316,7 @@
             if (!el) return;
             try {
                 // Use settlement-narrative endpoint for rich data
-                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/settlement-narrative`);
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/settlement-narrative?pwd=${encodeURIComponent(getPwd())}`);
                 const data = await resp.json();
                 
                 // Update count in header
@@ -4446,12 +4446,10 @@
             if (!el) return;
             try {
                 let url = `/api/parks/${encodeURIComponent(paId)}/deforestation-narrative`;
-                if (dateFrom || dateTo) {
-                    const params = [];
-                    if (dateFrom) params.push('from=' + dateFrom);
-                    if (dateTo) params.push('to=' + dateTo);
-                    url += '?' + params.join('&');
-                }
+                const params = ['pwd=' + encodeURIComponent(getPwd())];
+                if (dateFrom) params.push('from=' + dateFrom);
+                if (dateTo) params.push('to=' + dateTo);
+                url += '?' + params.join('&');
                 const resp = await fetch(url);
                 const data = await resp.json();
                 const totalLoss = data.total_loss_km2 || data.total_area_km2 || 0;
