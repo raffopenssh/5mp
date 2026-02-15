@@ -157,6 +157,43 @@ out center tags;
             logger.error(f"Overpass API error: {e}")
             return None
     
+    def _split_bbox(self, bbox: Tuple[float, float, float, float]) -> List[Tuple[float, float, float, float]]:
+        """Split a bounding box into 4 quadrants"""
+        south, west, north, east = bbox
+        mid_lat = (south + north) / 2
+        mid_lon = (west + east) / 2
+        return [
+            (south, west, mid_lat, mid_lon),      # SW
+            (south, mid_lon, mid_lat, east),      # SE
+            (mid_lat, west, north, mid_lon),      # NW
+            (mid_lat, mid_lon, north, east),      # NE
+        ]
+    
+    def _query_bbox_with_retry(self, bbox: Tuple[float, float, float, float], depth: int = 0) -> List[Dict]:
+        """Query a bbox, splitting into quadrants on failure (max 2 levels deep)"""
+        query = self._build_overpass_query(bbox)
+        data = self._query_overpass(query)
+        
+        if data is not None:
+            return self._parse_osm_elements(data)
+        
+        # On failure, try splitting (max depth 2 = 16 quadrants)
+        if depth >= 2:
+            logger.warning(f"Max retry depth reached for bbox {bbox}")
+            return []
+        
+        logger.info(f"Splitting bbox into quadrants (depth {depth + 1})...")
+        all_places = []
+        quadrants = self._split_bbox(bbox)
+        
+        for i, quad in enumerate(quadrants):
+            logger.info(f"  Querying quadrant {i+1}/4...")
+            time.sleep(10)  # Rate limit between quadrants
+            places = self._query_bbox_with_retry(quad, depth + 1)
+            all_places.extend(places)
+        
+        return all_places
+    
     def _parse_osm_elements(self, data: Dict) -> List[Dict]:
         places = []
         for element in data.get('elements', []):
@@ -211,16 +248,29 @@ out center tags;
         
         logger.info(f"Downloading OSM places for {park_id}")
         
-        query = self._build_overpass_query(bbox)
-        data = self._query_overpass(query)
+        # Use retry logic with bbox splitting
+        places = self._query_bbox_with_retry(bbox)
         
-        if data is None:
-            # Write error file
-            error_file = OUTPUT_DIR / f"{park_id}.error"
-            error_file.write_text(f"Query failed at {datetime.now().isoformat()}")
-            return None
+        if not places:
+            # Check if it's truly empty or failed
+            query = self._build_overpass_query(bbox)
+            data = self._query_overpass(query)
+            if data is None:
+                # Write error file
+                error_file = OUTPUT_DIR / f"{park_id}.error"
+                error_file.write_text(f"Query failed at {datetime.now().isoformat()}")
+                return None
         
-        places = self._parse_osm_elements(data)
+        # Deduplicate places (in case of overlapping quadrants)
+        seen = set()
+        unique_places = []
+        for p in places:
+            key = (p['osm_id'], p['name'])
+            if key not in seen:
+                seen.add(key)
+                unique_places.append(p)
+        places = unique_places
+        
         logger.info(f"Found {len(places)} places for {park_id}")
         
         # Write to JSON file
