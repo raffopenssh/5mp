@@ -203,6 +203,44 @@ python scripts/export_events_from_db.py
 
 ## Important: ID Matching
 
+## Enhanced Event Rebuild (with road detection)
+
+```bash
+python scripts/rebuild_events_enhanced.py
+```
+
+This enhanced script rebuilds both settlements and deforestation with:
+
+**Data sources used:**
+- `park_rivers_hydro` - HydroRIVERS with geometry (50km buffer)
+- `park_lakes_hydro` - HydroLAKES with geometry (50km buffer)
+- `osm_places` - OSM villages, towns, rivers, mountains
+- `roads_heigit` - HeiGIT road geometries for linear pattern detection
+- `park_climate` - Seasonality data
+
+**Linear road detection:**
+- Checks if >60% of deforestation polygons are within 500m of a road
+- Classifies as `logging` with `linear_road` pattern when detected
+- Includes nearest road name in narrative
+
+**Output:**
+- Updates `deforestation_events` and `park_settlements` tables
+- Exports to `data/deforestation_events/*.json` and `data/settlement_events/*.json`
+
+**Classifications:**
+- **Deforestation**: slash_burn, logging (with linear/linear_road patterns), encroachment, natural
+- **Settlements**: town, village, agricultural, temporary_camp, settlement
+
+### Load new hydro/OSM data before rebuild
+
+```bash
+# Import all JSON data to database (rivers, lakes, places, roads)
+python scripts/import_all_json_data.py
+
+# Then rebuild events with enhanced classification
+python scripts/rebuild_events_enhanced.py
+```
+
 The database uses auto-increment IDs for `park_settlements.id` and 
 `deforestation_events.id`. These IDs can differ between database instances
 if data is imported in different orders.
