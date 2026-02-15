@@ -350,7 +350,11 @@ def load_fire_trajectories(conn):
     return count
 
 def load_settlement_events(conn):
-    """Load classified settlement events"""
+    """Load classified settlement events.
+    
+    Matches by (park_id, lat, lon) instead of auto-increment ID,
+    since IDs can differ between database instances.
+    """
     settle_dir = DATA_DIR / 'settlement_events'
     if not settle_dir.exists():
         print("  No settlement_events directory found")
@@ -364,21 +368,33 @@ def load_settlement_events(conn):
                 settlements = json.load(f)
             
             for s in settlements:
-                # Update park_settlements with classification
-                conn.execute('''
+                lat = s.get('lat')
+                lon = s.get('lon')
+                if lat is None or lon is None:
+                    continue
+                
+                # Match by park_id and coordinates (natural key)
+                # Also update polygon_ids for UI polygon display
+                cursor = conn.execute('''
                     UPDATE park_settlements 
                     SET classification = ?,
                         classification_confidence = ?,
-                        narrative = ?
-                    WHERE id = ?
+                        narrative = ?,
+                        polygon_ids = ?
+                    WHERE park_id = ?
+                      AND ABS(lat - ?) < 0.0001
+                      AND ABS(lon - ?) < 0.0001
                 ''', (
                     s.get('classification'),
                     s.get('classification_confidence'),
                     s.get('narrative'),
-                    s.get('id')
+                    s.get('polygon_ids'),
+                    park_id,
+                    lat,
+                    lon
                 ))
-                if conn.total_changes:
-                    count += 1
+                if cursor.rowcount > 0:
+                    count += cursor.rowcount
         except Exception as e:
             print(f"  Error loading settlements for {park_id}: {e}")
     
@@ -386,7 +402,11 @@ def load_settlement_events(conn):
     return count
 
 def load_deforestation_events(conn):
-    """Load classified deforestation events"""
+    """Load classified deforestation events.
+    
+    Matches by (park_id, year) which is the natural UNIQUE key,
+    instead of auto-increment ID which can differ between databases.
+    """
     defo_dir = DATA_DIR / 'deforestation_events'
     if not defo_dir.exists():
         print("  No deforestation_events directory found")
@@ -400,20 +420,30 @@ def load_deforestation_events(conn):
                 events = json.load(f)
             
             for e in events:
-                # Update deforestation_events with classification
-                conn.execute('''
+                year = e.get('year')
+                if year is None:
+                    continue
+                
+                # Match by (park_id, year) - the natural UNIQUE key
+                # Also update polygon_ids for UI polygon display
+                cursor = conn.execute('''
                     UPDATE deforestation_events 
                     SET classification = ?,
                         classification_confidence = ?,
-                        narrative = ?
-                    WHERE id = ?
+                        narrative = ?,
+                        polygon_ids = ?
+                    WHERE park_id = ?
+                      AND year = ?
                 ''', (
                     e.get('classification'),
                     e.get('classification_confidence'),
                     e.get('narrative'),
-                    e.get('id')
+                    e.get('polygon_ids'),
+                    park_id,
+                    year
                 ))
-                count += 1
+                if cursor.rowcount > 0:
+                    count += cursor.rowcount
         except Exception as e:
             print(f"  Error loading deforestation for {park_id}: {e}")
     

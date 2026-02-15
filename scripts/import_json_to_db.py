@@ -186,10 +186,11 @@ def import_settlements(conn):
                 for e in json.load(fp):
                     pid = e.get('polygon_ids')
                     if pid:
-                        pids = [pid] if isinstance(pid, str) else (pid or [])
+                        # polygon_ids can be comma-separated string or single ID
+                        pids = pid.split(',') if isinstance(pid, str) else (pid or [])
                         for p in pids:
-                            classifications[p] = {'classification': e.get('classification'),
-                                                 'narrative': e.get('narrative')}
+                            classifications[p.strip()] = {'classification': e.get('classification'),
+                                                         'narrative': e.get('narrative')}
     log(f"  Loaded {len(classifications)} classifications")
     conn.execute("DELETE FROM feature_geometries WHERE feature_type = 'settlement'")
     rows = []
@@ -230,10 +231,11 @@ def import_deforestation(conn):
                 for e in json.load(fp):
                     pid = e.get('polygon_ids')
                     if pid:
-                        pids = [pid] if isinstance(pid, str) else (pid or [])
+                        # polygon_ids is comma-separated for deforestation (multiple polygons per year)
+                        pids = pid.split(',') if isinstance(pid, str) else (pid or [])
                         for p in pids:
-                            classifications[p] = {'classification': e.get('classification'),
-                                                 'narrative': e.get('narrative')}
+                            classifications[p.strip()] = {'classification': e.get('classification'),
+                                                         'narrative': e.get('narrative')}
     log(f"  Loaded {len(classifications)} classifications")
     conn.execute("DELETE FROM feature_geometries WHERE feature_type = 'deforestation'")
     rows = []

@@ -11,7 +11,10 @@ DB_PATH = Path(__file__).parent.parent / 'db.sqlite3'
 DATA_DIR = Path(__file__).parent.parent / 'data'
 
 def update_settlements(conn):
-    """Update settlements matching by park_id and coordinates"""
+    """Update settlements matching by park_id and coordinates.
+    
+    Also updates polygon_ids which links to feature_geometries for display.
+    """
     settle_dir = DATA_DIR / 'settlement_events'
     if not settle_dir.exists():
         return 0
@@ -34,7 +37,8 @@ def update_settlements(conn):
                     UPDATE park_settlements 
                     SET classification = ?,
                         classification_confidence = ?,
-                        narrative = ?
+                        narrative = ?,
+                        polygon_ids = ?
                     WHERE park_id = ? 
                       AND ABS(lat - ?) < 0.0001
                       AND ABS(lon - ?) < 0.0001
@@ -42,6 +46,7 @@ def update_settlements(conn):
                     s.get('classification'),
                     s.get('classification_confidence'),
                     s.get('narrative'),
+                    s.get('polygon_ids'),
                     park_id,
                     lat,
                     lon
@@ -55,7 +60,11 @@ def update_settlements(conn):
     return count
 
 def update_deforestation(conn):
-    """Update deforestation matching by park_id, year, and coordinates"""
+    """Update deforestation matching by park_id and year.
+    
+    Uses (park_id, year) as the natural UNIQUE key.
+    Also updates polygon_ids for feature_geometries display.
+    """
     defo_dir = DATA_DIR / 'deforestation_events'
     if not defo_dir.exists():
         return 0
@@ -68,29 +77,25 @@ def update_deforestation(conn):
                 events = json.load(f)
             
             for e in events:
-                lat = e.get('lat')
-                lon = e.get('lon')
                 year = e.get('year')
-                if lat is None or lon is None or year is None:
+                if year is None:
                     continue
                     
                 cursor = conn.execute('''
                     UPDATE deforestation_events 
                     SET classification = ?,
                         classification_confidence = ?,
-                        narrative = ?
+                        narrative = ?,
+                        polygon_ids = ?
                     WHERE park_id = ?
                       AND year = ?
-                      AND ABS(lat - ?) < 0.0001
-                      AND ABS(lon - ?) < 0.0001
                 ''', (
                     e.get('classification'),
                     e.get('classification_confidence'),
                     e.get('narrative'),
+                    e.get('polygon_ids'),
                     park_id,
-                    year,
-                    lat,
-                    lon
+                    year
                 ))
                 if cursor.rowcount > 0:
                     count += cursor.rowcount
