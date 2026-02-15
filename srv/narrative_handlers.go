@@ -105,6 +105,7 @@ type FireYearSummary struct {
 // FireGroupStory describes a single fire group's movement
 type FireGroupStory struct {
 	GroupNum      int      `json:"group_num"`
+	FeatureID     string   `json:"feature_id,omitempty"`
 	Year          int      `json:"year,omitempty"`
 	GeoJSONID     int64    `json:"geojson_id,omitempty"`
 	OriginDesc    string   `json:"origin_desc"`

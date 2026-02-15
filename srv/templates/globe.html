@@ -4196,7 +4196,8 @@
                         if (text.length > 120) {
                             text = text.substring(0, 117) + '...';
                         }
-                        const fireFeatureId = data.park_id + '_' + (n.entry_date ? n.entry_date.substring(0,4) : data.year) + '_grp_' + n.group_num;
+                        // Use feature_id from API if available, otherwise construct from group_num
+                        const fireFeatureId = n.feature_id || (data.park_id + '_' + (n.entry_date ? n.entry_date.substring(0,4) : data.year) + '_grp_' + n.group_num);
                         const isPinned = isSingleFeaturePinned(paId, 'fire', fireFeatureId);
                         const rowStyle = isPinned ? 'background: rgba(34,197,94,0.15); border-left: 2px solid #22c55e;' : 'background: rgba(0,0,0,0.2);';
                         return `<div class="narrative-row" data-park="${paId}" data-type="fire" data-feature="${fireFeatureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(data.park_name || paId)}', 'fire', '${fireFeatureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; ${rowStyle} border-radius: 4px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;" title="Click to pin on map. ${fullText.replace(/"/g, '&quot;')}"><span style="color: ${outcomeColor}; margin-right: 4px;">●</span> <span style="flex:1;">${text}</span></div>`;
@@ -6909,12 +6910,12 @@ ${starredItems.narratives.map(n => {
                 btn.style.opacity = '0.4';
             }
         } else {
-            // Pin
-            if (btn) {
+            // Pin - only update visual state if feature is found
+            const success = await addSinglePinnedFeature(parkId, parkName, type, featureId, narrative);
+            if (success && btn) {
                 btn.classList.add('pinned');
                 btn.style.opacity = '1';
             }
-            await addSinglePinnedFeature(parkId, parkName, type, featureId, narrative);
         }
         updatePinnedIndicator();
     }
@@ -6971,7 +6972,7 @@ ${starredItems.narratives.map(n => {
             
             if (features.length === 0) {
                 showToast(`Feature not found`, 'warning');
-                return;
+                return false;
             }
             
             // Create a feature collection (may have multiple polygons)
@@ -7201,9 +7202,11 @@ ${starredItems.narratives.map(n => {
             // Start pulsing after layer is added
             setTimeout(pulseGlow, 100);
             
+            return true; // Success
         } catch (e) {
             console.error('Failed to pin single feature:', e);
             showToast('Failed to pin feature', 'error');
+            return false;
         }
     }
     
