@@ -37,27 +37,40 @@ python scripts/precompute_narratives_v3.py
 
 ## Individual Data Scripts
 
-### Rivers (HydroRIVERS)
+### Rivers & Lakes (HydroRIVERS/HydroLAKES)
 ```bash
-python scripts/import_hydrorivers.py
+# Extract from source GDB files (requires download first)
+python scripts/extract_hydro_data.py
 ```
-- Downloads and imports HydroRIVERS Africa data
-- Output: `rivers` + `park_rivers` tables + `data/rivers/*.json`
+- Requires: `data/hydro_source/HydroRIVERS_v10_af.gdb` and `HydroLAKES_polys_v10.gdb`
+- Download from: https://data.hydrosheds.org/
+- Output: `data/rivers_hydro/*.json` + `data/lakes_hydro/*.json`
+- 50km buffer around each park, full geometry included
 
 ### Roads (HeiGIT)
 ```bash
 python scripts/download_heigit_roads.py
 ```
 - Downloads road surface data from HeiGIT/HDX
-- Output: `feature_geometries` (road_heigit) + `data/roads_heigit/*.json`
-- Includes surface type, passability, width
+- Output: `data/roads_heigit/*.json`
+- Includes surface type, passability, DL classification, geometry
 
 ### OSM Places
 ```bash
+# Download from Overpass API
 python scripts/download_osm_places_to_file.py
 ```
-- Downloads villages, rivers, landmarks from OSM
-- Output: `osm_places` table + `data/osm_places/*.json`
+- Downloads villages, towns, rivers, lakes, mountains from OSM
+- 50km buffer, retries failed parks
+- Output: `data/osm_places/*.json`
+
+### Update Hydro Names from OSM
+```bash
+python scripts/update_hydro_names.py
+```
+- Matches rivers/lakes to nearby OSM place names
+- Updates `data/rivers_hydro/*.json` and `data/lakes_hydro/*.json`
+- Run after downloading new OSM places
 
 ### Settlements & Deforestation (from polygons)
 ```bash
@@ -84,9 +97,10 @@ python scripts/load_json_data.py
 | `data/fire_trajectories/` | 153 | Enhanced trajectories (2018-2026) |
 | `data/deforestation_events/` | 79 | Classified deforestation events |
 | `data/settlement_events/` | 156 | Classified settlements |
-| `data/roads_heigit/` | 159 | Road surface data |
-| `data/rivers/` | 161 | HydroRIVERS data |
-| `data/osm_places/` | 91 | OSM place names |
+| `data/roads_heigit/` | 161 | HeiGIT road data with geometry |
+| `data/rivers_hydro/` | 161 | HydroRIVERS with geometry (50km buffer) |
+| `data/lakes_hydro/` | 161 | HydroLAKES with geometry (50km buffer) |
+| `data/osm_places/` | 161 | OSM place names (villages, rivers, etc.) |
 | `data/climate/` | 1 | Monthly precipitation, seasons |
 | `data/species/` | 1 | IUCN mammal species |
 | `data/waterbodies/` | 137 | Global waterbody polygons |
