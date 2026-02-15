@@ -59,19 +59,15 @@ python scripts/download_osm_places_to_file.py
 - Downloads villages, rivers, landmarks from OSM
 - Output: `osm_places` table + `data/osm_places/*.json`
 
-### Settlements (from polygons)
+### Settlements & Deforestation (from polygons)
 ```bash
 python scripts/rebuild_events_from_polygons.py
 ```
-- Rebuilds settlement events from GHSL polygons
-- Output: `park_settlements` table + `data/settlement_events/*.json`
-
-### Deforestation (from polygons)  
-```bash
-python scripts/rebuild_events_from_polygons.py
-```
-- Rebuilds deforestation events from Hansen polygons
-- Output: `deforestation_events` table + `data/deforestation_events/*.json`
+- Rebuilds both settlements and deforestation from polygon data
+- **Settlements**: Clusters nearby polygons (2km threshold)
+- **Deforestation**: Clusters nearby polygons (5km threshold), multiple events per year
+- Output: `park_settlements` + `deforestation_events` tables
+- Then export: `python scripts/export_events_from_db.py`
 
 ### Species (IUCN)
 ```bash
@@ -160,8 +156,8 @@ sudo systemctl restart srv
 python scripts/import_all_json_data.py
 ```
 - Imports all JSON data into database tables
-- Matches settlements by (park_id, lat, lon) - NOT by auto-increment ID
-- Matches deforestation by (park_id, year) - the natural UNIQUE key
+- Matches settlements by `(park_id, lat, lon)` - NOT by auto-increment ID
+- Matches deforestation by `(park_id, year, lat, lon)` - multiple clusters per year
 - Updates polygon_ids for UI polygon display
 
 ### Update Classifications Only
@@ -169,8 +165,8 @@ python scripts/import_all_json_data.py
 python scripts/update_classifications.py
 ```
 - Updates classification/narrative fields without full reimport
-- Uses coordinate matching for settlements
-- Uses park_id + year for deforestation
+- Settlements: Match by `(park_id, lat, lon)`
+- Deforestation: Match by `(park_id, year, lat, lon)`
 
 ### Import Feature Geometries
 ```bash
@@ -199,33 +195,41 @@ if data is imported in different orders.
 
 **DO NOT match by auto-increment ID when importing.** Instead:
 - Settlements: Match by `(park_id, lat, lon)` coordinates
-- Deforestation: Match by `(park_id, year)` - the natural UNIQUE key
+- Deforestation: Match by `(park_id, year, lat, lon)` - multiple clusters per year
 - Fire trajectories: Use `feature_id` which is consistent
 
 The `polygon_ids` field links events to `feature_geometries` entries.
 Always ensure this field is populated for UI polygon display.
 
-## Deforestation Clustering
+## Spatial Clustering
 
-The deforestation pipeline now creates **multiple events per park-year** using spatial clustering.
+Both settlements and deforestation use spatial clustering to group nearby polygons into events.
 
-### Schema Change
-The `UNIQUE(park_id, year)` constraint was removed. Each distinct cluster of deforestation polygons within 5km is now a separate event.
+| Type | Cluster Distance | Events per Park |
+|------|------------------|------------------|
+| Settlements | 2km | ~74 avg |
+| Deforestation | 5km | ~204 avg (multiple per year) |
 
 ### Rebuild from scratch
 ```bash
+# Both settlements and deforestation:
+python scripts/rebuild_events_from_polygons.py
+
+# Or deforestation only:
 python scripts/rebuild_deforestation_clusters.py
 ```
-- Groups deforestation polygons by (park, year)
-- Clusters spatially (5km threshold)
-- Creates separate event for each cluster
-- Classifies: slash_burn, logging, encroachment, natural, agricultural_clearing
 
-### Statistics (as of rebuild)
-- 16,119 events (was 1,401)
-- Average 11.5 events per park-year
-- 79 parks with deforestation data
+### Deforestation Schema
+The `UNIQUE(park_id, year)` constraint was removed. Each distinct spatial cluster within a year is a separate event.
+
+### Classifications
+- **Deforestation**: slash_burn, logging, encroachment, natural, agricultural_clearing
+- **Settlements**: town, village, compound, agricultural, pastoral, temporary_camp
+
+### Statistics
+- Settlements: 11,559 records across 156 parks
+- Deforestation: 16,119 events across 79 parks (avg 11.5 per park-year)
 
 ### Import/Export
 - Export: `python scripts/export_events_from_db.py`
-- Import: Match by `(park_id, year, lat, lon)` with 0.0001° tolerance
+- Import: Match by coordinates with 0.0001° tolerance
