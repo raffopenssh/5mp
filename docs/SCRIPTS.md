@@ -152,3 +152,55 @@ python3 scripts/import_json_to_db.py
 make build
 sudo systemctl restart srv
 ```
+
+## Import Scripts (for fresh database)
+
+### Full JSON Import
+```bash
+python scripts/import_all_json_data.py
+```
+- Imports all JSON data into database tables
+- Matches settlements by (park_id, lat, lon) - NOT by auto-increment ID
+- Matches deforestation by (park_id, year) - the natural UNIQUE key
+- Updates polygon_ids for UI polygon display
+
+### Update Classifications Only
+```bash
+python scripts/update_classifications.py
+```
+- Updates classification/narrative fields without full reimport
+- Uses coordinate matching for settlements
+- Uses park_id + year for deforestation
+
+### Import Feature Geometries
+```bash
+python scripts/import_json_to_db.py settlements
+python scripts/import_json_to_db.py deforestation
+python scripts/import_json_to_db.py fire_trajectories
+```
+- Loads polygon geometries from `data/feature_geometries/`
+- Applies classifications from `data/*_events/*.json`
+
+## Export Scripts
+
+### Export Events from Database
+```bash
+python scripts/export_events_from_db.py
+```
+- Exports `park_settlements` → `data/settlement_events/*.json`
+- Exports `deforestation_events` → `data/deforestation_events/*.json`
+- Includes polygon_ids for feature_geometries linking
+
+## Important: ID Matching
+
+The database uses auto-increment IDs for `park_settlements.id` and 
+`deforestation_events.id`. These IDs can differ between database instances
+if data is imported in different orders.
+
+**DO NOT match by auto-increment ID when importing.** Instead:
+- Settlements: Match by `(park_id, lat, lon)` coordinates
+- Deforestation: Match by `(park_id, year)` - the natural UNIQUE key
+- Fire trajectories: Use `feature_id` which is consistent
+
+The `polygon_ids` field links events to `feature_geometries` entries.
+Always ensure this field is populated for UI polygon display.
