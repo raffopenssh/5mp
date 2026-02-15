@@ -4,7 +4,7 @@
 Data sources:
 - data/rivers_hydro/*.json - HydroRIVERS with geometry (50km buffer)
 - data/lakes_hydro/*.json - HydroLAKES with geometry (50km buffer)  
-- data/roads_processed/*.json - HeiGIT roads with geometry (50km buffer)
+- data/roads_heigit/*.json - HeiGIT roads with geometry (50km buffer)
 - data/osm_places/*.json - OSM place names
 - data/fire_trajectories/*.json - Enhanced fire trajectories
 - data/settlement_events/*.json - Classified settlements
@@ -176,10 +176,10 @@ def load_lakes_hydro(conn):
     return count
 
 def load_roads_heigit(conn):
-    """Load HeiGIT road data with geometry (from roads_processed)"""
-    roads_dir = DATA_DIR / 'roads_processed'
+    """Load HeiGIT road data with geometry (from roads_heigit)"""
+    roads_dir = DATA_DIR / 'roads_heigit'
     if not roads_dir.exists():
-        print("  No roads_processed directory found")
+        print("  No roads_heigit directory found")
         return 0
     
     # Clear existing data
