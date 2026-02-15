@@ -440,7 +440,12 @@ class EventRebuilder:
         count = 0
         linear_count = 0
         
+        processed_parks = set()
         for (park_id, year), polygons in sorted(park_year_polygons.items()):
+            if park_id not in processed_parks:
+                processed_parks.add(park_id)
+                print(f"  Processing {park_id}...")
+            
             # Cluster polygons spatially
             clusters = self._cluster_polygons(polygons, DEFORESTATION_CLUSTER_KM)
             
@@ -491,7 +496,7 @@ class EventRebuilder:
                 ))
                 count += 1
             
-            if count % 500 == 0:
+            if count % 50 == 0:
                 print(f"  Processed {count} events ({linear_count} linear)...")
                 self.conn.commit()
         
@@ -556,6 +561,7 @@ class EventRebuilder:
         
         count = 0
         for park_id, polygons in sorted(park_polygons.items()):
+            print(f"  Processing {park_id} ({len(polygons)} polygons)...")
             clusters = self._cluster_polygons(polygons, SETTLEMENT_CLUSTER_KM)
             
             places = self._load_park_places(park_id)
@@ -617,7 +623,7 @@ class EventRebuilder:
                 ))
                 count += 1
             
-            if count % 500 == 0:
+            if count % 50 == 0:
                 print(f"  Processed {count} settlements...")
                 self.conn.commit()
         

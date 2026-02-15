@@ -1,6 +1,6 @@
 [
   {
-    "id": 13599,
+    "id": 29718,
     "park_id": "ZAF_Richtersveld",
     "year": 2023,
     "area_km2": 0.0054,
@@ -9,16 +9,16 @@
     "lon": 17.404347,
     "geojson": null,
     "description": null,
-    "pattern_type": "single_patch",
+    "pattern_type": "scattered",
     "pixel_count": 1,
-    "created_at": "2026-02-15 10:57:45",
-    "classification": "encroachment",
-    "classification_confidence": 0.55,
-    "narrative": "Forest encroachment detected in 2023. Affected area: 0.01 km\u00b2 across 1 patch. Located 1.2km from Aussenkehr.",
+    "created_at": "2026-02-15 16:57:20",
+    "classification": "natural",
+    "classification_confidence": 0.5,
+    "narrative": "Natural forest loss detected in 2023. Affected 0.01 km\u00b2 across 1 patch. Located 1.2km from Aussenkehr. Near Helskloof river.",
     "fires_same_year": 0,
     "fire_ratio": 0.0,
     "nearest_settlement_km": null,
-    "classified_at": "2026-02-15T10:57:45.446175",
+    "classified_at": "2026-02-15T16:57:20.656825",
     "polygon_ids": "deforest_ZAF_Richtersveld_2023_0"
   }
 ]
