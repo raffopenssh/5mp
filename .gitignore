@@ -45,9 +45,3 @@ data/fire_realtime/
 data/export/deforestation_narratives.json
 data/export/settlement_narratives.json
 data/export/narrative_summary.json
-
-# HydroRIVERS/HydroLAKES/roads processed data (large, regenerate with scripts/extract_hydro_data.py)
-data/rivers_hydro/
-data/lakes_hydro/
-data/roads_processed/
-data/hydro_source/
