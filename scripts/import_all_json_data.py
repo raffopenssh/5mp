@@ -258,10 +258,16 @@ def load_osm_places(conn):
             for p in places:
                 if not isinstance(p, dict):
                     continue
+                
+                # Handle osm_tags - can be dict or string
+                osm_tags = p.get('osm_tags')
+                if isinstance(osm_tags, dict):
+                    osm_tags = json.dumps(osm_tags)
+                
                 conn.execute('''
                     INSERT OR REPLACE INTO osm_places 
-                    (park_id, place_type, name, lat, lon, osm_id, geojson)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    (park_id, place_type, name, lat, lon, osm_id, geojson, osm_tags)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     park_id,
                     p.get('place_type') or p.get('type'),
@@ -269,7 +275,8 @@ def load_osm_places(conn):
                     p.get('lat'),
                     p.get('lon'),
                     p.get('osm_id'),
-                    json.dumps(p.get('geojson')) if p.get('geojson') else None
+                    json.dumps(p.get('geojson')) if p.get('geojson') else None,
+                    osm_tags
                 ))
                 count += 1
         except Exception as e:
