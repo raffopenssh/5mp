@@ -204,3 +204,28 @@ if data is imported in different orders.
 
 The `polygon_ids` field links events to `feature_geometries` entries.
 Always ensure this field is populated for UI polygon display.
+
+## Deforestation Clustering
+
+The deforestation pipeline now creates **multiple events per park-year** using spatial clustering.
+
+### Schema Change
+The `UNIQUE(park_id, year)` constraint was removed. Each distinct cluster of deforestation polygons within 5km is now a separate event.
+
+### Rebuild from scratch
+```bash
+python scripts/rebuild_deforestation_clusters.py
+```
+- Groups deforestation polygons by (park, year)
+- Clusters spatially (5km threshold)
+- Creates separate event for each cluster
+- Classifies: slash_burn, logging, encroachment, natural, agricultural_clearing
+
+### Statistics (as of rebuild)
+- 16,119 events (was 1,401)
+- Average 11.5 events per park-year
+- 79 parks with deforestation data
+
+### Import/Export
+- Export: `python scripts/export_events_from_db.py`
+- Import: Match by `(park_id, year, lat, lon)` with 0.0001° tolerance
