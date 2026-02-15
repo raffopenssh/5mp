@@ -239,9 +239,12 @@ class EventRebuilder:
         return ' '.join(p for p in parts if p)
     
     def rebuild_deforestation_events(self):
-        """Rebuild deforestation_events from polygon data"""
+        """Rebuild deforestation_events from polygon data with spatial clustering.
         
-        print("Rebuilding deforestation events from polygons...")
+        Creates multiple events per park-year, one for each distinct spatial cluster.
+        """
+        
+        print("Rebuilding deforestation events from polygons (with clustering)...")
         
         # Get all deforestation polygons grouped by park and year
         cursor = self.conn.execute("""
@@ -255,10 +258,13 @@ class EventRebuilder:
             ORDER BY park_id, year
         """)
         
-        # Group by park and year
+        # Group by park and year first
         park_year_polygons = defaultdict(list)
         for row in cursor:
-            key = (row['park_id'], int(row['year']) if row['year'] else 0)
+            year = int(row['year']) if row['year'] else 0
+            if year == 0:
+                continue
+            key = (row['park_id'], year)
             park_year_polygons[key].append({
                 'feature_id': row['feature_id'],
                 'area_km2': float(row['area_km2']) if row['area_km2'] else 0,
@@ -271,72 +277,74 @@ class EventRebuilder:
         # Get park names
         park_names = {}
         for row in self.conn.execute("SELECT DISTINCT park_id FROM feature_geometries WHERE feature_type = 'deforestation'"):
-            # Extract name from park_id (e.g., CAF_Chinko -> Chinko)
             parts = row['park_id'].split('_')
             park_names[row['park_id']] = ' '.join(parts[1:]).replace('_', ' ')
         
         # Clear existing events
         self.conn.execute("DELETE FROM deforestation_events")
         
-        # Process each park-year
+        # Process each park-year with spatial clustering
         count = 0
         for (park_id, year), polygons in sorted(park_year_polygons.items()):
-            if year == 0:
-                continue
-                
-            # Load context data
+            # Cluster polygons spatially (5km threshold for deforestation)
+            clusters = self._cluster_polygons(polygons, max_dist_km=5)
+            
+            # Load context once per park-year
             places = self._load_park_places(park_id)
             rivers = self._load_park_rivers(park_id)
             climate = self.climate.get(park_id, {})
-            
-            # Calculate centroid
-            avg_lat = sum(p['lat'] for p in polygons) / len(polygons)
-            avg_lon = sum(p['lon'] for p in polygons) / len(polygons)
-            
-            # Get fire density
-            fires_near = self._get_fire_density(park_id, year, avg_lat, avg_lon, radius_km=10)
-            
-            # Classify
-            classification = self._classify_deforestation(
-                polygons, park_id, year, fires_near, places, rivers, climate
-            )
-            
-            # Get nearest place
-            nearest_place = self._get_nearest_place(avg_lat, avg_lon, places)
-            nearest_river = self._get_nearest_river(avg_lat, avg_lon, rivers)
-            
-            # Generate narrative
             park_name = park_names.get(park_id, park_id)
-            narrative = self._generate_deforestation_narrative(
-                park_name, year, classification, polygons,
-                nearest_place, nearest_river, climate
-            )
             
-            # Get polygon IDs
-            polygon_ids = ','.join(p['feature_id'] for p in polygons)
+            # Create event for each cluster
+            for cluster in clusters:
+                # Calculate centroid
+                avg_lat = sum(p['lat'] for p in cluster) / len(cluster)
+                avg_lon = sum(p['lon'] for p in cluster) / len(cluster)
+                
+                # Get fire density
+                fires_near = self._get_fire_density(park_id, year, avg_lat, avg_lon, radius_km=10)
+                
+                # Classify
+                classification = self._classify_deforestation(
+                    cluster, park_id, year, fires_near, places, rivers, climate
+                )
+                
+                # Get nearest place
+                nearest_place = self._get_nearest_place(avg_lat, avg_lon, places)
+                nearest_river = self._get_nearest_river(avg_lat, avg_lon, rivers)
+                
+                # Generate narrative
+                narrative = self._generate_deforestation_narrative(
+                    park_name, year, classification, cluster,
+                    nearest_place, nearest_river, climate
+                )
+                
+                # Get polygon IDs
+                polygon_ids = ','.join(p['feature_id'] for p in cluster)
+                
+                # Insert event
+                self.conn.execute("""
+                    INSERT INTO deforestation_events 
+                    (park_id, year, area_km2, lat, lon, pattern_type, classification,
+                     classification_confidence, narrative, fires_same_year, fire_ratio, 
+                     polygon_ids, pixel_count)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    park_id, year, classification['total_area_km2'],
+                    avg_lat, avg_lon, classification['pattern'],
+                    classification['classification'], classification['confidence'],
+                    narrative, fires_near, classification['fire_ratio'],
+                    polygon_ids, classification['num_polygons']
+                ))
+                
+                count += 1
             
-            # Insert event
-            self.conn.execute("""
-                INSERT INTO deforestation_events 
-                (park_id, year, area_km2, lat, lon, pattern_type, classification,
-                 classification_confidence, narrative, fires_same_year, fire_ratio, 
-                 polygon_ids, pixel_count)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                park_id, year, classification['total_area_km2'],
-                avg_lat, avg_lon, classification['pattern'],
-                classification['classification'], classification['confidence'],
-                narrative, fires_near, classification['fire_ratio'],
-                polygon_ids, classification['num_polygons']
-            ))
-            
-            count += 1
-            if count % 100 == 0:
+            if count % 500 == 0:
                 print(f"  Processed {count} events...")
                 self.conn.commit()
         
         self.conn.commit()
-        print(f"Created {count} deforestation events")
+        print(f"Created {count} deforestation events (clustered)")
         return count
     
     def _classify_settlement(self, polygons, park_id, fires_nearby, places, rivers, climate):
