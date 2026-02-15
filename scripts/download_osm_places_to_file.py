@@ -169,38 +169,14 @@ out center tags;
             (mid_lat, mid_lon, north, east),      # NE
         ]
     
-    def _query_bbox_with_retry(self, bbox: Tuple[float, float, float, float], depth: int = 0, failed_bboxes: List = None) -> List[Dict]:
-        """Query a bbox, splitting into quadrants on failure (max 3 levels deep)"""
-        if failed_bboxes is None:
-            failed_bboxes = []
-        
+    def _query_bbox_simple(self, bbox: Tuple[float, float, float, float]) -> Optional[List[Dict]]:
+        """Query a bbox, return None on failure (no retries here)"""
         query = self._build_overpass_query(bbox)
         data = self._query_overpass(query)
         
         if data is not None:
             return self._parse_osm_elements(data)
-        
-        # On failure, wait 5 minutes then try splitting
-        logger.warning(f"Timeout at depth {depth}, waiting 5 minutes before retry...")
-        time.sleep(300)  # 5 minute wait after timeout
-        
-        # On failure, try splitting (max depth 3 = 64 quadrants)
-        if depth >= 3:
-            logger.warning(f"Max retry depth reached for bbox {bbox}")
-            failed_bboxes.append(bbox)
-            return []
-        
-        logger.info(f"Splitting bbox into quadrants (depth {depth + 1})...")
-        all_places = []
-        quadrants = self._split_bbox(bbox)
-        
-        for i, quad in enumerate(quadrants):
-            logger.info(f"  Querying quadrant {i+1}/4 at depth {depth + 1}...")
-            time.sleep(15)  # Rate limit between quadrants
-            places = self._query_bbox_with_retry(quad, depth + 1, failed_bboxes)
-            all_places.extend(places)
-        
-        return all_places
+        return None
     
     def _parse_osm_elements(self, data: Dict) -> List[Dict]:
         places = []
@@ -256,32 +232,14 @@ out center tags;
         
         logger.info(f"Downloading OSM places for {park_id}")
         
-        # Use retry logic with bbox splitting
-        failed_bboxes = []
-        places = self._query_bbox_with_retry(bbox, failed_bboxes=failed_bboxes)
+        # Simple query - no splitting, just return None on failure
+        places = self._query_bbox_simple(bbox)
         
-        # Save failed bboxes for potential rerun
-        if failed_bboxes:
-            failed_file = OUTPUT_DIR / f"{park_id}.failed_bboxes"
-            with open(failed_file, 'w') as f:
-                json.dump({
-                    'park_id': park_id,
-                    'failed_at': datetime.now().isoformat(),
-                    'failed_bboxes': failed_bboxes
-                }, f, indent=2)
-            logger.warning(f"Saved {len(failed_bboxes)} failed bboxes to {failed_file}")
+        if places is None:
+            logger.warning(f"Failed to download {park_id}, will retry later")
+            return None  # Signal to caller to retry later
         
-        # Deduplicate places (in case of overlapping quadrants)
-        seen = set()
-        unique_places = []
-        for p in places:
-            key = (p['osm_id'], p['name'])
-            if key not in seen:
-                seen.add(key)
-                unique_places.append(p)
-        places = unique_places
-        
-        logger.info(f"Found {len(places)} places for {park_id}" + (f" ({len(failed_bboxes)} quadrants failed)" if failed_bboxes else ""))
+        logger.info(f"Found {len(places)} places for {park_id}")
         
         # Write to JSON file
         output_file = OUTPUT_DIR / f"{park_id}.json"
@@ -300,7 +258,7 @@ out center tags;
         gc.collect()
         return len(places)
     
-    def download_missing_parks(self, limit: int = None):
+    def download_missing_parks(self, limit: int = None, max_retries: int = 3):
         """Download OSM places for all parks that don't have them yet"""
         missing_parks = self._get_parks_without_places()
         
@@ -318,25 +276,59 @@ out center tags;
         if limit:
             parks_to_process = parks_to_process[:limit]
         
-        for i, park_id in enumerate(parks_to_process):
-            logger.info(f"\n[{i+1}/{len(parks_to_process)}] Processing {park_id}")
+        # Track retries per park
+        retry_counts = {park_id: 0 for park_id in parks_to_process}
+        failed_queue = []  # Parks to retry later
+        completed = 0
+        
+        while parks_to_process or failed_queue:
+            # If main queue empty, move failed parks back (if retries remain)
+            if not parks_to_process and failed_queue:
+                parks_to_process = [p for p in failed_queue if retry_counts[p] < max_retries]
+                still_failed = [p for p in failed_queue if retry_counts[p] >= max_retries]
+                if still_failed:
+                    logger.warning(f"Giving up on {len(still_failed)} parks after {max_retries} retries: {still_failed}")
+                failed_queue = []
+                if parks_to_process:
+                    logger.info(f"\n=== Retrying {len(parks_to_process)} failed parks ===")
+                else:
+                    break
+            
+            park_id = parks_to_process.pop(0)
+            attempt = retry_counts[park_id] + 1
+            total_remaining = len(parks_to_process) + len(failed_queue) + 1
+            
+            logger.info(f"\n[{completed+1}, {total_remaining} remaining] Processing {park_id}" + 
+                        (f" (attempt {attempt})" if attempt > 1 else ""))
             
             try:
                 count = self.download_park_places(park_id)
                 if count is not None:
                     logger.info(f"Saved {count} places for {park_id}")
+                    completed += 1
+                else:
+                    # Failed - add to retry queue
+                    retry_counts[park_id] += 1
+                    failed_queue.append(park_id)
+                    logger.info(f"Will retry {park_id} later (attempt {retry_counts[park_id]}/{max_retries})")
             except Exception as e:
                 logger.error(f"Error processing {park_id}: {e}")
-                error_file = OUTPUT_DIR / f"{park_id}.error"
-                error_file.write_text(f"{e}\n{datetime.now().isoformat()}")
+                retry_counts[park_id] += 1
+                failed_queue.append(park_id)
             
-            if i < len(parks_to_process) - 1:
+            # Wait between parks
+            if parks_to_process or failed_queue:
                 logger.info(f"Waiting {self.park_sleep_interval}s before next park...")
                 time.sleep(self.park_sleep_interval)
         
         # Summary
         json_files = list(OUTPUT_DIR.glob("*.json"))
         logger.info(f"\nComplete. {len(json_files)} JSON files in {OUTPUT_DIR}")
+        logger.info(f"Successfully downloaded: {completed}")
+        
+        final_failed = [p for p, c in retry_counts.items() if c >= max_retries]
+        if final_failed:
+            logger.warning(f"Failed after all retries: {final_failed}")
 
 
 def main():
