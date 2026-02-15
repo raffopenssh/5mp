@@ -1,0 +1,655 @@
+{
+  "park_id": "ETH_Bale_Mountains",
+  "downloaded_at": "2026-02-15T12:20:11.837962+00:00",
+  "buffer_km": 50,
+  "place_count": 51,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Haro Dumal",
+      "lat": 6.7504217,
+      "lon": 40.1743391,
+      "osm_id": "node/458742370",
+      "osm_tags": {
+        "name": "Haro Dumal",
+        "place": "town",
+        "source": "landsat"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Agarfa",
+      "lat": 7.268909,
+      "lon": 39.8227789,
+      "osm_id": "node/458746783",
+      "osm_tags": {
+        "name": "Agarfa",
+        "place": "town",
+        "source": "landsat"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rira",
+      "lat": 6.7763591,
+      "lon": 39.7414202,
+      "osm_id": "node/706599702",
+      "osm_tags": {
+        "name": "Rira",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "\u12f2\u1295\u123e / Dinsho",
+      "lat": 7.108213,
+      "lon": 39.780153,
+      "osm_id": "node/706617871",
+      "osm_tags": {
+        "name": "\u12f2\u1295\u123e / Dinsho",
+        "name:am": "\u12f2\u1295\u123e",
+        "name:en": "Dinsho",
+        "name:fr": "Dinsho",
+        "note": "Translation source: http://translator.abyssinica.com/.",
+        "place": "town",
+        "wikidata": "Q2370431"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "\u12a0\u12f3\u1263 / Adaba",
+      "lat": 7.0072505,
+      "lon": 39.3917175,
+      "osm_id": "node/1104382516",
+      "osm_tags": {
+        "name": "\u12a0\u12f3\u1263 / Adaba",
+        "name:am": "\u12a0\u12f3\u1263",
+        "name:en": "Adaba",
+        "name:fr": "Adaba",
+        "note": "Translation source: http://translator.abyssinica.com/.",
+        "place": "town",
+        "source": "300TDI"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Meslo",
+      "lat": 6.4110735,
+      "lon": 39.8500162,
+      "osm_id": "node/1150633732",
+      "osm_tags": {
+        "name": "Meslo",
+        "place": "village",
+        "source": "300TDI"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "K'Ojora",
+      "lat": 7.03333,
+      "lon": 40.1,
+      "osm_id": "node/1150697759",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "K'Ojora",
+        "place": "town",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "\u1218\u122b\u122e / Meraro",
+      "lat": 7.4079469,
+      "lon": 39.2417452,
+      "osm_id": "node/1150882681",
+      "osm_tags": {
+        "name": "\u1218\u122b\u122e / Meraro",
+        "name:am": "\u1218\u122b\u122e",
+        "name:en": "Meraro",
+        "name:fr": "Meraro",
+        "note": "Translation source: http://translator.abyssinica.com/.",
+        "place": "town",
+        "source": "GeoDatabase",
+        "wikidata": "Q3306256",
+        "wikipedia": "en:Meraro"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Magaalaa Dodola/\u12f6\u12f6\u120b",
+      "lat": 6.9789417,
+      "lon": 39.18333,
+      "osm_id": "node/1150883265",
+      "osm_tags": {
+        "name": "Magaalaa Dodola/\u12f6\u12f6\u120b",
+        "name:am": "\u12f6\u12f6\u120b",
+        "name:en": "Dodolla",
+        "name:fr": "Dodolla",
+        "name:om": "Dodolaa",
+        "note": "Translation source: http://translator.abyssinica.com/.",
+        "place": "town",
+        "source": "GeoDatabase",
+        "wikidata": "Q3033674"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ali",
+      "lat": 7.2433353,
+      "lon": 39.9305351,
+      "osm_id": "node/1150884817",
+      "osm_tags": {
+        "name": "Ali",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Goba",
+      "lat": 7.0073251,
+      "lon": 39.9694204,
+      "osm_id": "node/1150885057",
+      "osm_tags": {
+        "alt_name": "\u130e\u1263 (\u1263\u120c-\u130e\u1263)",
+        "name": "Goba",
+        "name:en": "Goba",
+        "name:ru": "\u0413\u043e\u0431\u0430",
+        "name:uk": "\u0413\u043e\u0431\u0430",
+        "place": "town",
+        "source": "GeoDatabase",
+        "wikidata": "Q745871",
+        "wikipedia": "en:Goba"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Meliyu",
+      "lat": 7.0228309,
+      "lon": 40.3583858,
+      "osm_id": "node/1150885442",
+      "osm_tags": {
+        "name": "Meliyu",
+        "place": "town",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Encuolo",
+      "lat": 7.3745741,
+      "lon": 39.3618263,
+      "osm_id": "node/1150886721",
+      "osm_tags": {
+        "addr:country": "ET",
+        "name": "Encuolo",
+        "natural": "peak",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Weleshe Bota",
+      "lat": 7.0832155,
+      "lon": 40.0005177,
+      "osm_id": "node/1150907645",
+      "osm_tags": {
+        "name": "Weleshe Bota",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Obera Bota",
+      "lat": 7.174082,
+      "lon": 40.1779444,
+      "osm_id": "node/1150911375",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Obera Bota",
+        "place": "town",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Suca",
+      "lat": 6.5127366,
+      "lon": 39.2340917,
+      "osm_id": "node/1150915810",
+      "osm_tags": {
+        "name": "Suca",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "\u1260\u1246\u1302 / Bekoji",
+      "lat": 7.53333,
+      "lon": 39.25,
+      "osm_id": "node/1150924327",
+      "osm_tags": {
+        "name": "\u1260\u1246\u1302 / Bekoji",
+        "name:am": "\u1260\u1246\u1302",
+        "name:en": "Bekoji",
+        "name:fr": "Bekoji",
+        "note": "Translation source: http://translator.abyssinica.com/.",
+        "place": "town",
+        "wikidata": "Q815044",
+        "wikipedia": "en:Bekoji"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Siltana",
+      "lat": 7.3971731,
+      "lon": 39.3944789,
+      "osm_id": "node/1150947596",
+      "osm_tags": {
+        "name": "Siltana",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Gasera",
+      "lat": 7.3711688,
+      "lon": 40.1909828,
+      "osm_id": "node/1150953098",
+      "osm_tags": {
+        "name": "Gasera",
+        "place": "town",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gurachu",
+      "lat": 7.1202008,
+      "lon": 40.3634653,
+      "osm_id": "node/1150963510",
+      "osm_tags": {
+        "name": "Gurachu",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Zero",
+      "lat": 7.6,
+      "lon": 39.36667,
+      "osm_id": "node/1150967022",
+      "osm_tags": {
+        "addr:country": "ET",
+        "name": "Zero",
+        "natural": "peak",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dolomena",
+      "lat": 6.4126517,
+      "lon": 39.8483743,
+      "osm_id": "node/1281236043",
+      "osm_tags": {
+        "name": "Dolomena",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Deneba",
+      "lat": 6.9449131,
+      "lon": 39.1774903,
+      "osm_id": "node/1445206208",
+      "osm_tags": {
+        "name": "Deneba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Deneba (Upper)",
+      "lat": 6.932037,
+      "lon": 39.1887448,
+      "osm_id": "node/1445206306",
+      "osm_tags": {
+        "name": "Deneba (Upper)",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Wabe",
+      "lat": 7.0139925,
+      "lon": 39.0225319,
+      "osm_id": "node/1445259753",
+      "osm_tags": {
+        "name": "Wabe",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Edo",
+      "lat": 7.012102,
+      "lon": 39.0442199,
+      "osm_id": "node/1445259849",
+      "osm_tags": {
+        "name": "Edo",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "\u122e\u1264 / Robe",
+      "lat": 7.1242676,
+      "lon": 40.0080973,
+      "osm_id": "node/1800190312",
+      "osm_tags": {
+        "alt_name": "\u122e\u1264 (\u1263\u120c-\u122e\u1264)",
+        "name": "\u122e\u1264 / Robe",
+        "name:am": "\u1290\u1329\u1295",
+        "name:ar": "\u0631\u0648\u0628",
+        "name:en": "Robe",
+        "name:fr": "Robe",
+        "note": "Translation source: http://translator.abyssinica.com/.",
+        "place": "city",
+        "wikidata": "Q3434314"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Gado Dona",
+      "lat": 7.5288413,
+      "lon": 39.4737367,
+      "osm_id": "node/1911713870",
+      "osm_tags": {
+        "name": "Gado Dona",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chole",
+      "lat": 7.5472497,
+      "lon": 39.6143901,
+      "osm_id": "node/1911743899",
+      "osm_tags": {
+        "name": "Chole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mechitu",
+      "lat": 7.437069,
+      "lon": 39.4779267,
+      "osm_id": "node/1953127867",
+      "osm_tags": {
+        "name": "Mechitu",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Robe Gerjeda",
+      "lat": 7.1904723,
+      "lon": 39.4301665,
+      "osm_id": "node/1953310052",
+      "osm_tags": {
+        "name": "Robe Gerjeda",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Washa",
+      "lat": 7.0351853,
+      "lon": 39.4731681,
+      "osm_id": "node/1953349744",
+      "osm_tags": {
+        "name": "Washa",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Asassa",
+      "lat": 7.0993203,
+      "lon": 39.1953046,
+      "osm_id": "node/1969475626",
+      "osm_tags": {
+        "alt_name": "Asasa",
+        "name": "Asassa",
+        "name:om": "Hasassa",
+        "place": "town",
+        "wikidata": "Q2866322",
+        "wikipedia": "en:Asasa"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Farakassa",
+      "lat": 6.9213189,
+      "lon": 39.2114777,
+      "osm_id": "node/1969968437",
+      "osm_tags": {
+        "name": "Farakassa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Raytu",
+      "lat": 6.8385373,
+      "lon": 40.401446,
+      "osm_id": "node/3381850297",
+      "osm_tags": {
+        "name": "Raytu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tullu Dimtu",
+      "lat": 6.826419,
+      "lon": 39.8190149,
+      "osm_id": "node/3784262551",
+      "osm_tags": {
+        "ele": "4377",
+        "name": "Tullu Dimtu",
+        "name:om": "Tulluu Diimtuu",
+        "natural": "peak",
+        "prominence": "2477",
+        "source:prominence": "4377-1900 (Gado)",
+        "tourism": "attraction",
+        "wikidata": "Q3502707",
+        "wikipedia": "en:Mount Tullu Dimtu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chire",
+      "lat": 6.5334303,
+      "lon": 39.0918994,
+      "osm_id": "node/3939770562",
+      "osm_tags": {
+        "name": "Chire",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bele",
+      "lat": 6.8258421,
+      "lon": 40.2915209,
+      "osm_id": "node/6852120979",
+      "osm_tags": {
+        "name": "Bele",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Alage",
+      "lat": 7.2410968,
+      "lon": 40.0676644,
+      "osm_id": "node/7808606504",
+      "osm_tags": {
+        "name": "Alage",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Haranfema",
+      "lat": 6.1191558,
+      "lon": 39.0941861,
+      "osm_id": "node/10594717525",
+      "osm_tags": {
+        "name": "Haranfema",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Werka",
+      "lat": 6.5876282,
+      "lon": 39.1063499,
+      "osm_id": "node/10594717526",
+      "osm_tags": {
+        "name": "Werka",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Angetu",
+      "lat": 6.4051646,
+      "lon": 39.5903706,
+      "osm_id": "node/10595421342",
+      "osm_tags": {
+        "name": "Angetu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wabe Shebelle",
+      "lat": 7.3333629,
+      "lon": 39.689306,
+      "osm_id": "way/29266504",
+      "osm_tags": {
+        "name": "Wabe Shebelle",
+        "name:lt": "\u0160ebel\u0117",
+        "name:uk": "\u0423\u0435\u0431\u0456-\u0428\u0430\u0431\u0435\u043b\u043b\u0435",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q141915",
+        "wikipedia": "en:Shebelle River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Weyib",
+      "lat": 6.954365,
+      "lon": 39.6486443,
+      "osm_id": "way/38705098",
+      "osm_tags": {
+        "name": "Weyib",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Meribo",
+      "lat": 7.1407061,
+      "lon": 39.3249598,
+      "osm_id": "way/103547490",
+      "osm_tags": {
+        "name": "Meribo",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Hulul",
+      "lat": 7.5863749,
+      "lon": 39.7449934,
+      "osm_id": "way/115996787",
+      "osm_tags": {
+        "name": "Hulul",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Hulul",
+      "lat": 7.4833915,
+      "lon": 40.0528931,
+      "osm_id": "way/180719455",
+      "osm_tags": {
+        "name": "Hulul",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Ingia",
+      "lat": 7.1188267,
+      "lon": 39.32924,
+      "osm_id": "way/184963373",
+      "osm_tags": {
+        "name": "Lake Ingia",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Weyib",
+      "lat": 7.1459964,
+      "lon": 40.241503,
+      "osm_id": "way/234709238",
+      "osm_tags": {
+        "name": "Weyib",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Repesa",
+      "lat": 7.5413683,
+      "lon": 39.6566731,
+      "osm_id": "way/385179257",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Repesa",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Webi Mana",
+      "lat": 6.2906089,
+      "lon": 40.7934562,
+      "osm_id": "way/712159944",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Webi Mana",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    }
+  ]
+}

@@ -1,0 +1,2869 @@
+{
+  "park_id": "ETH_Gambella",
+  "downloaded_at": "2026-02-15T12:27:59.224655+00:00",
+  "buffer_km": 50,
+  "place_count": 237,
+  "places": [
+    {
+      "place_type": "city",
+      "name": "k\u00f6b\u025b",
+      "lat": 7.7929337,
+      "lon": 33.0029396,
+      "osm_id": "node/227880231",
+      "osm_tags": {
+        "is_in:country_code": "SS",
+        "name": "k\u00f6b\u025b",
+        "name:ar": "\u0623\u0643\u0648\u0628\u0648",
+        "name:de": "Akobo",
+        "name:en": "Akobo",
+        "name:es": "Akobo",
+        "name:fr": "Akobo",
+        "place": "city",
+        "population": "1000",
+        "population:date": "2011",
+        "wikidata": "Q530223"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Pochalla",
+      "lat": 7.1835522,
+      "lon": 34.0955825,
+      "osm_id": "node/241778447",
+      "osm_tags": {
+        "alt_name": "Pochalla",
+        "name": "Pochalla",
+        "place": "town",
+        "wikidata": "Q3132379"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Maiwut",
+      "lat": 8.6107065,
+      "lon": 33.923913,
+      "osm_id": "node/243415643",
+      "osm_tags": {
+        "name": "Maiwut",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "KuanyLualTh\u0254\u0331a\u0331n",
+      "lat": 8.6154098,
+      "lon": 33.0604914,
+      "osm_id": "node/243425912",
+      "osm_tags": {
+        "alt_name": "KuanyLualTh\u0254a\u0331n",
+        "is_in:country": "Ro\u0331l Nath",
+        "is_in:state": "L\u025btJ\u0254r state",
+        "name": "KuanyLualTh\u0254\u0331a\u0331n",
+        "name:en": "Nasir",
+        "place": "city"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "\u130b\u121d\u1264\u120b / Gambela",
+      "lat": 8.2503656,
+      "lon": 34.5877344,
+      "osm_id": "node/321376181",
+      "osm_tags": {
+        "admin_level": "8",
+        "capital": "4",
+        "ele": "526",
+        "is_capital": "state",
+        "name": "\u130b\u121d\u1264\u120b / Gambela",
+        "name:am": "\u130b\u121d\u1264\u120b",
+        "name:ar": "\u063a\u0627\u0645\u0628\u0644\u0627",
+        "name:de": "Gambela",
+        "name:en": "Gambela",
+        "name:es": "Gambela",
+        "name:fr": "Gambela",
+        "name:it": "Gambela",
+        "name:ko": "\uac10\ubca8\ub77c",
+        "name:ru": "\u0413\u0430\u043c\u0431\u0435\u043b\u0430",
+        "name:uk": "\u0413\u0430\u043c\u0431\u0435\u043b\u0430",
+        "place": "city",
+        "population": "31282",
+        "wikidata": "Q762656",
+        "wikipedia": "en:Gambela (city)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Scentoa or Shentawa",
+      "lat": 7.7900582,
+      "lon": 33.941585,
+      "osm_id": "node/1150884405",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Scentoa or Shentawa",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Abilegn",
+      "lat": 7.55,
+      "lon": 34.3,
+      "osm_id": "node/1150886670",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Abilegn",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Agiual",
+      "lat": 7.7764628,
+      "lon": 33.9325274,
+      "osm_id": "node/1150895439",
+      "osm_tags": {
+        "alt_name": "Ognogi",
+        "country": "ET",
+        "name": "Agiual",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuach-Thiang (Nibnib)",
+      "lat": 8.3236326,
+      "lon": 33.7496271,
+      "osm_id": "node/1150902481",
+      "osm_tags": {
+        "alt_name": "Gunjang",
+        "country": "ET",
+        "name": "Kuach-Thiang (Nibnib)",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gniuir",
+      "lat": 7.8335532,
+      "lon": 33.9557292,
+      "osm_id": "node/1150905524",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Gniuir",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Udia",
+      "lat": 7.8527589,
+      "lon": 33.8286093,
+      "osm_id": "node/1150914672",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Udia",
+        "place": "hamlet",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Childi",
+      "lat": 7.4997766,
+      "lon": 34.5332334,
+      "osm_id": "node/1150919525",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Childi",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Itang",
+      "lat": 8.196875,
+      "lon": 34.267753,
+      "osm_id": "node/1150928047",
+      "osm_tags": {
+        "name": "Itang",
+        "place": "town",
+        "source": "GeoDatabase",
+        "wikidata": "Q984337"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Akado",
+      "lat": 8.1946194,
+      "lon": 34.347332,
+      "osm_id": "node/1150932913",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Akado",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Burebiey",
+      "lat": 8.4197314,
+      "lon": 33.2317395,
+      "osm_id": "node/1150952570",
+      "osm_tags": {
+        "name": "Burebiey",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gior",
+      "lat": 7.9182002,
+      "lon": 33.7523174,
+      "osm_id": "node/1150957770",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Gior",
+        "place": "hamlet",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gog",
+      "lat": 7.5775408,
+      "lon": 34.5025628,
+      "osm_id": "node/1150961735",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Gog",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pintaidi",
+      "lat": 7.43333,
+      "lon": 34.33333,
+      "osm_id": "node/1150963117",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Pintaidi",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tierguol",
+      "lat": 7.8176238,
+      "lon": 33.0432761,
+      "osm_id": "node/1150968892",
+      "osm_tags": {
+        "alt_name": "Tirigol",
+        "country": "ET",
+        "name": "Tierguol",
+        "place": "village",
+        "source": "Bing/DigitalGlobe 2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tori",
+      "lat": 7.8560723,
+      "lon": 33.588909,
+      "osm_id": "node/1150969486",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Tori",
+        "name:ar": "\u062a\u0648\u0631\u064a",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ebago",
+      "lat": 8.2,
+      "lon": 34.31666,
+      "osm_id": "node/1150972656",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Ebago",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Elia",
+      "lat": 8.1660101,
+      "lon": 34.3308589,
+      "osm_id": "node/1151002931",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Elia",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Garri Garri",
+      "lat": 7.53333,
+      "lon": 34.4,
+      "osm_id": "node/1151004486",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Garri Garri",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ashi",
+      "lat": 8.6470629,
+      "lon": 34.6677525,
+      "osm_id": "node/1283788387",
+      "osm_tags": {
+        "name": "Ashi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dolla",
+      "lat": 8.5369668,
+      "lon": 34.6006528,
+      "osm_id": "node/1283788419",
+      "osm_tags": {
+        "name": "Dolla",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muggi",
+      "lat": 8.567885,
+      "lon": 34.6039976,
+      "osm_id": "node/1283788715",
+      "osm_tags": {
+        "name": "Muggi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dikany",
+      "lat": 8.2979077,
+      "lon": 33.6830669,
+      "osm_id": "node/2519103698",
+      "osm_tags": {
+        "alt_name": "Nynininyang",
+        "name": "Dikany",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Docota",
+      "lat": 7.706715,
+      "lon": 34.0430705,
+      "osm_id": "node/2519103761",
+      "osm_tags": {
+        "name": "Docota",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Matar",
+      "lat": 8.3567131,
+      "lon": 33.4455601,
+      "osm_id": "node/2519103796",
+      "osm_tags": {
+        "name": "Matar",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pokedi",
+      "lat": 7.9814237,
+      "lon": 34.2710413,
+      "osm_id": "node/2519103797",
+      "osm_tags": {
+        "name": "Pokedi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Pinyudo",
+      "lat": 7.6470239,
+      "lon": 34.2572333,
+      "osm_id": "node/2519103798",
+      "osm_tags": {
+        "name": "Pinyudo",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Shebel",
+      "lat": 8.4891255,
+      "lon": 34.5841097,
+      "osm_id": "node/2519103805",
+      "osm_tags": {
+        "alt_name": "Shebele",
+        "name": "Shebel",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Periet",
+      "lat": 7.7077695,
+      "lon": 34.0632699,
+      "osm_id": "node/2519103806",
+      "osm_tags": {
+        "name": "Periet",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Abol",
+      "lat": 7.7047732,
+      "lon": 34.1008465,
+      "osm_id": "node/2519103824",
+      "osm_tags": {
+        "name": "Abol",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Camaton",
+      "lat": 7.7142106,
+      "lon": 34.3960089,
+      "osm_id": "node/2519448018",
+      "osm_tags": {
+        "name": "Camaton",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Pinyudo",
+      "lat": 7.7502261,
+      "lon": 34.4986723,
+      "osm_id": "node/2519448051",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Pinyudo",
+        "place": "hamlet",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Unknown Hamlet",
+      "lat": 8.3349074,
+      "lon": 33.545614,
+      "osm_id": "node/2519448165",
+      "osm_tags": {
+        "name": "Unknown Hamlet",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Unkown Hamlet",
+      "lat": 7.7253013,
+      "lon": 34.003631,
+      "osm_id": "node/2519448214",
+      "osm_tags": {
+        "name": "Unkown Hamlet",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Buoala or Bola",
+      "lat": 7.7284232,
+      "lon": 33.9810436,
+      "osm_id": "node/2519448268",
+      "osm_tags": {
+        "name": "Buoala or Bola",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Pagak (South Sudan)",
+      "lat": 8.474665,
+      "lon": 34.0246349,
+      "osm_id": "node/2616039123",
+      "osm_tags": {
+        "name": "Pagak (South Sudan)",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "T\u0254rpu\u0254t/Torpuot",
+      "lat": 8.5747565,
+      "lon": 33.1094391,
+      "osm_id": "node/2626597227",
+      "osm_tags": {
+        "name": "T\u0254rpu\u0254t/Torpuot",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Paduey i\u0331n lu\u0254\u0331c",
+      "lat": 8.7204583,
+      "lon": 33.0301483,
+      "osm_id": "node/2626610514",
+      "osm_tags": {
+        "name": "Paduey i\u0331n lu\u0254\u0331c",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jikmir",
+      "lat": 8.4561375,
+      "lon": 33.1877395,
+      "osm_id": "node/2626841189",
+      "osm_tags": {
+        "name": "Jikmir",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dh\u00ebg-Dh\u00ebg",
+      "lat": 8.6981387,
+      "lon": 33.1255572,
+      "osm_id": "node/2633339755",
+      "osm_tags": {
+        "name": "Dh\u00ebg-Dh\u00ebg",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yomding",
+      "lat": 8.6342279,
+      "lon": 32.8350888,
+      "osm_id": "node/2656045842",
+      "osm_tags": {
+        "name": "Yomding",
+        "place": "village",
+        "source": "OCHA map"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gueng",
+      "lat": 8.4727923,
+      "lon": 33.5313019,
+      "osm_id": "node/2670900299",
+      "osm_tags": {
+        "name": "Gueng",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "ChamThonyTak",
+      "lat": 8.481807,
+      "lon": 33.4985329,
+      "osm_id": "node/2670900572",
+      "osm_tags": {
+        "name": "ChamThonyTak",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nyawech",
+      "lat": 8.4697417,
+      "lon": 33.5249287,
+      "osm_id": "node/2670900608",
+      "osm_tags": {
+        "name": "Nyawech",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuertuata",
+      "lat": 8.478734,
+      "lon": 33.3057568,
+      "osm_id": "node/2670902017",
+      "osm_tags": {
+        "name": "Kuertuata",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maker",
+      "lat": 8.4692978,
+      "lon": 33.3120444,
+      "osm_id": "node/2670902077",
+      "osm_tags": {
+        "name": "Maker",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mand\u025b\u0308\u014b",
+      "lat": 8.5328917,
+      "lon": 33.1194246,
+      "osm_id": "node/2670903267",
+      "osm_tags": {
+        "name": "Mand\u025b\u0308\u014b",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Burjuok",
+      "lat": 8.5184617,
+      "lon": 33.1236517,
+      "osm_id": "node/2670903404",
+      "osm_tags": {
+        "name": "Burjuok",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bianyti\u0331ek",
+      "lat": 8.4954363,
+      "lon": 33.1718129,
+      "osm_id": "node/2670903521",
+      "osm_tags": {
+        "name": "Bianyti\u0331ek",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ula\u014b",
+      "lat": 8.6560054,
+      "lon": 32.7185614,
+      "osm_id": "node/2670904255",
+      "osm_tags": {
+        "name": "Ula\u014b",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Madi\u014b",
+      "lat": 8.7728623,
+      "lon": 33.3216703,
+      "osm_id": "node/3205687780",
+      "osm_tags": {
+        "name": "Madi\u014b",
+        "place": "city",
+        "source:name": "Geonames"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Orang",
+      "lat": 7.9194547,
+      "lon": 33.5427449,
+      "osm_id": "node/3936357387",
+      "osm_tags": {
+        "name": "Orang",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Unknown Hamlet",
+      "lat": 7.9458074,
+      "lon": 33.5625537,
+      "osm_id": "node/3936359086",
+      "osm_tags": {
+        "name": "Unknown Hamlet",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Unknown Hamlet",
+      "lat": 7.9446068,
+      "lon": 33.5237956,
+      "osm_id": "node/3937246567",
+      "osm_tags": {
+        "name": "Unknown Hamlet",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Atlep",
+      "lat": 7.9630368,
+      "lon": 33.5249522,
+      "osm_id": "node/3937323529",
+      "osm_tags": {
+        "name": "Atlep",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lu\u025bdh/Lueth",
+      "lat": 8.5813388,
+      "lon": 33.1892845,
+      "osm_id": "node/4035038479",
+      "osm_tags": {
+        "name": "Lu\u025bdh/Lueth",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Akola",
+      "lat": 7.9962559,
+      "lon": 33.0317999,
+      "osm_id": "node/4066607373",
+      "osm_tags": {
+        "name": "Akola",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Keir",
+      "lat": 7.9649336,
+      "lon": 33.0070807,
+      "osm_id": "node/4066607695",
+      "osm_tags": {
+        "name": "Keir",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wechtut",
+      "lat": 7.9641048,
+      "lon": 33.0211677,
+      "osm_id": "node/4066608020",
+      "osm_tags": {
+        "name": "Wechtut",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wanding Ru\u0254p",
+      "lat": 8.0647676,
+      "lon": 33.0696513,
+      "osm_id": "node/4066608127",
+      "osm_tags": {
+        "name": "Wanding Ru\u0254p",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Koratong",
+      "lat": 8.0489076,
+      "lon": 33.0616046,
+      "osm_id": "node/4066608449",
+      "osm_tags": {
+        "name": "Koratong",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wechkok",
+      "lat": 7.8786283,
+      "lon": 33.0005572,
+      "osm_id": "node/4066608452",
+      "osm_tags": {
+        "name": "Wechkok",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Oanbut",
+      "lat": 8.0302094,
+      "lon": 33.0623997,
+      "osm_id": "node/4066608471",
+      "osm_tags": {
+        "name": "Oanbut",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Small hill",
+      "lat": 8.054096,
+      "lon": 33.3660554,
+      "osm_id": "node/4143837964",
+      "osm_tags": {
+        "name": "Small hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ongogi",
+      "lat": 7.8544157,
+      "lon": 34.0058598,
+      "osm_id": "node/4146128603",
+      "osm_tags": {
+        "name": "Ongogi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Omeda",
+      "lat": 7.749953,
+      "lon": 33.915083,
+      "osm_id": "node/4159250503",
+      "osm_tags": {
+        "name": "Omeda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuich",
+      "lat": 8.6062733,
+      "lon": 32.8999419,
+      "osm_id": "node/4249035593",
+      "osm_tags": {
+        "alt_name": "Kuich payam",
+        "name": "Kuich",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lindiit",
+      "lat": 8.7100911,
+      "lon": 33.0793029,
+      "osm_id": "node/4277852037",
+      "osm_tags": {
+        "name": "Lindiit",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Waga",
+      "lat": 8.7139651,
+      "lon": 32.7236612,
+      "osm_id": "node/5249241285",
+      "osm_tags": {
+        "name": "Waga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rirnyang",
+      "lat": 8.7319869,
+      "lon": 32.7161551,
+      "osm_id": "node/5249241288",
+      "osm_tags": {
+        "name": "Rirnyang",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Akado",
+      "lat": 8.2246405,
+      "lon": 34.3703213,
+      "osm_id": "node/5511787209",
+      "osm_tags": {
+        "name": "Akado",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pamdong",
+      "lat": 8.2918999,
+      "lon": 34.2127198,
+      "osm_id": "node/5511957715",
+      "osm_tags": {
+        "name": "Pamdong",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Tharpham",
+      "lat": 8.2580588,
+      "lon": 34.2767425,
+      "osm_id": "node/5515721707",
+      "osm_tags": {
+        "name": "Tharpham",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Choma",
+      "lat": 8.699481,
+      "lon": 34.2326152,
+      "osm_id": "node/7032826230",
+      "osm_tags": {
+        "ele": "570",
+        "name": "Choma",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Monte Cureca",
+      "lat": 8.738975,
+      "lon": 34.2448088,
+      "osm_id": "node/7032826232",
+      "osm_tags": {
+        "ele": "800",
+        "name": "Monte Cureca",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gebel Dagobasa",
+      "lat": 8.7403704,
+      "lon": 34.1924451,
+      "osm_id": "node/7032826234",
+      "osm_tags": {
+        "ele": "730",
+        "name": "Gebel Dagobasa",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Unknown Hamlet",
+      "lat": 7.9279668,
+      "lon": 33.5318614,
+      "osm_id": "node/7442843484",
+      "osm_tags": {
+        "name": "Unknown Hamlet",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Unknown Hamlet",
+      "lat": 7.9356104,
+      "lon": 33.5277134,
+      "osm_id": "node/7442843517",
+      "osm_tags": {
+        "name": "Unknown Hamlet",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Odochi",
+      "lat": 7.8264565,
+      "lon": 33.8283687,
+      "osm_id": "node/7443474959",
+      "osm_tags": {
+        "name": "Odochi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Omeda ?",
+      "lat": 7.775087,
+      "lon": 33.9013794,
+      "osm_id": "node/7443475174",
+      "osm_tags": {
+        "name": "Omeda ?",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Unknown Hamlet",
+      "lat": 7.9448928,
+      "lon": 33.5826695,
+      "osm_id": "node/7443488396",
+      "osm_tags": {
+        "name": "Unknown Hamlet",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Togn",
+      "lat": 7.7185219,
+      "lon": 34.0049293,
+      "osm_id": "node/7445022391",
+      "osm_tags": {
+        "name": "Togn",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Renguall",
+      "lat": 7.8789814,
+      "lon": 33.5652966,
+      "osm_id": "node/7448673005",
+      "osm_tags": {
+        "name": "Renguall",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Abobo/\u12a0\u1266\u1266",
+      "lat": 7.8979397,
+      "lon": 34.5408139,
+      "osm_id": "node/9312228051",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Abobo/\u12a0\u1266\u1266",
+        "name:am": "\u12a0\u1266\u1266",
+        "name:en": "Abobo",
+        "place": "city",
+        "region": "Gambela",
+        "source": "GeoDatabase",
+        "wikidata": "Q2821681",
+        "wikipedia": "en:Abobo (woreda)"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Kuergeng",
+      "lat": 8.3325531,
+      "lon": 33.9566266,
+      "osm_id": "node/10597732825",
+      "osm_tags": {
+        "name": "Kuergeng",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Abole",
+      "lat": 8.2258202,
+      "lon": 34.4361734,
+      "osm_id": "node/10597755317",
+      "osm_tags": {
+        "name": "Abole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "D\u00e4r Wec Wakrial",
+      "lat": 8.5782166,
+      "lon": 33.0862882,
+      "osm_id": "node/12084337094",
+      "osm_tags": {
+        "name": "D\u00e4r Wec Wakrial",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "N\u00f6r D\u025b\u0308\u014b",
+      "lat": 8.5934589,
+      "lon": 33.0445717,
+      "osm_id": "node/12084410338",
+      "osm_tags": {
+        "name": "N\u00f6r D\u025b\u0308\u014b",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuetrenke",
+      "lat": 8.5607231,
+      "lon": 33.087674,
+      "osm_id": "node/12084410339",
+      "osm_tags": {
+        "name": "Kuetrenke",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pi\u0331n\u025b/Wunb\u00e4rk\u0254w",
+      "lat": 8.6130567,
+      "lon": 33.0742391,
+      "osm_id": "node/12084413733",
+      "osm_tags": {
+        "name": "Pi\u0331n\u025b/Wunb\u00e4rk\u0254w",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuat Cie Th\u00f6r",
+      "lat": 8.6572339,
+      "lon": 33.1121445,
+      "osm_id": "node/12084413734",
+      "osm_tags": {
+        "name": "Kuat Cie Th\u00f6r",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuat Cie Gaw",
+      "lat": 8.6448086,
+      "lon": 33.0997364,
+      "osm_id": "node/12084413735",
+      "osm_tags": {
+        "name": "Kuat Cie Gaw",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Duny\u00e4l",
+      "lat": 8.6729395,
+      "lon": 33.1220225,
+      "osm_id": "node/12084413736",
+      "osm_tags": {
+        "name": "Duny\u00e4l",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "dhu\u0254r\u025bdi\u014b",
+      "lat": 8.6028061,
+      "lon": 32.9998973,
+      "osm_id": "node/12084415423",
+      "osm_tags": {
+        "name": "dhu\u0254r\u025bdi\u014b",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wec Tut",
+      "lat": 8.5940672,
+      "lon": 32.9793595,
+      "osm_id": "node/12084415424",
+      "osm_tags": {
+        "name": "Wec Tut",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "D\u00e4r Wec Majak",
+      "lat": 8.6358852,
+      "lon": 33.0625897,
+      "osm_id": "node/12084418063",
+      "osm_tags": {
+        "name": "D\u00e4r Wec Majak",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "D\u00e4r Wec Chuol Wal",
+      "lat": 8.6522378,
+      "lon": 33.0463913,
+      "osm_id": "node/12084419125",
+      "osm_tags": {
+        "name": "D\u00e4r Wec Chuol Wal",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "T\u025bnyd\u025br",
+      "lat": 8.6456899,
+      "lon": 33.0481293,
+      "osm_id": "node/12084419126",
+      "osm_tags": {
+        "name": "T\u025bnyd\u025br",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "D\u00e4r Wec Tounyadh",
+      "lat": 8.6522744,
+      "lon": 33.0377634,
+      "osm_id": "node/12084419152",
+      "osm_tags": {
+        "name": "D\u00e4r Wec Tounyadh",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wech Tor Gile Thoan",
+      "lat": 8.6063428,
+      "lon": 33.0397677,
+      "osm_id": "node/12101379447",
+      "osm_tags": {
+        "name": "Wech Tor Gile Thoan",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "G\u0254any\u025b/Guanye",
+      "lat": 8.6522764,
+      "lon": 33.0251217,
+      "osm_id": "node/12101548053",
+      "osm_tags": {
+        "name": "G\u0254any\u025b/Guanye",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "K\u025btb\u025bk",
+      "lat": 8.6120626,
+      "lon": 33.0797038,
+      "osm_id": "node/12101554948",
+      "osm_tags": {
+        "name": "K\u025btb\u025bk",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Thar Ruop",
+      "lat": 8.6637006,
+      "lon": 33.0220802,
+      "osm_id": "node/12101588426",
+      "osm_tags": {
+        "name": "Thar Ruop",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wec lieda",
+      "lat": 8.6668069,
+      "lon": 33.0285147,
+      "osm_id": "node/12101588427",
+      "osm_tags": {
+        "name": "Wec lieda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Burebiey, Nasir County",
+      "lat": 8.4264352,
+      "lon": 33.2310713,
+      "osm_id": "node/12109491212",
+      "osm_tags": {
+        "name": "Burebiey, Nasir County",
+        "place": "hamlet",
+        "source": "local knowledge"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Pandanya\u014b",
+      "lat": 8.6063969,
+      "lon": 33.1042493,
+      "osm_id": "node/12109703434",
+      "osm_tags": {
+        "name": "Pandanya\u014b",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wuntho\u0331w",
+      "lat": 8.6287207,
+      "lon": 33.0871701,
+      "osm_id": "node/12109703435",
+      "osm_tags": {
+        "name": "Wuntho\u0331w",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Oumk\u00f6r",
+      "lat": 8.7204186,
+      "lon": 33.0991806,
+      "osm_id": "node/12109703436",
+      "osm_tags": {
+        "name": "Oumk\u00f6r",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ku\u0254l\u025bdaw",
+      "lat": 8.7167248,
+      "lon": 33.0647393,
+      "osm_id": "node/12109703437",
+      "osm_tags": {
+        "name": "Ku\u0254l\u025bdaw",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u014bu\u025bny/Ngueny",
+      "lat": 8.6963391,
+      "lon": 33.1695513,
+      "osm_id": "node/12109703438",
+      "osm_tags": {
+        "name": "\u014bu\u025bny/Ngueny",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Paduey Cuilkhat",
+      "lat": 8.697331,
+      "lon": 33.058801,
+      "osm_id": "node/12109703439",
+      "osm_tags": {
+        "name": "Paduey Cuilkhat",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "D\u00e4r Wec Paduey",
+      "lat": 8.6951699,
+      "lon": 33.03933,
+      "osm_id": "node/12109703440",
+      "osm_tags": {
+        "name": "D\u00e4r Wec Paduey",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Di\u014bkar",
+      "lat": 8.7853326,
+      "lon": 33.0406046,
+      "osm_id": "node/12109703441",
+      "osm_tags": {
+        "name": "Di\u014bkar",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dha\u0331la\u0331b",
+      "lat": 8.7538023,
+      "lon": 33.0312571,
+      "osm_id": "node/12109703442",
+      "osm_tags": {
+        "name": "Dha\u0331la\u0331b",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Paduey Gaat Nyab\u00f6th",
+      "lat": 8.7227375,
+      "lon": 33.0358106,
+      "osm_id": "node/12109703443",
+      "osm_tags": {
+        "name": "Paduey Gaat Nyab\u00f6th",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wec Koari",
+      "lat": 8.5535541,
+      "lon": 32.9600642,
+      "osm_id": "node/12109703445",
+      "osm_tags": {
+        "name": "Wec Koari",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pu\u0254b\u00f6r/Puobor",
+      "lat": 8.5817871,
+      "lon": 32.9559203,
+      "osm_id": "node/12109703447",
+      "osm_tags": {
+        "name": "Pu\u0254b\u00f6r/Puobor",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ny\u025bgu\u025bn/Nyeguen",
+      "lat": 8.5865434,
+      "lon": 33.0310971,
+      "osm_id": "node/12109703448",
+      "osm_tags": {
+        "name": "Ny\u025bgu\u025bn/Nyeguen",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "R\u025by Cie\u014b Wakrial",
+      "lat": 8.5830346,
+      "lon": 33.0780368,
+      "osm_id": "node/12109703449",
+      "osm_tags": {
+        "name": "R\u025by Cie\u014b Wakrial",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wa\u014b Bu\u0254p",
+      "lat": 8.5742183,
+      "lon": 33.073044,
+      "osm_id": "node/12109703450",
+      "osm_tags": {
+        "name": "Wa\u014b Bu\u0254p",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wec Bu\u0254kni",
+      "lat": 8.5848742,
+      "lon": 33.0642963,
+      "osm_id": "node/12109703451",
+      "osm_tags": {
+        "name": "Wec Bu\u0254kni",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wec Lieda Nyangu\u00f6t",
+      "lat": 8.5849087,
+      "lon": 33.1014536,
+      "osm_id": "node/12109703452",
+      "osm_tags": {
+        "name": "Wec Lieda Nyangu\u00f6t",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "T\u0254rk\u025bc/Torkech",
+      "lat": 8.468818,
+      "lon": 33.158349,
+      "osm_id": "node/12109703453",
+      "osm_tags": {
+        "name": "T\u0254rk\u025bc/Torkech",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Makak",
+      "lat": 8.4072439,
+      "lon": 33.1889444,
+      "osm_id": "node/12109703454",
+      "osm_tags": {
+        "name": "Makak",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bukte\u0331\u014b/Bukteng",
+      "lat": 8.3580171,
+      "lon": 33.1821851,
+      "osm_id": "node/12109703455",
+      "osm_tags": {
+        "name": "Bukte\u0331\u014b/Bukteng",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ku\u0254tk\u025b",
+      "lat": 8.2736063,
+      "lon": 33.1572347,
+      "osm_id": "node/12109720057",
+      "osm_tags": {
+        "name": "Ku\u0254tk\u025b",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bianyliedh/Bianlieth",
+      "lat": 8.4636424,
+      "lon": 33.2708894,
+      "osm_id": "node/12109720058",
+      "osm_tags": {
+        "name": "Bianyliedh/Bianlieth",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Rom Yieri Tuat",
+      "lat": 8.4365524,
+      "lon": 33.2194034,
+      "osm_id": "node/12109720059",
+      "osm_tags": {
+        "name": "Rom Yieri Tuat",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "T\u0254rbar/Torbar",
+      "lat": 8.6264273,
+      "lon": 32.8666065,
+      "osm_id": "node/12109720061",
+      "osm_tags": {
+        "name": "T\u0254rbar/Torbar",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "T\u0254rki\u025bl/Torkiel",
+      "lat": 8.6155593,
+      "lon": 32.7808011,
+      "osm_id": "node/12109720062",
+      "osm_tags": {
+        "name": "T\u0254rki\u025bl/Torkiel",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wec Yuel",
+      "lat": 8.6154634,
+      "lon": 33.0031164,
+      "osm_id": "node/12167192468",
+      "osm_tags": {
+        "name": "Wec Yuel",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Pagak(Gambella, Ethiopia)",
+      "lat": 8.4595028,
+      "lon": 34.0054735,
+      "osm_id": "node/12167251163",
+      "osm_tags": {
+        "name": "Pagak(Gambella, Ethiopia)",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wandow",
+      "lat": 8.711695,
+      "lon": 33.1114576,
+      "osm_id": "node/12179182964",
+      "osm_tags": {
+        "name": "Wandow",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dhor Guongni",
+      "lat": 8.5681974,
+      "lon": 33.0849654,
+      "osm_id": "node/12179182965",
+      "osm_tags": {
+        "name": "Dhor Guongni",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dhor Maluth Chuol",
+      "lat": 8.603007,
+      "lon": 33.0817389,
+      "osm_id": "node/12179241144",
+      "osm_tags": {
+        "name": "Dhor Maluth Chuol",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Thu\u0254k Wang Cie Nyajue\u0331l",
+      "lat": 8.7306316,
+      "lon": 33.0374535,
+      "osm_id": "node/12179241145",
+      "osm_tags": {
+        "name": "Thu\u0254k Wang Cie Nyajue\u0331l",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dualdong",
+      "lat": 8.4344226,
+      "lon": 33.177134,
+      "osm_id": "node/12179253932",
+      "osm_tags": {
+        "name": "Dualdong",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyakang",
+      "lat": 8.4931172,
+      "lon": 33.1373575,
+      "osm_id": "node/12179253933",
+      "osm_tags": {
+        "name": "Nyakang",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matar Cie Wiyi\u0331\u00ebl",
+      "lat": 8.6483073,
+      "lon": 33.0129983,
+      "osm_id": "node/12271812569",
+      "osm_tags": {
+        "name": "Matar Cie Wiyi\u0331\u00ebl",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kuat Mathieg",
+      "lat": 8.4416555,
+      "lon": 33.2281329,
+      "osm_id": "node/12277862200",
+      "osm_tags": {
+        "name": "Kuat Mathieg",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wechnyot",
+      "lat": 8.7263169,
+      "lon": 33.2928881,
+      "osm_id": "node/12426891313",
+      "osm_tags": {
+        "name": "Wechnyot",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jokow",
+      "lat": 8.3708308,
+      "lon": 33.7658628,
+      "osm_id": "node/12488809726",
+      "osm_tags": {
+        "name": "Jokow",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Borawil",
+      "lat": 7.8593533,
+      "lon": 33.0022593,
+      "osm_id": "node/12488942293",
+      "osm_tags": {
+        "name": "Borawil",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sobat River",
+      "lat": 8.6058194,
+      "lon": 32.8224936,
+      "osm_id": "way/28290580",
+      "osm_tags": {
+        "name": "Sobat River",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u0633\u0648\u0628\u0627\u0637",
+        "name:en": "Sobat River",
+        "name:fa": "\u0631\u0648\u062f \u0633\u0648\u0628\u0627\u0637",
+        "name:ru": "\u0421\u043e\u0431\u0430\u0442",
+        "waterway": "river",
+        "wikidata": "Q821911",
+        "wikipedia": "en:Sobat River"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Pul Kuat Mathiek",
+      "lat": 8.4359934,
+      "lon": 33.2296514,
+      "osm_id": "way/28290702",
+      "osm_tags": {
+        "name": "Pul Kuat Mathiek",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u1263\u122e \u12c8\u1295\u12dd",
+      "lat": 8.2055019,
+      "lon": 34.4300033,
+      "osm_id": "way/29218697",
+      "osm_tags": {
+        "alt_name": "Upeno River",
+        "name": "\u1263\u122e \u12c8\u1295\u12dd",
+        "name:am": "\u1263\u122e \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0627\u0631\u0648",
+        "name:en": "Baro River",
+        "name:ru": "\u0411\u0430\u0440\u043e",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Abobo Dam",
+      "lat": 7.8576545,
+      "lon": 34.5319606,
+      "osm_id": "way/29218742",
+      "osm_tags": {
+        "name": "Abobo Dam",
+        "natural": "water",
+        "source": "landsat",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wakow River",
+      "lat": 8.6456615,
+      "lon": 33.1697218,
+      "osm_id": "way/29219229",
+      "osm_tags": {
+        "name": "Wakow River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wakow River",
+      "lat": 8.7012844,
+      "lon": 33.1179228,
+      "osm_id": "way/29219231",
+      "osm_tags": {
+        "name": "Wakow River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyandit river",
+      "lat": 7.6939997,
+      "lon": 32.9025127,
+      "osm_id": "way/29219345",
+      "osm_tags": {
+        "name": "Nyandit river",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jajjaba ?",
+      "lat": 8.2701152,
+      "lon": 34.6541603,
+      "osm_id": "way/29258055",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Jajjaba ?",
+        "name:ar": "\u0646\u0647\u0631 \u062c\u0627\u062c\u0627\u0628\u0627",
+        "source": "landsat;wikipedia",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "tata",
+      "lat": 7.6477517,
+      "lon": 34.1846666,
+      "osm_id": "way/145246785",
+      "osm_tags": {
+        "name": "tata",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wakow River",
+      "lat": 8.7244413,
+      "lon": 33.0762315,
+      "osm_id": "way/200889400",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Wakow River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Tor TorJuoch",
+      "lat": 8.6008309,
+      "lon": 33.0336049,
+      "osm_id": "way/200889402",
+      "osm_tags": {
+        "name": "Tor TorJuoch",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pibor River",
+      "lat": 7.142886,
+      "lon": 33.0358278,
+      "osm_id": "way/233369759",
+      "osm_tags": {
+        "name": "Pibor River",
+        "name:am": "\u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u064a\u0628\u0648\u0631",
+        "name:en": "Pibor River",
+        "name:ru": "\u041f\u0438\u0431\u043e\u0440",
+        "source": "landsat",
+        "waterway": "river",
+        "wikipedia": "en:Pibor River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dualdab River",
+      "lat": 8.5006689,
+      "lon": 33.0135887,
+      "osm_id": "way/244046626",
+      "osm_tags": {
+        "name": "Dualdab River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Burebiey",
+      "lat": 8.4199042,
+      "lon": 33.2312072,
+      "osm_id": "way/257064468",
+      "osm_tags": {
+        "check_date": "2025-03-23",
+        "name": "Burebiey",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u1263\u122e \u12c8\u1295\u12dd",
+      "lat": 8.2652063,
+      "lon": 33.8895215,
+      "osm_id": "way/307387663",
+      "osm_tags": {
+        "alt_name": "Upeno River",
+        "name": "\u1263\u122e \u12c8\u1295\u12dd",
+        "name:am": "\u1263\u122e \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0627\u0631\u0648",
+        "name:en": "Baro River",
+        "name:ru": "\u0411\u0430\u0440\u043e",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u1263\u122e \u12c8\u1295\u12dd",
+      "lat": 8.3199102,
+      "lon": 33.8235508,
+      "osm_id": "way/307387664",
+      "osm_tags": {
+        "alt_name": "Upeno River",
+        "name": "\u1263\u122e \u12c8\u1295\u12dd",
+        "name:am": "\u1263\u122e \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0627\u0631\u0648",
+        "name:en": "Baro River",
+        "name:ru": "\u0411\u0430\u0440\u043e",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Baro",
+      "lat": 8.1936203,
+      "lon": 34.3114718,
+      "osm_id": "way/310133757",
+      "osm_tags": {
+        "name": "Baro",
+        "natural": "water",
+        "water": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pibor River",
+      "lat": 7.7973343,
+      "lon": 33.0403422,
+      "osm_id": "way/330086721",
+      "osm_tags": {
+        "name": "Pibor River",
+        "name:am": "\u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u064a\u0628\u0648\u0631",
+        "name:en": "Pibor River",
+        "name:ru": "\u041f\u0438\u0431\u043e\u0440",
+        "source": "landsat",
+        "waterway": "river",
+        "wikipedia": "en:Pibor River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pibor River",
+      "lat": 7.7842105,
+      "lon": 33.018829,
+      "osm_id": "way/330086723",
+      "osm_tags": {
+        "name": "Pibor River",
+        "name:am": "\u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u064a\u0628\u0648\u0631",
+        "name:en": "Pibor River",
+        "name:ru": "\u041f\u0438\u0431\u043e\u0440",
+        "source": "landsat",
+        "waterway": "river",
+        "wikipedia": "en:Pibor River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pibor River",
+      "lat": 7.7931316,
+      "lon": 33.0204452,
+      "osm_id": "way/330086724",
+      "osm_tags": {
+        "name": "Pibor River",
+        "name:am": "\u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u064a\u0628\u0648\u0631",
+        "name:en": "Pibor River",
+        "name:ru": "\u041f\u0438\u0431\u043e\u0440",
+        "waterway": "river",
+        "wikipedia": "en:Pibor River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jokow",
+      "lat": 8.4715711,
+      "lon": 34.0456626,
+      "osm_id": "way/336363187",
+      "osm_tags": {
+        "name": "Jokow",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyandit river",
+      "lat": 7.4242852,
+      "lon": 32.7807765,
+      "osm_id": "way/383315213",
+      "osm_tags": {
+        "name": "Nyandit river",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Burmath river",
+      "lat": 7.4028056,
+      "lon": 33.1391436,
+      "osm_id": "way/396938236",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Burmath river",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oboth",
+      "lat": 7.1790006,
+      "lon": 33.5957485,
+      "osm_id": "way/396947372",
+      "osm_tags": {
+        "name": "Oboth",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oboth",
+      "lat": 7.1384564,
+      "lon": 33.7755468,
+      "osm_id": "way/396947376",
+      "osm_tags": {
+        "name": "Oboth",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyandit river",
+      "lat": 7.6303693,
+      "lon": 32.9015686,
+      "osm_id": "way/396952087",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nyandit river",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lueth River",
+      "lat": 8.5160899,
+      "lon": 33.2211675,
+      "osm_id": "way/401028026",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lueth River",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Tor Nyengoore",
+      "lat": 8.5999839,
+      "lon": 33.0656843,
+      "osm_id": "way/401224640",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Tor Nyengoore",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wakow River",
+      "lat": 8.6270142,
+      "lon": 33.2497787,
+      "osm_id": "way/401261953",
+      "osm_tags": {
+        "name": "Wakow River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyanding River",
+      "lat": 8.0182346,
+      "lon": 32.743407,
+      "osm_id": "way/404378423",
+      "osm_tags": {
+        "name": "Nyanding River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyandit river",
+      "lat": 7.7638483,
+      "lon": 32.957842,
+      "osm_id": "way/404384201",
+      "osm_tags": {
+        "name": "Nyandit river",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moun",
+      "lat": 8.3241995,
+      "lon": 33.2780118,
+      "osm_id": "way/409784484",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Moun",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gire Health Centre",
+      "lat": 8.2448069,
+      "lon": 33.6491878,
+      "osm_id": "way/413131619",
+      "osm_tags": {
+        "name": "Gire Health Centre",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gesi",
+      "lat": 7.648286,
+      "lon": 34.2013403,
+      "osm_id": "way/414784227",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Gesi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Agenga?",
+      "lat": 7.6358287,
+      "lon": 34.2596314,
+      "osm_id": "way/414784502",
+      "osm_tags": {
+        "name": "Agenga?",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "LINDIK",
+      "lat": 8.7100616,
+      "lon": 33.0793161,
+      "osm_id": "way/428702811",
+      "osm_tags": {
+        "name": "LINDIK",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Burmath river",
+      "lat": 7.5632326,
+      "lon": 33.1323087,
+      "osm_id": "way/527276309",
+      "osm_tags": {
+        "name": "Burmath river",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Burmath river",
+      "lat": 7.6132819,
+      "lon": 33.0548072,
+      "osm_id": "way/527279165",
+      "osm_tags": {
+        "name": "Burmath river",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nyangora",
+      "lat": 8.6318011,
+      "lon": 32.7121067,
+      "osm_id": "way/543643130",
+      "osm_tags": {
+        "name": "Nyangora",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Maiwut River",
+      "lat": 8.7345707,
+      "lon": 34.0203022,
+      "osm_id": "way/581705730",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Maiwut River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jikawo",
+      "lat": 8.454093,
+      "lon": 33.9648744,
+      "osm_id": "way/581962152",
+      "osm_tags": {
+        "name": "Jikawo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pibor River",
+      "lat": 7.6663746,
+      "lon": 33.0184632,
+      "osm_id": "way/704706028",
+      "osm_tags": {
+        "name": "Pibor River",
+        "name:am": "\u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u064a\u0628\u0648\u0631",
+        "name:en": "Pibor River",
+        "name:ru": "\u041f\u0438\u0431\u043e\u0440",
+        "source": "landsat",
+        "waterway": "river",
+        "wikipedia": "en:Pibor River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pibor River",
+      "lat": 7.4725605,
+      "lon": 32.9940378,
+      "osm_id": "way/705579430",
+      "osm_tags": {
+        "name": "Pibor River",
+        "name:am": "\u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u064a\u0628\u0648\u0631",
+        "name:en": "Pibor River",
+        "name:ru": "\u041f\u0438\u0431\u043e\u0440",
+        "source": "landsat",
+        "waterway": "river",
+        "wikipedia": "en:Pibor River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyanding River",
+      "lat": 7.7281549,
+      "lon": 32.7208272,
+      "osm_id": "way/705588849",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nyanding River",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Burmath river",
+      "lat": 7.4836228,
+      "lon": 33.2069532,
+      "osm_id": "way/752042920",
+      "osm_tags": {
+        "name": "Burmath river",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pibor River - \u1352\u1266\u122d \u12c8\u1295\u12dd",
+      "lat": 7.855646,
+      "lon": 33.0245856,
+      "osm_id": "way/764281742",
+      "osm_tags": {
+        "name": "Pibor River - \u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:am": "\u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u064a\u0628\u0648\u0631",
+        "name:en": "Pibor River",
+        "name:ru": "\u041f\u0438\u0431\u043e\u0440",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pibor River - \u1352\u1266\u122d \u12c8\u1295\u12dd",
+      "lat": 8.1644147,
+      "lon": 33.1258547,
+      "osm_id": "way/764281743",
+      "osm_tags": {
+        "name": "Pibor River - \u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:am": "\u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u064a\u0628\u0648\u0631",
+        "name:en": "Pibor River",
+        "name:ru": "\u041f\u0438\u0431\u043e\u0440",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pibor River - \u1352\u1266\u122d \u12c8\u1295\u12dd",
+      "lat": 8.3882437,
+      "lon": 33.2030108,
+      "osm_id": "way/764281745",
+      "osm_tags": {
+        "name": "Pibor River - \u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:am": "\u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u064a\u0628\u0648\u0631",
+        "name:en": "Pibor River",
+        "name:ru": "\u041f\u0438\u0431\u043e\u0440",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Baro River",
+      "lat": 8.4526986,
+      "lon": 33.4276527,
+      "osm_id": "way/764281748",
+      "osm_tags": {
+        "name": "Baro River",
+        "name:am": "\u1263\u122e \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0627\u0631\u0648",
+        "name:en": "Baro River",
+        "name:ru": "\u0411\u0430\u0440\u043e",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyanding River",
+      "lat": 8.2370584,
+      "lon": 32.7449921,
+      "osm_id": "way/866941523",
+      "osm_tags": {
+        "name": "Nyanding River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyanding River",
+      "lat": 8.2373881,
+      "lon": 32.7599904,
+      "osm_id": "way/866941524",
+      "osm_tags": {
+        "name": "Nyanding River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyanding River",
+      "lat": 8.2701139,
+      "lon": 32.7085518,
+      "osm_id": "way/866941525",
+      "osm_tags": {
+        "name": "Nyanding River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyanding River",
+      "lat": 7.841219,
+      "lon": 32.9772194,
+      "osm_id": "way/917807431",
+      "osm_tags": {
+        "alt_name": "Khawr Geni",
+        "name": "Nyanding River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sobat River",
+      "lat": 8.8426296,
+      "lon": 32.5760672,
+      "osm_id": "way/1009739111",
+      "osm_tags": {
+        "name": "Sobat River",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u0633\u0648\u0628\u0627\u0637",
+        "name:en": "Sobat River",
+        "name:fa": "\u0631\u0648\u062f \u0633\u0648\u0628\u0627\u0637",
+        "name:ru": "\u0421\u043e\u0431\u0430\u0442",
+        "waterway": "river",
+        "wikidata": "Q821911",
+        "wikipedia": "en:Sobat River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyanding River",
+      "lat": 8.4698191,
+      "lon": 32.7012432,
+      "osm_id": "way/1009739113",
+      "osm_tags": {
+        "name": "Nyanding River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pibor River - \u1352\u1266\u122d \u12c8\u1295\u12dd",
+      "lat": 7.9517921,
+      "lon": 33.0188705,
+      "osm_id": "way/1009739116",
+      "osm_tags": {
+        "name": "Pibor River - \u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:am": "\u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u064a\u0628\u0648\u0631",
+        "name:en": "Pibor River",
+        "name:ru": "\u041f\u0438\u0431\u043e\u0440",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Baro River",
+      "lat": 8.4162915,
+      "lon": 33.7018669,
+      "osm_id": "way/1009990277",
+      "osm_tags": {
+        "name": "Baro River",
+        "name:am": "\u1263\u122e \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u0627\u0631\u0648",
+        "name:en": "Baro River",
+        "name:ru": "\u0411\u0430\u0440\u043e",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Latjor River",
+      "lat": 8.665645,
+      "lon": 33.5661585,
+      "osm_id": "way/1009996276",
+      "osm_tags": {
+        "name": "Latjor River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sobat River",
+      "lat": 8.4448722,
+      "lon": 33.1854399,
+      "osm_id": "way/1010042094",
+      "osm_tags": {
+        "name": "Sobat River",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u0633\u0648\u0628\u0627\u0637",
+        "name:en": "Sobat River",
+        "name:fa": "\u0631\u0648\u062f \u0633\u0648\u0628\u0627\u0637",
+        "name:ru": "\u0421\u043e\u0431\u0430\u0442",
+        "waterway": "river",
+        "wikidata": "Q821911",
+        "wikipedia": "en:Sobat River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dualdab River",
+      "lat": 8.4304005,
+      "lon": 33.0679616,
+      "osm_id": "way/1010042097",
+      "osm_tags": {
+        "name": "Dualdab River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sobat River",
+      "lat": 8.5310649,
+      "lon": 33.0765214,
+      "osm_id": "way/1010042098",
+      "osm_tags": {
+        "name": "Sobat River",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u0633\u0648\u0628\u0627\u0637",
+        "name:en": "Sobat River",
+        "name:fa": "\u0631\u0648\u062f \u0633\u0648\u0628\u0627\u0637",
+        "name:ru": "\u0421\u043e\u0431\u0430\u0442",
+        "waterway": "river",
+        "wikidata": "Q821911",
+        "wikipedia": "en:Sobat River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sobat River",
+      "lat": 8.5730272,
+      "lon": 32.9712753,
+      "osm_id": "way/1010042099",
+      "osm_tags": {
+        "name": "Sobat River",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u0633\u0648\u0628\u0627\u0637",
+        "name:en": "Sobat River",
+        "name:fa": "\u0631\u0648\u062f \u0633\u0648\u0628\u0627\u0637",
+        "name:ru": "\u0421\u043e\u0431\u0430\u0442",
+        "waterway": "river",
+        "wikidata": "Q821911",
+        "wikipedia": "en:Sobat River"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lil Kajiok",
+      "lat": 8.6196372,
+      "lon": 32.9904428,
+      "osm_id": "way/1010042101",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lil Kajiok",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pibor River",
+      "lat": 7.3396837,
+      "lon": 32.990567,
+      "osm_id": "way/1010382116",
+      "osm_tags": {
+        "admin_level": "4",
+        "name": "Pibor River",
+        "name:am": "\u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u064a\u0628\u0648\u0631",
+        "name:en": "Pibor River",
+        "name:ru": "\u041f\u0438\u0431\u043e\u0440",
+        "source": "landsat",
+        "waterway": "river",
+        "wikipedia": "en:Pibor River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Pibor River",
+      "lat": 7.2592165,
+      "lon": 33.0163661,
+      "osm_id": "way/1010382117",
+      "osm_tags": {
+        "admin_level": "4",
+        "name": "Pibor River",
+        "name:am": "\u1352\u1266\u122d \u12c8\u1295\u12dd",
+        "name:ar": "\u0646\u0647\u0631 \u0628\u064a\u0628\u0648\u0631",
+        "name:en": "Pibor River",
+        "name:ru": "\u041f\u0438\u0431\u043e\u0440",
+        "source": "landsat",
+        "waterway": "river",
+        "wikipedia": "en:Pibor River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kong Kong",
+      "lat": 7.3238444,
+      "lon": 33.2262811,
+      "osm_id": "way/1010382119",
+      "osm_tags": {
+        "name": "Kong Kong",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kong Kong",
+      "lat": 7.1234589,
+      "lon": 33.2300236,
+      "osm_id": "way/1010382120",
+      "osm_tags": {
+        "name": "Kong Kong",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jokow",
+      "lat": 8.6444221,
+      "lon": 34.2048966,
+      "osm_id": "way/1089136803",
+      "osm_tags": {
+        "name": "Jokow",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jikawo",
+      "lat": 8.7248987,
+      "lon": 34.348405,
+      "osm_id": "way/1089136804",
+      "osm_tags": {
+        "name": "Jikawo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Wa\u014b Ca\u0331a\u0331n",
+      "lat": 8.6527875,
+      "lon": 33.1018124,
+      "osm_id": "way/1307085441",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Wa\u014b Ca\u0331a\u0331n",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jokow",
+      "lat": 8.4690447,
+      "lon": 34.0355373,
+      "osm_id": "way/1315632691",
+      "osm_tags": {
+        "name": "Jokow",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jokow",
+      "lat": 8.4623281,
+      "lon": 34.018634,
+      "osm_id": "way/1315632692",
+      "osm_tags": {
+        "name": "Jokow",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jokow",
+      "lat": 8.4835967,
+      "lon": 34.0592077,
+      "osm_id": "way/1315632693",
+      "osm_tags": {
+        "name": "Jokow",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jokow",
+      "lat": 8.4986333,
+      "lon": 34.0928464,
+      "osm_id": "way/1315632694",
+      "osm_tags": {
+        "name": "Jokow",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jokow",
+      "lat": 8.4932338,
+      "lon": 34.0805889,
+      "osm_id": "way/1315632695",
+      "osm_tags": {
+        "name": "Jokow",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Jokow",
+      "lat": 8.5575409,
+      "lon": 34.1346925,
+      "osm_id": "way/1315632696",
+      "osm_tags": {
+        "name": "Jokow",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Pul Paduey",
+      "lat": 8.6857083,
+      "lon": 33.0458883,
+      "osm_id": "way/1329554109",
+      "osm_tags": {
+        "name": "Pul Paduey",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Pul Tounyath",
+      "lat": 8.659794,
+      "lon": 33.0319207,
+      "osm_id": "way/1329554110",
+      "osm_tags": {
+        "name": "Pul Tounyath",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Maiwut River",
+      "lat": 8.6294819,
+      "lon": 33.8934392,
+      "osm_id": "way/1330308678",
+      "osm_tags": {
+        "name": "Maiwut River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Akobo Town",
+      "lat": 7.7953842,
+      "lon": 33.0055503,
+      "osm_id": "way/1332125997",
+      "osm_tags": {
+        "name": "Akobo Town",
+        "place": "town",
+        "population": "40000",
+        "population:date": "2024/11/10"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kiew",
+      "lat": 8.4787827,
+      "lon": 33.5044017,
+      "osm_id": "way/1333107877",
+      "osm_tags": {
+        "name": "Kiew",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Jiath Chiengkang",
+      "lat": 8.4720941,
+      "lon": 33.4856721,
+      "osm_id": "way/1333107878",
+      "osm_tags": {
+        "name": "Jiath Chiengkang",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wangnyang",
+      "lat": 8.4594861,
+      "lon": 33.4651791,
+      "osm_id": "way/1333107879",
+      "osm_tags": {
+        "name": "Wangnyang",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bombal",
+      "lat": 8.4520678,
+      "lon": 33.4539215,
+      "osm_id": "way/1333107880",
+      "osm_tags": {
+        "name": "Bombal",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Marial",
+      "lat": 8.4464765,
+      "lon": 33.44313,
+      "osm_id": "way/1333107881",
+      "osm_tags": {
+        "name": "Marial",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bulew",
+      "lat": 8.4509431,
+      "lon": 33.4208024,
+      "osm_id": "way/1333107882",
+      "osm_tags": {
+        "name": "Bulew",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nguanhook",
+      "lat": 8.4383341,
+      "lon": 33.3824599,
+      "osm_id": "way/1333107883",
+      "osm_tags": {
+        "name": "Nguanhook",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nyienygoog",
+      "lat": 8.4603899,
+      "lon": 33.3041664,
+      "osm_id": "way/1333108999",
+      "osm_tags": {
+        "name": "Nyienygoog",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Pul Rie\u0331li",
+      "lat": 8.1771353,
+      "lon": 33.1699021,
+      "osm_id": "way/1339342231",
+      "osm_tags": {
+        "name": "Pul Rie\u0331li",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kerchot",
+      "lat": 8.6044754,
+      "lon": 32.8647992,
+      "osm_id": "way/1350042325",
+      "osm_tags": {
+        "name": "Kerchot",
+        "place": "village"
+      }
+    }
+  ]
+}

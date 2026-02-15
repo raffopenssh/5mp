@@ -1,0 +1,6973 @@
+{
+  "park_id": "COD_Okapis",
+  "downloaded_at": "2026-02-15T11:43:29.316252+00:00",
+  "buffer_km": 50,
+  "place_count": 554,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Oicha",
+      "lat": 0.6967563,
+      "lon": 29.517232,
+      "osm_id": "node/310819376",
+      "osm_tags": {
+        "alt_name": "Oisha",
+        "alt_name_1": "Owicha",
+        "name": "Oicha",
+        "old_name": "Hoysha",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Epulu",
+      "lat": 1.4029243,
+      "lon": 28.572058,
+      "osm_id": "node/435452190",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Bandaka",
+        "is_in:territoire": "Mambasa",
+        "name": "Epulu",
+        "name:ru": "\u042d\u043f\u0443\u043b\u0443",
+        "place": "village",
+        "population": "3500",
+        "source": "GPS",
+        "source:date": "2010/02/24",
+        "source_ref": "www.rgc.cd",
+        "wikidata": "Q3055868"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sikwaila",
+      "lat": 0.6231866,
+      "lon": 29.4856639,
+      "osm_id": "node/435574818",
+      "osm_tags": {
+        "alt_name": "Sikwakira",
+        "fixme": "Please confirm placename spelling and location. RGC spells it \"Sikwakira\", but it appears to actually be Sikwaila. Sikwahive is another possibility.",
+        "name": "Sikwaila",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Isiro",
+      "lat": 2.7742702,
+      "lon": 27.6208169,
+      "osm_id": "node/478528026",
+      "osm_tags": {
+        "admin_level": "4",
+        "capital": "4",
+        "is_in": "Haut-Uele",
+        "is_in:country": "Congo-Kinshasa",
+        "name": "Isiro",
+        "name:ru": "\u0418\u0441\u0438\u0440\u043e",
+        "name:uk": "\u0406\u0441\u0456\u0440\u043e",
+        "name:zh": "\u4f0a\u897f\u91cc\u5965",
+        "name:zh-Hans": "\u4f0a\u897f\u91cc\u5965",
+        "old_name": "Paulis",
+        "place": "city",
+        "wikidata": "Q899873",
+        "wikipedia": "en:Isiro"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Adusa",
+      "lat": 1.404476,
+      "lon": 28.001129,
+      "osm_id": "node/613411274",
+      "osm_tags": {
+        "name": "Adusa",
+        "name:ru": "\u0410\u0434\u0443\u0441\u0430",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Babeke",
+      "lat": 1.3979495,
+      "lon": 28.0430385,
+      "osm_id": "node/613411275",
+      "osm_tags": {
+        "name": "Babeke",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Talisa Lokele",
+      "lat": 1.3368607,
+      "lon": 27.9760664,
+      "osm_id": "node/613411468",
+      "osm_tags": {
+        "name": "Talisa Lokele",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Basiri",
+      "lat": 1.3292838,
+      "lon": 27.9741978,
+      "osm_id": "node/613411964",
+      "osm_tags": {
+        "name": "Basiri",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Wamba",
+      "lat": 2.1435115,
+      "lon": 27.9938589,
+      "osm_id": "node/613450119",
+      "osm_tags": {
+        "name": "Wamba",
+        "place": "town",
+        "wikidata": "Q7966913",
+        "wikipedia": "en:Wamba, Haut-Uele"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ingbea",
+      "lat": 2.412075,
+      "lon": 28.292775,
+      "osm_id": "node/613456924",
+      "osm_tags": {
+        "name": "Ingbea",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Andudu",
+      "lat": 2.5257782,
+      "lon": 28.7015759,
+      "osm_id": "node/613460485",
+      "osm_tags": {
+        "name": "Andudu",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nepoko",
+      "lat": 2.4819197,
+      "lon": 28.6949681,
+      "osm_id": "node/613461489",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Kebo",
+        "is_in:territoire": "Watsa",
+        "name": "Nepoko",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nduye",
+      "lat": 1.8291163,
+      "lon": 28.9983754,
+      "osm_id": "node/613464400",
+      "osm_tags": {
+        "name": "Nduye",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mambasa",
+      "lat": 1.360333,
+      "lon": 29.035422,
+      "osm_id": "node/613478500",
+      "osm_tags": {
+        "admin_level": "6",
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "capital": "6",
+        "is_in:collectivit\u00e9": "Mambasa",
+        "is_in:groupement": "Mputu",
+        "is_in:territoire": "Mambasa",
+        "name": "Mambasa",
+        "name:ru": "\u041c\u0430\u043c\u0431\u0430\u0441\u0430",
+        "place": "town",
+        "source": "GPS",
+        "source:date": "2009/12/21",
+        "source_ref": "www.rgc.cd",
+        "wikidata": "Q6745504"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ekwe",
+      "lat": 1.4555556,
+      "lon": 29.0495,
+      "osm_id": "node/613533627",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Walese-Karo",
+        "is_in:groupement": "Andubuta",
+        "is_in:territoire": "Mambasa",
+        "name": "Ekwe",
+        "place": "hamlet",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tsumbi",
+      "lat": 1.4912723,
+      "lon": 29.0511608,
+      "osm_id": "node/613534306",
+      "osm_tags": {
+        "name": "Tsumbi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Nia-Nia",
+      "lat": 1.4073372,
+      "lon": 27.6074223,
+      "osm_id": "node/626497236",
+      "osm_tags": {
+        "alt_name": "Nyanya;Niania",
+        "name": "Nia-Nia",
+        "note:population": "Previous value was \"20 000 - 30 000\", so I put 25000, as population must be a single number",
+        "place": "town",
+        "population": "25000",
+        "wikidata": "Q7023497"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngadi",
+      "lat": 0.5392725,
+      "lon": 29.4920356,
+      "osm_id": "node/626501260",
+      "osm_tags": {
+        "name": "Ngadi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mbau",
+      "lat": 0.6529085,
+      "lon": 29.4987496,
+      "osm_id": "node/626508813",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Beni",
+        "is_in:groupement": "Batangi mbau",
+        "name": "Mbau",
+        "place": "town",
+        "source": "GPS",
+        "source:date": "2009/12/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bingo",
+      "lat": 0.5220095,
+      "lon": 29.319925,
+      "osm_id": "node/626545213",
+      "osm_tags": {
+        "alt_name": "Binga",
+        "name": "Bingo",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Home",
+      "lat": 0.5572285,
+      "lon": 29.3235865,
+      "osm_id": "node/626547067",
+      "osm_tags": {
+        "alt_name": "Mhome",
+        "name": "Home",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matango",
+      "lat": 0.6123877,
+      "lon": 29.2931101,
+      "osm_id": "node/626550496",
+      "osm_tags": {
+        "name": "Matango",
+        "place": "village",
+        "wikidata": "Q6786064"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lebia",
+      "lat": 0.6215475,
+      "lon": 29.2557749,
+      "osm_id": "node/626550503",
+      "osm_tags": {
+        "name": "Lebia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Home",
+      "lat": 0.5612442,
+      "lon": 29.3126494,
+      "osm_id": "node/626561864",
+      "osm_tags": {
+        "name": "Mont Home",
+        "natural": "peak",
+        "wikidata": "Q3321865"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Mbao",
+      "lat": 0.6511897,
+      "lon": 29.271279,
+      "osm_id": "node/626572008",
+      "osm_tags": {
+        "name": "Mont Mbao",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mapelenga",
+      "lat": 0.6452796,
+      "lon": 29.2553879,
+      "osm_id": "node/626574056",
+      "osm_tags": {
+        "name": "Mapelenga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maperanga",
+      "lat": 0.6709106,
+      "lon": 29.2501354,
+      "osm_id": "node/626574057",
+      "osm_tags": {
+        "name": "Maperanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Biakato",
+      "lat": 0.8529923,
+      "lon": 29.2582865,
+      "osm_id": "node/626574854",
+      "osm_tags": {
+        "name": "Biakato",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Komuve",
+      "lat": 0.8324488,
+      "lon": 29.249993,
+      "osm_id": "node/626574855",
+      "osm_tags": {
+        "name": "Mont Komuve",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Yila",
+      "lat": 0.9314857,
+      "lon": 29.1785819,
+      "osm_id": "node/626577980",
+      "osm_tags": {
+        "name": "Mont Yila",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Luengba",
+      "lat": 0.9701042,
+      "lon": 29.2055327,
+      "osm_id": "node/626578476",
+      "osm_tags": {
+        "name": "Luengba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Luengbe",
+      "lat": 0.9109104,
+      "lon": 29.2348869,
+      "osm_id": "node/626578692",
+      "osm_tags": {
+        "name": "Luengbe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Babunda",
+      "lat": 1.4044444,
+      "lon": 27.6966667,
+      "osm_id": "node/1156621790",
+      "osm_tags": {
+        "alt_name": "Bagbunda",
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Bandaka",
+        "is_in:territoire": "Mambasa",
+        "name": "Babunda",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/02/24",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Avakubi I",
+      "lat": 1.2992266,
+      "lon": 27.5645214,
+      "osm_id": "node/1156621799",
+      "osm_tags": {
+        "alt_name": "Avakubi Lokombe",
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Bakundumu",
+        "is_in:territoire": "Bafwasende",
+        "name": "Avakubi I",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/02/24",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Salate",
+      "lat": 1.4052778,
+      "lon": 28.3888889,
+      "osm_id": "node/1156621833",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Bandaka",
+        "is_in:territoire": "Mambasa",
+        "name": "Salate",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/02/24",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Molokayi",
+      "lat": 1.4355577,
+      "lon": 28.2797561,
+      "osm_id": "node/1156621855",
+      "osm_tags": {
+        "alt_name": "Molokay",
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Bandaka",
+        "is_in:territoire": "Mambasa",
+        "name": "Molokayi",
+        "place": "hamlet",
+        "source": "GPS",
+        "source:date": "2010/02/24",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kilimamweza",
+      "lat": 1.3619722,
+      "lon": 28.9547222,
+      "osm_id": "node/1156621876",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Mambasa",
+        "name": "Kilimamweza",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madidi",
+      "lat": 1.3712778,
+      "lon": 29.0326389,
+      "osm_id": "node/1156621907",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Mambassa",
+        "name": "Madidi",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bahaha",
+      "lat": 1.3958056,
+      "lon": 29.3561944,
+      "osm_id": "node/1156621922",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Bakwanza",
+        "is_in:territoire": "Mambassa",
+        "name": "Bahaha",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Alima",
+      "lat": 1.4008056,
+      "lon": 29.0525278,
+      "osm_id": "node/1156621928",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Mambassa",
+        "name": "Alima",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Koko",
+      "lat": 1.3530833,
+      "lon": 29.0333333,
+      "osm_id": "node/1156621953",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Mambassa",
+        "name": "Koko",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gabon",
+      "lat": 1.3558333,
+      "lon": 29.0404722,
+      "osm_id": "node/1156621959",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Mambassa",
+        "name": "Gabon",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Makoko 2",
+      "lat": 1.43075,
+      "lon": 29.0438056,
+      "osm_id": "node/1156621963",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Mambassa",
+        "name": "Makoko 2",
+        "place": "hamlet",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manya",
+      "lat": 1.3501111,
+      "lon": 29.1558611,
+      "osm_id": "node/1156621972",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Mambasa",
+        "name": "Manya",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Parana",
+      "lat": 1.3833611,
+      "lon": 28.906,
+      "osm_id": "node/1156621973",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Mambassa",
+        "name": "Parana",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bafwakoa",
+      "lat": 1.3938889,
+      "lon": 27.935,
+      "osm_id": "node/1156621982",
+      "osm_tags": {
+        "alt_name": "Bafwakowa",
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Bandaka",
+        "is_in:territoire": "Mambasa",
+        "name": "Bafwakoa",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/02/24",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mirindi",
+      "lat": 1.3605833,
+      "lon": 29.0320278,
+      "osm_id": "node/1156621998",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Mambassa",
+        "name": "Mirindi",
+        "place": "town",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pekele",
+      "lat": 1.3535,
+      "lon": 29.0931111,
+      "osm_id": "node/1156621999",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Mambassa",
+        "name": "Pekele",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Badengayido",
+      "lat": 1.4094444,
+      "lon": 28.0752778,
+      "osm_id": "node/1156622018",
+      "osm_tags": {
+        "alt_name": "Badengaido",
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Bandaka",
+        "is_in:territoire": "Mambasa",
+        "name": "Badengayido",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/02/24",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mabukulu",
+      "lat": 1.3452778,
+      "lon": 29.2159722,
+      "osm_id": "node/1156622028",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Bakwanza",
+        "is_in:groupement": "Bakwanza",
+        "is_in:territoire": "Mambassa",
+        "name": "Mabukulu",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mungbere",
+      "lat": 2.62889,
+      "lon": 28.50508,
+      "osm_id": "node/1157841107",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Andobi",
+        "is_in:territoire": "Watsa",
+        "name": "Mungbere",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd",
+        "wikidata": "Q1952775"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Irambe",
+      "lat": 2.156944,
+      "lon": 28.8580561,
+      "osm_id": "node/1157841284",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Walese-Dese",
+        "is_in:territoire": "Mambasa",
+        "name": "Irambe",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2007/05/17",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Giki",
+      "lat": 2.6229091,
+      "lon": 28.5907815,
+      "osm_id": "node/1157841331",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Andikofa",
+        "is_in:territoire": "Watsa",
+        "name": "Giki",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dingbo",
+      "lat": 2.3066017,
+      "lon": 28.7560231,
+      "osm_id": "node/1157841459",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Walese-Dese",
+        "is_in:territoire": "Mambasa",
+        "name": "Dingbo",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Apodo",
+      "lat": 2.5952617,
+      "lon": 28.6476754,
+      "osm_id": "node/1157841520",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wazimba-Maringa",
+        "is_in:territoire": "Watsa",
+        "name": "Apodo",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tembo",
+      "lat": 2.9086702,
+      "lon": 28.2768446,
+      "osm_id": "node/1157841541",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Mboli",
+        "is_in:territoire": "Rungu",
+        "name": "Tembo",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Alambi",
+      "lat": 1.9596415,
+      "lon": 28.8946315,
+      "osm_id": "node/1157841595",
+      "osm_tags": {
+        "alt_name": "Alembi",
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Walese-Dese",
+        "is_in:territoire": "Mambasa",
+        "name": "Alambi",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malembi",
+      "lat": 2.2531422,
+      "lon": 28.785596,
+      "osm_id": "node/1157841655",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Walese-Dese",
+        "is_in:territoire": "Mambasa",
+        "name": "Malembi",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lembeo",
+      "lat": 2.4008706,
+      "lon": 28.7179305,
+      "osm_id": "node/1157841684",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Kebo",
+        "is_in:territoire": "Watsa",
+        "name": "Lembeo",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Samboko Centre",
+      "lat": 0.8564167,
+      "lon": 29.5009444,
+      "osm_id": "node/1157931417",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Oicha",
+        "name": "Samboko Centre",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Malehe",
+      "lat": 0.6297697,
+      "lon": 29.5236268,
+      "osm_id": "node/1157931475",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "fixme": "Misplaced or settlement no longer exists",
+        "is_in:collectivit\u00e9": "Beni",
+        "is_in:groupement": "Batangi mbau",
+        "is_in:territoire": "Oicha",
+        "name": "Malehe",
+        "place": "hamlet",
+        "source": "GPS",
+        "source:date": "2009/12/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mapiki",
+      "lat": 0.6177736,
+      "lon": 29.432851,
+      "osm_id": "node/1157931611",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Beni",
+        "is_in:groupement": "Batangi mbau",
+        "name": "Mapiki",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/12/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maleki",
+      "lat": 0.757133,
+      "lon": 29.4675839,
+      "osm_id": "node/1157931828",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Beni",
+        "is_in:groupement": "Batangi mbau",
+        "is_in:territoire": "Oicha",
+        "name": "Maleki",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/12/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Andisende",
+      "lat": 1.3545278,
+      "lon": 29.5104167,
+      "osm_id": "node/1157932418",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Mambassa",
+        "name": "Andisende",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ngite-Kubechi",
+      "lat": 0.6016985,
+      "lon": 29.5196276,
+      "osm_id": "node/1157932433",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Beni",
+        "is_in:groupement": "Batangi mbau",
+        "is_in:territoire": "Oicha",
+        "name": "Ngite-Kubechi",
+        "place": "hamlet",
+        "source": "GPS",
+        "source:date": "2009/12/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngite",
+      "lat": 0.5967183,
+      "lon": 29.4924128,
+      "osm_id": "node/1157932779",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Beni",
+        "is_in:groupement": "Batangi mbau",
+        "name": "Ngite",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/12/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mamove",
+      "lat": 0.8241467,
+      "lon": 29.4412435,
+      "osm_id": "node/1157933259",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Beni",
+        "is_in:groupement": "Batangi mbau",
+        "is_in:territoire": "Oicha",
+        "name": "Mamove",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/12/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mangimo",
+      "lat": 0.8528056,
+      "lon": 29.5290833,
+      "osm_id": "node/1157934065",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Oicha",
+        "name": "Mangimo",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mulobya",
+      "lat": 0.8214167,
+      "lon": 29.5296389,
+      "osm_id": "node/1157934341",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Oicha",
+        "name": "Mulobya",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mangango",
+      "lat": 0.5254026,
+      "lon": 29.351905,
+      "osm_id": "node/1157934578",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "name": "Mangango",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lolwa",
+      "lat": 1.3499167,
+      "lon": 29.4953889,
+      "osm_id": "node/1157934607",
+      "osm_tags": {
+        "alt_name": "Lowa",
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Bakwanza",
+        "is_in:territoire": "Mambassa",
+        "name": "Lolwa",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd",
+        "wikidata": "Q3258815"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mambesu",
+      "lat": 1.4066667,
+      "lon": 29.5055556,
+      "osm_id": "node/1157935395",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Irumu",
+        "name": "Mambesu",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mavivi-Matembo",
+      "lat": 0.5689662,
+      "lon": 29.4774488,
+      "osm_id": "node/1157935398",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "fixme": "Confirm name.",
+        "is_in:collectivit\u00e9": "Beni",
+        "is_in:groupement": "Batangi mbau",
+        "name": "Mavivi-Matembo",
+        "place": "hamlet",
+        "source": "GPS",
+        "source:date": "2009/12/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mulobia",
+      "lat": 0.8037677,
+      "lon": 29.5277895,
+      "osm_id": "node/1157935455",
+      "osm_tags": {
+        "alt_name": "Kisiki",
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Beni Mbau",
+        "is_in:groupement": "Bambuba-Kisiki",
+        "is_in:territoire": "Oicha",
+        "name": "Mulobia",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/07/18",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maleki-Mamove",
+      "lat": 0.7180771,
+      "lon": 29.5021448,
+      "osm_id": "node/1157936507",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Beni",
+        "is_in:groupement": "Batangi mbau",
+        "is_in:territoire": "Oicha",
+        "name": "Maleki-Mamove",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/12/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbutama",
+      "lat": 0.62279,
+      "lon": 29.43345,
+      "osm_id": "node/1157936571",
+      "osm_tags": {
+        "alt_name": "Mbutaba",
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Beni",
+        "is_in:groupement": "Batangi mbau",
+        "name": "Mbutama",
+        "place": "hamlet",
+        "source": "GPS",
+        "source:date": "2009/12/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sayuni",
+      "lat": 0.8881264,
+      "lon": 29.4781347,
+      "osm_id": "node/1157936756",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Oicha",
+        "name": "Sayuni",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kandate",
+      "lat": 1.3519722,
+      "lon": 29.4999167,
+      "osm_id": "node/1157937272",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Mambassa",
+        "name": "Kandate",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kyavisimi",
+      "lat": 0.517745,
+      "lon": 29.2537006,
+      "osm_id": "node/1157937457",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "name": "Kyavisimi",
+        "place": "hamlet",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Capoca",
+      "lat": 0.83125,
+      "lon": 29.5175,
+      "osm_id": "node/1157938457",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Oicha",
+        "name": "Capoca",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mavivi",
+      "lat": 0.5861222,
+      "lon": 29.4855928,
+      "osm_id": "node/1157938789",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Beni",
+        "is_in:groupement": "Batangi mbau",
+        "name": "Mavivi",
+        "place": "town",
+        "source": "GPS",
+        "source:date": "2009/12/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dimba",
+      "lat": 2.5377054,
+      "lon": 28.4739766,
+      "osm_id": "node/1243270403",
+      "osm_tags": {
+        "name": "Dimba",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kosia",
+      "lat": 2.6006247,
+      "lon": 28.6703573,
+      "osm_id": "node/1243278437",
+      "osm_tags": {
+        "name": "Kosia",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Abakodu",
+      "lat": 2.497584,
+      "lon": 28.5155187,
+      "osm_id": "node/1243278440",
+      "osm_tags": {
+        "fixme": "yes",
+        "name": "Abakodu",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mando",
+      "lat": 2.6476512,
+      "lon": 28.4010399,
+      "osm_id": "node/1243278443",
+      "osm_tags": {
+        "name": "Mando",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Namesu",
+      "lat": 2.5755963,
+      "lon": 28.2788599,
+      "osm_id": "node/1243278444",
+      "osm_tags": {
+        "name": "Namesu",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mulimulikodu",
+      "lat": 2.5624237,
+      "lon": 28.6775241,
+      "osm_id": "node/1243278445",
+      "osm_tags": {
+        "name": "Mulimulikodu",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Soneoma",
+      "lat": 2.6170956,
+      "lon": 28.3159023,
+      "osm_id": "node/1243278447",
+      "osm_tags": {
+        "name": "Soneoma",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Adzuma",
+      "lat": 2.5155826,
+      "lon": 28.281055,
+      "osm_id": "node/1243278449",
+      "osm_tags": {
+        "fixme": "yes",
+        "name": "Adzuma",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Djamu",
+      "lat": 2.6337207,
+      "lon": 28.6626325,
+      "osm_id": "node/1243278450",
+      "osm_tags": {
+        "fixme": "yes",
+        "name": "Djamu",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matuya",
+      "lat": 2.4349771,
+      "lon": 28.6149106,
+      "osm_id": "node/1243282740",
+      "osm_tags": {
+        "fixme": "yes",
+        "name": "Matuya",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Likosi",
+      "lat": 2.4368636,
+      "lon": 28.3019977,
+      "osm_id": "node/1243282744",
+      "osm_tags": {
+        "fixme": "yes",
+        "name": "Likosi",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbunza",
+      "lat": 2.4344625,
+      "lon": 28.3136707,
+      "osm_id": "node/1243282764",
+      "osm_tags": {
+        "fixme": "yes",
+        "name": "Mbunza",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Gombari",
+      "lat": 2.7151568,
+      "lon": 29.0485234,
+      "osm_id": "node/1729932919",
+      "osm_tags": {
+        "alt_name": "Gumbari",
+        "is_in:collectivit\u00e9": "Ateru",
+        "is_in:territoire": "Watsa",
+        "name": "Gombari",
+        "place": "town",
+        "rgc:pcode": "50450047"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Akoti",
+      "lat": 2.7849577,
+      "lon": 28.5988998,
+      "osm_id": "node/1729950076",
+      "osm_tags": {
+        "name": "Mont Akoti",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Lope",
+      "lat": 2.7420947,
+      "lon": 28.7272798,
+      "osm_id": "node/1729950080",
+      "osm_tags": {
+        "name": "Mont Lope",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ingi",
+      "lat": 2.7907527,
+      "lon": 29.0983009,
+      "osm_id": "node/1729961878",
+      "osm_tags": {
+        "name": "Ingi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gao",
+      "lat": 2.819498,
+      "lon": 28.27843,
+      "osm_id": "node/2144122926",
+      "osm_tags": {
+        "name": "Gao",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bandisende",
+      "lat": 1.356356,
+      "lon": 28.7532897,
+      "osm_id": "node/2498934321",
+      "osm_tags": {
+        "name": "Bandisende",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Eboyo",
+      "lat": 1.3994469,
+      "lon": 28.5811115,
+      "osm_id": "node/2653096163",
+      "osm_tags": {
+        "ele": "750",
+        "name": "Eboyo",
+        "place": "hamlet",
+        "source": "local knowledge"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bapukeli",
+      "lat": 1.3906651,
+      "lon": 28.6161999,
+      "osm_id": "node/2653098343",
+      "osm_tags": {
+        "name": "Bapukeli",
+        "place": "hamlet",
+        "source": "Local knowledge"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Babama",
+      "lat": 1.4269074,
+      "lon": 28.6787511,
+      "osm_id": "node/2653099254",
+      "osm_tags": {
+        "name": "Babama",
+        "place": "hamlet",
+        "source": "Local knowledge"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Mbia",
+      "lat": 1.3900661,
+      "lon": 28.5789914,
+      "osm_id": "node/2965144572",
+      "osm_tags": {
+        "name": "Mont Mbia",
+        "natural": "peak",
+        "operator": "ICCN",
+        "tourism": "attraction"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makeke",
+      "lat": 0.614202,
+      "lon": 29.2871668,
+      "osm_id": "node/3420978202",
+      "osm_tags": {
+        "name": "Makeke",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Nebobongo",
+      "lat": 2.4503207,
+      "lon": 27.6294402,
+      "osm_id": "node/3430537727",
+      "osm_tags": {
+        "is_in:country_code": "CD",
+        "name": "Nebobongo",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Koki",
+      "lat": 1.3980111,
+      "lon": 28.6991391,
+      "osm_id": "node/3984761157",
+      "osm_tags": {
+        "name": "Koki",
+        "place": "hamlet",
+        "source": "Local knowledge"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bafwabango",
+      "lat": 1.7496027,
+      "lon": 27.8228705,
+      "osm_id": "node/3985083559",
+      "osm_tags": {
+        "alt_name": "Bavabango",
+        "alt_name_1": "\"51\"",
+        "name": "Bafwabango",
+        "place": "town",
+        "source": "local knowledge"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bafwambaya",
+      "lat": 1.7192821,
+      "lon": 27.8155998,
+      "osm_id": "node/3985086157",
+      "osm_tags": {
+        "alt_name": "\"47\"",
+        "name": "Bafwambaya",
+        "place": "town",
+        "source": "local knowledge"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Yindi",
+      "lat": 1.5911181,
+      "lon": 27.695487,
+      "osm_id": "node/3985092316",
+      "osm_tags": {
+        "alt_name": "Indi",
+        "alt_name_1": "\"25\"",
+        "name": "Yindi",
+        "place": "town",
+        "source": "local knowledge"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mamopi",
+      "lat": 1.4109479,
+      "lon": 28.4727115,
+      "osm_id": "node/3996244457",
+      "osm_tags": {
+        "name": "Mamopi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Melebwe",
+      "lat": 1.3388802,
+      "lon": 28.7769674,
+      "osm_id": "node/3999558336",
+      "osm_tags": {
+        "name": "Melebwe",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tolytoly",
+      "lat": 1.394791,
+      "lon": 29.4065193,
+      "osm_id": "node/4013619378",
+      "osm_tags": {
+        "alt_name": "Tolitoli",
+        "name": "Tolytoly",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nala",
+      "lat": 2.8704579,
+      "lon": 27.6655322,
+      "osm_id": "node/4408610947",
+      "osm_tags": {
+        "name": "Nala",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nepomeda",
+      "lat": 2.9273611,
+      "lon": 27.70575,
+      "osm_id": "node/4408610949",
+      "osm_tags": {
+        "name": "Nepomeda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Robinville",
+      "lat": 2.125964,
+      "lon": 28.8208073,
+      "osm_id": "node/4818689004",
+      "osm_tags": {
+        "name": "Robinville",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Magueni",
+      "lat": 1.3286043,
+      "lon": 27.5562666,
+      "osm_id": "node/5502653021",
+      "osm_tags": {
+        "name": "Magueni",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bangatsha",
+      "lat": 2.2331455,
+      "lon": 27.9400333,
+      "osm_id": "node/5785296117",
+      "osm_tags": {
+        "name": "Bangatsha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mando",
+      "lat": 2.2316471,
+      "lon": 27.9191119,
+      "osm_id": "node/5785301759",
+      "osm_tags": {
+        "name": "Mando",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbaga",
+      "lat": 2.2329784,
+      "lon": 27.9580961,
+      "osm_id": "node/5785301760",
+      "osm_tags": {
+        "name": "Mbaga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nangita",
+      "lat": 2.2458895,
+      "lon": 27.9464708,
+      "osm_id": "node/5785301761",
+      "osm_tags": {
+        "name": "Nangita",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Abambula",
+      "lat": 2.6746501,
+      "lon": 27.6370078,
+      "osm_id": "node/5785405834",
+      "osm_tags": {
+        "ele": "980",
+        "name": "Mont Abambula",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbabune",
+      "lat": 2.8292154,
+      "lon": 27.6321548,
+      "osm_id": "node/5794010165",
+      "osm_tags": {
+        "name": "Mbabune",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boda",
+      "lat": 2.2980852,
+      "lon": 27.6323014,
+      "osm_id": "node/5794640650",
+      "osm_tags": {
+        "name": "Boda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mangbukele",
+      "lat": 2.2809229,
+      "lon": 27.6106281,
+      "osm_id": "node/5794642759",
+      "osm_tags": {
+        "name": "Mangbukele",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matsotso",
+      "lat": 2.2736417,
+      "lon": 27.5967657,
+      "osm_id": "node/5794663612",
+      "osm_tags": {
+        "name": "Matsotso",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Babonde",
+      "lat": 2.2595209,
+      "lon": 27.5866262,
+      "osm_id": "node/5794663613",
+      "osm_tags": {
+        "name": "Babonde",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bazuwa",
+      "lat": 2.257537,
+      "lon": 27.6102036,
+      "osm_id": "node/5794663614",
+      "osm_tags": {
+        "name": "Bazuwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mambata",
+      "lat": 2.2458063,
+      "lon": 27.5754396,
+      "osm_id": "node/5794663615",
+      "osm_tags": {
+        "name": "Mambata",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Memela",
+      "lat": 2.2340294,
+      "lon": 27.5781331,
+      "osm_id": "node/5794663616",
+      "osm_tags": {
+        "name": "Memela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mopoto",
+      "lat": 2.2261756,
+      "lon": 27.5759124,
+      "osm_id": "node/5794663630",
+      "osm_tags": {
+        "name": "Mopoto",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Badigo",
+      "lat": 2.2081282,
+      "lon": 27.5519686,
+      "osm_id": "node/5794664353",
+      "osm_tags": {
+        "name": "Badigo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbongo",
+      "lat": 2.1965408,
+      "lon": 27.5481428,
+      "osm_id": "node/5794664354",
+      "osm_tags": {
+        "name": "Mbongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Apepo",
+      "lat": 2.1669415,
+      "lon": 27.5443615,
+      "osm_id": "node/5794664355",
+      "osm_tags": {
+        "name": "Apepo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mangodomu",
+      "lat": 0.5167535,
+      "lon": 29.3719738,
+      "osm_id": "node/5802326218",
+      "osm_tags": {
+        "alt_name": "Mangodomu I",
+        "name": "Mangodomu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kyanzaba",
+      "lat": 0.5312943,
+      "lon": 29.3195935,
+      "osm_id": "node/5802326219",
+      "osm_tags": {
+        "alt_name": "Kiashaba",
+        "name": "Kyanzaba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mboso",
+      "lat": 0.5433903,
+      "lon": 29.3224071,
+      "osm_id": "node/5802326220",
+      "osm_tags": {
+        "name": "Mboso",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalibi",
+      "lat": 0.5589924,
+      "lon": 29.2957257,
+      "osm_id": "node/5802326563",
+      "osm_tags": {
+        "name": "Kalibi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mangodomu II",
+      "lat": 0.5666241,
+      "lon": 29.3250791,
+      "osm_id": "node/5802326653",
+      "osm_tags": {
+        "alt_name": "Mangodomu Deuxi\u00e8me",
+        "name": "Mangodomu II",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manyuba",
+      "lat": 0.579897,
+      "lon": 29.3276902,
+      "osm_id": "node/5802405835",
+      "osm_tags": {
+        "name": "Manyuba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mangina",
+      "lat": 0.6038107,
+      "lon": 29.3073265,
+      "osm_id": "node/5802486114",
+      "osm_tags": {
+        "name": "Mangina",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maosiama",
+      "lat": 0.6217078,
+      "lon": 29.286378,
+      "osm_id": "node/5802521083",
+      "osm_tags": {
+        "fixme": "Please confirm existence. Possible this placename belongs elsewhere, and this is just a part of Makeke",
+        "name": "Maosiama",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mandumbi",
+      "lat": 0.7298032,
+      "lon": 29.3679344,
+      "osm_id": "node/5805944302",
+      "osm_tags": {
+        "name": "Mandumbi",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bango",
+      "lat": 2.2190279,
+      "lon": 27.5681995,
+      "osm_id": "node/5808212734",
+      "osm_tags": {
+        "name": "Bango",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matula",
+      "lat": 0.5600322,
+      "lon": 29.243561,
+      "osm_id": "node/5808425880",
+      "osm_tags": {
+        "name": "Matula",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mangole",
+      "lat": 0.5632575,
+      "lon": 29.2597073,
+      "osm_id": "node/5808425881",
+      "osm_tags": {
+        "name": "Mangole",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mambabwanga",
+      "lat": 0.5323101,
+      "lon": 29.2908451,
+      "osm_id": "node/5809452942",
+      "osm_tags": {
+        "name": "Mambabwanga",
+        "place": "village",
+        "source": "RGC"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bomili",
+      "lat": 0.5333259,
+      "lon": 29.2786199,
+      "osm_id": "node/5809473925",
+      "osm_tags": {
+        "name": "Bomili",
+        "place": "hamlet",
+        "source": "RGC"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mambabwanga III",
+      "lat": 0.5266547,
+      "lon": 29.2747408,
+      "osm_id": "node/5809562054",
+      "osm_tags": {
+        "name": "Mambabwanga III",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Baka",
+      "lat": 0.524058,
+      "lon": 29.2679992,
+      "osm_id": "node/5809562180",
+      "osm_tags": {
+        "name": "Baka",
+        "place": "hamlet",
+        "source": "RGC"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mikili",
+      "lat": 0.5221957,
+      "lon": 29.2657094,
+      "osm_id": "node/5809562191",
+      "osm_tags": {
+        "name": "Mikili",
+        "place": "hamlet",
+        "source": "RGC"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mabulengo",
+      "lat": 0.5213097,
+      "lon": 29.2632485,
+      "osm_id": "node/5809562225",
+      "osm_tags": {
+        "name": "Mabulengo",
+        "place": "hamlet",
+        "source": "RGC"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kaukabo I",
+      "lat": 0.5207287,
+      "lon": 29.261827,
+      "osm_id": "node/5809562226",
+      "osm_tags": {
+        "name": "Kaukabo I",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbum\u00e9",
+      "lat": 0.518349,
+      "lon": 29.2646054,
+      "osm_id": "node/5809562238",
+      "osm_tags": {
+        "name": "Mbum\u00e9",
+        "place": "hamlet",
+        "source": "RGC"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbum\u00e9 II",
+      "lat": 0.5171861,
+      "lon": 29.2620955,
+      "osm_id": "node/5809562239",
+      "osm_tags": {
+        "name": "Mbum\u00e9 II",
+        "place": "hamlet",
+        "source": "RGC"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kaukabo II",
+      "lat": 0.5194655,
+      "lon": 29.2535949,
+      "osm_id": "node/5809562259",
+      "osm_tags": {
+        "name": "Kaukabo II",
+        "place": "hamlet",
+        "source": "RGC"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Buyuma",
+      "lat": 0.5156213,
+      "lon": 29.2487543,
+      "osm_id": "node/5809562347",
+      "osm_tags": {
+        "name": "Buyuma",
+        "place": "hamlet",
+        "source": "RGC"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moseli",
+      "lat": 0.5484447,
+      "lon": 29.2002919,
+      "osm_id": "node/5811012893",
+      "osm_tags": {
+        "name": "Moseli",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mighobwe",
+      "lat": 0.5648153,
+      "lon": 29.1859056,
+      "osm_id": "node/5813169993",
+      "osm_tags": {
+        "name": "Mighobwe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bela",
+      "lat": 0.6225278,
+      "lon": 29.2568307,
+      "osm_id": "node/5813929099",
+      "osm_tags": {
+        "name": "Bela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masali",
+      "lat": 0.6284608,
+      "lon": 29.2542559,
+      "osm_id": "node/5813929116",
+      "osm_tags": {
+        "name": "Masali",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukaya",
+      "lat": 0.6923647,
+      "lon": 29.2460634,
+      "osm_id": "node/5813929558",
+      "osm_tags": {
+        "name": "Lukaya",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Njiambili",
+      "lat": 0.704592,
+      "lon": 29.2448713,
+      "osm_id": "node/5813929559",
+      "osm_tags": {
+        "alt_name": "Nzambili",
+        "name": "Njiambili",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mununzi",
+      "lat": 0.5933395,
+      "lon": 29.2412151,
+      "osm_id": "node/5815778537",
+      "osm_tags": {
+        "alt_name": "Mununze",
+        "name": "Mununzi",
+        "place": "village",
+        "wikidata": "Q15260270"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mangwengwete",
+      "lat": 0.5595429,
+      "lon": 29.2354048,
+      "osm_id": "node/5816850043",
+      "osm_tags": {
+        "name": "Mangwengwete",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Manzua",
+      "lat": 0.5668923,
+      "lon": 29.3651275,
+      "osm_id": "node/5821929229",
+      "osm_tags": {
+        "name": "Manzua",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Molende",
+      "lat": 0.6012326,
+      "lon": 29.3579403,
+      "osm_id": "node/5821929230",
+      "osm_tags": {
+        "name": "Molende",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Burutsu",
+      "lat": 0.5713701,
+      "lon": 29.3881765,
+      "osm_id": "node/5821931108",
+      "osm_tags": {
+        "name": "Burutsu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malese",
+      "lat": 0.5237724,
+      "lon": 29.1943649,
+      "osm_id": "node/5826108003",
+      "osm_tags": {
+        "name": "Malese",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mangalo",
+      "lat": 0.5173979,
+      "lon": 29.1923774,
+      "osm_id": "node/5826108237",
+      "osm_tags": {
+        "name": "Mangalo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Masangi I",
+      "lat": 0.5298266,
+      "lon": 29.1999027,
+      "osm_id": "node/5826108238",
+      "osm_tags": {
+        "name": "Masangi I",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngaluma",
+      "lat": 2.1832503,
+      "lon": 27.9736376,
+      "osm_id": "node/5829226841",
+      "osm_tags": {
+        "name": "Ngaluma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ayo",
+      "lat": 2.2738501,
+      "lon": 27.9415839,
+      "osm_id": "node/5829226842",
+      "osm_tags": {
+        "name": "Ayo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalongo",
+      "lat": 0.7424985,
+      "lon": 29.5229491,
+      "osm_id": "node/5852012825",
+      "osm_tags": {
+        "name": "Kalongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bendera",
+      "lat": 0.5637422,
+      "lon": 29.4786665,
+      "osm_id": "node/5907141612",
+      "osm_tags": {
+        "alt_name": "Bendere",
+        "fixme": "Please verify placename spelling and placement",
+        "name": "Bendera",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Boikene",
+      "lat": 0.5172498,
+      "lon": 29.4918598,
+      "osm_id": "node/5907141735",
+      "osm_tags": {
+        "name": "Boikene",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Majihi",
+      "lat": 0.5301444,
+      "lon": 29.4936772,
+      "osm_id": "node/5907198743",
+      "osm_tags": {
+        "fixme": "Please confirm placename spelling and location",
+        "name": "Majihi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mamuli",
+      "lat": 0.6436265,
+      "lon": 29.4959567,
+      "osm_id": "node/5907234687",
+      "osm_tags": {
+        "fixme": "Please confirm placename spelling and location",
+        "name": "Mamuli",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Vuhimbandere",
+      "lat": 0.6153876,
+      "lon": 29.4884378,
+      "osm_id": "node/5907234695",
+      "osm_tags": {
+        "alt_name": "Vhuhimbandere",
+        "fixme": "Please confirm placename spelling and location.",
+        "name": "Vuhimbandere",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Alafu",
+      "lat": 0.7580814,
+      "lon": 29.2327542,
+      "osm_id": "node/5907258913",
+      "osm_tags": {
+        "name": "Alafu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbutama II",
+      "lat": 0.6193003,
+      "lon": 29.42769,
+      "osm_id": "node/5907581750",
+      "osm_tags": {
+        "alt_name": "Mbutaba II",
+        "fixme": "Please verify placename spelling and location",
+        "name": "Mbutama II",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sayo",
+      "lat": 0.5670407,
+      "lon": 29.435703,
+      "osm_id": "node/5907581827",
+      "osm_tags": {
+        "fixme": "Please verify placename spelling and location",
+        "name": "Sayo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mulekia",
+      "lat": 0.5553429,
+      "lon": 29.4286506,
+      "osm_id": "node/5907581828",
+      "osm_tags": {
+        "alt_name": "Mulekya",
+        "fixme": "Please verify placename spelling and location",
+        "name": "Mulekia",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bayaswa",
+      "lat": 1.33918,
+      "lon": 27.5759399,
+      "osm_id": "node/5907698733",
+      "osm_tags": {
+        "name": "Bayaswa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bafwaio",
+      "lat": 1.3613225,
+      "lon": 27.5939877,
+      "osm_id": "node/5907698734",
+      "osm_tags": {
+        "name": "Bafwaio",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kolopao",
+      "lat": 1.3779019,
+      "lon": 27.5977246,
+      "osm_id": "node/5907698735",
+      "osm_tags": {
+        "name": "Kolopao",
+        "note": "May be name of next settlement to the south - unclear",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Avakubi II",
+      "lat": 1.3237958,
+      "lon": 27.5490152,
+      "osm_id": "node/5907698736",
+      "osm_tags": {
+        "alt_name": "Avakubi Mbandjo",
+        "name": "Avakubi II",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makumbo",
+      "lat": 0.6186664,
+      "lon": 29.4862949,
+      "osm_id": "node/5908908586",
+      "osm_tags": {
+        "fixme": "Please confirm placename spelling and location.",
+        "name": "Makumbo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sikwaila II",
+      "lat": 0.6263479,
+      "lon": 29.4892473,
+      "osm_id": "node/5908908601",
+      "osm_tags": {
+        "alt_name": "Sikwakira",
+        "fixme": "Please confirm placename spelling and location. RGC spells it \"Sikwakira\", but it appears to actually be Sikwaila. Sikwahive is another possibility.",
+        "name": "Sikwaila II",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matapi",
+      "lat": 0.6317816,
+      "lon": 29.4918306,
+      "osm_id": "node/5908908602",
+      "osm_tags": {
+        "fixme": "Please confirm placename spelling and location.",
+        "name": "Matapi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mangboko",
+      "lat": 0.6343853,
+      "lon": 29.4905647,
+      "osm_id": "node/5908908603",
+      "osm_tags": {
+        "fixme": "Please confirm placename spelling and location.",
+        "name": "Mangboko",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kitoho",
+      "lat": 0.6381383,
+      "lon": 29.4946267,
+      "osm_id": "node/5908908625",
+      "osm_tags": {
+        "fixme": "Please confirm placename spelling and location",
+        "name": "Kitoho",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kebikeba",
+      "lat": 0.6536742,
+      "lon": 29.4916623,
+      "osm_id": "node/5908908628",
+      "osm_tags": {
+        "fixme": "Please confirm placename spelling and location.",
+        "name": "Kebikeba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Linzo-Mbau",
+      "lat": 0.6537237,
+      "lon": 29.4857812,
+      "osm_id": "node/5908908629",
+      "osm_tags": {
+        "fixme": "Please confirm placename spelling and location.",
+        "name": "Linzo-Mbau",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Upende",
+      "lat": 0.6600203,
+      "lon": 29.4539332,
+      "osm_id": "node/5908908702",
+      "osm_tags": {
+        "fixme": "Please confirm placename spelling and location.",
+        "name": "Upende",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Upende II",
+      "lat": 0.6638734,
+      "lon": 29.4444442,
+      "osm_id": "node/5908908703",
+      "osm_tags": {
+        "name": "Upende II",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Musuku",
+      "lat": 0.6683829,
+      "lon": 29.4250838,
+      "osm_id": "node/5908908720",
+      "osm_tags": {
+        "name": "Musuku",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Maliese",
+      "lat": 0.679923,
+      "lon": 29.4100485,
+      "osm_id": "node/5908908728",
+      "osm_tags": {
+        "fixme": "Please confirm placename spelling and location.",
+        "name": "Maliese",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Musakwa",
+      "lat": 0.6869956,
+      "lon": 29.3946295,
+      "osm_id": "node/5908908729",
+      "osm_tags": {
+        "fixme": "Please confirm placename spelling and location.",
+        "name": "Musakwa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanunu-Maliese",
+      "lat": 0.6841553,
+      "lon": 29.400465,
+      "osm_id": "node/5908908730",
+      "osm_tags": {
+        "name": "Kanunu-Maliese",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maibo",
+      "lat": 0.6613581,
+      "lon": 29.4994408,
+      "osm_id": "node/5908908742",
+      "osm_tags": {
+        "alt_name": "Mahibo",
+        "fixme": "Please confirm placename spelling and location.",
+        "name": "Maibo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngite II",
+      "lat": 0.6016068,
+      "lon": 29.4951003,
+      "osm_id": "node/5908908758",
+      "osm_tags": {
+        "fixme": "Please confirm placename spelling and location.",
+        "name": "Ngite II",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mangango II",
+      "lat": 0.5218379,
+      "lon": 29.3614323,
+      "osm_id": "node/5908908763",
+      "osm_tags": {
+        "name": "Mangango II",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bingo III",
+      "lat": 0.5239112,
+      "lon": 29.3393746,
+      "osm_id": "node/5908908764",
+      "osm_tags": {
+        "name": "Bingo III",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bingo II",
+      "lat": 0.5234116,
+      "lon": 29.3430516,
+      "osm_id": "node/5908908766",
+      "osm_tags": {
+        "name": "Bingo II",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalemie",
+      "lat": 0.528504,
+      "lon": 29.3139426,
+      "osm_id": "node/5908908767",
+      "osm_tags": {
+        "name": "Kalemie",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tokou",
+      "lat": 0.5360882,
+      "lon": 29.320321,
+      "osm_id": "node/5908908768",
+      "osm_tags": {
+        "name": "Tokou",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Somucar",
+      "lat": 0.55252,
+      "lon": 29.3221214,
+      "osm_id": "node/5908908769",
+      "osm_tags": {
+        "name": "Somucar",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mapemba",
+      "lat": 0.6110396,
+      "lon": 29.4074307,
+      "osm_id": "node/6050061630",
+      "osm_tags": {
+        "fixme": "Please verify spelling and location",
+        "name": "Mapemba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mawambi",
+      "lat": 1.0573138,
+      "lon": 28.5528539,
+      "osm_id": "node/7023842757",
+      "osm_tags": {
+        "name": "Mawambi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Avakubi Centre",
+      "lat": 1.3121507,
+      "lon": 27.5555134,
+      "osm_id": "node/7029924032",
+      "osm_tags": {
+        "alt_name": "Avakubi Kieka",
+        "name": "Avakubi Centre",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ahili",
+      "lat": 0.7827194,
+      "lon": 29.5240939,
+      "osm_id": "node/7518249506",
+      "osm_tags": {
+        "name": "Ahili",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Biakatu",
+      "lat": 0.8164475,
+      "lon": 29.2393076,
+      "osm_id": "node/7532624364",
+      "osm_tags": {
+        "name": "Biakatu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Amalutu",
+      "lat": 1.0018506,
+      "lon": 29.1682291,
+      "osm_id": "node/7532703712",
+      "osm_tags": {
+        "name": "Amalutu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Vunyondo",
+      "lat": 0.8655025,
+      "lon": 29.4819885,
+      "osm_id": "node/7559966029",
+      "osm_tags": {
+        "name": "Vunyondo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kalibo",
+      "lat": 0.5623333,
+      "lon": 29.2852778,
+      "osm_id": "node/7769935654",
+      "osm_tags": {
+        "name": "Kalibo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mangodomu",
+      "lat": 0.5799444,
+      "lon": 29.331,
+      "osm_id": "node/7769935655",
+      "osm_tags": {
+        "name": "Mangodomu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mundubiena",
+      "lat": 0.6167222,
+      "lon": 29.3354444,
+      "osm_id": "node/7769935656",
+      "osm_tags": {
+        "name": "Mundubiena",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Manzuha",
+      "lat": 0.5953889,
+      "lon": 29.40225,
+      "osm_id": "node/7769935657",
+      "osm_tags": {
+        "name": "Manzuha",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kichwatembo",
+      "lat": 0.5503611,
+      "lon": 29.4463056,
+      "osm_id": "node/7769935658",
+      "osm_tags": {
+        "name": "Kichwatembo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Central",
+      "lat": 0.5263611,
+      "lon": 29.1982222,
+      "osm_id": "node/7769935663",
+      "osm_tags": {
+        "name": "Central",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Pumzika",
+      "lat": 0.6028056,
+      "lon": 29.1225278,
+      "osm_id": "node/7769935665",
+      "osm_tags": {
+        "name": "Pumzika",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Andisende II",
+      "lat": 1.359285,
+      "lon": 29.5212067,
+      "osm_id": "node/8026099713",
+      "osm_tags": {
+        "name": "Andisende II",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mukonja",
+      "lat": 1.900586,
+      "lon": 29.0185766,
+      "osm_id": "node/8152403359",
+      "osm_tags": {
+        "fixme": "the name is mentioned in a trip report, it would be good to see this name in an other document/map",
+        "name": "Mukonja",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalongo",
+      "lat": 0.7935,
+      "lon": 29.1245167,
+      "osm_id": "node/8375750355",
+      "osm_tags": {
+        "name": "Kalongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mahu",
+      "lat": 0.7619533,
+      "lon": 29.16921,
+      "osm_id": "node/8375751338",
+      "osm_tags": {
+        "name": "Mahu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanyota",
+      "lat": 0.8239567,
+      "lon": 29.1284817,
+      "osm_id": "node/8375751637",
+      "osm_tags": {
+        "name": "Kanyota",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kisere",
+      "lat": 0.79836,
+      "lon": 29.1542067,
+      "osm_id": "node/8375752961",
+      "osm_tags": {
+        "name": "Kisere",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mambatoko",
+      "lat": 0.7988417,
+      "lon": 29.135275,
+      "osm_id": "node/8375757649",
+      "osm_tags": {
+        "name": "Mambatoko",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mangwautu",
+      "lat": 0.7243395,
+      "lon": 29.4055007,
+      "osm_id": "node/8712619419",
+      "osm_tags": {
+        "name": "Mangwautu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ebiane",
+      "lat": 1.4115306,
+      "lon": 28.4277463,
+      "osm_id": "node/9129152510",
+      "osm_tags": {
+        "name": "Ebiane",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbula",
+      "lat": 0.515873,
+      "lon": 29.4284919,
+      "osm_id": "node/9174506838",
+      "osm_tags": {
+        "name": "Mbula",
+        "place": "village",
+        "survey:date": "2021-10-09"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kasanga",
+      "lat": 0.518582,
+      "lon": 29.4241333,
+      "osm_id": "node/9174506839",
+      "osm_tags": {
+        "name": "Kasanga",
+        "place": "village",
+        "survey:date": "2021-10-09"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Esege 2",
+      "lat": 0.5162275,
+      "lon": 28.8656136,
+      "osm_id": "node/9594356117",
+      "osm_tags": {
+        "name": "Esege 2",
+        "place": "village",
+        "source": "PREPPYG",
+        "survey:date": "2022-03-10"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makaburi",
+      "lat": 0.568272,
+      "lon": 28.815203,
+      "osm_id": "node/9594357019",
+      "osm_tags": {
+        "name": "Makaburi",
+        "place": "village",
+        "source": "PREPPYG",
+        "survey:date": "2022-03-10"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manzumbu 1",
+      "lat": 0.5539554,
+      "lon": 28.736353,
+      "osm_id": "node/9594357217",
+      "osm_tags": {
+        "name": "Manzumbu 1",
+        "place": "village",
+        "source": "PREPPYG",
+        "survey:date": "2022-03-10"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lubumbashi",
+      "lat": 0.590692,
+      "lon": 28.7268258,
+      "osm_id": "node/9594357218",
+      "osm_tags": {
+        "name": "Lubumbashi",
+        "place": "village",
+        "source": "PREPPYG",
+        "survey:date": "2022-03-10"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bilulu",
+      "lat": 0.5746793,
+      "lon": 28.8013037,
+      "osm_id": "node/9594357219",
+      "osm_tags": {
+        "name": "Bilulu",
+        "place": "village",
+        "source": "PREPPYG",
+        "survey:date": "2022-03-10"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manzumbu 2",
+      "lat": 0.5490437,
+      "lon": 28.7414663,
+      "osm_id": "node/9594357617",
+      "osm_tags": {
+        "name": "Manzumbu 2",
+        "place": "village",
+        "source": "PREPPYG",
+        "survey:date": "2022-03-10"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Monde Arabe",
+      "lat": 0.5648392,
+      "lon": 28.7414086,
+      "osm_id": "node/9594359018",
+      "osm_tags": {
+        "name": "Monde Arabe",
+        "place": "village",
+        "source": "PREPPYG",
+        "survey:date": "2022-03-10"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malindi",
+      "lat": 0.5850986,
+      "lon": 28.7334534,
+      "osm_id": "node/9594359418",
+      "osm_tags": {
+        "name": "Malindi",
+        "place": "village",
+        "source": "PREPPYG",
+        "survey:date": "2022-03-10"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Babesua",
+      "lat": 1.4284808,
+      "lon": 28.1751309,
+      "osm_id": "node/10778801021",
+      "osm_tags": {
+        "name": "Babesua",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mt Kilima Mutu",
+      "lat": 2.0281673,
+      "lon": 28.6453967,
+      "osm_id": "node/11952448578",
+      "osm_tags": {
+        "description": "inselberg",
+        "name": "Mt Kilima Mutu",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Penge",
+      "lat": 1.3353831,
+      "lon": 28.1229347,
+      "osm_id": "node/12064154623",
+      "osm_tags": {
+        "name": "Penge",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bango",
+      "lat": 1.0597492,
+      "lon": 29.1836681,
+      "osm_id": "node/12852506075",
+      "osm_tags": {
+        "name": "Bango",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mingazi",
+      "lat": 0.9586189,
+      "lon": 29.0841137,
+      "osm_id": "node/13001444187",
+      "osm_tags": {
+        "name": "Mingazi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makele",
+      "lat": 1.0032356,
+      "lon": 29.2240474,
+      "osm_id": "node/13006721071",
+      "osm_tags": {
+        "name": "Makele",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mabakuha",
+      "lat": 0.9574524,
+      "lon": 28.9563379,
+      "osm_id": "node/13006734031",
+      "osm_tags": {
+        "name": "Mabakuha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mayuano",
+      "lat": 1.1331392,
+      "lon": 29.1480804,
+      "osm_id": "node/13051902224",
+      "osm_tags": {
+        "name": "Mayuano",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Teturi",
+      "lat": 1.0523075,
+      "lon": 29.1477249,
+      "osm_id": "node/13327984357",
+      "osm_tags": {
+        "name": "Teturi",
+        "name:ru": "\u0422\u0435\u0442\u0443\u0440\u0438",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lenda",
+      "lat": 1.200865,
+      "lon": 28.044283,
+      "osm_id": "way/48277364",
+      "osm_tags": {
+        "name": "Lenda",
+        "waterway": "river",
+        "wikidata": "Q22407035"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Endulu",
+      "lat": 1.0708815,
+      "lon": 28.1005789,
+      "osm_id": "way/48277651",
+      "osm_tags": {
+        "name": "Endulu",
+        "waterway": "river",
+        "wikidata": "Q22409576"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lenda",
+      "lat": 0.8847002,
+      "lon": 28.2115906,
+      "osm_id": "way/48277652",
+      "osm_tags": {
+        "name": "Lenda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Agamba",
+      "lat": 1.8145869,
+      "lon": 27.9565803,
+      "osm_id": "way/48277830",
+      "osm_tags": {
+        "name": "Agamba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Imbo",
+      "lat": 1.7252206,
+      "lon": 27.8553825,
+      "osm_id": "way/48277834",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Imbo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.411741,
+      "lon": 28.4734521,
+      "osm_id": "way/48278001",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4075974,
+      "lon": 28.0864897,
+      "osm_id": "way/48278002",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Afande",
+      "lat": 2.3518406,
+      "lon": 28.5337622,
+      "osm_id": "way/48278067",
+      "osm_tags": {
+        "name": "Afande",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nduye",
+      "lat": 1.93968,
+      "lon": 29.0595931,
+      "osm_id": "way/48278178",
+      "osm_tags": {
+        "name": "Nduye",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Epulu",
+      "lat": 1.4192837,
+      "lon": 28.8795819,
+      "osm_id": "way/48278461",
+      "osm_tags": {
+        "name": "Epulu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.0925577,
+      "lon": 28.7317702,
+      "osm_id": "way/48278651",
+      "osm_tags": {
+        "alt_name": "Aruwimi",
+        "intermittent": "no",
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Epulu",
+      "lat": 1.4188533,
+      "lon": 28.6669659,
+      "osm_id": "way/48278655",
+      "osm_tags": {
+        "name": "Epulu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Epulu",
+      "lat": 1.3203385,
+      "lon": 28.5150569,
+      "osm_id": "way/48288347",
+      "osm_tags": {
+        "name": "Epulu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.2687158,
+      "lon": 27.8438926,
+      "osm_id": "way/48387521",
+      "osm_tags": {
+        "alt_name": "Nepoki",
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.2962355,
+      "lon": 27.8578016,
+      "osm_id": "way/48387522",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.2336488,
+      "lon": 27.8359571,
+      "osm_id": "way/48387523",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Maika",
+      "lat": 2.5781428,
+      "lon": 28.0570893,
+      "osm_id": "way/48387524",
+      "osm_tags": {
+        "alt_name": "Naika",
+        "name": "Maika",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mendambo",
+      "lat": 2.7672881,
+      "lon": 27.6147398,
+      "osm_id": "way/51567376",
+      "osm_tags": {
+        "alt_name": "Mendambo",
+        "name": "Mendambo",
+        "source": "alt_name: Plan de d\u00e9veloppement urbain de Paulis, in: Guy Choprix: La naissance d'une ville.;Andr\u00e9 MAMBATA KA MAMBATA;Expert SIG",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Modimbo",
+      "lat": 2.7669024,
+      "lon": 27.5955352,
+      "osm_id": "way/51567416",
+      "osm_tags": {
+        "name": "Modimbo",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Tely",
+      "lat": 2.7887238,
+      "lon": 27.6312767,
+      "osm_id": "way/51737882",
+      "osm_tags": {
+        "name": "Tely",
+        "source": "Plan de d\u00e9veloppement urbain de Paulis, in: Guy Choprix: La naissance d'une ville.",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Manzakaie",
+      "lat": 2.7846616,
+      "lon": 27.6187983,
+      "osm_id": "way/51737893",
+      "osm_tags": {
+        "name": "Manzakaie",
+        "source": "Plan de d\u00e9veloppement urbain de Paulis, in: Guy Choprix: La naissance d'une ville.",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Manzakayi",
+      "lat": 2.7940224,
+      "lon": 27.6160347,
+      "osm_id": "way/51738049",
+      "osm_tags": {
+        "name": "Manzakayi",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tely",
+      "lat": 2.8003455,
+      "lon": 27.6129658,
+      "osm_id": "way/51738050",
+      "osm_tags": {
+        "alt_name": "Teli",
+        "name": "Tely",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.5879544,
+      "lon": 29.3232245,
+      "osm_id": "way/51910884",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lindi",
+      "lat": 0.7492669,
+      "lon": 27.6234213,
+      "osm_id": "way/80975319",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lindi",
+        "name:en": "Lindi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mambaya",
+      "lat": 2.7836975,
+      "lon": 27.6008413,
+      "osm_id": "way/82164676",
+      "osm_tags": {
+        "name": "Mambaya",
+        "old_name": "Nebuda",
+        "source": "old name: Plan de d\u00e9veloppement urbain de Paulis, in: Guy Choprix: La naissance d'une ville.",
+        "source_ref": "new name: Uniuele",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nebuda",
+      "lat": 2.7779492,
+      "lon": 27.6078704,
+      "osm_id": "way/82164677",
+      "osm_tags": {
+        "name": "Nebuda",
+        "source": "Plan de d\u00e9veloppement urbain de Paulis, in: Guy Choprix: La naissance d'une ville.",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Anne",
+      "lat": 2.7533957,
+      "lon": 27.61909,
+      "osm_id": "way/82164680",
+      "osm_tags": {
+        "alt_name": "Ane",
+        "name": "Anne",
+        "source": "Plan de d\u00e9veloppement urbain de Paulis, in: Guy Choprix: La naissance d'une ville.",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Imbo",
+      "lat": 1.6812303,
+      "lon": 27.7360185,
+      "osm_id": "way/122051266",
+      "osm_tags": {
+        "name": "Imbo",
+        "waterway": "river",
+        "wikidata": "Q22426294"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ngayu",
+      "lat": 1.6926775,
+      "lon": 27.5964011,
+      "osm_id": "way/122051268",
+      "osm_tags": {
+        "name": "Ngayu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nduye",
+      "lat": 1.6606671,
+      "lon": 28.8103769,
+      "osm_id": "way/122056929",
+      "osm_tags": {
+        "alt_name": "Duye",
+        "name": "Nduye",
+        "source": "Bing",
+        "waterway": "river",
+        "wikidata": "Q22589314"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.0365756,
+      "lon": 27.5203056,
+      "osm_id": "way/122571588",
+      "osm_tags": {
+        "alt_name": "Nepoki",
+        "name": "Nepoko",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Epulu",
+      "lat": 1.2852134,
+      "lon": 28.4334203,
+      "osm_id": "way/122572060",
+      "osm_tags": {
+        "name": "Epulu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.884888,
+      "lon": 28.4195152,
+      "osm_id": "way/161006943",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.850043,
+      "lon": 28.536051,
+      "osm_id": "way/161007613",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.8446674,
+      "lon": 28.7332767,
+      "osm_id": "way/161008315",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.8422084,
+      "lon": 28.6320354,
+      "osm_id": "way/161008316",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Obo",
+      "lat": 2.8538952,
+      "lon": 28.7008897,
+      "osm_id": "way/161008318",
+      "osm_tags": {
+        "name": "Obo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.8124437,
+      "lon": 28.8953662,
+      "osm_id": "way/161008752",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.7976098,
+      "lon": 28.9529937,
+      "osm_id": "way/161008754",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.823195,
+      "lon": 28.8372485,
+      "osm_id": "way/161008756",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.719325,
+      "lon": 29.0992331,
+      "osm_id": "way/161009290",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.776051,
+      "lon": 28.997886,
+      "osm_id": "way/161009291",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.6204549,
+      "lon": 29.2653495,
+      "osm_id": "way/161009292",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.7311674,
+      "lon": 29.0773577,
+      "osm_id": "way/161009293",
+      "osm_tags": {
+        "boat": "no",
+        "fixme": "yes",
+        "name": "Bomokandi",
+        "note": "clouds in Satellite Imagery",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.7226906,
+      "lon": 29.0613579,
+      "osm_id": "way/161009294",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.7360259,
+      "lon": 29.0306475,
+      "osm_id": "way/161009295",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.1718314,
+      "lon": 28.9701054,
+      "osm_id": "way/201761404",
+      "osm_tags": {
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilokwa",
+      "lat": 0.5224606,
+      "lon": 29.4438126,
+      "osm_id": "way/313690439",
+      "osm_tags": {
+        "name": "Kilokwa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyabelu",
+      "lat": 0.553717,
+      "lon": 29.4474776,
+      "osm_id": "way/320398741",
+      "osm_tags": {
+        "name": "Munyabelu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6237517,
+      "lon": 29.3488113,
+      "osm_id": "way/320401232",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mambele",
+      "lat": 1.4123442,
+      "lon": 28.4624578,
+      "osm_id": "way/397127986",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Mambele",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mamopi",
+      "lat": 1.4111016,
+      "lon": 28.4728512,
+      "osm_id": "way/397127987",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Mamopi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ebiane",
+      "lat": 1.4114194,
+      "lon": 28.4276494,
+      "osm_id": "way/397128446",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Ebiane",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Babeke",
+      "lat": 1.3978424,
+      "lon": 28.0430827,
+      "osm_id": "way/402484060",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Babeke",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nduye",
+      "lat": 2.0944788,
+      "lon": 29.1375757,
+      "osm_id": "way/453136452",
+      "osm_tags": {
+        "name": "Nduye",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4152779,
+      "lon": 28.2875469,
+      "osm_id": "way/489640272",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mabukusi",
+      "lat": 1.3468241,
+      "lon": 28.8456169,
+      "osm_id": "way/489643528",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Mabukusi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lindi",
+      "lat": 0.5080708,
+      "lon": 27.8699541,
+      "osm_id": "way/498863682",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lindi",
+        "name:en": "Lindi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.491724,
+      "lon": 28.7291032,
+      "osm_id": "way/548809328",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4867961,
+      "lon": 28.7109983,
+      "osm_id": "way/548809329",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bombombi",
+      "lat": 2.2009619,
+      "lon": 27.9611012,
+      "osm_id": "way/609468690",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Bombombi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Abiangama",
+      "lat": 2.5763534,
+      "lon": 27.7720203,
+      "osm_id": "way/609743625",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Abiangama",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Audanga",
+      "lat": 2.4456024,
+      "lon": 27.6471633,
+      "osm_id": "way/609822235",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Audanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Buhengo",
+      "lat": 2.4449713,
+      "lon": 27.6825773,
+      "osm_id": "way/609823648",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Buhengo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tsangba",
+      "lat": 2.4331875,
+      "lon": 27.6257274,
+      "osm_id": "way/609824430",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Tsangba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Babiti",
+      "lat": 2.4240981,
+      "lon": 27.616226,
+      "osm_id": "way/609824431",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Babiti",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndei",
+      "lat": 2.4510492,
+      "lon": 27.6113445,
+      "osm_id": "way/609968092",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Ndei",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sengi",
+      "lat": 2.4522191,
+      "lon": 27.5905463,
+      "osm_id": "way/609980379",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Sengi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Paukpa",
+      "lat": 2.4402515,
+      "lon": 27.5707592,
+      "osm_id": "way/609980380",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Paukpa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gbokpowo",
+      "lat": 2.5102764,
+      "lon": 27.6356266,
+      "osm_id": "way/610020386",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Gbokpowo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mudimba",
+      "lat": 2.3990739,
+      "lon": 27.6156867,
+      "osm_id": "way/610021732",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Mudimba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Aguia",
+      "lat": 2.3792228,
+      "lon": 27.6177406,
+      "osm_id": "way/610200680",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Aguia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ibambi",
+      "lat": 2.3526963,
+      "lon": 27.6303895,
+      "osm_id": "way/610263470",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Ibambi",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mandewa",
+      "lat": 2.4560494,
+      "lon": 27.6524998,
+      "osm_id": "way/610293968",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Mandewa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manzara",
+      "lat": 2.4942899,
+      "lon": 27.6796077,
+      "osm_id": "way/610293969",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Manzara",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Basiana",
+      "lat": 2.6176156,
+      "lon": 27.7876427,
+      "osm_id": "way/610302565",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Basiana",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katukunane",
+      "lat": 2.5987586,
+      "lon": 27.7448214,
+      "osm_id": "way/610305510",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Katukunane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moke",
+      "lat": 2.4160355,
+      "lon": 27.6575997,
+      "osm_id": "way/610325423",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Moke",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Pawa",
+      "lat": 2.5313449,
+      "lon": 27.6995123,
+      "osm_id": "way/610328145",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Pawa",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Baonoku",
+      "lat": 2.4094808,
+      "lon": 27.6325487,
+      "osm_id": "way/610922444",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Baonoku",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magbangbawu",
+      "lat": 2.3281265,
+      "lon": 27.6775321,
+      "osm_id": "way/610931686",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Magbangbawu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5269119,
+      "lon": 29.4270359,
+      "osm_id": "way/616374088",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Obo",
+      "lat": 2.8649656,
+      "lon": 28.7046227,
+      "osm_id": "way/617343859",
+      "osm_tags": {
+        "name": "Obo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Obo",
+      "lat": 2.9241049,
+      "lon": 28.7135091,
+      "osm_id": "way/617343860",
+      "osm_tags": {
+        "name": "Obo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5437791,
+      "lon": 29.4316784,
+      "osm_id": "way/619147498",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.567206,
+      "lon": 29.3402723,
+      "osm_id": "way/620104655",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "source": "DigitalGlobe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.5660657,
+      "lon": 29.3469187,
+      "osm_id": "way/620104659",
+      "osm_tags": {
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.8284538,
+      "lon": 29.4260929,
+      "osm_id": "way/620586444",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.8349364,
+      "lon": 29.4369491,
+      "osm_id": "way/620586449",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.8375684,
+      "lon": 29.4429504,
+      "osm_id": "way/620586451",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ebo",
+      "lat": 0.8036941,
+      "lon": 29.4797382,
+      "osm_id": "way/620586459",
+      "osm_tags": {
+        "name": "Ebo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4940776,
+      "lon": 28.8285979,
+      "osm_id": "way/620629713",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mambo",
+      "lat": 2.2208888,
+      "lon": 28.3171925,
+      "osm_id": "way/621113285",
+      "osm_tags": {
+        "name": "Mambo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.6625957,
+      "lon": 29.1667189,
+      "osm_id": "way/623572965",
+      "osm_tags": {
+        "name": "Ibina",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6516968,
+      "lon": 29.1856625,
+      "osm_id": "way/624619788",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4574157,
+      "lon": 28.9476724,
+      "osm_id": "way/636270399",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4637543,
+      "lon": 28.9440482,
+      "osm_id": "way/636270400",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4713903,
+      "lon": 28.9408601,
+      "osm_id": "way/636270401",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4777157,
+      "lon": 28.9353801,
+      "osm_id": "way/636270402",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4824373,
+      "lon": 28.9296764,
+      "osm_id": "way/636270403",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4911553,
+      "lon": 28.9232927,
+      "osm_id": "way/636270404",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.5018097,
+      "lon": 28.9172665,
+      "osm_id": "way/636270405",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4486173,
+      "lon": 28.9607138,
+      "osm_id": "way/636270406",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4540669,
+      "lon": 28.9527149,
+      "osm_id": "way/636270407",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4412679,
+      "lon": 28.9662435,
+      "osm_id": "way/636270408",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4269923,
+      "lon": 28.9816284,
+      "osm_id": "way/636270409",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.6356106,
+      "lon": 29.2053041,
+      "osm_id": "way/645681432",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lenda",
+      "lat": 0.6239504,
+      "lon": 28.4202607,
+      "osm_id": "way/645681446",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Lenda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6841092,
+      "lon": 29.2556068,
+      "osm_id": "way/667784096",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.8316901,
+      "lon": 29.4311175,
+      "osm_id": "way/668260924",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vunyondo",
+      "lat": 0.8646993,
+      "lon": 29.4820959,
+      "osm_id": "way/696091465",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Oicha",
+        "landuse": "residential",
+        "name": "Vunyondo",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.815069,
+      "lon": 29.4084049,
+      "osm_id": "way/696250838",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.8237934,
+      "lon": 29.4189931,
+      "osm_id": "way/696250839",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.9515021,
+      "lon": 29.2982733,
+      "osm_id": "way/697078532",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.8606951,
+      "lon": 29.3647183,
+      "osm_id": "way/720629054",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.1219843,
+      "lon": 29.4001112,
+      "osm_id": "way/720629057",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.028141,
+      "lon": 29.2268247,
+      "osm_id": "way/720629058",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.330734,
+      "lon": 27.5572761,
+      "osm_id": "way/733938230",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Aruwimi",
+        "boundary": "administrative",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.3358202,
+      "lon": 27.6341318,
+      "osm_id": "way/733938231",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Aruwimi",
+        "boundary": "administrative",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.3115472,
+      "lon": 28.006427,
+      "osm_id": "way/733938236",
+      "osm_tags": {
+        "alt_name": "Aruwimi",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6941266,
+      "lon": 29.3290078,
+      "osm_id": "way/763806574",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5791444,
+      "lon": 29.4393824,
+      "osm_id": "way/763806576",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.6647009,
+      "lon": 29.1685702,
+      "osm_id": "way/763898054",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4390911,
+      "lon": 28.9695747,
+      "osm_id": "way/763905767",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.2997809,
+      "lon": 27.7577062,
+      "osm_id": "way/763924577",
+      "osm_tags": {
+        "alt_name": "Aruwimi",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.0855848,
+      "lon": 27.6049797,
+      "osm_id": "way/775020175",
+      "osm_tags": {
+        "alt_name": "Nepoki",
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.3958158,
+      "lon": 28.2623802,
+      "osm_id": "way/775103225",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4463301,
+      "lon": 27.9903261,
+      "osm_id": "way/775103227",
+      "osm_tags": {
+        "alt_name": "Nepoki",
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.3851101,
+      "lon": 27.9102252,
+      "osm_id": "way/775103229",
+      "osm_tags": {
+        "alt_name": "Nepoki",
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4803387,
+      "lon": 28.7003004,
+      "osm_id": "way/775320488",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6181287,
+      "lon": 29.4215138,
+      "osm_id": "way/776262079",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6171862,
+      "lon": 29.4224111,
+      "osm_id": "way/776262080",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.1359093,
+      "lon": 28.9978322,
+      "osm_id": "way/776262085",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.1048117,
+      "lon": 29.0323047,
+      "osm_id": "way/776262086",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 0.9775299,
+      "lon": 29.3037854,
+      "osm_id": "way/776262091",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.2958836,
+      "lon": 27.7754783,
+      "osm_id": "way/776341612",
+      "osm_tags": {
+        "alt_name": "Aruwimi",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.3522327,
+      "lon": 27.5411001,
+      "osm_id": "way/776341614",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Aruwimi",
+        "boundary": "administrative",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.332564,
+      "lon": 27.5758822,
+      "osm_id": "way/776341615",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Aruwimi",
+        "boundary": "administrative",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6064836,
+      "lon": 29.4271149,
+      "osm_id": "way/776885904",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lahule",
+      "lat": 0.5596537,
+      "lon": 29.2107837,
+      "osm_id": "way/783852422",
+      "osm_tags": {
+        "name": "Lahule",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.6614878,
+      "lon": 29.1616051,
+      "osm_id": "way/789912740",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.6596704,
+      "lon": 29.1583854,
+      "osm_id": "way/789912741",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6530428,
+      "lon": 29.1886996,
+      "osm_id": "way/790281662",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6543065,
+      "lon": 29.1917895,
+      "osm_id": "way/790281663",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6535047,
+      "lon": 29.195989,
+      "osm_id": "way/790281664",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6536227,
+      "lon": 29.1999905,
+      "osm_id": "way/790281665",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6501752,
+      "lon": 29.2064945,
+      "osm_id": "way/791755239",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6536871,
+      "lon": 29.2131414,
+      "osm_id": "way/791755240",
+      "osm_tags": {
+        "layer": "-1",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5615155,
+      "lon": 29.4472967,
+      "osm_id": "way/792733007",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 0.9748139,
+      "lon": 29.28492,
+      "osm_id": "way/799615139",
+      "osm_tags": {
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilokwa",
+      "lat": 0.5347844,
+      "lon": 29.4380944,
+      "osm_id": "way/806159253",
+      "osm_tags": {
+        "name": "Kilokwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mukere",
+      "lat": 0.648657,
+      "lon": 29.0670991,
+      "osm_id": "way/806901749",
+      "osm_tags": {
+        "name": "Mukere",
+        "seasonal": "yes",
+        "waterway": "stream",
+        "wikidata": "Q22626341"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Data",
+      "lat": 0.7435452,
+      "lon": 29.1076234,
+      "osm_id": "way/807216781",
+      "osm_tags": {
+        "name": "Data",
+        "seasonal": "yes",
+        "waterway": "stream",
+        "wikidata": "Q22561021"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ebo",
+      "lat": 0.7872575,
+      "lon": 29.4938819,
+      "osm_id": "way/808754633",
+      "osm_tags": {
+        "name": "Ebo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ebo",
+      "lat": 0.7644521,
+      "lon": 29.4996004,
+      "osm_id": "way/808754634",
+      "osm_tags": {
+        "name": "Ebo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lindi",
+      "lat": 0.8275132,
+      "lon": 27.665795,
+      "osm_id": "way/815052515",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lindi",
+        "name:en": "Lindi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lenda",
+      "lat": 0.5197272,
+      "lon": 28.5294556,
+      "osm_id": "way/920857957",
+      "osm_tags": {
+        "name": "Lenda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.67985,
+      "lon": 29.3286735,
+      "osm_id": "way/921150541",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6207702,
+      "lon": 29.3986532,
+      "osm_id": "way/921150542",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.6737823,
+      "lon": 29.1664749,
+      "osm_id": "way/934983233",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.6671809,
+      "lon": 29.1653504,
+      "osm_id": "way/934983234",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.6054062,
+      "lon": 29.1515714,
+      "osm_id": "way/935370986",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.5256932,
+      "lon": 29.1465018,
+      "osm_id": "way/935370987",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.0857873,
+      "lon": 29.0541175,
+      "osm_id": "way/935724913",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.0824319,
+      "lon": 29.0558299,
+      "osm_id": "way/935724914",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.0783986,
+      "lon": 29.0566023,
+      "osm_id": "way/935724915",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.0697812,
+      "lon": 29.0540236,
+      "osm_id": "way/935724916",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.0773006,
+      "lon": 29.1054951,
+      "osm_id": "way/935730744",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.9383463,
+      "lon": 29.3025876,
+      "osm_id": "way/935837385",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.9332589,
+      "lon": 29.3103433,
+      "osm_id": "way/935837386",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.9148639,
+      "lon": 29.324455,
+      "osm_id": "way/935850766",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.8925252,
+      "lon": 29.3474382,
+      "osm_id": "way/935850767",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.8279222,
+      "lon": 29.3821983,
+      "osm_id": "way/935871801",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.8202438,
+      "lon": 29.3911757,
+      "osm_id": "way/935871802",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.7027603,
+      "lon": 29.1644095,
+      "osm_id": "way/936263355",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.8751241,
+      "lon": 28.9555006,
+      "osm_id": "way/936263358",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.7859914,
+      "lon": 29.0935333,
+      "osm_id": "way/936263359",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.7468297,
+      "lon": 29.1379578,
+      "osm_id": "way/936263361",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.7136824,
+      "lon": 29.3144586,
+      "osm_id": "way/936284962",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.65669,
+      "lon": 29.1748812,
+      "osm_id": "way/936384801",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.6519648,
+      "lon": 29.1853263,
+      "osm_id": "way/936384802",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6694593,
+      "lon": 29.3330341,
+      "osm_id": "way/936396703",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.314675,
+      "lon": 27.7108233,
+      "osm_id": "way/936626459",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Aruwimi",
+        "boundary": "administrative",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.6445113,
+      "lon": 29.1548529,
+      "osm_id": "way/936787649",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.6650031,
+      "lon": 29.1640294,
+      "osm_id": "way/936787650",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5770722,
+      "lon": 29.4425755,
+      "osm_id": "way/941796934",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5906571,
+      "lon": 29.43143,
+      "osm_id": "way/941796940",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5715886,
+      "lon": 29.4460671,
+      "osm_id": "way/941796941",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.522236,
+      "lon": 29.4284322,
+      "osm_id": "way/941798977",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5204048,
+      "lon": 29.4292597,
+      "osm_id": "way/941798978",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5573596,
+      "lon": 29.4416171,
+      "osm_id": "way/941853313",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyabelu",
+      "lat": 0.5203625,
+      "lon": 29.4724084,
+      "osm_id": "way/942119332",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Munyabelu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyabelu",
+      "lat": 0.5228206,
+      "lon": 29.4708184,
+      "osm_id": "way/942139796",
+      "osm_tags": {
+        "name": "Munyabelu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyabelu",
+      "lat": 0.5482487,
+      "lon": 29.4495784,
+      "osm_id": "way/942262328",
+      "osm_tags": {
+        "name": "Munyabelu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyabelu",
+      "lat": 0.542288,
+      "lon": 29.4496392,
+      "osm_id": "way/942262329",
+      "osm_tags": {
+        "name": "Munyabelu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyabelu",
+      "lat": 0.5257539,
+      "lon": 29.4598302,
+      "osm_id": "way/943186719",
+      "osm_tags": {
+        "name": "Munyabelu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6175694,
+      "lon": 29.422619,
+      "osm_id": "way/943222833",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6157316,
+      "lon": 29.3666129,
+      "osm_id": "way/943461069",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ebo",
+      "lat": 0.8265014,
+      "lon": 29.4547205,
+      "osm_id": "way/943478224",
+      "osm_tags": {
+        "name": "Ebo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ebo",
+      "lat": 0.8157319,
+      "lon": 29.4651515,
+      "osm_id": "way/943480752",
+      "osm_tags": {
+        "name": "Ebo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ebo",
+      "lat": 0.7822606,
+      "lon": 29.4931116,
+      "osm_id": "way/943484045",
+      "osm_tags": {
+        "name": "Ebo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Asefu",
+      "lat": 0.8992025,
+      "lon": 29.3419155,
+      "osm_id": "way/943634347",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "name": "Asefu",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.6576771,
+      "lon": 29.1573853,
+      "osm_id": "way/944207689",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.628395,
+      "lon": 29.1475278,
+      "osm_id": "way/944207690",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.6220614,
+      "lon": 29.1458245,
+      "osm_id": "way/944211652",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.5574574,
+      "lon": 29.1515271,
+      "osm_id": "way/944218675",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.5666261,
+      "lon": 29.1567096,
+      "osm_id": "way/944218677",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.545384,
+      "lon": 29.1488513,
+      "osm_id": "way/944218678",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.515622,
+      "lon": 29.1361403,
+      "osm_id": "way/944253388",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.5333949,
+      "lon": 29.152048,
+      "osm_id": "way/944254991",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.5187796,
+      "lon": 29.1392194,
+      "osm_id": "way/944255444",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.5829403,
+      "lon": 29.1592052,
+      "osm_id": "way/944283542",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ingabo",
+      "lat": 0.5767269,
+      "lon": 29.1607279,
+      "osm_id": "way/944283543",
+      "osm_tags": {
+        "name": "Ingabo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 0.9918662,
+      "lon": 29.3252488,
+      "osm_id": "way/946857285",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 0.9928311,
+      "lon": 29.3431321,
+      "osm_id": "way/946883441",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.0273509,
+      "lon": 29.3620673,
+      "osm_id": "way/946912222",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.2018456,
+      "lon": 29.451556,
+      "osm_id": "way/946938213",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.2329205,
+      "lon": 29.5258859,
+      "osm_id": "way/946940596",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lindi",
+      "lat": 0.5529985,
+      "lon": 27.7598896,
+      "osm_id": "way/949408195",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lindi",
+        "name:en": "Lindi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lindi",
+      "lat": 0.5830056,
+      "lon": 27.7494907,
+      "osm_id": "way/949408196",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lindi",
+        "name:en": "Lindi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.7760492,
+      "lon": 29.0988212,
+      "osm_id": "way/952493337",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.8019096,
+      "lon": 29.0820952,
+      "osm_id": "way/952493338",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.2010342,
+      "lon": 27.800879,
+      "osm_id": "way/958453671",
+      "osm_tags": {
+        "alt_name": "Nepoki",
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.1434213,
+      "lon": 27.7841626,
+      "osm_id": "way/958453675",
+      "osm_tags": {
+        "alt_name": "Nepoki",
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.1028804,
+      "lon": 27.6841475,
+      "osm_id": "way/958453678",
+      "osm_tags": {
+        "alt_name": "Nepoki",
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.2316921,
+      "lon": 27.801911,
+      "osm_id": "way/958455557",
+      "osm_tags": {
+        "alt_name": "Nepoki",
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.3321657,
+      "lon": 27.876476,
+      "osm_id": "way/958456470",
+      "osm_tags": {
+        "alt_name": "Nepoki",
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.8282903,
+      "lon": 28.8091795,
+      "osm_id": "way/958801052",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bomokandi",
+      "lat": 2.8361427,
+      "lon": 28.7885348,
+      "osm_id": "way/958801055",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bomokandi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Imbo",
+      "lat": 1.7604315,
+      "lon": 27.9240763,
+      "osm_id": "way/960039663",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Imbo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.0668246,
+      "lon": 27.5937371,
+      "osm_id": "way/960042341",
+      "osm_tags": {
+        "alt_name": "Nepoki",
+        "name": "Nepoko",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Obo",
+      "lat": 2.8814305,
+      "lon": 28.6963216,
+      "osm_id": "way/960102635",
+      "osm_tags": {
+        "name": "Obo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sililo",
+      "lat": 2.3486409,
+      "lon": 28.1757197,
+      "osm_id": "way/960110665",
+      "osm_tags": {
+        "name": "Sililo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sililo",
+      "lat": 2.3595771,
+      "lon": 28.1672076,
+      "osm_id": "way/960110666",
+      "osm_tags": {
+        "name": "Sililo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4313067,
+      "lon": 27.9572913,
+      "osm_id": "way/960110670",
+      "osm_tags": {
+        "alt_name": "Nepoki",
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4531964,
+      "lon": 28.0028049,
+      "osm_id": "way/960130703",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Manzakayi",
+      "lat": 2.7924165,
+      "lon": 27.6148957,
+      "osm_id": "way/962174392",
+      "osm_tags": {
+        "name": "Manzakayi",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Epulu",
+      "lat": 1.2420108,
+      "lon": 28.3540841,
+      "osm_id": "way/980674971",
+      "osm_tags": {
+        "name": "Epulu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.2646732,
+      "lon": 28.2421961,
+      "osm_id": "way/981302104",
+      "osm_tags": {
+        "alt_name": "Aruwimi",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.2211656,
+      "lon": 28.2890754,
+      "osm_id": "way/981302105",
+      "osm_tags": {
+        "alt_name": "Aruwimi",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.1047564,
+      "lon": 28.4658068,
+      "osm_id": "way/981302106",
+      "osm_tags": {
+        "alt_name": "Aruwimi",
+        "intermittent": "no",
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5502734,
+      "lon": 29.4353946,
+      "osm_id": "way/981597930",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilokwa",
+      "lat": 0.5145931,
+      "lon": 29.4445684,
+      "osm_id": "way/981613518",
+      "osm_tags": {
+        "name": "Kilokwa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.552697,
+      "lon": 29.4369876,
+      "osm_id": "way/981641774",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.203024,
+      "lon": 28.3603739,
+      "osm_id": "way/982933608",
+      "osm_tags": {
+        "alt_name": "Aruwimi",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyabelu",
+      "lat": 0.5249697,
+      "lon": 29.4625371,
+      "osm_id": "way/989065344",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Munyabelu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilokwa",
+      "lat": 0.5484565,
+      "lon": 29.4403529,
+      "osm_id": "way/991443248",
+      "osm_tags": {
+        "name": "Kilokwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilokwa",
+      "lat": 0.5160494,
+      "lon": 29.444165,
+      "osm_id": "way/991776872",
+      "osm_tags": {
+        "name": "Kilokwa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilokwa",
+      "lat": 0.5270182,
+      "lon": 29.4410559,
+      "osm_id": "way/991776874",
+      "osm_tags": {
+        "name": "Kilokwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6141356,
+      "lon": 29.3692254,
+      "osm_id": "way/992720575",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6149003,
+      "lon": 29.3742797,
+      "osm_id": "way/992720576",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6445256,
+      "lon": 29.3346249,
+      "osm_id": "way/992720586",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.6172654,
+      "lon": 29.3650955,
+      "osm_id": "way/992720587",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyabelu",
+      "lat": 0.5315567,
+      "lon": 29.4570468,
+      "osm_id": "way/993233502",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Munyabelu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyabelu",
+      "lat": 0.5368207,
+      "lon": 29.4541084,
+      "osm_id": "way/993239788",
+      "osm_tags": {
+        "name": "Munyabelu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyabelu",
+      "lat": 0.5258093,
+      "lon": 29.464479,
+      "osm_id": "way/993264769",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Munyabelu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyabelu",
+      "lat": 0.5239632,
+      "lon": 29.46764,
+      "osm_id": "way/993264770",
+      "osm_tags": {
+        "name": "Munyabelu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyabelu",
+      "lat": 0.5270797,
+      "lon": 29.4587098,
+      "osm_id": "way/993265985",
+      "osm_tags": {
+        "name": "Munyabelu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilokwa",
+      "lat": 0.5416927,
+      "lon": 29.4396714,
+      "osm_id": "way/993288083",
+      "osm_tags": {
+        "name": "Kilokwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilokwa",
+      "lat": 0.5415467,
+      "lon": 29.439575,
+      "osm_id": "way/993288084",
+      "osm_tags": {
+        "name": "Kilokwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilokwa",
+      "lat": 0.518738,
+      "lon": 29.4432453,
+      "osm_id": "way/993288090",
+      "osm_tags": {
+        "name": "Kilokwa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilokwa",
+      "lat": 0.5176674,
+      "lon": 29.4436415,
+      "osm_id": "way/993288091",
+      "osm_tags": {
+        "name": "Kilokwa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5330377,
+      "lon": 29.426442,
+      "osm_id": "way/995262932",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5367437,
+      "lon": 29.4276986,
+      "osm_id": "way/995872110",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5821605,
+      "lon": 29.433271,
+      "osm_id": "way/995883391",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5937582,
+      "lon": 29.431012,
+      "osm_id": "way/995883399",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5810643,
+      "lon": 29.4351055,
+      "osm_id": "way/995883400",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5861314,
+      "lon": 29.4321052,
+      "osm_id": "way/995883404",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5555296,
+      "lon": 29.4382714,
+      "osm_id": "way/995883407",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Itua",
+      "lat": 0.5495723,
+      "lon": 29.4351283,
+      "osm_id": "way/995883410",
+      "osm_tags": {
+        "name": "Itua",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.3746453,
+      "lon": 28.1655427,
+      "osm_id": "way/996291320",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.463731,
+      "lon": 28.6470523,
+      "osm_id": "way/997257390",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lenda",
+      "lat": 0.5407414,
+      "lon": 28.5038191,
+      "osm_id": "way/1003183779",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Lenda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lenda",
+      "lat": 0.5475709,
+      "lon": 28.4970402,
+      "osm_id": "way/1003183780",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Lenda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Epulu",
+      "lat": 1.4295517,
+      "lon": 28.9890368,
+      "osm_id": "way/1009693769",
+      "osm_tags": {
+        "name": "Epulu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Epulu",
+      "lat": 1.4483712,
+      "lon": 29.0209947,
+      "osm_id": "way/1009693770",
+      "osm_tags": {
+        "name": "Epulu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Epulu",
+      "lat": 1.4293233,
+      "lon": 28.9360656,
+      "osm_id": "way/1009706412",
+      "osm_tags": {
+        "name": "Epulu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Epulu",
+      "lat": 1.4309532,
+      "lon": 28.9261021,
+      "osm_id": "way/1009706413",
+      "osm_tags": {
+        "name": "Epulu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Epulu",
+      "lat": 1.425548,
+      "lon": 28.9415429,
+      "osm_id": "way/1009706416",
+      "osm_tags": {
+        "name": "Epulu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Epulu",
+      "lat": 1.4293229,
+      "lon": 28.9682072,
+      "osm_id": "way/1009706417",
+      "osm_tags": {
+        "name": "Epulu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.1874445,
+      "lon": 28.8813352,
+      "osm_id": "way/1009730880",
+      "osm_tags": {
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.1816908,
+      "lon": 28.8291749,
+      "osm_id": "way/1009730881",
+      "osm_tags": {
+        "alt_name": "Aruwimi",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.0353801,
+      "lon": 28.5927345,
+      "osm_id": "way/1009734164",
+      "osm_tags": {
+        "alt_name": "Aruwimi",
+        "intermittent": "no",
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.076007,
+      "lon": 28.5155504,
+      "osm_id": "way/1009734166",
+      "osm_tags": {
+        "alt_name": "Aruwimi",
+        "intermittent": "no",
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.1448876,
+      "lon": 28.983843,
+      "osm_id": "way/1009741556",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.1964311,
+      "lon": 28.9314296,
+      "osm_id": "way/1009741561",
+      "osm_tags": {
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.9652,
+      "lon": 28.7521943,
+      "osm_id": "way/1009990967",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "tidal": "no",
+        "waterway": "river",
+        "wikidata": "Q22352376"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibina",
+      "lat": 0.8199493,
+      "lon": 29.0657838,
+      "osm_id": "way/1009990968",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Ibina",
+        "seasonal": "yes",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.1784299,
+      "lon": 28.8527666,
+      "osm_id": "way/1009990970",
+      "osm_tags": {
+        "alt_name": "Aruwimi",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 1.1538338,
+      "lon": 28.4121248,
+      "osm_id": "way/1010004752",
+      "osm_tags": {
+        "alt_name": "Aruwimi",
+        "name": "Ituri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lenda",
+      "lat": 0.5394513,
+      "lon": 28.5076932,
+      "osm_id": "way/1010004753",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Lenda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ituri",
+      "lat": 0.9927371,
+      "lon": 29.3156496,
+      "osm_id": "way/1052635607",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "fixme": "inaccurate",
+        "name": "Ituri",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sililo",
+      "lat": 2.2784685,
+      "lon": 28.270795,
+      "osm_id": "way/1116238232",
+      "osm_tags": {
+        "name": "Sililo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nepoko",
+      "lat": 2.4790403,
+      "lon": 28.6962556,
+      "osm_id": "way/1164635875",
+      "osm_tags": {
+        "name": "Nepoko",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Madulunga",
+      "lat": 2.7923178,
+      "lon": 27.5988332,
+      "osm_id": "way/1165738900",
+      "osm_tags": {
+        "name": "Madulunga",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Dingilipi",
+      "lat": 2.7923543,
+      "lon": 27.5921848,
+      "osm_id": "way/1165738901",
+      "osm_tags": {
+        "name": "Dingilipi",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Akpokoma",
+      "lat": 2.7476709,
+      "lon": 27.6322009,
+      "osm_id": "way/1165738902",
+      "osm_tags": {
+        "name": "Akpokoma",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Sadi",
+      "lat": 2.7477021,
+      "lon": 27.6117637,
+      "osm_id": "way/1165738903",
+      "osm_tags": {
+        "name": "Sadi",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mongaki",
+      "lat": 2.7675568,
+      "lon": 27.643443,
+      "osm_id": "way/1165748006",
+      "osm_tags": {
+        "name": "Mongaki",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Agamba",
+      "lat": 1.871947,
+      "lon": 27.9890524,
+      "osm_id": "way/1184461892",
+      "osm_tags": {
+        "name": "Agamba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mabakou",
+      "lat": 0.5124201,
+      "lon": 29.4339059,
+      "osm_id": "way/1237509886",
+      "osm_tags": {
+        "fixme": "confirm waterway stream or canal, intermittent",
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Mabakou",
+        "seasonal": "yes",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sililo",
+      "lat": 2.3157219,
+      "lon": 28.2208336,
+      "osm_id": "way/1339170731",
+      "osm_tags": {
+        "name": "Sililo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Anne",
+      "lat": 2.7717137,
+      "lon": 27.6304377,
+      "osm_id": "way/1450719344",
+      "osm_tags": {
+        "alt_name": "Ane",
+        "layer": "-1",
+        "name": "Anne",
+        "tunnel": "culvert",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Anne",
+      "lat": 2.7765049,
+      "lon": 27.63257,
+      "osm_id": "way/1450719345",
+      "osm_tags": {
+        "alt_name": "Ane",
+        "name": "Anne",
+        "source": "Plan de d\u00e9veloppement urbain de Paulis, in: Guy Choprix: La naissance d'une ville.",
+        "waterway": "river"
+      }
+    }
+  ]
+}

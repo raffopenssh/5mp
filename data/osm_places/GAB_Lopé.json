@@ -1,0 +1,1862 @@
+{
+  "park_id": "GAB_Lop\u00e9",
+  "downloaded_at": "2026-02-15T14:18:57.200829+00:00",
+  "buffer_km": 50,
+  "place_count": 151,
+  "places": [
+    {
+      "place_type": "village",
+      "name": "Alemb\u00e9",
+      "lat": -0.0776964,
+      "lon": 10.958121,
+      "osm_id": "node/925697533",
+      "osm_tags": {
+        "name": "Alemb\u00e9",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lalara",
+      "lat": 0.3549002,
+      "lon": 11.45221,
+      "osm_id": "node/925724571",
+      "osm_tags": {
+        "name": "Lalara",
+        "name:en": "Lalara",
+        "place": "village",
+        "wikidata": "Q6480203"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ovan",
+      "lat": 0.3092055,
+      "lon": 12.1835787,
+      "osm_id": "node/927113108",
+      "osm_tags": {
+        "name": "Ovan",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Boou\u00e9",
+      "lat": -0.1015728,
+      "lon": 11.9481458,
+      "osm_id": "node/2178082108",
+      "osm_tags": {
+        "name": "Boou\u00e9",
+        "name:fr": "Boou\u00e9",
+        "place": "city",
+        "source": "Wikipedia commons Topographic map of Gabon-fr.svg",
+        "start_date": "1883",
+        "wikidata": "Q1052014",
+        "wikipedia": "fr:Boou\u00e9"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont",
+      "lat": -1.3522128,
+      "lon": 10.9674897,
+      "osm_id": "node/3601360761",
+      "osm_tags": {
+        "ele": "880",
+        "name": "Mont",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Junkville",
+      "lat": -0.0628674,
+      "lon": 11.1597341,
+      "osm_id": "node/3602159393",
+      "osm_tags": {
+        "name": "Junkville",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ayem",
+      "lat": -0.1158199,
+      "lon": 11.4357011,
+      "osm_id": "node/3602161392",
+      "osm_tags": {
+        "name": "Ayem",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Achouka",
+      "lat": -0.100982,
+      "lon": 11.7750972,
+      "osm_id": "node/3602168413",
+      "osm_tags": {
+        "name": "Achouka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Motodiene",
+      "lat": -0.8497271,
+      "lon": 12.1414869,
+      "osm_id": "node/3602190233",
+      "osm_tags": {
+        "name": "Motodiene",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont",
+      "lat": -0.9009934,
+      "lon": 11.2007438,
+      "osm_id": "node/3611835939",
+      "osm_tags": {
+        "name": "Mont",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Iboundji",
+      "lat": -1.1559551,
+      "lon": 11.7963229,
+      "osm_id": "node/3611841181",
+      "osm_tags": {
+        "ele": "972",
+        "name": "Mont Iboundji",
+        "natural": "peak",
+        "tourism": "yes",
+        "wikidata": "Q1895747",
+        "wikipedia": "fr:Mont Iboundji"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Guemonga",
+      "lat": -1.1840213,
+      "lon": 10.8510749,
+      "osm_id": "node/3613504709",
+      "osm_tags": {
+        "ele": "346",
+        "name": "Mont Guemonga",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ivindo",
+      "lat": -0.1952215,
+      "lon": 12.202034,
+      "osm_id": "node/4866796403",
+      "osm_tags": {
+        "name": "Ivindo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ikobey",
+      "lat": -1.0574581,
+      "lon": 10.9932198,
+      "osm_id": "node/5158500500",
+      "osm_tags": {
+        "description": "Activit\u00e9s: \n- Visite de la localit\u00e9\n- Activit\u00e9s culturelles\n- D\u00e9couverte de la colonie pygm\u00e9es",
+        "name": "Ikobey",
+        "place": "village",
+        "source": "AGATOUR",
+        "tourism": "yes"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Koumameyong",
+      "lat": 0.2122465,
+      "lon": 11.866917,
+      "osm_id": "node/5652185744",
+      "osm_tags": {
+        "name": "Koumameyong",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Brazza",
+      "lat": -0.1153683,
+      "lon": 11.5877701,
+      "osm_id": "node/5806938331",
+      "osm_tags": {
+        "description": "Le Mont de Brazza est un pic. Ce point culminant offre une vue panoramique du parc.",
+        "ele": "405",
+        "name": "Mont Brazza",
+        "natural": "peak",
+        "note": "Activit\u00e9s:\n- Randonn\u00e9e p\u00e9destre\n- Vue panoramique sur l'Ogoou\u00e9\n- Pique-nique\n- D\u00e9couverte \n- Vision des animaux",
+        "tourism": "yes"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Otoumbi",
+      "lat": -0.0815888,
+      "lon": 11.1245051,
+      "osm_id": "node/6128535859",
+      "osm_tags": {
+        "name": "Otoumbi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malongo",
+      "lat": -1.417217,
+      "lon": 12.035558,
+      "osm_id": "node/6547839681",
+      "osm_tags": {
+        "name": "Malongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mougamou",
+      "lat": -1.4345291,
+      "lon": 11.9951061,
+      "osm_id": "node/6547839710",
+      "osm_tags": {
+        "name": "Mougamou",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gongu\u00e9",
+      "lat": -0.7786648,
+      "lon": 11.9180203,
+      "osm_id": "node/6553024890",
+      "osm_tags": {
+        "name": "Gongu\u00e9",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mikongo I",
+      "lat": -0.2933287,
+      "lon": 11.75493,
+      "osm_id": "node/6554805321",
+      "osm_tags": {
+        "name": "Mikongo I",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyoye 1",
+      "lat": -1.0317055,
+      "lon": 11.0536689,
+      "osm_id": "node/6555663714",
+      "osm_tags": {
+        "name": "Nyoye 1",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Divind\u00e8",
+      "lat": -1.0378275,
+      "lon": 11.1560014,
+      "osm_id": "node/6555663895",
+      "osm_tags": {
+        "name": "Divind\u00e8",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nioy\u00e8 2",
+      "lat": -1.0359832,
+      "lon": 11.1846222,
+      "osm_id": "node/6555663932",
+      "osm_tags": {
+        "name": "Nioy\u00e8 2",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "La Lop\u00e9",
+      "lat": -0.1067508,
+      "lon": 11.6110615,
+      "osm_id": "node/6557098305",
+      "osm_tags": {
+        "name": "La Lop\u00e9",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Iboundji",
+      "lat": -1.2168129,
+      "lon": 11.8166152,
+      "osm_id": "node/8023487210",
+      "osm_tags": {
+        "name": "Iboundji",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moutouyeni",
+      "lat": -0.9919847,
+      "lon": 12.1923303,
+      "osm_id": "node/8086311243",
+      "osm_tags": {
+        "name": "Moutouyeni",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Baniaty",
+      "lat": -0.9987559,
+      "lon": 12.195404,
+      "osm_id": "node/8086311251",
+      "osm_tags": {
+        "name": "Baniaty",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Massima",
+      "lat": -1.4359619,
+      "lon": 11.58827,
+      "osm_id": "node/8165022576",
+      "osm_tags": {
+        "name": "Massima",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Et\u00e9k\u00e9",
+      "lat": -1.493041,
+      "lon": 11.4761984,
+      "osm_id": "node/8165022581",
+      "osm_tags": {
+        "name": "Et\u00e9k\u00e9",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Medoumane",
+      "lat": -0.0312966,
+      "lon": 10.9995495,
+      "osm_id": "node/9005721688",
+      "osm_tags": {
+        "name": "Medoumane",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Djandja",
+      "lat": -0.1217615,
+      "lon": 12.0462137,
+      "osm_id": "node/9075854823",
+      "osm_tags": {
+        "name": "Djandja",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Diyanga",
+      "lat": -1.5160644,
+      "lon": 11.7289579,
+      "osm_id": "node/9108779756",
+      "osm_tags": {
+        "name": "Diyanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ngouassa",
+      "lat": -1.4188912,
+      "lon": 12.0075709,
+      "osm_id": "node/9108779766",
+      "osm_tags": {
+        "name": "Ngouassa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moudouma",
+      "lat": -1.4330092,
+      "lon": 11.9976446,
+      "osm_id": "node/9108779767",
+      "osm_tags": {
+        "name": "Moudouma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dilanga",
+      "lat": -1.4219752,
+      "lon": 12.0451287,
+      "osm_id": "node/9108779768",
+      "osm_tags": {
+        "name": "Dilanga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Imeno Plateau",
+      "lat": -1.4226204,
+      "lon": 12.0997731,
+      "osm_id": "node/9108779779",
+      "osm_tags": {
+        "name": "Imeno Plateau",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dikouka (Sogha)",
+      "lat": -1.0500222,
+      "lon": 11.1830213,
+      "osm_id": "node/9130341613",
+      "osm_tags": {
+        "name": "Dikouka (Sogha)",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Evouta 1",
+      "lat": -1.0628417,
+      "lon": 11.1891874,
+      "osm_id": "node/9130341614",
+      "osm_tags": {
+        "name": "Evouta 1",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ebel (Evouta 2)",
+      "lat": -1.082458,
+      "lon": 11.1988816,
+      "osm_id": "node/9130341615",
+      "osm_tags": {
+        "name": "Ebel (Evouta 2)",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Motombi (Mimongo 1)",
+      "lat": -1.1290106,
+      "lon": 11.2116907,
+      "osm_id": "node/9130341622",
+      "osm_tags": {
+        "name": "Motombi (Mimongo 1)",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gh\u00e9ghouba",
+      "lat": -1.0271622,
+      "lon": 11.135336,
+      "osm_id": "node/9130341631",
+      "osm_tags": {
+        "name": "Gh\u00e9ghouba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Divanga",
+      "lat": -1.0525954,
+      "lon": 11.1256439,
+      "osm_id": "node/9130341632",
+      "osm_tags": {
+        "name": "Divanga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tchibanga",
+      "lat": -1.0432723,
+      "lon": 11.0944765,
+      "osm_id": "node/9130341633",
+      "osm_tags": {
+        "name": "Tchibanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ossimba",
+      "lat": -1.0410759,
+      "lon": 11.0779894,
+      "osm_id": "node/9130341634",
+      "osm_tags": {
+        "name": "Ossimba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tranquille",
+      "lat": -1.0398242,
+      "lon": 11.0623002,
+      "osm_id": "node/9130341636",
+      "osm_tags": {
+        "name": "Tranquille",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Divende",
+      "lat": -1.205694,
+      "lon": 12.0384622,
+      "osm_id": "node/9135427461",
+      "osm_tags": {
+        "name": "Divende",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Camp Forestier ONOYE 1",
+      "lat": -1.1836204,
+      "lon": 11.9706031,
+      "osm_id": "node/9135427470",
+      "osm_tags": {
+        "name": "Camp Forestier ONOYE 1",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moukouagno 1",
+      "lat": -1.22495,
+      "lon": 12.0891252,
+      "osm_id": "node/9135427478",
+      "osm_tags": {
+        "name": "Moukouagno 1",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndanda",
+      "lat": -1.2692946,
+      "lon": 12.1322671,
+      "osm_id": "node/9135427498",
+      "osm_tags": {
+        "name": "Ndanda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mouila Pouvi",
+      "lat": -1.3283777,
+      "lon": 12.1920229,
+      "osm_id": "node/9135427499",
+      "osm_tags": {
+        "name": "Mouila Pouvi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dibouka",
+      "lat": -1.3154189,
+      "lon": 12.2155533,
+      "osm_id": "node/9135427500",
+      "osm_tags": {
+        "name": "Dibouka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makoko",
+      "lat": -1.0178896,
+      "lon": 11.2639648,
+      "osm_id": "node/9135427501",
+      "osm_tags": {
+        "name": "Makoko",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ngondet",
+      "lat": -1.1960941,
+      "lon": 11.5203225,
+      "osm_id": "node/9135427502",
+      "osm_tags": {
+        "name": "Ngondet",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mimongo 2",
+      "lat": -1.133999,
+      "lon": 11.2121147,
+      "osm_id": "node/9135445555",
+      "osm_tags": {
+        "name": "Mimongo 2",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moukandi",
+      "lat": -1.472667,
+      "lon": 11.851915,
+      "osm_id": "node/9425008174",
+      "osm_tags": {
+        "name": "Moukandi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boulembou",
+      "lat": -1.4503713,
+      "lon": 11.9334042,
+      "osm_id": "node/9425020618",
+      "osm_tags": {
+        "name": "Boulembou",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mounongo",
+      "lat": -1.4557341,
+      "lon": 11.8883882,
+      "osm_id": "node/9425020619",
+      "osm_tags": {
+        "name": "Mounongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Boutoumbi",
+      "lat": -1.4770103,
+      "lon": 11.8154716,
+      "osm_id": "node/9425020632",
+      "osm_tags": {
+        "name": "Boutoumbi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dibamba",
+      "lat": -1.5091214,
+      "lon": 11.7788086,
+      "osm_id": "node/9425020685",
+      "osm_tags": {
+        "name": "Dibamba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Diangui",
+      "lat": -1.1302589,
+      "lon": 11.8317095,
+      "osm_id": "node/9426693516",
+      "osm_tags": {
+        "name": "Diangui",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Iwatsi",
+      "lat": -1.2423947,
+      "lon": 11.8895319,
+      "osm_id": "node/9426693517",
+      "osm_tags": {
+        "name": "Iwatsi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Poungou",
+      "lat": -1.336949,
+      "lon": 11.9203599,
+      "osm_id": "node/9434286443",
+      "osm_tags": {
+        "name": "Poungou",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boudianguila",
+      "lat": -1.3975067,
+      "lon": 12.1582721,
+      "osm_id": "node/9446059470",
+      "osm_tags": {
+        "name": "Boudianguila",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moughounda",
+      "lat": -1.3883889,
+      "lon": 12.1511222,
+      "osm_id": "node/9446059496",
+      "osm_tags": {
+        "name": "Moughounda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Massika",
+      "lat": -1.4158177,
+      "lon": 12.1044903,
+      "osm_id": "node/9446059505",
+      "osm_tags": {
+        "name": "Massika",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndjol\u00e9",
+      "lat": -1.2829016,
+      "lon": 12.2904189,
+      "osm_id": "node/9446059538",
+      "osm_tags": {
+        "name": "Ndjol\u00e9",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ramba",
+      "lat": -0.3696821,
+      "lon": 11.7867373,
+      "osm_id": "node/9620818746",
+      "osm_tags": {
+        "name": "Ramba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mikongo II",
+      "lat": -0.3223145,
+      "lon": 11.7563212,
+      "osm_id": "node/9620818774",
+      "osm_tags": {
+        "name": "Mikongo II",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Baka",
+      "lat": -0.1026216,
+      "lon": 11.7886087,
+      "osm_id": "node/10703920561",
+      "osm_tags": {
+        "name": "Baka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kazamabika",
+      "lat": -0.1199988,
+      "lon": 11.6965315,
+      "osm_id": "node/10703922119",
+      "osm_tags": {
+        "name": "Kazamabika",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makogu\u00e9",
+      "lat": -0.162779,
+      "lon": 11.7487492,
+      "osm_id": "node/10703925806",
+      "osm_tags": {
+        "inscription": "Destination touristique",
+        "name": "Makogu\u00e9",
+        "note": "Activit\u00e9s: - P\u00eache touristique - Randonn\u00e9e p\u00e9destre - Excursion en pirogue - Excursions foresti\u00e8res - Danses traditionnellles",
+        "operator": "Association Mogheso",
+        "place": "village",
+        "reservation": "recommended",
+        "tourism": "yes"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Viaf\u00e9",
+      "lat": 0.3239474,
+      "lon": 11.4142236,
+      "osm_id": "node/10711367665",
+      "osm_tags": {
+        "name": "Viaf\u00e9",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Edock city",
+      "lat": 0.3232843,
+      "lon": 11.4133369,
+      "osm_id": "node/10711393831",
+      "osm_tags": {
+        "addr:housename": "Chalet \u00e9cologique",
+        "capacity": "10",
+        "inscription": "Cit\u00e9 rurale \u00e9cologique",
+        "name": "Edock city",
+        "note": "Les fresques artistiques d\u2019Edock City sont d\u00e9sormais int\u00e9gr\u00e9s au Patrimoine Culturel et Touristique National.",
+        "place": "hamlet",
+        "reservation": "yes",
+        "tourism": "yes"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Oundou",
+      "lat": -1.4959715,
+      "lon": 10.8516383,
+      "osm_id": "node/13430297132",
+      "osm_tags": {
+        "name": "Oundou",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ogoou\u00e9",
+      "lat": -0.1873706,
+      "lon": 10.8852067,
+      "osm_id": "way/79262218",
+      "osm_tags": {
+        "boat": "no;yes",
+        "intermittent": "no",
+        "name": "Ogoou\u00e9",
+        "name:ar": "\u0646\u0647\u0631 \u0623\u063a\u0648\u064a",
+        "name:en": "Ogowe River",
+        "name:es": "R\u00edo Og\u00fc\u00e9",
+        "source": "Yahoo;landsat",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ngouni\u00e9",
+      "lat": -1.6041348,
+      "lon": 10.8988191,
+      "osm_id": "way/79385223",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ngouni\u00e9",
+        "name:en": "Ngounie River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ogoou\u00e9",
+      "lat": -0.5172045,
+      "lon": 12.4056346,
+      "osm_id": "way/79418356",
+      "osm_tags": {
+        "name": "Ogoou\u00e9",
+        "name:ar": "\u0646\u0647\u0631 \u0623\u063a\u0648\u064a",
+        "name:en": "Ogowe River",
+        "name:es": "R\u00edo Og\u00fc\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Offou\u00e9",
+      "lat": -0.388094,
+      "lon": 11.7762014,
+      "osm_id": "way/79551967",
+      "osm_tags": {
+        "alt_name": "Ofou\u00e9",
+        "alt_name:fr": "Ofou\u00e9",
+        "boat": "no",
+        "name": "Offou\u00e9",
+        "name:fr": "Offou\u00e9",
+        "reg_name": "Ogugw\u00e8",
+        "reg_name:fr": "Ogugw\u00e8",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Offou\u00e9",
+      "lat": -0.2493174,
+      "lon": 11.7586134,
+      "osm_id": "way/79551984",
+      "osm_tags": {
+        "alt_name": "Ofou\u00e9",
+        "alt_name:fr": "Ofou\u00e9",
+        "boat": "no",
+        "name": "Offou\u00e9",
+        "name:fr": "Offou\u00e9",
+        "reg_name": "Ogugw\u00e8",
+        "reg_name:fr": "Ogugw\u00e8",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nkam",
+      "lat": 0.4300263,
+      "lon": 10.965194,
+      "osm_id": "way/82879863",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Nkam",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Waka",
+      "lat": -1.3337357,
+      "lon": 10.8250492,
+      "osm_id": "way/161180472",
+      "osm_tags": {
+        "alt_name": "Ouaka",
+        "destination": "Ngouni\u00e9",
+        "name": "Waka",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ikoy",
+      "lat": -1.0384973,
+      "lon": 11.0714132,
+      "osm_id": "way/238627653",
+      "osm_tags": {
+        "alt_name": "Iko\u00ef",
+        "boat": "no",
+        "name": "Ikoy",
+        "name:en": "Ikoy River",
+        "reg_name": "Okoyo",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ikob\u00e9",
+      "lat": -1.1818374,
+      "lon": 11.0481675,
+      "osm_id": "way/238627655",
+      "osm_tags": {
+        "name": "Ikob\u00e9",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Laliti\u00e9",
+      "lat": -0.7589022,
+      "lon": 10.9132294,
+      "osm_id": "way/238627656",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Laliti\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lolo",
+      "lat": -0.464452,
+      "lon": 12.3302866,
+      "osm_id": "way/239008950",
+      "osm_tags": {
+        "name": "Lolo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dilo",
+      "lat": -0.0317679,
+      "lon": 12.5432619,
+      "osm_id": "way/291143104",
+      "osm_tags": {
+        "name": "Dilo",
+        "name:en": "Dilo River",
+        "waterway": "river",
+        "wikidata": "Q23966432",
+        "wikipedia": "en:Dilo River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wagnya",
+      "lat": -0.9424989,
+      "lon": 12.1700199,
+      "osm_id": "way/316428758",
+      "osm_tags": {
+        "name": "Wagnya",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wagnya",
+      "lat": -0.7670389,
+      "lon": 12.2178927,
+      "osm_id": "way/316428759",
+      "osm_tags": {
+        "name": "Wagnya",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Offou\u00e9",
+      "lat": -0.7853956,
+      "lon": 11.8344419,
+      "osm_id": "way/316433766",
+      "osm_tags": {
+        "name": "Offou\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Onoy",
+      "lat": -1.153453,
+      "lon": 11.8868664,
+      "osm_id": "way/316433768",
+      "osm_tags": {
+        "name": "Onoy",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tougou",
+      "lat": -1.6026847,
+      "lon": 10.9842419,
+      "osm_id": "way/354411285",
+      "osm_tags": {
+        "name": "Tougou",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Migabi",
+      "lat": -1.4926298,
+      "lon": 10.9116983,
+      "osm_id": "way/354411318",
+      "osm_tags": {
+        "alt_name": "Mighab\u00e9; Migab\u00e9",
+        "name": "Migabi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "N'Golo",
+      "lat": -0.0356774,
+      "lon": 11.2756856,
+      "osm_id": "way/364862596",
+      "osm_tags": {
+        "destination": "Ogoou\u00e9",
+        "name": "N'Golo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ogoou\u00e9",
+      "lat": -0.1130124,
+      "lon": 11.9628167,
+      "osm_id": "way/386906552",
+      "osm_tags": {
+        "boat": "no;yes",
+        "name": "Ogoou\u00e9",
+        "name:ar": "\u0646\u0647\u0631 \u0623\u063a\u0648\u064a",
+        "name:en": "Ogoou\u00e9 River",
+        "name:es": "R\u00edo Og\u00fc\u00e9",
+        "name:fr": "Ogoou\u00e9",
+        "source": "Yahoo;landsat",
+        "waterway": "river",
+        "wikidata": "Q750021",
+        "wikipedia": "fr:Ogoou\u00e9"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Samba",
+      "lat": -1.0812656,
+      "lon": 10.761897,
+      "osm_id": "way/597558537",
+      "osm_tags": {
+        "name": "Samba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gongu\u00e9",
+      "lat": -1.0172139,
+      "lon": 11.9259046,
+      "osm_id": "way/598200925",
+      "osm_tags": {
+        "alt_name": "Ono\u00ff",
+        "name": "Gongu\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ikob\u00e9",
+      "lat": -1.4382436,
+      "lon": 11.141186,
+      "osm_id": "way/598248179",
+      "osm_tags": {
+        "name": "Ikob\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ofou\u00e9",
+      "lat": -1.2792928,
+      "lon": 11.8552367,
+      "osm_id": "way/598407700",
+      "osm_tags": {
+        "alt_name": "Offou\u00e9",
+        "name": "Ofou\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oumba",
+      "lat": -1.000594,
+      "lon": 11.1142996,
+      "osm_id": "way/598411350",
+      "osm_tags": {
+        "name": "Oumba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oumba",
+      "lat": -1.2163269,
+      "lon": 11.2028518,
+      "osm_id": "way/598411484",
+      "osm_tags": {
+        "name": "Oumba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.4411584,
+      "lon": 11.5107542,
+      "osm_id": "way/629255637",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ogoou\u00e9",
+      "lat": -0.1146302,
+      "lon": 10.873466,
+      "osm_id": "way/653997478",
+      "osm_tags": {
+        "name": "Ogoou\u00e9",
+        "name:ar": "\u0646\u0647\u0631 \u0623\u063a\u0648\u064a",
+        "name:es": "R\u00edo Og\u00fc\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ogoou\u00e9",
+      "lat": -0.114334,
+      "lon": 10.8799361,
+      "osm_id": "way/653997480",
+      "osm_tags": {
+        "name": "Ogoou\u00e9",
+        "name:ar": "\u0646\u0647\u0631 \u0623\u063a\u0648\u064a",
+        "name:es": "R\u00edo Og\u00fc\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "M'boumi",
+      "lat": -0.3932971,
+      "lon": 10.6999962,
+      "osm_id": "way/666653882",
+      "osm_tags": {
+        "name": "M'boumi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.3473825,
+      "lon": 11.4679931,
+      "osm_id": "way/696384673",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.3710215,
+      "lon": 11.5262144,
+      "osm_id": "way/696384674",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.3688127,
+      "lon": 11.5199846,
+      "osm_id": "way/696384675",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.3460016,
+      "lon": 11.4597658,
+      "osm_id": "way/696384676",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.2952415,
+      "lon": 11.4440626,
+      "osm_id": "way/696384678",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.278759,
+      "lon": 11.415058,
+      "osm_id": "way/696384679",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.2792711,
+      "lon": 11.4079142,
+      "osm_id": "way/696384680",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.2770702,
+      "lon": 11.4115603,
+      "osm_id": "way/696384681",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.2813424,
+      "lon": 11.3960003,
+      "osm_id": "way/696384684",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.2812221,
+      "lon": 11.400057,
+      "osm_id": "way/696384685",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.2845509,
+      "lon": 11.3772665,
+      "osm_id": "way/696391355",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.291676,
+      "lon": 11.3583869,
+      "osm_id": "way/696391356",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.2930248,
+      "lon": 11.3529001,
+      "osm_id": "way/696391357",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.2670462,
+      "lon": 11.3177594,
+      "osm_id": "way/696391359",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.2329198,
+      "lon": 11.2819718,
+      "osm_id": "way/696391361",
+      "osm_tags": {
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.3828463,
+      "lon": 11.5329317,
+      "osm_id": "way/696391365",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.3826779,
+      "lon": 11.5331369,
+      "osm_id": "way/696391366",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.3786647,
+      "lon": 11.5318298,
+      "osm_id": "way/696391367",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ofou\u00e9",
+      "lat": -0.9837451,
+      "lon": 11.7635821,
+      "osm_id": "way/697163223",
+      "osm_tags": {
+        "alt_name": "Offou\u00e9",
+        "name": "Ofou\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ogoulou",
+      "lat": -1.4701835,
+      "lon": 11.7212989,
+      "osm_id": "way/697163234",
+      "osm_tags": {
+        "name": "Ogoulou",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ogoulou",
+      "lat": -1.530843,
+      "lon": 11.6520158,
+      "osm_id": "way/697167267",
+      "osm_tags": {
+        "name": "Ogoulou",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lara",
+      "lat": 0.565882,
+      "lon": 11.4639115,
+      "osm_id": "way/749508714",
+      "osm_tags": {
+        "name": "Lara",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ogoou\u00e9",
+      "lat": -0.0907299,
+      "lon": 11.5227341,
+      "osm_id": "way/801649707",
+      "osm_tags": {
+        "boat": "no;yes",
+        "name": "Ogoou\u00e9",
+        "name:ar": "\u0646\u0647\u0631 \u0623\u063a\u0648\u064a",
+        "name:en": "Ogowe River",
+        "name:es": "R\u00edo Og\u00fc\u00e9",
+        "source": "Yahoo;landsat",
+        "waterway": "river",
+        "wikipedia": "en:Ogoou\u00e9 River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Offou\u00e9",
+      "lat": -0.5288873,
+      "lon": 11.8233166,
+      "osm_id": "way/801649708",
+      "osm_tags": {
+        "name": "Offou\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ogoou\u00e9",
+      "lat": -0.0994727,
+      "lon": 11.7598511,
+      "osm_id": "way/801649709",
+      "osm_tags": {
+        "name": "Ogoou\u00e9",
+        "name:es": "R\u00edo Og\u00fc\u00e9",
+        "name:fr": "Ogoou\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ogoou\u00e9",
+      "lat": -0.1000071,
+      "lon": 11.7676791,
+      "osm_id": "way/801649710",
+      "osm_tags": {
+        "name": "Ogoou\u00e9",
+        "name:es": "R\u00edo Og\u00fc\u00e9",
+        "name:fr": "Ogoou\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Offou\u00e9",
+      "lat": -0.1454924,
+      "lon": 11.7497403,
+      "osm_id": "way/801653684",
+      "osm_tags": {
+        "alt_name": "Ofou\u00e9",
+        "alt_name:fr": "Ofou\u00e9",
+        "boat": "no",
+        "name": "Offou\u00e9",
+        "name:fr": "Offou\u00e9",
+        "reg_name": "Ogugw\u00e8",
+        "reg_name:fr": "Ogugw\u00e8",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Offou\u00e9",
+      "lat": -0.1163432,
+      "lon": 11.7604378,
+      "osm_id": "way/801656846",
+      "osm_tags": {
+        "alt_name": "Ofou\u00e9",
+        "alt_name:fr": "Ofou\u00e9",
+        "boat": "no",
+        "name": "Offou\u00e9",
+        "name:fr": "Offou\u00e9",
+        "reg_name": "Ogugw\u00e8",
+        "reg_name:fr": "Ogugw\u00e8",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Offou\u00e9",
+      "lat": -0.103341,
+      "lon": 11.7651043,
+      "osm_id": "way/830045257",
+      "osm_tags": {
+        "alt_name": "Ofou\u00e9",
+        "alt_name:fr": "Ofou\u00e9",
+        "boat": "no",
+        "name": "Offou\u00e9",
+        "name:fr": "Offou\u00e9",
+        "reg_name": "Ogugw\u00e8",
+        "reg_name:fr": "Ogugw\u00e8",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Oumba",
+      "lat": -1.0482495,
+      "lon": 11.1353335,
+      "osm_id": "way/908471741",
+      "osm_tags": {
+        "name": "Oumba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ivindo",
+      "lat": 0.1535863,
+      "lon": 12.3959317,
+      "osm_id": "way/975391718",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ivindo",
+        "name:en": "Ivindo River",
+        "waterway": "river",
+        "wikidata": "Q1650057",
+        "wikipedia": "en:Ivindo River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ivindo",
+      "lat": -0.0535762,
+      "lon": 12.2320322,
+      "osm_id": "way/975391719",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ivindo",
+        "name:en": "Ivindo River",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1650057",
+        "wikipedia": "en:Ivindo River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.2609868,
+      "lon": 11.3222763,
+      "osm_id": "way/976620162",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": 0.0656105,
+      "lon": 11.1185096,
+      "osm_id": "way/976620163",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lolo",
+      "lat": -1.4169156,
+      "lon": 12.154651,
+      "osm_id": "way/1024385498",
+      "osm_tags": {
+        "name": "Lolo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gongu\u00e9",
+      "lat": -0.7715077,
+      "lon": 11.9102305,
+      "osm_id": "way/1101518423",
+      "osm_tags": {
+        "alt_name": "Ono\u00ff",
+        "name": "Gongu\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gongu\u00e9",
+      "lat": -0.8321184,
+      "lon": 11.9075443,
+      "osm_id": "way/1101538990",
+      "osm_tags": {
+        "alt_name": "Ono\u00ff",
+        "name": "Gongu\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gongu\u00e9",
+      "lat": -0.9095204,
+      "lon": 11.8978218,
+      "osm_id": "way/1101538991",
+      "osm_tags": {
+        "alt_name": "Ono\u00ff",
+        "name": "Gongu\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mvung",
+      "lat": 0.3272649,
+      "lon": 12.20422,
+      "osm_id": "way/1110160576",
+      "osm_tags": {
+        "alt_name": "N'Voung",
+        "boat": "no",
+        "name": "Mvung",
+        "name:en": "Mvung River",
+        "waterway": "river",
+        "wikidata": "Q3331092",
+        "wikipedia": "en:Mvung River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Samba",
+      "lat": -1.0646014,
+      "lon": 10.8256933,
+      "osm_id": "way/1138486073",
+      "osm_tags": {
+        "name": "Samba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mingou\u00e9",
+      "lat": -0.3772022,
+      "lon": 11.3082759,
+      "osm_id": "way/1139694157",
+      "osm_tags": {
+        "name": "Mingou\u00e9",
+        "waterway": "river",
+        "wikidata": "Q23965063"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okano",
+      "lat": -0.0815733,
+      "lon": 10.9588943,
+      "osm_id": "way/1147401242",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Okano",
+        "name:en": "Okano River",
+        "waterway": "river",
+        "wikipedia": "en:Okano River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wagnya",
+      "lat": -0.6142144,
+      "lon": 12.3050553,
+      "osm_id": "way/1449721260",
+      "osm_tags": {
+        "name": "Wagnya",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loubandji",
+      "lat": -1.4703493,
+      "lon": 10.8826124,
+      "osm_id": "way/1464117640",
+      "osm_tags": {
+        "name": "Loubandji",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wagnya",
+      "lat": -1.0642493,
+      "lon": 12.1650624,
+      "osm_id": "way/1464594095",
+      "osm_tags": {
+        "alt_name": "Ouanya",
+        "fixme": "accuracy",
+        "name": "Wagnya",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wagnya",
+      "lat": -1.1714721,
+      "lon": 12.0962208,
+      "osm_id": "way/1464597752",
+      "osm_tags": {
+        "alt_name": "Ouanya",
+        "name": "Wagnya",
+        "waterway": "river"
+      }
+    }
+  ]
+}

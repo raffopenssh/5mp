@@ -1,0 +1,7983 @@
+{
+  "park_id": "ZMB_South_Luangwa",
+  "downloaded_at": "2026-02-15T14:05:31.585463+00:00",
+  "buffer_km": 50,
+  "place_count": 663,
+  "places": [
+    {
+      "place_type": "village",
+      "name": "Chilonga",
+      "lat": -12.0273436,
+      "lon": 31.3393524,
+      "osm_id": "node/369023046",
+      "osm_tags": {
+        "name": "Chilonga",
+        "place": "village",
+        "population": "11816"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kasiya",
+      "lat": -13.2935682,
+      "lon": 32.2142109,
+      "osm_id": "node/419763685",
+      "osm_tags": {
+        "name": "Kasiya",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Msoro Mission",
+      "lat": -13.5928838,
+      "lon": 31.8870224,
+      "osm_id": "node/902312851",
+      "osm_tags": {
+        "name": "Msoro Mission",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kasananda",
+      "lat": -13.7560699,
+      "lon": 31.9602477,
+      "osm_id": "node/902312854",
+      "osm_tags": {
+        "name": "Kasananda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanona",
+      "lat": -13.0717859,
+      "lon": 30.627771,
+      "osm_id": "node/918147484",
+      "osm_tags": {
+        "name": "Kanona",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalonje",
+      "lat": -12.3745455,
+      "lon": 31.099039,
+      "osm_id": "node/918163448",
+      "osm_tags": {
+        "name": "Kalonje",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Kakumbi",
+      "lat": -13.1141669,
+      "lon": 31.8053708,
+      "osm_id": "node/2546467295",
+      "osm_tags": {
+        "name": "Kakumbi",
+        "place": "town",
+        "source": "www.geonames.org"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chitungulu",
+      "lat": -12.4215205,
+      "lon": 32.2811151,
+      "osm_id": "node/2694280270",
+      "osm_tags": {
+        "name": "Chitungulu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Sinda",
+      "lat": -14.2132804,
+      "lon": 31.758974,
+      "osm_id": "node/2694418015",
+      "osm_tags": {
+        "name": "Sinda",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaole",
+      "lat": -11.9568395,
+      "lon": 31.4222613,
+      "osm_id": "node/2834580955",
+      "osm_tags": {
+        "name": "Kaole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Katete",
+      "lat": -14.060241,
+      "lon": 32.04272,
+      "osm_id": "node/3068371732",
+      "osm_tags": {
+        "name": "Katete",
+        "place": "town",
+        "wikidata": "Q1735857",
+        "wikipedia": "en:Katete"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Chadiza",
+      "lat": -14.0614591,
+      "lon": 32.4345345,
+      "osm_id": "node/3368225028",
+      "osm_tags": {
+        "name": "Chadiza",
+        "place": "town",
+        "source": "www.geonames.org",
+        "wikidata": "Q1058666",
+        "wikipedia": "en:Chadiza"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madzimoyo",
+      "lat": -13.702852,
+      "lon": 32.4969811,
+      "osm_id": "node/3379466408",
+      "osm_tags": {
+        "name": "Madzimoyo",
+        "place": "village",
+        "source": "www.geonames.org"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gomani",
+      "lat": -13.7184293,
+      "lon": 32.4588401,
+      "osm_id": "node/3379466633",
+      "osm_tags": {
+        "name": "Gomani",
+        "place": "village",
+        "source": "www.geonames.org"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jimu",
+      "lat": -13.7705582,
+      "lon": 32.1828266,
+      "osm_id": "node/3415539849",
+      "osm_tags": {
+        "name": "Jimu",
+        "place": "village",
+        "source": "www.geonames.org"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chisengu",
+      "lat": -13.3051242,
+      "lon": 32.2211992,
+      "osm_id": "node/3448355828",
+      "osm_tags": {
+        "name": "Chisengu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamoto Mission",
+      "lat": -13.2999493,
+      "lon": 32.1140474,
+      "osm_id": "node/3448355844",
+      "osm_tags": {
+        "name": "Kamoto Mission",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mambwe",
+      "lat": -13.2938934,
+      "lon": 32.0887488,
+      "osm_id": "node/3448355847",
+      "osm_tags": {
+        "name": "Mambwe",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chama",
+      "lat": -12.1249932,
+      "lon": 32.4451888,
+      "osm_id": "node/3471397356",
+      "osm_tags": {
+        "name": "Chama",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chifunda",
+      "lat": -11.876738,
+      "lon": 32.566777,
+      "osm_id": "node/3472724374",
+      "osm_tags": {
+        "name": "Chifunda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chitambo",
+      "lat": -12.915343,
+      "lon": 30.6362802,
+      "osm_id": "node/3650536233",
+      "osm_tags": {
+        "name": "Chitambo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mabonde",
+      "lat": -12.920197,
+      "lon": 30.6551567,
+      "osm_id": "node/3652756457",
+      "osm_tags": {
+        "name": "Mabonde",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nabwale",
+      "lat": -12.9129681,
+      "lon": 30.6300599,
+      "osm_id": "node/3652758933",
+      "osm_tags": {
+        "name": "Nabwale",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nakatambo",
+      "lat": -12.7899304,
+      "lon": 30.7494578,
+      "osm_id": "node/3834695707",
+      "osm_tags": {
+        "name": "Nakatambo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chisomo",
+      "lat": -13.594446,
+      "lon": 30.6693187,
+      "osm_id": "node/3835593969",
+      "osm_tags": {
+        "name": "Chisomo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mailo",
+      "lat": -13.0543632,
+      "lon": 30.909866,
+      "osm_id": "node/3835614032",
+      "osm_tags": {
+        "name": "Mailo",
+        "place": "village",
+        "source": "Diva-gis"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masase",
+      "lat": -13.193248,
+      "lon": 31.078845,
+      "osm_id": "node/3835624291",
+      "osm_tags": {
+        "name": "Masase",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masumba",
+      "lat": -13.2521433,
+      "lon": 31.9356971,
+      "osm_id": "node/3839709411",
+      "osm_tags": {
+        "name": "Masumba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mfuwe",
+      "lat": -13.1106786,
+      "lon": 31.7978162,
+      "osm_id": "node/3841476030",
+      "osm_tags": {
+        "name": "Mfuwe",
+        "name:he": "\u05db\u05e4\u05e8 \u05d1\u05d3\u05e8\u05d5\u05dd \u05d4\u05e1\u05e4\u05d0\u05e8\u05d9",
+        "place": "village",
+        "population": "5000"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamolisya village",
+      "lat": -13.3006225,
+      "lon": 32.039477,
+      "osm_id": "node/3904793301",
+      "osm_tags": {
+        "name": "Kamolisya village",
+        "place": "village",
+        "source": "www.geonames.org"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chikowa Mission",
+      "lat": -13.417607,
+      "lon": 32.0824192,
+      "osm_id": "node/3904817138",
+      "osm_tags": {
+        "name": "Chikowa Mission",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiundaponde",
+      "lat": -12.2459078,
+      "lon": 30.5804658,
+      "osm_id": "node/5104205023",
+      "osm_tags": {
+        "name": "Chiundaponde",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyembe",
+      "lat": -14.0387483,
+      "lon": 31.9507872,
+      "osm_id": "node/5491816276",
+      "osm_tags": {
+        "name": "Nyembe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muchinga",
+      "lat": -12.3513081,
+      "lon": 31.6894136,
+      "osm_id": "node/5531799150",
+      "osm_tags": {
+        "name": "Muchinga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyongo",
+      "lat": -12.0914116,
+      "lon": 32.3730613,
+      "osm_id": "node/5533369834",
+      "osm_tags": {
+        "name": "Nyongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chikumbi",
+      "lat": -12.1005588,
+      "lon": 32.3833025,
+      "osm_id": "node/5533369835",
+      "osm_tags": {
+        "name": "Chikumbi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lambwe",
+      "lat": -12.1217933,
+      "lon": 32.414114,
+      "osm_id": "node/5533369836",
+      "osm_tags": {
+        "name": "Lambwe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nabwalya",
+      "lat": -12.4214523,
+      "lon": 31.9757478,
+      "osm_id": "node/5564803518",
+      "osm_tags": {
+        "name": "Nabwalya",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Lavushimanda",
+      "lat": -12.6745324,
+      "lon": 31.0093547,
+      "osm_id": "node/5568076004",
+      "osm_tags": {
+        "name": "Lavushimanda",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpumba",
+      "lat": -12.6078612,
+      "lon": 31.0073275,
+      "osm_id": "node/5568076005",
+      "osm_tags": {
+        "name": "Mpumba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwenda",
+      "lat": -12.5993395,
+      "lon": 31.0093763,
+      "osm_id": "node/5568076636",
+      "osm_tags": {
+        "name": "Mwenda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Salamo",
+      "lat": -12.4814453,
+      "lon": 31.0626579,
+      "osm_id": "node/5568076637",
+      "osm_tags": {
+        "name": "Salamo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muchinga",
+      "lat": -12.1068334,
+      "lon": 31.2619288,
+      "osm_id": "node/5568076695",
+      "osm_tags": {
+        "name": "Muchinga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kapwasha",
+      "lat": -11.9685907,
+      "lon": 31.4106865,
+      "osm_id": "node/5568076696",
+      "osm_tags": {
+        "name": "Kapwasha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Village",
+      "lat": -12.4070317,
+      "lon": 31.9698996,
+      "osm_id": "node/5577580199",
+      "osm_tags": {
+        "fixme": "name",
+        "name": "Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Village",
+      "lat": -12.4341361,
+      "lon": 32.0375224,
+      "osm_id": "node/5577611410",
+      "osm_tags": {
+        "fixme": "name",
+        "name": "Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Njolomole",
+      "lat": -13.3552617,
+      "lon": 32.4648417,
+      "osm_id": "node/6134335485",
+      "osm_tags": {
+        "name": "Njolomole",
+        "place": "village",
+        "source": "Akros"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bwemba",
+      "lat": -13.3705217,
+      "lon": 32.442135,
+      "osm_id": "node/6370039586",
+      "osm_tags": {
+        "name": "Bwemba",
+        "place": "village",
+        "source": "Akros"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Memiwe Village",
+      "lat": -13.3867703,
+      "lon": 32.575191,
+      "osm_id": "node/6451304886",
+      "osm_tags": {
+        "name": "Memiwe Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Musukula Village",
+      "lat": -13.3888654,
+      "lon": 32.5389191,
+      "osm_id": "node/6507655185",
+      "osm_tags": {
+        "name": "Musukula Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kagona Village",
+      "lat": -13.3954767,
+      "lon": 32.5317788,
+      "osm_id": "node/6507655285",
+      "osm_tags": {
+        "name": "Kagona Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mukatunya Village",
+      "lat": -13.3890625,
+      "lon": 32.5687755,
+      "osm_id": "node/6507655485",
+      "osm_tags": {
+        "name": "Mukatunya Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chipezeyani Village",
+      "lat": -13.3566218,
+      "lon": 32.5591648,
+      "osm_id": "node/6902108485",
+      "osm_tags": {
+        "name": "Chipezeyani Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Salaweka Village",
+      "lat": -13.3491364,
+      "lon": 32.5316942,
+      "osm_id": "node/7624731086",
+      "osm_tags": {
+        "name": "Salaweka Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Joni Village",
+      "lat": -13.3502916,
+      "lon": 32.5331279,
+      "osm_id": "node/7624731385",
+      "osm_tags": {
+        "name": "Joni Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shabati Village",
+      "lat": -13.707398,
+      "lon": 32.4442652,
+      "osm_id": "node/7670814588",
+      "osm_tags": {
+        "name": "Shabati Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndima Village",
+      "lat": -13.7210855,
+      "lon": 32.4392813,
+      "osm_id": "node/7670818086",
+      "osm_tags": {
+        "name": "Ndima Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyalumbwe Village",
+      "lat": -13.7144088,
+      "lon": 32.4400362,
+      "osm_id": "node/7670818185",
+      "osm_tags": {
+        "name": "Nyalumbwe Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malume Village",
+      "lat": -13.7254838,
+      "lon": 32.4386205,
+      "osm_id": "node/7670818186",
+      "osm_tags": {
+        "name": "Malume Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masiwa Village",
+      "lat": -13.6992706,
+      "lon": 32.4423116,
+      "osm_id": "node/7670818685",
+      "osm_tags": {
+        "name": "Masiwa Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Machinga Village",
+      "lat": -13.6842828,
+      "lon": 32.4310848,
+      "osm_id": "node/7677152085",
+      "osm_tags": {
+        "name": "Machinga Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mekerani Village",
+      "lat": -13.7083585,
+      "lon": 32.1575146,
+      "osm_id": "node/7677152086",
+      "osm_tags": {
+        "name": "Mekerani Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kakwese Village",
+      "lat": -13.7016288,
+      "lon": 32.116612,
+      "osm_id": "node/7677152985",
+      "osm_tags": {
+        "name": "Kakwese Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Guze Village",
+      "lat": -13.7213591,
+      "lon": 32.2092703,
+      "osm_id": "node/7677152986",
+      "osm_tags": {
+        "name": "Guze Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chinunda Village",
+      "lat": -13.6912619,
+      "lon": 32.2433853,
+      "osm_id": "node/7677153185",
+      "osm_tags": {
+        "name": "Chinunda Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maloza village",
+      "lat": -13.7009196,
+      "lon": 32.2515564,
+      "osm_id": "node/7677153285",
+      "osm_tags": {
+        "name": "Maloza village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalembo Village",
+      "lat": -13.7724025,
+      "lon": 32.3545019,
+      "osm_id": "node/7677153286",
+      "osm_tags": {
+        "name": "Kalembo Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chimutengo village",
+      "lat": -13.7807259,
+      "lon": 32.3420984,
+      "osm_id": "node/7679262186",
+      "osm_tags": {
+        "name": "Chimutengo village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kazembe Village",
+      "lat": -13.773361,
+      "lon": 32.3687791,
+      "osm_id": "node/7679262285",
+      "osm_tags": {
+        "name": "Kazembe Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Machacha Village",
+      "lat": -13.77185,
+      "lon": 32.4089747,
+      "osm_id": "node/7679262287",
+      "osm_tags": {
+        "name": "Machacha Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamutemeni Village",
+      "lat": -13.7815904,
+      "lon": 32.3327948,
+      "osm_id": "node/7679277186",
+      "osm_tags": {
+        "name": "Kamutemeni Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bulwe Village",
+      "lat": -13.7702387,
+      "lon": 32.3829623,
+      "osm_id": "node/7679277187",
+      "osm_tags": {
+        "name": "Bulwe Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kasinje Village",
+      "lat": -13.7790477,
+      "lon": 32.4076239,
+      "osm_id": "node/7679342087",
+      "osm_tags": {
+        "name": "Kasinje Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kasegula Village",
+      "lat": -13.7791546,
+      "lon": 32.3448349,
+      "osm_id": "node/7679342186",
+      "osm_tags": {
+        "name": "Kasegula Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gwezalamba Village",
+      "lat": -13.8039654,
+      "lon": 32.3701974,
+      "osm_id": "node/7694835485",
+      "osm_tags": {
+        "name": "Gwezalamba Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chakoka Village",
+      "lat": -13.8121335,
+      "lon": 32.2028279,
+      "osm_id": "node/7694835486",
+      "osm_tags": {
+        "name": "Chakoka Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mukuzi Village",
+      "lat": -13.8939512,
+      "lon": 32.3055448,
+      "osm_id": "node/7694835487",
+      "osm_tags": {
+        "name": "Mukuzi Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kufa",
+      "lat": -13.8410154,
+      "lon": 32.2693067,
+      "osm_id": "node/7694835488",
+      "osm_tags": {
+        "name": "Kufa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sabala Village",
+      "lat": -13.8553527,
+      "lon": 32.2783829,
+      "osm_id": "node/7694835489",
+      "osm_tags": {
+        "name": "Sabala Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zholela Village",
+      "lat": -13.8156381,
+      "lon": 32.2430803,
+      "osm_id": "node/7694838186",
+      "osm_tags": {
+        "name": "Zholela Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndende Village",
+      "lat": -13.8657806,
+      "lon": 32.2821941,
+      "osm_id": "node/7694838187",
+      "osm_tags": {
+        "name": "Ndende Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndende Village",
+      "lat": -13.8630746,
+      "lon": 32.282901,
+      "osm_id": "node/7694838188",
+      "osm_tags": {
+        "name": "Ndende Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamembe Village",
+      "lat": -13.861693,
+      "lon": 32.2436367,
+      "osm_id": "node/7694838189",
+      "osm_tags": {
+        "name": "Kamembe Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sumba Village",
+      "lat": -13.7840848,
+      "lon": 32.3117441,
+      "osm_id": "node/7694838285",
+      "osm_tags": {
+        "name": "Sumba Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Salamba Village",
+      "lat": -13.8555046,
+      "lon": 32.2215244,
+      "osm_id": "node/7694838286",
+      "osm_tags": {
+        "name": "Salamba Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mutumba Village",
+      "lat": -13.8975764,
+      "lon": 32.2265378,
+      "osm_id": "node/7694838287",
+      "osm_tags": {
+        "name": "Mutumba Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mnukwa Village",
+      "lat": -13.8691878,
+      "lon": 32.2798852,
+      "osm_id": "node/7694838885",
+      "osm_tags": {
+        "name": "Mnukwa Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanymbu Village",
+      "lat": -13.9029948,
+      "lon": 32.2626974,
+      "osm_id": "node/7694839485",
+      "osm_tags": {
+        "name": "Kanymbu Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malata Village",
+      "lat": -13.9215402,
+      "lon": 32.3199544,
+      "osm_id": "node/7694839487",
+      "osm_tags": {
+        "name": "Malata Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Samuel Village",
+      "lat": -13.7622953,
+      "lon": 32.127839,
+      "osm_id": "node/7720694987",
+      "osm_tags": {
+        "name": "Samuel Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Menyani Village",
+      "lat": -13.7591345,
+      "lon": 32.1271072,
+      "osm_id": "node/7720694988",
+      "osm_tags": {
+        "name": "Menyani Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kangwanda Village",
+      "lat": -13.7773368,
+      "lon": 32.148163,
+      "osm_id": "node/7720698885",
+      "osm_tags": {
+        "name": "Kangwanda Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Astoni Village",
+      "lat": -13.7816226,
+      "lon": 32.1443408,
+      "osm_id": "node/7720699285",
+      "osm_tags": {
+        "name": "Astoni Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Njombwe Village",
+      "lat": -13.745022,
+      "lon": 32.22672,
+      "osm_id": "node/7720706085",
+      "osm_tags": {
+        "name": "Njombwe Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mukhwanila Village",
+      "lat": -13.8396888,
+      "lon": 32.3525587,
+      "osm_id": "node/7720706086",
+      "osm_tags": {
+        "name": "Mukhwanila Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiweleni Village",
+      "lat": -13.8329606,
+      "lon": 32.3576287,
+      "osm_id": "node/7720706685",
+      "osm_tags": {
+        "name": "Chiweleni Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Inoki Village",
+      "lat": -13.8448208,
+      "lon": 32.3505426,
+      "osm_id": "node/7720706785",
+      "osm_tags": {
+        "name": "Inoki Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chapita Village",
+      "lat": -13.9092856,
+      "lon": 32.3587054,
+      "osm_id": "node/7720707085",
+      "osm_tags": {
+        "name": "Chapita Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lufu Village",
+      "lat": -13.8561047,
+      "lon": 32.4712824,
+      "osm_id": "node/7733251186",
+      "osm_tags": {
+        "name": "Lufu Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Langa Village",
+      "lat": -13.8591049,
+      "lon": 32.4509796,
+      "osm_id": "node/7733251187",
+      "osm_tags": {
+        "name": "Langa Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chilambula Village",
+      "lat": -13.9238637,
+      "lon": 32.4669186,
+      "osm_id": "node/7733303285",
+      "osm_tags": {
+        "name": "Chilambula Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mphamba Village",
+      "lat": -13.8396282,
+      "lon": 32.4194805,
+      "osm_id": "node/7733304685",
+      "osm_tags": {
+        "name": "Mphamba Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chithewele village",
+      "lat": -13.9439906,
+      "lon": 32.4531728,
+      "osm_id": "node/7733312385",
+      "osm_tags": {
+        "name": "Chithewele village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mphendwa Village",
+      "lat": -13.8668398,
+      "lon": 32.4685729,
+      "osm_id": "node/7733313885",
+      "osm_tags": {
+        "name": "Mphendwa Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Muchumo Village",
+      "lat": -13.8253257,
+      "lon": 32.4813003,
+      "osm_id": "node/7733317485",
+      "osm_tags": {
+        "name": "Muchumo Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chakwaba Village",
+      "lat": -13.7970752,
+      "lon": 32.4529444,
+      "osm_id": "node/7733358286",
+      "osm_tags": {
+        "name": "Chakwaba Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chatuluka Village",
+      "lat": -13.9371169,
+      "lon": 32.4245017,
+      "osm_id": "node/7733365185",
+      "osm_tags": {
+        "name": "Chatuluka Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zungula Village",
+      "lat": -13.7633352,
+      "lon": 32.3745451,
+      "osm_id": "node/7733366985",
+      "osm_tags": {
+        "name": "Zungula Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malama Village",
+      "lat": -13.8331627,
+      "lon": 32.4913878,
+      "osm_id": "node/7733367985",
+      "osm_tags": {
+        "name": "Malama Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zambezi Village",
+      "lat": -13.8260682,
+      "lon": 32.4883395,
+      "osm_id": "node/7733368085",
+      "osm_tags": {
+        "name": "Zambezi Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mubala Village",
+      "lat": -13.7989539,
+      "lon": 32.5104431,
+      "osm_id": "node/7733516386",
+      "osm_tags": {
+        "name": "Mubala Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalinde Village",
+      "lat": -13.7528406,
+      "lon": 32.2262557,
+      "osm_id": "node/7733518385",
+      "osm_tags": {
+        "name": "Kalinde Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaigwaza Village",
+      "lat": -13.8503513,
+      "lon": 32.4391356,
+      "osm_id": "node/7733518386",
+      "osm_tags": {
+        "name": "Kaigwaza Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mukoko Village",
+      "lat": -13.7924456,
+      "lon": 32.4535914,
+      "osm_id": "node/7733518387",
+      "osm_tags": {
+        "name": "Mukoko Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mteyo Village",
+      "lat": -13.802681,
+      "lon": 32.5110726,
+      "osm_id": "node/7733518486",
+      "osm_tags": {
+        "name": "Mteyo Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyandeka Village",
+      "lat": -13.8078395,
+      "lon": 32.5026872,
+      "osm_id": "node/7733518885",
+      "osm_tags": {
+        "name": "Nyandeka Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mutwalo Village",
+      "lat": -13.8352162,
+      "lon": 32.4844315,
+      "osm_id": "node/7733519085",
+      "osm_tags": {
+        "name": "Mutwalo Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Magodi Nthani Village",
+      "lat": -13.8813089,
+      "lon": 32.5630688,
+      "osm_id": "node/7761661588",
+      "osm_tags": {
+        "name": "Magodi Nthani Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zaladeni Village",
+      "lat": -13.9092344,
+      "lon": 32.5443719,
+      "osm_id": "node/7761661589",
+      "osm_tags": {
+        "name": "Zaladeni Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Beza Village",
+      "lat": -13.8622075,
+      "lon": 32.5655196,
+      "osm_id": "node/7761673186",
+      "osm_tags": {
+        "name": "Beza Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chimponda village",
+      "lat": -13.8743437,
+      "lon": 32.5756526,
+      "osm_id": "node/7761678785",
+      "osm_tags": {
+        "name": "Chimponda village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyalongo Village",
+      "lat": -13.8967063,
+      "lon": 32.5738291,
+      "osm_id": "node/7761678786",
+      "osm_tags": {
+        "name": "Nyalongo Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mphande village",
+      "lat": -13.8627525,
+      "lon": 32.1993036,
+      "osm_id": "node/7761678787",
+      "osm_tags": {
+        "name": "Mphande village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tambala village",
+      "lat": -13.8480922,
+      "lon": 32.1879155,
+      "osm_id": "node/7764684685",
+      "osm_tags": {
+        "name": "Tambala village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zirole Village",
+      "lat": -13.9337212,
+      "lon": 32.1634958,
+      "osm_id": "node/7764684785",
+      "osm_tags": {
+        "name": "Zirole Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jabesi Village",
+      "lat": -13.8838197,
+      "lon": 32.1678314,
+      "osm_id": "node/7770081486",
+      "osm_tags": {
+        "name": "Jabesi Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chimphinga Village",
+      "lat": -13.8354106,
+      "lon": 32.526031,
+      "osm_id": "node/7770098587",
+      "osm_tags": {
+        "name": "Chimphinga Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpanga Village",
+      "lat": -13.842311,
+      "lon": 32.5482269,
+      "osm_id": "node/7770098685",
+      "osm_tags": {
+        "name": "Mpanga Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bandawe Village",
+      "lat": -13.840478,
+      "lon": 32.546214,
+      "osm_id": "node/7770098686",
+      "osm_tags": {
+        "name": "Bandawe Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sungu'ni jere village",
+      "lat": -13.8538173,
+      "lon": 32.5707436,
+      "osm_id": "node/7770098785",
+      "osm_tags": {
+        "name": "Sungu'ni jere village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "William village",
+      "lat": -13.8788469,
+      "lon": 32.1629589,
+      "osm_id": "node/7770098885",
+      "osm_tags": {
+        "name": "William village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyanga Village",
+      "lat": -13.801163,
+      "lon": 32.3696826,
+      "osm_id": "node/7772975686",
+      "osm_tags": {
+        "name": "Nyanga Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Theleka Village",
+      "lat": -13.7661014,
+      "lon": 32.5042095,
+      "osm_id": "node/7772983885",
+      "osm_tags": {
+        "name": "Theleka Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zuze Village",
+      "lat": -13.8048588,
+      "lon": 32.3729533,
+      "osm_id": "node/7804443285",
+      "osm_tags": {
+        "name": "Zuze Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lumbwe Village",
+      "lat": -13.804216,
+      "lon": 32.3172891,
+      "osm_id": "node/7804443385",
+      "osm_tags": {
+        "name": "Lumbwe Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mukwekwe Village",
+      "lat": -13.8417546,
+      "lon": 32.4087688,
+      "osm_id": "node/7804443885",
+      "osm_tags": {
+        "name": "Mukwekwe Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chimukule Village",
+      "lat": -13.8357486,
+      "lon": 32.4200599,
+      "osm_id": "node/7804444585",
+      "osm_tags": {
+        "name": "Chimukule Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kabeni Village",
+      "lat": -13.9582575,
+      "lon": 32.4330046,
+      "osm_id": "node/7804444685",
+      "osm_tags": {
+        "name": "Kabeni Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sateni Village",
+      "lat": -13.9546347,
+      "lon": 32.4438316,
+      "osm_id": "node/7806219386",
+      "osm_tags": {
+        "name": "Sateni Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyane Village",
+      "lat": -13.7667645,
+      "lon": 32.5052457,
+      "osm_id": "node/7806224285",
+      "osm_tags": {
+        "name": "Nyane Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katebele Village",
+      "lat": -13.9629674,
+      "lon": 32.4338297,
+      "osm_id": "node/7806227285",
+      "osm_tags": {
+        "name": "Katebele Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Samuyeli Village",
+      "lat": -13.1649276,
+      "lon": 32.5464926,
+      "osm_id": "node/7806228985",
+      "osm_tags": {
+        "name": "Samuyeli Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyandeka Village",
+      "lat": -13.1638043,
+      "lon": 32.544751,
+      "osm_id": "node/7806229185",
+      "osm_tags": {
+        "name": "Nyandeka Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ibazima village",
+      "lat": -13.913098,
+      "lon": 32.4421805,
+      "osm_id": "node/7806281785",
+      "osm_tags": {
+        "name": "Ibazima village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiwulunga Village",
+      "lat": -13.9588,
+      "lon": 32.4430718,
+      "osm_id": "node/7806281885",
+      "osm_tags": {
+        "name": "Chiwulunga Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyonyo",
+      "lat": -13.8605544,
+      "lon": 32.2520282,
+      "osm_id": "node/7829202786",
+      "osm_tags": {
+        "name": "Nyonyo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chikondi Village",
+      "lat": -13.868198,
+      "lon": 32.2824749,
+      "osm_id": "node/7829202787",
+      "osm_tags": {
+        "name": "Chikondi Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zengo Village",
+      "lat": -13.8990235,
+      "lon": 32.3807686,
+      "osm_id": "node/7829202886",
+      "osm_tags": {
+        "name": "Zengo Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kayigobe village",
+      "lat": -13.8212145,
+      "lon": 32.2386912,
+      "osm_id": "node/7829202985",
+      "osm_tags": {
+        "name": "Kayigobe village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chimate Village",
+      "lat": -14.0379703,
+      "lon": 32.5002691,
+      "osm_id": "node/7849788985",
+      "osm_tags": {
+        "name": "Chimate Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chimate Village",
+      "lat": -13.9501149,
+      "lon": 32.5725065,
+      "osm_id": "node/7849788987",
+      "osm_tags": {
+        "name": "Chimate Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Robi Village",
+      "lat": -14.111817,
+      "lon": 32.4392475,
+      "osm_id": "node/7849788988",
+      "osm_tags": {
+        "name": "Robi Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mukoko Village",
+      "lat": -13.9323101,
+      "lon": 32.5750014,
+      "osm_id": "node/7849789085",
+      "osm_tags": {
+        "name": "Mukoko Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chimponda Village",
+      "lat": -13.9464568,
+      "lon": 32.571645,
+      "osm_id": "node/7849789385",
+      "osm_tags": {
+        "name": "Chimponda Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanaisi One Village",
+      "lat": -13.9500118,
+      "lon": 32.5751759,
+      "osm_id": "node/7849789386",
+      "osm_tags": {
+        "name": "Kanaisi One Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Changaya Village",
+      "lat": -14.0321575,
+      "lon": 32.464335,
+      "osm_id": "node/7849789387",
+      "osm_tags": {
+        "name": "Changaya Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Khulika Village",
+      "lat": -14.0425403,
+      "lon": 32.4884749,
+      "osm_id": "node/7849791185",
+      "osm_tags": {
+        "name": "Khulika Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manje Village",
+      "lat": -13.9522167,
+      "lon": 32.525118,
+      "osm_id": "node/7884264585",
+      "osm_tags": {
+        "name": "Manje Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tafelansoni",
+      "lat": -14.2147202,
+      "lon": 32.4356766,
+      "osm_id": "node/7900103785",
+      "osm_tags": {
+        "name": "Tafelansoni",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tambala Village",
+      "lat": -13.8818381,
+      "lon": 32.0972698,
+      "osm_id": "node/7922075785",
+      "osm_tags": {
+        "name": "Tambala Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mutonya Village",
+      "lat": -13.8397584,
+      "lon": 32.0529717,
+      "osm_id": "node/7922136785",
+      "osm_tags": {
+        "name": "Mutonya Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kazika Village",
+      "lat": -13.7806325,
+      "lon": 32.0271243,
+      "osm_id": "node/7922834687",
+      "osm_tags": {
+        "name": "Kazika Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lembani Village",
+      "lat": -13.8263758,
+      "lon": 32.0393707,
+      "osm_id": "node/7922872785",
+      "osm_tags": {
+        "name": "Lembani Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tiyankhule Village",
+      "lat": -13.8269135,
+      "lon": 32.0394379,
+      "osm_id": "node/7923772585",
+      "osm_tags": {
+        "name": "Tiyankhule Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngowe Village",
+      "lat": -13.8433694,
+      "lon": 32.1187777,
+      "osm_id": "node/7923772685",
+      "osm_tags": {
+        "name": "Ngowe Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Burawayo Village",
+      "lat": -13.8382555,
+      "lon": 32.1559568,
+      "osm_id": "node/7924614085",
+      "osm_tags": {
+        "name": "Burawayo Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katapa 2",
+      "lat": -13.9716813,
+      "lon": 32.0018614,
+      "osm_id": "node/7934002885",
+      "osm_tags": {
+        "name": "Katapa 2",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Cholowa 1",
+      "lat": -13.9519331,
+      "lon": 31.9957668,
+      "osm_id": "node/7934011986",
+      "osm_tags": {
+        "name": "Cholowa 1",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chibanga Village",
+      "lat": -13.9292744,
+      "lon": 31.9793605,
+      "osm_id": "node/7934267085",
+      "osm_tags": {
+        "name": "Chibanga Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nthambwa Village",
+      "lat": -13.903492,
+      "lon": 31.9806609,
+      "osm_id": "node/7934284785",
+      "osm_tags": {
+        "name": "Nthambwa Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mandowa Village",
+      "lat": -13.8791829,
+      "lon": 31.9674585,
+      "osm_id": "node/7934341385",
+      "osm_tags": {
+        "name": "Mandowa Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndelemani 1&2",
+      "lat": -13.8776667,
+      "lon": 31.9838827,
+      "osm_id": "node/7934408585",
+      "osm_tags": {
+        "name": "Ndelemani 1&2",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtopa",
+      "lat": -13.8668447,
+      "lon": 31.9849389,
+      "osm_id": "node/7934476685",
+      "osm_tags": {
+        "name": "Mtopa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kambale Village",
+      "lat": -13.9262812,
+      "lon": 31.9808784,
+      "osm_id": "node/7937483585",
+      "osm_tags": {
+        "name": "Kambale Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Takozele Village",
+      "lat": -13.928507,
+      "lon": 31.9820016,
+      "osm_id": "node/7937488985",
+      "osm_tags": {
+        "name": "Takozele Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makonde Village",
+      "lat": -13.9086896,
+      "lon": 31.9812053,
+      "osm_id": "node/7937534685",
+      "osm_tags": {
+        "name": "Makonde Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kolowela Village",
+      "lat": -13.8850366,
+      "lon": 31.9852528,
+      "osm_id": "node/7939856885",
+      "osm_tags": {
+        "name": "Kolowela Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kasankha Village",
+      "lat": -13.8591468,
+      "lon": 32.0135758,
+      "osm_id": "node/7941222985",
+      "osm_tags": {
+        "name": "Kasankha Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chimbalu Village",
+      "lat": -13.8494608,
+      "lon": 32.0134211,
+      "osm_id": "node/7941405385",
+      "osm_tags": {
+        "name": "Chimbalu Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamukukute Village",
+      "lat": -13.8842068,
+      "lon": 32.0203683,
+      "osm_id": "node/7941463885",
+      "osm_tags": {
+        "name": "Kamukukute Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moffat",
+      "lat": -13.8878997,
+      "lon": 32.011976,
+      "osm_id": "node/7941463985",
+      "osm_tags": {
+        "name": "Moffat",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Samson Village",
+      "lat": -13.8861381,
+      "lon": 32.0413873,
+      "osm_id": "node/7942615391",
+      "osm_tags": {
+        "name": "Samson Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sekani Village",
+      "lat": -13.8365586,
+      "lon": 32.0064942,
+      "osm_id": "node/7948628085",
+      "osm_tags": {
+        "name": "Sekani Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vulamkoko",
+      "lat": -14.1009738,
+      "lon": 31.8528493,
+      "osm_id": "node/7954509886",
+      "osm_tags": {
+        "name": "Vulamkoko",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Filipo Village",
+      "lat": -13.9148247,
+      "lon": 32.0357698,
+      "osm_id": "node/7954597485",
+      "osm_tags": {
+        "name": "Filipo Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Biwi Village",
+      "lat": -13.9075466,
+      "lon": 32.0437949,
+      "osm_id": "node/7954622203",
+      "osm_tags": {
+        "name": "Biwi Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pukila Village",
+      "lat": -13.9395319,
+      "lon": 32.0459184,
+      "osm_id": "node/7962377885",
+      "osm_tags": {
+        "name": "Pukila Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Azele Kacheka",
+      "lat": -14.0946332,
+      "lon": 31.8738898,
+      "osm_id": "node/7962377985",
+      "osm_tags": {
+        "name": "Azele Kacheka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chisuluwe Village",
+      "lat": -14.0278583,
+      "lon": 31.8695752,
+      "osm_id": "node/7962655887",
+      "osm_tags": {
+        "name": "Chisuluwe Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Singa Village",
+      "lat": -14.0598674,
+      "lon": 31.8911543,
+      "osm_id": "node/7962665685",
+      "osm_tags": {
+        "name": "Singa Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Filipo Village",
+      "lat": -14.0585361,
+      "lon": 31.8932958,
+      "osm_id": "node/7962779685",
+      "osm_tags": {
+        "name": "Filipo Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katakombe Village",
+      "lat": -14.0813205,
+      "lon": 31.9030684,
+      "osm_id": "node/7973093686",
+      "osm_tags": {
+        "name": "Katakombe Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtaya Village",
+      "lat": -14.04704,
+      "lon": 32.0301934,
+      "osm_id": "node/7995120585",
+      "osm_tags": {
+        "name": "Mtaya Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gibson Village",
+      "lat": -14.0446286,
+      "lon": 32.0353682,
+      "osm_id": "node/7995171685",
+      "osm_tags": {
+        "name": "Gibson Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Machita Village",
+      "lat": -13.3063421,
+      "lon": 32.1435175,
+      "osm_id": "node/8012243185",
+      "osm_tags": {
+        "name": "Machita Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pindwe",
+      "lat": -13.2844234,
+      "lon": 31.999532,
+      "osm_id": "node/8015948886",
+      "osm_tags": {
+        "name": "Pindwe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chamatwa",
+      "lat": -13.2558349,
+      "lon": 31.977405,
+      "osm_id": "node/8016010285",
+      "osm_tags": {
+        "name": "Chamatwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kapole",
+      "lat": -13.2727126,
+      "lon": 31.9913839,
+      "osm_id": "node/8021737386",
+      "osm_tags": {
+        "name": "Kapole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masako",
+      "lat": -13.2664179,
+      "lon": 31.9849759,
+      "osm_id": "node/8021737387",
+      "osm_tags": {
+        "name": "Masako",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamanga",
+      "lat": -13.2711388,
+      "lon": 31.9747942,
+      "osm_id": "node/8021737388",
+      "osm_tags": {
+        "name": "Kamanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tonga",
+      "lat": -13.2800166,
+      "lon": 31.9954873,
+      "osm_id": "node/8021748086",
+      "osm_tags": {
+        "name": "Tonga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kango",
+      "lat": -13.2846639,
+      "lon": 32.0032514,
+      "osm_id": "node/8021752787",
+      "osm_tags": {
+        "name": "Kango",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaolela",
+      "lat": -13.395356,
+      "lon": 32.0895916,
+      "osm_id": "node/8024401885",
+      "osm_tags": {
+        "name": "Kaolela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maunto",
+      "lat": -13.4098077,
+      "lon": 32.085622,
+      "osm_id": "node/8024401886",
+      "osm_tags": {
+        "name": "Maunto",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Santhe",
+      "lat": -13.4052161,
+      "lon": 32.0788799,
+      "osm_id": "node/8024462788",
+      "osm_tags": {
+        "name": "Santhe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbalundu",
+      "lat": -13.4000564,
+      "lon": 32.0719021,
+      "osm_id": "node/8024505385",
+      "osm_tags": {
+        "name": "Mbalundu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpesi",
+      "lat": -13.3971101,
+      "lon": 32.0780147,
+      "osm_id": "node/8024537885",
+      "osm_tags": {
+        "name": "Mpesi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sinoya",
+      "lat": -13.3980871,
+      "lon": 32.0702085,
+      "osm_id": "node/8024590041",
+      "osm_tags": {
+        "name": "Sinoya",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yobe",
+      "lat": -13.3922829,
+      "lon": 32.0691433,
+      "osm_id": "node/8024614388",
+      "osm_tags": {
+        "name": "Yobe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chisapa",
+      "lat": -13.2978872,
+      "lon": 32.0621038,
+      "osm_id": "node/8024927685",
+      "osm_tags": {
+        "name": "Chisapa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mphanda",
+      "lat": -13.407829,
+      "lon": 32.0825346,
+      "osm_id": "node/8024927885",
+      "osm_tags": {
+        "name": "Mphanda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masiye",
+      "lat": -13.4186881,
+      "lon": 32.1027156,
+      "osm_id": "node/8025254486",
+      "osm_tags": {
+        "name": "Masiye",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bwezani",
+      "lat": -13.4134998,
+      "lon": 32.097422,
+      "osm_id": "node/8025254685",
+      "osm_tags": {
+        "name": "Bwezani",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Luka",
+      "lat": -13.4189206,
+      "lon": 32.1035895,
+      "osm_id": "node/8027675285",
+      "osm_tags": {
+        "name": "Luka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkubwa",
+      "lat": -13.423805,
+      "lon": 32.1075307,
+      "osm_id": "node/8027698485",
+      "osm_tags": {
+        "name": "Mkubwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lengesi",
+      "lat": -13.4209721,
+      "lon": 32.1050022,
+      "osm_id": "node/8039063785",
+      "osm_tags": {
+        "name": "Lengesi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Musanja Village",
+      "lat": -13.2869005,
+      "lon": 32.1997626,
+      "osm_id": "node/8039063786",
+      "osm_tags": {
+        "name": "Musanja Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kachusi Village",
+      "lat": -13.2877743,
+      "lon": 32.2031094,
+      "osm_id": "node/8039063787",
+      "osm_tags": {
+        "name": "Kachusi Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sampa Village",
+      "lat": -13.2880705,
+      "lon": 32.2039312,
+      "osm_id": "node/8039063788",
+      "osm_tags": {
+        "name": "Sampa Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malemya Village",
+      "lat": -13.2929821,
+      "lon": 32.2114907,
+      "osm_id": "node/8039063789",
+      "osm_tags": {
+        "name": "Malemya Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manyoni Village",
+      "lat": -13.3171335,
+      "lon": 32.2239548,
+      "osm_id": "node/8039063790",
+      "osm_tags": {
+        "name": "Manyoni Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kapezya Village",
+      "lat": -13.2846875,
+      "lon": 32.1893443,
+      "osm_id": "node/8039063985",
+      "osm_tags": {
+        "name": "Kapezya Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ziba zako Village",
+      "lat": -13.2861589,
+      "lon": 32.1973209,
+      "osm_id": "node/8039064085",
+      "osm_tags": {
+        "name": "Ziba zako Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zondo",
+      "lat": -13.3164202,
+      "lon": 32.2265793,
+      "osm_id": "node/8039064285",
+      "osm_tags": {
+        "name": "Zondo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lufelo Village",
+      "lat": -13.3110252,
+      "lon": 32.2358427,
+      "osm_id": "node/8039064385",
+      "osm_tags": {
+        "name": "Lufelo Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiwale Village",
+      "lat": -13.2939265,
+      "lon": 32.2637124,
+      "osm_id": "node/8039064386",
+      "osm_tags": {
+        "name": "Chiwale Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sabuni Village",
+      "lat": -13.3159854,
+      "lon": 32.240066,
+      "osm_id": "node/8039064387",
+      "osm_tags": {
+        "name": "Sabuni Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sitima Village",
+      "lat": -13.3125257,
+      "lon": 32.2375389,
+      "osm_id": "node/8039069285",
+      "osm_tags": {
+        "name": "Sitima Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ulaya Village",
+      "lat": -13.3083784,
+      "lon": 32.223227,
+      "osm_id": "node/8047634885",
+      "osm_tags": {
+        "name": "Ulaya Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chinyanta Village",
+      "lat": -13.292366,
+      "lon": 32.2121012,
+      "osm_id": "node/8062796285",
+      "osm_tags": {
+        "name": "Chinyanta Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chibabula",
+      "lat": -13.2340621,
+      "lon": 31.9618014,
+      "osm_id": "node/8062796385",
+      "osm_tags": {
+        "name": "Chibabula",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyapale",
+      "lat": -13.2515548,
+      "lon": 31.9617861,
+      "osm_id": "node/8062796485",
+      "osm_tags": {
+        "name": "Nyapale",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Akhale Amazibana Village",
+      "lat": -13.2689067,
+      "lon": 31.9462019,
+      "osm_id": "node/8062796486",
+      "osm_tags": {
+        "name": "Akhale Amazibana Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Simon",
+      "lat": -13.2552034,
+      "lon": 31.9150184,
+      "osm_id": "node/8091227853",
+      "osm_tags": {
+        "name": "Simon",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kiwindula",
+      "lat": -13.2568395,
+      "lon": 31.9136412,
+      "osm_id": "node/8091250629",
+      "osm_tags": {
+        "name": "Kiwindula",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kakwiya",
+      "lat": -13.249892,
+      "lon": 31.9123304,
+      "osm_id": "node/8093041417",
+      "osm_tags": {
+        "name": "Kakwiya",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Phaku",
+      "lat": -13.2588159,
+      "lon": 31.914945,
+      "osm_id": "node/8093041518",
+      "osm_tags": {
+        "name": "Phaku",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiuli",
+      "lat": -13.2638257,
+      "lon": 31.9158453,
+      "osm_id": "node/8093041519",
+      "osm_tags": {
+        "name": "Chiuli",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kapela Village",
+      "lat": -13.9591212,
+      "lon": 32.5204088,
+      "osm_id": "node/8872759218",
+      "osm_tags": {
+        "name": "Kapela Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Khulika Village",
+      "lat": -14.0124115,
+      "lon": 32.4838233,
+      "osm_id": "node/8872777417",
+      "osm_tags": {
+        "name": "Khulika Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kafele Village",
+      "lat": -13.9608842,
+      "lon": 32.5207568,
+      "osm_id": "node/8875348917",
+      "osm_tags": {
+        "name": "Kafele Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkwekwe Village",
+      "lat": -13.9604654,
+      "lon": 32.5184333,
+      "osm_id": "node/8875348918",
+      "osm_tags": {
+        "name": "Mkwekwe Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manje Village",
+      "lat": -13.9519521,
+      "lon": 32.5254154,
+      "osm_id": "node/8875348919",
+      "osm_tags": {
+        "name": "Manje Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpeta Village",
+      "lat": -13.9857407,
+      "lon": 32.5066959,
+      "osm_id": "node/8875349317",
+      "osm_tags": {
+        "name": "Mpeta Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chimata Village",
+      "lat": -14.0383734,
+      "lon": 32.4993124,
+      "osm_id": "node/8879537625",
+      "osm_tags": {
+        "name": "Chimata Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kumadzi Village",
+      "lat": -13.9941239,
+      "lon": 32.5079356,
+      "osm_id": "node/8879537720",
+      "osm_tags": {
+        "name": "Kumadzi Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chimukuyu",
+      "lat": -13.9964577,
+      "lon": 32.5092281,
+      "osm_id": "node/8879930817",
+      "osm_tags": {
+        "name": "Chimukuyu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaomu Village",
+      "lat": -14.0486199,
+      "lon": 32.5011602,
+      "osm_id": "node/8880015417",
+      "osm_tags": {
+        "name": "Kaomu Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "John Cheta Village",
+      "lat": -14.0495821,
+      "lon": 32.4968814,
+      "osm_id": "node/8880015517",
+      "osm_tags": {
+        "name": "John Cheta Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chipuzi Village",
+      "lat": -14.0424209,
+      "lon": 32.4893696,
+      "osm_id": "node/8883039017",
+      "osm_tags": {
+        "name": "Chipuzi Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Changaya 1",
+      "lat": -14.0320752,
+      "lon": 32.4638934,
+      "osm_id": "node/8883039117",
+      "osm_tags": {
+        "name": "Changaya 1",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamuseche Village",
+      "lat": -14.0195185,
+      "lon": 32.4617255,
+      "osm_id": "node/8883039217",
+      "osm_tags": {
+        "name": "Kamuseche Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Choloba Village",
+      "lat": -13.9492594,
+      "lon": 32.5736991,
+      "osm_id": "node/8897670118",
+      "osm_tags": {
+        "name": "Choloba Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chimate Village",
+      "lat": -13.9493595,
+      "lon": 32.5728318,
+      "osm_id": "node/8898214719",
+      "osm_tags": {
+        "name": "Chimate Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kezi Village",
+      "lat": -14.0596223,
+      "lon": 32.4701032,
+      "osm_id": "node/8898255719",
+      "osm_tags": {
+        "name": "Kezi Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mpoto Village",
+      "lat": -14.0569202,
+      "lon": 32.4919583,
+      "osm_id": "node/8898256120",
+      "osm_tags": {
+        "name": "Mpoto Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbingwa Village",
+      "lat": -14.0567911,
+      "lon": 32.4743168,
+      "osm_id": "node/8898256121",
+      "osm_tags": {
+        "name": "Mbingwa Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chazika Village",
+      "lat": -14.0620835,
+      "lon": 32.4703017,
+      "osm_id": "node/8903938117",
+      "osm_tags": {
+        "name": "Chazika Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mkanda Village",
+      "lat": -14.0612732,
+      "lon": 32.4692161,
+      "osm_id": "node/8903938217",
+      "osm_tags": {
+        "name": "Mkanda Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanyankwele Village",
+      "lat": -14.0553059,
+      "lon": 32.5292959,
+      "osm_id": "node/8906351121",
+      "osm_tags": {
+        "name": "Kanyankwele Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chimusitu Village",
+      "lat": -14.0622584,
+      "lon": 32.5303195,
+      "osm_id": "node/8914255324",
+      "osm_tags": {
+        "name": "Chimusitu Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kafele Village",
+      "lat": -14.0613686,
+      "lon": 32.5285709,
+      "osm_id": "node/8914255325",
+      "osm_tags": {
+        "name": "Kafele Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwanya",
+      "lat": -12.7277955,
+      "lon": 32.2494411,
+      "osm_id": "node/9108624617",
+      "osm_tags": {
+        "name": "Mwanya",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kazimuli",
+      "lat": -13.8987764,
+      "lon": 32.4030328,
+      "osm_id": "node/9296463728",
+      "osm_tags": {
+        "name": "Kazimuli",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwangala",
+      "lat": -14.1913628,
+      "lon": 32.5220903,
+      "osm_id": "node/9300709144",
+      "osm_tags": {
+        "name": "Mwangala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malama",
+      "lat": -13.514022,
+      "lon": 31.5718996,
+      "osm_id": "node/9303600025",
+      "osm_tags": {
+        "name": "Malama",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwelwa",
+      "lat": -13.3787634,
+      "lon": 31.6119924,
+      "osm_id": "node/9303600026",
+      "osm_tags": {
+        "name": "Mwelwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Pandebiri Hill",
+      "lat": -12.4977602,
+      "lon": 32.5483511,
+      "osm_id": "node/9306695979",
+      "osm_tags": {
+        "name": "Pandebiri Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Zimwe Hill",
+      "lat": -12.5538446,
+      "lon": 32.4941802,
+      "osm_id": "node/9306695980",
+      "osm_tags": {
+        "name": "Zimwe Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Undi",
+      "lat": -13.4881895,
+      "lon": 32.5687164,
+      "osm_id": "node/9317303464",
+      "osm_tags": {
+        "name": "Undi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nyaviombo Hill",
+      "lat": -13.4909413,
+      "lon": 32.5581009,
+      "osm_id": "node/9317304075",
+      "osm_tags": {
+        "name": "Nyaviombo Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Kasenengwa",
+      "lat": -13.5687555,
+      "lon": 32.4783025,
+      "osm_id": "node/9407591937",
+      "osm_tags": {
+        "name": "Kasenengwa",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katiula",
+      "lat": -14.109455,
+      "lon": 32.257587,
+      "osm_id": "node/9409619868",
+      "osm_tags": {
+        "name": "Katiula",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nsadzu Mission",
+      "lat": -14.0709659,
+      "lon": 32.3391987,
+      "osm_id": "node/9409729675",
+      "osm_tags": {
+        "name": "Nsadzu Mission",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nyankanga Hill",
+      "lat": -14.0621637,
+      "lon": 32.3357862,
+      "osm_id": "node/9409729677",
+      "osm_tags": {
+        "name": "Nyankanga Hill",
+        "natural": "peak",
+        "wikidata": "Q31411971"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwape",
+      "lat": -14.1281164,
+      "lon": 30.8363696,
+      "osm_id": "node/9412646403",
+      "osm_tags": {
+        "name": "Mwape",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyampande",
+      "lat": -14.2176646,
+      "lon": 31.2191011,
+      "osm_id": "node/9412646416",
+      "osm_tags": {
+        "name": "Nyampande",
+        "old_name": "Old Petauke",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madzimawe",
+      "lat": -13.7127639,
+      "lon": 32.4109193,
+      "osm_id": "node/9513284014",
+      "osm_tags": {
+        "name": "Madzimawe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ukwimi",
+      "lat": -13.888817,
+      "lon": 31.6481067,
+      "osm_id": "node/9568164804",
+      "osm_tags": {
+        "name": "Ukwimi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kunguli Hill",
+      "lat": -12.2928403,
+      "lon": 31.4560587,
+      "osm_id": "node/9815022245",
+      "osm_tags": {
+        "name": "Kunguli Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zokwe",
+      "lat": -12.314454,
+      "lon": 32.3209883,
+      "osm_id": "node/9822252778",
+      "osm_tags": {
+        "name": "Zokwe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Chilefwe Hill",
+      "lat": -13.3314903,
+      "lon": 30.9075503,
+      "osm_id": "node/9876370695",
+      "osm_tags": {
+        "name": "Chilefwe Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kalomo Hill",
+      "lat": -13.3589266,
+      "lon": 30.9214483,
+      "osm_id": "node/9876370696",
+      "osm_tags": {
+        "name": "Kalomo Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nguvili Hill",
+      "lat": -13.5723844,
+      "lon": 30.8936294,
+      "osm_id": "node/9876370697",
+      "osm_tags": {
+        "name": "Nguvili Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mchelia Hill",
+      "lat": -13.5925857,
+      "lon": 31.0448978,
+      "osm_id": "node/9876370698",
+      "osm_tags": {
+        "name": "Mchelia Hill",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukulu",
+      "lat": -12.8269769,
+      "lon": 30.8671681,
+      "osm_id": "node/9889207731",
+      "osm_tags": {
+        "name": "Lukulu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Lavushi",
+      "lat": -12.402792,
+      "lon": 30.863755,
+      "osm_id": "node/9931158238",
+      "osm_tags": {
+        "ele": "1754",
+        "name": "Lavushi",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Chimbwingombe",
+      "lat": -13.028333,
+      "lon": 31.189091,
+      "osm_id": "node/9983781926",
+      "osm_tags": {
+        "name": "Chimbwingombe",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Chifuma",
+      "lat": -12.758049,
+      "lon": 31.397255,
+      "osm_id": "node/9983783376",
+      "osm_tags": {
+        "name": "Chifuma",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Chilomo",
+      "lat": -12.8408006,
+      "lon": 31.3661706,
+      "osm_id": "node/9983783411",
+      "osm_tags": {
+        "name": "Chilomo",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Chikashi",
+      "lat": -12.7921599,
+      "lon": 31.2774634,
+      "osm_id": "node/9983783756",
+      "osm_tags": {
+        "name": "Chikashi",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Nyakolwe Hills",
+      "lat": -14.0172506,
+      "lon": 31.068434,
+      "osm_id": "node/10058294551",
+      "osm_tags": {
+        "name": "Nyakolwe Hills",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kholowa",
+      "lat": -13.3561111,
+      "lon": 32.5744286,
+      "osm_id": "node/10095599317",
+      "osm_tags": {
+        "name": "Kholowa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matebe",
+      "lat": -11.9612363,
+      "lon": 31.2450703,
+      "osm_id": "node/11180456282",
+      "osm_tags": {
+        "name": "Matebe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Ibangwe",
+      "lat": -11.9909232,
+      "lon": 31.610817,
+      "osm_id": "node/11191166384",
+      "osm_tags": {
+        "name": "Ibangwe",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gundani",
+      "lat": -13.6254446,
+      "lon": 32.3079258,
+      "osm_id": "node/11350478960",
+      "osm_tags": {
+        "name": "Gundani",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mishoro Village",
+      "lat": -13.6054631,
+      "lon": 32.4392565,
+      "osm_id": "node/11372605074",
+      "osm_tags": {
+        "name": "Mishoro Village",
+        "place": "village",
+        "population": "400",
+        "population:date": "2023-11-24",
+        "source:population": "Personal knowledge"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mthanzi",
+      "lat": -14.0590643,
+      "lon": 31.8617041,
+      "osm_id": "node/11375836222",
+      "osm_tags": {
+        "name": "Mthanzi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Waseka",
+      "lat": -14.1379027,
+      "lon": 31.8741721,
+      "osm_id": "node/11377896662",
+      "osm_tags": {
+        "name": "Waseka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chongo Turn",
+      "lat": -13.6388716,
+      "lon": 32.3787923,
+      "osm_id": "node/11380949251",
+      "osm_tags": {
+        "description": "Small village at the turn of the D124",
+        "name": "Chongo Turn",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Okanyelele Village",
+      "lat": -13.6348528,
+      "lon": 32.3369682,
+      "osm_id": "node/11380960028",
+      "osm_tags": {
+        "description": "Small rural village",
+        "name": "Okanyelele Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mandondo Village",
+      "lat": -13.6208828,
+      "lon": 32.4070262,
+      "osm_id": "node/11380961261",
+      "osm_tags": {
+        "description": "Small rural area with a school",
+        "name": "Mandondo Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mphayabantu Village",
+      "lat": -13.5777771,
+      "lon": 32.5088629,
+      "osm_id": "node/11380979013",
+      "osm_tags": {
+        "name": "Mphayabantu Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yohane Village",
+      "lat": -13.5826266,
+      "lon": 32.5035789,
+      "osm_id": "node/11381001089",
+      "osm_tags": {
+        "description": "Small village in rural area",
+        "name": "Yohane Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtelemuka area",
+      "lat": -13.6218501,
+      "lon": 32.341403,
+      "osm_id": "node/11381018408",
+      "osm_tags": {
+        "description": "Rural area",
+        "name": "Mtelemuka area",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndembela area",
+      "lat": -13.5988436,
+      "lon": 32.5205814,
+      "osm_id": "node/11381018791",
+      "osm_tags": {
+        "description": "Farming area",
+        "name": "Ndembela area",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kasuma Village",
+      "lat": -13.6200121,
+      "lon": 32.347625,
+      "osm_id": "node/11381024558",
+      "osm_tags": {
+        "name": "Kasuma Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chinjala Village",
+      "lat": -13.5961637,
+      "lon": 32.4886578,
+      "osm_id": "node/11381038513",
+      "osm_tags": {
+        "name": "Chinjala Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kachingwe",
+      "lat": -13.5781884,
+      "lon": 32.3085194,
+      "osm_id": "node/11381041308",
+      "osm_tags": {
+        "name": "Kachingwe",
+        "place": "village",
+        "population": "300",
+        "population:date": "2023-11-27"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vungulubwe",
+      "lat": -13.5978405,
+      "lon": 32.2882385,
+      "osm_id": "node/11381072743",
+      "osm_tags": {
+        "name": "Vungulubwe",
+        "place": "village",
+        "population": "400",
+        "population:date": "2023-11-28"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiteko",
+      "lat": -13.5707381,
+      "lon": 32.2276905,
+      "osm_id": "node/11381087580",
+      "osm_tags": {
+        "name": "Chiteko",
+        "place": "village",
+        "population": "200",
+        "population:date": "2023-11-27"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chisemphere",
+      "lat": -13.4887811,
+      "lon": 32.237714,
+      "osm_id": "node/11381187422",
+      "osm_tags": {
+        "name": "Chisemphere",
+        "place": "village",
+        "population": "200",
+        "population:date": "2023-11-27"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kambwata area",
+      "lat": -13.5315092,
+      "lon": 32.314974,
+      "osm_id": "node/11381239932",
+      "osm_tags": {
+        "name": "Kambwata area",
+        "place": "village",
+        "population": "300",
+        "population:date": "2023-11-27"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chikungu Mission",
+      "lat": -13.7666159,
+      "lon": 32.2552908,
+      "osm_id": "node/11401070460",
+      "osm_tags": {
+        "name": "Chikungu Mission",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mwelalo",
+      "lat": -12.1821247,
+      "lon": 31.2102548,
+      "osm_id": "node/11491681170",
+      "osm_tags": {
+        "name": "Mwelalo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mazala",
+      "lat": -13.681385,
+      "lon": 32.5384516,
+      "osm_id": "node/11792881119",
+      "osm_tags": {
+        "name": "Mazala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiwuyu",
+      "lat": -14.1945064,
+      "lon": 31.8312364,
+      "osm_id": "node/12123794827",
+      "osm_tags": {
+        "name": "Chiwuyu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chiswa",
+      "lat": -13.9126722,
+      "lon": 32.3048328,
+      "osm_id": "node/12162956691",
+      "osm_tags": {
+        "name": "Chiswa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mtenguleni",
+      "lat": -13.7478634,
+      "lon": 32.4656027,
+      "osm_id": "node/12218107910",
+      "osm_tags": {
+        "name": "Mtenguleni",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manunkhila",
+      "lat": -13.8376211,
+      "lon": 32.3770408,
+      "osm_id": "node/12218154156",
+      "osm_tags": {
+        "name": "Manunkhila",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kazembe",
+      "lat": -12.1779471,
+      "lon": 32.5640419,
+      "osm_id": "node/12235803680",
+      "osm_tags": {
+        "name": "Kazembe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mabonga",
+      "lat": -12.6968848,
+      "lon": 30.8169701,
+      "osm_id": "node/12278796540",
+      "osm_tags": {
+        "name": "Mabonga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -13.5784487,
+      "lon": 31.2768711,
+      "osm_id": "way/23307175",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -14.2300488,
+      "lon": 30.6229787,
+      "osm_id": "way/23307204",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -11.9603649,
+      "lon": 32.3907181,
+      "osm_id": "way/26830230",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembwe",
+      "lat": -13.3838608,
+      "lon": 32.1666496,
+      "osm_id": "way/28473564",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lutembwe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -13.2476615,
+      "lon": 31.6762635,
+      "osm_id": "way/30090184",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kauluzi",
+      "lat": -12.9989622,
+      "lon": 31.9669522,
+      "osm_id": "way/31609847",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kauluzi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.8119216,
+      "lon": 32.0308015,
+      "osm_id": "way/44106570",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msandile",
+      "lat": -13.177444,
+      "lon": 31.9227301,
+      "osm_id": "way/247789000",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msandile",
+        "seasonal": "yes",
+        "source": "www.geonames.org",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kapamba",
+      "lat": -13.1938819,
+      "lon": 31.4992253,
+      "osm_id": "way/257080905",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kapamba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwitikila",
+      "lat": -11.8813603,
+      "lon": 31.1558172,
+      "osm_id": "way/257673480",
+      "osm_tags": {
+        "name": "Lwitikila",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwitikila",
+      "lat": -11.870427,
+      "lon": 30.8100556,
+      "osm_id": "way/257749812",
+      "osm_tags": {
+        "name": "Lwitikila",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukusashi",
+      "lat": -13.49266,
+      "lon": 30.5466026,
+      "osm_id": "way/258075110",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lukusashi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kaombe",
+      "lat": -13.5699746,
+      "lon": 30.7360014,
+      "osm_id": "way/258075111",
+      "osm_tags": {
+        "name": "Kaombe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mweneshi",
+      "lat": -13.4272915,
+      "lon": 30.6597145,
+      "osm_id": "way/258076743",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mweneshi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukusashi",
+      "lat": -13.7668832,
+      "lon": 30.5474986,
+      "osm_id": "way/258076744",
+      "osm_tags": {
+        "name": "Lukusashi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kaombe",
+      "lat": -13.2509155,
+      "lon": 30.749249,
+      "osm_id": "way/258162205",
+      "osm_tags": {
+        "name": "Kaombe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kaombe",
+      "lat": -13.3945169,
+      "lon": 30.7919123,
+      "osm_id": "way/258166230",
+      "osm_tags": {
+        "name": "Kaombe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mvuvye",
+      "lat": -14.1749244,
+      "lon": 30.9598535,
+      "osm_id": "way/258194157",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mvuvye",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lupande",
+      "lat": -13.3471523,
+      "lon": 31.8826528,
+      "osm_id": "way/263353252",
+      "osm_tags": {
+        "name": "Lupande",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumimba",
+      "lat": -12.4716498,
+      "lon": 32.5205542,
+      "osm_id": "way/263772853",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lumimba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Matisi",
+      "lat": -12.4573634,
+      "lon": 32.4019169,
+      "osm_id": "way/263773469",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Matisi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.9476019,
+      "lon": 31.9228549,
+      "osm_id": "way/263787460",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumimba",
+      "lat": -12.4756966,
+      "lon": 32.1897022,
+      "osm_id": "way/266017698",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lumimba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumimba",
+      "lat": -12.4829134,
+      "lon": 32.1829217,
+      "osm_id": "way/266017700",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lumimba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusiwasi",
+      "lat": -13.2281793,
+      "lon": 31.0366503,
+      "osm_id": "way/302913558",
+      "osm_tags": {
+        "name": "Lusiwasi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusiwasi",
+      "lat": -13.3469704,
+      "lon": 31.0327507,
+      "osm_id": "way/302913559",
+      "osm_tags": {
+        "name": "Lusiwasi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kaombe",
+      "lat": -13.1822662,
+      "lon": 30.7195137,
+      "osm_id": "way/316684764",
+      "osm_tags": {
+        "name": "Kaombe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukuzye",
+      "lat": -12.8464528,
+      "lon": 32.1280215,
+      "osm_id": "way/322208897",
+      "osm_tags": {
+        "alt_name": "Rukuzye",
+        "intermittent": "yes",
+        "name": "Lukuzye",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumezi",
+      "lat": -12.2008895,
+      "lon": 32.6171235,
+      "osm_id": "way/322224258",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lumezi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mushilashi",
+      "lat": -13.0268388,
+      "lon": 31.7027175,
+      "osm_id": "way/323969030",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mushilashi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mupamadzi",
+      "lat": -12.5572332,
+      "lon": 31.8611973,
+      "osm_id": "way/323971175",
+      "osm_tags": {
+        "name": "Mupamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mutinondo",
+      "lat": -12.3806952,
+      "lon": 31.5551253,
+      "osm_id": "way/323973790",
+      "osm_tags": {
+        "name": "Mutinondo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Katete",
+      "lat": -13.0959115,
+      "lon": 31.6905476,
+      "osm_id": "way/324173203",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Katete",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Luangwa Wafwa Lagoon",
+      "lat": -13.0650877,
+      "lon": 31.8207142,
+      "osm_id": "way/324173963",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Luangwa Wafwa Lagoon",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Chipela Chandombo",
+      "lat": -13.0510096,
+      "lon": 31.8535582,
+      "osm_id": "way/324174378",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chipela Chandombo",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luwi",
+      "lat": -12.8743891,
+      "lon": 31.7447129,
+      "osm_id": "way/324181050",
+      "osm_tags": {
+        "alt_name": "Lubi",
+        "intermittent": "yes",
+        "name": "Luwi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lunga Lagoon",
+      "lat": -12.992179,
+      "lon": 31.91191,
+      "osm_id": "way/324184429",
+      "osm_tags": {
+        "name": "Lunga Lagoon",
+        "natural": "water",
+        "water": "oxbow"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwaleshi",
+      "lat": -11.866069,
+      "lon": 32.1577344,
+      "osm_id": "way/324242111",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwaleshi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msipazi",
+      "lat": -13.7221141,
+      "lon": 32.5019593,
+      "osm_id": "way/330889690",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msipazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chankhanga",
+      "lat": -13.7282013,
+      "lon": 32.474727,
+      "osm_id": "way/330889691",
+      "osm_tags": {
+        "name": "Chankhanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lutembwe",
+      "lat": -13.7037029,
+      "lon": 32.5415465,
+      "osm_id": "way/330889698",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lutembwe",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mutenguleni",
+      "lat": -13.747801,
+      "lon": 32.4628824,
+      "osm_id": "way/330889701",
+      "osm_tags": {
+        "name": "Mutenguleni",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembwe",
+      "lat": -13.6153111,
+      "lon": 32.4135868,
+      "osm_id": "way/330911776",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lutembwe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chibobo",
+      "lat": -13.3597364,
+      "lon": 30.9965466,
+      "osm_id": "way/331516356",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chibobo",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katiula",
+      "lat": -14.1071684,
+      "lon": 32.2566556,
+      "osm_id": "way/333397682",
+      "osm_tags": {
+        "ford": "yes",
+        "intermittent": "yes",
+        "name": "Katiula",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sadeza",
+      "lat": -14.2049722,
+      "lon": 32.3302449,
+      "osm_id": "way/333397683",
+      "osm_tags": {
+        "name": "Sadeza",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kapundi",
+      "lat": -13.9331764,
+      "lon": 32.5246898,
+      "osm_id": "way/335707603",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kapundi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chamchenga",
+      "lat": -14.0681352,
+      "lon": 32.3376292,
+      "osm_id": "way/335724728",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chamchenga",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msandile",
+      "lat": -13.3180095,
+      "lon": 32.2421932,
+      "osm_id": "way/338301231",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msandile",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwatezi",
+      "lat": -13.226927,
+      "lon": 32.2495754,
+      "osm_id": "way/338301234",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwatezi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lundazi",
+      "lat": -12.1121778,
+      "lon": 32.448945,
+      "osm_id": "way/339941850",
+      "osm_tags": {
+        "name": "Lundazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lupande",
+      "lat": -13.7111581,
+      "lon": 31.9026961,
+      "osm_id": "way/342716738",
+      "osm_tags": {
+        "name": "Lupande",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwangazi",
+      "lat": -13.7387191,
+      "lon": 32.1967402,
+      "osm_id": "way/342716748",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwangazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kawala",
+      "lat": -13.9438894,
+      "lon": 32.187093,
+      "osm_id": "way/344509688",
+      "osm_tags": {
+        "name": "Kawala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lwitikila",
+      "lat": -11.8890448,
+      "lon": 31.3583055,
+      "osm_id": "way/346811712",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lwitikila",
+        "source": "bing2015",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lwitikila",
+      "lat": -11.9153743,
+      "lon": 31.3079976,
+      "osm_id": "way/346811715",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lwitikila",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwitikila",
+      "lat": -11.9023676,
+      "lon": 31.2376692,
+      "osm_id": "way/346816708",
+      "osm_tags": {
+        "name": "Lwitikila",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msipazi",
+      "lat": -13.7559058,
+      "lon": 32.5198666,
+      "osm_id": "way/355422426",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msipazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mabonde",
+      "lat": -12.9247608,
+      "lon": 30.6487387,
+      "osm_id": "way/373756294",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mabonde",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chibobo",
+      "lat": -13.3317477,
+      "lon": 30.9524145,
+      "osm_id": "way/380557385",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chibobo",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Mfuwe Lagoon",
+      "lat": -13.0840346,
+      "lon": 31.7951684,
+      "osm_id": "way/380807727",
+      "osm_tags": {
+        "boat": "no",
+        "canoe": "no",
+        "intermittent": "yes",
+        "motorboat": "no",
+        "name": "Mfuwe Lagoon",
+        "natural": "water",
+        "ship": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -13.1016427,
+      "lon": 31.7624182,
+      "osm_id": "way/380823459",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Mushroom Lagoon",
+      "lat": -13.0829211,
+      "lon": 31.7949875,
+      "osm_id": "way/380823460",
+      "osm_tags": {
+        "boat": "no",
+        "canoe": "no",
+        "intermittent": "yes",
+        "motorboat": "no",
+        "name": "Mushroom Lagoon",
+        "natural": "water",
+        "ship": "no",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mushilashi",
+      "lat": -13.0766088,
+      "lon": 31.7481368,
+      "osm_id": "way/380892530",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mushilashi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Crocodile River",
+      "lat": -12.9392555,
+      "lon": 31.9406051,
+      "osm_id": "way/381243859",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Crocodile River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Wakawaka Lagoon",
+      "lat": -12.9739003,
+      "lon": 31.9064069,
+      "osm_id": "way/381389648",
+      "osm_tags": {
+        "alt_name": "Baka Baka Lagoon",
+        "intermittent": "yes",
+        "name": "Wakawaka Lagoon",
+        "natural": "water",
+        "water": "oxbow"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kasikizi Lagoon",
+      "lat": -12.950462,
+      "lon": 31.9161943,
+      "osm_id": "way/381389649",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kasikizi Lagoon",
+        "natural": "water",
+        "water": "oxbow"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Mtanda Lagoon",
+      "lat": -12.9378312,
+      "lon": 31.9431247,
+      "osm_id": "way/381389650",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mtanda Lagoon",
+        "natural": "water",
+        "water": "oxbow"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mwamba",
+      "lat": -12.8345633,
+      "lon": 31.9690229,
+      "osm_id": "way/381402167",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwamba",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwamba",
+      "lat": -12.9166867,
+      "lon": 31.916595,
+      "osm_id": "way/381436822",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwamba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Chipela Lagoon",
+      "lat": -12.9144093,
+      "lon": 31.9632074,
+      "osm_id": "way/381553185",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chipela Lagoon",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chichele",
+      "lat": -12.9353541,
+      "lon": 32.0159107,
+      "osm_id": "way/381752880",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chichele",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chichele",
+      "lat": -12.9262341,
+      "lon": 31.9892466,
+      "osm_id": "way/382133815",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chichele",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chichele",
+      "lat": -12.9221777,
+      "lon": 31.9785955,
+      "osm_id": "way/382133816",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chichele",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Chimbwi Lagoon",
+      "lat": -12.9020855,
+      "lon": 31.9881081,
+      "osm_id": "way/382133826",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chimbwi Lagoon",
+        "natural": "water",
+        "water": "oxbow"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chichele",
+      "lat": -12.9408355,
+      "lon": 32.0325852,
+      "osm_id": "way/382137789",
+      "osm_tags": {
+        "name": "Chichele",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chichele",
+      "lat": -12.9428735,
+      "lon": 32.0321126,
+      "osm_id": "way/382137792",
+      "osm_tags": {
+        "name": "Chichele",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusiwasi",
+      "lat": -12.9791479,
+      "lon": 30.8328136,
+      "osm_id": "way/383759233",
+      "osm_tags": {
+        "name": "Lusiwasi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusiwasi",
+      "lat": -13.3030638,
+      "lon": 31.0146243,
+      "osm_id": "way/383964759",
+      "osm_tags": {
+        "name": "Lusiwasi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusiwasi",
+      "lat": -13.3340754,
+      "lon": 31.1650926,
+      "osm_id": "way/383965489",
+      "osm_tags": {
+        "name": "Lusiwasi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusiwasi",
+      "lat": -13.4384774,
+      "lon": 31.2810274,
+      "osm_id": "way/383965490",
+      "osm_tags": {
+        "name": "Lusiwasi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusiwasi",
+      "lat": -13.071427,
+      "lon": 31.0363204,
+      "osm_id": "way/384838883",
+      "osm_tags": {
+        "name": "Lusiwasi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusiwasi",
+      "lat": -13.1803535,
+      "lon": 31.0336336,
+      "osm_id": "way/384839904",
+      "osm_tags": {
+        "name": "Lusiwasi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msandile",
+      "lat": -13.2856422,
+      "lon": 32.0358413,
+      "osm_id": "way/387158064",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msandile",
+        "seasonal": "yes",
+        "source": "www.geonames.org",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mwinga",
+      "lat": -13.432782,
+      "lon": 32.1128129,
+      "osm_id": "way/387159412",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwinga",
+        "seasonal": "yes",
+        "source": "bing2015",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kasenengwa",
+      "lat": -13.405443,
+      "lon": 32.0322677,
+      "osm_id": "way/387160478",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kasenengwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kasenengwa",
+      "lat": -13.3409985,
+      "lon": 31.9343433,
+      "osm_id": "way/387160483",
+      "osm_tags": {
+        "name": "Kasenengwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mutinondo",
+      "lat": -12.3982191,
+      "lon": 31.3874575,
+      "osm_id": "way/405304166",
+      "osm_tags": {
+        "name": "Mutinondo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Musamfushi",
+      "lat": -12.4395005,
+      "lon": 31.318833,
+      "osm_id": "way/405305026",
+      "osm_tags": {
+        "name": "Musamfushi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chamchenga",
+      "lat": -14.0709418,
+      "lon": 32.3765199,
+      "osm_id": "way/419229056",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chamchenga",
+        "seasonal": "yes",
+        "source": "bing2016",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lundazi",
+      "lat": -12.1662426,
+      "lon": 32.7082814,
+      "osm_id": "way/423654348",
+      "osm_tags": {
+        "name": "Lundazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luelo",
+      "lat": -11.8559578,
+      "lon": 32.5443875,
+      "osm_id": "way/423804862",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Luelo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kabale",
+      "lat": -12.039378,
+      "lon": 31.9695177,
+      "osm_id": "way/485306213",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kabale",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mulandashi",
+      "lat": -12.2102858,
+      "lon": 32.270109,
+      "osm_id": "way/485861978",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mulandashi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mulandashi",
+      "lat": -12.2076907,
+      "lon": 32.2409162,
+      "osm_id": "way/486047749",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mulandashi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Myawe",
+      "lat": -13.5361288,
+      "lon": 31.6091925,
+      "osm_id": "way/486394093",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Myawe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusangazi",
+      "lat": -13.714792,
+      "lon": 31.5778714,
+      "osm_id": "way/486394786",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lusangazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mupamadzi",
+      "lat": -12.465448,
+      "lon": 31.6265919,
+      "osm_id": "way/576951855",
+      "osm_tags": {
+        "name": "Mupamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mupamadzi",
+      "lat": -12.6857836,
+      "lon": 31.374983,
+      "osm_id": "way/576952136",
+      "osm_tags": {
+        "name": "Mupamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Paradise Pools",
+      "lat": -12.4475249,
+      "lon": 31.3132836,
+      "osm_id": "way/577119241",
+      "osm_tags": {
+        "name": "Paradise Pools",
+        "natural": "water",
+        "water": "stream_pool"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -13.0522307,
+      "lon": 31.781163,
+      "osm_id": "way/578085699",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Waterhole",
+        "natural": "water",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kangala",
+      "lat": -12.8316905,
+      "lon": 31.4351705,
+      "osm_id": "way/578311707",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kangala",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chiwula",
+      "lat": -12.4809753,
+      "lon": 31.7366087,
+      "osm_id": "way/580310617",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chiwula",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mupamadzi",
+      "lat": -12.689762,
+      "lon": 32.0396015,
+      "osm_id": "way/580377990",
+      "osm_tags": {
+        "name": "Mupamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mupamadzi",
+      "lat": -12.70298,
+      "lon": 32.0583735,
+      "osm_id": "way/580383032",
+      "osm_tags": {
+        "name": "Mupamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mutinondo",
+      "lat": -12.3331189,
+      "lon": 31.7077807,
+      "osm_id": "way/581764093",
+      "osm_tags": {
+        "name": "Mutinondo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Munyamadzi River",
+      "lat": -12.2467653,
+      "lon": 31.7757399,
+      "osm_id": "way/581923844",
+      "osm_tags": {
+        "name": "Munyamadzi River",
+        "natural": "water",
+        "water": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Mutinondo River",
+      "lat": -12.2364165,
+      "lon": 31.7712398,
+      "osm_id": "way/581923845",
+      "osm_tags": {
+        "name": "Mutinondo River",
+        "natural": "water",
+        "water": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyamadzi",
+      "lat": -12.1984748,
+      "lon": 31.758463,
+      "osm_id": "way/581927101",
+      "osm_tags": {
+        "name": "Munyamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyamadzi",
+      "lat": -12.1130355,
+      "lon": 31.7263167,
+      "osm_id": "way/581928593",
+      "osm_tags": {
+        "name": "Munyamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukulu",
+      "lat": -12.2118259,
+      "lon": 30.7931763,
+      "osm_id": "way/583925275",
+      "osm_tags": {
+        "name": "Lukulu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lutimwe",
+      "lat": -12.2327854,
+      "lon": 30.7856262,
+      "osm_id": "way/583929763",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lutimwe",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwaleshi",
+      "lat": -11.957751,
+      "lon": 32.2562201,
+      "osm_id": "way/583931363",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwaleshi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukulu",
+      "lat": -11.9840703,
+      "lon": 30.3323308,
+      "osm_id": "way/594805813",
+      "osm_tags": {
+        "name": "Lukulu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukulu",
+      "lat": -12.3332389,
+      "lon": 30.9452146,
+      "osm_id": "way/599677897",
+      "osm_tags": {
+        "name": "Lukulu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukulu",
+      "lat": -12.1444357,
+      "lon": 30.6250905,
+      "osm_id": "way/604667604",
+      "osm_tags": {
+        "name": "Lukulu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.8881356,
+      "lon": 31.9909322,
+      "osm_id": "way/605828048",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -13.1129226,
+      "lon": 31.7398849,
+      "osm_id": "way/605876096",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.5525239,
+      "lon": 32.1310797,
+      "osm_id": "way/605876101",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.8662737,
+      "lon": 32.0033759,
+      "osm_id": "way/605876105",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -13.3894998,
+      "lon": 31.5847974,
+      "osm_id": "way/605883898",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Masauka",
+      "lat": -12.8883068,
+      "lon": 32.0408266,
+      "osm_id": "way/605921359",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Masauka",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Masauka",
+      "lat": -12.880943,
+      "lon": 32.0218838,
+      "osm_id": "way/605921360",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Masauka",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kauluzi",
+      "lat": -13.0249728,
+      "lon": 32.1416724,
+      "osm_id": "way/605921361",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kauluzi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.4486836,
+      "lon": 32.156941,
+      "osm_id": "way/605975437",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.6436104,
+      "lon": 32.1030588,
+      "osm_id": "way/605975441",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lupita",
+      "lat": -12.6002871,
+      "lon": 32.1320434,
+      "osm_id": "way/605975444",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lupita",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.364599,
+      "lon": 32.19591,
+      "osm_id": "way/605978384",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusangazi",
+      "lat": -13.5265362,
+      "lon": 31.5716228,
+      "osm_id": "way/606030916",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lusangazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusangazi",
+      "lat": -13.4734901,
+      "lon": 31.5526888,
+      "osm_id": "way/606030917",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lusangazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -13.9004946,
+      "lon": 30.9204795,
+      "osm_id": "way/606030919",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -13.0620459,
+      "lon": 31.8380302,
+      "osm_id": "way/606035365",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Masauka",
+      "lat": -12.8730423,
+      "lon": 32.0052803,
+      "osm_id": "way/608632509",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Masauka",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msanzala",
+      "lat": -13.8982354,
+      "lon": 31.1324584,
+      "osm_id": "way/608632511",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msanzala",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lupita",
+      "lat": -12.6082226,
+      "lon": 32.1227069,
+      "osm_id": "way/608636548",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lupita",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mtikila",
+      "lat": -13.9285333,
+      "lon": 30.9460362,
+      "osm_id": "way/610442731",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mtikila",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mulembo",
+      "lat": -12.5966021,
+      "lon": 30.46944,
+      "osm_id": "way/649545195",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mulembo",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sandwe",
+      "lat": -13.8064491,
+      "lon": 31.5792427,
+      "osm_id": "way/659787653",
+      "osm_tags": {
+        "name": "Sandwe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katete",
+      "lat": -14.0343531,
+      "lon": 32.065782,
+      "osm_id": "way/659872953",
+      "osm_tags": {
+        "name": "Katete",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katete",
+      "lat": -14.1448404,
+      "lon": 32.124349,
+      "osm_id": "way/659872954",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Katete",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyamadzi",
+      "lat": -12.4199189,
+      "lon": 32.0392297,
+      "osm_id": "way/693170171",
+      "osm_tags": {
+        "name": "Munyamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyamadzi",
+      "lat": -12.3495821,
+      "lon": 31.8961618,
+      "osm_id": "way/693174022",
+      "osm_tags": {
+        "name": "Munyamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyamadzi",
+      "lat": -12.3048931,
+      "lon": 31.8169025,
+      "osm_id": "way/693189755",
+      "osm_tags": {
+        "name": "Munyamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyamadzi",
+      "lat": -12.2828428,
+      "lon": 31.798536,
+      "osm_id": "way/693199931",
+      "osm_tags": {
+        "name": "Munyamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyamadzi",
+      "lat": -12.2542684,
+      "lon": 31.7839421,
+      "osm_id": "way/693213548",
+      "osm_tags": {
+        "name": "Munyamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -13.4222498,
+      "lon": 31.5435532,
+      "osm_id": "way/770641424",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.9033804,
+      "lon": 31.9661271,
+      "osm_id": "way/770676110",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.1474495,
+      "lon": 32.3065951,
+      "osm_id": "way/771000307",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.7246849,
+      "lon": 32.0621903,
+      "osm_id": "way/771000308",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.6817557,
+      "lon": 32.0778488,
+      "osm_id": "way/771000309",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwangazi",
+      "lat": -13.133569,
+      "lon": 32.1174328,
+      "osm_id": "way/773558195",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwangazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lunkuswe",
+      "lat": -13.4373183,
+      "lon": 32.5239182,
+      "osm_id": "way/851453090",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lunkuswe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwitikila",
+      "lat": -11.9181523,
+      "lon": 30.9977083,
+      "osm_id": "way/939298098",
+      "osm_tags": {
+        "name": "Lwitikila",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mupamadzi",
+      "lat": -12.8141866,
+      "lon": 31.080291,
+      "osm_id": "way/948434545",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mupamadzi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mulandashi",
+      "lat": -12.0384099,
+      "lon": 32.0055585,
+      "osm_id": "way/957465486",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mulandashi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mufungushi",
+      "lat": -12.2620445,
+      "lon": 31.9267228,
+      "osm_id": "way/957542543",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mufungushi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mufungushi",
+      "lat": -12.1252559,
+      "lon": 31.9153543,
+      "osm_id": "way/957543589",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mufungushi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kapamba",
+      "lat": -12.905766,
+      "lon": 31.3552352,
+      "osm_id": "way/958288482",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kapamba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Musamfushi",
+      "lat": -12.467188,
+      "lon": 31.2657199,
+      "osm_id": "way/963603357",
+      "osm_tags": {
+        "name": "Musamfushi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mutinondo",
+      "lat": -12.3598644,
+      "lon": 31.2344374,
+      "osm_id": "way/963613757",
+      "osm_tags": {
+        "name": "Mutinondo",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chiwula",
+      "lat": -12.4636586,
+      "lon": 31.7458939,
+      "osm_id": "way/964600847",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chiwula",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mulembo",
+      "lat": -12.7415494,
+      "lon": 30.5476421,
+      "osm_id": "way/970995909",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mulembo",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lunika",
+      "lat": -12.7434152,
+      "lon": 30.6471838,
+      "osm_id": "way/970997082",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lunika",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mfushi",
+      "lat": -13.7332209,
+      "lon": 31.0186371,
+      "osm_id": "way/972278069",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mfushi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mpupushi",
+      "lat": -13.7446787,
+      "lon": 31.0142222,
+      "osm_id": "way/972278070",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mpupushi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mpupushi",
+      "lat": -13.7555768,
+      "lon": 31.0412848,
+      "osm_id": "way/972278071",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mpupushi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mweneshi",
+      "lat": -13.2232283,
+      "lon": 30.5328077,
+      "osm_id": "way/972299599",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mweneshi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Bulelele",
+      "lat": -13.1215795,
+      "lon": 30.5296041,
+      "osm_id": "way/972299601",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Bulelele",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mweneshi",
+      "lat": -13.3078353,
+      "lon": 30.5868581,
+      "osm_id": "way/972299606",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mweneshi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -13.4302342,
+      "lon": 31.4883921,
+      "osm_id": "way/972458090",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Munensi",
+      "lat": -11.9569571,
+      "lon": 31.6728064,
+      "osm_id": "way/985829244",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Munensi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mufubushi",
+      "lat": -12.0068119,
+      "lon": 31.226172,
+      "osm_id": "way/987738455",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mufubushi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lwitikila",
+      "lat": -11.9068838,
+      "lon": 31.2545134,
+      "osm_id": "way/987922647",
+      "osm_tags": {
+        "name": "Lwitikila",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Musamfushi",
+      "lat": -12.4809098,
+      "lon": 31.1265094,
+      "osm_id": "way/990288541",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Musamfushi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyamadzi",
+      "lat": -12.3174799,
+      "lon": 31.8362627,
+      "osm_id": "way/996071420",
+      "osm_tags": {
+        "name": "Munyamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyamadzi",
+      "lat": -12.316623,
+      "lon": 31.845932,
+      "osm_id": "way/996071421",
+      "osm_tags": {
+        "name": "Munyamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mutinondo",
+      "lat": -12.3375028,
+      "lon": 31.1569828,
+      "osm_id": "way/996258649",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mutinondo",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukulu",
+      "lat": -12.722679,
+      "lon": 30.8420702,
+      "osm_id": "way/998957519",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lukulu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukulu",
+      "lat": -12.4321436,
+      "lon": 30.9376797,
+      "osm_id": "way/998992737",
+      "osm_tags": {
+        "name": "Lukulu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mushilashi",
+      "lat": -12.9320231,
+      "lon": 31.5935979,
+      "osm_id": "way/999072047",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mushilashi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chibishi",
+      "lat": -12.3058185,
+      "lon": 31.0515555,
+      "osm_id": "way/999209198",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chibishi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mupamadzi",
+      "lat": -12.7928286,
+      "lon": 31.1889324,
+      "osm_id": "way/1000518758",
+      "osm_tags": {
+        "name": "Mupamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Musamfushi",
+      "lat": -12.4563211,
+      "lon": 31.2411386,
+      "osm_id": "way/1000713093",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Musamfushi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumbabatwa",
+      "lat": -12.327383,
+      "lon": 32.0874135,
+      "osm_id": "way/1002191560",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lumbabatwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kapamba",
+      "lat": -12.9384498,
+      "lon": 31.1423734,
+      "osm_id": "way/1003518708",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kapamba",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukusuzi",
+      "lat": -12.6897046,
+      "lon": 32.1692934,
+      "osm_id": "way/1007588366",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lukusuzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwangazi",
+      "lat": -13.0617363,
+      "lon": 31.8741903,
+      "osm_id": "way/1007590310",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwangazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwangazi",
+      "lat": -13.1028288,
+      "lon": 31.9916735,
+      "osm_id": "way/1007590311",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwangazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Pirasi",
+      "lat": -12.7543998,
+      "lon": 32.4152975,
+      "osm_id": "way/1008670832",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Pirasi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mburuzi",
+      "lat": -12.7621086,
+      "lon": 32.5544128,
+      "osm_id": "way/1008670833",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mburuzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukusuzi",
+      "lat": -12.7259156,
+      "lon": 32.387162,
+      "osm_id": "way/1008670834",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lukusuzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukuzye",
+      "lat": -13.0526061,
+      "lon": 32.4769722,
+      "osm_id": "way/1008689656",
+      "osm_tags": {
+        "alt_name": "Rukuzye",
+        "intermittent": "yes",
+        "name": "Lukuzye",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukuzye",
+      "lat": -12.9305689,
+      "lon": 32.2387226,
+      "osm_id": "way/1008779870",
+      "osm_tags": {
+        "alt_name": "Rukuzye",
+        "intermittent": "yes",
+        "name": "Lukuzye",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chenje",
+      "lat": -13.0586656,
+      "lon": 32.5869495,
+      "osm_id": "way/1008791434",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chenje",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukusuzi",
+      "lat": -12.8246989,
+      "lon": 32.5741015,
+      "osm_id": "way/1008808229",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lukusuzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukuzye",
+      "lat": -13.0006996,
+      "lon": 32.4198672,
+      "osm_id": "way/1008811184",
+      "osm_tags": {
+        "alt_name": "Rukuzye",
+        "intermittent": "yes",
+        "name": "Lukuzye",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukuzye",
+      "lat": -12.967992,
+      "lon": 32.3335538,
+      "osm_id": "way/1008811185",
+      "osm_tags": {
+        "alt_name": "Rukuzye",
+        "intermittent": "yes",
+        "name": "Lukuzye",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lupita",
+      "lat": -12.5273785,
+      "lon": 32.2728385,
+      "osm_id": "way/1008828752",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lupita",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lunkuswe",
+      "lat": -13.4962627,
+      "lon": 32.5847194,
+      "osm_id": "way/1009824335",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lunkuswe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lunkuswe",
+      "lat": -13.468945,
+      "lon": 32.5707165,
+      "osm_id": "way/1009828399",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lunkuswe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msandile",
+      "lat": -13.4136864,
+      "lon": 32.5520484,
+      "osm_id": "way/1009830846",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msandile",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kazutu",
+      "lat": -12.1508526,
+      "lon": 32.4799928,
+      "osm_id": "way/1017551052",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kazutu",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.2840271,
+      "lon": 32.2477601,
+      "osm_id": "way/1017551054",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kawondo",
+      "lat": -12.2105885,
+      "lon": 32.3861341,
+      "osm_id": "way/1017551055",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kawondo",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lupande",
+      "lat": -13.6038337,
+      "lon": 31.9151587,
+      "osm_id": "way/1020019093",
+      "osm_tags": {
+        "name": "Lupande",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kasenengwa",
+      "lat": -13.5417726,
+      "lon": 32.1826088,
+      "osm_id": "way/1020039778",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kasenengwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembwe",
+      "lat": -13.6795679,
+      "lon": 32.4663541,
+      "osm_id": "way/1020039785",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lutembwe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Milanzi",
+      "lat": -13.7021758,
+      "lon": 31.9816528,
+      "osm_id": "way/1020041421",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Milanzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katiula",
+      "lat": -14.2023355,
+      "lon": 32.3076665,
+      "osm_id": "way/1020220645",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Katiula",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kalyangu",
+      "lat": -14.1077237,
+      "lon": 31.1238236,
+      "osm_id": "way/1020563317",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kalyangu",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msanzala",
+      "lat": -14.096705,
+      "lon": 31.4079587,
+      "osm_id": "way/1061772328",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msanzala",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nyamkuya",
+      "lat": -14.0245516,
+      "lon": 31.1917207,
+      "osm_id": "way/1061787293",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nyamkuya",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kazutu",
+      "lat": -13.586407,
+      "lon": 31.6042262,
+      "osm_id": "way/1061807276",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kazutu",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyamadzi",
+      "lat": -13.8665358,
+      "lon": 31.845524,
+      "osm_id": "way/1061825198",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nyamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mtululwe",
+      "lat": -14.2179087,
+      "lon": 31.1096955,
+      "osm_id": "way/1062091476",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mtululwe",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mtikila",
+      "lat": -14.0299059,
+      "lon": 31.0218809,
+      "osm_id": "way/1062105475",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mtikila",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusandwa",
+      "lat": -13.8027689,
+      "lon": 31.6947477,
+      "osm_id": "way/1067219688",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lusandwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kauluzi",
+      "lat": -13.0215215,
+      "lon": 31.8908657,
+      "osm_id": "way/1067219689",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kauluzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -12.3984508,
+      "lon": 32.1770771,
+      "osm_id": "way/1067530511",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukuzye",
+      "lat": -12.7996018,
+      "lon": 32.0522901,
+      "osm_id": "way/1067530513",
+      "osm_tags": {
+        "alt_name": "Rukuzye",
+        "intermittent": "yes",
+        "name": "Lukuzye",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lufishi",
+      "lat": -11.8875351,
+      "lon": 31.8699959,
+      "osm_id": "way/1068175907",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lufishi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lufishi",
+      "lat": -11.9620352,
+      "lon": 31.7855827,
+      "osm_id": "way/1068175912",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lufishi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mushina",
+      "lat": -12.2968348,
+      "lon": 32.1922061,
+      "osm_id": "way/1068175915",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mushina",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mulandashi",
+      "lat": -12.1530106,
+      "lon": 32.1509229,
+      "osm_id": "way/1068243906",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mulandashi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Luanda",
+      "lat": -12.9560826,
+      "lon": 31.3915912,
+      "osm_id": "way/1068537416",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Luanda",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mfushi",
+      "lat": -13.6981408,
+      "lon": 30.9999688,
+      "osm_id": "way/1068537417",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mfushi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kauluzi",
+      "lat": -13.0134184,
+      "lon": 32.090579,
+      "osm_id": "way/1068590206",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kauluzi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -13.754367,
+      "lon": 31.0833922,
+      "osm_id": "way/1069174056",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mtipwazi",
+      "lat": -13.7484938,
+      "lon": 31.1360489,
+      "osm_id": "way/1069174058",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mtipwazi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kapamba",
+      "lat": -12.9049499,
+      "lon": 31.2476103,
+      "osm_id": "way/1069314953",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kapamba",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mupamadzi",
+      "lat": -12.5437966,
+      "lon": 31.5199084,
+      "osm_id": "way/1069314962",
+      "osm_tags": {
+        "name": "Mupamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kapamba",
+      "lat": -12.9372449,
+      "lon": 31.4473909,
+      "osm_id": "way/1069321323",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kapamba",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Nyamjiwa",
+      "lat": -13.8816959,
+      "lon": 31.5546768,
+      "osm_id": "way/1069652674",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nyamjiwa",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukusashi",
+      "lat": -13.5054474,
+      "lon": 30.6607595,
+      "osm_id": "way/1077111202",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lukusashi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lulimala",
+      "lat": -12.4589112,
+      "lon": 30.6386254,
+      "osm_id": "way/1077727010",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lulimala",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumbatwa",
+      "lat": -11.9778657,
+      "lon": 30.7535323,
+      "osm_id": "way/1077727021",
+      "osm_tags": {
+        "name": "Lumbatwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Musuku",
+      "lat": -12.1887933,
+      "lon": 30.8550448,
+      "osm_id": "way/1078387609",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Musuku",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lubweshi",
+      "lat": -12.0349524,
+      "lon": 30.828916,
+      "osm_id": "way/1078387612",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lubweshi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Wutala",
+      "lat": -12.1678328,
+      "lon": 31.0818469,
+      "osm_id": "way/1078396764",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Wutala",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kandiwu",
+      "lat": -12.2750036,
+      "lon": 31.082626,
+      "osm_id": "way/1078727296",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kandiwu",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mufubushi",
+      "lat": -12.1955674,
+      "lon": 31.1258203,
+      "osm_id": "way/1078727298",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mufubushi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mufubushi",
+      "lat": -12.1388815,
+      "lon": 31.1686183,
+      "osm_id": "way/1078732963",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Mufubushi",
+        "seasonal": "yes",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chibishi",
+      "lat": -12.2947282,
+      "lon": 30.9859892,
+      "osm_id": "way/1078732965",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chibishi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lukulu",
+      "lat": -12.8298554,
+      "lon": 30.8589525,
+      "osm_id": "way/1078746907",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Lukulu",
+        "seasonal": "yes",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lukulu",
+      "lat": -12.8577199,
+      "lon": 30.8058485,
+      "osm_id": "way/1078746908",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lukulu",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lukulu",
+      "lat": -12.8008578,
+      "lon": 30.8552052,
+      "osm_id": "way/1078746909",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lukulu",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Musangazi",
+      "lat": -12.5524155,
+      "lon": 30.805472,
+      "osm_id": "way/1078851897",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Musangazi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mangala",
+      "lat": -12.323746,
+      "lon": 30.6718375,
+      "osm_id": "way/1078858698",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mangala",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lulimala",
+      "lat": -12.2632764,
+      "lon": 30.5109799,
+      "osm_id": "way/1078858700",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lulimala",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lubumba",
+      "lat": -12.2914103,
+      "lon": 30.7645579,
+      "osm_id": "way/1078862775",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lubumba",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luangwa",
+      "lat": -13.0068882,
+      "lon": 31.895652,
+      "osm_id": "way/1087253745",
+      "osm_tags": {
+        "name": "Luangwa",
+        "name:en": "Luangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msanzala",
+      "lat": -14.0364109,
+      "lon": 31.2767459,
+      "osm_id": "way/1088522682",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msanzala",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Tambo",
+      "lat": -13.4590242,
+      "lon": 32.3529885,
+      "osm_id": "way/1088777246",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Tambo",
+        "seasonal": "yes",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Tambo",
+      "lat": -13.4570275,
+      "lon": 32.3550001,
+      "osm_id": "way/1088777247",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Tambo",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Tambo",
+      "lat": -13.4638992,
+      "lon": 32.3099978,
+      "osm_id": "way/1088777248",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Tambo",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembwe",
+      "lat": -13.5258406,
+      "lon": 32.3223115,
+      "osm_id": "way/1088777250",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lutembwe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Msekera",
+      "lat": -13.6252158,
+      "lon": 32.4555043,
+      "osm_id": "way/1088807108",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msekera",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Upper Msekera",
+      "lat": -13.6207326,
+      "lon": 32.539845,
+      "osm_id": "way/1088807120",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Upper Msekera",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chiewe",
+      "lat": -13.5358498,
+      "lon": 32.5590303,
+      "osm_id": "way/1088807127",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chiewe",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Milanzi",
+      "lat": -13.791077,
+      "lon": 32.063138,
+      "osm_id": "way/1088838296",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Milanzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Milanzi",
+      "lat": -13.6078364,
+      "lon": 31.9255462,
+      "osm_id": "way/1088838297",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Milanzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Susa",
+      "lat": -13.7271882,
+      "lon": 32.0576195,
+      "osm_id": "way/1088838303",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Susa",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwangazi",
+      "lat": -13.6164578,
+      "lon": 31.9472203,
+      "osm_id": "way/1088838305",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwangazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lupande",
+      "lat": -13.8773927,
+      "lon": 31.9356929,
+      "osm_id": "way/1089032283",
+      "osm_tags": {
+        "name": "Lupande",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lunkuswe",
+      "lat": -13.4137631,
+      "lon": 32.4523662,
+      "osm_id": "way/1089381499",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lunkuswe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lunkuswe",
+      "lat": -13.3920201,
+      "lon": 32.4186587,
+      "osm_id": "way/1089381500",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lunkuswe",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kapundi",
+      "lat": -13.9664569,
+      "lon": 32.4313389,
+      "osm_id": "way/1089381505",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kapundi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mupamadzi",
+      "lat": -12.7896607,
+      "lon": 31.2418207,
+      "osm_id": "way/1089905094",
+      "osm_tags": {
+        "name": "Mupamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Musengeleshi",
+      "lat": -13.3759843,
+      "lon": 30.9743887,
+      "osm_id": "way/1097914793",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Musengeleshi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kuvi",
+      "lat": -13.4147194,
+      "lon": 31.0113405,
+      "osm_id": "way/1097914794",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kuvi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Musengeleshi",
+      "lat": -13.3849824,
+      "lon": 30.9334604,
+      "osm_id": "way/1097914795",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Musengeleshi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kalumbi",
+      "lat": -14.063412,
+      "lon": 31.390515,
+      "osm_id": "way/1098168081",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kalumbi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Singozi",
+      "lat": -13.9525235,
+      "lon": 31.3772969,
+      "osm_id": "way/1098168083",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Singozi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Singozi",
+      "lat": -13.968154,
+      "lon": 31.2630073,
+      "osm_id": "way/1098168084",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Singozi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Misewe",
+      "lat": -14.1525628,
+      "lon": 31.0683631,
+      "osm_id": "way/1098333244",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Misewe",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mtikila",
+      "lat": -14.1262028,
+      "lon": 31.1099984,
+      "osm_id": "way/1098516208",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mtikila",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kaulu",
+      "lat": -14.1312054,
+      "lon": 31.1170398,
+      "osm_id": "way/1098516210",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kaulu",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lunika",
+      "lat": -12.685593,
+      "lon": 30.6014273,
+      "osm_id": "way/1108312668",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lunika",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katete",
+      "lat": -14.0334841,
+      "lon": 32.0658702,
+      "osm_id": "way/1172327619",
+      "osm_tags": {
+        "layer": "-1",
+        "man_made": "pipeline",
+        "name": "Katete",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanyelele",
+      "lat": -13.8764405,
+      "lon": 32.3321837,
+      "osm_id": "way/1172690732",
+      "osm_tags": {
+        "name": "Kanyelele",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumimba",
+      "lat": -12.4680489,
+      "lon": 32.2853329,
+      "osm_id": "way/1185789168",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lumimba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kangwa",
+      "lat": -12.5933246,
+      "lon": 32.2429099,
+      "osm_id": "way/1185789170",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kavyavya",
+      "lat": -12.5399033,
+      "lon": 32.3471842,
+      "osm_id": "way/1185789172",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kavyavya",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mukamadzi",
+      "lat": -12.5149728,
+      "lon": 32.2682994,
+      "osm_id": "way/1185789173",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mukamadzi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Kamira Pool",
+      "lat": -12.4842244,
+      "lon": 32.3634639,
+      "osm_id": "way/1185789174",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kamira Pool",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Baka Baka Lagoon",
+      "lat": -12.4049362,
+      "lon": 32.1759481,
+      "osm_id": "way/1185789175",
+      "osm_tags": {
+        "name": "Baka Baka Lagoon",
+        "natural": "water",
+        "water": "lagoon"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mukamadzi",
+      "lat": -12.5540314,
+      "lon": 32.3515864,
+      "osm_id": "way/1185931332",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mukamadzi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kangwa",
+      "lat": -12.622016,
+      "lon": 32.3588099,
+      "osm_id": "way/1185931342",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kangwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mukamadzi",
+      "lat": -12.5903814,
+      "lon": 32.4006432,
+      "osm_id": "way/1185931351",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mukamadzi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lukulu",
+      "lat": -12.8272784,
+      "lon": 30.8581449,
+      "osm_id": "way/1206393751",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Lukulu",
+        "seasonal": "yes",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lukulu",
+      "lat": -12.828516,
+      "lon": 30.8584252,
+      "osm_id": "way/1206393752",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lukulu",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukulu",
+      "lat": -12.5655008,
+      "lon": 30.8767586,
+      "osm_id": "way/1206396359",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lukulu",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mabonde",
+      "lat": -12.8591305,
+      "lon": 30.6103697,
+      "osm_id": "way/1206407397",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mabonde",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mabonde",
+      "lat": -12.7965735,
+      "lon": 30.5499018,
+      "osm_id": "way/1206534516",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mabonde",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mufubushi",
+      "lat": -12.1232931,
+      "lon": 31.1749067,
+      "osm_id": "way/1206540530",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mufubushi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Munyamadzi",
+      "lat": -11.8652732,
+      "lon": 31.746929,
+      "osm_id": "way/1206915277",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Munyamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "kavulamkoko",
+      "lat": -14.0937949,
+      "lon": 31.8307327,
+      "osm_id": "way/1226885696",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "kavulamkoko",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nyamadzi",
+      "lat": -13.9910057,
+      "lon": 31.8005358,
+      "osm_id": "way/1226967800",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nyamadzi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mzime",
+      "lat": -14.2502981,
+      "lon": 32.0267367,
+      "osm_id": "way/1227182218",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mzime",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katete",
+      "lat": -14.0017284,
+      "lon": 32.098939,
+      "osm_id": "way/1227290529",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Katete",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katete",
+      "lat": -14.0335896,
+      "lon": 32.0653892,
+      "osm_id": "way/1227291067",
+      "osm_tags": {
+        "name": "Katete",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katiula",
+      "lat": -14.024006,
+      "lon": 32.1648348,
+      "osm_id": "way/1227584573",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Katiula",
+        "seasonal": "yes",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katiula",
+      "lat": -14.0235755,
+      "lon": 32.1639567,
+      "osm_id": "way/1227584574",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Katiula",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katiula",
+      "lat": -14.0307432,
+      "lon": 32.1913422,
+      "osm_id": "way/1227584579",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Katiula",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Chimpunta",
+      "lat": -14.0381263,
+      "lon": 32.2464453,
+      "osm_id": "way/1227584580",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Chimpunta",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katete",
+      "lat": -14.0997712,
+      "lon": 32.0959822,
+      "osm_id": "way/1227592918",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Katete",
+        "seasonal": "yes",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katete",
+      "lat": -14.0705185,
+      "lon": 32.0750702,
+      "osm_id": "way/1227592919",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Katete",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katete",
+      "lat": -14.0380604,
+      "lon": 32.0634591,
+      "osm_id": "way/1227592922",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Katete",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Katete",
+      "lat": -14.2129617,
+      "lon": 32.1689546,
+      "osm_id": "way/1227597822",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Katete",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mwangazi",
+      "lat": -13.7764101,
+      "lon": 32.283694,
+      "osm_id": "way/1229461325",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwangazi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwangazi",
+      "lat": -13.667172,
+      "lon": 32.0422183,
+      "osm_id": "way/1229469113",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwangazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwatezi",
+      "lat": -13.2440652,
+      "lon": 32.3765285,
+      "osm_id": "way/1230889192",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwatezi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukuzye",
+      "lat": -13.1345436,
+      "lon": 32.5540623,
+      "osm_id": "way/1262969377",
+      "osm_tags": {
+        "alt_name": "Rukuzye",
+        "intermittent": "yes",
+        "name": "Lukuzye",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msandile",
+      "lat": -13.3938726,
+      "lon": 32.4699919,
+      "osm_id": "way/1267698113",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msandile",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Msekera",
+      "lat": -13.6313823,
+      "lon": 32.5857125,
+      "osm_id": "way/1267704850",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msekera",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Msekera",
+      "lat": -13.6358381,
+      "lon": 32.5739399,
+      "osm_id": "way/1267704852",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msekera",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Msekera",
+      "lat": -13.6346717,
+      "lon": 32.5768261,
+      "osm_id": "way/1267704853",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Msekera",
+        "seasonal": "yes",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Msekera",
+      "lat": -13.6332935,
+      "lon": 32.5273935,
+      "osm_id": "way/1267704857",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msekera",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Musangash",
+      "lat": -12.5158794,
+      "lon": 30.4950766,
+      "osm_id": "way/1294708340",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Musangash",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Musamfushi",
+      "lat": -12.4350559,
+      "lon": 31.2216706,
+      "osm_id": "way/1298053594",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Musamfushi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwatishi",
+      "lat": -12.5026146,
+      "lon": 31.4780788,
+      "osm_id": "way/1298534402",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwatishi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mwatishi",
+      "lat": -12.5871649,
+      "lon": 31.3333584,
+      "osm_id": "way/1298534405",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwatishi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mupamadzi",
+      "lat": -12.8512408,
+      "lon": 30.9586906,
+      "osm_id": "way/1298714902",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Mupamadzi",
+        "seasonal": "yes",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mupamadzi",
+      "lat": -12.8417635,
+      "lon": 30.9810545,
+      "osm_id": "way/1298714903",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mupamadzi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mupamadzi",
+      "lat": -12.8766487,
+      "lon": 30.9200443,
+      "osm_id": "way/1298714908",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mupamadzi",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lutimwe",
+      "lat": -12.3367196,
+      "lon": 30.8122957,
+      "osm_id": "way/1298799781",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lutimwe",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Misewe",
+      "lat": -14.0538313,
+      "lon": 30.9635594,
+      "osm_id": "way/1314545914",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Misewe",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Misewe",
+      "lat": -14.059515,
+      "lon": 30.9629751,
+      "osm_id": "way/1314545915",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Misewe",
+        "seasonal": "yes",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Misewe",
+      "lat": -14.0931765,
+      "lon": 30.9942851,
+      "osm_id": "way/1314545916",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Misewe",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Msanzala",
+      "lat": -14.1626713,
+      "lon": 31.52123,
+      "osm_id": "way/1316396443",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Msanzala",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusangazi",
+      "lat": -13.9705505,
+      "lon": 31.5389232,
+      "osm_id": "way/1316592566",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lusangazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusangazi",
+      "lat": -14.0673234,
+      "lon": 31.5844673,
+      "osm_id": "way/1316887085",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lusangazi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusandwa",
+      "lat": -13.6508653,
+      "lon": 31.8269231,
+      "osm_id": "way/1316896328",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lusandwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lusandwa",
+      "lat": -13.8715361,
+      "lon": 31.6551275,
+      "osm_id": "way/1317499237",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Lusandwa",
+        "seasonal": "yes",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lusandwa",
+      "lat": -13.8983106,
+      "lon": 31.6527732,
+      "osm_id": "way/1317499238",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lusandwa",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lusandwa",
+      "lat": -13.9323581,
+      "lon": 31.644668,
+      "osm_id": "way/1317499248",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lusandwa",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lusandwa",
+      "lat": -13.9397114,
+      "lon": 31.6425108,
+      "osm_id": "way/1317499249",
+      "osm_tags": {
+        "intermittent": "yes",
+        "layer": "-1",
+        "name": "Lusandwa",
+        "seasonal": "yes",
+        "tunnel": "culvert",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lusandwa",
+      "lat": -13.9419877,
+      "lon": 31.6410529,
+      "osm_id": "way/1318118641",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lusandwa",
+        "seasonal": "yes",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nsanga",
+      "lat": -13.3847368,
+      "lon": 31.6132585,
+      "osm_id": "way/1323223501",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nsanga",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mushilashi",
+      "lat": -12.9706592,
+      "lon": 31.6331363,
+      "osm_id": "way/1450674278",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mushilashi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mwatezi",
+      "lat": -13.2857677,
+      "lon": 32.4750621,
+      "osm_id": "way/1466710284",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mwatezi",
+        "seasonal": "yes",
+        "waterway": "river"
+      }
+    }
+  ]
+}

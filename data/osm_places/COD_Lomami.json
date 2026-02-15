@@ -1,0 +1,3788 @@
+{
+  "park_id": "COD_Lomami",
+  "downloaded_at": "2026-02-15T13:39:47.744140+00:00",
+  "buffer_km": 50,
+  "place_count": 306,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Opala",
+      "lat": -0.5096558,
+      "lon": 24.2298322,
+      "osm_id": "node/83196295",
+      "osm_tags": {
+        "name": "Opala",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Lokandu",
+      "lat": -2.537005,
+      "lon": 25.747398,
+      "osm_id": "node/435611377",
+      "osm_tags": {
+        "name": "Lokandu",
+        "old_name": "Riba Riba",
+        "place": "town",
+        "wikidata": "Q3258713"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Katako-Kombe",
+      "lat": -3.3981629,
+      "lon": 24.4213923,
+      "osm_id": "node/616107607",
+      "osm_tags": {
+        "name": "Katako-Kombe",
+        "place": "town",
+        "wikidata": "Q6375032"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ompedi",
+      "lat": -3.30342,
+      "lon": 24.510672,
+      "osm_id": "node/1083644895",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Ngandu",
+        "is_in:territoire": "Katako-Kombe",
+        "name": "Ompedi",
+        "note": "moved since import",
+        "pcode": "80340102",
+        "place": "village",
+        "source": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shinga II",
+      "lat": -3.2571391,
+      "lon": 24.6273379,
+      "osm_id": "node/1083645053",
+      "osm_tags": {
+        "alt_name": "Shinga",
+        "is_in:collectivit\u00e9": "Ngandu",
+        "is_in:territoire": "Katako-Kombe",
+        "name": "Shinga II",
+        "note": "moved since import",
+        "pcode": "80340145",
+        "place": "village",
+        "source": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olemba",
+      "lat": -3.119416,
+      "lon": 24.6828877,
+      "osm_id": "node/1083645155",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Watambulu-Nord",
+        "is_in:territoire": "Katako-Kombe",
+        "name": "Olemba",
+        "note": "moved since import",
+        "pcode": "80340116",
+        "place": "village",
+        "source": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Obenge",
+      "lat": -1.3825273,
+      "lon": 25.0382142,
+      "osm_id": "node/1087589535",
+      "osm_tags": {
+        "alt_name": "Obengebenge",
+        "alt_name_1": "Lugimbigimbi",
+        "is_in:collectivit\u00e9": "Balinga-Lindja",
+        "is_in:territoire": "Ubundu",
+        "name": "Obenge",
+        "pcode": "50230198",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chekecheke",
+      "lat": -1.0335589,
+      "lon": 24.7730352,
+      "osm_id": "node/1087589571",
+      "osm_tags": {
+        "alt_name": "Litoko",
+        "is_in:collectivit\u00e9": "Balinga-Lindja",
+        "is_in:territoire": "Opala",
+        "name": "Chekecheke",
+        "pcode": "50240060",
+        "place": "village",
+        "source": "https://www.bonoboincongo.com/wp-content/uploads/2009/08/USFWS_midterm_TL2-Community-drafting.pdf"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ungwaina",
+      "lat": -1.0434418,
+      "lon": 24.7523911,
+      "osm_id": "node/1087589586",
+      "osm_tags": {
+        "NOM2": "Gombe-Likolo",
+        "alt_name": "Mohera",
+        "is_in:collectivit\u00e9": "Yawende-Loolo",
+        "is_in:territoire": "Opala",
+        "name": "Ungwaina",
+        "pcode": "50240195",
+        "place": "village",
+        "source": "https://www.bonoboincongo.com/wp-content/uploads/2009/08/USFWS_midterm_TL2-Community-drafting.pdf"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Benekamba",
+      "lat": -2.3830297,
+      "lon": 25.0546132,
+      "osm_id": "node/1089175078",
+      "osm_tags": {
+        "alt_name": "Bena Kamba",
+        "is_in:collectivit\u00e9": "Bangengele",
+        "is_in:territoire": "Kailo",
+        "name": "Benekamba",
+        "note:fr": "nom \u00e0 v\u00e9rifier",
+        "pcode": "62270038",
+        "place": "village",
+        "source": "www.rgc.cd;Bing;https://www.flickr.com/photos/teresehart/51157413806/",
+        "wikidata": "Q4886770"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Pole-Pole",
+      "lat": -2.5626449,
+      "lon": 25.0034017,
+      "osm_id": "node/1089356859",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Watambulu-Nord",
+        "is_in:territoire": "Katako-Kombe",
+        "name": "Pole-Pole",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katopa",
+      "lat": -2.7462689,
+      "lon": 25.1009338,
+      "osm_id": "node/1094959480",
+      "osm_tags": {
+        "name": "Katopa",
+        "pcode": "80340037",
+        "place": "village",
+        "source": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanyonyo",
+      "lat": -0.8308,
+      "lon": 25.5003944,
+      "osm_id": "node/1156621880",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Ubundu",
+        "name": "Kanyonyo",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2010/04/21",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Kirundu",
+      "lat": -0.794003,
+      "lon": 25.517238,
+      "osm_id": "node/1156621935",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Kirundu",
+        "is_in:groupement": "W Kibonge",
+        "is_in:territoire": "Ubundu",
+        "name": "Kirundu",
+        "place": "town",
+        "wikidata": "Q3197433"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bondo",
+      "lat": -1.3547672,
+      "lon": 24.0836834,
+      "osm_id": "node/1722835442",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Tshwapa",
+        "is_in:territoire": "Ikela",
+        "name": "Bondo",
+        "place": "town",
+        "rgc:pcode": "40740018"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Moma",
+      "lat": -1.572835,
+      "lon": 24.152942,
+      "osm_id": "node/1722890446",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Tshuapa",
+        "is_in:territoire": "Ikela",
+        "name": "Moma",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Elinga-Mpango",
+      "lat": -1.989728,
+      "lon": 24.2205325,
+      "osm_id": "node/1722905623",
+      "osm_tags": {
+        "alt_name": "Elingampangu;Elinganpandu",
+        "ins:code": "80330601014",
+        "is_in:collectivit\u00e9": "Djonga",
+        "is_in:groupement": "Malo",
+        "is_in:territoire": "Lomela",
+        "name": "Elinga-Mpango",
+        "place": "town",
+        "rgc:pcode": "80330025",
+        "wikidata": "Q106405760"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Karushe",
+      "lat": -3.1309134,
+      "lon": 24.9908767,
+      "osm_id": "node/1723468852",
+      "osm_tags": {
+        "code_grpt": "63260304",
+        "code_ins": "62210105002",
+        "is_in:collectivit\u00e9": "Bangengele",
+        "is_in:groupement": "Tshadi",
+        "is_in:territoire": "Kailo",
+        "name": "Karushe",
+        "place": "village",
+        "rgc:pcode": "62270175"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katako-Kombe",
+      "lat": -2.972461,
+      "lon": 25.869878,
+      "osm_id": "node/1723468864",
+      "osm_tags": {
+        "attribution": "R\u00e9f\u00e9rentiel G\u00e9ographique Commune (rgc.cd)",
+        "is_in:admin_level6": "Kindu",
+        "is_in:admin_level7": "Kailo",
+        "is_in:collectivit\u00e9": "Kailo",
+        "is_in:territoire": "Kindu",
+        "name": "Katako-Kombe",
+        "place": "village",
+        "rgc:pcode": "62100001"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Baluku",
+      "lat": -0.7899914,
+      "lon": 25.5804862,
+      "osm_id": "node/1732978415",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Kirundu",
+        "is_in:territoire": "Ubundu",
+        "name": "Baluku",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katuku",
+      "lat": -0.805007,
+      "lon": 25.6386879,
+      "osm_id": "node/1732978420",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Walengola Lilo",
+        "is_in:territoire": "Ubundu",
+        "name": "Katuku",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lusungu",
+      "lat": -0.8082014,
+      "lon": 25.6593254,
+      "osm_id": "node/1732978423",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Walengola Lilo",
+        "is_in:territoire": "Ubundu",
+        "name": "Lusungu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ulangati",
+      "lat": -3.0251642,
+      "lon": 25.5312776,
+      "osm_id": "node/2503478635",
+      "osm_tags": {
+        "is_in:admin_level6": "Kailo",
+        "is_in:admin_level7": "Bangengele",
+        "is_in:admin_level8": "Kodi",
+        "name": "Ulangati",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lubilenge",
+      "lat": -3.0891384,
+      "lon": 25.8492795,
+      "osm_id": "node/2532854469",
+      "osm_tags": {
+        "alt_name": "Lubelenge",
+        "attribution": "R\u00e9f\u00e9rentiel G\u00e9ographique Commune (rgc.cd)",
+        "is_in:admin_level6": "Kailo",
+        "is_in:admin_level7": "Bangengele",
+        "name": "Lubilenge",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Oluala",
+      "lat": -3.5049183,
+      "lon": 25.7697094,
+      "osm_id": "node/5081880467",
+      "osm_tags": {
+        "name": "Oluala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Etanga",
+      "lat": -3.4881482,
+      "lon": 25.7733853,
+      "osm_id": "node/5081880468",
+      "osm_tags": {
+        "name": "Etanga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dikila",
+      "lat": -3.4738811,
+      "lon": 25.7865215,
+      "osm_id": "node/5081894334",
+      "osm_tags": {
+        "name": "Dikila",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Djah II",
+      "lat": -3.5264347,
+      "lon": 25.6942347,
+      "osm_id": "node/5081912655",
+      "osm_tags": {
+        "name": "Djah II",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ohambe",
+      "lat": -3.512294,
+      "lon": 25.713965,
+      "osm_id": "node/5081912657",
+      "osm_tags": {
+        "name": "Ohambe",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lokanda",
+      "lat": -3.5034833,
+      "lon": 25.7228968,
+      "osm_id": "node/5081912658",
+      "osm_tags": {
+        "name": "Lokanda",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Openge",
+      "lat": -3.4812249,
+      "lon": 25.7428175,
+      "osm_id": "node/5081912659",
+      "osm_tags": {
+        "name": "Openge",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tshombei",
+      "lat": -3.467394,
+      "lon": 25.74808,
+      "osm_id": "node/5081912660",
+      "osm_tags": {
+        "name": "Tshombei",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tshombe II",
+      "lat": -3.404442,
+      "lon": 25.7924746,
+      "osm_id": "node/5081954012",
+      "osm_tags": {
+        "name": "Tshombe II",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Guade",
+      "lat": -3.383698,
+      "lon": 25.8713409,
+      "osm_id": "node/5083453244",
+      "osm_tags": {
+        "name": "Guade",
+        "place": "hamlet",
+        "population": "43",
+        "source": "MSF survey 2017"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Libi",
+      "lat": -3.3729557,
+      "lon": 25.8704558,
+      "osm_id": "node/5083453245",
+      "osm_tags": {
+        "name": "Libi",
+        "place": "hamlet",
+        "population": "70",
+        "source": "MSF survey 2017"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Lweki",
+      "lat": -3.3972355,
+      "lon": 25.8395755,
+      "osm_id": "node/5083453246",
+      "osm_tags": {
+        "name": "Lweki",
+        "place": "town",
+        "population": "3466",
+        "source": "MSF survey 2017"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Difuma II",
+      "lat": -3.4410883,
+      "lon": 25.7839825,
+      "osm_id": "node/5083453251",
+      "osm_tags": {
+        "name": "Difuma II",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Manga",
+      "lat": -3.3080387,
+      "lon": 25.8350962,
+      "osm_id": "node/5083482398",
+      "osm_tags": {
+        "name": "Manga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Luponde",
+      "lat": -3.3601649,
+      "lon": 25.8272454,
+      "osm_id": "node/5083482401",
+      "osm_tags": {
+        "name": "Luponde",
+        "place": "village",
+        "population": "740",
+        "source": "MSF survey 2017"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Djunga Lohbela",
+      "lat": -3.373269,
+      "lon": 25.8014345,
+      "osm_id": "node/5083482403",
+      "osm_tags": {
+        "name": "Djunga Lohbela",
+        "place": "hamlet",
+        "population": "80",
+        "source": "MSF survey 2017"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olanga",
+      "lat": -3.3851626,
+      "lon": 25.7954813,
+      "osm_id": "node/5083482404",
+      "osm_tags": {
+        "name": "Olanga",
+        "place": "village",
+        "population": "625",
+        "source": "MSF survey 2017"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Likansa",
+      "lat": -3.4013026,
+      "lon": 25.8301905,
+      "osm_id": "node/5083482405",
+      "osm_tags": {
+        "name": "Likansa",
+        "place": "hamlet",
+        "population": "38",
+        "source": "MSF survey 2017"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lombela",
+      "lat": -3.2999465,
+      "lon": 25.8348066,
+      "osm_id": "node/5083523032",
+      "osm_tags": {
+        "name": "Lombela",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Osidi",
+      "lat": -3.2961254,
+      "lon": 25.8348789,
+      "osm_id": "node/5083523033",
+      "osm_tags": {
+        "name": "Osidi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gabon",
+      "lat": -3.267363,
+      "lon": 25.6778383,
+      "osm_id": "node/5083523040",
+      "osm_tags": {
+        "name": "Gabon",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dongo",
+      "lat": -3.2552376,
+      "lon": 25.7151693,
+      "osm_id": "node/5083523041",
+      "osm_tags": {
+        "name": "Dongo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Elindu",
+      "lat": -3.2236435,
+      "lon": 25.8566397,
+      "osm_id": "node/5083621635",
+      "osm_tags": {
+        "name": "Elindu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bilundu",
+      "lat": -3.2529936,
+      "lon": 25.8480513,
+      "osm_id": "node/5083621641",
+      "osm_tags": {
+        "name": "Bilundu",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lokongo",
+      "lat": -3.2946352,
+      "lon": 25.8373533,
+      "osm_id": "node/5083621681",
+      "osm_tags": {
+        "name": "Lokongo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kapome",
+      "lat": -3.1881866,
+      "lon": 25.8417669,
+      "osm_id": "node/5083841610",
+      "osm_tags": {
+        "name": "Kapome",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Katamba",
+      "lat": -3.1941587,
+      "lon": 25.8444169,
+      "osm_id": "node/5083841611",
+      "osm_tags": {
+        "name": "Katamba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Aluba",
+      "lat": -3.0082111,
+      "lon": 24.9138111,
+      "osm_id": "node/6068076571",
+      "osm_tags": {
+        "alt_name": "Alumba",
+        "attribution": "R\u00e9f\u00e9rentiel G\u00e9ographique Commune (rgc.cd)",
+        "name": "Aluba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kembede",
+      "lat": -3.0,
+      "lon": 25.5666668,
+      "osm_id": "node/6068305676",
+      "osm_tags": {
+        "attribution": "R\u00e9f\u00e9rentiel G\u00e9ographique Commune (rgc.cd)",
+        "fixme": "inaccurate location",
+        "is_in:admin_level6": "Kailo",
+        "is_in:admin_level7": "Bangengele",
+        "name": "Kembede",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tshumbi-Tshumbi",
+      "lat": -3.00801,
+      "lon": 25.7171283,
+      "osm_id": "node/6068305677",
+      "osm_tags": {
+        "attribution": "R\u00e9f\u00e9rentiel G\u00e9ographique Commune (rgc.cd)",
+        "is_in:admin_level6": "Kailo",
+        "is_in:admin_level7": "Bangengele",
+        "name": "Tshumbi-Tshumbi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kasuku",
+      "lat": -3.008732,
+      "lon": 25.7497533,
+      "osm_id": "node/6068305678",
+      "osm_tags": {
+        "attribution": "R\u00e9f\u00e9rentiel G\u00e9ographique Commune (rgc.cd)",
+        "is_in:admin_level6": "Kailo",
+        "is_in:admin_level7": "Bangengele",
+        "name": "Kasuku",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Teri-Limpongo",
+      "lat": -3.1485538,
+      "lon": 25.3748625,
+      "osm_id": "node/6068305679",
+      "osm_tags": {
+        "attribution": "R\u00e9f\u00e9rentiel G\u00e9ographique Commune (rgc.cd)",
+        "fixme": "inaccurate location",
+        "is_in:admin_level6": "Kailo",
+        "is_in:admin_level7": "Bangengele",
+        "name": "Teri-Limpongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shoko",
+      "lat": -2.9950544,
+      "lon": 25.7914653,
+      "osm_id": "node/6068305680",
+      "osm_tags": {
+        "attribution": "R\u00e9f\u00e9rentiel G\u00e9ographique Commune (rgc.cd)",
+        "is_in:admin_level6": "Kailo",
+        "is_in:admin_level7": "Bangengele",
+        "name": "Shoko",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Katako-Kombe",
+      "lat": -2.9666671,
+      "lon": 25.8833329,
+      "osm_id": "node/6068305681",
+      "osm_tags": {
+        "attribution": "R\u00e9f\u00e9rentiel G\u00e9ographique Commune (rgc.cd)",
+        "is_in:admin_level6": "Kindu",
+        "is_in:admin_level7": "Kailo",
+        "name": "Katako-Kombe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bangaliwa",
+      "lat": -1.0849552,
+      "lon": 24.7959735,
+      "osm_id": "node/9581893801",
+      "osm_tags": {
+        "name": "Bangaliwa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kakongo",
+      "lat": -2.049195,
+      "lon": 25.1924178,
+      "osm_id": "node/9583191039",
+      "osm_tags": {
+        "name": "Kakongo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kandolo",
+      "lat": -2.0527149,
+      "lon": 25.1841748,
+      "osm_id": "node/9583191040",
+      "osm_tags": {
+        "name": "Kandolo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngombe",
+      "lat": -1.90867,
+      "lon": 25.1049679,
+      "osm_id": "node/9583191144",
+      "osm_tags": {
+        "name": "Ngombe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Oluo",
+      "lat": -2.5363575,
+      "lon": 25.3261814,
+      "osm_id": "node/9583191159",
+      "osm_tags": {
+        "name": "Oluo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bafundo",
+      "lat": -2.0986993,
+      "lon": 25.5551813,
+      "osm_id": "node/9583191207",
+      "osm_tags": {
+        "name": "Bafundo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yakenye",
+      "lat": -2.1144804,
+      "lon": 25.6088098,
+      "osm_id": "node/9583191208",
+      "osm_tags": {
+        "name": "Yakenye",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bote",
+      "lat": -2.0984638,
+      "lon": 25.5592954,
+      "osm_id": "node/9583191215",
+      "osm_tags": {
+        "name": "Bote",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ichuku",
+      "lat": -2.0976384,
+      "lon": 25.5811748,
+      "osm_id": "node/9583191216",
+      "osm_tags": {
+        "name": "Ichuku",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lole",
+      "lat": -2.5689695,
+      "lon": 25.373592,
+      "osm_id": "node/9583191231",
+      "osm_tags": {
+        "name": "Lole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Elengalale",
+      "lat": -1.0634425,
+      "lon": 24.447472,
+      "osm_id": "node/9583191232",
+      "osm_tags": {
+        "name": "Elengalale",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lukunda",
+      "lat": -3.091519,
+      "lon": 25.245867,
+      "osm_id": "node/9583191237",
+      "osm_tags": {
+        "name": "Lukunda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ndulu",
+      "lat": -0.97027,
+      "lon": 24.6051465,
+      "osm_id": "node/9583191247",
+      "osm_tags": {
+        "name": "Ndulu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Yaefoto",
+      "lat": -2.0518992,
+      "lon": 25.1161354,
+      "osm_id": "node/9583367600",
+      "osm_tags": {
+        "name": "Yaefoto",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yalombe",
+      "lat": -2.0560389,
+      "lon": 25.1021961,
+      "osm_id": "node/9583367601",
+      "osm_tags": {
+        "name": "Yalombe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Buute",
+      "lat": -1.9833492,
+      "lon": 25.1056793,
+      "osm_id": "node/9583367602",
+      "osm_tags": {
+        "name": "Buute",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boyela",
+      "lat": -2.1016436,
+      "lon": 25.0130246,
+      "osm_id": "node/9583367817",
+      "osm_tags": {
+        "name": "Boyela",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lomanga-Pechiol",
+      "lat": -2.113058,
+      "lon": 25.0293188,
+      "osm_id": "node/9583367828",
+      "osm_tags": {
+        "name": "Lomanga-Pechiol",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Masai",
+      "lat": -1.0227196,
+      "lon": 24.7371955,
+      "osm_id": "node/9583367879",
+      "osm_tags": {
+        "name": "Masai",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lohumonoko",
+      "lat": -1.0229124,
+      "lon": 24.4164344,
+      "osm_id": "node/9583367880",
+      "osm_tags": {
+        "name": "Lohumonoko",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ochio",
+      "lat": -0.9096671,
+      "lon": 24.554593,
+      "osm_id": "node/9583367888",
+      "osm_tags": {
+        "name": "Ochio",
+        "place": "hamlet",
+        "source": "https://www.bonoboincongo.com/wp-content/uploads/2009/08/USFWS_midterm_TL2-Community-drafting.pdf"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Oleke",
+      "lat": -2.6368201,
+      "lon": 25.3388906,
+      "osm_id": "node/9583373937",
+      "osm_tags": {
+        "name": "Oleke",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -1.2347341,
+      "lon": 25.7225239,
+      "osm_id": "way/8080763",
+      "osm_tags": {
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Elila",
+      "lat": -2.8049617,
+      "lon": 26.0644438,
+      "osm_id": "way/10262348",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Elila",
+        "name:en": "Elila River",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q3050996"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lac Kasuku",
+      "lat": -3.2542991,
+      "lon": 25.6691954,
+      "osm_id": "way/10262858",
+      "osm_tags": {
+        "name": "Lac Kasuku",
+        "name:en": "Ndjale Lake",
+        "natural": "water",
+        "population": "471"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -2.7144801,
+      "lon": 25.0577239,
+      "osm_id": "way/10309268",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kasuku",
+      "lat": -1.9741443,
+      "lon": 25.6258028,
+      "osm_id": "way/48167196",
+      "osm_tags": {
+        "name": "Kasuku",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kasuku",
+      "lat": -2.1608362,
+      "lon": 25.6002369,
+      "osm_id": "way/48167208",
+      "osm_tags": {
+        "name": "Kasuku",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kasuku",
+      "lat": -3.0806673,
+      "lon": 25.7548902,
+      "osm_id": "way/48167306",
+      "osm_tags": {
+        "name": "Kasuku",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lweki",
+      "lat": -3.3982281,
+      "lon": 25.8570039,
+      "osm_id": "way/76654254",
+      "osm_tags": {
+        "name": "Lweki",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.4874697,
+      "lon": 25.1354205,
+      "osm_id": "way/81119354",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.4026102,
+      "lon": 24.3699267,
+      "osm_id": "way/81119358",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.8496815,
+      "lon": 24.5313077,
+      "osm_id": "way/81119382",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -3.3775576,
+      "lon": 24.8562347,
+      "osm_id": "way/81119399",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -2.0271006,
+      "lon": 25.2270029,
+      "osm_id": "way/81119421",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.2004039,
+      "lon": 24.8902409,
+      "osm_id": "way/81119423",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -3.6407265,
+      "lon": 24.7661697,
+      "osm_id": "way/81119426",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -2.2872507,
+      "lon": 25.1730997,
+      "osm_id": "way/81119432",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loho",
+      "lat": -3.5298768,
+      "lon": 25.8261064,
+      "osm_id": "way/92139140",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "name": "Loho",
+        "source": "Image satellite",
+        "source:date": "2010/05/06",
+        "source_ref": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Osokoy",
+      "lat": -3.5503128,
+      "lon": 25.7754269,
+      "osm_id": "way/92163058",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "name": "Osokoy",
+        "source": "Image satellite",
+        "source:date": "2010/05/06",
+        "source_ref": "www.rgc.cd",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Niembo",
+      "lat": -3.4771146,
+      "lon": 25.7734595,
+      "osm_id": "way/92163354",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "name": "Niembo",
+        "source": "Image satellite",
+        "source:date": "2010/05/06",
+        "source_ref": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Ongendjo",
+      "lat": -3.484863,
+      "lon": 25.7007589,
+      "osm_id": "way/92933665",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "name": "Ongendjo",
+        "source": "Image satellite",
+        "source:date": "2010/05/06",
+        "source_ref": "www.rgc.cd",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luhiu",
+      "lat": -2.3591269,
+      "lon": 24.3251759,
+      "osm_id": "way/93477353",
+      "osm_tags": {
+        "name": "Luhiu",
+        "source": "Bing",
+        "waterway": "river",
+        "wikidata": "Q22598892"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luhiu",
+      "lat": -2.5225583,
+      "lon": 24.1479186,
+      "osm_id": "way/93479705",
+      "osm_tags": {
+        "name": "Luhiu",
+        "note": "FIXME:inaccurate",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lombo",
+      "lat": -0.5158933,
+      "lon": 24.2200018,
+      "osm_id": "way/93493980",
+      "osm_tags": {
+        "name": "Lombo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Elipa",
+      "lat": -0.8229969,
+      "lon": 24.3752687,
+      "osm_id": "way/93622761",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Elipa",
+        "note": "FIXME:verify name",
+        "note:fr": "nom \u00e0 v\u00e9rifier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndulu",
+      "lat": -1.1094032,
+      "lon": 24.4965586,
+      "osm_id": "way/93679164",
+      "osm_tags": {
+        "name": "Ndulu",
+        "note": "FIXME:verify name",
+        "note:fr": "nom \u00e0 v\u00e9rifier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndulu",
+      "lat": -1.0398307,
+      "lon": 24.5391525,
+      "osm_id": "way/93679168",
+      "osm_tags": {
+        "name": "Ndulu",
+        "note": "FIXME:verify name",
+        "note:fr": "nom \u00e0 v\u00e9rifier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndulu",
+      "lat": -1.0868763,
+      "lon": 24.4480138,
+      "osm_id": "way/93679174",
+      "osm_tags": {
+        "name": "Ndulu",
+        "note": "FIXME:verify name",
+        "note:fr": "nom \u00e0 v\u00e9rifier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwidjo",
+      "lat": -2.4127376,
+      "lon": 25.3424087,
+      "osm_id": "way/93685049",
+      "osm_tags": {
+        "alt_name": "Luidjo;Luilu;Lwilu",
+        "name": "Lwidjo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mombu",
+      "lat": -1.9570044,
+      "lon": 25.2671264,
+      "osm_id": "way/93685902",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Mombu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.8933878,
+      "lon": 25.1616547,
+      "osm_id": "way/93685903",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lohu",
+      "lat": -2.5062444,
+      "lon": 24.9588645,
+      "osm_id": "way/93781752",
+      "osm_tags": {
+        "name": "Lohu",
+        "note": "FIXME:verify name",
+        "note:fr": "nom \u00e0 v\u00e9rifier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yalu",
+      "lat": -2.5784084,
+      "lon": 25.0073727,
+      "osm_id": "way/93796223",
+      "osm_tags": {
+        "name": "Yalu",
+        "note": "FIXME:verify name",
+        "note:fr": "nom \u00e0 v\u00e9rifier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kasuku",
+      "lat": -3.2331454,
+      "lon": 25.5857331,
+      "osm_id": "way/93799012",
+      "osm_tags": {
+        "name": "Kasuku",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luyanga",
+      "lat": -3.2293535,
+      "lon": 25.4738003,
+      "osm_id": "way/93799015",
+      "osm_tags": {
+        "name": "Luyanga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -3.0389166,
+      "lon": 25.011104,
+      "osm_id": "way/93814312",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukufu",
+      "lat": -3.6394698,
+      "lon": 24.9903957,
+      "osm_id": "way/93823517",
+      "osm_tags": {
+        "name": "Lukufu",
+        "note": "FIXME:inaccurate",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokeri",
+      "lat": -3.3778735,
+      "lon": 24.938579,
+      "osm_id": "way/93823526",
+      "osm_tags": {
+        "name": "Lokeri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukufu",
+      "lat": -3.3568857,
+      "lon": 24.912013,
+      "osm_id": "way/93823529",
+      "osm_tags": {
+        "name": "Lukufu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.5878355,
+      "lon": 24.191387,
+      "osm_id": "way/93828750",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -3.0418393,
+      "lon": 24.6222895,
+      "osm_id": "way/93828752",
+      "osm_tags": {
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -2.2109908,
+      "lon": 24.3837687,
+      "osm_id": "way/93828753",
+      "osm_tags": {
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kasuku",
+      "lat": -2.6157452,
+      "lon": 25.6750809,
+      "osm_id": "way/107796496",
+      "osm_tags": {
+        "name": "Kasuku",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kasuku",
+      "lat": -2.0581684,
+      "lon": 25.6066855,
+      "osm_id": "way/116398058",
+      "osm_tags": {
+        "name": "Kasuku",
+        "source": "Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yafa",
+      "lat": -1.3664187,
+      "lon": 24.1317777,
+      "osm_id": "way/160223787",
+      "osm_tags": {
+        "name": "Yafa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.3559052,
+      "lon": 24.0646651,
+      "osm_id": "way/160225966",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwidjo",
+      "lat": -2.3452117,
+      "lon": 25.3353193,
+      "osm_id": "way/160250722",
+      "osm_tags": {
+        "alt_name": "Luidjo;Luilu;Lwilu",
+        "name": "Lwidjo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwidjo",
+      "lat": -2.2461848,
+      "lon": 25.3257248,
+      "osm_id": "way/160250730",
+      "osm_tags": {
+        "alt_name": "Luidjo;Luilu;Lwilu",
+        "name": "Lwidjo",
+        "waterway": "river",
+        "wikidata": "Q22599445"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.4942784,
+      "lon": 24.2468387,
+      "osm_id": "way/160262608",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.5215457,
+      "lon": 24.2982769,
+      "osm_id": "way/160262609",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.4762458,
+      "lon": 24.2009405,
+      "osm_id": "way/160262611",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.8667226,
+      "lon": 24.4865196,
+      "osm_id": "way/160262613",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.536668,
+      "lon": 24.3511461,
+      "osm_id": "way/160262614",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.7092904,
+      "lon": 24.5608637,
+      "osm_id": "way/160264086",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.5798353,
+      "lon": 24.5574031,
+      "osm_id": "way/160264087",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.5376256,
+      "lon": 24.469273,
+      "osm_id": "way/160264089",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.539432,
+      "lon": 24.407395,
+      "osm_id": "way/160264091",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.6236731,
+      "lon": 24.5932351,
+      "osm_id": "way/160264095",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.6682846,
+      "lon": 24.5821424,
+      "osm_id": "way/160264096",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.5491199,
+      "lon": 24.5144063,
+      "osm_id": "way/160264097",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.8003087,
+      "lon": 24.5045102,
+      "osm_id": "way/160265187",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.756547,
+      "lon": 24.5301203,
+      "osm_id": "way/160265195",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loli",
+      "lat": -1.8354687,
+      "lon": 24.4913254,
+      "osm_id": "way/160265203",
+      "osm_tags": {
+        "name": "Loli",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.4221961,
+      "lon": 24.1427475,
+      "osm_id": "way/160266436",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -2.3132843,
+      "lon": 24.4324654,
+      "osm_id": "way/160269598",
+      "osm_tags": {
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -2.5188533,
+      "lon": 24.5266806,
+      "osm_id": "way/160270718",
+      "osm_tags": {
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -2.4519229,
+      "lon": 24.5126543,
+      "osm_id": "way/160270719",
+      "osm_tags": {
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -2.3850622,
+      "lon": 24.4822504,
+      "osm_id": "way/160270720",
+      "osm_tags": {
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -2.6153909,
+      "lon": 24.561813,
+      "osm_id": "way/160278439",
+      "osm_tags": {
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -2.7664171,
+      "lon": 24.5976981,
+      "osm_id": "way/160278440",
+      "osm_tags": {
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -2.6973178,
+      "lon": 24.5867358,
+      "osm_id": "way/160278441",
+      "osm_tags": {
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -2.8479294,
+      "lon": 24.614204,
+      "osm_id": "way/160278989",
+      "osm_tags": {
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -2.937489,
+      "lon": 24.6271201,
+      "osm_id": "way/160278992",
+      "osm_tags": {
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.6508259,
+      "lon": 25.3855059,
+      "osm_id": "way/161305567",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7242465,
+      "lon": 25.6743372,
+      "osm_id": "way/161307088",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.5892107,
+      "lon": 25.5626418,
+      "osm_id": "way/161307089",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.5195353,
+      "lon": 25.4400544,
+      "osm_id": "way/161307090",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7351852,
+      "lon": 25.8132162,
+      "osm_id": "way/161307922",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nakasingai",
+      "lat": -0.6944488,
+      "lon": 25.884956,
+      "osm_id": "way/161307924",
+      "osm_tags": {
+        "name": "Nakasingai",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.776809,
+      "lon": 25.9103217,
+      "osm_id": "way/161308175",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokanye",
+      "lat": -0.9326487,
+      "lon": 25.9146668,
+      "osm_id": "way/161316090",
+      "osm_tags": {
+        "alt_name": "Lokanie",
+        "name": "Lokanye",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kasuku",
+      "lat": -3.2485045,
+      "lon": 25.6715412,
+      "osm_id": "way/161420478",
+      "osm_tags": {
+        "name": "Kasuku",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ambe",
+      "lat": -1.9188047,
+      "lon": 25.7670164,
+      "osm_id": "way/161423722",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ambe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ambe",
+      "lat": -1.9040621,
+      "lon": 25.7917252,
+      "osm_id": "way/161424106",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ambe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ambe",
+      "lat": -1.9857843,
+      "lon": 25.8107931,
+      "osm_id": "way/161424107",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ambe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ambe",
+      "lat": -2.0515981,
+      "lon": 25.8529303,
+      "osm_id": "way/161431593",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ambe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ambe",
+      "lat": -2.1194846,
+      "lon": 25.9006696,
+      "osm_id": "way/161438984",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ambe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ulindi",
+      "lat": -1.8933146,
+      "lon": 26.1159184,
+      "osm_id": "way/161452996",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Ulindi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -1.0792364,
+      "lon": 25.4849714,
+      "osm_id": "way/163904844",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7283721,
+      "lon": 25.3475777,
+      "osm_id": "way/163904848",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.8968961,
+      "lon": 25.4244231,
+      "osm_id": "way/163904857",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.5254512,
+      "lon": 24.2441893,
+      "osm_id": "way/166257244",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luanbuku",
+      "lat": -3.0072398,
+      "lon": 25.9038338,
+      "osm_id": "way/247277133",
+      "osm_tags": {
+        "name": "Luanbuku",
+        "source": "WorldView-1, DigitalGlobe, Nextview, 2013/09/21",
+        "source:name": "US Army Topographic Map",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -2.4413043,
+      "lon": 25.0311227,
+      "osm_id": "way/407053883",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -3.1823115,
+      "lon": 24.9803004,
+      "osm_id": "way/407053886",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Unia",
+      "lat": -3.5117596,
+      "lon": 24.7488525,
+      "osm_id": "way/407059344",
+      "osm_tags": {
+        "name": "Unia",
+        "source": "Yahoo!",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.9558547,
+      "lon": 25.2310053,
+      "osm_id": "way/540198304",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.7790644,
+      "lon": 25.1319229,
+      "osm_id": "way/540198305",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lomami",
+        "name:fr": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rwiki",
+      "lat": -0.669707,
+      "lon": 25.1369195,
+      "osm_id": "way/629097342",
+      "osm_tags": {
+        "name": "Rwiki",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rwiki",
+      "lat": -0.619328,
+      "lon": 25.1617786,
+      "osm_id": "way/629097344",
+      "osm_tags": {
+        "name": "Rwiki",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rwiki",
+      "lat": -0.7594576,
+      "lon": 25.0860459,
+      "osm_id": "way/675647573",
+      "osm_tags": {
+        "name": "Rwiki",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rwiki",
+      "lat": -0.7306927,
+      "lon": 25.0856983,
+      "osm_id": "way/675647575",
+      "osm_tags": {
+        "name": "Rwiki",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rwiki",
+      "lat": -0.7075535,
+      "lon": 25.1120392,
+      "osm_id": "way/675647578",
+      "osm_tags": {
+        "name": "Rwiki",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rwiki",
+      "lat": -0.7749679,
+      "lon": 25.1006812,
+      "osm_id": "way/675647579",
+      "osm_tags": {
+        "name": "Rwiki",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -2.6886316,
+      "lon": 25.8443337,
+      "osm_id": "way/772778392",
+      "osm_tags": {
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -1.6236265,
+      "lon": 25.8050449,
+      "osm_id": "way/772786055",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "boundary": "administrative",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -2.1599101,
+      "lon": 25.7448184,
+      "osm_id": "way/772786056",
+      "osm_tags": {
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -2.1395229,
+      "lon": 25.2801554,
+      "osm_id": "way/772786057",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kasuku",
+      "lat": -1.8725486,
+      "lon": 25.693642,
+      "osm_id": "way/772786058",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Kasuku",
+        "waterway": "river",
+        "wikidata": "Q3193787"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -3.278809,
+      "lon": 25.9024496,
+      "osm_id": "way/772794956",
+      "osm_tags": {
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kasuku",
+      "lat": -3.2268721,
+      "lon": 25.5737782,
+      "osm_id": "way/772794957",
+      "osm_tags": {
+        "name": "Kasuku",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kasuku",
+      "lat": -3.2002951,
+      "lon": 25.7615538,
+      "osm_id": "way/772794958",
+      "osm_tags": {
+        "name": "Kasuku",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luyanga",
+      "lat": -3.2744761,
+      "lon": 25.3615235,
+      "osm_id": "way/772794960",
+      "osm_tags": {
+        "name": "Luyanga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -3.2476319,
+      "lon": 24.9451875,
+      "osm_id": "way/772794961",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -1.7950468,
+      "lon": 25.7863125,
+      "osm_id": "way/772794963",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "boundary": "administrative",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.9593887,
+      "lon": 25.199706,
+      "osm_id": "way/772794966",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -2.4153393,
+      "lon": 24.4995593,
+      "osm_id": "way/775002627",
+      "osm_tags": {
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.4845907,
+      "lon": 24.2926129,
+      "osm_id": "way/775002628",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lowa",
+      "lat": -1.4149252,
+      "lon": 25.8348333,
+      "osm_id": "way/775137563",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "yes",
+        "boundary": "administrative",
+        "name": "Lowa",
+        "waterway": "river",
+        "wikidata": "Q22586788"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.347262,
+      "lon": 23.9726641,
+      "osm_id": "way/775180837",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.318487,
+      "lon": 24.9826098,
+      "osm_id": "way/775180844",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.3695447,
+      "lon": 25.0540853,
+      "osm_id": "way/775186993",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lombo",
+      "lat": -0.6121795,
+      "lon": 24.0818957,
+      "osm_id": "way/836831842",
+      "osm_tags": {
+        "name": "Lombo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lombo",
+      "lat": -0.5234953,
+      "lon": 24.2223754,
+      "osm_id": "way/836831843",
+      "osm_tags": {
+        "name": "Lombo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshwapa",
+      "lat": -3.1196044,
+      "lon": 24.6108769,
+      "osm_id": "way/866590422",
+      "osm_tags": {
+        "name": "Tshwapa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tumbenga River",
+      "lat": -2.1680358,
+      "lon": 23.9280894,
+      "osm_id": "way/943292454",
+      "osm_tags": {
+        "name": "Tumbenga River",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.0592297,
+      "lon": 24.7817445,
+      "osm_id": "way/950287200",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.9930143,
+      "lon": 24.6549118,
+      "osm_id": "way/950287201",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.5774069,
+      "lon": 24.3349913,
+      "osm_id": "way/951469699",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.4875844,
+      "lon": 24.2620094,
+      "osm_id": "way/951469700",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.63944,
+      "lon": 24.4002344,
+      "osm_id": "way/951470892",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.644253,
+      "lon": 24.3613116,
+      "osm_id": "way/951470893",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.4869679,
+      "lon": 24.3011557,
+      "osm_id": "way/951475116",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.5111578,
+      "lon": 24.2867697,
+      "osm_id": "way/951475117",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.2985608,
+      "lon": 24.9392404,
+      "osm_id": "way/951653444",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.0935133,
+      "lon": 24.8219811,
+      "osm_id": "way/951657815",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndulu",
+      "lat": -0.9955181,
+      "lon": 24.5872188,
+      "osm_id": "way/951659955",
+      "osm_tags": {
+        "name": "Ndulu",
+        "note": "FIXME:verify name",
+        "note:fr": "nom \u00e0 v\u00e9rifier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.9673628,
+      "lon": 24.6007509,
+      "osm_id": "way/951659958",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndulu",
+      "lat": -0.9792078,
+      "lon": 24.5987627,
+      "osm_id": "way/951659959",
+      "osm_tags": {
+        "name": "Ndulu",
+        "note": "FIXME:verify name",
+        "note:fr": "nom \u00e0 v\u00e9rifier",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.9721472,
+      "lon": 24.6054448,
+      "osm_id": "way/951659960",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.7253304,
+      "lon": 24.4495133,
+      "osm_id": "way/951664067",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.5388369,
+      "lon": 24.328962,
+      "osm_id": "way/951677546",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lombo",
+      "lat": -0.5566741,
+      "lon": 24.1889347,
+      "osm_id": "way/951680613",
+      "osm_tags": {
+        "name": "Lombo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lombo",
+      "lat": -0.6385951,
+      "lon": 24.0016287,
+      "osm_id": "way/951680615",
+      "osm_tags": {
+        "name": "Lombo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.9494694,
+      "lon": 24.5960496,
+      "osm_id": "way/952045230",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.4755071,
+      "lon": 24.1958916,
+      "osm_id": "way/952059926",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -1.2034247,
+      "lon": 25.4976582,
+      "osm_id": "way/952956972",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -1.2999724,
+      "lon": 25.5162405,
+      "osm_id": "way/952956975",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.9671854,
+      "lon": 25.4567933,
+      "osm_id": "way/952956976",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -0.9912093,
+      "lon": 25.6013407,
+      "osm_id": "way/952956980",
+      "osm_tags": {
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -0.9277457,
+      "lon": 25.577588,
+      "osm_id": "way/952956982",
+      "osm_tags": {
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -0.8156533,
+      "lon": 25.5231821,
+      "osm_id": "way/952956984",
+      "osm_tags": {
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -0.4670832,
+      "lon": 25.4160225,
+      "osm_id": "way/952956985",
+      "osm_tags": {
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.6680779,
+      "lon": 25.6437259,
+      "osm_id": "way/952956986",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7427436,
+      "lon": 25.8470714,
+      "osm_id": "way/952956988",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -2.0966738,
+      "lon": 25.2597677,
+      "osm_id": "way/953014362",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -1.4011961,
+      "lon": 25.5379008,
+      "osm_id": "way/953014367",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -1.5597724,
+      "lon": 25.5099394,
+      "osm_id": "way/953014368",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -1.3033767,
+      "lon": 25.7730453,
+      "osm_id": "way/953291498",
+      "osm_tags": {
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -1.0949597,
+      "lon": 25.6441917,
+      "osm_id": "way/953291499",
+      "osm_tags": {
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lowa",
+      "lat": -1.4552379,
+      "lon": 25.908574,
+      "osm_id": "way/953291500",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "yes",
+        "boundary": "administrative",
+        "name": "Lowa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -1.3684133,
+      "lon": 25.7985263,
+      "osm_id": "way/953291502",
+      "osm_tags": {
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -1.4455676,
+      "lon": 25.8035481,
+      "osm_id": "way/953291505",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "boundary": "administrative",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.6672332,
+      "lon": 25.1396262,
+      "osm_id": "way/953679500",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.6642637,
+      "lon": 24.4316612,
+      "osm_id": "way/955656819",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -0.6557828,
+      "lon": 25.4525091,
+      "osm_id": "way/955794058",
+      "osm_tags": {
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rwiki",
+      "lat": -0.4465098,
+      "lon": 25.1575353,
+      "osm_id": "way/955794081",
+      "osm_tags": {
+        "alt_name": "Ruiki",
+        "name": "Rwiki",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.5254853,
+      "lon": 24.3190268,
+      "osm_id": "way/1003706507",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.6196493,
+      "lon": 24.3343993,
+      "osm_id": "way/1003706513",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7782303,
+      "lon": 25.3572551,
+      "osm_id": "way/1004012627",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.8102376,
+      "lon": 25.3780597,
+      "osm_id": "way/1004012628",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.0266709,
+      "lon": 24.7273529,
+      "osm_id": "way/1004012630",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.0808418,
+      "lon": 24.8214519,
+      "osm_id": "way/1004012633",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -0.6865057,
+      "lon": 24.4518112,
+      "osm_id": "way/1005885065",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.5572167,
+      "lon": 25.5306578,
+      "osm_id": "way/1005968672",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomami",
+      "lat": -1.042367,
+      "lon": 24.7536027,
+      "osm_id": "way/1005968697",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lomami",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7298441,
+      "lon": 25.8246422,
+      "osm_id": "way/1007143077",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.61766,
+      "lon": 25.6030439,
+      "osm_id": "way/1007143083",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.6603661,
+      "lon": 25.6204553,
+      "osm_id": "way/1007143085",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lulanga",
+      "lat": -0.5010599,
+      "lon": 24.5591897,
+      "osm_id": "way/1029421452",
+      "osm_tags": {
+        "name": "Lulanga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -3.1456882,
+      "lon": 24.2583367,
+      "osm_id": "way/1039863781",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -3.0955214,
+      "lon": 24.2140957,
+      "osm_id": "way/1039863782",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -3.0775019,
+      "lon": 24.137738,
+      "osm_id": "way/1039863783",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -3.1747175,
+      "lon": 24.2596195,
+      "osm_id": "way/1039999734",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -3.0958666,
+      "lon": 24.0491242,
+      "osm_id": "way/1039999735",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwalaba",
+      "lat": -3.4797265,
+      "lon": 25.9389209,
+      "osm_id": "way/1120559533",
+      "osm_tags": {
+        "alt_name": "Congo;Lualaba",
+        "boat": "yes",
+        "name": "Lwalaba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -2.079655,
+      "lon": 24.2934037,
+      "osm_id": "way/1227597507",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.9900961,
+      "lon": 24.2143376,
+      "osm_id": "way/1227597508",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.972045,
+      "lon": 24.200214,
+      "osm_id": "way/1227597509",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.9514006,
+      "lon": 24.1947435,
+      "osm_id": "way/1227597510",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.9293553,
+      "lon": 24.1895338,
+      "osm_id": "way/1227597511",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.9033023,
+      "lon": 24.1900298,
+      "osm_id": "way/1227597512",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.8730266,
+      "lon": 24.1914377,
+      "osm_id": "way/1227597513",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.8430287,
+      "lon": 24.1844839,
+      "osm_id": "way/1227597514",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.8127167,
+      "lon": 24.196471,
+      "osm_id": "way/1227597515",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.7810285,
+      "lon": 24.1975629,
+      "osm_id": "way/1227597516",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.752787,
+      "lon": 24.2015259,
+      "osm_id": "way/1227597517",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.7380151,
+      "lon": 24.2075607,
+      "osm_id": "way/1227597518",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -1.7203465,
+      "lon": 24.2091146,
+      "osm_id": "way/1227597519",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "source": "Bing;bing 2021",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -3.1067002,
+      "lon": 23.9890877,
+      "osm_id": "way/1229266072",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.6283662,
+      "lon": 25.5965908,
+      "osm_id": "way/1263785617",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.6788043,
+      "lon": 25.6434888,
+      "osm_id": "way/1263785618",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.6895244,
+      "lon": 25.6398846,
+      "osm_id": "way/1263785619",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7015181,
+      "lon": 25.6444355,
+      "osm_id": "way/1263785620",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.6934653,
+      "lon": 25.6686443,
+      "osm_id": "way/1263785621",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7103183,
+      "lon": 25.673167,
+      "osm_id": "way/1263785622",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7156174,
+      "lon": 25.690568,
+      "osm_id": "way/1263785623",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7129755,
+      "lon": 25.7043684,
+      "osm_id": "way/1263785624",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7062083,
+      "lon": 25.7275617,
+      "osm_id": "way/1263785625",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7039587,
+      "lon": 25.7599794,
+      "osm_id": "way/1263785626",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7203265,
+      "lon": 25.7781933,
+      "osm_id": "way/1263785627",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7321921,
+      "lon": 25.8232512,
+      "osm_id": "way/1263785628",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7344351,
+      "lon": 25.7978014,
+      "osm_id": "way/1263785629",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.73138,
+      "lon": 25.8315726,
+      "osm_id": "way/1263785630",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.7404698,
+      "lon": 25.8629711,
+      "osm_id": "way/1263785631",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.6441607,
+      "lon": 25.6047519,
+      "osm_id": "way/1263923005",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.6198147,
+      "lon": 25.600278,
+      "osm_id": "way/1263923006",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.6083174,
+      "lon": 25.5895941,
+      "osm_id": "way/1263923007",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.6139264,
+      "lon": 25.5700806,
+      "osm_id": "way/1263923008",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.6039068,
+      "lon": 25.5579069,
+      "osm_id": "way/1263923009",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.5745311,
+      "lon": 25.5491328,
+      "osm_id": "way/1263923010",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.5573829,
+      "lon": 25.4918385,
+      "osm_id": "way/1263923011",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.5517187,
+      "lon": 25.4657489,
+      "osm_id": "way/1263923012",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.5393741,
+      "lon": 25.44579,
+      "osm_id": "way/1263923013",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.5002506,
+      "lon": 25.450846,
+      "osm_id": "way/1263923014",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.4814822,
+      "lon": 25.4518233,
+      "osm_id": "way/1263923015",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lilo",
+      "lat": -0.4643199,
+      "lon": 25.4373239,
+      "osm_id": "way/1263923016",
+      "osm_tags": {
+        "name": "Lilo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    }
+  ]
+}

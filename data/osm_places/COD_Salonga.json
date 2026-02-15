@@ -1,0 +1,8224 @@
+{
+  "park_id": "COD_Salonga",
+  "downloaded_at": "2026-02-15T11:45:59.593655+00:00",
+  "buffer_km": 50,
+  "place_count": 648,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Monkoto",
+      "lat": -1.743868,
+      "lon": 20.687038,
+      "osm_id": "node/613748698",
+      "osm_tags": {
+        "name": "Monkoto",
+        "place": "town",
+        "wikidata": "Q3321019"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bokele",
+      "lat": -1.5904405,
+      "lon": 20.5695568,
+      "osm_id": "node/613772337",
+      "osm_tags": {
+        "name": "Bokele",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Watshi-Nkengo",
+      "lat": -0.9056179,
+      "lon": 20.6265468,
+      "osm_id": "node/613776379",
+      "osm_tags": {
+        "alt_name": "Watsi-Kengo;Watsi Kengo;Watsikengo;Watsi-Nkengo",
+        "name": "Watshi-Nkengo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Dekese",
+      "lat": -3.4925965,
+      "lon": 21.3772071,
+      "osm_id": "node/945262176",
+      "osm_tags": {
+        "admin_level": "6",
+        "capital": "6",
+        "is_in": "Congo-Kinshasa",
+        "name": "Dekese",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Kole",
+      "lat": -3.4633994,
+      "lon": 22.4456268,
+      "osm_id": "node/945337426",
+      "osm_tags": {
+        "is_in": "Congo-Kinshasa",
+        "name": "Kole",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Waka",
+      "lat": -0.9372387,
+      "lon": 20.1890401,
+      "osm_id": "node/1721291555",
+      "osm_tags": {
+        "name": "Waka",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Anga",
+      "lat": -3.1399076,
+      "lon": 21.5699999,
+      "osm_id": "node/1721355094",
+      "osm_tags": {
+        "name": "Anga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Djongo",
+      "lat": -3.0678545,
+      "lon": 21.6788529,
+      "osm_id": "node/1721355095",
+      "osm_tags": {
+        "name": "Djongo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Elongaba",
+      "lat": -2.92387,
+      "lon": 21.7914311,
+      "osm_id": "node/1721355097",
+      "osm_tags": {
+        "name": "Elongaba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ikali",
+      "lat": -2.2240858,
+      "lon": 21.1873893,
+      "osm_id": "node/1721355098",
+      "osm_tags": {
+        "name": "Ikali",
+        "note": "FIXME: inaccurate",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ila",
+      "lat": -2.9023389,
+      "lon": 21.0920929,
+      "osm_id": "node/1721355099",
+      "osm_tags": {
+        "code_ins": "90350101001",
+        "is_in:collectivit\u00e9": "Yaelima",
+        "is_in:groupement": "Idiki",
+        "is_in:territoire": "Dekese",
+        "name": "Ila",
+        "place": "village",
+        "rgc:pcode": "90350029"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Luapa",
+      "lat": -2.9769235,
+      "lon": 21.2509596,
+      "osm_id": "node/1721355100",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Yaelima",
+        "is_in:territoire": "Dekese",
+        "name": "Luapa",
+        "place": "village",
+        "rgc:pcode": "90350075"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bosanza",
+      "lat": -2.6540877,
+      "lon": 20.904355,
+      "osm_id": "node/1721356898",
+      "osm_tags": {
+        "alt_name": "Busandja",
+        "is_in:collectivit\u00e9": "Yaelima",
+        "is_in:territoire": "Dekese",
+        "name": "Bosanza",
+        "place": "village",
+        "rgc:pcode": "90350028"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bongola",
+      "lat": -2.5967374,
+      "lon": 20.8623174,
+      "osm_id": "node/1721365031",
+      "osm_tags": {
+        "code_ins": "90350104002",
+        "is_in:collectivit\u00e9": "Yaelima",
+        "is_in:groupement": "Yaelima",
+        "is_in:territoire": "Dekese",
+        "name": "Bongola",
+        "place": "village",
+        "rgc:pcode": "90350008"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ekombe",
+      "lat": -2.5720599,
+      "lon": 20.6379551,
+      "osm_id": "node/1721365042",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Lokolama",
+        "is_in:territoire": "Oshwe",
+        "name": "Ekombe",
+        "place": "village",
+        "rgc:pcode": "30230049"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mundja",
+      "lat": -2.5257982,
+      "lon": 20.4777463,
+      "osm_id": "node/1721365063",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Lokolama",
+        "is_in:territoire": "Oshwe",
+        "name": "Mundja",
+        "place": "village",
+        "rgc:pcode": "30230140"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bokungu",
+      "lat": -0.609586,
+      "lon": 22.312214,
+      "osm_id": "node/1721875607",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Lolaka",
+        "is_in:territoire": "Bokungu",
+        "name": "Bokungu",
+        "place": "town",
+        "rgc:pcode": "40750055",
+        "wikidata": "Q2909259"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mondombe",
+      "lat": -0.7783994,
+      "lon": 22.7547497,
+      "osm_id": "node/1721875625",
+      "osm_tags": {
+        "alt_name": "Mondomba",
+        "is_in:collectivit\u00e9": "Loile",
+        "is_in:territoire": "Ikela",
+        "name": "Mondombe",
+        "place": "town",
+        "rgc:pcode": "40740045"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Yalusaka",
+      "lat": -0.9612514,
+      "lon": 22.9720036,
+      "osm_id": "node/1721875631",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Lokina",
+        "is_in:territoire": "Ikela",
+        "name": "Yalusaka",
+        "place": "town",
+        "rgc:pcode": "40740102"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Besombo-Nkasa",
+      "lat": -0.7200516,
+      "lon": 20.1388277,
+      "osm_id": "node/1736049403",
+      "osm_tags": {
+        "alt_name": "Besombo",
+        "ins:code": "0",
+        "is_in:collectivit\u00e9": "Eungu",
+        "is_in:territoire": "Ingende",
+        "name": "Besombo-Nkasa",
+        "place": "village",
+        "rgc:pcode": "40230020"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bofandjoa",
+      "lat": -0.6535492,
+      "lon": 20.0902719,
+      "osm_id": "node/1736049408",
+      "osm_tags": {
+        "fixme": "position",
+        "ins:code": "0",
+        "is_in:collectivit\u00e9": "Eungu",
+        "is_in:territoire": "Ingende",
+        "name": "Bofandjoa",
+        "place": "village",
+        "rgc:pcode": "40230030"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Eandza-Wamba",
+      "lat": -0.5917461,
+      "lon": 20.0128766,
+      "osm_id": "node/1736049414",
+      "osm_tags": {
+        "alt_name": "Eanza Wamba",
+        "ins:code": "0",
+        "is_in:collectivit\u00e9": "Eungu",
+        "is_in:territoire": "Ingende",
+        "name": "Eandza-Wamba",
+        "place": "village",
+        "rgc:pcode": "40230070"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ikela",
+      "lat": -0.7714383,
+      "lon": 20.1247883,
+      "osm_id": "node/1736049422",
+      "osm_tags": {
+        "fixme": "position",
+        "ins:code": "0",
+        "is_in:collectivit\u00e9": "Eungu",
+        "is_in:territoire": "Ingende",
+        "name": "Ikela",
+        "place": "village",
+        "rgc:pcode": "40230118"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Isaka",
+      "lat": -0.6745469,
+      "lon": 20.1262867,
+      "osm_id": "node/1736049424",
+      "osm_tags": {
+        "ins:code": "40230203022",
+        "is_in:collectivit\u00e9": "Duali",
+        "is_in:groupement": "Iyonda Nkundo",
+        "is_in:territoire": "Ingende",
+        "name": "Isaka",
+        "place": "village",
+        "rgc:pcode": "40230128"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mongofe",
+      "lat": -0.6702146,
+      "lon": 20.165971,
+      "osm_id": "node/1736049425",
+      "osm_tags": {
+        "alt_name": "Isaka-Rive",
+        "ins:code": "0",
+        "is_in:collectivit\u00e9": "Eungu",
+        "is_in:territoire": "Ingende",
+        "name": "Mongofe",
+        "place": "village",
+        "rgc:pcode": "40230178"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bokakandu",
+      "lat": -0.6453025,
+      "lon": 20.4584799,
+      "osm_id": "node/1736159954",
+      "osm_tags": {
+        "ins:code": "0",
+        "is_in:collectivit\u00e9": "Djera",
+        "is_in:territoire": "Boende",
+        "name": "Bokakandu",
+        "place": "village",
+        "rgc:pcode": "40710029"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Djuangole",
+      "lat": -0.8523713,
+      "lon": 20.5639944,
+      "osm_id": "node/1736159956",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Djera",
+        "is_in:territoire": "Boende",
+        "name": "Djuangole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Esoi",
+      "lat": -0.6749811,
+      "lon": 20.4614166,
+      "osm_id": "node/1736159961",
+      "osm_tags": {
+        "ins:code": "0",
+        "is_in:collectivit\u00e9": "Djera",
+        "is_in:territoire": "Boende",
+        "name": "Esoi",
+        "place": "village",
+        "rgc:pcode": "40710019"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ileo",
+      "lat": -0.8228514,
+      "lon": 20.5599122,
+      "osm_id": "node/1736159967",
+      "osm_tags": {
+        "ins:code": "0",
+        "is_in:collectivit\u00e9": "Djera",
+        "is_in:territoire": "Boende",
+        "name": "Ileo",
+        "place": "hamlet",
+        "rgc:pcode": "40710100"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Inkanamongo",
+      "lat": -0.7138719,
+      "lon": 20.5302443,
+      "osm_id": "node/1736159969",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Djera",
+        "is_in:territoire": "Boende",
+        "name": "Inkanamongo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ituku",
+      "lat": -0.714902,
+      "lon": 20.5605892,
+      "osm_id": "node/1736159980",
+      "osm_tags": {
+        "is_in:collectivit\u00e9": "Djera",
+        "is_in:groupement": "Nkengo",
+        "is_in:territoire": "Boende",
+        "name": "Ituku",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lokolia",
+      "lat": -0.658531,
+      "lon": 20.6066619,
+      "osm_id": "node/1736159981",
+      "osm_tags": {
+        "ins:code": "0",
+        "is_in:collectivit\u00e9": "Djera",
+        "is_in:territoire": "Boende",
+        "name": "Lokolia",
+        "place": "village",
+        "rgc:pcode": "40710190"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Momboyo Monene",
+      "lat": -0.7397253,
+      "lon": 20.5628627,
+      "osm_id": "node/1736159984",
+      "osm_tags": {
+        "grpt:code": "40710112",
+        "ins:code": "40710112016",
+        "is_in:collectivit\u00e9": "Djera",
+        "is_in:groupement": "Nkengo",
+        "is_in:territoire": "Boende",
+        "name": "Momboyo Monene",
+        "place": "hamlet",
+        "rgc:pcode": "40710121"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mondjoku",
+      "lat": -0.917728,
+      "lon": 20.6659942,
+      "osm_id": "node/1736159990",
+      "osm_tags": {
+        "ins:code": "0",
+        "is_in:collectivit\u00e9": "Djera",
+        "is_in:territoire": "Boende",
+        "name": "Mondjoku",
+        "place": "village",
+        "rgc:pcode": "40710118"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Monkema",
+      "lat": -0.6249822,
+      "lon": 20.4654039,
+      "osm_id": "node/1736159995",
+      "osm_tags": {
+        "ins:code": "0",
+        "is_in:collectivit\u00e9": "Djera",
+        "is_in:territoire": "Boende",
+        "name": "Monkema",
+        "place": "village",
+        "rgc:pcode": "40710085"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngele",
+      "lat": -0.6091735,
+      "lon": 20.4909677,
+      "osm_id": "node/1736160002",
+      "osm_tags": {
+        "fixme": "position",
+        "ins:code": "0",
+        "is_in:collectivit\u00e9": "Djera",
+        "is_in:territoire": "Boende",
+        "name": "Ngele",
+        "place": "village",
+        "rgc:pcode": "40710221"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Isanga",
+      "lat": -1.5614244,
+      "lon": 22.397756,
+      "osm_id": "node/1736994763",
+      "osm_tags": {
+        "alt_name": "Isongo",
+        "ins:code": "40750104006",
+        "is_in:collectivit\u00e9": "Loombo",
+        "is_in:groupement": "Mondji Yale",
+        "is_in:territoire": "Bokungu",
+        "name": "Isanga",
+        "place": "village",
+        "rgc:pcode": "40750080"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Busanga",
+      "lat": -0.9033842,
+      "lon": 22.1090108,
+      "osm_id": "node/2529666868",
+      "osm_tags": {
+        "name": "Busanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bompe",
+      "lat": -0.8856586,
+      "lon": 22.2354618,
+      "osm_id": "node/2529666892",
+      "osm_tags": {
+        "name": "Bompe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Likuku",
+      "lat": -0.8370121,
+      "lon": 22.2576376,
+      "osm_id": "node/2529666900",
+      "osm_tags": {
+        "name": "Likuku",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bokota",
+      "lat": -0.8537038,
+      "lon": 22.2912838,
+      "osm_id": "node/2529666905",
+      "osm_tags": {
+        "name": "Bokota",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bongemba",
+      "lat": -0.7638545,
+      "lon": 22.3323459,
+      "osm_id": "node/2529670311",
+      "osm_tags": {
+        "name": "Bongemba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mombiyo",
+      "lat": -0.6808996,
+      "lon": 22.2749716,
+      "osm_id": "node/2529681100",
+      "osm_tags": {
+        "name": "Mombiyo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Efefe",
+      "lat": -0.8419441,
+      "lon": 20.5591156,
+      "osm_id": "node/3044892665",
+      "osm_tags": {
+        "name": "Efefe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Isuka",
+      "lat": -0.7564756,
+      "lon": 20.5716573,
+      "osm_id": "node/3044892666",
+      "osm_tags": {
+        "name": "Isuka",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nkasa 1",
+      "lat": -0.6287966,
+      "lon": 20.6362609,
+      "osm_id": "node/3044892668",
+      "osm_tags": {
+        "name": "Nkasa 1",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nkasa 2",
+      "lat": -0.6097365,
+      "lon": 20.6504632,
+      "osm_id": "node/3044892669",
+      "osm_tags": {
+        "name": "Nkasa 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bakako",
+      "lat": -1.0044786,
+      "lon": 20.2928426,
+      "osm_id": "node/3044934025",
+      "osm_tags": {
+        "name": "Bakako",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Biamo",
+      "lat": -0.9373575,
+      "lon": 20.3659036,
+      "osm_id": "node/3044934026",
+      "osm_tags": {
+        "name": "Biamo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bonga-Iteli",
+      "lat": -1.0287267,
+      "lon": 20.5644521,
+      "osm_id": "node/3044934027",
+      "osm_tags": {
+        "name": "Bonga-Iteli",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bonyanga",
+      "lat": -0.9802717,
+      "lon": 20.5875867,
+      "osm_id": "node/3044934028",
+      "osm_tags": {
+        "name": "Bonyanga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Boya",
+      "lat": -0.9778547,
+      "lon": 20.3556443,
+      "osm_id": "node/3044934029",
+      "osm_tags": {
+        "name": "Boya",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Djombo-Iyafe",
+      "lat": -1.0417868,
+      "lon": 20.5666982,
+      "osm_id": "node/3044934030",
+      "osm_tags": {
+        "name": "Djombo-Iyafe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ifoke",
+      "lat": -1.0731272,
+      "lon": 20.5636293,
+      "osm_id": "node/3044934031",
+      "osm_tags": {
+        "name": "Ifoke",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ilongolo",
+      "lat": -0.9391604,
+      "lon": 20.39361,
+      "osm_id": "node/3044934032",
+      "osm_tags": {
+        "name": "Ilongolo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Inkekele",
+      "lat": -0.9795018,
+      "lon": 20.4614456,
+      "osm_id": "node/3044935633",
+      "osm_tags": {
+        "name": "Inkekele",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kile",
+      "lat": -0.9455888,
+      "lon": 20.4068644,
+      "osm_id": "node/3044935634",
+      "osm_tags": {
+        "name": "Kile",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kungu-Salonga",
+      "lat": -0.9738505,
+      "lon": 20.448823,
+      "osm_id": "node/3044935635",
+      "osm_tags": {
+        "name": "Kungu-Salonga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Loango",
+      "lat": -0.9966194,
+      "lon": 20.493637,
+      "osm_id": "node/3044935636",
+      "osm_tags": {
+        "name": "Loango",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mangampumba",
+      "lat": -0.9950546,
+      "lon": 20.3863615,
+      "osm_id": "node/3044935637",
+      "osm_tags": {
+        "fixme": "position",
+        "name": "Mangampumba",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mondombe",
+      "lat": -1.0899558,
+      "lon": 20.571444,
+      "osm_id": "node/3044935638",
+      "osm_tags": {
+        "name": "Mondombe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ngunda",
+      "lat": -1.005596,
+      "lon": 20.566612,
+      "osm_id": "node/3044935639",
+      "osm_tags": {
+        "name": "Ngunda",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bofoku",
+      "lat": -1.0393428,
+      "lon": 20.9414772,
+      "osm_id": "node/3045881147",
+      "osm_tags": {
+        "name": "Bofoku",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Boimbo",
+      "lat": -1.3263692,
+      "lon": 20.8502948,
+      "osm_id": "node/3045881148",
+      "osm_tags": {
+        "name": "Boimbo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Elonge",
+      "lat": -1.2296861,
+      "lon": 20.8441017,
+      "osm_id": "node/3045881149",
+      "osm_tags": {
+        "name": "Elonge",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ika",
+      "lat": -1.0830345,
+      "lon": 21.0534063,
+      "osm_id": "node/3045881150",
+      "osm_tags": {
+        "name": "Ika",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bafaka",
+      "lat": -1.9110733,
+      "lon": 20.9059227,
+      "osm_id": "node/3048320504",
+      "osm_tags": {
+        "alt_name": "Bafaka",
+        "name": "Bafaka",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bafake",
+      "lat": -1.5069403,
+      "lon": 20.9359528,
+      "osm_id": "node/3048320505",
+      "osm_tags": {
+        "alt_name": "Batake",
+        "name": "Bafake",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bafake",
+      "lat": -1.6624059,
+      "lon": 19.8409003,
+      "osm_id": "node/3048320506",
+      "osm_tags": {
+        "alt_name": "Bafake",
+        "name": "Bafake",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bafake",
+      "lat": -1.7194623,
+      "lon": 20.6761817,
+      "osm_id": "node/3048320507",
+      "osm_tags": {
+        "alt_name": "Bafaki",
+        "name": "Bafake",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bafatsi",
+      "lat": -1.2120391,
+      "lon": 20.4702194,
+      "osm_id": "node/3048320508",
+      "osm_tags": {
+        "alt_name": "Bafatsi",
+        "name": "Bafatsi",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bakako",
+      "lat": -1.4999451,
+      "lon": 20.4155746,
+      "osm_id": "node/3048320509",
+      "osm_tags": {
+        "name": "Bakako",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bakatanga",
+      "lat": -1.9722446,
+      "lon": 20.9660226,
+      "osm_id": "node/3048320510",
+      "osm_tags": {
+        "alt_name": "Inkanda",
+        "name": "Bakatanga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bamala",
+      "lat": -1.1785018,
+      "lon": 21.2277361,
+      "osm_id": "node/3048320511",
+      "osm_tags": {
+        "alt_name": "Bamala",
+        "name": "Bamala",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bamata",
+      "lat": -1.1214474,
+      "lon": 21.1874207,
+      "osm_id": "node/3048320512",
+      "osm_tags": {
+        "alt_name": "Bamata",
+        "name": "Bamata",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bangasasi",
+      "lat": -1.4533517,
+      "lon": 20.8284866,
+      "osm_id": "node/3048320513",
+      "osm_tags": {
+        "alt_name": "Bangasasi",
+        "name": "Bangasasi",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Basaw",
+      "lat": -1.2378193,
+      "lon": 20.3659064,
+      "osm_id": "node/3048320514",
+      "osm_tags": {
+        "alt_name": "Besow",
+        "name": "Basaw",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Beble",
+      "lat": -1.0212056,
+      "lon": 21.190795,
+      "osm_id": "node/3048320515",
+      "osm_tags": {
+        "alt_name": "Beble",
+        "name": "Beble",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Befeko",
+      "lat": -1.2135163,
+      "lon": 20.5555146,
+      "osm_id": "node/3048320516",
+      "osm_tags": {
+        "alt_name": "Befeko",
+        "name": "Befeko",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Befidji",
+      "lat": -1.5312995,
+      "lon": 20.1512707,
+      "osm_id": "node/3048320517",
+      "osm_tags": {
+        "alt_name": "Befidji",
+        "name": "Befidji",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bekelongo",
+      "lat": -1.6358834,
+      "lon": 19.9006217,
+      "osm_id": "node/3048320518",
+      "osm_tags": {
+        "alt_name": "Bekelongo",
+        "name": "Bekelongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bekomu",
+      "lat": -1.4367395,
+      "lon": 20.7074338,
+      "osm_id": "node/3048320519",
+      "osm_tags": {
+        "alt_name": "Bekomu",
+        "name": "Bekomu",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bekungu",
+      "lat": -1.5257313,
+      "lon": 20.3512857,
+      "osm_id": "node/3048320520",
+      "osm_tags": {
+        "alt_name": "Bekungu",
+        "name": "Bekungu",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Belingo",
+      "lat": -1.5031653,
+      "lon": 20.9387038,
+      "osm_id": "node/3048320521",
+      "osm_tags": {
+        "alt_name": "Belingo",
+        "name": "Belingo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Belondo",
+      "lat": -1.6242803,
+      "lon": 19.9209624,
+      "osm_id": "node/3048320522",
+      "osm_tags": {
+        "alt_name": "Belondo",
+        "name": "Belondo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bemianga",
+      "lat": -1.4517776,
+      "lon": 20.8140296,
+      "osm_id": "node/3048320523",
+      "osm_tags": {
+        "alt_name": "Bemianga",
+        "name": "Bemianga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Benganya",
+      "lat": -1.5610857,
+      "lon": 20.1962409,
+      "osm_id": "node/3048320525",
+      "osm_tags": {
+        "alt_name": "Bengania",
+        "name": "Benganya",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Besala",
+      "lat": -1.5523354,
+      "lon": 20.635005,
+      "osm_id": "node/3048320526",
+      "osm_tags": {
+        "name": "Besala",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Besange",
+      "lat": -1.3850313,
+      "lon": 20.6429585,
+      "osm_id": "node/3048320527",
+      "osm_tags": {
+        "alt_name": "Besange",
+        "name": "Besange",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Besau",
+      "lat": -1.8080846,
+      "lon": 20.7707943,
+      "osm_id": "node/3048320528",
+      "osm_tags": {
+        "alt_name": "Besaw",
+        "name": "Besau",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Besaw Nongo",
+      "lat": -1.2378311,
+      "lon": 20.4171763,
+      "osm_id": "node/3048320529",
+      "osm_tags": {
+        "alt_name": "Besaw Nongo",
+        "name": "Besaw Nongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Besolongo",
+      "lat": -1.2269873,
+      "lon": 20.4590566,
+      "osm_id": "node/3048320530",
+      "osm_tags": {
+        "alt_name": "Besolongo",
+        "name": "Besolongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Betaka",
+      "lat": -1.5179305,
+      "lon": 20.9241707,
+      "osm_id": "node/3048320531",
+      "osm_tags": {
+        "name": "Betaka",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Betamba 1",
+      "lat": -1.7525905,
+      "lon": 20.7030184,
+      "osm_id": "node/3048320532",
+      "osm_tags": {
+        "alt_name": "Betamba 1",
+        "name": "Betamba 1",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Betamba 2",
+      "lat": -1.7601639,
+      "lon": 20.72076,
+      "osm_id": "node/3048320533",
+      "osm_tags": {
+        "alt_name": "Betamba 2",
+        "name": "Betamba 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Betamba III",
+      "lat": -2.0860376,
+      "lon": 21.2118159,
+      "osm_id": "node/3048320534",
+      "osm_tags": {
+        "alt_name": "Betamba III",
+        "name": "Betamba III",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Betamba",
+      "lat": -1.2540714,
+      "lon": 20.6387664,
+      "osm_id": "node/3048320535",
+      "osm_tags": {
+        "alt_name": "Betamba",
+        "name": "Betamba",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Betambefa",
+      "lat": -1.6162083,
+      "lon": 19.9350267,
+      "osm_id": "node/3048320536",
+      "osm_tags": {
+        "alt_name": "Betambefa",
+        "name": "Betambefa",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Beteleme",
+      "lat": -1.5185545,
+      "lon": 20.6716554,
+      "osm_id": "node/3048320537",
+      "osm_tags": {
+        "name": "Beteleme",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Betumbe",
+      "lat": -1.1628345,
+      "lon": 21.2664699,
+      "osm_id": "node/3048320538",
+      "osm_tags": {
+        "alt_name": "Betumbe",
+        "name": "Betumbe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Betuna",
+      "lat": -2.10006,
+      "lon": 21.1446529,
+      "osm_id": "node/3048320539",
+      "osm_tags": {
+        "alt_name": "Betuna",
+        "name": "Betuna",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bianga",
+      "lat": -1.593089,
+      "lon": 20.231656,
+      "osm_id": "node/3048320540",
+      "osm_tags": {
+        "alt_name": "Bianga",
+        "name": "Bianga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bilangi",
+      "lat": -1.4998465,
+      "lon": 20.4045139,
+      "osm_id": "node/3048320541",
+      "osm_tags": {
+        "alt_name": "Bilangi",
+        "name": "Bilangi",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Biongo",
+      "lat": -1.5224359,
+      "lon": 20.9195688,
+      "osm_id": "node/3048320542",
+      "osm_tags": {
+        "alt_name": "Biongo",
+        "name": "Biongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Boala",
+      "lat": -1.5483092,
+      "lon": 20.1890478,
+      "osm_id": "node/3048320543",
+      "osm_tags": {
+        "alt_name": "Boala",
+        "name": "Boala",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Boangi",
+      "lat": -1.9857455,
+      "lon": 20.9776493,
+      "osm_id": "node/3048320544",
+      "osm_tags": {
+        "alt_name": "Boangi",
+        "name": "Boangi",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bofambe",
+      "lat": -1.1553911,
+      "lon": 20.4359074,
+      "osm_id": "node/3048320545",
+      "osm_tags": {
+        "alt_name": "Bofambe",
+        "name": "Bofambe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bofonge",
+      "lat": -1.5099488,
+      "lon": 20.3686587,
+      "osm_id": "node/3048320546",
+      "osm_tags": {
+        "alt_name": "Bofonge",
+        "name": "Bofonge",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bokake",
+      "lat": -0.8389102,
+      "lon": 19.8474336,
+      "osm_id": "node/3048320547",
+      "osm_tags": {
+        "alt_name": "Bokake",
+        "name": "Bokake",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bokala 1",
+      "lat": -1.7781816,
+      "lon": 20.7345568,
+      "osm_id": "node/3048320548",
+      "osm_tags": {
+        "alt_name": "Bokala",
+        "name": "Bokala 1",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bokala 2",
+      "lat": -2.0995442,
+      "lon": 21.1423502,
+      "osm_id": "node/3048320549",
+      "osm_tags": {
+        "alt_name": "Bokala",
+        "name": "Bokala 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bokala",
+      "lat": -1.5741958,
+      "lon": 20.2722714,
+      "osm_id": "node/3048320550",
+      "osm_tags": {
+        "alt_name": "Bokala",
+        "name": "Bokala",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bokanga",
+      "lat": -1.5504756,
+      "lon": 20.0751853,
+      "osm_id": "node/3048320551",
+      "osm_tags": {
+        "alt_name": "Bokanga",
+        "name": "Bokanga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bokanu",
+      "lat": -2.0955627,
+      "lon": 21.117577,
+      "osm_id": "node/3048320553",
+      "osm_tags": {
+        "alt_name": "Bokanu",
+        "name": "Bokanu",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bokombola",
+      "lat": -1.4828139,
+      "lon": 20.6964679,
+      "osm_id": "node/3048320554",
+      "osm_tags": {
+        "alt_name": "Bokombola",
+        "name": "Bokombola",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bokongo",
+      "lat": -1.2890359,
+      "lon": 20.636235,
+      "osm_id": "node/3048320555",
+      "osm_tags": {
+        "alt_name": "Bokongo",
+        "name": "Bokongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bolanda",
+      "lat": -1.6502428,
+      "lon": 19.8846189,
+      "osm_id": "node/3048320556",
+      "osm_tags": {
+        "alt_name": "Bolanda",
+        "name": "Bolanda",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bolaya",
+      "lat": -1.7865978,
+      "lon": 20.7485929,
+      "osm_id": "node/3048320557",
+      "osm_tags": {
+        "alt_name": "Bolaya",
+        "name": "Bolaya",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Boleandjoku",
+      "lat": -1.6054669,
+      "lon": 19.6773198,
+      "osm_id": "node/3048320558",
+      "osm_tags": {
+        "alt_name": "Boleandjoku",
+        "name": "Boleandjoku",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Boleko",
+      "lat": -1.5385319,
+      "lon": 20.027514,
+      "osm_id": "node/3048320559",
+      "osm_tags": {
+        "name": "Boleko",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bolembe",
+      "lat": -1.8411334,
+      "lon": 20.8392087,
+      "osm_id": "node/3048320560",
+      "osm_tags": {
+        "alt_name": "Bolembe",
+        "name": "Bolembe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bolendo",
+      "lat": -1.4667135,
+      "lon": 20.7421331,
+      "osm_id": "node/3048320561",
+      "osm_tags": {
+        "alt_name": "Bolendo",
+        "name": "Bolendo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bolenge",
+      "lat": -1.447844,
+      "lon": 20.8003543,
+      "osm_id": "node/3048320562",
+      "osm_tags": {
+        "alt_name": "Bolenge",
+        "name": "Bolenge",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bolenge",
+      "lat": -1.5861744,
+      "lon": 20.8477646,
+      "osm_id": "node/3048320563",
+      "osm_tags": {
+        "name": "Bolenge",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bolenge",
+      "lat": -1.9196616,
+      "lon": 20.9157326,
+      "osm_id": "node/3048320564",
+      "osm_tags": {
+        "alt_name": "Bolenge",
+        "name": "Bolenge",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Boliko",
+      "lat": -2.0932646,
+      "lon": 21.1085226,
+      "osm_id": "node/3048320565",
+      "osm_tags": {
+        "alt_name": "Boliko",
+        "name": "Boliko",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bololo",
+      "lat": -1.8403341,
+      "lon": 20.8365533,
+      "osm_id": "node/3048320566",
+      "osm_tags": {
+        "alt_name": "Bololo",
+        "name": "Bololo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bolondo 2",
+      "lat": -2.0534072,
+      "lon": 21.3048003,
+      "osm_id": "node/3048320567",
+      "osm_tags": {
+        "alt_name": "Bolondo",
+        "name": "Bolondo 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bolondo",
+      "lat": -1.9114387,
+      "lon": 20.9071583,
+      "osm_id": "node/3048320568",
+      "osm_tags": {
+        "alt_name": "Bolondo",
+        "name": "Bolondo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bolongo",
+      "lat": -1.5631608,
+      "lon": 20.5531559,
+      "osm_id": "node/3048320569",
+      "osm_tags": {
+        "alt_name": "Bolongo",
+        "name": "Bolongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bolongo",
+      "lat": -2.0896457,
+      "lon": 21.2068875,
+      "osm_id": "node/3048320570",
+      "osm_tags": {
+        "alt_name": "Bolongo",
+        "name": "Bolongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bombelenge K",
+      "lat": -1.5298922,
+      "lon": 20.1571538,
+      "osm_id": "node/3048320573",
+      "osm_tags": {
+        "alt_name": "Bombelenge K",
+        "name": "Bombelenge K",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bombimbi",
+      "lat": -1.54287,
+      "lon": 20.1823601,
+      "osm_id": "node/3048320574",
+      "osm_tags": {
+        "alt_name": "Bombimbi",
+        "name": "Bombimbi",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bombolenge B",
+      "lat": -1.5414828,
+      "lon": 20.1093106,
+      "osm_id": "node/3048320575",
+      "osm_tags": {
+        "alt_name": "Bombolenge B",
+        "name": "Bombolenge B",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bombomba",
+      "lat": -2.006298,
+      "lon": 21.0082182,
+      "osm_id": "node/3048320576",
+      "osm_tags": {
+        "alt_name": "Bombomba",
+        "name": "Bombomba",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bomongili",
+      "lat": -2.040145,
+      "lon": 21.3875553,
+      "osm_id": "node/3048320577",
+      "osm_tags": {
+        "alt_name": "Bomongili",
+        "name": "Bomongili",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bompela",
+      "lat": -1.5399551,
+      "lon": 20.8964588,
+      "osm_id": "node/3048320578",
+      "osm_tags": {
+        "alt_name": "Bompela",
+        "name": "Bompela",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bompofia",
+      "lat": -1.501152,
+      "lon": 20.9432052,
+      "osm_id": "node/3048320579",
+      "osm_tags": {
+        "alt_name": "Bompofia",
+        "name": "Bompofia",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bompombo",
+      "lat": -1.5531741,
+      "lon": 19.9787939,
+      "osm_id": "node/3048320580",
+      "osm_tags": {
+        "alt_name": "Bompombo",
+        "name": "Bompombo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bompona",
+      "lat": -1.5808855,
+      "lon": 20.2168891,
+      "osm_id": "node/3048320581",
+      "osm_tags": {
+        "alt_name": "Mompone",
+        "name": "Bompona",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bompoto Wenge",
+      "lat": -1.5978786,
+      "lon": 20.8025955,
+      "osm_id": "node/3048320582",
+      "osm_tags": {
+        "alt_name": "Bompoto",
+        "name": "Bompoto Wenge",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bompoto",
+      "lat": -1.5508067,
+      "lon": 20.3022539,
+      "osm_id": "node/3048320583",
+      "osm_tags": {
+        "alt_name": "Bompoto",
+        "name": "Bompoto",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bondamba",
+      "lat": -2.0979008,
+      "lon": 21.134519,
+      "osm_id": "node/3048320584",
+      "osm_tags": {
+        "name": "Bondamba",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bondjindo",
+      "lat": -1.5333692,
+      "lon": 20.1284735,
+      "osm_id": "node/3048320585",
+      "osm_tags": {
+        "name": "Bondjindo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bondongo",
+      "lat": -1.5442885,
+      "lon": 20.0920919,
+      "osm_id": "node/3048320586",
+      "osm_tags": {
+        "alt_name": "Bondongo",
+        "name": "Bondongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bongale 1",
+      "lat": -1.7099173,
+      "lon": 20.6658376,
+      "osm_id": "node/3048320587",
+      "osm_tags": {
+        "alt_name": "Bongale 1",
+        "name": "Bongale 1",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bongale 2",
+      "lat": -1.6847539,
+      "lon": 20.6434264,
+      "osm_id": "node/3048320588",
+      "osm_tags": {
+        "alt_name": "Bongale 2",
+        "name": "Bongale 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bongale 3",
+      "lat": -1.9412372,
+      "lon": 20.9340364,
+      "osm_id": "node/3048320589",
+      "osm_tags": {
+        "alt_name": "Bongale 3",
+        "name": "Bongale 3",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bongenyo",
+      "lat": -1.5110205,
+      "lon": 20.9322761,
+      "osm_id": "node/3048320590",
+      "osm_tags": {
+        "alt_name": "Bongenyo",
+        "name": "Bongenyo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bongenyo",
+      "lat": -1.5570201,
+      "lon": 20.8688595,
+      "osm_id": "node/3048320591",
+      "osm_tags": {
+        "alt_name": "Bongenio",
+        "name": "Bongenyo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bongila",
+      "lat": -1.1052513,
+      "lon": 20.3868197,
+      "osm_id": "node/3048320592",
+      "osm_tags": {
+        "alt_name": "Bongila",
+        "name": "Bongila",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bongila",
+      "lat": -1.4913649,
+      "lon": 20.6970764,
+      "osm_id": "node/3048320593",
+      "osm_tags": {
+        "alt_name": "Bongila",
+        "name": "Bongila",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bongila",
+      "lat": -1.5268421,
+      "lon": 20.9136908,
+      "osm_id": "node/3048320594",
+      "osm_tags": {
+        "alt_name": "Bongila",
+        "name": "Bongila",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bongila",
+      "lat": -1.95168,
+      "lon": 20.9455111,
+      "osm_id": "node/3048320595",
+      "osm_tags": {
+        "alt_name": "Bongila",
+        "name": "Bongila",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bongoi",
+      "lat": -1.2277723,
+      "lon": 20.427497,
+      "osm_id": "node/3048320596",
+      "osm_tags": {
+        "alt_name": "Bongoi",
+        "name": "Bongoi",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bonkoi",
+      "lat": -1.2642426,
+      "lon": 20.6356068,
+      "osm_id": "node/3048320597",
+      "osm_tags": {
+        "alt_name": "Bonkoi",
+        "name": "Bonkoi",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bontole",
+      "lat": -1.5539066,
+      "lon": 20.2986111,
+      "osm_id": "node/3048320598",
+      "osm_tags": {
+        "alt_name": "Bontole",
+        "name": "Bontole",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Boonga Iteli",
+      "lat": -1.4973773,
+      "lon": 20.9604605,
+      "osm_id": "node/3048320599",
+      "osm_tags": {
+        "alt_name": "Bonga Ikele",
+        "name": "Boonga Iteli",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bosomo",
+      "lat": -1.1297808,
+      "lon": 21.2037776,
+      "osm_id": "node/3048320601",
+      "osm_tags": {
+        "alt_name": "Bosomo",
+        "name": "Bosomo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Botsike",
+      "lat": -1.8178466,
+      "lon": 20.7827337,
+      "osm_id": "node/3048320602",
+      "osm_tags": {
+        "alt_name": "Botsike",
+        "name": "Botsike",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Botuka",
+      "lat": -1.2163478,
+      "lon": 20.61077,
+      "osm_id": "node/3048320603",
+      "osm_tags": {
+        "alt_name": "Botuka",
+        "name": "Botuka",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bowanga",
+      "lat": -1.6141024,
+      "lon": 20.7977436,
+      "osm_id": "node/3048320604",
+      "osm_tags": {
+        "alt_name": "Bowanga",
+        "name": "Bowanga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Boyeka",
+      "lat": -1.5812419,
+      "lon": 20.2672264,
+      "osm_id": "node/3048320605",
+      "osm_tags": {
+        "alt_name": "Boyeka",
+        "name": "Boyeka",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Boyombe",
+      "lat": -2.0252103,
+      "lon": 21.0206111,
+      "osm_id": "node/3048320606",
+      "osm_tags": {
+        "alt_name": "Boyombe",
+        "name": "Boyombe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Djombo",
+      "lat": -1.5014038,
+      "lon": 20.9484568,
+      "osm_id": "node/3048320607",
+      "osm_tags": {
+        "alt_name": "Djombo",
+        "name": "Djombo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Djombo",
+      "lat": -1.5903867,
+      "lon": 19.954833,
+      "osm_id": "node/3048320608",
+      "osm_tags": {
+        "alt_name": "Djombo",
+        "name": "Djombo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Djumbu",
+      "lat": -1.8368037,
+      "lon": 20.8314354,
+      "osm_id": "node/3048320609",
+      "osm_tags": {
+        "alt_name": "Djumbu",
+        "name": "Djumbu",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Djumbwa Pongo",
+      "lat": -1.8271039,
+      "lon": 20.8028046,
+      "osm_id": "node/3048320610",
+      "osm_tags": {
+        "alt_name": "Djumbwampongo",
+        "name": "Djumbwa Pongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Eandza",
+      "lat": -1.2187082,
+      "lon": 20.5497095,
+      "osm_id": "node/3048320611",
+      "osm_tags": {
+        "alt_name": "Eandza",
+        "name": "Eandza",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Efeka",
+      "lat": -1.1658366,
+      "lon": 21.2538403,
+      "osm_id": "node/3048320612",
+      "osm_tags": {
+        "alt_name": "Efeka",
+        "name": "Efeka",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ekombe",
+      "lat": -2.0363589,
+      "lon": 21.4015771,
+      "osm_id": "node/3048320614",
+      "osm_tags": {
+        "alt_name": "Ekombe",
+        "name": "Ekombe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Elanga",
+      "lat": -1.5451455,
+      "lon": 20.8849127,
+      "osm_id": "node/3048320616",
+      "osm_tags": {
+        "alt_name": "Elanga",
+        "name": "Elanga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Elonga",
+      "lat": -1.4997219,
+      "lon": 20.9568935,
+      "osm_id": "node/3048320617",
+      "osm_tags": {
+        "alt_name": "Elonga",
+        "name": "Elonga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Emengeye",
+      "lat": -2.0929458,
+      "lon": 21.1034218,
+      "osm_id": "node/3048320618",
+      "osm_tags": {
+        "alt_name": "Emengeye",
+        "name": "Emengeye",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Esokonda",
+      "lat": -1.8149293,
+      "lon": 20.7783674,
+      "osm_id": "node/3048320619",
+      "osm_tags": {
+        "alt_name": "Esokonda",
+        "name": "Esokonda",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Eyengo",
+      "lat": -1.5496201,
+      "lon": 20.0660034,
+      "osm_id": "node/3048320620",
+      "osm_tags": {
+        "alt_name": "Eyengo",
+        "name": "Eyengo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Golgota",
+      "lat": -1.5845648,
+      "lon": 20.5748743,
+      "osm_id": "node/3048320621",
+      "osm_tags": {
+        "name": "Golgota",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gombe",
+      "lat": -1.2167589,
+      "lon": 20.5377789,
+      "osm_id": "node/3048320622",
+      "osm_tags": {
+        "alt_name": "Gombe",
+        "name": "Gombe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ifumu-Isaka",
+      "lat": -1.8160961,
+      "lon": 20.7801855,
+      "osm_id": "node/3048320623",
+      "osm_tags": {
+        "alt_name": "Isaka",
+        "name": "Ifumu-Isaka",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ifuto",
+      "lat": -1.1817282,
+      "lon": 20.4531963,
+      "osm_id": "node/3048320624",
+      "osm_tags": {
+        "alt_name": "Ifuto",
+        "name": "Ifuto",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ikali village",
+      "lat": -2.0962363,
+      "lon": 21.1244351,
+      "osm_id": "node/3048320625",
+      "osm_tags": {
+        "alt_name": "Ikali II",
+        "name": "Ikali village",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ikali",
+      "lat": -2.2234493,
+      "lon": 21.1875507,
+      "osm_id": "node/3048320626",
+      "osm_tags": {
+        "alt_name": "Ikali",
+        "name": "Ikali",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ikiyo",
+      "lat": -2.0712925,
+      "lon": 21.2569254,
+      "osm_id": "node/3048320627",
+      "osm_tags": {
+        "alt_name": "Ikiyo",
+        "name": "Ikiyo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ikolongo",
+      "lat": -1.549328,
+      "lon": 20.0821353,
+      "osm_id": "node/3048320628",
+      "osm_tags": {
+        "alt_name": "Ikolongo",
+        "name": "Ikolongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ikombe",
+      "lat": -1.8246815,
+      "lon": 20.8113481,
+      "osm_id": "node/3048320629",
+      "osm_tags": {
+        "alt_name": "Ikombe",
+        "name": "Ikombe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ikuela",
+      "lat": -1.8909987,
+      "lon": 20.8878458,
+      "osm_id": "node/3048320630",
+      "osm_tags": {
+        "alt_name": "Bongoyampongo",
+        "name": "Ikuela",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ila",
+      "lat": -1.8318924,
+      "lon": 20.8241397,
+      "osm_id": "node/3048320631",
+      "osm_tags": {
+        "alt_name": "Ila",
+        "name": "Ila",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ilaka",
+      "lat": -1.1070991,
+      "lon": 21.1701086,
+      "osm_id": "node/3048320632",
+      "osm_tags": {
+        "alt_name": "Ilaka",
+        "name": "Ilaka",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ilangankole",
+      "lat": -1.8540096,
+      "lon": 20.8575302,
+      "osm_id": "node/3048320633",
+      "osm_tags": {
+        "alt_name": "Ilangankole",
+        "name": "Ilangankole",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ilemba",
+      "lat": -1.5351781,
+      "lon": 20.177701,
+      "osm_id": "node/3048320634",
+      "osm_tags": {
+        "alt_name": "Ilemba",
+        "name": "Ilemba",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ilenge",
+      "lat": -2.0691909,
+      "lon": 21.0715398,
+      "osm_id": "node/3048320635",
+      "osm_tags": {
+        "alt_name": "Zanga",
+        "name": "Ilenge",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iliko 1",
+      "lat": -1.7841613,
+      "lon": 20.7452572,
+      "osm_id": "node/3048320636",
+      "osm_tags": {
+        "alt_name": "Iliko",
+        "name": "Iliko 1",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iliko",
+      "lat": -1.8773796,
+      "lon": 20.8742285,
+      "osm_id": "node/3048320637",
+      "osm_tags": {
+        "alt_name": "Iliko",
+        "name": "Iliko",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iliko-Bongale",
+      "lat": -1.5705622,
+      "lon": 19.9603376,
+      "osm_id": "node/3048320638",
+      "osm_tags": {
+        "alt_name": "Iliko-Bongale",
+        "name": "Iliko-Bongale",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iloku",
+      "lat": -1.5498703,
+      "lon": 20.0680667,
+      "osm_id": "node/3048320639",
+      "osm_tags": {
+        "alt_name": "Ilaku",
+        "name": "Iloku",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ilombe",
+      "lat": -2.1009589,
+      "lon": 21.1792839,
+      "osm_id": "node/3048320640",
+      "osm_tags": {
+        "alt_name": "Ilombe",
+        "name": "Ilombe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ilondo",
+      "lat": -1.3284506,
+      "lon": 20.6345449,
+      "osm_id": "node/3048320641",
+      "osm_tags": {
+        "alt_name": "Itondo",
+        "name": "Ilondo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ilonge",
+      "lat": -1.2288226,
+      "lon": 21.3588978,
+      "osm_id": "node/3048320642",
+      "osm_tags": {
+        "alt_name": "Ilonge",
+        "name": "Ilonge",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ilongo",
+      "lat": -1.5533819,
+      "lon": 20.5498305,
+      "osm_id": "node/3048320643",
+      "osm_tags": {
+        "alt_name": "Ilongo",
+        "name": "Ilongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ilongo",
+      "lat": -2.0502965,
+      "lon": 21.0535701,
+      "osm_id": "node/3048320644",
+      "osm_tags": {
+        "name": "Ilongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ilongolo",
+      "lat": -1.1125636,
+      "lon": 20.3909454,
+      "osm_id": "node/3048320645",
+      "osm_tags": {
+        "alt_name": "Ilongolo",
+        "name": "Ilongolo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Imbonge-Isolu",
+      "lat": -2.0876097,
+      "lon": 21.0959587,
+      "osm_id": "node/3048320646",
+      "osm_tags": {
+        "alt_name": "Isolu",
+        "name": "Imbonge-Isolu",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Indjolo 1",
+      "lat": -1.6228621,
+      "lon": 20.591662,
+      "osm_id": "node/3048320647",
+      "osm_tags": {
+        "alt_name": "Indjolo 1",
+        "name": "Indjolo 1",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Indjolo 2",
+      "lat": -1.6066986,
+      "lon": 20.5813202,
+      "osm_id": "node/3048320648",
+      "osm_tags": {
+        "alt_name": "Indjolo 2",
+        "name": "Indjolo 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ingundu",
+      "lat": -2.0996552,
+      "lon": 21.175268,
+      "osm_id": "node/3048320649",
+      "osm_tags": {
+        "alt_name": "Ingundu",
+        "name": "Ingundu",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Inkandja B.",
+      "lat": -1.5707525,
+      "lon": 20.2000848,
+      "osm_id": "node/3048320650",
+      "osm_tags": {
+        "alt_name": "Inkandjab",
+        "name": "Inkandja B.",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Inkandja K",
+      "lat": -1.5648957,
+      "lon": 20.2815191,
+      "osm_id": "node/3048320651",
+      "osm_tags": {
+        "alt_name": "Inkandje",
+        "name": "Inkandja K",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Inkotolo",
+      "lat": -1.1394415,
+      "lon": 21.235656,
+      "osm_id": "node/3048320652",
+      "osm_tags": {
+        "alt_name": "Inkotolo",
+        "name": "Inkotolo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Isenga",
+      "lat": -1.4639639,
+      "lon": 20.7702663,
+      "osm_id": "node/3048320653",
+      "osm_tags": {
+        "alt_name": "Isenga",
+        "name": "Isenga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Isenga",
+      "lat": -1.569848,
+      "lon": 20.8600595,
+      "osm_id": "node/3048320654",
+      "osm_tags": {
+        "alt_name": "Isenga",
+        "name": "Isenga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Isomo",
+      "lat": -1.4710696,
+      "lon": 20.7045487,
+      "osm_id": "node/3048320655",
+      "osm_tags": {
+        "alt_name": "Isomo",
+        "name": "Isomo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Itongu",
+      "lat": -1.3339598,
+      "lon": 20.6320175,
+      "osm_id": "node/3048320656",
+      "osm_tags": {
+        "alt_name": "Itongu",
+        "name": "Itongu",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Itota",
+      "lat": -1.35286,
+      "lon": 20.631273,
+      "osm_id": "node/3048320657",
+      "osm_tags": {
+        "alt_name": "Itota",
+        "name": "Itota",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iwamba 2",
+      "lat": -2.0677932,
+      "lon": 21.442844,
+      "osm_id": "node/3048320658",
+      "osm_tags": {
+        "name": "Iwamba 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iyala 1",
+      "lat": -1.7989216,
+      "lon": 20.762623,
+      "osm_id": "node/3048320659",
+      "osm_tags": {
+        "alt_name": "Yala",
+        "name": "Iyala 1",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iyala 2",
+      "lat": -2.1008055,
+      "lon": 21.1646637,
+      "osm_id": "node/3048320660",
+      "osm_tags": {
+        "alt_name": "Yala",
+        "name": "Iyala 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iyanda",
+      "lat": -1.2280042,
+      "lon": 20.6208741,
+      "osm_id": "node/3048320661",
+      "osm_tags": {
+        "alt_name": "Iyanda",
+        "name": "Iyanda",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iyanga 1",
+      "lat": -1.7818821,
+      "lon": 20.7413598,
+      "osm_id": "node/3048320662",
+      "osm_tags": {
+        "alt_name": "Yanga",
+        "name": "Iyanga 1",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iyanga 2",
+      "lat": -2.1008696,
+      "lon": 21.1560033,
+      "osm_id": "node/3048320663",
+      "osm_tags": {
+        "alt_name": "Yanga",
+        "name": "Iyanga 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iyete 1",
+      "lat": -1.1451986,
+      "lon": 20.3729306,
+      "osm_id": "node/3048320664",
+      "osm_tags": {
+        "alt_name": "Yete 1",
+        "name": "Iyete 1",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iyete 2",
+      "lat": -1.1352066,
+      "lon": 20.3945925,
+      "osm_id": "node/3048320665",
+      "osm_tags": {
+        "alt_name": "Yete 2",
+        "name": "Iyete 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iyete 3",
+      "lat": -1.1759012,
+      "lon": 20.3401216,
+      "osm_id": "node/3048320666",
+      "osm_tags": {
+        "alt_name": "Yete 3",
+        "name": "Iyete 3",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Jenge",
+      "lat": -1.5029138,
+      "lon": 20.9454558,
+      "osm_id": "node/3048320667",
+      "osm_tags": {
+        "alt_name": "Djenge",
+        "name": "Jenge",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kiki",
+      "lat": -1.6383062,
+      "lon": 20.7581118,
+      "osm_id": "node/3048320668",
+      "osm_tags": {
+        "alt_name": "Kiki",
+        "name": "Kiki",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kungu Luile",
+      "lat": -1.0720523,
+      "lon": 20.3543871,
+      "osm_id": "node/3048320669",
+      "osm_tags": {
+        "alt_name": "Kungu Luile",
+        "name": "Kungu Luile",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lianga",
+      "lat": -2.0624315,
+      "lon": 21.0730557,
+      "osm_id": "node/3048320670",
+      "osm_tags": {
+        "alt_name": "Lianga",
+        "name": "Lianga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Likongo",
+      "lat": -1.5386538,
+      "lon": 20.0357824,
+      "osm_id": "node/3048320671",
+      "osm_tags": {
+        "alt_name": "Ikongo",
+        "name": "Likongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lingombe",
+      "lat": -1.5477081,
+      "lon": 20.3098186,
+      "osm_id": "node/3048320672",
+      "osm_tags": {
+        "alt_name": "Lingombe",
+        "name": "Lingombe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Liombo",
+      "lat": -1.6738005,
+      "lon": 20.7265385,
+      "osm_id": "node/3048320673",
+      "osm_tags": {
+        "alt_name": "Liombo",
+        "name": "Liombo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lokako",
+      "lat": -2.0818988,
+      "lon": 21.2454699,
+      "osm_id": "node/3048320674",
+      "osm_tags": {
+        "alt_name": "Lokako",
+        "name": "Lokako",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lokanga",
+      "lat": -2.0248996,
+      "lon": 21.3377805,
+      "osm_id": "node/3048320675",
+      "osm_tags": {
+        "alt_name": "Lokanga",
+        "name": "Lokanga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lokenie",
+      "lat": -1.5992512,
+      "lon": 19.7096693,
+      "osm_id": "node/3048320676",
+      "osm_tags": {
+        "alt_name": "Lokenie",
+        "name": "Lokenie",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lokofa",
+      "lat": -1.5026218,
+      "lon": 20.3793059,
+      "osm_id": "node/3048320677",
+      "osm_tags": {
+        "alt_name": "Lokofa",
+        "name": "Lokofa",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lokolama",
+      "lat": -1.2362005,
+      "lon": 20.6315394,
+      "osm_id": "node/3048320678",
+      "osm_tags": {
+        "alt_name": "Lokolama",
+        "name": "Lokolama",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lokongatu",
+      "lat": -1.5770358,
+      "lon": 20.2130313,
+      "osm_id": "node/3048320679",
+      "osm_tags": {
+        "name": "Lokongatu",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lolakenanga",
+      "lat": -2.0372991,
+      "lon": 21.3752109,
+      "osm_id": "node/3048320680",
+      "osm_tags": {
+        "alt_name": "Lolakenanga",
+        "name": "Lolakenanga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lombo Lombo",
+      "lat": -1.4928266,
+      "lon": 20.4182931,
+      "osm_id": "node/3048320681",
+      "osm_tags": {
+        "alt_name": "Lombolombo",
+        "name": "Lombo Lombo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Londoko",
+      "lat": -1.5206916,
+      "lon": 20.9217236,
+      "osm_id": "node/3048320682",
+      "osm_tags": {
+        "name": "Londoko",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lontomba",
+      "lat": -1.5894144,
+      "lon": 20.2585392,
+      "osm_id": "node/3048320683",
+      "osm_tags": {
+        "alt_name": "Lontomba",
+        "name": "Lontomba",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Loola",
+      "lat": -1.1986964,
+      "lon": 20.4926595,
+      "osm_id": "node/3048320684",
+      "osm_tags": {
+        "alt_name": "Loola",
+        "name": "Loola",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Losako 2",
+      "lat": -1.5618275,
+      "lon": 20.6152544,
+      "osm_id": "node/3048320685",
+      "osm_tags": {
+        "name": "Losako 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Losombo 1",
+      "lat": -1.4853268,
+      "lon": 20.5041928,
+      "osm_id": "node/3048320686",
+      "osm_tags": {
+        "alt_name": "Losombo 1",
+        "name": "Losombo 1",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Losombo 2",
+      "lat": -1.5102435,
+      "lon": 20.5158997,
+      "osm_id": "node/3048320687",
+      "osm_tags": {
+        "alt_name": "Losombo 2",
+        "name": "Losombo 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Losombo",
+      "lat": -1.8627196,
+      "lon": 20.8653158,
+      "osm_id": "node/3048320688",
+      "osm_tags": {
+        "alt_name": "Losombo",
+        "name": "Losombo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lotoko",
+      "lat": -2.0958527,
+      "lon": 21.1207142,
+      "osm_id": "node/3048320689",
+      "osm_tags": {
+        "alt_name": "Lotoko",
+        "name": "Lotoko",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lowankombe",
+      "lat": -2.0757888,
+      "lon": 21.2522251,
+      "osm_id": "node/3048320690",
+      "osm_tags": {
+        "name": "Lowankombe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Luembe",
+      "lat": -1.8241414,
+      "lon": 20.8145575,
+      "osm_id": "node/3048320691",
+      "osm_tags": {
+        "alt_name": "Luembe",
+        "name": "Luembe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Maduo",
+      "lat": -1.4601196,
+      "lon": 20.7112505,
+      "osm_id": "node/3048320692",
+      "osm_tags": {
+        "alt_name": "Maduo",
+        "name": "Maduo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Maese",
+      "lat": -2.0499366,
+      "lon": 21.2807201,
+      "osm_id": "node/3048320693",
+      "osm_tags": {
+        "name": "Maese",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Malela",
+      "lat": -1.071999,
+      "lon": 21.1691802,
+      "osm_id": "node/3048320694",
+      "osm_tags": {
+        "alt_name": "Malela",
+        "name": "Malela",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Manga",
+      "lat": -1.5564401,
+      "lon": 20.2874048,
+      "osm_id": "node/3048320695",
+      "osm_tags": {
+        "alt_name": "Manga",
+        "name": "Manga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mange",
+      "lat": -1.8756317,
+      "lon": 20.8730271,
+      "osm_id": "node/3048320696",
+      "osm_tags": {
+        "alt_name": "Mange 2",
+        "name": "Mange",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mangilombe",
+      "lat": -1.5388671,
+      "lon": 20.0489231,
+      "osm_id": "node/3048320697",
+      "osm_tags": {
+        "alt_name": "Mangilombe",
+        "name": "Mangilombe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Manyanyu",
+      "lat": -1.8669812,
+      "lon": 20.867155,
+      "osm_id": "node/3048320698",
+      "osm_tags": {
+        "alt_name": "Maniania",
+        "name": "Manyanyu",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Masamba",
+      "lat": -1.509746,
+      "lon": 20.6794738,
+      "osm_id": "node/3048320699",
+      "osm_tags": {
+        "alt_name": "Masamba",
+        "name": "Masamba",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbanda",
+      "lat": -1.4589382,
+      "lon": 20.499008,
+      "osm_id": "node/3048320700",
+      "osm_tags": {
+        "alt_name": "Banda",
+        "name": "Mbanda",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbelo",
+      "lat": -1.4872996,
+      "lon": 20.6996602,
+      "osm_id": "node/3048320701",
+      "osm_tags": {
+        "name": "Mbelo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbile",
+      "lat": -2.000067,
+      "lon": 21.0008009,
+      "osm_id": "node/3048320702",
+      "osm_tags": {
+        "alt_name": "Mbile",
+        "name": "Mbile",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbombe longale",
+      "lat": -1.5513618,
+      "lon": 20.1920588,
+      "osm_id": "node/3048320703",
+      "osm_tags": {
+        "alt_name": "Bombelongale",
+        "name": "Mbombe longale",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbombe",
+      "lat": -1.6571613,
+      "lon": 20.6149964,
+      "osm_id": "node/3048320704",
+      "osm_tags": {
+        "alt_name": "Mbombe",
+        "name": "Mbombe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbongwanzale",
+      "lat": -1.5927199,
+      "lon": 20.2457333,
+      "osm_id": "node/3048320705",
+      "osm_tags": {
+        "alt_name": "Lokokongato",
+        "name": "Mbongwanzale",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbwaniama",
+      "lat": -1.8055077,
+      "lon": 20.7706604,
+      "osm_id": "node/3048320706",
+      "osm_tags": {
+        "alt_name": "Mbwaniama",
+        "name": "Mbwaniama",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Molaya",
+      "lat": -1.7942076,
+      "lon": 20.7604957,
+      "osm_id": "node/3048320707",
+      "osm_tags": {
+        "name": "Molaya",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mompona",
+      "lat": -1.5448917,
+      "lon": 20.3185038,
+      "osm_id": "node/3048320708",
+      "osm_tags": {
+        "alt_name": "Mompona",
+        "name": "Mompona",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mondjoku",
+      "lat": -1.5187685,
+      "lon": 20.9224482,
+      "osm_id": "node/3048320709",
+      "osm_tags": {
+        "alt_name": "Mondjoku",
+        "name": "Mondjoku",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mpoko",
+      "lat": -1.4998938,
+      "lon": 20.9519579,
+      "osm_id": "node/3048320710",
+      "osm_tags": {
+        "alt_name": "Mpoko",
+        "name": "Mpoko",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mpumba",
+      "lat": -1.1416454,
+      "lon": 20.4016702,
+      "osm_id": "node/3048320711",
+      "osm_tags": {
+        "alt_name": "Pumba",
+        "name": "Mpumba",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nangiema",
+      "lat": -1.4938537,
+      "lon": 20.9557091,
+      "osm_id": "node/3048320712",
+      "osm_tags": {
+        "alt_name": "Nongo Iyema",
+        "name": "Nangiema",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ndomba",
+      "lat": -1.6495223,
+      "lon": 20.7447369,
+      "osm_id": "node/3048320713",
+      "osm_tags": {
+        "alt_name": "Groupement Ndomba",
+        "name": "Ndomba",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ngandoto",
+      "lat": -1.226801,
+      "lon": 20.438597,
+      "osm_id": "node/3048320714",
+      "osm_tags": {
+        "alt_name": "Gandoto",
+        "name": "Ngandoto",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ngombe",
+      "lat": -1.580532,
+      "lon": 20.5613496,
+      "osm_id": "node/3048320715",
+      "osm_tags": {
+        "alt_name": "Gombe",
+        "name": "Ngombe",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nkake",
+      "lat": -2.0606158,
+      "lon": 21.2686186,
+      "osm_id": "node/3048320716",
+      "osm_tags": {
+        "alt_name": "N'kake",
+        "name": "Nkake",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nkile",
+      "lat": -2.0877967,
+      "lon": 21.0905153,
+      "osm_id": "node/3048320717",
+      "osm_tags": {
+        "name": "Nkile",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nkomu",
+      "lat": -2.0528414,
+      "lon": 21.0593149,
+      "osm_id": "node/3048320718",
+      "osm_tags": {
+        "alt_name": "Nkomu",
+        "name": "Nkomu",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nkoto",
+      "lat": -1.9173096,
+      "lon": 20.9127432,
+      "osm_id": "node/3048320719",
+      "osm_tags": {
+        "alt_name": "Nkoto",
+        "name": "Nkoto",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nkoy",
+      "lat": -1.5562482,
+      "lon": 20.1959014,
+      "osm_id": "node/3048320720",
+      "osm_tags": {
+        "alt_name": "Nkoi",
+        "name": "Nkoy",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Noguerira",
+      "lat": -1.23084,
+      "lon": 20.4056968,
+      "osm_id": "node/3048320721",
+      "osm_tags": {
+        "name": "Noguerira",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nongo 1 (Boloki)",
+      "lat": -1.208082,
+      "lon": 20.6006654,
+      "osm_id": "node/3048320722",
+      "osm_tags": {
+        "alt_name": "Nongo 1 (Boloki)",
+        "name": "Nongo 1 (Boloki)",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nongo 2",
+      "lat": -1.2001334,
+      "lon": 20.5926651,
+      "osm_id": "node/3048320723",
+      "osm_tags": {
+        "alt_name": "Nongo 2",
+        "name": "Nongo 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nongonienga",
+      "lat": -1.1664665,
+      "lon": 21.2868649,
+      "osm_id": "node/3048320724",
+      "osm_tags": {
+        "alt_name": "Nongonienga",
+        "name": "Nongonienga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nsambwankoy",
+      "lat": -1.5845896,
+      "lon": 20.2653025,
+      "osm_id": "node/3048320725",
+      "osm_tags": {
+        "name": "Nsambwankoy",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ntolengole",
+      "lat": -1.5257832,
+      "lon": 20.5240152,
+      "osm_id": "node/3048320726",
+      "osm_tags": {
+        "alt_name": "Talengole",
+        "name": "Ntolengole",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ntomba",
+      "lat": -1.8041326,
+      "lon": 20.1254919,
+      "osm_id": "node/3048320727",
+      "osm_tags": {
+        "alt_name": "Bokanga",
+        "name": "Ntomba",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nyanga",
+      "lat": -2.0669932,
+      "lon": 21.0699246,
+      "osm_id": "node/3048320728",
+      "osm_tags": {
+        "alt_name": "Djanga",
+        "name": "Nyanga",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Pata",
+      "lat": -1.8278409,
+      "lon": 20.8180428,
+      "osm_id": "node/3048320729",
+      "osm_tags": {
+        "alt_name": "Pata",
+        "name": "Pata",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Port Ifombo",
+      "lat": -1.1698781,
+      "lon": 20.3512711,
+      "osm_id": "node/3048320730",
+      "osm_tags": {
+        "alt_name": "Befonge",
+        "name": "Port Ifombo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Siona",
+      "lat": -1.5375429,
+      "lon": 20.6530008,
+      "osm_id": "node/3048320731",
+      "osm_tags": {
+        "name": "Siona",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tofeke",
+      "lat": -1.7969238,
+      "lon": 20.7617863,
+      "osm_id": "node/3048320732",
+      "osm_tags": {
+        "name": "Tofeke",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tumba",
+      "lat": -1.4264405,
+      "lon": 20.6725495,
+      "osm_id": "node/3048320733",
+      "osm_tags": {
+        "alt_name": "Tumba",
+        "name": "Tumba",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tumba",
+      "lat": -1.5468336,
+      "lon": 20.0866608,
+      "osm_id": "node/3048320734",
+      "osm_tags": {
+        "alt_name": "Tumba",
+        "name": "Tumba",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wafanya",
+      "lat": -1.5106335,
+      "lon": 20.4382092,
+      "osm_id": "node/3048320735",
+      "osm_tags": {
+        "alt_name": "Wafania",
+        "name": "Wafanya",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)",
+        "start_date": "1945-02"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wafema",
+      "lat": -1.4311096,
+      "lon": 20.6988806,
+      "osm_id": "node/3048320736",
+      "osm_tags": {
+        "alt_name": "Wafema",
+        "name": "Wafema",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wambansango",
+      "lat": -2.1018857,
+      "lon": 21.1740311,
+      "osm_id": "node/3048320737",
+      "osm_tags": {
+        "alt_name": "Wambansaku",
+        "name": "Wambansango",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wele",
+      "lat": -1.5206575,
+      "lon": 20.3540885,
+      "osm_id": "node/3048320738",
+      "osm_tags": {
+        "alt_name": "Wele",
+        "name": "Wele",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Welia",
+      "lat": -2.003781,
+      "lon": 21.0064183,
+      "osm_id": "node/3048320739",
+      "osm_tags": {
+        "alt_name": "Welia",
+        "name": "Welia",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wendjola",
+      "lat": -2.0972407,
+      "lon": 21.1301682,
+      "osm_id": "node/3048320740",
+      "osm_tags": {
+        "alt_name": "Wendjola-Bondaneba",
+        "name": "Wendjola",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Weta 2",
+      "lat": -1.5763966,
+      "lon": 20.586506,
+      "osm_id": "node/3048320741",
+      "osm_tags": {
+        "name": "Weta 2",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Weta",
+      "lat": -1.4658441,
+      "lon": 20.7018846,
+      "osm_id": "node/3048320742",
+      "osm_tags": {
+        "alt_name": "Weta",
+        "name": "Weta",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wetelia",
+      "lat": -2.039422,
+      "lon": 21.396215,
+      "osm_id": "node/3048320743",
+      "osm_tags": {
+        "alt_name": "Wetelia",
+        "name": "Wetelia",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Wetsi",
+      "lat": -2.030313,
+      "lon": 21.0344448,
+      "osm_id": "node/3048320744",
+      "osm_tags": {
+        "alt_name": "Wetsi",
+        "name": "Wetsi",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Yala",
+      "lat": -1.7788133,
+      "lon": 20.7549462,
+      "osm_id": "node/3048320745",
+      "osm_tags": {
+        "alt_name": "Yala",
+        "name": "Yala",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Yane",
+      "lat": -1.5311171,
+      "lon": 20.9061809,
+      "osm_id": "node/3048320746",
+      "osm_tags": {
+        "alt_name": "Yane",
+        "name": "Yane",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Yongo",
+      "lat": -2.1007671,
+      "lon": 21.1484814,
+      "osm_id": "node/3048320748",
+      "osm_tags": {
+        "alt_name": "Yongo",
+        "name": "Yongo",
+        "place": "hamlet",
+        "source": "SYGIAP project (UCL and UGent)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Watsi",
+      "lat": -0.9923063,
+      "lon": 20.7998665,
+      "osm_id": "node/3109315941",
+      "osm_tags": {
+        "name": "Watsi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Yolonga",
+      "lat": -1.2781114,
+      "lon": 22.5930029,
+      "osm_id": "node/5637491586",
+      "osm_tags": {
+        "name": "Yolonga",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lompole",
+      "lat": -2.617215,
+      "lon": 20.3384077,
+      "osm_id": "node/9942242453",
+      "osm_tags": {
+        "name": "Lompole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Village X I.",
+      "lat": -2.675401,
+      "lon": 21.74082,
+      "osm_id": "node/12604211109",
+      "osm_tags": {
+        "name": "Village X I.",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.0234125,
+      "lon": 20.7244078,
+      "osm_id": "way/10919057",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -0.6336549,
+      "lon": 22.264784,
+      "osm_id": "way/10919512",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -1.0228874,
+      "lon": 20.283785,
+      "osm_id": "way/23501508",
+      "osm_tags": {
+        "alt_name": "Luilaka",
+        "boat": "yes",
+        "name": "Lwilaka",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -1.8435456,
+      "lon": 20.7895641,
+      "osm_id": "way/48306203",
+      "osm_tags": {
+        "alt_name": "Luilaka;Momboyo",
+        "boat": "yes",
+        "name": "Lwilaka",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -1.647401,
+      "lon": 20.58356,
+      "osm_id": "way/48306770",
+      "osm_tags": {
+        "alt_name": "Luilaka;Momboyo",
+        "boat": "yes",
+        "name": "Lwilaka",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.8932635,
+      "lon": 21.6757686,
+      "osm_id": "way/48492482",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -1.0260618,
+      "lon": 20.3652127,
+      "osm_id": "way/48492604",
+      "osm_tags": {
+        "name": "Loile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -1.5184893,
+      "lon": 20.4680846,
+      "osm_id": "way/49915069",
+      "osm_tags": {
+        "alt_name": "Luilaka;Momboyo",
+        "boat": "yes",
+        "name": "Lwilaka",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.0211207,
+      "lon": 21.6715613,
+      "osm_id": "way/49919759",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.1302987,
+      "lon": 21.5318071,
+      "osm_id": "way/49919767",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.1969796,
+      "lon": 21.367209,
+      "osm_id": "way/49919825",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2017649,
+      "lon": 21.2161554,
+      "osm_id": "way/49919826",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.180727,
+      "lon": 21.0998369,
+      "osm_id": "way/49919827",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2083868,
+      "lon": 20.9869281,
+      "osm_id": "way/49919830",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2529366,
+      "lon": 20.8982934,
+      "osm_id": "way/49919831",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2734862,
+      "lon": 20.7696629,
+      "osm_id": "way/49919853",
+      "osm_tags": {
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2847825,
+      "lon": 20.6446471,
+      "osm_id": "way/49919880",
+      "osm_tags": {
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.310833,
+      "lon": 20.5342315,
+      "osm_id": "way/49919888",
+      "osm_tags": {
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.1330478,
+      "lon": 20.2950871,
+      "osm_id": "way/49919903",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lota",
+      "lat": -2.725048,
+      "lon": 20.5651253,
+      "osm_id": "way/49919947",
+      "osm_tags": {
+        "name": "Lota",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Penge",
+      "lat": -2.5399421,
+      "lon": 20.6950379,
+      "osm_id": "way/49919963",
+      "osm_tags": {
+        "name": "Penge",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.4686423,
+      "lon": 20.6601646,
+      "osm_id": "way/49919968",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.4549931,
+      "lon": 20.6042264,
+      "osm_id": "way/49919989",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.3969692,
+      "lon": 20.5273201,
+      "osm_id": "way/49919999",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.3197151,
+      "lon": 20.4560567,
+      "osm_id": "way/49920023",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.2548346,
+      "lon": 20.4062584,
+      "osm_id": "way/49920041",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.1911911,
+      "lon": 20.3444524,
+      "osm_id": "way/49920062",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.4410826,
+      "lon": 20.5775012,
+      "osm_id": "way/49920078",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.0714295,
+      "lon": 20.2528131,
+      "osm_id": "way/49920091",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.9830092,
+      "lon": 20.2019369,
+      "osm_id": "way/49920111",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.8917682,
+      "lon": 20.149024,
+      "osm_id": "way/49920128",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.8189445,
+      "lon": 20.1232836,
+      "osm_id": "way/49920136",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7920846,
+      "lon": 20.5128911,
+      "osm_id": "way/49940354",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -1.6834547,
+      "lon": 22.4871349,
+      "osm_id": "way/49953749",
+      "osm_tags": {
+        "name": "Lomela",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -1.3811494,
+      "lon": 20.8991619,
+      "osm_id": "way/49953751",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -1.6861481,
+      "lon": 21.0958987,
+      "osm_id": "way/49953753",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -1.5808116,
+      "lon": 21.0280619,
+      "osm_id": "way/49953755",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -1.4781149,
+      "lon": 20.9726487,
+      "osm_id": "way/49953756",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -1.9861967,
+      "lon": 21.4512381,
+      "osm_id": "way/49953759",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -1.8448974,
+      "lon": 21.261057,
+      "osm_id": "way/49953761",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -1.7684462,
+      "lon": 21.1745079,
+      "osm_id": "way/49953763",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -1.2872601,
+      "lon": 20.8021872,
+      "osm_id": "way/49953767",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -1.2111248,
+      "lon": 20.7123217,
+      "osm_id": "way/49953769",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.2565069,
+      "lon": 21.3891336,
+      "osm_id": "way/49953775",
+      "osm_tags": {
+        "name": "Salonga",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -1.8038914,
+      "lon": 22.5904842,
+      "osm_id": "way/49953783",
+      "osm_tags": {
+        "name": "Lomela",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lota",
+      "lat": -2.638459,
+      "lon": 20.6233711,
+      "osm_id": "way/49953797",
+      "osm_tags": {
+        "name": "Lota",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Dwenge",
+      "lat": -1.2630451,
+      "lon": 21.8132456,
+      "osm_id": "way/49953851",
+      "osm_tags": {
+        "name": "Dwenge",
+        "source": "www.rgc.cd",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -1.5363404,
+      "lon": 22.3731164,
+      "osm_id": "way/49954171",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lomela",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.385772,
+      "lon": 19.7298316,
+      "osm_id": "way/81100819",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.546792,
+      "lon": 19.7457328,
+      "osm_id": "way/81103205",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.5622003,
+      "lon": 19.8242722,
+      "osm_id": "way/81103206",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokeli",
+      "lat": -2.5356191,
+      "lon": 19.8183608,
+      "osm_id": "way/81103211",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokeli",
+        "name:en": "Lokeli River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.300464,
+      "lon": 20.0085451,
+      "osm_id": "way/81107510",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2443592,
+      "lon": 20.9219235,
+      "osm_id": "way/81107511",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2048393,
+      "lon": 21.0114487,
+      "osm_id": "way/81107512",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.1899472,
+      "lon": 21.1611987,
+      "osm_id": "way/81107514",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.1718688,
+      "lon": 21.4471857,
+      "osm_id": "way/81107515",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.35273,
+      "lon": 20.4590581,
+      "osm_id": "way/81107516",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.1109479,
+      "lon": 21.570419,
+      "osm_id": "way/81107517",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2784363,
+      "lon": 20.6158396,
+      "osm_id": "way/81107519",
+      "osm_tags": {
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2301379,
+      "lon": 20.9467384,
+      "osm_id": "way/81107521",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.1961412,
+      "lon": 21.040558,
+      "osm_id": "way/81107530",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.1501747,
+      "lon": 21.4900347,
+      "osm_id": "way/81107537",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.3226778,
+      "lon": 20.4804679,
+      "osm_id": "way/81107538",
+      "osm_tags": {
+        "boat": "no",
+        "fixme": "get rid of clouds!",
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.1981876,
+      "lon": 21.3214168,
+      "osm_id": "way/81107539",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.1844524,
+      "lon": 21.0702517,
+      "osm_id": "way/81107541",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lolimi",
+      "lat": -3.4370936,
+      "lon": 20.0476979,
+      "osm_id": "way/81107542",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lolimi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2763031,
+      "lon": 20.74331,
+      "osm_id": "way/81107543",
+      "osm_tags": {
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.303734,
+      "lon": 20.5580171,
+      "osm_id": "way/81107545",
+      "osm_tags": {
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2659631,
+      "lon": 20.842578,
+      "osm_id": "way/81107546",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.5131769,
+      "lon": 21.3128778,
+      "osm_id": "way/81107548",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "Esri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.1873697,
+      "lon": 21.4092328,
+      "osm_id": "way/81107550",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2890838,
+      "lon": 20.5867606,
+      "osm_id": "way/81107551",
+      "osm_tags": {
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2027207,
+      "lon": 21.2470357,
+      "osm_id": "way/81107552",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.4000183,
+      "lon": 20.2974404,
+      "osm_id": "way/81107553",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.1954261,
+      "lon": 21.19005,
+      "osm_id": "way/81107554",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.0882389,
+      "lon": 21.612431,
+      "osm_id": "way/81107555",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2587486,
+      "lon": 20.8736055,
+      "osm_id": "way/81107558",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.5910748,
+      "lon": 21.5194942,
+      "osm_id": "way/81107559",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "Esri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.4257678,
+      "lon": 20.7331781,
+      "osm_id": "way/81107560",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "Esri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2011428,
+      "lon": 21.2824261,
+      "osm_id": "way/81107561",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2786004,
+      "lon": 20.6763757,
+      "osm_id": "way/81107562",
+      "osm_tags": {
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2156969,
+      "lon": 20.9675439,
+      "osm_id": "way/81107564",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.4991945,
+      "lon": 21.1383797,
+      "osm_id": "way/81107567",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "Esri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.3679898,
+      "lon": 20.4885285,
+      "osm_id": "way/81107568",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.0601099,
+      "lon": 21.6475594,
+      "osm_id": "way/81107569",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lolimi",
+      "lat": -3.3788938,
+      "lon": 19.9993264,
+      "osm_id": "way/81107573",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lolimi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.3107243,
+      "lon": 20.5132693,
+      "osm_id": "way/81107574",
+      "osm_tags": {
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2805383,
+      "lon": 20.7109538,
+      "osm_id": "way/81107575",
+      "osm_tags": {
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.182569,
+      "lon": 21.1319046,
+      "osm_id": "way/81107576",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.4634078,
+      "lon": 21.0087323,
+      "osm_id": "way/81107577",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "Esri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2725389,
+      "lon": 20.8036386,
+      "osm_id": "way/81107578",
+      "osm_tags": {
+        "name": "Lula",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenye",
+      "lat": -3.5739283,
+      "lon": 22.2191517,
+      "osm_id": "way/81111069",
+      "osm_tags": {
+        "alt_name": "Lukenie",
+        "boat": "yes",
+        "name": "Lukenye",
+        "name:en": "Lukenie River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.5895709,
+      "lon": 21.8146641,
+      "osm_id": "way/81111077",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.616207,
+      "lon": 22.012644,
+      "osm_id": "way/81111105",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "yes",
+        "boundary": "administrative",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bula",
+      "lat": -3.5244564,
+      "lon": 21.7320598,
+      "osm_id": "way/81111107",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Bula",
+        "name:en": "Bula River",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q22606249"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.5728783,
+      "lon": 21.6694102,
+      "osm_id": "way/81111113",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "Esri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.4218302,
+      "lon": 23.0223116,
+      "osm_id": "way/81119343",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.4372325,
+      "lon": 22.6147042,
+      "osm_id": "way/81119362",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.408009,
+      "lon": 22.9426908,
+      "osm_id": "way/81119392",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.4121434,
+      "lon": 22.8316969,
+      "osm_id": "way/81119398",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.5270289,
+      "lon": 22.3425968,
+      "osm_id": "way/81119415",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.4709139,
+      "lon": 22.4070279,
+      "osm_id": "way/81119425",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.429657,
+      "lon": 23.1201642,
+      "osm_id": "way/81119430",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -0.7058186,
+      "lon": 22.4561462,
+      "osm_id": "way/93828756",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.5916138,
+      "lon": 19.9384656,
+      "osm_id": "way/94999461",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -2.0798316,
+      "lon": 23.0578099,
+      "osm_id": "way/111544317",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lomela",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndjale",
+      "lat": -1.9922593,
+      "lon": 23.1825016,
+      "osm_id": "way/111639842",
+      "osm_tags": {
+        "alt_name": "Djale",
+        "name": "Ndjale",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -1.4261647,
+      "lon": 20.4158937,
+      "osm_id": "way/115002415",
+      "osm_tags": {
+        "alt_name": "Luilaka",
+        "boat": "yes",
+        "name": "Lwilaka",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -1.1965396,
+      "lon": 20.3199143,
+      "osm_id": "way/115189441",
+      "osm_tags": {
+        "alt_name": "Luilaka",
+        "boat": "yes",
+        "name": "Lwilaka",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -1.9941002,
+      "lon": 20.971578,
+      "osm_id": "way/115257152",
+      "osm_tags": {
+        "alt_name": "Luilaka;Momboyo",
+        "boat": "yes",
+        "name": "Lwilaka",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -1.1112021,
+      "lon": 20.5542403,
+      "osm_id": "way/115257451",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Losoy",
+      "lat": -1.6337088,
+      "lon": 20.0979809,
+      "osm_id": "way/115543878",
+      "osm_tags": {
+        "name": "Losoy",
+        "source": "Bing, www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.4727582,
+      "lon": 19.9763526,
+      "osm_id": "way/115543882",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "Bing, www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.703585,
+      "lon": 20.099794,
+      "osm_id": "way/115543915",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.2615215,
+      "lon": 19.8129266,
+      "osm_id": "way/115546216",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "Bing, www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.0123236,
+      "lon": 19.733976,
+      "osm_id": "way/115546226",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "Bing, www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lolongo",
+      "lat": -1.2810493,
+      "lon": 19.8765273,
+      "osm_id": "way/115546247",
+      "osm_tags": {
+        "name": "Lolongo",
+        "source": "Bing, www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loso",
+      "lat": -1.3499391,
+      "lon": 19.7936512,
+      "osm_id": "way/115546253",
+      "osm_tags": {
+        "name": "Loso",
+        "source": "Bing, www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.6947544,
+      "lon": 21.9246781,
+      "osm_id": "way/116397422",
+      "osm_tags": {
+        "name": "Salonga",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -2.1309231,
+      "lon": 22.3247382,
+      "osm_id": "way/116397665",
+      "osm_tags": {
+        "name": "Salonga",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loto",
+      "lat": -2.0578507,
+      "lon": 22.2101995,
+      "osm_id": "way/116397666",
+      "osm_tags": {
+        "name": "Loto",
+        "source": "Bing, Landsat",
+        "waterway": "river",
+        "wikidata": "Q22660490"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7378083,
+      "lon": 20.2655552,
+      "osm_id": "way/158013194",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.6626908,
+      "lon": 20.1098759,
+      "osm_id": "way/158013200",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7724165,
+      "lon": 20.7161179,
+      "osm_id": "way/158014182",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "note": "FIXME: inaccurate",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.8243625,
+      "lon": 20.9210317,
+      "osm_id": "way/158014183",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "note": "FIXME: inaccurate",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lokoro",
+      "lat": -2.8555737,
+      "lon": 21.0405419,
+      "osm_id": "way/158014185",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Longoi",
+      "lat": -0.5546435,
+      "lon": 20.208499,
+      "osm_id": "way/158081772",
+      "osm_tags": {
+        "name": "Longoi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lofombo",
+      "lat": -2.3489428,
+      "lon": 21.613286,
+      "osm_id": "way/159974702",
+      "osm_tags": {
+        "name": "Lofombo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Momboyo",
+      "lat": -0.9734414,
+      "lon": 20.2315049,
+      "osm_id": "way/159979264",
+      "osm_tags": {
+        "alt_name": "Lwilaka;Luilaka",
+        "boat": "yes",
+        "name": "Momboyo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Momboyo",
+      "lat": -0.5999193,
+      "lon": 19.4816898,
+      "osm_id": "way/159981131",
+      "osm_tags": {
+        "alt_name": "Lwilaka;Luilaka",
+        "boat": "yes",
+        "name": "Momboyo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Momboyo",
+      "lat": -0.8147997,
+      "lon": 19.7385063,
+      "osm_id": "way/160022091",
+      "osm_tags": {
+        "alt_name": "Lwilaka;Luilaka",
+        "boat": "yes",
+        "name": "Momboyo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Momboyo",
+      "lat": -0.8925767,
+      "lon": 19.9765895,
+      "osm_id": "way/160025305",
+      "osm_tags": {
+        "alt_name": "Lwilaka;Luilaka",
+        "boat": "yes",
+        "name": "Momboyo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.1338326,
+      "lon": 21.111675,
+      "osm_id": "way/160029456",
+      "osm_tags": {
+        "alt_name": "Luilaka;Momboyo",
+        "name": "Lwilaka",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ilonga-Djali",
+      "lat": -1.9505583,
+      "lon": 20.7844757,
+      "osm_id": "way/160052864",
+      "osm_tags": {
+        "name": "Ilonga-Djali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ilonga-Djali",
+      "lat": -2.0149396,
+      "lon": 20.7977024,
+      "osm_id": "way/160052867",
+      "osm_tags": {
+        "name": "Ilonga-Djali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.7555492,
+      "lon": 22.1139351,
+      "osm_id": "way/160061702",
+      "osm_tags": {
+        "alt_name": "Luilaka;Momboyo",
+        "name": "Lwilaka",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.3040319,
+      "lon": 21.2049649,
+      "osm_id": "way/160061703",
+      "osm_tags": {
+        "alt_name": "Luilaka;Momboyo",
+        "name": "Lwilaka",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.4853468,
+      "lon": 20.7222885,
+      "osm_id": "way/160062677",
+      "osm_tags": {
+        "name": "Lokolo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lofombo",
+      "lat": -2.2604358,
+      "lon": 21.4023055,
+      "osm_id": "way/160064979",
+      "osm_tags": {
+        "name": "Lofombo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lofombo",
+      "lat": -2.2326282,
+      "lon": 21.2942252,
+      "osm_id": "way/160064980",
+      "osm_tags": {
+        "name": "Lofombo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lofombo",
+      "lat": -2.2740528,
+      "lon": 21.4421382,
+      "osm_id": "way/160064983",
+      "osm_tags": {
+        "name": "Lofombo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lofombo",
+      "lat": -2.2976736,
+      "lon": 21.4956133,
+      "osm_id": "way/160064985",
+      "osm_tags": {
+        "name": "Lofombo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lofombo",
+      "lat": -2.2458241,
+      "lon": 21.3520964,
+      "osm_id": "way/160064986",
+      "osm_tags": {
+        "name": "Lofombo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lofombo",
+      "lat": -2.230507,
+      "lon": 21.2270715,
+      "osm_id": "way/160064988",
+      "osm_tags": {
+        "name": "Lofombo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.4241655,
+      "lon": 21.2472889,
+      "osm_id": "way/160066016",
+      "osm_tags": {
+        "alt_name": "Luilaka;Momboyo",
+        "name": "Lwilaka",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.5666704,
+      "lon": 21.4848854,
+      "osm_id": "way/160067386",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Luilaka;Momboyo",
+        "boundary": "administrative",
+        "name": "Lwilaka",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -0.5610336,
+      "lon": 22.0180715,
+      "osm_id": "way/160111581",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -0.8629579,
+      "lon": 22.8659007,
+      "osm_id": "way/160115861",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -0.7774095,
+      "lon": 22.6769776,
+      "osm_id": "way/160115862",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.7494466,
+      "lon": 22.516842,
+      "osm_id": "way/160123584",
+      "osm_tags": {
+        "name": "Loile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.6429133,
+      "lon": 22.7311924,
+      "osm_id": "way/160127065",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.7368246,
+      "lon": 22.6196765,
+      "osm_id": "way/160127066",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.6922495,
+      "lon": 22.6741401,
+      "osm_id": "way/160127067",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lofombe",
+      "lat": -0.8182512,
+      "lon": 22.9370747,
+      "osm_id": "way/160137191",
+      "osm_tags": {
+        "name": "Lofombe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lofombe",
+      "lat": -0.8264391,
+      "lon": 23.1704557,
+      "osm_id": "way/160137192",
+      "osm_tags": {
+        "name": "Lofombe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mokombe",
+      "lat": -0.8147552,
+      "lon": 22.8795677,
+      "osm_id": "way/160137193",
+      "osm_tags": {
+        "name": "Mokombe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -0.99917,
+      "lon": 23.1646828,
+      "osm_id": "way/160156309",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loka",
+      "lat": -1.0200978,
+      "lon": 23.0610824,
+      "osm_id": "way/160163705",
+      "osm_tags": {
+        "name": "Loka",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loka",
+      "lat": -1.1758002,
+      "lon": 23.1106268,
+      "osm_id": "way/160170342",
+      "osm_tags": {
+        "name": "Loka",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loka",
+      "lat": -1.1251622,
+      "lon": 23.0986202,
+      "osm_id": "way/160170343",
+      "osm_tags": {
+        "name": "Loka",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loka",
+      "lat": -1.0740232,
+      "lon": 23.0812885,
+      "osm_id": "way/160170344",
+      "osm_tags": {
+        "name": "Loka",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7778218,
+      "lon": 20.656057,
+      "osm_id": "way/160275109",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "note": "FIXME: inaccurate",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7694586,
+      "lon": 20.5796439,
+      "osm_id": "way/160275111",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "note": "FIXME: inaccurate",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -0.5927669,
+      "lon": 20.2040903,
+      "osm_id": "way/161633797",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.2750906,
+      "lon": 21.4311031,
+      "osm_id": "way/161636827",
+      "osm_tags": {
+        "name": "Salonga",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.3449572,
+      "lon": 21.5810472,
+      "osm_id": "way/161654098",
+      "osm_tags": {
+        "name": "Salonga",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.2236454,
+      "lon": 21.3266277,
+      "osm_id": "way/161655668",
+      "osm_tags": {
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.2763887,
+      "lon": 20.9509727,
+      "osm_id": "way/161688919",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.2388037,
+      "lon": 20.8884853,
+      "osm_id": "way/161688920",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.0705869,
+      "lon": 20.739662,
+      "osm_id": "way/161688921",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.1327986,
+      "lon": 20.778297,
+      "osm_id": "way/161688931",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.1852499,
+      "lon": 20.826946,
+      "osm_id": "way/161688940",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.3966116,
+      "lon": 21.2649858,
+      "osm_id": "way/161691444",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.3051658,
+      "lon": 21.0380321,
+      "osm_id": "way/161691445",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.3320326,
+      "lon": 21.0981813,
+      "osm_id": "way/161691446",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.35929,
+      "lon": 21.1522511,
+      "osm_id": "way/161691447",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.379305,
+      "lon": 21.2110573,
+      "osm_id": "way/161691448",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.2905467,
+      "lon": 20.995767,
+      "osm_id": "way/161691449",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.4222049,
+      "lon": 21.3172601,
+      "osm_id": "way/161693776",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.495379,
+      "lon": 21.4094396,
+      "osm_id": "way/161703261",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.5327522,
+      "lon": 21.4490423,
+      "osm_id": "way/161703262",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.4592358,
+      "lon": 21.3718456,
+      "osm_id": "way/161703263",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -1.5852829,
+      "lon": 21.4906201,
+      "osm_id": "way/161704862",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.0507093,
+      "lon": 20.8447693,
+      "osm_id": "way/161712977",
+      "osm_tags": {
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.0829732,
+      "lon": 20.9792083,
+      "osm_id": "way/161717183",
+      "osm_tags": {
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.0895803,
+      "lon": 21.0374017,
+      "osm_id": "way/161717701",
+      "osm_tags": {
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.1210733,
+      "lon": 21.1012205,
+      "osm_id": "way/161718001",
+      "osm_tags": {
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.1487683,
+      "lon": 21.1643441,
+      "osm_id": "way/161718533",
+      "osm_tags": {
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bosa",
+      "lat": -0.8126034,
+      "lon": 21.4473257,
+      "osm_id": "way/161736635",
+      "osm_tags": {
+        "name": "Bosa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likafe",
+      "lat": -0.7692665,
+      "lon": 21.4911355,
+      "osm_id": "way/161736636",
+      "osm_tags": {
+        "name": "Likafe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -1.8879503,
+      "lon": 22.6868586,
+      "osm_id": "way/161737365",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lomela",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luay",
+      "lat": -0.9198402,
+      "lon": 21.7706832,
+      "osm_id": "way/161737366",
+      "osm_tags": {
+        "alt_name": "Luai",
+        "name": "Luay",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.1831965,
+      "lon": 21.2414636,
+      "osm_id": "way/161745634",
+      "osm_tags": {
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.7113485,
+      "lon": 21.9393765,
+      "osm_id": "way/166235113",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Luilaka;Momboyo",
+        "boundary": "administrative",
+        "name": "Lwilaka",
+        "note": "inaccurate",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bula",
+      "lat": -3.4692758,
+      "lon": 21.7471753,
+      "osm_id": "way/199831853",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Bula",
+        "name:en": "Bula River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -1.375391,
+      "lon": 22.149456,
+      "osm_id": "way/256066429",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lomela",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -0.918465,
+      "lon": 20.6190026,
+      "osm_id": "way/300029224",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.5099975,
+      "lon": 20.0004554,
+      "osm_id": "way/301700692",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "Bing, www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.576793,
+      "lon": 20.0344669,
+      "osm_id": "way/301700693",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "Bing, www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.556482,
+      "lon": 20.0320917,
+      "osm_id": "way/301700694",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "Bing, www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.5677151,
+      "lon": 20.0371961,
+      "osm_id": "way/301700695",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "Bing, www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.5080057,
+      "lon": 19.9944018,
+      "osm_id": "way/301700696",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "Bing, www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -0.9669255,
+      "lon": 20.6624712,
+      "osm_id": "way/302293672",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.0293751,
+      "lon": 20.7407257,
+      "osm_id": "way/303391786",
+      "osm_tags": {
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -0.9493339,
+      "lon": 20.6337989,
+      "osm_id": "way/303408138",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -0.9688367,
+      "lon": 20.6461947,
+      "osm_id": "way/303408139",
+      "osm_tags": {
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -0.9759719,
+      "lon": 20.6751773,
+      "osm_id": "way/303409883",
+      "osm_tags": {
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -0.5446127,
+      "lon": 20.902642,
+      "osm_id": "way/303803407",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -0.7244236,
+      "lon": 21.2910926,
+      "osm_id": "way/303803408",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -0.6390996,
+      "lon": 21.0847979,
+      "osm_id": "way/303803409",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -0.8151019,
+      "lon": 21.4986,
+      "osm_id": "way/309558367",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mokombe",
+      "lat": -0.740978,
+      "lon": 23.0413556,
+      "osm_id": "way/316438178",
+      "osm_tags": {
+        "name": "Mokombe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.2368124,
+      "lon": 22.2074176,
+      "osm_id": "way/381683815",
+      "osm_tags": {
+        "name": "Lukenie",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.2734506,
+      "lon": 22.5517305,
+      "osm_id": "way/381683816",
+      "osm_tags": {
+        "name": "Lukenie",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loto",
+      "lat": -2.381181,
+      "lon": 22.3559341,
+      "osm_id": "way/381815578",
+      "osm_tags": {
+        "name": "Loto",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.6689545,
+      "lon": 21.71141,
+      "osm_id": "way/406831640",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Luilaka;Momboyo",
+        "boundary": "administrative",
+        "name": "Lwilaka",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenye",
+      "lat": -3.5934735,
+      "lon": 22.1349364,
+      "osm_id": "way/613132362",
+      "osm_tags": {
+        "alt_name": "Lukenie",
+        "boat": "yes",
+        "name": "Lukenye",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -1.0329678,
+      "lon": 21.6903398,
+      "osm_id": "way/613900756",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -1.1406191,
+      "lon": 21.8085426,
+      "osm_id": "way/613900759",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -1.2368119,
+      "lon": 21.9500357,
+      "osm_id": "way/613900763",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lomela",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.6227665,
+      "lon": 21.9352048,
+      "osm_id": "way/764288915",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenye",
+      "lat": -3.601144,
+      "lon": 22.0920542,
+      "osm_id": "way/764288916",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Lukenie",
+        "boat": "yes",
+        "boundary": "administrative",
+        "name": "Lukenye",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ilonga-Djali",
+      "lat": -1.8646107,
+      "lon": 20.7713062,
+      "osm_id": "way/766465597",
+      "osm_tags": {
+        "name": "Ilonga-Djali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.2165348,
+      "lon": 20.3713724,
+      "osm_id": "way/766465598",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.8606792,
+      "lon": 20.1342569,
+      "osm_id": "way/766465599",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2796129,
+      "lon": 20.6315911,
+      "osm_id": "way/766465603",
+      "osm_tags": {
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.3089749,
+      "lon": 20.5002987,
+      "osm_id": "way/766465604",
+      "osm_tags": {
+        "boat": "no",
+        "fixme": "get rid of clouds!",
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -1.0818995,
+      "lon": 21.7189518,
+      "osm_id": "way/766476989",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -0.9114912,
+      "lon": 21.642201,
+      "osm_id": "way/766476990",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lukenie",
+      "lat": -3.3910492,
+      "lon": 22.4051272,
+      "osm_id": "way/773115583",
+      "osm_tags": {
+        "name": "Lukenie",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.3186575,
+      "lon": 22.3535321,
+      "osm_id": "way/773115584",
+      "osm_tags": {
+        "name": "Lukenie",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.4430357,
+      "lon": 22.4275546,
+      "osm_id": "way/773115585",
+      "osm_tags": {
+        "name": "Lukenie",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.4167403,
+      "lon": 22.4605872,
+      "osm_id": "way/773115586",
+      "osm_tags": {
+        "name": "Lukenie",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -1.958962,
+      "lon": 22.9371992,
+      "osm_id": "way/775027545",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lomela",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -1.9344357,
+      "lon": 22.8253826,
+      "osm_id": "way/775027546",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lomela",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lomela",
+      "lat": -0.9725166,
+      "lon": 21.6605812,
+      "osm_id": "way/786381762",
+      "osm_tags": {
+        "name": "Lomela",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lolimi",
+      "lat": -3.720222,
+      "lon": 20.3047836,
+      "osm_id": "way/800534984",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lolimi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -1.296306,
+      "lon": 21.4861736,
+      "osm_id": "way/848221642",
+      "osm_tags": {
+        "name": "Salonga",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -0.7520973,
+      "lon": 20.3181436,
+      "osm_id": "way/848221644",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "yes",
+        "boundary": "administrative",
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Salonga",
+      "lat": -0.8556374,
+      "lon": 20.4894893,
+      "osm_id": "way/848221646",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Salonga",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.9440235,
+      "lon": 20.1765045,
+      "osm_id": "way/848222806",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.5065303,
+      "lon": 22.8586197,
+      "osm_id": "way/866310972",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.6341013,
+      "lon": 22.7435617,
+      "osm_id": "way/866310973",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.6507497,
+      "lon": 22.7225082,
+      "osm_id": "way/866310974",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.6552234,
+      "lon": 22.7163673,
+      "osm_id": "way/866310975",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.6599677,
+      "lon": 22.7131064,
+      "osm_id": "way/866310976",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.6674806,
+      "lon": 22.6998655,
+      "osm_id": "way/866310977",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.678947,
+      "lon": 22.6845803,
+      "osm_id": "way/866310978",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.7037403,
+      "lon": 22.6661732,
+      "osm_id": "way/866310979",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.7154443,
+      "lon": 22.6599439,
+      "osm_id": "way/866310980",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.7248184,
+      "lon": 22.6442672,
+      "osm_id": "way/866310981",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.7399936,
+      "lon": 22.6007047,
+      "osm_id": "way/866310982",
+      "osm_tags": {
+        "name": "Loile",
+        "source": "Bing LowRes Satellite Imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luay",
+      "lat": -0.9326627,
+      "lon": 21.9894573,
+      "osm_id": "way/946913095",
+      "osm_tags": {
+        "name": "Luay",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.9616476,
+      "lon": 22.6262288,
+      "osm_id": "way/949420638",
+      "osm_tags": {
+        "name": "Loile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.6266309,
+      "lon": 20.0512491,
+      "osm_id": "way/984465501",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokeli",
+      "lat": -2.4830653,
+      "lon": 19.8606943,
+      "osm_id": "way/984465502",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokeli",
+        "name:en": "Lokeli River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokeli",
+      "lat": -2.4636381,
+      "lon": 19.8654485,
+      "osm_id": "way/984465503",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokeli",
+        "name:en": "Lokeli River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokeli",
+      "lat": -2.4406899,
+      "lon": 19.8700387,
+      "osm_id": "way/984465504",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokeli",
+        "name:en": "Lokeli River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokeli",
+      "lat": -2.4367237,
+      "lon": 19.8705768,
+      "osm_id": "way/984465505",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokeli",
+        "name:en": "Lokeli River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokeli",
+      "lat": -2.4106305,
+      "lon": 19.8781509,
+      "osm_id": "way/984465506",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokeli",
+        "name:en": "Lokeli River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokeli",
+      "lat": -2.5013304,
+      "lon": 19.8476976,
+      "osm_id": "way/984465508",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokeli",
+        "name:en": "Lokeli River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7700068,
+      "lon": 20.7538976,
+      "osm_id": "way/984970760",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "note": "FIXME: inaccurate",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7454056,
+      "lon": 20.33914,
+      "osm_id": "way/984970762",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.749373,
+      "lon": 20.3428119,
+      "osm_id": "way/984970763",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.749984,
+      "lon": 20.3445932,
+      "osm_id": "way/984970764",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7502679,
+      "lon": 20.3469957,
+      "osm_id": "way/984970765",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7490216,
+      "lon": 20.3483176,
+      "osm_id": "way/984970766",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7487854,
+      "lon": 20.350076,
+      "osm_id": "way/984970767",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7486123,
+      "lon": 20.3512896,
+      "osm_id": "way/984970768",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7488355,
+      "lon": 20.3524365,
+      "osm_id": "way/984970769",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7475682,
+      "lon": 20.3523764,
+      "osm_id": "way/984970770",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7501641,
+      "lon": 20.374474,
+      "osm_id": "way/984970771",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7722876,
+      "lon": 20.4308374,
+      "osm_id": "way/984970785",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7887823,
+      "lon": 20.4644928,
+      "osm_id": "way/984970814",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7934487,
+      "lon": 20.4757706,
+      "osm_id": "way/984970823",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7949876,
+      "lon": 20.4777007,
+      "osm_id": "way/984970824",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7964449,
+      "lon": 20.4784802,
+      "osm_id": "way/984970825",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7966801,
+      "lon": 20.4794803,
+      "osm_id": "way/984970826",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7973423,
+      "lon": 20.4800534,
+      "osm_id": "way/984970827",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7984587,
+      "lon": 20.4808575,
+      "osm_id": "way/984970828",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7986098,
+      "lon": 20.4837898,
+      "osm_id": "way/984970829",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.797398,
+      "lon": 20.4880085,
+      "osm_id": "way/984970830",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7985089,
+      "lon": 20.488788,
+      "osm_id": "way/984970831",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.3542757,
+      "lon": 20.4844909,
+      "osm_id": "way/984970832",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2836745,
+      "lon": 20.6581928,
+      "osm_id": "way/984982242",
+      "osm_tags": {
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7159843,
+      "lon": 20.1957961,
+      "osm_id": "way/984982245",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.2866242,
+      "lon": 20.4314095,
+      "osm_id": "way/984986948",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.1758009,
+      "lon": 20.3267059,
+      "osm_id": "way/984992671",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokeli",
+      "lat": -2.3767243,
+      "lon": 19.8983668,
+      "osm_id": "way/985093068",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokeli",
+        "name:en": "Lokeli River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -2.0334198,
+      "lon": 20.2288432,
+      "osm_id": "way/985093069",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.5593956,
+      "lon": 19.6709415,
+      "osm_id": "way/985113852",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7842712,
+      "lon": 20.7861094,
+      "osm_id": "way/986339570",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "note": "FIXME: inaccurate",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.3800004,
+      "lon": 19.933476,
+      "osm_id": "way/986666638",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.3083041,
+      "lon": 20.0905034,
+      "osm_id": "way/986666640",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokolo",
+      "lat": -1.9324562,
+      "lon": 20.1659735,
+      "osm_id": "way/994957606",
+      "osm_tags": {
+        "name": "Lokolo",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lula",
+      "lat": -3.2796606,
+      "lon": 20.6328315,
+      "osm_id": "way/995794041",
+      "osm_tags": {
+        "name": "Lula",
+        "name:en": "Lula River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.8270992,
+      "lon": 22.5543819,
+      "osm_id": "way/1006143618",
+      "osm_tags": {
+        "name": "Loile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.8109285,
+      "lon": 22.5509056,
+      "osm_id": "way/1006143619",
+      "osm_tags": {
+        "name": "Loile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.7954746,
+      "lon": 22.5527432,
+      "osm_id": "way/1006143620",
+      "osm_tags": {
+        "name": "Loile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.7788201,
+      "lon": 22.5463514,
+      "osm_id": "way/1006143621",
+      "osm_tags": {
+        "name": "Loile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.7622577,
+      "lon": 22.5333146,
+      "osm_id": "way/1006143622",
+      "osm_tags": {
+        "name": "Loile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile",
+      "lat": -0.7350087,
+      "lon": 22.5109613,
+      "osm_id": "way/1006143623",
+      "osm_tags": {
+        "name": "Loile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lofombe",
+      "lat": -0.8347122,
+      "lon": 22.9806087,
+      "osm_id": "way/1006679963",
+      "osm_tags": {
+        "name": "Lofombe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lofombe",
+      "lat": -0.8421288,
+      "lon": 22.9963414,
+      "osm_id": "way/1006679964",
+      "osm_tags": {
+        "name": "Lofombe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -0.744355,
+      "lon": 22.5506441,
+      "osm_id": "way/1030281936",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Tshuapa",
+      "lat": -0.7489914,
+      "lon": 22.5864717,
+      "osm_id": "way/1030281937",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Tshuapa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndjale",
+      "lat": -1.9454263,
+      "lon": 22.968362,
+      "osm_id": "way/1144683161",
+      "osm_tags": {
+        "alt_name": "Djale",
+        "name": "Ndjale",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndjale",
+      "lat": -1.9348258,
+      "lon": 23.0313798,
+      "osm_id": "way/1144683162",
+      "osm_tags": {
+        "alt_name": "Djale",
+        "name": "Ndjale",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndjale",
+      "lat": -1.9581462,
+      "lon": 22.9394678,
+      "osm_id": "way/1144683163",
+      "osm_tags": {
+        "alt_name": "Djale",
+        "name": "Ndjale",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.6723775,
+      "lon": 21.7225094,
+      "osm_id": "way/1232675955",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Luilaka;Momboyo",
+        "boundary": "administrative",
+        "name": "Lwilaka",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mokombe",
+      "lat": -0.8003822,
+      "lon": 22.8483783,
+      "osm_id": "way/1250099737",
+      "osm_tags": {
+        "name": "Mokombe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mokombe",
+      "lat": -0.8124471,
+      "lon": 22.9088607,
+      "osm_id": "way/1250099738",
+      "osm_tags": {
+        "name": "Mokombe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lofombe",
+      "lat": -0.8340807,
+      "lon": 22.9656153,
+      "osm_id": "way/1250099762",
+      "osm_tags": {
+        "name": "Lofombe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lolimi",
+      "lat": -3.6223642,
+      "lon": 20.1673472,
+      "osm_id": "way/1269879254",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lolimi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lolimi",
+      "lat": -3.567696,
+      "lon": 20.1341173,
+      "osm_id": "way/1269879255",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lolimi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lolimi",
+      "lat": -3.5056761,
+      "lon": 20.0943268,
+      "osm_id": "way/1269879256",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lolimi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lolimi",
+      "lat": -3.6707445,
+      "lon": 20.2103269,
+      "osm_id": "way/1270256476",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lolimi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lolimi",
+      "lat": -3.6947518,
+      "lon": 20.2542897,
+      "osm_id": "way/1270274839",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lolimi",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile ea Kungu",
+      "lat": -0.569072,
+      "lon": 22.2902502,
+      "osm_id": "way/1339441791",
+      "osm_tags": {
+        "alt_name": "Loile",
+        "name": "Loile ea Kungu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Loile ea Kungu",
+      "lat": -0.5887442,
+      "lon": 22.2703106,
+      "osm_id": "way/1339441792",
+      "osm_tags": {
+        "alt_name": "Loile",
+        "name": "Loile ea Kungu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.6699595,
+      "lon": 21.7390532,
+      "osm_id": "way/1361393049",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Luilaka;Momboyo",
+        "boundary": "administrative",
+        "name": "Lwilaka",
+        "note": "inaccurate",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.6724915,
+      "lon": 21.7683788,
+      "osm_id": "way/1361393051",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Luilaka;Momboyo",
+        "boundary": "administrative",
+        "name": "Lwilaka",
+        "note": "inaccurate",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yenge",
+      "lat": -2.2472372,
+      "lon": 21.9066079,
+      "osm_id": "way/1426349551",
+      "osm_tags": {
+        "name": "Yenge",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.6439848,
+      "lon": 20.0823858,
+      "osm_id": "way/1431087399",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.6883871,
+      "lon": 20.1496439,
+      "osm_id": "way/1431087400",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7480299,
+      "lon": 20.3411603,
+      "osm_id": "way/1431844173",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7577838,
+      "lon": 20.4012749,
+      "osm_id": "way/1431844174",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7378117,
+      "lon": 20.3175252,
+      "osm_id": "way/1431844175",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7307458,
+      "lon": 20.2299099,
+      "osm_id": "way/1431844176",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7782166,
+      "lon": 20.5498724,
+      "osm_id": "way/1431844181",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "source": "www.rgc.cd",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lokoro",
+      "lat": -2.7723135,
+      "lon": 20.6096578,
+      "osm_id": "way/1431844182",
+      "osm_tags": {
+        "name": "Lokoro",
+        "name:en": "Lokoro River",
+        "note": "FIXME: inaccurate",
+        "source": "Lowres Satellite imagery",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bula",
+      "lat": -3.4845514,
+      "lon": 21.7439227,
+      "osm_id": "way/1435992903",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Bula",
+        "name:en": "Bula River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bula",
+      "lat": -3.4798497,
+      "lon": 21.7444268,
+      "osm_id": "way/1435992904",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Bula",
+        "name:en": "Bula River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.6734844,
+      "lon": 21.7765479,
+      "osm_id": "way/1437033529",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Luilaka;Momboyo",
+        "boundary": "administrative",
+        "name": "Lwilaka",
+        "note": "inaccurate",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.6688805,
+      "lon": 21.7584688,
+      "osm_id": "way/1437033530",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Luilaka;Momboyo",
+        "boundary": "administrative",
+        "name": "Lwilaka",
+        "note": "inaccurate",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.6706474,
+      "lon": 21.7621716,
+      "osm_id": "way/1437033534",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Luilaka;Momboyo",
+        "boundary": "administrative",
+        "name": "Lwilaka",
+        "note": "inaccurate",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.6720242,
+      "lon": 21.7796367,
+      "osm_id": "way/1437033536",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Luilaka;Momboyo",
+        "boundary": "administrative",
+        "name": "Lwilaka",
+        "note": "inaccurate",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.671476,
+      "lon": 21.7892604,
+      "osm_id": "way/1437033537",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Luilaka;Momboyo",
+        "boundary": "administrative",
+        "name": "Lwilaka",
+        "note": "inaccurate",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwilaka",
+      "lat": -2.6720027,
+      "lon": 21.8050005,
+      "osm_id": "way/1437033538",
+      "osm_tags": {
+        "admin_level": "4",
+        "alt_name": "Luilaka;Momboyo",
+        "boundary": "administrative",
+        "name": "Lwilaka",
+        "note": "inaccurate",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lukenie",
+      "lat": -3.4727521,
+      "lon": 22.4341034,
+      "osm_id": "way/1442950037",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Lukenie",
+        "name:en": "Lukenie River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    }
+  ]
+}

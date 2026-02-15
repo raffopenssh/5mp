@@ -1,0 +1,6134 @@
+{
+  "park_id": "ETH_Borana",
+  "downloaded_at": "2026-02-15T13:51:47.874502+00:00",
+  "buffer_km": 50,
+  "place_count": 500,
+  "places": [
+    {
+      "place_type": "village",
+      "name": "Sololo",
+      "lat": 3.562807,
+      "lon": 38.6436056,
+      "osm_id": "node/44915195",
+      "osm_tags": {
+        "is_in": "Marsabit,Kenya",
+        "name": "Sololo",
+        "place": "village",
+        "wikidata": "Q7558520",
+        "wikipedia": "en:Sololo"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Rhamu",
+      "lat": 3.929003,
+      "lon": 41.2215954,
+      "osm_id": "node/44922199",
+      "osm_tags": {
+        "alt_name": "Ramu",
+        "is_in": "Mandera,Kenya",
+        "name": "Rhamu",
+        "nga:ufi": "-2261466",
+        "place": "town",
+        "source": "Bing; USGS 2013-07-16; NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "North Horr",
+      "lat": 3.321682,
+      "lon": 37.070624,
+      "osm_id": "node/44924541",
+      "osm_tags": {
+        "name": "North Horr",
+        "place": "village",
+        "wikidata": "Q7055663"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Moyale",
+      "lat": 3.5241898,
+      "lon": 39.0512683,
+      "osm_id": "node/44927166",
+      "osm_tags": {
+        "name": "Moyale",
+        "name:ru": "\u041c\u043e\u044f\u043b\u0435",
+        "place": "town",
+        "wikidata": "Q1009179",
+        "wikipedia": "en:Moyale"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hara Hurile",
+      "lat": 4.05,
+      "lon": 40.2666,
+      "osm_id": "node/45001621",
+      "osm_tags": {
+        "fixme": "Location approximate.",
+        "is_in": "Mandera,Kenya",
+        "name": "Hara Hurile",
+        "nga:ufi": "-2245906",
+        "place": "village",
+        "source": "Bing; USGS 2013-07-16; NGA",
+        "wikidata": "Q5653513"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Golla",
+      "lat": 3.0987497,
+      "lon": 39.2647705,
+      "osm_id": "node/45002628",
+      "osm_tags": {
+        "is_in": "Marsabit,Kenya",
+        "name": "Golla",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Burji Manyatta",
+      "lat": 3.5166,
+      "lon": 39.0666,
+      "osm_id": "node/45006435",
+      "osm_tags": {
+        "is_in": "Marsabit,Kenya",
+        "name": "Burji Manyatta",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bur Mayo",
+      "lat": 2.9833,
+      "lon": 40.2666,
+      "osm_id": "node/45006443",
+      "osm_tags": {
+        "is_in": "Mandera,Kenya",
+        "name": "Bur Mayo",
+        "place": "village",
+        "wikidata": "Q4998052"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bule Hora",
+      "lat": 5.6399545,
+      "lon": 38.2393711,
+      "osm_id": "node/294749162",
+      "osm_tags": {
+        "alt_name": "\u0100gere Maryam;Hagere Mariam",
+        "name": "Bule Hora",
+        "name:am": "\u1200\u1308\u1228 \u121b\u122d\u12eb\u121d",
+        "name:en": "Bule Hora",
+        "name:fr": "Bule Hora",
+        "name:om": "Bulee Horaa",
+        "note": "Translation source: http://translator.abyssinica.com/.",
+        "old_name": "\u1200\u1308\u1228 \u121b\u122d\u12eb\u121d / Hagere Mariyam",
+        "old_name:am": "\u1200\u1308\u1228 \u121b\u122d\u12eb\u121d",
+        "old_name:en": "Hagere Mariam",
+        "old_name:fr": "Hagere Mariam",
+        "place": "town",
+        "population": "27820",
+        "source": "300TDI"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "El Ley",
+      "lat": 3.7709417,
+      "lon": 39.2270676,
+      "osm_id": "node/306617422",
+      "osm_tags": {
+        "created_by": "Potlatch 0.10e",
+        "name": "El Ley",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Soda",
+      "lat": 4.1990877,
+      "lon": 38.3911899,
+      "osm_id": "node/538184462",
+      "osm_tags": {
+        "name": "Soda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Keyafer",
+      "lat": 5.5225569,
+      "lon": 36.7348377,
+      "osm_id": "node/540264991",
+      "osm_tags": {
+        "name": "Keyafer",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Dimeka",
+      "lat": 5.1744266,
+      "lon": 36.5484885,
+      "osm_id": "node/614239700",
+      "osm_tags": {
+        "name": "Dimeka",
+        "place": "town",
+        "wikidata": "Q125945428",
+        "wikipedia": "en:Dimeka"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dillo",
+      "lat": 4.2610008,
+      "lon": 37.7015292,
+      "osm_id": "node/647950070",
+      "osm_tags": {
+        "name": "Dillo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Arbore",
+      "lat": 4.9932363,
+      "lon": 36.8500074,
+      "osm_id": "node/1104258331",
+      "osm_tags": {
+        "name": "Arbore",
+        "place": "village",
+        "source": "300TDI"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kako",
+      "lat": 5.6558731,
+      "lon": 36.6575401,
+      "osm_id": "node/1104260108",
+      "osm_tags": {
+        "name": "Kako",
+        "place": "village",
+        "source": "300TDI"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Alduba",
+      "lat": 5.4237099,
+      "lon": 36.6159824,
+      "osm_id": "node/1104260270",
+      "osm_tags": {
+        "name": "Alduba",
+        "name:am": "\u12a0\u120d\u12f1\u1263",
+        "place": "village",
+        "source": "300TDI"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Mega",
+      "lat": 4.0588,
+      "lon": 38.32089,
+      "osm_id": "node/1104290065",
+      "osm_tags": {
+        "name": "Mega",
+        "name:ru": "\u041c\u0435\u0433\u0430",
+        "place": "town",
+        "wikidata": "Q3304215",
+        "wikipedia": "en:Mega, Ethiopia"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tetelle",
+      "lat": 5.0667525,
+      "lon": 37.3855667,
+      "osm_id": "node/1150880681",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Tetelle",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Hudat",
+      "lat": 4.7572654,
+      "lon": 39.2368373,
+      "osm_id": "node/1150882070",
+      "osm_tags": {
+        "name": "Hudat",
+        "place": "town",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Negele",
+      "lat": 5.3328174,
+      "lon": 39.5806628,
+      "osm_id": "node/1150886385",
+      "osm_tags": {
+        "fixme": "Because of recent change in administrative system, the name of the town as well as the zonal administration have been changed. So, correct identification or name of this town as to now is \"Nagele Borana\"",
+        "loc_name": "Nagele Borana",
+        "name": "Negele",
+        "name:it": "Neghelli",
+        "name:ru": "\u041d\u044d\u0433\u044d\u043b\u0435",
+        "official_name": "Nagele Borana",
+        "official_name:am": "\u1290\u1308\u120c \u1266\u1228\u1293",
+        "place": "town",
+        "reg_name": "Nagellee Booranaa",
+        "source": "GeoDatabase",
+        "wikidata": "Q2714363",
+        "wikipedia": "en:Negele Borana"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dubuluk'",
+      "lat": 4.3634074,
+      "lon": 38.2799567,
+      "osm_id": "node/1150887292",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Dubuluk'",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Maheir",
+      "lat": 3.7783958,
+      "lon": 37.9991452,
+      "osm_id": "node/1150899485",
+      "osm_tags": {
+        "ele": "1470",
+        "name": "Maheir",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)",
+        "source:name": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bitata",
+      "lat": 5.477171,
+      "lon": 39.4773942,
+      "osm_id": "node/1150901517",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Bitata",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "WachIle",
+      "lat": 4.5451005,
+      "lon": 39.0611862,
+      "osm_id": "node/1150901642",
+      "osm_tags": {
+        "name": "WachIle",
+        "place": "town",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Durenn",
+      "lat": 5.712017,
+      "lon": 39.5379008,
+      "osm_id": "node/1150903462",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Durenn",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Meta Gafersa",
+      "lat": 4.7437559,
+      "lon": 38.8253289,
+      "osm_id": "node/1150911479",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Meta Gafersa",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Gidole",
+      "lat": 5.6505459,
+      "lon": 37.3660534,
+      "osm_id": "node/1150921795",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Gidole",
+        "place": "town",
+        "source": "GeoDatabase",
+        "wikidata": "Q3105416"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mubarek",
+      "lat": 4.1747055,
+      "lon": 40.0240925,
+      "osm_id": "node/1150923737",
+      "osm_tags": {
+        "alt_name": "Ch'Elago",
+        "country": "ET",
+        "name": "Mubarek",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hare Kelo",
+      "lat": 5.5537599,
+      "lon": 39.3926311,
+      "osm_id": "node/1150934557",
+      "osm_tags": {
+        "alt_name": "Uaddara",
+        "country": "ET",
+        "name": "Hare Kelo",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Filtu",
+      "lat": 5.115379,
+      "lon": 40.6591506,
+      "osm_id": "node/1150940015",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Filtu",
+        "place": "village",
+        "population": "4746",
+        "source": "survey"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Biduara",
+      "lat": 5.0997862,
+      "lon": 38.6340467,
+      "osm_id": "node/1150963149",
+      "osm_tags": {
+        "alt_name": "Bidduara, Geleba",
+        "name": "Biduara",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Web",
+      "lat": 4.4954427,
+      "lon": 38.6594263,
+      "osm_id": "node/1150963481",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Web",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Soroppa",
+      "lat": 5.1353924,
+      "lon": 38.2984014,
+      "osm_id": "node/1150973290",
+      "osm_tags": {
+        "alt_name": "Surupa",
+        "country": "ET",
+        "name": "Soroppa",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Hidilola",
+      "lat": 3.7417867,
+      "lon": 38.5788132,
+      "osm_id": "node/1150982067",
+      "osm_tags": {
+        "name": "Hidilola",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Shakiso",
+      "lat": 5.7746802,
+      "lon": 38.9028468,
+      "osm_id": "node/1151003576",
+      "osm_tags": {
+        "name": "Shakiso",
+        "place": "town",
+        "source": "GeoDatabase",
+        "wikidata": "Q3481278"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Karat Konso",
+      "lat": 5.3398227,
+      "lon": 37.442368,
+      "osm_id": "node/1228170241",
+      "osm_tags": {
+        "name": "Karat Konso",
+        "name:am": "\u12ae\u1295\u1236",
+        "name:en": "Konso",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "\u041a\u0440\u0430\u0441\u043d\u044b\u0439 \u043a\u0430\u043b\u0438\u043d\u0438\u043d",
+      "lat": 5.28306,
+      "lon": 39.16667,
+      "osm_id": "node/1271031265",
+      "osm_tags": {
+        "name": "\u041a\u0440\u0430\u0441\u043d\u044b\u0439 \u043a\u0430\u043b\u0438\u043d\u0438\u043d",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hari",
+      "lat": 5.7212361,
+      "lon": 36.62775,
+      "osm_id": "node/1289362968",
+      "osm_tags": {
+        "name": "Hari",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Daba",
+      "lat": 3.0208,
+      "lon": 41.2015,
+      "osm_id": "node/1404223688",
+      "osm_tags": {
+        "name": "Daba",
+        "pcode": "NA-3704-Z16-001",
+        "place": "hamlet",
+        "source": "UNDP - 1997"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Yado 2",
+      "lat": 2.959062,
+      "lon": 41.130966,
+      "osm_id": "node/1404231409",
+      "osm_tags": {
+        "name": "Yado 2",
+        "pcode": "NA-3708-A14-001",
+        "place": "hamlet",
+        "source": "UNDP - 2006"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Soyema",
+      "lat": 5.4853114,
+      "lon": 37.8607733,
+      "osm_id": "node/1920760197",
+      "osm_tags": {
+        "name": "Soyema",
+        "place": "town",
+        "wikidata": "Q3492491"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Yab\u0113lo",
+      "lat": 4.892569,
+      "lon": 38.094989,
+      "osm_id": "node/1920864375",
+      "osm_tags": {
+        "GNS:id": "-622120",
+        "alt_name": "Yabelo",
+        "name": "Yab\u0113lo",
+        "name:ru": "\u042f\u0431\u0435\u043b\u043e",
+        "name:zh": "\u4e9e\u8c9d\u6d1b",
+        "place": "town",
+        "wikidata": "Q1067172",
+        "wikipedia": "en:Yabelo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gayo",
+      "lat": 4.220438,
+      "lon": 38.5351838,
+      "osm_id": "node/1921727630",
+      "osm_tags": {
+        "is_in:country": "Ethiopia",
+        "is_in:country_code": "ET",
+        "name": "Gayo",
+        "place": "village",
+        "source": "GeoDatabase"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sogiya",
+      "lat": 4.2209888,
+      "lon": 38.7219689,
+      "osm_id": "node/1922117912",
+      "osm_tags": {
+        "alt_name": "Soghidda",
+        "name": "Sogiya",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Melka Goda",
+      "lat": 4.868606,
+      "lon": 39.3186084,
+      "osm_id": "node/2083405596",
+      "osm_tags": {
+        "name": "Melka Goda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yabicho",
+      "lat": 3.9386585,
+      "lon": 41.1669187,
+      "osm_id": "node/2083947720",
+      "osm_tags": {
+        "name": "Yabicho",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Koibi",
+      "lat": 5.7727226,
+      "lon": 36.7977432,
+      "osm_id": "node/2140613125",
+      "osm_tags": {
+        "name": "Koibi",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mamaru",
+      "lat": 4.6868609,
+      "lon": 37.1958804,
+      "osm_id": "node/2140613135",
+      "osm_tags": {
+        "name": "Mamaru",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Banissa",
+      "lat": 3.9405976,
+      "lon": 40.3447379,
+      "osm_id": "node/2485483693",
+      "osm_tags": {
+        "alt_name": "Banisa",
+        "name": "Banissa",
+        "nga:ufi": "9098386",
+        "place": "village",
+        "source": "Bing;USGS 2013-07-16;NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rhamu Dimtu",
+      "lat": 4.0177948,
+      "lon": 41.0635972,
+      "osm_id": "node/3165590325",
+      "osm_tags": {
+        "name": "Rhamu Dimtu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Garsey",
+      "lat": 4.0660972,
+      "lon": 40.9981772,
+      "osm_id": "node/3165590392",
+      "osm_tags": {
+        "name": "Garsey",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malka Roqa",
+      "lat": 4.110501,
+      "lon": 40.8698555,
+      "osm_id": "node/3165590407",
+      "osm_tags": {
+        "name": "Malka Roqa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hullow",
+      "lat": 4.1803796,
+      "lon": 40.7984346,
+      "osm_id": "node/3165590412",
+      "osm_tags": {
+        "name": "Hullow",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Eymole",
+      "lat": 4.0371631,
+      "lon": 40.194241,
+      "osm_id": "node/3165590426",
+      "osm_tags": {
+        "name": "Eymole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Halo",
+      "lat": 5.1236397,
+      "lon": 38.702752,
+      "osm_id": "node/3167378114",
+      "osm_tags": {
+        "name": "Halo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Melka Soda",
+      "lat": 5.4894624,
+      "lon": 38.6127762,
+      "osm_id": "node/3167378208",
+      "osm_tags": {
+        "name": "Melka Soda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gas",
+      "lat": 3.0644081,
+      "lon": 36.8263484,
+      "osm_id": "node/3328712765",
+      "osm_tags": {
+        "name": "Gas",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Konso village",
+      "lat": 5.2909263,
+      "lon": 37.3970724,
+      "osm_id": "node/3388249967",
+      "osm_tags": {
+        "fixme": "Add name",
+        "name": "Konso village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ajawa Village",
+      "lat": 2.9622229,
+      "lon": 39.6894582,
+      "osm_id": "node/3695362755",
+      "osm_tags": {
+        "name": "Ajawa Village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Korendile",
+      "lat": 2.9890289,
+      "lon": 39.3156584,
+      "osm_id": "node/3695362763",
+      "osm_tags": {
+        "name": "Korendile",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bute Town",
+      "lat": 3.3571847,
+      "lon": 39.4202473,
+      "osm_id": "node/3695407066",
+      "osm_tags": {
+        "name": "Bute Town",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hote",
+      "lat": 3.1661403,
+      "lon": 39.3454561,
+      "osm_id": "node/3695407069",
+      "osm_tags": {
+        "name": "Hote",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Adadijole",
+      "lat": 3.3370943,
+      "lon": 39.4611156,
+      "osm_id": "node/3696831490",
+      "osm_tags": {
+        "name": "Adadijole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Erestino",
+      "lat": 3.4576952,
+      "lon": 39.5555802,
+      "osm_id": "node/3696831495",
+      "osm_tags": {
+        "name": "Erestino",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Gurar",
+      "lat": 3.3681272,
+      "lon": 39.5717889,
+      "osm_id": "node/3696831502",
+      "osm_tags": {
+        "name": "Gurar",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Karutusi",
+      "lat": 3.4059566,
+      "lon": 39.3683555,
+      "osm_id": "node/3696831503",
+      "osm_tags": {
+        "name": "Karutusi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Waititi",
+      "lat": 3.4103202,
+      "lon": 39.3239426,
+      "osm_id": "node/3696831504",
+      "osm_tags": {
+        "name": "Waititi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Balatul Amin",
+      "lat": 3.2942544,
+      "lon": 39.6718893,
+      "osm_id": "node/3696856320",
+      "osm_tags": {
+        "name": "Balatul Amin",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Danaba",
+      "lat": 3.3395101,
+      "lon": 39.7857703,
+      "osm_id": "node/3696859225",
+      "osm_tags": {
+        "name": "Danaba",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Balowle",
+      "lat": 3.0463094,
+      "lon": 39.7453804,
+      "osm_id": "node/3696895020",
+      "osm_tags": {
+        "name": "Balowle",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Qarsa Sare",
+      "lat": 3.3876817,
+      "lon": 39.6355961,
+      "osm_id": "node/3696895022",
+      "osm_tags": {
+        "name": "Qarsa Sare",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Garakilo",
+      "lat": 3.1600082,
+      "lon": 39.6022594,
+      "osm_id": "node/3696913090",
+      "osm_tags": {
+        "name": "Garakilo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ogorji",
+      "lat": 3.1956477,
+      "lon": 39.448152,
+      "osm_id": "node/3697007913",
+      "osm_tags": {
+        "name": "Ogorji",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Qudama",
+      "lat": 3.1768171,
+      "lon": 39.8208812,
+      "osm_id": "node/3697022303",
+      "osm_tags": {
+        "name": "Qudama",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bur Mayo Hills",
+      "lat": 2.9730815,
+      "lon": 40.2745903,
+      "osm_id": "node/3702436358",
+      "osm_tags": {
+        "name": "Bur Mayo Hills",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gunana",
+      "lat": 3.168762,
+      "lon": 40.0969442,
+      "osm_id": "node/3702436369",
+      "osm_tags": {
+        "name": "Gunana",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "El Hadi",
+      "lat": 3.8023722,
+      "lon": 37.5315773,
+      "osm_id": "node/4185698518",
+      "osm_tags": {
+        "name": "El Hadi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Forolle",
+      "lat": 3.7142686,
+      "lon": 37.9636082,
+      "osm_id": "node/4185839955",
+      "osm_tags": {
+        "name": "Forolle",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Malabot",
+      "lat": 3.1852565,
+      "lon": 37.0829399,
+      "osm_id": "node/4186147962",
+      "osm_tags": {
+        "name": "Malabot",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Funan Qumbi",
+      "lat": 3.368429,
+      "lon": 38.3548606,
+      "osm_id": "node/4187198790",
+      "osm_tags": {
+        "name": "Funan Qumbi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ele Bor",
+      "lat": 3.4893631,
+      "lon": 38.2410687,
+      "osm_id": "node/4187257090",
+      "osm_tags": {
+        "name": "Ele Bor",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hurri Hills",
+      "lat": 3.3753053,
+      "lon": 37.744233,
+      "osm_id": "node/4187375277",
+      "osm_tags": {
+        "alt_name": "Badha Hurri",
+        "name": "Hurri Hills",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Kalacha",
+      "lat": 3.1296333,
+      "lon": 37.4272629,
+      "osm_id": "node/4187431816",
+      "osm_tags": {
+        "name": "Kalacha",
+        "place": "town",
+        "population": "3000",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Woito",
+      "lat": 5.3759552,
+      "lon": 36.9933271,
+      "osm_id": "node/4772495086",
+      "osm_tags": {
+        "name": "Woito",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "\u134a\u1295\u132b\u12cb / Finchawa",
+      "lat": 5.394126,
+      "lon": 38.270657,
+      "osm_id": "node/4956855001",
+      "osm_tags": {
+        "alt_name": "Finchewa, Foncha, Finchoa, Fincioa, Fincadaa",
+        "name": "\u134a\u1295\u132b\u12cb / Finchawa",
+        "name:am": "\u134a\u1295\u132b\u12cb",
+        "name:en": "Finchawa",
+        "name:fr": "Finchawa",
+        "name:om": "Fincawaa",
+        "place": "town",
+        "population": "5560"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Dawa Digati",
+      "lat": 5.3288382,
+      "lon": 38.7923498,
+      "osm_id": "node/5027517393",
+      "osm_tags": {
+        "name": "Dawa Digati",
+        "name:om": "Dhawaa",
+        "place": "town",
+        "population": "1264",
+        "source:population": "CSA 2007"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bole",
+      "lat": 5.2987697,
+      "lon": 38.8328783,
+      "osm_id": "node/5037865773",
+      "osm_tags": {
+        "name": "Bole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Gerba",
+      "lat": 5.7788821,
+      "lon": 38.2710146,
+      "osm_id": "node/5060360456",
+      "osm_tags": {
+        "name": "Gerba",
+        "place": "town",
+        "population": "7425"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Dukana",
+      "lat": 3.9984455,
+      "lon": 37.2708714,
+      "osm_id": "node/5609883874",
+      "osm_tags": {
+        "name": "Dukana",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Turbi",
+      "lat": 3.3002206,
+      "lon": 38.3768445,
+      "osm_id": "node/6683329248",
+      "osm_tags": {
+        "name": "Turbi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Harshilin",
+      "lat": 3.6449879,
+      "lon": 39.65091,
+      "osm_id": "node/6937669585",
+      "osm_tags": {
+        "name": "Harshilin",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Eresteno",
+      "lat": 3.4655468,
+      "lon": 39.6134353,
+      "osm_id": "node/6938142363",
+      "osm_tags": {
+        "name": "Eresteno",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Godoma",
+      "lat": 3.4692789,
+      "lon": 39.3089211,
+      "osm_id": "node/6939142449",
+      "osm_tags": {
+        "name": "Godoma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Qada Duma",
+      "lat": 3.4170067,
+      "lon": 39.5238733,
+      "osm_id": "node/6939598155",
+      "osm_tags": {
+        "name": "Qada Duma",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Konkoma",
+      "lat": 3.4325531,
+      "lon": 39.2213948,
+      "osm_id": "node/6943705723",
+      "osm_tags": {
+        "name": "Konkoma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nana",
+      "lat": 3.4662589,
+      "lon": 39.2410827,
+      "osm_id": "node/6943705725",
+      "osm_tags": {
+        "name": "Nana",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iladu",
+      "lat": 3.4017505,
+      "lon": 39.1590515,
+      "osm_id": "node/6945830618",
+      "osm_tags": {
+        "name": "Iladu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Godhee",
+      "lat": 3.3066819,
+      "lon": 39.1232975,
+      "osm_id": "node/6945831134",
+      "osm_tags": {
+        "name": "Godhee",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dirdima",
+      "lat": 3.3511327,
+      "lon": 39.1941644,
+      "osm_id": "node/6945831176",
+      "osm_tags": {
+        "name": "Dirdima",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Misa",
+      "lat": 3.3282769,
+      "lon": 39.2183,
+      "osm_id": "node/6945831216",
+      "osm_tags": {
+        "name": "Misa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dabel",
+      "lat": 3.1516522,
+      "lon": 39.2510504,
+      "osm_id": "node/6945831217",
+      "osm_tags": {
+        "name": "Dabel",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Qoloba dam",
+      "lat": 3.2975579,
+      "lon": 39.0787481,
+      "osm_id": "node/6945890023",
+      "osm_tags": {
+        "name": "Qoloba dam",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Yaballo",
+      "lat": 3.4448709,
+      "lon": 39.1756526,
+      "osm_id": "node/6945904775",
+      "osm_tags": {
+        "name": "Yaballo",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kinisa",
+      "lat": 3.4757345,
+      "lon": 39.1321756,
+      "osm_id": "node/6945905033",
+      "osm_tags": {
+        "name": "Kinisa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bolowle",
+      "lat": 3.2520689,
+      "lon": 40.0118213,
+      "osm_id": "node/6947978236",
+      "osm_tags": {
+        "name": "Bolowle",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Afalo",
+      "lat": 3.4623003,
+      "lon": 40.2297837,
+      "osm_id": "node/6948812835",
+      "osm_tags": {
+        "name": "Afalo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lagsure",
+      "lat": 3.4219311,
+      "lon": 40.2636599,
+      "osm_id": "node/6948812846",
+      "osm_tags": {
+        "name": "Lagsure",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Takaba",
+      "lat": 3.3987343,
+      "lon": 40.2241984,
+      "osm_id": "node/6948812928",
+      "osm_tags": {
+        "name": "Takaba",
+        "name:so": "Taagaabo",
+        "place": "town",
+        "wikidata": "Q85804934",
+        "wikipedia": "en:Takaba, Kenya"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bulla Mpaya",
+      "lat": 3.3973333,
+      "lon": 40.244671,
+      "osm_id": "node/6948812929",
+      "osm_tags": {
+        "name": "Bulla Mpaya",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wangai Dahan",
+      "lat": 3.3701657,
+      "lon": 40.2758843,
+      "osm_id": "node/6948812930",
+      "osm_tags": {
+        "name": "Wangai Dahan",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Salla reh haranqesa",
+      "lat": 3.4379634,
+      "lon": 37.6669835,
+      "osm_id": "node/6955564389",
+      "osm_tags": {
+        "ele": "1440",
+        "name": "Salla reh haranqesa",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Qilta korma",
+      "lat": 3.467028,
+      "lon": 37.7241502,
+      "osm_id": "node/6955564738",
+      "osm_tags": {
+        "ele": "1460",
+        "name": "Qilta korma",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Qilta dala",
+      "lat": 3.4514265,
+      "lon": 37.7173519,
+      "osm_id": "node/6955564739",
+      "osm_tags": {
+        "ele": "1460",
+        "name": "Qilta dala",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kala-Jarso",
+      "lat": 4.3655445,
+      "lon": 36.9124837,
+      "osm_id": "node/6956107770",
+      "osm_tags": {
+        "ele": "850",
+        "name": "Kala-Jarso",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Arkor",
+      "lat": 3.6394194,
+      "lon": 37.7023066,
+      "osm_id": "node/6957099150",
+      "osm_tags": {
+        "ele": "1020",
+        "name": "Arkor",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Balesa",
+      "lat": 3.6092835,
+      "lon": 37.3466308,
+      "osm_id": "node/6957172906",
+      "osm_tags": {
+        "name": "Balesa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Salla Karabara Diqa",
+      "lat": 3.3311829,
+      "lon": 37.7017998,
+      "osm_id": "node/6958085725",
+      "osm_tags": {
+        "ele": "1380",
+        "name": "Salla Karabara Diqa",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "El Gade",
+      "lat": 3.3178452,
+      "lon": 37.2836024,
+      "osm_id": "node/6958085727",
+      "osm_tags": {
+        "name": "El Gade",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Qubi iresa matacho",
+      "lat": 3.403964,
+      "lon": 37.7174592,
+      "osm_id": "node/6958139840",
+      "osm_tags": {
+        "ele": "1410",
+        "name": "Qubi iresa matacho",
+        "natural": "peak",
+        "note": "Man named mata died of a cold and was buried here.",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Dibu Lonlubo",
+      "lat": 3.3995311,
+      "lon": 37.7468751,
+      "osm_id": "node/6958139842",
+      "osm_tags": {
+        "ele": "1600",
+        "name": "Dibu Lonlubo",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gotu Obaso",
+      "lat": 3.3538496,
+      "lon": 37.7415719,
+      "osm_id": "node/6958139844",
+      "osm_tags": {
+        "ele": "1450",
+        "name": "Gotu Obaso",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Obasa Gudda",
+      "lat": 3.3442323,
+      "lon": 37.7319397,
+      "osm_id": "node/6958139845",
+      "osm_tags": {
+        "ele": "1450",
+        "name": "Obasa Gudda",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Salla karabara",
+      "lat": 3.3337982,
+      "lon": 37.7258062,
+      "osm_id": "node/6958139846",
+      "osm_tags": {
+        "ele": "1510",
+        "name": "Salla karabara",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bori",
+      "lat": 3.5170497,
+      "lon": 38.9787586,
+      "osm_id": "node/6983402120",
+      "osm_tags": {
+        "name": "Bori",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Afurr",
+      "lat": 4.3726751,
+      "lon": 37.0465711,
+      "osm_id": "node/6990808336",
+      "osm_tags": {
+        "ele": "1834",
+        "name": "Afurr",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Walda",
+      "lat": 3.4551962,
+      "lon": 38.5156095,
+      "osm_id": "node/6991044179",
+      "osm_tags": {
+        "name": "Walda",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Sullsull Mudde",
+      "lat": 4.1491623,
+      "lon": 37.1876916,
+      "osm_id": "node/6992654913",
+      "osm_tags": {
+        "ele": "960",
+        "name": "Sullsull Mudde",
+        "natural": "peak",
+        "source:elevation": "txu-pclmaps"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tartessai III",
+      "lat": 4.1342813,
+      "lon": 37.174903,
+      "osm_id": "node/6992654914",
+      "osm_tags": {
+        "ele": "999",
+        "name": "Tartessai III",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "G. Kanye I",
+      "lat": 4.0932878,
+      "lon": 37.0884122,
+      "osm_id": "node/6992654915",
+      "osm_tags": {
+        "ele": "1062",
+        "name": "G. Kanye I",
+        "natural": "peak",
+        "source:elevation": "txu-pclmaps"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "G. Kanye",
+      "lat": 4.1018035,
+      "lon": 37.0949646,
+      "osm_id": "node/6992654916",
+      "osm_tags": {
+        "ele": "1063",
+        "name": "G. Kanye",
+        "natural": "peak",
+        "source:elevation": "txu-pclmaps"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tartessai I",
+      "lat": 4.1124678,
+      "lon": 37.1215424,
+      "osm_id": "node/6992654917",
+      "osm_tags": {
+        "ele": "1052",
+        "name": "Tartessai I",
+        "natural": "peak",
+        "source:elevation": "txu-pclmaps"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Watich",
+      "lat": 4.3301897,
+      "lon": 37.208445,
+      "osm_id": "node/6993474881",
+      "osm_tags": {
+        "ele": "1075",
+        "name": "Watich",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jibissa",
+      "lat": 4.2242711,
+      "lon": 37.0614568,
+      "osm_id": "node/6993474884",
+      "osm_tags": {
+        "ele": "1604",
+        "name": "Jibissa",
+        "natural": "peak",
+        "source:elevation": "txu-pclmaps",
+        "wikidata": "Q27197750"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kokurfo",
+      "lat": 4.1698293,
+      "lon": 36.9576767,
+      "osm_id": "node/6993474885",
+      "osm_tags": {
+        "ele": "990",
+        "name": "Kokurfo",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "El Yibo",
+      "lat": 4.1387256,
+      "lon": 37.2331026,
+      "osm_id": "node/6993477497",
+      "osm_tags": {
+        "name": "El Yibo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Dukana",
+      "lat": 4.0487827,
+      "lon": 37.3531962,
+      "osm_id": "node/6993477498",
+      "osm_tags": {
+        "ele": "1052",
+        "name": "Dukana",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kalkalcha",
+      "lat": 4.0624688,
+      "lon": 37.378134,
+      "osm_id": "node/6993477499",
+      "osm_tags": {
+        "ele": "940",
+        "name": "Kalkalcha",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Sullsull Mudde",
+      "lat": 4.3683418,
+      "lon": 36.9550895,
+      "osm_id": "node/6993892326",
+      "osm_tags": {
+        "ele": "1380",
+        "name": "Sullsull Mudde",
+        "natural": "peak",
+        "source:elevation": "estimated from DEM (OpenCycleMap)"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Bollo",
+      "lat": 4.0057402,
+      "lon": 36.9567686,
+      "osm_id": "node/6997401722",
+      "osm_tags": {
+        "ele": "931",
+        "name": "Bollo",
+        "natural": "peak",
+        "source:elevation": "txu-pclmaps"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lafey",
+      "lat": 3.1516211,
+      "lon": 41.1866597,
+      "osm_id": "node/7026740345",
+      "osm_tags": {
+        "name": "Lafey",
+        "place": "village",
+        "wikidata": "Q24236454",
+        "wikipedia": "en:Lafey"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dandu",
+      "lat": 3.423573,
+      "lon": 39.8795317,
+      "osm_id": "node/7026959484",
+      "osm_tags": {
+        "name": "Dandu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gamole",
+      "lat": 5.3302248,
+      "lon": 37.4077566,
+      "osm_id": "node/7038966587",
+      "osm_tags": {
+        "name": "Gamole",
+        "name:en": "Gamole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Derkale",
+      "lat": 3.8432606,
+      "lon": 40.2660746,
+      "osm_id": "node/7217966468",
+      "osm_tags": {
+        "name": "Derkale",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Quarsa Bulla",
+      "lat": 3.2933276,
+      "lon": 39.6671277,
+      "osm_id": "node/7217966469",
+      "osm_tags": {
+        "name": "Quarsa Bulla",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Did keesa",
+      "lat": 3.3496502,
+      "lon": 37.7161534,
+      "osm_id": "node/7220879307",
+      "osm_tags": {
+        "name": "Did keesa",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tuluu Galaa",
+      "lat": 3.3184924,
+      "lon": 37.644473,
+      "osm_id": "node/7220879308",
+      "osm_tags": {
+        "name": "Tuluu Galaa",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Qubi mata dhaka",
+      "lat": 3.3210091,
+      "lon": 37.6980206,
+      "osm_id": "node/7220879309",
+      "osm_tags": {
+        "name": "Qubi mata dhaka",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Afkab",
+      "lat": 3.1836696,
+      "lon": 37.5261116,
+      "osm_id": "node/7220879310",
+      "osm_tags": {
+        "name": "Afkab",
+        "natural": "peak",
+        "note": "Spelling not confirmed"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tuluu Dimtu",
+      "lat": 3.1724419,
+      "lon": 37.5823722,
+      "osm_id": "node/7220879311",
+      "osm_tags": {
+        "name": "Tuluu Dimtu",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Wara",
+      "lat": 3.165937,
+      "lon": 37.6471955,
+      "osm_id": "node/7220879312",
+      "osm_tags": {
+        "name": "Wara",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Qubi Bubiftu",
+      "lat": 3.3610446,
+      "lon": 37.7227088,
+      "osm_id": "node/7220879313",
+      "osm_tags": {
+        "name": "Qubi Bubiftu",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Qubi Bubiftu",
+      "lat": 3.3577053,
+      "lon": 37.7212612,
+      "osm_id": "node/7220879314",
+      "osm_tags": {
+        "name": "Qubi Bubiftu",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cheme",
+      "lat": 5.2813466,
+      "lon": 38.4029701,
+      "osm_id": "node/7389801516",
+      "osm_tags": {
+        "name": "Cheme",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Baya Gundi",
+      "lat": 5.4346033,
+      "lon": 38.4718519,
+      "osm_id": "node/7396164645",
+      "osm_tags": {
+        "name": "Baya Gundi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Katelo Sora",
+      "lat": 3.3987251,
+      "lon": 37.6541458,
+      "osm_id": "node/7578443103",
+      "osm_tags": {
+        "name": "Olla Katelo Sora",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shanqera Phase 2",
+      "lat": 3.4004145,
+      "lon": 37.6537115,
+      "osm_id": "node/7578443104",
+      "osm_tags": {
+        "name": "Shanqera Phase 2",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Bori",
+      "lat": 3.2837321,
+      "lon": 37.7027981,
+      "osm_id": "node/7578456896",
+      "osm_tags": {
+        "name": "Olla Bori",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Toricha",
+      "lat": 3.1898725,
+      "lon": 37.7739642,
+      "osm_id": "node/7578456898",
+      "osm_tags": {
+        "name": "Olla Toricha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bule Goda",
+      "lat": 3.1260858,
+      "lon": 37.8869772,
+      "osm_id": "node/7578456901",
+      "osm_tags": {
+        "name": "Bule Goda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Katamura",
+      "lat": 3.1375538,
+      "lon": 37.9387173,
+      "osm_id": "node/7578456903",
+      "osm_tags": {
+        "name": "Katamura",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lgawoshu",
+      "lat": 3.165597,
+      "lon": 38.0801645,
+      "osm_id": "node/7578456904",
+      "osm_tags": {
+        "name": "Lgawoshu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tigo",
+      "lat": 3.0940565,
+      "lon": 38.2522591,
+      "osm_id": "node/7578456905",
+      "osm_tags": {
+        "name": "Tigo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Didu Badan",
+      "lat": 3.1621024,
+      "lon": 37.3945923,
+      "osm_id": "node/7578456908",
+      "osm_tags": {
+        "name": "Didu Badan",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Qutur",
+      "lat": 3.189775,
+      "lon": 37.389026,
+      "osm_id": "node/7578456909",
+      "osm_tags": {
+        "name": "Olla Qutur",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Aranqesa",
+      "lat": 3.2005694,
+      "lon": 37.3844954,
+      "osm_id": "node/7578456910",
+      "osm_tags": {
+        "name": "Olla Aranqesa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rage",
+      "lat": 3.2136648,
+      "lon": 37.3586306,
+      "osm_id": "node/7578456911",
+      "osm_tags": {
+        "name": "Rage",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yaa Algana",
+      "lat": 3.6812722,
+      "lon": 37.266975,
+      "osm_id": "node/7578543778",
+      "osm_tags": {
+        "name": "Yaa Algana",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Old Yaa Sharbana",
+      "lat": 3.515868,
+      "lon": 37.4277536,
+      "osm_id": "node/7578559119",
+      "osm_tags": {
+        "name": "Old Yaa Sharbana",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yaa Sharbana",
+      "lat": 3.5143425,
+      "lon": 37.4604598,
+      "osm_id": "node/7578559120",
+      "osm_tags": {
+        "name": "Yaa Sharbana",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Golo Adi",
+      "lat": 3.4212993,
+      "lon": 37.6885579,
+      "osm_id": "node/7578559121",
+      "osm_tags": {
+        "name": "Olla Golo Adi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Qubi gara ano",
+      "lat": 3.4662075,
+      "lon": 37.6719332,
+      "osm_id": "node/7578720603",
+      "osm_tags": {
+        "name": "Qubi gara ano",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Ali Boru",
+      "lat": 3.3865651,
+      "lon": 37.7306256,
+      "osm_id": "node/7578721084",
+      "osm_tags": {
+        "name": "Olla Ali Boru",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Tumtich",
+      "lat": 3.4963609,
+      "lon": 37.4909698,
+      "osm_id": "node/7578738223",
+      "osm_tags": {
+        "name": "Tumtich",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Baqaqa",
+      "lat": 3.4164372,
+      "lon": 37.7711579,
+      "osm_id": "node/7578792505",
+      "osm_tags": {
+        "name": "Olla Baqaqa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Burarata",
+      "lat": 3.5149342,
+      "lon": 37.787468,
+      "osm_id": "node/7578792507",
+      "osm_tags": {
+        "name": "Burarata",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Magutho",
+      "lat": 3.5850685,
+      "lon": 37.8285364,
+      "osm_id": "node/7578792508",
+      "osm_tags": {
+        "name": "Olla Magutho",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Ilma Shama (Toricha)",
+      "lat": 3.1653606,
+      "lon": 37.7839542,
+      "osm_id": "node/7918868887",
+      "osm_tags": {
+        "name": "Olla Ilma Shama (Toricha)",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalesa",
+      "lat": 3.4987582,
+      "lon": 37.5804369,
+      "osm_id": "node/7921242261",
+      "osm_tags": {
+        "name": "Kalesa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kalesa Mata Jala",
+      "lat": 3.4960487,
+      "lon": 37.5521774,
+      "osm_id": "node/7939234508",
+      "osm_tags": {
+        "name": "Kalesa Mata Jala",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Dibu lonlubo",
+      "lat": 3.3916842,
+      "lon": 37.7396196,
+      "osm_id": "node/7944465481",
+      "osm_tags": {
+        "name": "Dibu lonlubo",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Olla Konchora",
+      "lat": 3.3871414,
+      "lon": 37.7741579,
+      "osm_id": "node/7944474756",
+      "osm_tags": {
+        "name": "Olla Konchora",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Qubi Mabartafi",
+      "lat": 3.363423,
+      "lon": 37.7469862,
+      "osm_id": "node/7944482115",
+      "osm_tags": {
+        "name": "Qubi Mabartafi",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Boqore",
+      "lat": 3.438576,
+      "lon": 37.7496075,
+      "osm_id": "node/7944484374",
+      "osm_tags": {
+        "name": "Boqore",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Qubi gara dolola",
+      "lat": 3.3692533,
+      "lon": 37.7448216,
+      "osm_id": "node/7944492413",
+      "osm_tags": {
+        "name": "Qubi gara dolola",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jaldesa Diqa",
+      "lat": 3.3881729,
+      "lon": 37.7994948,
+      "osm_id": "node/7944501180",
+      "osm_tags": {
+        "name": "Jaldesa Diqa",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Jaldesa Guda",
+      "lat": 3.3783043,
+      "lon": 37.8017984,
+      "osm_id": "node/7944509042",
+      "osm_tags": {
+        "name": "Jaldesa Guda",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gara Mboga",
+      "lat": 3.4497636,
+      "lon": 37.7666229,
+      "osm_id": "node/7944524118",
+      "osm_tags": {
+        "name": "Gara Mboga",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Qubi Kooti",
+      "lat": 3.2483064,
+      "lon": 37.6628017,
+      "osm_id": "node/7945871679",
+      "osm_tags": {
+        "name": "Qubi Kooti",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gof Lon elema",
+      "lat": 3.4332988,
+      "lon": 37.7118277,
+      "osm_id": "node/7962698626",
+      "osm_tags": {
+        "name": "Gof Lon elema",
+        "natural": "peak",
+        "note": "Named after a man named Elema whose cows (lon) were stolen from this crater (gof) by the Dasenach. Probably sometime in the 1990s"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bule worabesa",
+      "lat": 3.6191073,
+      "lon": 37.3641447,
+      "osm_id": "node/7966636794",
+      "osm_tags": {
+        "description": "Named because of the rocks (bule) and hyenas (worabesa) commonly coming here",
+        "name": "Bule worabesa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Barambate",
+      "lat": 3.6318145,
+      "lon": 37.3730358,
+      "osm_id": "node/7966654465",
+      "osm_tags": {
+        "name": "Barambate",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gandile",
+      "lat": 3.5957892,
+      "lon": 37.8352003,
+      "osm_id": "node/7969526796",
+      "osm_tags": {
+        "name": "Gandile",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Agana",
+      "lat": 3.2156692,
+      "lon": 38.103023,
+      "osm_id": "node/8010644684",
+      "osm_tags": {
+        "name": "Olla Agana",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hill",
+      "name": "Qubi kooti",
+      "lat": 3.2534502,
+      "lon": 37.6652854,
+      "osm_id": "node/8014285258",
+      "osm_tags": {
+        "name": "Qubi kooti",
+        "natural": "hill"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Burgabo",
+      "lat": 3.1790651,
+      "lon": 38.1561291,
+      "osm_id": "node/8014403053",
+      "osm_tags": {
+        "name": "Burgabo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Golinacha",
+      "lat": 3.2656205,
+      "lon": 37.6968767,
+      "osm_id": "node/8038148361",
+      "osm_tags": {
+        "name": "Golinacha",
+        "natural": "peak",
+        "wikidata": "Q27197532"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Buta",
+      "lat": 3.2188562,
+      "lon": 37.6786888,
+      "osm_id": "node/8038164047",
+      "osm_tags": {
+        "name": "Buta",
+        "natural": "peak",
+        "wikidata": "Q27198559"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Salla Dakara",
+      "lat": 3.2912349,
+      "lon": 37.6788131,
+      "osm_id": "node/8038164048",
+      "osm_tags": {
+        "name": "Salla Dakara",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Qubi Bulto Algi",
+      "lat": 3.3092832,
+      "lon": 37.6645893,
+      "osm_id": "node/8038180524",
+      "osm_tags": {
+        "name": "Qubi Bulto Algi",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Logara",
+      "lat": 5.2189071,
+      "lon": 36.7429046,
+      "osm_id": "node/8347432586",
+      "osm_tags": {
+        "name": "Logara",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gara Gadamsa",
+      "lat": 3.4893574,
+      "lon": 37.813452,
+      "osm_id": "node/8733077401",
+      "osm_tags": {
+        "name": "Gara Gadamsa",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Qubi Bora",
+      "lat": 3.4290628,
+      "lon": 37.6994399,
+      "osm_id": "node/8733090827",
+      "osm_tags": {
+        "name": "Qubi Bora",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Salla Dakara",
+      "lat": 3.3055794,
+      "lon": 37.6881191,
+      "osm_id": "node/8733093289",
+      "osm_tags": {
+        "name": "Salla Dakara",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Gara Dao",
+      "lat": 3.429984,
+      "lon": 37.7902187,
+      "osm_id": "node/8733096951",
+      "osm_tags": {
+        "name": "Gara Dao",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Shanqera Mountain",
+      "lat": 3.4181907,
+      "lon": 37.6966478,
+      "osm_id": "node/8733097605",
+      "osm_tags": {
+        "name": "Shanqera Mountain",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Salla Ree Tore",
+      "lat": 3.3077363,
+      "lon": 37.7337753,
+      "osm_id": "node/8733107729",
+      "osm_tags": {
+        "name": "Salla Ree Tore",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Eli Dimtu",
+      "lat": 3.6150775,
+      "lon": 38.1021382,
+      "osm_id": "node/9162458017",
+      "osm_tags": {
+        "name": "Eli Dimtu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Wadera",
+      "lat": 5.7773139,
+      "lon": 39.3105652,
+      "osm_id": "node/9238774998",
+      "osm_tags": {
+        "name": "Wadera",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Segen",
+      "lat": 5.5886603,
+      "lon": 37.5465027,
+      "osm_id": "node/9239272287",
+      "osm_tags": {
+        "name": "Segen",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Hiyadima",
+      "lat": 5.534515,
+      "lon": 38.8094779,
+      "osm_id": "node/10073476885",
+      "osm_tags": {
+        "name": "Hiyadima",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kenticha",
+      "lat": 5.4476057,
+      "lon": 39.0068836,
+      "osm_id": "node/10262887135",
+      "osm_tags": {
+        "name": "Kenticha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hadhesa",
+      "lat": 5.0183469,
+      "lon": 39.7112584,
+      "osm_id": "node/10263030784",
+      "osm_tags": {
+        "name": "Hadhesa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalisha",
+      "lat": 3.9665598,
+      "lon": 41.1195086,
+      "osm_id": "node/10263364454",
+      "osm_tags": {
+        "name": "Kalisha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chachabole",
+      "lat": 3.1590375,
+      "lon": 40.6189256,
+      "osm_id": "node/10577607129",
+      "osm_tags": {
+        "name": "Chachabole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Elele",
+      "lat": 3.2721899,
+      "lon": 40.7075801,
+      "osm_id": "node/10577609329",
+      "osm_tags": {
+        "name": "Elele",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Megado",
+      "lat": 5.654617,
+      "lon": 38.7970709,
+      "osm_id": "node/10577714504",
+      "osm_tags": {
+        "name": "Megado",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Guro",
+      "lat": 5.4463251,
+      "lon": 37.3324844,
+      "osm_id": "node/10594841354",
+      "osm_tags": {
+        "name": "Guro",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Elweya",
+      "lat": 4.9633788,
+      "lon": 37.8932659,
+      "osm_id": "node/10594841355",
+      "osm_tags": {
+        "name": "Elweya",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Deka",
+      "lat": 5.2156249,
+      "lon": 39.9101382,
+      "osm_id": "node/10597356048",
+      "osm_tags": {
+        "name": "Deka",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Birbirsa Bera",
+      "lat": 5.7049586,
+      "lon": 38.5969877,
+      "osm_id": "node/10624126642",
+      "osm_tags": {
+        "name": "Birbirsa Bera",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Soyoma",
+      "lat": 5.6078016,
+      "lon": 38.1505957,
+      "osm_id": "node/10624131600",
+      "osm_tags": {
+        "name": "Soyoma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Damog",
+      "lat": 3.282532,
+      "lon": 40.6297391,
+      "osm_id": "node/10657136057",
+      "osm_tags": {
+        "name": "Damog",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Wargadud",
+      "lat": 3.1837951,
+      "lon": 40.8673946,
+      "osm_id": "node/10657170579",
+      "osm_tags": {
+        "name": "Wargadud",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iresjunto",
+      "lat": 3.2877049,
+      "lon": 40.5908504,
+      "osm_id": "node/10657170918",
+      "osm_tags": {
+        "name": "Iresjunto",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hamasa",
+      "lat": 3.2969697,
+      "lon": 40.4332891,
+      "osm_id": "node/10657170919",
+      "osm_tags": {
+        "name": "Hamasa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Harsanga",
+      "lat": 3.1010511,
+      "lon": 40.6782701,
+      "osm_id": "node/10657170920",
+      "osm_tags": {
+        "name": "Harsanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kobadadi",
+      "lat": 3.1914704,
+      "lon": 40.4220887,
+      "osm_id": "node/10657170921",
+      "osm_tags": {
+        "name": "Kobadadi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gofa",
+      "lat": 3.4097023,
+      "lon": 40.5774856,
+      "osm_id": "node/10657170922",
+      "osm_tags": {
+        "name": "Gofa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Iressuki",
+      "lat": 2.9702439,
+      "lon": 40.922049,
+      "osm_id": "node/10660720728",
+      "osm_tags": {
+        "name": "Iressuki",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tuli",
+      "lat": 2.9763844,
+      "lon": 40.8580099,
+      "osm_id": "node/10660720729",
+      "osm_tags": {
+        "name": "Tuli",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ababosone",
+      "lat": 3.0087962,
+      "lon": 40.7889813,
+      "osm_id": "node/10660720730",
+      "osm_tags": {
+        "name": "Ababosone",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shimbir Fatuma",
+      "lat": 3.0285977,
+      "lon": 40.5093991,
+      "osm_id": "node/10660720733",
+      "osm_tags": {
+        "name": "Shimbir Fatuma",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kotkoto",
+      "lat": 3.2135265,
+      "lon": 40.4046016,
+      "osm_id": "node/10660720734",
+      "osm_tags": {
+        "name": "Kotkoto",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shir Shir",
+      "lat": 3.5320861,
+      "lon": 40.7354451,
+      "osm_id": "node/10660720735",
+      "osm_tags": {
+        "name": "Shir Shir",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "El Hobok",
+      "lat": 4.378328,
+      "lon": 37.2612423,
+      "osm_id": "node/10752309534",
+      "osm_tags": {
+        "name": "El Hobok",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Orogwein",
+      "lat": 3.4338658,
+      "lon": 40.7946772,
+      "osm_id": "node/11279067297",
+      "osm_tags": {
+        "name": "Orogwein",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ashabito",
+      "lat": 3.5523692,
+      "lon": 40.8691207,
+      "osm_id": "node/11279071971",
+      "osm_tags": {
+        "name": "Ashabito",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Guticha",
+      "lat": 3.5943963,
+      "lon": 40.83042,
+      "osm_id": "node/11279747248",
+      "osm_tags": {
+        "name": "Guticha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bambo",
+      "lat": 3.5258967,
+      "lon": 40.9712235,
+      "osm_id": "node/11279762020",
+      "osm_tags": {
+        "name": "Bambo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bambo 2",
+      "lat": 3.5364826,
+      "lon": 40.9727987,
+      "osm_id": "node/11279762040",
+      "osm_tags": {
+        "name": "Bambo 2",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Khera",
+      "lat": 3.6807853,
+      "lon": 41.0493581,
+      "osm_id": "node/11279762052",
+      "osm_tags": {
+        "name": "Khera",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Towfiq",
+      "lat": 3.8827741,
+      "lon": 41.1963875,
+      "osm_id": "node/11279775044",
+      "osm_tags": {
+        "name": "Towfiq",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Barwago",
+      "lat": 3.8387523,
+      "lon": 41.0423107,
+      "osm_id": "node/11279952402",
+      "osm_tags": {
+        "name": "Barwago",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Qorahey",
+      "lat": 4.0070425,
+      "lon": 41.0648843,
+      "osm_id": "node/11292996566",
+      "osm_tags": {
+        "name": "Qorahey",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lulis",
+      "lat": 4.0206428,
+      "lon": 40.3363738,
+      "osm_id": "node/11293413488",
+      "osm_tags": {
+        "name": "Lulis",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Awal Yatani",
+      "lat": 4.0096175,
+      "lon": 40.3654679,
+      "osm_id": "node/11293467220",
+      "osm_tags": {
+        "name": "Awal Yatani",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla",
+      "lat": 3.8965945,
+      "lon": 40.868043,
+      "osm_id": "node/11293545711",
+      "osm_tags": {
+        "name": "Olla",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kalisha",
+      "lat": 3.8513397,
+      "lon": 41.0176957,
+      "osm_id": "node/11293605248",
+      "osm_tags": {
+        "name": "Kalisha",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Domal",
+      "lat": 4.0444619,
+      "lon": 40.5070438,
+      "osm_id": "node/11293625832",
+      "osm_tags": {
+        "name": "Domal",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Qalim",
+      "lat": 3.9914865,
+      "lon": 40.4313342,
+      "osm_id": "node/11293642762",
+      "osm_tags": {
+        "name": "Qalim",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Soroba",
+      "lat": 4.0286421,
+      "lon": 40.4791536,
+      "osm_id": "node/11293671176",
+      "osm_tags": {
+        "name": "Soroba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kubi",
+      "lat": 3.7094518,
+      "lon": 41.0382356,
+      "osm_id": "node/11307760817",
+      "osm_tags": {
+        "name": "Kubi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Awara",
+      "lat": 3.7735848,
+      "lon": 41.1357585,
+      "osm_id": "node/11307788536",
+      "osm_tags": {
+        "name": "Awara",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Waldiri",
+      "lat": 3.802803,
+      "lon": 41.1554277,
+      "osm_id": "node/11307788584",
+      "osm_tags": {
+        "name": "Waldiri",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "JabI",
+      "lat": 3.720117,
+      "lon": 41.1032438,
+      "osm_id": "node/11307789191",
+      "osm_tags": {
+        "name": "JabI",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Qarani",
+      "lat": 2.9809232,
+      "lon": 39.8533592,
+      "osm_id": "node/11333186593",
+      "osm_tags": {
+        "name": "Qarani",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Darwed",
+      "lat": 3.4421309,
+      "lon": 40.2323692,
+      "osm_id": "node/11407111975",
+      "osm_tags": {
+        "name": "Darwed",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Qorobo Lakoley",
+      "lat": 3.6735675,
+      "lon": 40.240135,
+      "osm_id": "node/11407166141",
+      "osm_tags": {
+        "name": "Qorobo Lakoley",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nuray",
+      "lat": 3.6571239,
+      "lon": 40.2333644,
+      "osm_id": "node/11407166160",
+      "osm_tags": {
+        "name": "Nuray",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dugdi dera",
+      "lat": 3.6440621,
+      "lon": 40.2286171,
+      "osm_id": "node/11407166168",
+      "osm_tags": {
+        "name": "Dugdi dera",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Hoppi",
+      "lat": 3.5352618,
+      "lon": 40.203048,
+      "osm_id": "node/11407171387",
+      "osm_tags": {
+        "name": "Hoppi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Barashum",
+      "lat": 3.7161751,
+      "lon": 40.2384563,
+      "osm_id": "node/11407185236",
+      "osm_tags": {
+        "name": "Barashum",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Arda Halo",
+      "lat": 3.5438208,
+      "lon": 40.1007839,
+      "osm_id": "node/11407206980",
+      "osm_tags": {
+        "name": "Arda Halo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Awasho Sambur",
+      "lat": 3.5364461,
+      "lon": 40.1474409,
+      "osm_id": "node/11407206981",
+      "osm_tags": {
+        "name": "Awasho Sambur",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "KotKot",
+      "lat": 3.7312729,
+      "lon": 40.0522826,
+      "osm_id": "node/11407207037",
+      "osm_tags": {
+        "name": "KotKot",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ogode",
+      "lat": 3.7016316,
+      "lon": 40.0792003,
+      "osm_id": "node/11407207038",
+      "osm_tags": {
+        "name": "Ogode",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Qorobo Saglan",
+      "lat": 3.6518005,
+      "lon": 40.103414,
+      "osm_id": "node/11407221497",
+      "osm_tags": {
+        "name": "Qorobo Saglan",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Donqey",
+      "lat": 3.6018175,
+      "lon": 40.1217505,
+      "osm_id": "node/11407221525",
+      "osm_tags": {
+        "name": "Donqey",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dakar",
+      "lat": 3.6842916,
+      "lon": 40.1859319,
+      "osm_id": "node/11407279375",
+      "osm_tags": {
+        "name": "Dakar",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sololo Makutano",
+      "lat": 3.5087694,
+      "lon": 38.6468725,
+      "osm_id": "node/12288225049",
+      "osm_tags": {
+        "name": "Sololo Makutano",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dambala Fullchana",
+      "lat": 3.5054227,
+      "lon": 38.7510158,
+      "osm_id": "node/12288232634",
+      "osm_tags": {
+        "name": "Dambala Fullchana",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mado Adi",
+      "lat": 3.5740319,
+      "lon": 38.6936221,
+      "osm_id": "node/12301493766",
+      "osm_tags": {
+        "name": "Mado Adi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mukh - Gurra",
+      "lat": 3.5282962,
+      "lon": 38.718134,
+      "osm_id": "node/12301493767",
+      "osm_tags": {
+        "name": "Mukh - Gurra",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Waye Godha",
+      "lat": 3.6058784,
+      "lon": 38.6898789,
+      "osm_id": "node/12301493784",
+      "osm_tags": {
+        "name": "Waye Godha",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Qate",
+      "lat": 3.4389533,
+      "lon": 38.9671148,
+      "osm_id": "node/12301503341",
+      "osm_tags": {
+        "name": "Qate",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nyaata",
+      "lat": 2.9943888,
+      "lon": 39.2475725,
+      "osm_id": "node/12349162037",
+      "osm_tags": {
+        "name": "Nyaata",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Anona",
+      "lat": 3.5924084,
+      "lon": 38.6318568,
+      "osm_id": "node/12442169499",
+      "osm_tags": {
+        "name": "Anona",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Karbururi",
+      "lat": 3.5833768,
+      "lon": 38.6036877,
+      "osm_id": "node/12442169500",
+      "osm_tags": {
+        "name": "Karbururi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Godole",
+      "lat": 3.5915897,
+      "lon": 38.5873543,
+      "osm_id": "node/12442176601",
+      "osm_tags": {
+        "name": "Godole",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Uran Godha",
+      "lat": 3.6107159,
+      "lon": 38.5451818,
+      "osm_id": "node/12442176602",
+      "osm_tags": {
+        "name": "Uran Godha",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Uran",
+      "lat": 3.6043156,
+      "lon": 38.5193103,
+      "osm_id": "node/12442176603",
+      "osm_tags": {
+        "name": "Uran",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dabach",
+      "lat": 3.5092179,
+      "lon": 38.5152885,
+      "osm_id": "node/12442176604",
+      "osm_tags": {
+        "name": "Dabach",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gondoma Didiqo",
+      "lat": 3.4560688,
+      "lon": 39.2723332,
+      "osm_id": "node/12442201786",
+      "osm_tags": {
+        "name": "Gondoma Didiqo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gagaba",
+      "lat": 3.5705851,
+      "lon": 39.7103945,
+      "osm_id": "node/12464961586",
+      "osm_tags": {
+        "name": "Gagaba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sake",
+      "lat": 3.6375464,
+      "lon": 39.7877743,
+      "osm_id": "node/12464961588",
+      "osm_tags": {
+        "name": "Sake",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Harchilmi",
+      "lat": 3.5979497,
+      "lon": 39.7423358,
+      "osm_id": "node/12464961589",
+      "osm_tags": {
+        "name": "Harchilmi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tesu Ramu",
+      "lat": 3.529525,
+      "lon": 39.6521832,
+      "osm_id": "node/12464961590",
+      "osm_tags": {
+        "name": "Tesu Ramu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Funan Nyatta",
+      "lat": 3.3799662,
+      "lon": 39.0740202,
+      "osm_id": "node/12469192572",
+      "osm_tags": {
+        "name": "Funan Nyatta",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mansile",
+      "lat": 3.4880321,
+      "lon": 39.1155896,
+      "osm_id": "node/12470912564",
+      "osm_tags": {
+        "name": "Mansile",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Garse",
+      "lat": 3.4306671,
+      "lon": 39.2619884,
+      "osm_id": "node/12470942702",
+      "osm_tags": {
+        "name": "Garse",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Watitit",
+      "lat": 3.4145664,
+      "lon": 39.2945567,
+      "osm_id": "node/12470942703",
+      "osm_tags": {
+        "name": "Watitit",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Garsa",
+      "lat": 3.3323913,
+      "lon": 39.0699765,
+      "osm_id": "node/12471037010",
+      "osm_tags": {
+        "name": "Garsa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lag Dedachi",
+      "lat": 3.0303179,
+      "lon": 38.9580263,
+      "osm_id": "node/12471037011",
+      "osm_tags": {
+        "name": "Lag Dedachi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kiliweheri",
+      "lat": 3.9501475,
+      "lon": 40.0712441,
+      "osm_id": "node/12508864558",
+      "osm_tags": {
+        "name": "Kiliweheri",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chiracha",
+      "lat": 3.9098787,
+      "lon": 40.3690453,
+      "osm_id": "node/12513960642",
+      "osm_tags": {
+        "name": "Chiracha",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mataarba",
+      "lat": 3.8728605,
+      "lon": 40.3781823,
+      "osm_id": "node/12513968651",
+      "osm_tags": {
+        "name": "Mataarba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Marille",
+      "lat": 3.8231087,
+      "lon": 40.3957797,
+      "osm_id": "node/12513968825",
+      "osm_tags": {
+        "name": "Marille",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Guba",
+      "lat": 3.8631942,
+      "lon": 40.5005571,
+      "osm_id": "node/12513968832",
+      "osm_tags": {
+        "name": "Guba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Qotqot",
+      "lat": 3.8404108,
+      "lon": 40.5463478,
+      "osm_id": "node/12513968833",
+      "osm_tags": {
+        "name": "Qotqot",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Muradhelow",
+      "lat": 3.8171062,
+      "lon": 40.5713782,
+      "osm_id": "node/12513968834",
+      "osm_tags": {
+        "name": "Muradhelow",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Rawana",
+      "lat": 3.3425699,
+      "lon": 38.4683382,
+      "osm_id": "node/12518806435",
+      "osm_tags": {
+        "name": "Rawana",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ambalo",
+      "lat": 3.03509,
+      "lon": 38.7613495,
+      "osm_id": "node/12522722793",
+      "osm_tags": {
+        "name": "Ambalo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "El-Beso",
+      "lat": 3.5477951,
+      "lon": 36.9085445,
+      "osm_id": "node/12529339985",
+      "osm_tags": {
+        "name": "El-Beso",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Sora",
+      "lat": 3.9393597,
+      "lon": 37.3173317,
+      "osm_id": "node/12969036716",
+      "osm_tags": {
+        "name": "Olla Sora",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Boru Guyo",
+      "lat": 3.8509313,
+      "lon": 37.0633348,
+      "osm_id": "node/12985739209",
+      "osm_tags": {
+        "description": "Small Gabra Village",
+        "name": "Olla Boru Guyo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Choroqo",
+      "lat": 3.9531789,
+      "lon": 40.498756,
+      "osm_id": "node/12987230984",
+      "osm_tags": {
+        "name": "Choroqo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Burdas",
+      "lat": 3.8436517,
+      "lon": 39.8726577,
+      "osm_id": "node/12989143397",
+      "osm_tags": {
+        "name": "Burdas",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Funan Teso Baru",
+      "lat": 3.8663632,
+      "lon": 39.9226019,
+      "osm_id": "node/12989143398",
+      "osm_tags": {
+        "name": "Funan Teso Baru",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kiliwehiri",
+      "lat": 3.9177139,
+      "lon": 40.0123598,
+      "osm_id": "node/12989143399",
+      "osm_tags": {
+        "name": "Kiliwehiri",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Goljo",
+      "lat": 3.873238,
+      "lon": 40.1283028,
+      "osm_id": "node/12989143400",
+      "osm_tags": {
+        "name": "Goljo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gither",
+      "lat": 3.6787119,
+      "lon": 39.9213702,
+      "osm_id": "node/12989151776",
+      "osm_tags": {
+        "name": "Gither",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gari",
+      "lat": 3.4368889,
+      "lon": 40.9646249,
+      "osm_id": "node/12989191701",
+      "osm_tags": {
+        "name": "Gari",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Waragalla",
+      "lat": 3.4100722,
+      "lon": 41.0103143,
+      "osm_id": "node/12989191702",
+      "osm_tags": {
+        "name": "Waragalla",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Quramathow",
+      "lat": 3.2470561,
+      "lon": 40.8650085,
+      "osm_id": "node/12989215431",
+      "osm_tags": {
+        "name": "Quramathow",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Barambate",
+      "lat": 3.13897,
+      "lon": 36.8228425,
+      "osm_id": "node/13147461525",
+      "osm_tags": {
+        "name": "Barambate",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "El Boru Magado",
+      "lat": 3.1757137,
+      "lon": 36.9313253,
+      "osm_id": "node/13147461526",
+      "osm_tags": {
+        "name": "El Boru Magado",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gorji",
+      "lat": 3.178714,
+      "lon": 37.0346324,
+      "osm_id": "node/13147461534",
+      "osm_tags": {
+        "name": "Gorji",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla Boqe",
+      "lat": 3.2712434,
+      "lon": 37.557652,
+      "osm_id": "node/13327630219",
+      "osm_tags": {
+        "name": "Olla Boqe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Qubi Boqe",
+      "lat": 3.2716887,
+      "lon": 37.594171,
+      "osm_id": "node/13327632331",
+      "osm_tags": {
+        "ele": "900",
+        "name": "Qubi Boqe",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Qarsa Dima",
+      "lat": 3.6549083,
+      "lon": 39.9749621,
+      "osm_id": "node/13514575539",
+      "osm_tags": {
+        "name": "Qarsa Dima",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bulla Mpya",
+      "lat": 3.691085,
+      "lon": 39.9210944,
+      "osm_id": "node/13514956661",
+      "osm_tags": {
+        "name": "Bulla Mpya",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Khalafow",
+      "lat": 3.7290928,
+      "lon": 39.9206185,
+      "osm_id": "node/13514974316",
+      "osm_tags": {
+        "name": "Khalafow",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sigirso",
+      "lat": 3.7360583,
+      "lon": 39.8612199,
+      "osm_id": "node/13514974324",
+      "osm_tags": {
+        "name": "Sigirso",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dobu",
+      "lat": 3.7603348,
+      "lon": 39.8216485,
+      "osm_id": "node/13514974325",
+      "osm_tags": {
+        "name": "Dobu",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sukela Louwo",
+      "lat": 3.7561981,
+      "lon": 39.8406143,
+      "osm_id": "node/13514974361",
+      "osm_tags": {
+        "name": "Sukela Louwo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kinisa",
+      "lat": 3.8086532,
+      "lon": 39.8501012,
+      "osm_id": "node/13514974407",
+      "osm_tags": {
+        "name": "Kinisa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Harbuyo",
+      "lat": 3.4132691,
+      "lon": 39.9734501,
+      "osm_id": "node/13514974600",
+      "osm_tags": {
+        "name": "Harbuyo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Duse Bima",
+      "lat": 3.4033663,
+      "lon": 40.1815164,
+      "osm_id": "node/13514974622",
+      "osm_tags": {
+        "name": "Duse Bima",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Chew Bahir",
+      "lat": 4.6269467,
+      "lon": 36.8495206,
+      "osm_id": "way/27144020",
+      "osm_tags": {
+        "int_name": "Stefanie",
+        "intermittent": "yes",
+        "name": "Lake Chew Bahir",
+        "name:am": "\u1328\u12cd \u1263\u1215\u122d",
+        "name:hu": "Csev-Bahir-t\u00f3",
+        "name:sk": "\u0160tef\u00e1niino jazero",
+        "natural": "water",
+        "old_name:hu": "Stef\u00e1nia-t\u00f3",
+        "salt": "yes",
+        "water": "lake",
+        "wikidata": "Q662811",
+        "wikimedia_commons": "Category:Lake Chew Bahir"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ganale",
+      "lat": 5.797031,
+      "lon": 39.5585099,
+      "osm_id": "way/28943168",
+      "osm_tags": {
+        "name": "Ganale",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Laga Wata",
+      "lat": 3.9979272,
+      "lon": 37.3429674,
+      "osm_id": "way/29036090",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Laga Wata",
+        "seasonal": "wet_season",
+        "waterway": "river",
+        "wikidata": "Q23967010"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Laga Balal",
+      "lat": 4.271969,
+      "lon": 37.1932276,
+      "osm_id": "way/29036144",
+      "osm_tags": {
+        "alt_name": "Laga Bulal",
+        "intermittent": "yes",
+        "name": "Laga Balal",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ganale",
+      "lat": 5.3895892,
+      "lon": 41.1618024,
+      "osm_id": "way/38704705",
+      "osm_tags": {
+        "name": "Ganale",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Wabi Uetmal",
+      "lat": 5.7838597,
+      "lon": 40.7164169,
+      "osm_id": "way/38704821",
+      "osm_tags": {
+        "name": "Wabi Uetmal",
+        "name:am": "Mena",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Webi Mana",
+      "lat": 5.6195659,
+      "lon": 41.1900148,
+      "osm_id": "way/38705374",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Webi Mana",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Salt Lake",
+      "lat": 4.2075393,
+      "lon": 38.3959447,
+      "osm_id": "way/94994922",
+      "osm_tags": {
+        "name": "Salt Lake",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Laga Jibiss",
+      "lat": 3.8644418,
+      "lon": 37.1134336,
+      "osm_id": "way/302674149",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Laga Jibiss",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 4.1828868,
+      "lon": 40.8966878,
+      "osm_id": "way/311111134",
+      "osm_tags": {
+        "name": "Dawa",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 3.9606984,
+      "lon": 41.4025653,
+      "osm_id": "way/311113156",
+      "osm_tags": {
+        "name": "Dawa",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 4.0549556,
+      "lon": 41.0536143,
+      "osm_id": "way/311113158",
+      "osm_tags": {
+        "name": "Dawa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 4.039886,
+      "lon": 41.0672808,
+      "osm_id": "way/311113160",
+      "osm_tags": {
+        "name": "Dawa",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 4.1373218,
+      "lon": 40.9543866,
+      "osm_id": "way/311113163",
+      "osm_tags": {
+        "name": "Dawa",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 4.2211066,
+      "lon": 40.8633856,
+      "osm_id": "way/311114159",
+      "osm_tags": {
+        "name": "Dawa",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 4.4031806,
+      "lon": 40.7403865,
+      "osm_id": "way/311117019",
+      "osm_tags": {
+        "name": "Dawa",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 4.6401314,
+      "lon": 40.5639087,
+      "osm_id": "way/311117621",
+      "osm_tags": {
+        "name": "Dawa",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 4.790664,
+      "lon": 40.3292432,
+      "osm_id": "way/311118950",
+      "osm_tags": {
+        "name": "Dawa",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 4.711039,
+      "lon": 39.8263506,
+      "osm_id": "way/311119407",
+      "osm_tags": {
+        "name": "Dawa",
+        "name:it": "Daua",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 4.7912996,
+      "lon": 40.1157865,
+      "osm_id": "way/311158358",
+      "osm_tags": {
+        "name": "Dawa",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 4.6962881,
+      "lon": 39.5844322,
+      "osm_id": "way/311158930",
+      "osm_tags": {
+        "name": "Dawa",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 4.7630758,
+      "lon": 39.4675885,
+      "osm_id": "way/311158949",
+      "osm_tags": {
+        "name": "Dawa",
+        "name:it": "Daua",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 5.1086397,
+      "lon": 38.9745737,
+      "osm_id": "way/311161053",
+      "osm_tags": {
+        "name": "Dawa",
+        "name:it": "Daua",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Aflata",
+      "lat": 5.3466795,
+      "lon": 38.5759564,
+      "osm_id": "way/311161057",
+      "osm_tags": {
+        "name": "Aflata",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ganale",
+      "lat": 5.4844138,
+      "lon": 40.3007471,
+      "osm_id": "way/311396453",
+      "osm_tags": {
+        "name": "Ganale",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ajawa Water Pan",
+      "lat": 2.9635463,
+      "lon": 39.6894149,
+      "osm_id": "way/365534085",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "no",
+        "name": "Ajawa Water Pan",
+        "natural": "water",
+        "water": "pond",
+        "water_management": "community",
+        "water_quality": "soft",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "no"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Korendile Water Pan",
+      "lat": 2.9881267,
+      "lon": 39.3156514,
+      "osm_id": "way/365534089",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "yes",
+        "name": "Korendile Water Pan",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_quality": "soft",
+        "water_seasonality": "unreliable",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "no"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Bute Water Pan 2",
+      "lat": 3.3809359,
+      "lon": 39.4102231,
+      "osm_id": "way/365538335",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "yes",
+        "name": "Bute Water Pan 2",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "no"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Bute Water Pan 3",
+      "lat": 3.3825785,
+      "lon": 39.4121581,
+      "osm_id": "way/365538340",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "yes",
+        "name": "Bute Water Pan 3",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "no"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Bute Water Pan",
+      "lat": 3.3712779,
+      "lon": 39.4281461,
+      "osm_id": "way/365538341",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "yes",
+        "name": "Bute Water Pan",
+        "natural": "water",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "no"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Adadijole Water Pan",
+      "lat": 3.3372604,
+      "lon": 39.4672724,
+      "osm_id": "way/365681611",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "no",
+        "name": "Adadijole Water Pan",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_quality": "soft",
+        "water_seasonality": "unreliable",
+        "water_source": "groundwater",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "no"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Bamba Gurar Water Pan",
+      "lat": 3.3038181,
+      "lon": 39.5474916,
+      "osm_id": "way/365681613",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "no",
+        "name": "Bamba Gurar Water Pan",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_quality": "soft",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "no"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Balatul Amin Water Pan",
+      "lat": 3.2883369,
+      "lon": 39.6598229,
+      "osm_id": "way/365684525",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "no",
+        "name": "Balatul Amin Water Pan",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_quality": "soft",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Danaba Water Pan",
+      "lat": 3.3360814,
+      "lon": 39.7668203,
+      "osm_id": "way/365684527",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "no",
+        "name": "Danaba Water Pan",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_quality": "soft",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Qudama Water Pan",
+      "lat": 3.1778126,
+      "lon": 39.8165793,
+      "osm_id": "way/365687896",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "no",
+        "name": "Qudama Water Pan",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_quality": "soft",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Qudama Water Pan",
+      "lat": 3.1771749,
+      "lon": 39.8244923,
+      "osm_id": "way/365687897",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "no",
+        "name": "Qudama Water Pan",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_quality": "soft",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Garakilo Water Pan",
+      "lat": 3.158006,
+      "lon": 39.6044481,
+      "osm_id": "way/365689420",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "yes",
+        "name": "Garakilo Water Pan",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_quality": "soft",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "no"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Garakilo Water Pan",
+      "lat": 3.1615023,
+      "lon": 39.5981748,
+      "osm_id": "way/365701111",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "no",
+        "name": "Garakilo Water Pan",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_quality": "soft",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "no"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Mabuyu Water Pan",
+      "lat": 3.3358796,
+      "lon": 39.4245169,
+      "osm_id": "way/365701113",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "no",
+        "name": "Mabuyu Water Pan",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_quality": "soft",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Ogorji Water Pan",
+      "lat": 3.1991847,
+      "lon": 39.4408685,
+      "osm_id": "way/365701114",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "no",
+        "name": "Ogorji Water Pan",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_quality": "soft",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Warbilcan Water Pan",
+      "lat": 3.3203295,
+      "lon": 39.4299472,
+      "osm_id": "way/365701118",
+      "osm_tags": {
+        "name": "Warbilcan Water Pan",
+        "natural": "water",
+        "origin": "manmade",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Bur Mayo Water Pan",
+      "lat": 2.9573593,
+      "lon": 40.2925097,
+      "osm_id": "way/366267152",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "no",
+        "name": "Bur Mayo Water Pan",
+        "natural": "water",
+        "origin": "manmade",
+        "water": "pond",
+        "water_management": "Community",
+        "water_quality": "Salty",
+        "water_seasonality": "Unreliable",
+        "water_source": "Rain",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gunana Water Pan",
+      "lat": 3.1675235,
+      "lon": 40.0904086,
+      "osm_id": "way/366267177",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "no",
+        "name": "Gunana Water Pan",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_management": "community",
+        "water_quality": "soft",
+        "water_seasonality": "unreliable",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "yes"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lagbor",
+      "lat": 2.1802224,
+      "lon": 39.9377075,
+      "osm_id": "way/367391333",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lagbor",
+        "old_name": "Laga Bor",
+        "seasonal": "wet_season",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Moyale",
+      "lat": 3.5441736,
+      "lon": 39.054227,
+      "osm_id": "way/390141513",
+      "osm_tags": {
+        "name": "Moyale",
+        "place": "town",
+        "wikidata": "Q1009179",
+        "wikipedia": "en:Moyale"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Haro Mboga",
+      "lat": 3.4429878,
+      "lon": 37.7626517,
+      "osm_id": "way/418164854",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Haro Mboga",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gandile earth pan",
+      "lat": 3.5671734,
+      "lon": 37.8186455,
+      "osm_id": "way/418164855",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Gandile earth pan",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Dukana",
+      "lat": 3.9973832,
+      "lon": 37.2728831,
+      "osm_id": "way/418294376",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Dukana",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ririba river",
+      "lat": 3.806362,
+      "lon": 37.4100686,
+      "osm_id": "way/418311582",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Ririba river",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mormora",
+      "lat": 5.4906066,
+      "lon": 38.9834485,
+      "osm_id": "way/467896347",
+      "osm_tags": {
+        "name": "Mormora",
+        "waterway": "river",
+        "wikidata": "Q23963081"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilkile",
+      "lat": 5.2931235,
+      "lon": 38.24825,
+      "osm_id": "way/514050051",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kilkile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 5.2617269,
+      "lon": 38.836338,
+      "osm_id": "way/514850877",
+      "osm_tags": {
+        "name": "Dawa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 5.3422214,
+      "lon": 38.7769867,
+      "osm_id": "way/514850878",
+      "osm_tags": {
+        "name": "Dawa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilkile",
+      "lat": 5.1106038,
+      "lon": 38.6498585,
+      "osm_id": "way/515001972",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kilkile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 5.2993637,
+      "lon": 38.8123999,
+      "osm_id": "way/515894478",
+      "osm_tags": {
+        "name": "Dawa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Aflata",
+      "lat": 5.1820194,
+      "lon": 38.7654481,
+      "osm_id": "way/516215652",
+      "osm_tags": {
+        "name": "Aflata",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q73608980"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Aflata",
+      "lat": 5.2105609,
+      "lon": 38.6854555,
+      "osm_id": "way/516396629",
+      "osm_tags": {
+        "name": "Aflata",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malkamari",
+      "lat": 4.2357071,
+      "lon": 40.6971609,
+      "osm_id": "way/520297143",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Malkamari",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Afeya River",
+      "lat": 5.7825442,
+      "lon": 36.578978,
+      "osm_id": "way/533115923",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Afeya River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Neri River",
+      "lat": 5.7233837,
+      "lon": 36.5003599,
+      "osm_id": "way/535363556",
+      "osm_tags": {
+        "name": "Neri River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Neri",
+      "lat": 5.8457998,
+      "lon": 36.5696327,
+      "osm_id": "way/539724818",
+      "osm_tags": {
+        "name": "Neri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Woito Wenz",
+      "lat": 5.2932609,
+      "lon": 36.9635725,
+      "osm_id": "way/541691849",
+      "osm_tags": {
+        "name": "Woito Wenz",
+        "source": "aerial imagery;Esri World",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Moyale",
+      "lat": 3.5161623,
+      "lon": 39.0623617,
+      "osm_id": "way/564383325",
+      "osm_tags": {
+        "name": "Moyale",
+        "place": "town",
+        "wikidata": "Q1009179",
+        "wikipedia": "en:Moyale"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Laga Balal",
+      "lat": 4.8235192,
+      "lon": 37.1251131,
+      "osm_id": "way/582519876",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Laga Balal",
+        "seasonal": "yes",
+        "source": "landsat",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nana",
+      "lat": 3.468231,
+      "lon": 39.2399222,
+      "osm_id": "way/613071030",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Nana",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Webi Mana",
+      "lat": 6.2906089,
+      "lon": 40.7934562,
+      "osm_id": "way/712159944",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Webi Mana",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Derarsum",
+      "lat": 5.7240858,
+      "lon": 41.2274268,
+      "osm_id": "way/712189194",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Derarsum",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Harshilin",
+      "lat": 3.6438844,
+      "lon": 39.6508633,
+      "osm_id": "way/741027288",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Harshilin",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Eresteno",
+      "lat": 3.4642361,
+      "lon": 39.6133943,
+      "osm_id": "way/741087774",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Eresteno",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Qarsa Sare",
+      "lat": 3.3871423,
+      "lon": 39.6362165,
+      "osm_id": "way/741092332",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Qarsa Sare",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Godoma",
+      "lat": 3.4689907,
+      "lon": 39.3081143,
+      "osm_id": "way/741220561",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Godoma",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kujure",
+      "lat": 3.2548462,
+      "lon": 39.3412574,
+      "osm_id": "way/741256282",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Kujure",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Qarsa Bula Water Pan",
+      "lat": 3.319143,
+      "lon": 39.7490803,
+      "osm_id": "way/741275354",
+      "osm_tags": {
+        "drinking_water": "yes",
+        "irrigation_water": "no",
+        "name": "Qarsa Bula Water Pan",
+        "natural": "water",
+        "reservoir_type": "water_storage",
+        "water": "reservoir",
+        "water_source": "stream",
+        "watering_place_livestock": "yes",
+        "watering_place_wildlife": "yes"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mormora",
+      "lat": 5.8877371,
+      "lon": 38.6271765,
+      "osm_id": "way/741327686",
+      "osm_tags": {
+        "name": "Mormora",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bolowle",
+      "lat": 3.2541687,
+      "lon": 40.0110242,
+      "osm_id": "way/742141360",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Bolowle",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Didkoba",
+      "lat": 3.4590252,
+      "lon": 39.8417041,
+      "osm_id": "way/742149459",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Didkoba",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dandu",
+      "lat": 3.4223024,
+      "lon": 39.8772886,
+      "osm_id": "way/742149460",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Dandu",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kubdishan",
+      "lat": 3.403466,
+      "lon": 40.1035374,
+      "osm_id": "way/742150191",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Kubdishan",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 5.4185581,
+      "lon": 38.7164319,
+      "osm_id": "way/742152693",
+      "osm_tags": {
+        "name": "Dawa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 5.3969601,
+      "lon": 38.7346323,
+      "osm_id": "way/742152694",
+      "osm_tags": {
+        "name": "Dawa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Awata",
+      "lat": 5.3661631,
+      "lon": 39.2204731,
+      "osm_id": "way/742152695",
+      "osm_tags": {
+        "name": "Awata",
+        "source:name": "wikidata",
+        "waterway": "river",
+        "wikidata": "Q23963081"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Awata",
+      "lat": 5.1411849,
+      "lon": 39.1434038,
+      "osm_id": "way/742152696",
+      "osm_tags": {
+        "name": "Awata",
+        "waterway": "river",
+        "wikidata": "Q73609465"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Qarani",
+      "lat": 2.9811348,
+      "lon": 39.8534538,
+      "osm_id": "way/742271092",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Qarani",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Haro Jatama",
+      "lat": 3.4078558,
+      "lon": 37.7351591,
+      "osm_id": "way/743080248",
+      "osm_tags": {
+        "description": "Seasonal Resevoir\nName \"Jatama\" comes from the Gabra word for 60. At the time this resevoir was dug, workers were being paid 60 shillings.",
+        "intermittent": "yes",
+        "name": "Haro Jatama",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Laga Balal",
+      "lat": 3.5248341,
+      "lon": 37.2538224,
+      "osm_id": "way/743149998",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Laga Balal",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Laga Wachu ?",
+      "lat": 3.3065163,
+      "lon": 37.9636725,
+      "osm_id": "way/743453695",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Laga Wachu ?",
+        "seasonal": "wet_season",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Laga Wachu ?",
+      "lat": 3.088089,
+      "lon": 37.9726456,
+      "osm_id": "way/743453696",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Laga Wachu ?",
+        "seasonal": "wet_season",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Laga Jibisa",
+      "lat": 4.1884285,
+      "lon": 37.0795031,
+      "osm_id": "way/747102127",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Laga Jibisa",
+        "seasonal": "wet_season",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Laga Kurrsa",
+      "lat": 4.118811,
+      "lon": 37.0915871,
+      "osm_id": "way/747120099",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Laga Kurrsa",
+        "seasonal": "wet_season",
+        "waterway": "river",
+        "wikidata": "Q23967185"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mogorei",
+      "lat": 4.4010216,
+      "lon": 36.8252599,
+      "osm_id": "way/747450831",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mogorei",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Il Eriet",
+      "lat": 4.507982,
+      "lon": 36.5436771,
+      "osm_id": "way/747905635",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Il Eriet",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Il Eriet (Dura Gura)",
+      "lat": 4.4137565,
+      "lon": 36.4997456,
+      "osm_id": "way/749165681",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Il Eriet (Dura Gura)",
+        "seasonal": "wet_season",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 5.1943326,
+      "lon": 38.83882,
+      "osm_id": "way/776209679",
+      "osm_tags": {
+        "name": "Dawa",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilkile",
+      "lat": 5.2550814,
+      "lon": 38.3304097,
+      "osm_id": "way/790436132",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kilkile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilkile",
+      "lat": 5.1706147,
+      "lon": 38.4259593,
+      "osm_id": "way/791921935",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kilkile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kilkile",
+      "lat": 5.2141625,
+      "lon": 38.3969123,
+      "osm_id": "way/791921937",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Kilkile",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Haro Karabara",
+      "lat": 3.3384578,
+      "lon": 37.7212472,
+      "osm_id": "way/819107633",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Haro Karabara",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Haro Mata Dhaka",
+      "lat": 3.3148172,
+      "lon": 37.6997325,
+      "osm_id": "way/849000874",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Haro Mata Dhaka",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Haro Bora",
+      "lat": 3.3837288,
+      "lon": 37.7482752,
+      "osm_id": "way/849000876",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Haro Bora",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Haro Kalesa",
+      "lat": 3.4866176,
+      "lon": 37.5897447,
+      "osm_id": "way/854266191",
+      "osm_tags": {
+        "name": "Haro Kalesa",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Haro Shanqera",
+      "lat": 3.4113479,
+      "lon": 37.693404,
+      "osm_id": "way/858685977",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Haro Shanqera",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Haro Toricha",
+      "lat": 3.188277,
+      "lon": 37.7742692,
+      "osm_id": "way/859394654",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Haro Toricha",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tuli",
+      "lat": 2.9769282,
+      "lon": 40.8572585,
+      "osm_id": "way/875595980",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Tuli",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Didikuro",
+      "lat": 3.3658655,
+      "lon": 40.2179592,
+      "osm_id": "way/883863420",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Didikuro",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "El-Bofa",
+      "lat": 3.372372,
+      "lon": 40.2479357,
+      "osm_id": "way/883870173",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "El-Bofa",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bachile",
+      "lat": 3.4033241,
+      "lon": 40.0220347,
+      "osm_id": "way/887030283",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Bachile",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Haro Worsesa",
+      "lat": 3.4260779,
+      "lon": 37.7622301,
+      "osm_id": "way/905877755",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Haro Worsesa",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Baya Gundi",
+      "lat": 5.4337308,
+      "lon": 38.4732879,
+      "osm_id": "way/973616088",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Baya Gundi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ganale",
+      "lat": 5.5805921,
+      "lon": 39.6809611,
+      "osm_id": "way/981043847",
+      "osm_tags": {
+        "name": "Ganale",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dawa",
+      "lat": 4.9349654,
+      "lon": 39.2413295,
+      "osm_id": "way/984476854",
+      "osm_tags": {
+        "name": "Dawa",
+        "name:it": "Daua",
+        "source": "landsat",
+        "waterway": "river",
+        "wikidata": "Q1178464",
+        "wikipedia": "en:Dawa River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Woito Wenz",
+      "lat": 5.2174214,
+      "lon": 37.0192033,
+      "osm_id": "way/1018634670",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Woito Wenz",
+        "source": "aerial imagery;Esri World",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Woito Wenz",
+      "lat": 5.2018455,
+      "lon": 36.9918468,
+      "osm_id": "way/1018634671",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Woito Wenz",
+        "source": "aerial imagery;Esri World",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Woito Wenz",
+      "lat": 5.2136429,
+      "lon": 37.0057709,
+      "osm_id": "way/1018634673",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Woito Wenz",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Aldere Forole Peace Dam",
+      "lat": 3.7100828,
+      "lon": 37.789355,
+      "osm_id": "way/1084644255",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Aldere Forole Peace Dam",
+        "natural": "water",
+        "note": "Boundaries and shape of this resevoir are not accurate since they were not charted, and the feature is not yet shown on satellite imagery. This is a placeholder showing the location of the Dam",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hullow",
+      "lat": 4.1815747,
+      "lon": 40.8016131,
+      "osm_id": "way/1122120629",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Hullow",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Garsey",
+      "lat": 4.0663718,
+      "lon": 40.9971352,
+      "osm_id": "way/1122143475",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Garsey",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Dried up stream",
+      "lat": 4.5818443,
+      "lon": 37.5489935,
+      "osm_id": "way/1164904685",
+      "osm_tags": {
+        "name": "Dried up stream",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Well",
+      "lat": 4.4412582,
+      "lon": 37.6613952,
+      "osm_id": "way/1175016366",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Well",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chachabole",
+      "lat": 3.1591963,
+      "lon": 40.6198953,
+      "osm_id": "way/1207171411",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Chachabole",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Damog",
+      "lat": 3.2842417,
+      "lon": 40.629592,
+      "osm_id": "way/1207171412",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Damog",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iresjunto",
+      "lat": 3.288451,
+      "lon": 40.5911236,
+      "osm_id": "way/1207176392",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Iresjunto",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wachile",
+      "lat": 2.9512216,
+      "lon": 40.6723018,
+      "osm_id": "way/1207176393",
+      "osm_tags": {
+        "name": "Wachile",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Harsanga",
+      "lat": 3.1024412,
+      "lon": 40.6799853,
+      "osm_id": "way/1207176394",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Harsanga",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hamasa",
+      "lat": 3.2970762,
+      "lon": 40.4327835,
+      "osm_id": "way/1207176396",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Hamasa",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kotkoto",
+      "lat": 3.2116606,
+      "lon": 40.4053538,
+      "osm_id": "way/1207179213",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Kotkoto",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kobadadi",
+      "lat": 3.1918162,
+      "lon": 40.42147,
+      "osm_id": "way/1207179215",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Kobadadi",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Itilale",
+      "lat": 3.2207798,
+      "lon": 40.2242009,
+      "osm_id": "way/1212721923",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Itilale",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ayan",
+      "lat": 3.2503476,
+      "lon": 40.2191234,
+      "osm_id": "way/1212721924",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Ayan",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sukelaquli",
+      "lat": 3.1105878,
+      "lon": 40.2458245,
+      "osm_id": "way/1212721925",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Sukelaquli",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Hada",
+      "lat": 3.4479013,
+      "lon": 39.7156267,
+      "osm_id": "way/1213844063",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Hada",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Qarsa Hama",
+      "lat": 3.4328599,
+      "lon": 39.7906155,
+      "osm_id": "way/1213844064",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Qarsa Hama",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bosicha",
+      "lat": 3.0196399,
+      "lon": 39.6899622,
+      "osm_id": "way/1213844068",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Bosicha",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ajawa",
+      "lat": 2.963129,
+      "lon": 39.688483,
+      "osm_id": "way/1213844069",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Ajawa",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gulani",
+      "lat": 3.1759402,
+      "lon": 40.0171634,
+      "osm_id": "way/1213844070",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Gulani",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sukela Tinfa",
+      "lat": 3.3959079,
+      "lon": 40.9090478,
+      "osm_id": "way/1215604512",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Sukela Tinfa",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ogorwein",
+      "lat": 3.4339527,
+      "lon": 40.7960096,
+      "osm_id": "way/1215604513",
+      "osm_tags": {
+        "area": "yes",
+        "landuse": "residential",
+        "name": "Ogorwein",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ababosone",
+      "lat": 3.0089839,
+      "lon": 40.7891738,
+      "osm_id": "way/1215616067",
+      "osm_tags": {
+        "area": "yes",
+        "landuse": "residential",
+        "name": "Ababosone",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ashabito",
+      "lat": 3.5540932,
+      "lon": 40.869582,
+      "osm_id": "way/1217280619",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Ashabito",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Guticha",
+      "lat": 3.5932194,
+      "lon": 40.8315797,
+      "osm_id": "way/1217365595",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Guticha",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bambo",
+      "lat": 3.5258351,
+      "lon": 40.9709454,
+      "osm_id": "way/1217365597",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Bambo",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bambo 2",
+      "lat": 3.5374904,
+      "lon": 40.9724239,
+      "osm_id": "way/1217365598",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Bambo 2",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Khera",
+      "lat": 3.6803829,
+      "lon": 41.0496963,
+      "osm_id": "way/1217365600",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Khera",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kubi",
+      "lat": 3.7087956,
+      "lon": 41.03962,
+      "osm_id": "way/1217365601",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Kubi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jabi",
+      "lat": 3.7246313,
+      "lon": 41.1039664,
+      "osm_id": "way/1217365603",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Jabi",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Awara",
+      "lat": 3.772946,
+      "lon": 41.135706,
+      "osm_id": "way/1217365604",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Awara",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shangala",
+      "lat": 3.8109739,
+      "lon": 41.158935,
+      "osm_id": "way/1217369524",
+      "osm_tags": {
+        "name": "Shangala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Towfiq",
+      "lat": 3.8824915,
+      "lon": 41.1951258,
+      "osm_id": "way/1217369525",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Towfiq",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Olla",
+      "lat": 3.8957274,
+      "lon": 40.8681773,
+      "osm_id": "way/1217384508",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Olla",
+        "place": "village",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Barwago",
+      "lat": 3.8379986,
+      "lon": 41.0403714,
+      "osm_id": "way/1217385081",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Barwago",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Waldiri",
+      "lat": 3.8035505,
+      "lon": 41.1550984,
+      "osm_id": "way/1220308681",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Waldiri",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Balowle",
+      "lat": 3.0465247,
+      "lon": 39.7468365,
+      "osm_id": "way/1221937287",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Balowle",
+        "place": "hamlet",
+        "residential": "rural"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "water body",
+      "lat": 3.9225688,
+      "lon": 40.289781,
+      "osm_id": "way/1256032275",
+      "osm_tags": {
+        "name": "water body",
+        "natural": "water",
+        "water": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "water body",
+      "lat": 3.8864815,
+      "lon": 40.3062207,
+      "osm_id": "way/1256036613",
+      "osm_tags": {
+        "name": "water body",
+        "natural": "water",
+        "water": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "water body",
+      "lat": 3.8764358,
+      "lon": 40.2987948,
+      "osm_id": "way/1256037935",
+      "osm_tags": {
+        "name": "water body",
+        "natural": "water",
+        "water": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "waterbody",
+      "lat": 3.8745836,
+      "lon": 40.2985185,
+      "osm_id": "way/1256038470",
+      "osm_tags": {
+        "name": "waterbody",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "waterbody",
+      "lat": 3.8744091,
+      "lon": 40.2991202,
+      "osm_id": "way/1256038598",
+      "osm_tags": {
+        "name": "waterbody",
+        "natural": "water",
+        "water": "yes"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "dried",
+      "lat": 5.1743151,
+      "lon": 37.9255658,
+      "osm_id": "way/1339118895",
+      "osm_tags": {
+        "name": "dried",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "dried up pond",
+      "lat": 5.1732186,
+      "lon": 37.9254016,
+      "osm_id": "way/1339118896",
+      "osm_tags": {
+        "name": "dried up pond",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "dried up pond",
+      "lat": 5.173488,
+      "lon": 37.9259864,
+      "osm_id": "way/1339118899",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "dried up pond",
+        "natural": "water",
+        "water": "basin"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "dried up pond",
+      "lat": 5.1734412,
+      "lon": 37.9257967,
+      "osm_id": "way/1339118900",
+      "osm_tags": {
+        "name": "dried up pond",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "dried up",
+      "lat": 5.1733855,
+      "lon": 37.9255655,
+      "osm_id": "way/1339118901",
+      "osm_tags": {
+        "name": "dried up",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "dried up pond",
+      "lat": 5.1736103,
+      "lon": 37.9261887,
+      "osm_id": "way/1339118902",
+      "osm_tags": {
+        "name": "dried up pond",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "dried up pond",
+      "lat": 5.1742828,
+      "lon": 37.9268965,
+      "osm_id": "way/1339118903",
+      "osm_tags": {
+        "name": "dried up pond",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "dried up pond",
+      "lat": 5.1740781,
+      "lon": 37.9254916,
+      "osm_id": "way/1339118914",
+      "osm_tags": {
+        "name": "dried up pond",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "dried up pond",
+      "lat": 5.1741709,
+      "lon": 37.925517,
+      "osm_id": "way/1339118915",
+      "osm_tags": {
+        "name": "dried up pond",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "dried up pond",
+      "lat": 5.1741911,
+      "lon": 37.9248683,
+      "osm_id": "way/1339118916",
+      "osm_tags": {
+        "name": "dried up pond",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "dried up pond",
+      "lat": 5.1721876,
+      "lon": 37.9250191,
+      "osm_id": "way/1339118921",
+      "osm_tags": {
+        "name": "dried up pond",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "dried up pond",
+      "lat": 5.1721226,
+      "lon": 37.9250741,
+      "osm_id": "way/1339118922",
+      "osm_tags": {
+        "name": "dried up pond",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "flood",
+      "lat": 3.7733596,
+      "lon": 38.5565323,
+      "osm_id": "way/1348677698",
+      "osm_tags": {
+        "name": "flood",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Qotqot Water Reservoir",
+      "lat": 3.844398,
+      "lon": 40.541078,
+      "osm_id": "way/1352089815",
+      "osm_tags": {
+        "name": "Qotqot Water Reservoir",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Dubuluk",
+      "lat": 4.365313,
+      "lon": 38.2768301,
+      "osm_id": "way/1376696358",
+      "osm_tags": {
+        "name": "Dubuluk",
+        "place": "town"
+      }
+    }
+  ]
+}

@@ -1,0 +1,7374 @@
+{
+  "park_id": "CAF_Bamingui-Bangoran",
+  "downloaded_at": "2026-02-15T09:18:10.669610+00:00",
+  "buffer_km": 50,
+  "place_count": 544,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Kabo",
+      "lat": 7.6920799,
+      "lon": 18.6243422,
+      "osm_id": "node/922627481",
+      "osm_tags": {
+        "capital": "6",
+        "name": "Kabo",
+        "name:ar": "\u0643\u0627\u0628\u0648",
+        "nga:ufi": "-1345298;-1345299",
+        "place": "town",
+        "source": "Bing, USGS, 2013-01-25;NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kanio Bombi",
+      "lat": 9.1405663,
+      "lon": 19.3257843,
+      "osm_id": "node/1327600043",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10340319",
+        "GNS:modify_date": "2008-10-30",
+        "name": "Kanio Bombi",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Maro \u0645\u0627\u0631\u0648",
+      "lat": 8.415207,
+      "lon": 18.7676943,
+      "osm_id": "node/1911985905",
+      "osm_tags": {
+        "capital": "5",
+        "name": "Maro \u0645\u0627\u0631\u0648",
+        "name:ar": "\u0645\u0627\u0631\u0648",
+        "name:de": "Maro",
+        "name:en": "Maro",
+        "name:es": "Maro",
+        "name:fr": "Maro",
+        "place": "city",
+        "rank": "0"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Maro",
+      "lat": 8.4434502,
+      "lon": 18.8549387,
+      "osm_id": "node/1911986505",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318351",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Maro",
+        "place": "hamlet",
+        "source": "Bing aerial imagery;GNS"
+      }
+    },
+    {
+      "place_type": "city",
+      "name": "Nd\u00e9l\u00e9",
+      "lat": 8.4111477,
+      "lon": 20.648473,
+      "osm_id": "node/2062772404",
+      "osm_tags": {
+        "alt_name": "N'D\u00e9l\u00e9;N'Dell\u00e9",
+        "alt_name:fr": "N'D\u00e9l\u00e9;N'Dell\u00e9",
+        "capital": "4",
+        "name": "Nd\u00e9l\u00e9",
+        "name:de": "Nd\u00e9l\u00e9",
+        "name:fr": "Nd\u00e9l\u00e9",
+        "name:ru": "\u041d\u0434\u0435\u043b\u0435",
+        "name:uk": "\u041d\u0434\u0435\u043b\u0435",
+        "name:ur": "\u0646\u062f\u06cc\u0644\u06d2",
+        "place": "city",
+        "wikidata": "Q612713",
+        "wikipedia": "fr:Nd\u00e9l\u00e9"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bamingui",
+      "lat": 7.5595396,
+      "lon": 20.1773437,
+      "osm_id": "node/2074356930",
+      "osm_tags": {
+        "capital": "6",
+        "name": "Bamingui",
+        "place": "town",
+        "source": "geonames",
+        "wikidata": "Q2427609",
+        "wikipedia": "en:Bamingui"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ouandago",
+      "lat": 7.257639,
+      "lon": 18.8454894,
+      "osm_id": "node/2100363238",
+      "osm_tags": {
+        "name": "Ouandago",
+        "place": "village",
+        "source": "UNICEF,NGA"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Moyenne Sido",
+      "lat": 8.2233649,
+      "lon": 18.7159551,
+      "osm_id": "node/2180523597",
+      "osm_tags": {
+        "alt_name": "Moyenne-Sido",
+        "alt_name:ar": "\u0645\u0648\u064a\u0646 \u0633\u064a\u062f\u0648",
+        "name": "Moyenne Sido",
+        "name:ar": "\u0648\u0633\u0637 \u0633\u064a\u062f\u0648",
+        "nga:ufi": "-1350374",
+        "place": "town",
+        "project:eurosha_2012": "yes",
+        "source": "Bing, USGS, 2013-01-25;NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "\u0645\u0648\u0644\u0627 Moula",
+      "lat": 8.4341125,
+      "lon": 18.7533149,
+      "osm_id": "node/2378502845",
+      "osm_tags": {
+        "name": "\u0645\u0648\u0644\u0627 Moula",
+        "name:ar": "\u0645\u0648\u0644\u0627",
+        "name:en": "Moula",
+        "name:fr": "Moula",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Beltonou 1",
+      "lat": 7.562631,
+      "lon": 18.6371007,
+      "osm_id": "node/2379182239",
+      "osm_tags": {
+        "alt_name": "Beltounou I",
+        "name": "Beltonou 1",
+        "place": "village",
+        "source:alt_name": "UNICEF",
+        "source:name": "MSF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zoumanga",
+      "lat": 7.5344753,
+      "lon": 18.6399108,
+      "osm_id": "node/2379182438",
+      "osm_tags": {
+        "alt_name": "Zoumanga II",
+        "alt_name_1": "Ouaki",
+        "name": "Zoumanga",
+        "nga:ufi": "10844967",
+        "place": "village",
+        "source:alt_name": "MSF;Bing, USGS, 2013-01-25;NGA",
+        "source:alt_name_1": "UNICEF",
+        "source:name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Balalou",
+      "lat": 7.4608889,
+      "lon": 18.6853558,
+      "osm_id": "node/2379187076",
+      "osm_tags": {
+        "alt_name": "Ouaki I",
+        "alt_name_1": "Ouaki",
+        "name": "Balalou",
+        "nga:ufi": "-1349274",
+        "place": "village",
+        "source:alt_name": "MSF;Bing, USGS, 2013-01-25;NGA",
+        "source:alt_name_1": "MSF;Bing, USGS, 2013-01-25;NGA",
+        "source:name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kouvougo",
+      "lat": 7.4111017,
+      "lon": 18.7219855,
+      "osm_id": "node/2379188962",
+      "osm_tags": {
+        "alt_name": "Bilalo",
+        "alt_name_1": "Belalo",
+        "name": "Kouvougo",
+        "nga:ufi": "-1340947",
+        "place": "village",
+        "source:alt_name": "MSF;Bing, USGS, 2013-01-25;NGA",
+        "source:alt_name_1": "MSF;Bing, USGS, 2013-01-25;NGA",
+        "source:name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dessi",
+      "lat": 7.345422,
+      "lon": 18.7702591,
+      "osm_id": "node/2379220459",
+      "osm_tags": {
+        "alt_name": "Dissi",
+        "name": "Dessi",
+        "nga:ufi": "-1342947;10845183",
+        "place": "village",
+        "source:alt_name": "MSF;Bing, USGS, 2013-01-25;NGA;UNICEF",
+        "source:name": "MSF;Bing, USGS, 2013-01-25;NGA;UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Farazara",
+      "lat": 7.3825784,
+      "lon": 18.7416261,
+      "osm_id": "node/2379220475",
+      "osm_tags": {
+        "alt_name": "Faranzala",
+        "alt_name_1": "Frazara",
+        "alt_name_2": "Farazala",
+        "name": "Farazara",
+        "place": "village",
+        "source:alt_name": "NGA",
+        "source:alt_name_1": "UNICEF",
+        "source:alt_name_2": "NGA",
+        "source:name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mounyara",
+      "lat": 7.6419524,
+      "lon": 18.6289827,
+      "osm_id": "node/2379340500",
+      "osm_tags": {
+        "alt_name": "Mouniara",
+        "name": "Mounyara",
+        "place": "village",
+        "source": "MSF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Beltonou II",
+      "lat": 7.6342546,
+      "lon": 18.6299734,
+      "osm_id": "node/2379340501",
+      "osm_tags": {
+        "name": "Beltonou II",
+        "place": "village",
+        "source": "MSF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Orombiya",
+      "lat": 7.6524476,
+      "lon": 18.6280493,
+      "osm_id": "node/2379340502",
+      "osm_tags": {
+        "alt_name": "Orombia",
+        "fixme": "name=Mouyara for UNICEF",
+        "name": "Orombiya",
+        "place": "village",
+        "source": "MSF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bogama 1",
+      "lat": 7.2559737,
+      "lon": 18.7187872,
+      "osm_id": "node/2382495060",
+      "osm_tags": {
+        "alt_name": "Bozoro",
+        "name": "Bogama 1",
+        "nga:ufi": "-1341202",
+        "place": "village",
+        "source": "Bing, USGS, 2013-01-25;NGA;UNICEF",
+        "source:alt_name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bogama 2",
+      "lat": 7.2570724,
+      "lon": 18.7115034,
+      "osm_id": "node/2382495061",
+      "osm_tags": {
+        "alt_name": "Bogama II",
+        "name": "Bogama 2",
+        "nga:ufi": "-1341203",
+        "place": "village",
+        "source:alt_name": "Bing, USGS, 2013-01-25; NGA",
+        "source:name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bongono",
+      "lat": 7.2582925,
+      "lon": 18.6221361,
+      "osm_id": "node/2382495067",
+      "osm_tags": {
+        "name": "Bongono",
+        "place": "village",
+        "source": "Bing, USGS, 2013-01-25; NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bozoro",
+      "lat": 7.2541494,
+      "lon": 18.7256593,
+      "osm_id": "node/2382495070",
+      "osm_tags": {
+        "fixme": "Location approximate.",
+        "name": "Bozoro",
+        "nga:ufi": "-1342410",
+        "place": "village",
+        "source": "Bing, USGS, 2013-01-25; NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndafourourou",
+      "lat": 7.2594134,
+      "lon": 18.657445,
+      "osm_id": "node/2382495072",
+      "osm_tags": {
+        "alt_name": "Ndafourourou",
+        "name": "Ndafourourou",
+        "nga:ufi": "-1342588",
+        "place": "village",
+        "source": "Bing, USGS, 2013-01-25;NGA",
+        "source:alt_name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gbafio",
+      "lat": 7.2582769,
+      "lon": 18.7984555,
+      "osm_id": "node/2382495073",
+      "osm_tags": {
+        "name": "Gbafio",
+        "nga:ufi": "10845194",
+        "place": "village",
+        "source": "Bing, USGS, 2013-01-25;NGA;UNICEF, 2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kia",
+      "lat": 7.2318342,
+      "lon": 18.877906,
+      "osm_id": "node/2382495074",
+      "osm_tags": {
+        "alt_name": "Kia I",
+        "name": "Kia",
+        "nga:ufi": "10845187",
+        "place": "village",
+        "source": "UNICEF",
+        "source:alt_name": "Bing, USGS, 2013-01-25; NGA"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kia II",
+      "lat": 7.2442655,
+      "lon": 18.8603811,
+      "osm_id": "node/2382495075",
+      "osm_tags": {
+        "name": "Kia II",
+        "nga:ufi": "10845186",
+        "place": "hamlet",
+        "source": "Bing, USGS, 2013-01-25; NGA"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Yapara",
+      "lat": 7.233333,
+      "lon": 18.816667,
+      "osm_id": "node/2382495082",
+      "osm_tags": {
+        "name": "Yapara",
+        "nga:ufi": "-1351513",
+        "place": "hamlet",
+        "source": "Bing, USGS, 2013-01-25;NGA"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bada",
+      "lat": 7.416324,
+      "lon": 18.9174837,
+      "osm_id": "node/2382656095",
+      "osm_tags": {
+        "fixme": "Location approximate.",
+        "name": "Bada",
+        "nga:ufi": "-1338557",
+        "place": "hamlet",
+        "source": "Bing, USGS, 2013-01-25; NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bokada",
+      "lat": 7.4942321,
+      "lon": 18.9655542,
+      "osm_id": "node/2382656097",
+      "osm_tags": {
+        "name": "Bokada",
+        "nga:ufi": "10844971",
+        "place": "village",
+        "source": "Bing, USGS, 2013-01-25; NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bokandi",
+      "lat": 7.8990615,
+      "lon": 18.6839637,
+      "osm_id": "node/2382656098",
+      "osm_tags": {
+        "name": "Bokandi",
+        "name:ar": "\u0628\u0643\u0627\u0646\u062f\u064a",
+        "nga:ufi": "10845131",
+        "place": "village",
+        "source": "Bing, USGS, 2013-01-25;NGA"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Carr\u00e9 de Ngamba",
+      "lat": 7.3,
+      "lon": 18.833333,
+      "osm_id": "node/2382656101",
+      "osm_tags": {
+        "fixme": "Location approximate.",
+        "name": "Carr\u00e9 de Ngamba",
+        "nga:ufi": "-1342496",
+        "note": "There is a similarly named town from GNS ~4 km northeast of here, please confirm proper name and location, and if these are the same town or not.",
+        "place": "hamlet",
+        "source": "Bing, USGS, 2013-01-25; NGA"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Carr\u00e9 de Togounda",
+      "lat": 7.45,
+      "lon": 18.95,
+      "osm_id": "node/2382656103",
+      "osm_tags": {
+        "fixme": "Location approximate.",
+        "name": "Carr\u00e9 de Togounda",
+        "nga:ufi": "-1350835",
+        "note": "The towns of 'Togounda' and 'Carre de Togounda' from GNS are probably the same thing, please confirm.",
+        "place": "hamlet",
+        "source": "Bing, USGS, 2013-01-25; NGA"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dramassa",
+      "lat": 7.4,
+      "lon": 18.683333,
+      "osm_id": "node/2382656110",
+      "osm_tags": {
+        "fixme": "Location approximate.",
+        "name": "Dramassa",
+        "nga:ufi": "-1343510",
+        "note": "Not sure if this is a historical name, or a town not easily seen in imagery, please confirm, some other GNS nodes in this area were located west of the highway, so this might need to be moved to there.",
+        "place": "hamlet",
+        "source": "Bing, USGS, 2013-01-25; NGA"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gorbess\u00e9",
+      "lat": 7.4175924,
+      "lon": 18.917143,
+      "osm_id": "node/2382656114",
+      "osm_tags": {
+        "fixme": "Location approximate.",
+        "name": "Gorbess\u00e9",
+        "nga:ufi": "-1344292",
+        "place": "hamlet",
+        "source": "Bing, USGS, 2013-01-25; NGA"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Moussoumba",
+      "lat": 7.5582302,
+      "lon": 18.6377184,
+      "osm_id": "node/2382656131",
+      "osm_tags": {
+        "alt_name": "Zoubanda",
+        "name": "Moussoumba",
+        "place": "hamlet",
+        "source": "UNICEF"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nonbandja",
+      "lat": 7.9713029,
+      "lon": 18.6981486,
+      "osm_id": "node/2382656133",
+      "osm_tags": {
+        "name": "Nonbandja",
+        "name:ar": "\u0646\u0646\u0628\u0627\u0646\u062c\u0627",
+        "nga:ufi": "10845128",
+        "place": "hamlet",
+        "source": "Bing, USGS, 2013-01-25;NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbo",
+      "lat": 8.0998209,
+      "lon": 18.7118226,
+      "osm_id": "node/2382656135",
+      "osm_tags": {
+        "name": "Mbo",
+        "name:ar": "\u0627\u0645\u0628\u0648",
+        "nga:ufi": "-1347662",
+        "place": "village",
+        "source": "Bing, USGS, 2013-01-25;NGA"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Togounda",
+      "lat": 7.4185408,
+      "lon": 18.9325699,
+      "osm_id": "node/2382656137",
+      "osm_tags": {
+        "fixme": "Location approximate.",
+        "name": "Togounda",
+        "nga:ufi": "-1350834",
+        "note": "The towns of 'Togounda' and 'Carre de Togounda' from GNS are probably the same thing, please confirm.",
+        "place": "hamlet",
+        "source": "Bing, USGS, 2013-01-25; NGA"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Zounoubaya",
+      "lat": 7.2840227,
+      "lon": 18.8567552,
+      "osm_id": "node/2382656142",
+      "osm_tags": {
+        "name": "Zounoubaya",
+        "nga:ufi": "10845185",
+        "place": "hamlet",
+        "source": "Bing, USGS, 2013-01-25; NGA"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Konga Litos",
+      "lat": 7.6380529,
+      "lon": 18.62954,
+      "osm_id": "node/2394946222",
+      "osm_tags": {
+        "name": "Konga Litos",
+        "place": "hamlet",
+        "source": "MSF, local survey"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Orombia",
+      "lat": 7.6618258,
+      "lon": 18.6266617,
+      "osm_id": "node/2426110042",
+      "osm_tags": {
+        "name": "Orombia",
+        "place": "hamlet",
+        "source": "Bing, UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gassa\u00ef",
+      "lat": 8.7546923,
+      "lon": 19.2875801,
+      "osm_id": "node/2484855324",
+      "osm_tags": {
+        "alt_name": "Gassai",
+        "name": "Gassa\u00ef",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Akourousoulba",
+      "lat": 8.9911485,
+      "lon": 20.7304008,
+      "osm_id": "node/2485435417",
+      "osm_tags": {
+        "name": "Akourousoulba",
+        "name:fa": "\u0627\u06a9\u0648\u0631\u0648\u0633\u0648\u0644\u0628\u0627",
+        "place": "town",
+        "source": "GNS;Wikidata",
+        "wikidata": "Q4701554",
+        "wikipedia": "en:Akourousoulba"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bandaboua",
+      "lat": 7.0409159,
+      "lon": 19.9370007,
+      "osm_id": "node/2485435431",
+      "osm_tags": {
+        "name": "Bandaboua",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Banyao",
+      "lat": 7.1750456,
+      "lon": 19.9838604,
+      "osm_id": "node/2485435446",
+      "osm_tags": {
+        "name": "Banyao",
+        "place": "village",
+        "source": "UNICEF;NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gu\u00e9m\u00e9",
+      "lat": 7.107217,
+      "lon": 19.9515262,
+      "osm_id": "node/2485435469",
+      "osm_tags": {
+        "name": "Gu\u00e9m\u00e9",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ramadane",
+      "lat": 7.060136,
+      "lon": 19.9420269,
+      "osm_id": "node/2485435476",
+      "osm_tags": {
+        "name": "Ramadane",
+        "place": "village",
+        "source": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nana-Outa",
+      "lat": 7.1964698,
+      "lon": 18.9180726,
+      "osm_id": "node/2590608269",
+      "osm_tags": {
+        "alt_name": "Nana",
+        "alt_name_1": "Outa",
+        "name": "Nana-Outa",
+        "place": "village",
+        "source:alt_name": "NGA",
+        "source:alt_name_1": "UNICEF",
+        "source:name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Patcho",
+      "lat": 7.1112854,
+      "lon": 19.0303425,
+      "osm_id": "node/2590667479",
+      "osm_tags": {
+        "name": "Patcho",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaba",
+      "lat": 7.0334244,
+      "lon": 19.3830777,
+      "osm_id": "node/2590683079",
+      "osm_tags": {
+        "alt_name": "Kaba I",
+        "name": "Kaba",
+        "place": "village",
+        "source": "UNICEF",
+        "source:alt_name": "NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yolomale-Godo",
+      "lat": 7.0167332,
+      "lon": 19.5935821,
+      "osm_id": "node/2590683080",
+      "osm_tags": {
+        "alt_name": "Kodo Yolomal\u00e9",
+        "name": "Yolomale-Godo",
+        "place": "village",
+        "source": "UNICEF",
+        "source:alt_name": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ngoub\u00e9",
+      "lat": 7.0180646,
+      "lon": 19.6062788,
+      "osm_id": "node/2590683081",
+      "osm_tags": {
+        "name": "Ngoub\u00e9",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zindi",
+      "lat": 7.0593303,
+      "lon": 19.4117403,
+      "osm_id": "node/2590683082",
+      "osm_tags": {
+        "name": "Zindi",
+        "place": "village",
+        "source": "UNICEF;GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Koundi",
+      "lat": 8.8267254,
+      "lon": 20.7028466,
+      "osm_id": "node/2602231614",
+      "osm_tags": {
+        "name": "Koundi",
+        "place": "village",
+        "source": "NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zoukoutouniala II",
+      "lat": 8.5663492,
+      "lon": 20.6082559,
+      "osm_id": "node/2602277211",
+      "osm_tags": {
+        "name": "Zoukoutouniala II",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Goz Beida \u0642\u0648\u0632 \u0628\u064a\u062f\u0627",
+      "lat": 8.490452,
+      "lon": 20.6670697,
+      "osm_id": "node/2602280678",
+      "osm_tags": {
+        "name": "Goz Beida \u0642\u0648\u0632 \u0628\u064a\u062f\u0627",
+        "name:ar": "\u0642\u0648\u0632 \u0628\u064a\u062f\u0627",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Aliou",
+      "lat": 8.4538722,
+      "lon": 20.6938037,
+      "osm_id": "node/2602285146",
+      "osm_tags": {
+        "name": "Aliou",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "L\u00e9m\u00e9na",
+      "lat": 8.4663088,
+      "lon": 20.6900377,
+      "osm_id": "node/2602285564",
+      "osm_tags": {
+        "name": "L\u00e9m\u00e9na",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ouihi",
+      "lat": 8.4017828,
+      "lon": 20.7001688,
+      "osm_id": "node/2602290548",
+      "osm_tags": {
+        "name": "Ouihi",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngoudjaka",
+      "lat": 8.3691382,
+      "lon": 20.6959596,
+      "osm_id": "node/2602293883",
+      "osm_tags": {
+        "name": "Ngoudjaka",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Doungouyangou",
+      "lat": 8.3711861,
+      "lon": 20.6082406,
+      "osm_id": "node/2602294998",
+      "osm_tags": {
+        "name": "Doungouyangou",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbolo Abetlanga",
+      "lat": 8.3107618,
+      "lon": 20.6795859,
+      "osm_id": "node/2602296763",
+      "osm_tags": {
+        "name": "Mbolo Abetlanga",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Goz Amar",
+      "lat": 8.4233164,
+      "lon": 20.6239971,
+      "osm_id": "node/2605135180",
+      "osm_tags": {
+        "name": "Goz Amar",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Abou-Ndoulaf",
+      "lat": 8.5213206,
+      "lon": 20.4932662,
+      "osm_id": "node/2605162800",
+      "osm_tags": {
+        "name": "Abou-Ndoulaf",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Djamassinda",
+      "lat": 8.5276577,
+      "lon": 20.4902696,
+      "osm_id": "node/2605162807",
+      "osm_tags": {
+        "name": "Djamassinda",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bangbali",
+      "lat": 8.6851039,
+      "lon": 20.2528141,
+      "osm_id": "node/2605174028",
+      "osm_tags": {
+        "name": "Bangbali",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Demi Batchi",
+      "lat": 8.7295838,
+      "lon": 20.0618228,
+      "osm_id": "node/2605188027",
+      "osm_tags": {
+        "name": "Demi Batchi",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Koukourou",
+      "lat": 7.1882893,
+      "lon": 19.9959591,
+      "osm_id": "node/2669384999",
+      "osm_tags": {
+        "alt_name": "Ayolo 1",
+        "name": "Koukourou",
+        "place": "village",
+        "source": "UNICEF;NGA",
+        "source:alt_name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yombo-Bac",
+      "lat": 7.1975782,
+      "lon": 20.0036048,
+      "osm_id": "node/2682793456",
+      "osm_tags": {
+        "alt_name": "Yombo",
+        "alt_name_1": "Ayolo 2",
+        "alt_name_2": "Yolo",
+        "name": "Yombo-Bac",
+        "place": "village",
+        "source": "UNICEF",
+        "source:alt_name": "NGA",
+        "source:alt_name_1": "UNICEF",
+        "source:alt_name_2": "NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngreva\u00ef",
+      "lat": 7.0545395,
+      "lon": 19.4425778,
+      "osm_id": "node/2683740022",
+      "osm_tags": {
+        "alt_name": "Griva\u00ef Pamia",
+        "name": "Ngreva\u00ef",
+        "place": "village",
+        "source": "UNICEF",
+        "source:alt_name": "NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Banga 1",
+      "lat": 7.0206132,
+      "lon": 19.2649581,
+      "osm_id": "node/2685207125",
+      "osm_tags": {
+        "name": "Banga 1",
+        "place": "village",
+        "source": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Godo-Boymandja",
+      "lat": 7.0566382,
+      "lon": 19.1832046,
+      "osm_id": "node/2685207127",
+      "osm_tags": {
+        "alt_name": "Godo",
+        "name": "Godo-Boymandja",
+        "place": "village",
+        "source": "UNICEF"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kotangomb\u00e9",
+      "lat": 7.0884818,
+      "lon": 19.2406719,
+      "osm_id": "node/2685207129",
+      "osm_tags": {
+        "alt_name": "Kabagomb\u00e9",
+        "name": "Kotangomb\u00e9",
+        "place": "hamlet",
+        "source": "UNICEF",
+        "source:alt_name": "NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kpokpo",
+      "lat": 7.0340051,
+      "lon": 19.1381883,
+      "osm_id": "node/2685207132",
+      "osm_tags": {
+        "alt_name": "Popo",
+        "name": "Kpokpo",
+        "place": "village",
+        "source": "UNICEF",
+        "source:alt_name": "NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngougaza",
+      "lat": 7.0231342,
+      "lon": 19.3294055,
+      "osm_id": "node/2685207134",
+      "osm_tags": {
+        "name": "Ngougaza",
+        "place": "village",
+        "source": "UNICEF,NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngribingui",
+      "lat": 7.0159583,
+      "lon": 19.187435,
+      "osm_id": "node/2685207135",
+      "osm_tags": {
+        "alt_name": "Gribingui",
+        "name": "Ngribingui",
+        "place": "village",
+        "source": "UNICEF",
+        "source:alt_name": "NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yamissi",
+      "lat": 7.071613,
+      "lon": 19.0866676,
+      "osm_id": "node/2685207136",
+      "osm_tags": {
+        "name": "Yamissi",
+        "place": "village",
+        "source": "UNICEF,NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zando",
+      "lat": 7.0904091,
+      "lon": 19.0610036,
+      "osm_id": "node/2685207137",
+      "osm_tags": {
+        "name": "Zando",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bissikibou",
+      "lat": 7.224368,
+      "lon": 18.8862391,
+      "osm_id": "node/2685594850",
+      "osm_tags": {
+        "alt_name": "Biss\u00e9k\u00e9bou",
+        "name": "Bissikibou",
+        "place": "village",
+        "source:alt_name": "NGA",
+        "source:name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngoumourou 1",
+      "lat": 7.1495585,
+      "lon": 18.9798263,
+      "osm_id": "node/2685594851",
+      "osm_tags": {
+        "name": "Ngoumourou 1",
+        "place": "village",
+        "source": "UNICEF;NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngoulekpa 3",
+      "lat": 7.0681037,
+      "lon": 19.0934222,
+      "osm_id": "node/3194229408",
+      "osm_tags": {
+        "name": "Ngoulekpa 3",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boumbala",
+      "lat": 7.1326906,
+      "lon": 19.0017485,
+      "osm_id": "node/3194249226",
+      "osm_tags": {
+        "name": "Boumbala",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yamaye",
+      "lat": 7.0801261,
+      "lon": 19.0767126,
+      "osm_id": "node/3194249227",
+      "osm_tags": {
+        "name": "Yamaye",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bakaba",
+      "lat": 7.0888899,
+      "lon": 19.0650374,
+      "osm_id": "node/3194442074",
+      "osm_tags": {
+        "name": "Bakaba",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Banga 2",
+      "lat": 7.0237002,
+      "lon": 19.2874063,
+      "osm_id": "node/3194442075",
+      "osm_tags": {
+        "name": "Banga 2",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boubou 2",
+      "lat": 7.0163046,
+      "lon": 19.2423958,
+      "osm_id": "node/3194442076",
+      "osm_tags": {
+        "name": "Boubou 2",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dambe",
+      "lat": 7.0240633,
+      "lon": 19.1875413,
+      "osm_id": "node/3194442077",
+      "osm_tags": {
+        "name": "Dambe",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Godo",
+      "lat": 7.0661959,
+      "lon": 19.1839331,
+      "osm_id": "node/3194442078",
+      "osm_tags": {
+        "name": "Godo",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ibingui",
+      "lat": 7.0766319,
+      "lon": 19.0812669,
+      "osm_id": "node/3194442079",
+      "osm_tags": {
+        "name": "Ibingui",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kpokpo 2",
+      "lat": 7.0209666,
+      "lon": 19.1547537,
+      "osm_id": "node/3194442080",
+      "osm_tags": {
+        "name": "Kpokpo 2",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mboutou",
+      "lat": 7.0831076,
+      "lon": 19.2277905,
+      "osm_id": "node/3194442081",
+      "osm_tags": {
+        "name": "Mboutou",
+        "place": "hamlet",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngoulekpa 2",
+      "lat": 7.0648218,
+      "lon": 19.0978442,
+      "osm_id": "node/3194442082",
+      "osm_tags": {
+        "name": "Ngoulekpa 2",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngoulekpa",
+      "lat": 7.0576733,
+      "lon": 19.1027007,
+      "osm_id": "node/3194442083",
+      "osm_tags": {
+        "name": "Ngoulekpa",
+        "place": "village",
+        "source": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sahara",
+      "lat": 7.0169416,
+      "lon": 19.1606608,
+      "osm_id": "node/3194442084",
+      "osm_tags": {
+        "name": "Sahara",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sindi",
+      "lat": 7.0831597,
+      "lon": 19.2165921,
+      "osm_id": "node/3194442085",
+      "osm_tags": {
+        "name": "Sindi",
+        "place": "hamlet",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngouassa",
+      "lat": 7.1444126,
+      "lon": 19.96869,
+      "osm_id": "node/3215663386",
+      "osm_tags": {
+        "alt_name": "Ngoussa",
+        "name": "Ngouassa",
+        "place": "village",
+        "source": "UNICEF",
+        "source:alt_name": "NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gbakoungbangou",
+      "lat": 7.0083993,
+      "lon": 19.6327651,
+      "osm_id": "node/3324973893",
+      "osm_tags": {
+        "alt_name": "Gbakoumbangou",
+        "name": "Gbakoungbangou",
+        "place": "village",
+        "source": "UNICEF",
+        "source:alt_name": "NGA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Fouta",
+      "lat": 7.1827809,
+      "lon": 18.9375089,
+      "osm_id": "node/3325266630",
+      "osm_tags": {
+        "name": "Fouta",
+        "place": "village",
+        "source": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngoumourou 2",
+      "lat": 7.1567365,
+      "lon": 18.9709388,
+      "osm_id": "node/3325266631",
+      "osm_tags": {
+        "name": "Ngoumourou 2",
+        "place": "village",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bir-Batouma Moussa",
+      "lat": 8.5468646,
+      "lon": 20.4654471,
+      "osm_id": "node/3380407784",
+      "osm_tags": {
+        "name": "Bir-Batouma Moussa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tiri",
+      "lat": 8.7476698,
+      "lon": 20.0180753,
+      "osm_id": "node/3380407790",
+      "osm_tags": {
+        "name": "Tiri",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sangha Aouk Safari",
+      "lat": 9.0186493,
+      "lon": 19.5841778,
+      "osm_id": "node/3380416405",
+      "osm_tags": {
+        "name": "Sangha Aouk Safari",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Koubou",
+      "lat": 8.4745205,
+      "lon": 20.5340796,
+      "osm_id": "node/3380427631",
+      "osm_tags": {
+        "name": "Koubou",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bemandjingai",
+      "lat": 7.774012,
+      "lon": 18.6454686,
+      "osm_id": "node/3613026207",
+      "osm_tags": {
+        "name": "Bemandjingai",
+        "name:ar": "\u0628\u0645\u0627\u0646\u062c\u064a\u0646\u0642\u064a",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Moudou 1",
+      "lat": 7.7931672,
+      "lon": 18.6517996,
+      "osm_id": "node/3614483578",
+      "osm_tags": {
+        "name": "Moudou 1",
+        "name:ar": "\u0645\u0648\u062f\u0648 1",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bokayanga",
+      "lat": 7.822034,
+      "lon": 18.6661226,
+      "osm_id": "node/3614491757",
+      "osm_tags": {
+        "name": "Bokayanga",
+        "name:ar": "\u0628\u0643\u0627\u064a\u0627\u0646\u0642\u0627",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kengar",
+      "lat": 7.8340814,
+      "lon": 18.6689206,
+      "osm_id": "node/3614530985",
+      "osm_tags": {
+        "name": "Kengar",
+        "name:ar": "\u0643\u0646\u0642\u0627\u0631",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Danz\u00e9",
+      "lat": 8.0241534,
+      "lon": 18.7075123,
+      "osm_id": "node/3614559524",
+      "osm_tags": {
+        "name": "Danz\u00e9",
+        "name:ar": "\u062f\u0627\u0646\u0632\u064a",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mb\u00e8ngou",
+      "lat": 7.3135742,
+      "lon": 20.1416857,
+      "osm_id": "node/4665549302",
+      "osm_tags": {
+        "GNS:id": "10848689",
+        "name": "Mb\u00e8ngou",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tangaray",
+      "lat": 9.1032782,
+      "lon": 19.586752,
+      "osm_id": "node/5224880990",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1104256",
+        "GNS:modify_date": "2008-10-30",
+        "name": "Tangaray",
+        "name:fr": "Tangaray",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Djabossinda",
+      "lat": 8.7448575,
+      "lon": 20.6788244,
+      "osm_id": "node/5295986150",
+      "osm_tags": {
+        "name": "Djabossinda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sokoumba",
+      "lat": 8.7408886,
+      "lon": 20.651193,
+      "osm_id": "node/5295986157",
+      "osm_tags": {
+        "name": "Sokoumba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kpakpal\u00e9",
+      "lat": 8.4136906,
+      "lon": 20.7022321,
+      "osm_id": "node/5407104352",
+      "osm_tags": {
+        "name": "Kpakpal\u00e9",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Rokone al Arab",
+      "lat": 8.4342954,
+      "lon": 20.6409355,
+      "osm_id": "node/5407104383",
+      "osm_tags": {
+        "name": "Rokone al Arab",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zoukoutouniala I",
+      "lat": 8.552907,
+      "lon": 20.6138706,
+      "osm_id": "node/5407104384",
+      "osm_tags": {
+        "name": "Zoukoutouniala I",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yaroungo",
+      "lat": 8.4026292,
+      "lon": 18.7054494,
+      "osm_id": "node/5751829399",
+      "osm_tags": {
+        "alt_name": "Yaroungu",
+        "name": "Yaroungo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Daha",
+      "lat": 9.2144757,
+      "lon": 20.4643867,
+      "osm_id": "node/5751829410",
+      "osm_tags": {
+        "name": "Daha",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Canan Djimald\u00e9",
+      "lat": 8.7441167,
+      "lon": 18.7438667,
+      "osm_id": "node/5765341407",
+      "osm_tags": {
+        "name": "Canan Djimald\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngonmolo",
+      "lat": 8.7531,
+      "lon": 18.8210167,
+      "osm_id": "node/5765341416",
+      "osm_tags": {
+        "name": "Ngonmolo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Morberim",
+      "lat": 8.8273667,
+      "lon": 18.78595,
+      "osm_id": "node/5765341419",
+      "osm_tags": {
+        "name": "Morberim",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Massa",
+      "lat": 8.8476333,
+      "lon": 18.7440833,
+      "osm_id": "node/5765342573",
+      "osm_tags": {
+        "name": "Massa",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "P\u00e9t\u00e9n\u00e9",
+      "lat": 8.2402,
+      "lon": 18.7257333,
+      "osm_id": "node/5765342579",
+      "osm_tags": {
+        "name": "P\u00e9t\u00e9n\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kagamenda 1",
+      "lat": 8.739451,
+      "lon": 18.6595679,
+      "osm_id": "node/5765342580",
+      "osm_tags": {
+        "name": "Kagamenda 1",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sandanan 1",
+      "lat": 8.5611167,
+      "lon": 18.6601849,
+      "osm_id": "node/5765342583",
+      "osm_tags": {
+        "name": "Sandanan 1",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "B\u00e9madji 2",
+      "lat": 8.4321061,
+      "lon": 18.8826947,
+      "osm_id": "node/5765342595",
+      "osm_tags": {
+        "name": "B\u00e9madji 2",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bakou",
+      "lat": 9.063,
+      "lon": 19.4571,
+      "osm_id": "node/5765342598",
+      "osm_tags": {
+        "name": "Bakou",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Beda",
+      "lat": 8.7335,
+      "lon": 18.6951333,
+      "osm_id": "node/5765342613",
+      "osm_tags": {
+        "name": "Beda",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mainbo",
+      "lat": 8.8066667,
+      "lon": 18.6370333,
+      "osm_id": "node/5765342626",
+      "osm_tags": {
+        "name": "Mainbo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mayo",
+      "lat": 8.6516852,
+      "lon": 18.8469478,
+      "osm_id": "node/5765342634",
+      "osm_tags": {
+        "name": "Mayo",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kongo",
+      "lat": 8.4600833,
+      "lon": 18.7692833,
+      "osm_id": "node/5765343497",
+      "osm_tags": {
+        "name": "Kongo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ferme Djadina",
+      "lat": 8.55035,
+      "lon": 18.6075167,
+      "osm_id": "node/5765343498",
+      "osm_tags": {
+        "name": "Ferme Djadina",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bodobara",
+      "lat": 8.9065324,
+      "lon": 18.830054,
+      "osm_id": "node/5765343502",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1091439",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Bodobara",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zawiya",
+      "lat": 8.6431,
+      "lon": 18.6027333,
+      "osm_id": "node/5765343539",
+      "osm_tags": {
+        "name": "Zawiya",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mobo Samndo",
+      "lat": 8.35965,
+      "lon": 18.7559167,
+      "osm_id": "node/5765343540",
+      "osm_tags": {
+        "name": "Mobo Samndo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mousnandja",
+      "lat": 8.8004667,
+      "lon": 18.6269167,
+      "osm_id": "node/5765343543",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1101480",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Mousnadja",
+        "name": "Mousnandja",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Djabayan",
+      "lat": 8.6251023,
+      "lon": 18.8028396,
+      "osm_id": "node/5765343549",
+      "osm_tags": {
+        "name": "Djabayan",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Koiwiyagu\u00e9",
+      "lat": 8.6346667,
+      "lon": 19.09885,
+      "osm_id": "node/5765343552",
+      "osm_tags": {
+        "name": "Koiwiyagu\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dangamdjai",
+      "lat": 8.743,
+      "lon": 19.01865,
+      "osm_id": "node/5765344378",
+      "osm_tags": {
+        "name": "Dangamdjai",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndjokou Sakou",
+      "lat": 9.0622333,
+      "lon": 19.5662,
+      "osm_id": "node/5765344379",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1102184",
+        "GNS:modify_date": "2008-10-30",
+        "alt_name": "Njoko Sako",
+        "alt_name:fr": "Djoko Sako;Njoko Sako",
+        "name": "Ndjokou Sakou",
+        "name:fr": "Boussa",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bidja 2",
+      "lat": 8.2158227,
+      "lon": 18.6304026,
+      "osm_id": "node/5765345153",
+      "osm_tags": {
+        "name": "Bidja 2",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bessama 2",
+      "lat": 8.7499167,
+      "lon": 18.7425,
+      "osm_id": "node/5765345158",
+      "osm_tags": {
+        "name": "Bessama 2",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Taguina Ferme",
+      "lat": 8.3596667,
+      "lon": 18.8672,
+      "osm_id": "node/5765345164",
+      "osm_tags": {
+        "name": "Taguina Ferme",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Djawedje",
+      "lat": 8.6850333,
+      "lon": 18.7825667,
+      "osm_id": "node/5765345168",
+      "osm_tags": {
+        "name": "Djawedje",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Miav\u00e9l\u00e9",
+      "lat": 8.66495,
+      "lon": 18.7728833,
+      "osm_id": "node/5765345171",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1100821",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Miavele",
+        "name": "Miav\u00e9l\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Motomolo",
+      "lat": 8.8064667,
+      "lon": 18.8320333,
+      "osm_id": "node/5765345174",
+      "osm_tags": {
+        "name": "Motomolo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kazva",
+      "lat": 8.32575,
+      "lon": 18.8327833,
+      "osm_id": "node/5765345181",
+      "osm_tags": {
+        "name": "Kazva",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Homtemadji",
+      "lat": 8.7558,
+      "lon": 19.0008833,
+      "osm_id": "node/5765345182",
+      "osm_tags": {
+        "name": "Homtemadji",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "B\u00e9kana",
+      "lat": 8.31915,
+      "lon": 18.7469,
+      "osm_id": "node/5765345203",
+      "osm_tags": {
+        "name": "B\u00e9kana",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00efnboundou",
+      "lat": 8.6476667,
+      "lon": 18.9390167,
+      "osm_id": "node/5765345215",
+      "osm_tags": {
+        "name": "Ma\u00efnboundou",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kira",
+      "lat": 8.5284333,
+      "lon": 18.7326167,
+      "osm_id": "node/5765345225",
+      "osm_tags": {
+        "name": "Kira",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lakonga",
+      "lat": 8.3135,
+      "lon": 18.74535,
+      "osm_id": "node/5765345229",
+      "osm_tags": {
+        "name": "Lakonga",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00efkouma",
+      "lat": 8.6857167,
+      "lon": 18.6332,
+      "osm_id": "node/5765345232",
+      "osm_tags": {
+        "name": "Ma\u00efkouma",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kobd\u00e9gu\u00e9 2",
+      "lat": 8.4288477,
+      "lon": 18.8774111,
+      "osm_id": "node/5765345253",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1097835",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Kobdogue;Kobdogu\u00e9",
+        "name": "Kobd\u00e9gu\u00e9 2",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ferme Gallil\u00e9e",
+      "lat": 8.3858,
+      "lon": 18.7621333,
+      "osm_id": "node/5765345257",
+      "osm_tags": {
+        "name": "Ferme Gallil\u00e9e",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Motguri",
+      "lat": 8.9352333,
+      "lon": 18.88545,
+      "osm_id": "node/5765352252",
+      "osm_tags": {
+        "name": "Motguri",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gouri",
+      "lat": 8.8076667,
+      "lon": 18.6996833,
+      "osm_id": "node/5765353211",
+      "osm_tags": {
+        "name": "Gouri",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Houraland",
+      "lat": 8.5266107,
+      "lon": 18.6292661,
+      "osm_id": "node/5765353215",
+      "osm_tags": {
+        "name": "Houraland",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zawiya",
+      "lat": 8.6409363,
+      "lon": 18.6039709,
+      "osm_id": "node/5765353221",
+      "osm_tags": {
+        "name": "Zawiya",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gnala",
+      "lat": 8.8234,
+      "lon": 18.7950333,
+      "osm_id": "node/5765353230",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318288",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Iala",
+        "name": "Gnala",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Koukouroudja",
+      "lat": 8.439939,
+      "lon": 18.9044243,
+      "osm_id": "node/5765353234",
+      "osm_tags": {
+        "name": "Koukouroudja",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kolongassara UBH",
+      "lat": 9.0521333,
+      "lon": 19.7241667,
+      "osm_id": "node/5765353250",
+      "osm_tags": {
+        "name": "Kolongassara UBH",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngonkaba 2",
+      "lat": 8.5549758,
+      "lon": 18.6607533,
+      "osm_id": "node/5765358006",
+      "osm_tags": {
+        "name": "Ngonkaba 2",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ka\u00efnodjo",
+      "lat": 8.7787833,
+      "lon": 18.8271667,
+      "osm_id": "node/5765358013",
+      "osm_tags": {
+        "name": "Ka\u00efnodjo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ndagui Mono UBH 4",
+      "lat": 9.0283151,
+      "lon": 19.1707822,
+      "osm_id": "node/5765358016",
+      "osm_tags": {
+        "name": "Ndagui Mono UBH 4",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00efmara",
+      "lat": 8.9238667,
+      "lon": 18.5965,
+      "osm_id": "node/5765358024",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318268",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Maimara",
+        "name": "Ma\u00efmara",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndinakongo",
+      "lat": 8.6293546,
+      "lon": 18.9793173,
+      "osm_id": "node/5765358026",
+      "osm_tags": {
+        "name": "Ndinakongo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kouma",
+      "lat": 8.3292833,
+      "lon": 18.8000833,
+      "osm_id": "node/5765358031",
+      "osm_tags": {
+        "name": "Kouma",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Albarka",
+      "lat": 8.6349993,
+      "lon": 18.8013441,
+      "osm_id": "node/5765358037",
+      "osm_tags": {
+        "name": "Albarka",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mourkoutou",
+      "lat": 8.9284333,
+      "lon": 18.6473167,
+      "osm_id": "node/5765358109",
+      "osm_tags": {
+        "name": "Mourkoutou",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndjokouko",
+      "lat": 9.11455,
+      "lon": 19.5715,
+      "osm_id": "node/5765358114",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1102183",
+        "GNS:modify_date": "2008-10-30",
+        "alt_name": "Njokoko",
+        "alt_name:fr": "N\u2019Djoko;N'Djoko;Ndioko",
+        "name": "Ndjokouko",
+        "name:fr": "Njokoko",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bendouman",
+      "lat": 8.8314,
+      "lon": 18.60085,
+      "osm_id": "node/5765358127",
+      "osm_tags": {
+        "name": "Bendouman",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mousmba",
+      "lat": 8.8107833,
+      "lon": 18.7373333,
+      "osm_id": "node/5765358145",
+      "osm_tags": {
+        "name": "Mousmba",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bobiri",
+      "lat": 8.3697,
+      "lon": 18.8767833,
+      "osm_id": "node/5765358146",
+      "osm_tags": {
+        "name": "Bobiri",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nelmbi",
+      "lat": 8.5208421,
+      "lon": 18.6875756,
+      "osm_id": "node/5765358150",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1101834",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Nelimbi;N\u00e9limbi",
+        "name": "Nelmbi",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00efgama",
+      "lat": 8.3671,
+      "lon": 18.7577667,
+      "osm_id": "node/5765358152",
+      "osm_tags": {
+        "name": "Ma\u00efgama",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Irnan",
+      "lat": 8.6207603,
+      "lon": 18.9756319,
+      "osm_id": "node/5765358304",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318341",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Irena;Ir\u00e9na",
+        "name": "Irnan",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndjiramadji",
+      "lat": 8.4263141,
+      "lon": 18.8736295,
+      "osm_id": "node/5765358306",
+      "osm_tags": {
+        "name": "Ndjiramadji",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00eftro",
+      "lat": 8.3214667,
+      "lon": 18.82805,
+      "osm_id": "node/5765358752",
+      "osm_tags": {
+        "name": "Ma\u00eftro",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gongo",
+      "lat": 8.9935678,
+      "lon": 18.9857544,
+      "osm_id": "node/5765358779",
+      "osm_tags": {
+        "name": "Gongo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ka\u00efngoh UBH 3",
+      "lat": 9.1168866,
+      "lon": 19.1055225,
+      "osm_id": "node/5765358789",
+      "osm_tags": {
+        "name": "Ka\u00efngoh UBH 3",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00efnkomb\u00e9",
+      "lat": 8.88275,
+      "lon": 18.6652833,
+      "osm_id": "node/5765358853",
+      "osm_tags": {
+        "name": "Ma\u00efnkomb\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "B\u00e9kondjon",
+      "lat": 8.80815,
+      "lon": 18.7203167,
+      "osm_id": "node/5765358861",
+      "osm_tags": {
+        "name": "B\u00e9kondjon",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kemngo Haoussa",
+      "lat": 8.6480833,
+      "lon": 18.92355,
+      "osm_id": "node/5765358868",
+      "osm_tags": {
+        "name": "Kemngo Haoussa",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Beguigui",
+      "lat": 8.9633252,
+      "lon": 18.9600067,
+      "osm_id": "node/5765358881",
+      "osm_tags": {
+        "name": "Beguigui",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndakono",
+      "lat": 8.6013,
+      "lon": 18.6135,
+      "osm_id": "node/5765358887",
+      "osm_tags": {
+        "name": "Ndakono",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Doubadana",
+      "lat": 8.9324667,
+      "lon": 18.8809833,
+      "osm_id": "node/5765358892",
+      "osm_tags": {
+        "name": "Doubadana",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngaber\u00e9",
+      "lat": 8.8798294,
+      "lon": 18.7602091,
+      "osm_id": "node/5765358915",
+      "osm_tags": {
+        "name": "Ngaber\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ka\u00efngoh UBH 2",
+      "lat": 9.0722862,
+      "lon": 19.1332701,
+      "osm_id": "node/5765358916",
+      "osm_tags": {
+        "name": "Ka\u00efngoh UBH 2",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moura\u00ef",
+      "lat": 9.0206167,
+      "lon": 19.0799167,
+      "osm_id": "node/5765359136",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1101392",
+        "GNS:modify_date": "2008-10-30",
+        "alt_name": "Mouray",
+        "alt_name:fr": "Mora\u00ef;Morai",
+        "name": "Moura\u00ef",
+        "name:fr": "Mouray",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yaroungou",
+      "lat": 8.4353695,
+      "lon": 18.6834091,
+      "osm_id": "node/5765359139",
+      "osm_tags": {
+        "name": "Yaroungou",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maintana",
+      "lat": 8.7809,
+      "lon": 18.96175,
+      "osm_id": "node/5765359144",
+      "osm_tags": {
+        "name": "Maintana",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Massa",
+      "lat": 8.7317167,
+      "lon": 18.8423333,
+      "osm_id": "node/5765359255",
+      "osm_tags": {
+        "name": "Massa",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dinakobo",
+      "lat": 8.7463333,
+      "lon": 18.7677167,
+      "osm_id": "node/5765359272",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1097470",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Kemkaba",
+        "name": "Dinakobo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Horo",
+      "lat": 8.2627559,
+      "lon": 18.7446032,
+      "osm_id": "node/5765359274",
+      "osm_tags": {
+        "name": "Horo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bessa 2",
+      "lat": 8.7863405,
+      "lon": 18.6671211,
+      "osm_id": "node/5765359279",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1103358",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Sako",
+        "name": "Bessa 2",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mballa",
+      "lat": 8.3394667,
+      "lon": 18.8273167,
+      "osm_id": "node/5765359288",
+      "osm_tags": {
+        "name": "Mballa",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Canada",
+      "lat": 8.3552167,
+      "lon": 18.8391667,
+      "osm_id": "node/5765359303",
+      "osm_tags": {
+        "name": "Canada",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Takia",
+      "lat": 8.6490167,
+      "lon": 18.9512833,
+      "osm_id": "node/5765359314",
+      "osm_tags": {
+        "name": "Takia",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madjiyam",
+      "lat": 9.192,
+      "lon": 18.6566833,
+      "osm_id": "node/5765359317",
+      "osm_tags": {
+        "name": "Madjiyam",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngoh",
+      "lat": 9.1053772,
+      "lon": 19.4965464,
+      "osm_id": "node/5765359327",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1101983",
+        "GNS:modify_date": "2008-10-30",
+        "alt_name": "Ngo",
+        "alt_name:fr": "G\u00f4;Go",
+        "name": "Ngoh",
+        "name:fr": "Ngo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maissaya",
+      "lat": 8.7952706,
+      "lon": 18.616524,
+      "osm_id": "node/5765359336",
+      "osm_tags": {
+        "name": "Maissaya",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sergu\u00e9",
+      "lat": 8.7701167,
+      "lon": 18.9770167,
+      "osm_id": "node/5765359337",
+      "osm_tags": {
+        "name": "Sergu\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bendanan",
+      "lat": 8.7783,
+      "lon": 18.8269167,
+      "osm_id": "node/5765359338",
+      "osm_tags": {
+        "name": "Bendanan",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngakorio 2",
+      "lat": 8.3097,
+      "lon": 18.7405167,
+      "osm_id": "node/5765359345",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1094865",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Gakorio",
+        "name": "Ngakorio 2",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00efngara",
+      "lat": 8.6929,
+      "lon": 18.7438167,
+      "osm_id": "node/5765359526",
+      "osm_tags": {
+        "name": "Ma\u00efngara",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nguiriri",
+      "lat": 9.0616167,
+      "lon": 18.62185,
+      "osm_id": "node/5765359531",
+      "osm_tags": {
+        "name": "Nguiriri",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madjimba",
+      "lat": 8.4551333,
+      "lon": 18.7697167,
+      "osm_id": "node/5765359539",
+      "osm_tags": {
+        "name": "Madjimba",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moulbian",
+      "lat": 8.6727398,
+      "lon": 18.7274256,
+      "osm_id": "node/5765359542",
+      "osm_tags": {
+        "name": "Moulbian",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kemkogui",
+      "lat": 8.6669,
+      "lon": 18.7497833,
+      "osm_id": "node/5765359544",
+      "osm_tags": {
+        "name": "Kemkogui",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kalgoua",
+      "lat": 8.67265,
+      "lon": 18.6609333,
+      "osm_id": "node/5765359559",
+      "osm_tags": {
+        "name": "Kalgoua",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndagui Mono",
+      "lat": 9.0738371,
+      "lon": 19.260409,
+      "osm_id": "node/5765359562",
+      "osm_tags": {
+        "name": "Ndagui Mono",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gravier",
+      "lat": 8.92425,
+      "lon": 18.6064667,
+      "osm_id": "node/5765359573",
+      "osm_tags": {
+        "name": "Gravier",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bibagu\u00e9",
+      "lat": 8.39335,
+      "lon": 18.8647833,
+      "osm_id": "node/5765359583",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318348",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Bimbague;Bimbagu\u00e9",
+        "name": "Bibagu\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tarako",
+      "lat": 9.0714667,
+      "lon": 18.7006333,
+      "osm_id": "node/5765359590",
+      "osm_tags": {
+        "name": "Tarako",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gourourou",
+      "lat": 8.6361333,
+      "lon": 18.9754667,
+      "osm_id": "node/5765359593",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1095862",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Gourourou",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Samadja",
+      "lat": 8.7128167,
+      "lon": 18.6893667,
+      "osm_id": "node/5765359594",
+      "osm_tags": {
+        "name": "Samadja",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moudguindi",
+      "lat": 8.6402833,
+      "lon": 18.8816667,
+      "osm_id": "node/5765359601",
+      "osm_tags": {
+        "name": "Moudguindi",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ka\u00efngoh",
+      "lat": 9.191475,
+      "lon": 19.0867615,
+      "osm_id": "node/5765359602",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1097308",
+        "GNS:modify_date": "2008-10-30",
+        "alt_name": "Kayengo",
+        "name": "Ka\u00efngoh",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ndagui Mono UBH 3",
+      "lat": 9.0311384,
+      "lon": 19.177954,
+      "osm_id": "node/5765359605",
+      "osm_tags": {
+        "name": "Ndagui Mono UBH 3",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Molo",
+      "lat": 8.3171167,
+      "lon": 18.7460333,
+      "osm_id": "node/5765359620",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318369",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Goulo",
+        "name": "Molo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mourhoutou",
+      "lat": 8.6473167,
+      "lon": 18.9284333,
+      "osm_id": "node/5765359622",
+      "osm_tags": {
+        "name": "Mourhoutou",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maimala",
+      "lat": 8.8322333,
+      "lon": 18.7749,
+      "osm_id": "node/5765359633",
+      "osm_tags": {
+        "name": "Maimala",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dogo",
+      "lat": 8.2530333,
+      "lon": 18.6473667,
+      "osm_id": "node/5765359645",
+      "osm_tags": {
+        "name": "Dogo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ka\u00efngoh UBH 1",
+      "lat": 9.0477839,
+      "lon": 19.1354963,
+      "osm_id": "node/5765359803",
+      "osm_tags": {
+        "name": "Ka\u00efngoh UBH 1",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dinaba",
+      "lat": 8.3432833,
+      "lon": 18.75165,
+      "osm_id": "node/5765359805",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1092961",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Dinaba",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bidja 2",
+      "lat": 8.2143933,
+      "lon": 18.6325427,
+      "osm_id": "node/5765359815",
+      "osm_tags": {
+        "name": "Bidja 2",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ferme Ma\u00efkissa",
+      "lat": 8.5518333,
+      "lon": 18.6301333,
+      "osm_id": "node/5765359818",
+      "osm_tags": {
+        "name": "Ferme Ma\u00efkissa",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mongondanga",
+      "lat": 8.7636333,
+      "lon": 18.8231833,
+      "osm_id": "node/5765359834",
+      "osm_tags": {
+        "name": "Mongondanga",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Moussa Foyo",
+      "lat": 8.8464,
+      "lon": 18.7088167,
+      "osm_id": "node/5765359837",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1101493",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Moussafoyo",
+        "capital": "6",
+        "name": "Moussa Foyo",
+        "note": "rank=0 + town car sous-prefecture",
+        "place": "town",
+        "rank": "0",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Beyongo",
+      "lat": 9.0694667,
+      "lon": 18.7083,
+      "osm_id": "node/5765359845",
+      "osm_tags": {
+        "name": "Beyongo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Horkala",
+      "lat": 8.6995745,
+      "lon": 18.8214778,
+      "osm_id": "node/5765360055",
+      "osm_tags": {
+        "name": "Horkala",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kemngo",
+      "lat": 8.6483667,
+      "lon": 18.94005,
+      "osm_id": "node/5765360063",
+      "osm_tags": {
+        "name": "Kemngo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00efmber\u00e9",
+      "lat": 8.7453,
+      "lon": 18.6252,
+      "osm_id": "node/5765360066",
+      "osm_tags": {
+        "name": "Ma\u00efmber\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Klabra",
+      "lat": 8.8147167,
+      "lon": 18.8601,
+      "osm_id": "node/5765360071",
+      "osm_tags": {
+        "name": "Klabra",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Samndo",
+      "lat": 8.3282833,
+      "lon": 18.8099,
+      "osm_id": "node/5765360073",
+      "osm_tags": {
+        "name": "Samndo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kouti II",
+      "lat": 8.78283,
+      "lon": 18.78267,
+      "osm_id": "node/5765360095",
+      "osm_tags": {
+        "name": "Kouti II",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "B\u00e9guid\u00e9",
+      "lat": 8.7101833,
+      "lon": 18.78345,
+      "osm_id": "node/5765360098",
+      "osm_tags": {
+        "name": "B\u00e9guid\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Jerusalem",
+      "lat": 8.7125333,
+      "lon": 18.8477,
+      "osm_id": "node/5765360119",
+      "osm_tags": {
+        "name": "Jerusalem",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dangaraye",
+      "lat": 9.0786615,
+      "lon": 19.656111,
+      "osm_id": "node/5765360121",
+      "osm_tags": {
+        "name": "Dangaraye",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Go\u00efgongo",
+      "lat": 8.8185333,
+      "lon": 18.7663,
+      "osm_id": "node/5765360134",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318286",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Maikouma;Ma\u00efkouma",
+        "name": "Go\u00efgongo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Samingue",
+      "lat": 8.7477,
+      "lon": 18.7228667,
+      "osm_id": "node/5765360136",
+      "osm_tags": {
+        "name": "Samingue",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngonkira",
+      "lat": 8.6603333,
+      "lon": 18.9791833,
+      "osm_id": "node/5765360137",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318293",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Gounkira",
+        "name": "Ngonkira",
+        "name:fr": "Gounkira",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kourware",
+      "lat": 8.9408822,
+      "lon": 18.9059345,
+      "osm_id": "node/5765360138",
+      "osm_tags": {
+        "name": "Kourware",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Motokaba",
+      "lat": 8.8892296,
+      "lon": 18.7658524,
+      "osm_id": "node/5765360143",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1101252",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Motokaba",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kotongoro",
+      "lat": 8.5889667,
+      "lon": 18.6201667,
+      "osm_id": "node/5765360144",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1098284",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Kotangoro;Kotongoro II",
+        "name": "Kotongoro",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dangala Kangan",
+      "lat": 9.1905167,
+      "lon": 18.5995167,
+      "osm_id": "node/5765360152",
+      "osm_tags": {
+        "name": "Dangala Kangan",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Monouma",
+      "lat": 8.8123667,
+      "lon": 18.6500333,
+      "osm_id": "node/5765360654",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1101362",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Mounouma",
+        "name": "Monouma",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lapia",
+      "lat": 8.79585,
+      "lon": 18.8362833,
+      "osm_id": "node/5765360655",
+      "osm_tags": {
+        "name": "Lapia",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Beracana",
+      "lat": 8.7471667,
+      "lon": 18.6570667,
+      "osm_id": "node/5765360662",
+      "osm_tags": {
+        "name": "Beracana",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Motogo",
+      "lat": 8.4773109,
+      "lon": 18.7687808,
+      "osm_id": "node/5765360664",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1101522",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Moutougo;Moutogolo;Moutogo",
+        "name": "Motogo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kouyo",
+      "lat": 8.8297667,
+      "lon": 18.7561,
+      "osm_id": "node/5765360666",
+      "osm_tags": {
+        "name": "Kouyo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sandanan",
+      "lat": 8.7364833,
+      "lon": 18.7719333,
+      "osm_id": "node/5765360679",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1103442",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Sandana",
+        "name": "Sandanan",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "B\u00e9ramadji",
+      "lat": 8.7592833,
+      "lon": 18.8330333,
+      "osm_id": "node/5765360686",
+      "osm_tags": {
+        "name": "B\u00e9ramadji",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Morkon Yambo",
+      "lat": 8.8033667,
+      "lon": 18.8193167,
+      "osm_id": "node/5765360695",
+      "osm_tags": {
+        "name": "Morkon Yambo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Liberia",
+      "lat": 8.8410667,
+      "lon": 18.7286833,
+      "osm_id": "node/5765360704",
+      "osm_tags": {
+        "name": "Liberia",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ndagui Mono UBH 2",
+      "lat": 9.0525902,
+      "lon": 19.212741,
+      "osm_id": "node/5765360706",
+      "osm_tags": {
+        "name": "Ndagui Mono UBH 2",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "France Ville",
+      "lat": 9.0732833,
+      "lon": 18.6935833,
+      "osm_id": "node/5765360711",
+      "osm_tags": {
+        "name": "France Ville",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sakoh",
+      "lat": 8.8251043,
+      "lon": 18.6745328,
+      "osm_id": "node/5765360724",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318285",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Sako",
+        "name": "Sakoh",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kourbou",
+      "lat": 8.2773,
+      "lon": 18.6597667,
+      "osm_id": "node/5765360726",
+      "osm_tags": {
+        "name": "Kourbou",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kemkra",
+      "lat": 8.6257246,
+      "lon": 18.8565388,
+      "osm_id": "node/5765360727",
+      "osm_tags": {
+        "name": "Kemkra",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bedinga",
+      "lat": 8.64915,
+      "lon": 18.9421833,
+      "osm_id": "node/5765361054",
+      "osm_tags": {
+        "name": "Bedinga",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaga 1",
+      "lat": 8.7639167,
+      "lon": 18.6453167,
+      "osm_id": "node/5765361257",
+      "osm_tags": {
+        "name": "Kaga 1",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngosro",
+      "lat": 8.7218667,
+      "lon": 18.9924333,
+      "osm_id": "node/5765361259",
+      "osm_tags": {
+        "name": "Ngosro",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00efmana",
+      "lat": 8.4893667,
+      "lon": 18.7322167,
+      "osm_id": "node/5765361284",
+      "osm_tags": {
+        "name": "Ma\u00efmana",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00efber\u00e9",
+      "lat": 8.3967,
+      "lon": 18.8723333,
+      "osm_id": "node/5765361418",
+      "osm_tags": {
+        "name": "Ma\u00efber\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nguirbingui",
+      "lat": 8.3622667,
+      "lon": 18.8700833,
+      "osm_id": "node/5765361431",
+      "osm_tags": {
+        "name": "Nguirbingui",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "B\u00e9kion",
+      "lat": 8.4249333,
+      "lon": 18.9170833,
+      "osm_id": "node/5765361453",
+      "osm_tags": {
+        "name": "B\u00e9kion",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Riradjim Narmadji",
+      "lat": 8.75685,
+      "lon": 18.69223,
+      "osm_id": "node/5765361455",
+      "osm_tags": {
+        "name": "Riradjim Narmadji",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Miyanga",
+      "lat": 9.0476804,
+      "lon": 19.6984998,
+      "osm_id": "node/5765361457",
+      "osm_tags": {
+        "name": "Miyanga",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Waltama",
+      "lat": 8.8155,
+      "lon": 18.8746167,
+      "osm_id": "node/5765361459",
+      "osm_tags": {
+        "name": "Waltama",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "May\u00e9l\u00e9",
+      "lat": 8.6522611,
+      "lon": 18.8375421,
+      "osm_id": "node/5765361476",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1100487",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Mayo",
+        "name": "May\u00e9l\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00efkissa",
+      "lat": 8.5632667,
+      "lon": 18.6462333,
+      "osm_id": "node/5765361482",
+      "osm_tags": {
+        "name": "Ma\u00efkissa",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Goro 2",
+      "lat": 8.788453,
+      "lon": 18.6067782,
+      "osm_id": "node/5765361488",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1095571",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Goro",
+        "name": "Goro 2",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Damas",
+      "lat": 8.6298623,
+      "lon": 18.683818,
+      "osm_id": "node/5765361507",
+      "osm_tags": {
+        "name": "Damas",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Paris Sakoula",
+      "lat": 8.7645667,
+      "lon": 18.69025,
+      "osm_id": "node/5765361514",
+      "osm_tags": {
+        "name": "Paris Sakoula",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Djou",
+      "lat": 9.0364572,
+      "lon": 19.70759,
+      "osm_id": "node/5765361517",
+      "osm_tags": {
+        "name": "Djou",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00efbourou",
+      "lat": 8.5505718,
+      "lon": 18.6164891,
+      "osm_id": "node/5765361523",
+      "osm_tags": {
+        "name": "Ma\u00efbourou",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngon-Kaba",
+      "lat": 8.2811,
+      "lon": 18.67155,
+      "osm_id": "node/5765361533",
+      "osm_tags": {
+        "name": "Ngon-Kaba",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ka\u00efmanmba",
+      "lat": 9.0555,
+      "lon": 18.6654,
+      "osm_id": "node/5765361540",
+      "osm_tags": {
+        "name": "Ka\u00efmanmba",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngaminda",
+      "lat": 8.3047333,
+      "lon": 18.8250167,
+      "osm_id": "node/5765361550",
+      "osm_tags": {
+        "name": "Ngaminda",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaounoudjo",
+      "lat": 8.5592333,
+      "lon": 18.9738833,
+      "osm_id": "node/5765361562",
+      "osm_tags": {
+        "name": "Kaounoudjo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndingarom",
+      "lat": 9.0597833,
+      "lon": 18.67775,
+      "osm_id": "node/5765361567",
+      "osm_tags": {
+        "name": "Ndingarom",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00efnbian",
+      "lat": 8.8257333,
+      "lon": 18.6165667,
+      "osm_id": "node/5765361569",
+      "osm_tags": {
+        "name": "Ma\u00efnbian",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndinakouyon",
+      "lat": 8.7141833,
+      "lon": 18.8986167,
+      "osm_id": "node/5765361587",
+      "osm_tags": {
+        "name": "Ndinakouyon",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Morkon",
+      "lat": 8.6784833,
+      "lon": 18.77555,
+      "osm_id": "node/5765361613",
+      "osm_tags": {
+        "name": "Morkon",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moussoumba",
+      "lat": 8.4215667,
+      "lon": 18.8147833,
+      "osm_id": "node/5765361617",
+      "osm_tags": {
+        "name": "Moussoumba",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngon-Molo",
+      "lat": 8.4531603,
+      "lon": 18.9140649,
+      "osm_id": "node/5765361624",
+      "osm_tags": {
+        "name": "Ngon-Molo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Beya",
+      "lat": 8.7748,
+      "lon": 18.9407833,
+      "osm_id": "node/5765361662",
+      "osm_tags": {
+        "name": "Beya",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Borgoto",
+      "lat": 9.2158333,
+      "lon": 19.2044333,
+      "osm_id": "node/5765361679",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1091634",
+        "GNS:modify_date": "2008-10-30",
+        "alt_name": "Bagotio;Bourokoto",
+        "name": "Borgoto",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00efkouma",
+      "lat": 8.8891667,
+      "lon": 18.6532333,
+      "osm_id": "node/5765361680",
+      "osm_tags": {
+        "name": "Ma\u00efkouma",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sandoro",
+      "lat": 8.7848833,
+      "lon": 18.71585,
+      "osm_id": "node/5765361689",
+      "osm_tags": {
+        "name": "Sandoro",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mongo",
+      "lat": 8.8081,
+      "lon": 18.9096167,
+      "osm_id": "node/5765361692",
+      "osm_tags": {
+        "name": "Mongo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Halala",
+      "lat": 9.1776508,
+      "lon": 18.6213888,
+      "osm_id": "node/5765361693",
+      "osm_tags": {
+        "name": "Halala",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ferme",
+      "lat": 8.9122333,
+      "lon": 18.6295667,
+      "osm_id": "node/5765361699",
+      "osm_tags": {
+        "name": "Ferme",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kagnaou Bombi",
+      "lat": 9.0526833,
+      "lon": 19.3852,
+      "osm_id": "node/5765361716",
+      "osm_tags": {
+        "name": "Kagnaou Bombi",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Djokaga",
+      "lat": 9.2057667,
+      "lon": 19.16605,
+      "osm_id": "node/5765361735",
+      "osm_tags": {
+        "name": "Djokaga",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Morkon",
+      "lat": 8.69045,
+      "lon": 18.9554667,
+      "osm_id": "node/5765361739",
+      "osm_tags": {
+        "name": "Morkon",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ngondeye",
+      "lat": 9.153435,
+      "lon": 19.3090157,
+      "osm_id": "node/5765361744",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1095484",
+        "GNS:modify_date": "2008-10-30",
+        "alt_name": "Dagui;Dagni;Dagi;Goud\u00e9\u00ef;Goudei;Gagui;Gondey",
+        "capital": "6",
+        "name": "Ngondeye",
+        "note": "rank=0 + town car sous-prefecture",
+        "place": "town",
+        "rank": "0",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Amchalabo",
+      "lat": 8.2520855,
+      "lon": 18.6895618,
+      "osm_id": "node/5765361746",
+      "osm_tags": {
+        "name": "Amchalabo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sarmba",
+      "lat": 8.33545,
+      "lon": 18.81895,
+      "osm_id": "node/5765361747",
+      "osm_tags": {
+        "name": "Sarmba",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gu\u00e9r\u00e9",
+      "lat": 8.8137833,
+      "lon": 18.81555,
+      "osm_id": "node/5765361748",
+      "osm_tags": {
+        "name": "Gu\u00e9r\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngar\u00e9",
+      "lat": 8.98735,
+      "lon": 18.5977833,
+      "osm_id": "node/5765361866",
+      "osm_tags": {
+        "name": "Ngar\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nodjimalah",
+      "lat": 8.7679,
+      "lon": 18.75685,
+      "osm_id": "node/5765361867",
+      "osm_tags": {
+        "name": "Nodjimalah",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kolongassara",
+      "lat": 9.0649322,
+      "lon": 19.766048,
+      "osm_id": "node/5765361868",
+      "osm_tags": {
+        "name": "Kolongassara",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tourndou",
+      "lat": 8.6261833,
+      "lon": 18.6066833,
+      "osm_id": "node/5765361880",
+      "osm_tags": {
+        "name": "Tourndou",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngori Baga",
+      "lat": 9.0681167,
+      "lon": 18.7491167,
+      "osm_id": "node/5765361910",
+      "osm_tags": {
+        "name": "Ngori Baga",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kemkaba",
+      "lat": 8.7926,
+      "lon": 18.7456,
+      "osm_id": "node/5765361921",
+      "osm_tags": {
+        "name": "Kemkaba",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Djarab\u00e9",
+      "lat": 8.8309333,
+      "lon": 18.8837,
+      "osm_id": "node/5765361933",
+      "osm_tags": {
+        "name": "Djarab\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaba",
+      "lat": 8.65036,
+      "lon": 18.94319,
+      "osm_id": "node/5765361934",
+      "osm_tags": {
+        "name": "Kaba",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tarangara",
+      "lat": 8.9708833,
+      "lon": 18.6574667,
+      "osm_id": "node/5765361938",
+      "osm_tags": {
+        "name": "Tarangara",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ndagui Mono UBH 5",
+      "lat": 9.0225849,
+      "lon": 19.1578047,
+      "osm_id": "node/5765361940",
+      "osm_tags": {
+        "name": "Ndagui Mono UBH 5",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sandana 2",
+      "lat": 8.3803167,
+      "lon": 18.8979833,
+      "osm_id": "node/5765361952",
+      "osm_tags": {
+        "name": "Sandana 2",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maintaman",
+      "lat": 8.8189022,
+      "lon": 18.6604739,
+      "osm_id": "node/5765362142",
+      "osm_tags": {
+        "name": "Maintaman",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ndjokouko UBH",
+      "lat": 9.1237667,
+      "lon": 19.57605,
+      "osm_id": "node/5765362164",
+      "osm_tags": {
+        "name": "Ndjokouko UBH",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boudourou",
+      "lat": 8.6335667,
+      "lon": 18.6561,
+      "osm_id": "node/5765362165",
+      "osm_tags": {
+        "name": "Boudourou",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndangoulou",
+      "lat": 8.5012755,
+      "lon": 18.7030269,
+      "osm_id": "node/5765362173",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1092479",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Dangoulou",
+        "name": "Ndangoulou",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Morkon",
+      "lat": 8.6918,
+      "lon": 19.0385167,
+      "osm_id": "node/5765362176",
+      "osm_tags": {
+        "name": "Morkon",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kouya Bani",
+      "lat": 9.099133,
+      "lon": 19.4442435,
+      "osm_id": "node/5765362253",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1098942",
+        "GNS:modify_date": "2008-10-30",
+        "alt_name": "Kouyabani",
+        "alt_name:fr": "Kouyab\u00e9n\u00e9;Kouyabene",
+        "name": "Kouya Bani",
+        "name:fr": "Kouyabani",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndagui Mono UBH 1",
+      "lat": 9.0668794,
+      "lon": 19.2364985,
+      "osm_id": "node/5765362268",
+      "osm_tags": {
+        "name": "Ndagui Mono UBH 1",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gambaye 1",
+      "lat": 8.7080333,
+      "lon": 19.06605,
+      "osm_id": "node/5765362273",
+      "osm_tags": {
+        "name": "Gambaye 1",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nanemadji",
+      "lat": 8.8311667,
+      "lon": 18.74335,
+      "osm_id": "node/5765362287",
+      "osm_tags": {
+        "name": "Nanemadji",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Doh",
+      "lat": 8.7100167,
+      "lon": 18.6535167,
+      "osm_id": "node/5765362288",
+      "osm_tags": {
+        "name": "Doh",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Massa",
+      "lat": 9.0304333,
+      "lon": 18.6468,
+      "osm_id": "node/5765362294",
+      "osm_tags": {
+        "name": "Massa",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Beri Beugreu",
+      "lat": 8.8561667,
+      "lon": 18.6050333,
+      "osm_id": "node/5765362357",
+      "osm_tags": {
+        "name": "Beri Beugreu",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dina Banda",
+      "lat": 8.6670667,
+      "lon": 18.6670667,
+      "osm_id": "node/5765362362",
+      "osm_tags": {
+        "name": "Dina Banda",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dandira",
+      "lat": 8.4927,
+      "lon": 18.9303,
+      "osm_id": "node/5765362363",
+      "osm_tags": {
+        "name": "Dandira",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bac",
+      "lat": 8.8661035,
+      "lon": 18.7276654,
+      "osm_id": "node/5765362365",
+      "osm_tags": {
+        "name": "Bac",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kava",
+      "lat": 8.3308333,
+      "lon": 18.7908667,
+      "osm_id": "node/5765362367",
+      "osm_tags": {
+        "name": "Kava",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Paris-Sara 1",
+      "lat": 8.4734667,
+      "lon": 18.7706667,
+      "osm_id": "node/5765362371",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318353",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Pare Sara I;Par\u00e9 Sara I",
+        "name": "Paris-Sara 1",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Doubadana",
+      "lat": 8.7412167,
+      "lon": 18.8152833,
+      "osm_id": "node/5765362385",
+      "osm_tags": {
+        "name": "Doubadana",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dangkolo",
+      "lat": 9.0644333,
+      "lon": 18.7584,
+      "osm_id": "node/5765362398",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1093624",
+        "GNS:modify_date": "2008-10-29",
+        "alt_name": "Dokolo",
+        "name": "Dangkolo",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Djonko",
+      "lat": 8.7912833,
+      "lon": 18.9465667,
+      "osm_id": "node/5765362408",
+      "osm_tags": {
+        "name": "Djonko",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bedoboye",
+      "lat": 8.69435,
+      "lon": 18.7063167,
+      "osm_id": "node/5765362417",
+      "osm_tags": {
+        "name": "Bedoboye",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kadamanba",
+      "lat": 8.8751607,
+      "lon": 18.7525628,
+      "osm_id": "node/5765362419",
+      "osm_tags": {
+        "name": "Kadamanba",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ka\u00efngoh UBH 4",
+      "lat": 9.0645431,
+      "lon": 19.1115421,
+      "osm_id": "node/5765362420",
+      "osm_tags": {
+        "name": "Ka\u00efngoh UBH 4",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Saguinan",
+      "lat": 8.68635,
+      "lon": 18.6353833,
+      "osm_id": "node/5765362441",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318300",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Saguna",
+        "name": "Saguinan",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kibetar",
+      "lat": 9.1725925,
+      "lon": 18.6515446,
+      "osm_id": "node/5765362444",
+      "osm_tags": {
+        "name": "Kibetar",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Moura\u00ef UBH",
+      "lat": 9.0132164,
+      "lon": 19.0494219,
+      "osm_id": "node/5765362446",
+      "osm_tags": {
+        "name": "Moura\u00ef UBH",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kemanga",
+      "lat": 9.2186167,
+      "lon": 18.9272333,
+      "osm_id": "node/5765362448",
+      "osm_tags": {
+        "name": "Kemanga",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ferme Taguina",
+      "lat": 8.3596,
+      "lon": 18.8673,
+      "osm_id": "node/5765362450",
+      "osm_tags": {
+        "name": "Ferme Taguina",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dok\u00e9d\u00e9",
+      "lat": 8.7862333,
+      "lon": 18.9554667,
+      "osm_id": "node/5765362453",
+      "osm_tags": {
+        "name": "Dok\u00e9d\u00e9",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Samarie",
+      "lat": 8.7582167,
+      "lon": 18.8688333,
+      "osm_id": "node/5765362459",
+      "osm_tags": {
+        "name": "Samarie",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ranekla",
+      "lat": 8.7027,
+      "lon": 18.9601667,
+      "osm_id": "node/5765362460",
+      "osm_tags": {
+        "name": "Ranekla",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Liboro",
+      "lat": 9.0566,
+      "lon": 19.4294,
+      "osm_id": "node/5765362467",
+      "osm_tags": {
+        "name": "Liboro",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Langoutou",
+      "lat": 8.6816,
+      "lon": 18.7166333,
+      "osm_id": "node/5765362468",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318299",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Langoutou",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Doro",
+      "lat": 8.4854,
+      "lon": 18.9263,
+      "osm_id": "node/5765362469",
+      "osm_tags": {
+        "name": "Doro",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kirakono",
+      "lat": 8.7444167,
+      "lon": 18.815283,
+      "osm_id": "node/5765362473",
+      "osm_tags": {
+        "name": "Kirakono",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mo\u00eftadjim",
+      "lat": 8.5411833,
+      "lon": 18.6726,
+      "osm_id": "node/5765362484",
+      "osm_tags": {
+        "name": "Mo\u00eftadjim",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bidja 1",
+      "lat": 8.2293003,
+      "lon": 18.6606712,
+      "osm_id": "node/5765362487",
+      "osm_tags": {
+        "name": "Bidja 1",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Maimate",
+      "lat": 8.7058333,
+      "lon": 18.9653,
+      "osm_id": "node/5765362488",
+      "osm_tags": {
+        "name": "Maimate",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ma\u00ef Village",
+      "lat": 9.2168333,
+      "lon": 19.13085,
+      "osm_id": "node/5765362490",
+      "osm_tags": {
+        "name": "Ma\u00ef Village",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndolamnon",
+      "lat": 8.3047,
+      "lon": 18.8252333,
+      "osm_id": "node/5765362497",
+      "osm_tags": {
+        "name": "Ndolamnon",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngoh UBH 1",
+      "lat": 9.1986333,
+      "lon": 19.4786,
+      "osm_id": "node/5765362519",
+      "osm_tags": {
+        "name": "Ngoh UBH 1",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Guiba",
+      "lat": 9.0467907,
+      "lon": 18.8267378,
+      "osm_id": "node/5765362523",
+      "osm_tags": {
+        "name": "Guiba",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaga Menda 2",
+      "lat": 8.7416333,
+      "lon": 18.6525667,
+      "osm_id": "node/5765362527",
+      "osm_tags": {
+        "name": "Kaga Menda 2",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bria",
+      "lat": 8.2848,
+      "lon": 18.8142333,
+      "osm_id": "node/5765362538",
+      "osm_tags": {
+        "name": "Bria",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gorgosso",
+      "lat": 8.7361,
+      "lon": 18.6558667,
+      "osm_id": "node/5765362541",
+      "osm_tags": {
+        "name": "Gorgosso",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngori",
+      "lat": 8.3546576,
+      "lon": 18.8480984,
+      "osm_id": "node/5765362544",
+      "osm_tags": {
+        "name": "Ngori",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kamadja",
+      "lat": 8.7279667,
+      "lon": 18.6162167,
+      "osm_id": "node/5765362551",
+      "osm_tags": {
+        "name": "Kamadja",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kouri 2",
+      "lat": 8.7828333,
+      "lon": 18.7826667,
+      "osm_id": "node/5765362655",
+      "osm_tags": {
+        "name": "Kouri 2",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Paris Congo 2",
+      "lat": 8.82265,
+      "lon": 18.8807,
+      "osm_id": "node/5765362668",
+      "osm_tags": {
+        "name": "Paris Congo 2",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Hibita",
+      "lat": 9.1708333,
+      "lon": 18.6548333,
+      "osm_id": "node/5765362671",
+      "osm_tags": {
+        "name": "Hibita",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "B\u00e9mouli 2",
+      "lat": 8.7603333,
+      "lon": 18.7854,
+      "osm_id": "node/5765362672",
+      "osm_tags": {
+        "name": "B\u00e9mouli 2",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Moutogo",
+      "lat": 8.4849162,
+      "lon": 18.7509175,
+      "osm_id": "node/5766264653",
+      "osm_tags": {
+        "name": "Moutogo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mo\u00efblla",
+      "lat": 8.6593434,
+      "lon": 18.7985888,
+      "osm_id": "node/5772468884",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318296",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Moiblla",
+        "name": "Mo\u00efblla",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tagon",
+      "lat": 8.7070505,
+      "lon": 18.8216986,
+      "osm_id": "node/5772469168",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318298",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Tagon",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "K\u00e9rakono",
+      "lat": 8.7252976,
+      "lon": 18.7759378,
+      "osm_id": "node/5772469222",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1097505",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Kerakono;Karakouno",
+        "name": "K\u00e9rakono",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbata",
+      "lat": 8.8148619,
+      "lon": 18.7369051,
+      "osm_id": "node/5772469554",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318287",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Mbata",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kemkaba",
+      "lat": 8.782768,
+      "lon": 18.7512347,
+      "osm_id": "node/5772469561",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318290",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Kemkaba",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nadili village",
+      "lat": 8.267266,
+      "lon": 18.7239998,
+      "osm_id": "node/5798926218",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1101589",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Nadel\u00e9;Nadele;Nadelio;Nadeli;Nadili",
+        "name": "Nadili village",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngandaza",
+      "lat": 8.2471506,
+      "lon": 18.7295179,
+      "osm_id": "node/5798926241",
+      "osm_tags": {
+        "name": "Ngandaza",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Djangara",
+      "lat": 9.161901,
+      "lon": 20.2196517,
+      "osm_id": "node/5836066884",
+      "osm_tags": {
+        "name": "Djangara",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gatiguili",
+      "lat": 9.1569936,
+      "lon": 20.2066905,
+      "osm_id": "node/5836068082",
+      "osm_tags": {
+        "name": "Gatiguili",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Moustraye Dougous",
+      "lat": 9.1555333,
+      "lon": 20.2480833,
+      "osm_id": "node/5836068691",
+      "osm_tags": {
+        "name": "Moustraye Dougous",
+        "place": "hamlet",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kolkyan",
+      "lat": 9.132033,
+      "lon": 20.3373128,
+      "osm_id": "node/5836069530",
+      "osm_tags": {
+        "name": "Kolkyan",
+        "place": "village",
+        "source": "INSEED"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bissikibou 2",
+      "lat": 7.2116677,
+      "lon": 18.9012223,
+      "osm_id": "node/5931563541",
+      "osm_tags": {
+        "alt_name": "Biss\u00e9k\u00e9bou",
+        "name": "Bissikibou 2",
+        "place": "village",
+        "source:alt_name": "NGA",
+        "source:name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bissikibou 3",
+      "lat": 7.2065065,
+      "lon": 18.9071724,
+      "osm_id": "node/5931563542",
+      "osm_tags": {
+        "alt_name": "Biss\u00e9k\u00e9bou",
+        "name": "Bissikibou 3",
+        "place": "village",
+        "source:alt_name": "NGA",
+        "source:name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gondava",
+      "lat": 7.1692285,
+      "lon": 18.9546255,
+      "osm_id": "node/5931563556",
+      "osm_tags": {
+        "name": "Gondava",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ngoumourou 3",
+      "lat": 7.1609094,
+      "lon": 18.9656523,
+      "osm_id": "node/5931563568",
+      "osm_tags": {
+        "name": "Ngoumourou 3",
+        "place": "hamlet",
+        "source": "Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nana 3",
+      "lat": 7.1886823,
+      "lon": 18.9304698,
+      "osm_id": "node/5931563569",
+      "osm_tags": {
+        "name": "Nana 3",
+        "place": "village",
+        "source": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nana",
+      "lat": 7.2032053,
+      "lon": 18.9128283,
+      "osm_id": "node/5931563570",
+      "osm_tags": {
+        "alt_name": "Nana",
+        "alt_name_1": "Outa",
+        "name": "Nana",
+        "place": "village",
+        "source:alt_name": "NGA",
+        "source:alt_name_1": "UNICEF",
+        "source:name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Saimbakoa",
+      "lat": 7.1440228,
+      "lon": 18.9871591,
+      "osm_id": "node/5931563701",
+      "osm_tags": {
+        "name": "Saimbakoa",
+        "place": "village",
+        "source": "OCHA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boumbala 2",
+      "lat": 7.1388395,
+      "lon": 18.9934572,
+      "osm_id": "node/5931563702",
+      "osm_tags": {
+        "name": "Boumbala 2",
+        "place": "village",
+        "source": "OCHA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngouaka 1",
+      "lat": 7.0431547,
+      "lon": 19.126584,
+      "osm_id": "node/5931563782",
+      "osm_tags": {
+        "name": "Ngouaka 1",
+        "place": "village",
+        "source": "OCHA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngouaka 2",
+      "lat": 7.0494066,
+      "lon": 19.1190018,
+      "osm_id": "node/5931563783",
+      "osm_tags": {
+        "name": "Ngouaka 2",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gabera",
+      "lat": 7.0823669,
+      "lon": 19.0739461,
+      "osm_id": "node/5931563784",
+      "osm_tags": {
+        "name": "Gabera",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yalo",
+      "lat": 7.0305377,
+      "lon": 19.1827848,
+      "osm_id": "node/5931563810",
+      "osm_tags": {
+        "name": "Yalo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kidingouli",
+      "lat": 7.0497808,
+      "lon": 19.179694,
+      "osm_id": "node/5931563811",
+      "osm_tags": {
+        "name": "Kidingouli",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boubou 1",
+      "lat": 7.0136789,
+      "lon": 19.2344704,
+      "osm_id": "node/5933556117",
+      "osm_tags": {
+        "name": "Boubou 1",
+        "place": "village",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngounzende",
+      "lat": 7.0278172,
+      "lon": 19.3021372,
+      "osm_id": "node/5933556133",
+      "osm_tags": {
+        "name": "Ngounzende",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ouanga",
+      "lat": 7.0133243,
+      "lon": 19.7303287,
+      "osm_id": "node/5933556389",
+      "osm_tags": {
+        "name": "Ouanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sindi 2",
+      "lat": 7.0728145,
+      "lon": 19.2089652,
+      "osm_id": "node/5933734015",
+      "osm_tags": {
+        "name": "Sindi 2",
+        "place": "hamlet",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sindi 3",
+      "lat": 7.0680035,
+      "lon": 19.2194439,
+      "osm_id": "node/5933734041",
+      "osm_tags": {
+        "name": "Sindi 3",
+        "place": "hamlet",
+        "source": "UNICEF",
+        "source:date": "2012"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ouaki",
+      "lat": 7.5383645,
+      "lon": 18.6395152,
+      "osm_id": "node/5936330785",
+      "osm_tags": {
+        "name": "Ouaki",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Beltonou",
+      "lat": 7.5695733,
+      "lon": 18.6365678,
+      "osm_id": "node/5936330786",
+      "osm_tags": {
+        "alt_name": "Beltounou I",
+        "name": "Beltonou",
+        "place": "village",
+        "source:alt_name": "UNICEF",
+        "source:name": "MSF"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bilalou",
+      "lat": 7.4014375,
+      "lon": 18.728178,
+      "osm_id": "node/5936330793",
+      "osm_tags": {
+        "name": "Bilalou",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Farazara 2",
+      "lat": 7.3961241,
+      "lon": 18.7328056,
+      "osm_id": "node/5936330825",
+      "osm_tags": {
+        "alt_name": "Faranzala",
+        "alt_name_1": "Frazara",
+        "alt_name_2": "Farazala",
+        "name": "Farazara 2",
+        "place": "village",
+        "source:alt_name": "NGA",
+        "source:alt_name_1": "UNICEF",
+        "source:alt_name_2": "NGA",
+        "source:name": "UNICEF"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Meloupa",
+      "lat": 7.0529407,
+      "lon": 19.1075991,
+      "osm_id": "node/6251848556",
+      "osm_tags": {
+        "name": "Meloupa",
+        "place": "hamlet",
+        "source": "GNS;Bing"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yamballa",
+      "lat": 7.2306097,
+      "lon": 20.038496,
+      "osm_id": "node/6337336044",
+      "osm_tags": {
+        "name": "Yamballa",
+        "place": "village",
+        "source": "RRM"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaga-Nze",
+      "lat": 7.343744,
+      "lon": 20.1655841,
+      "osm_id": "node/6337336065",
+      "osm_tags": {
+        "name": "Kaga-Nze",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Balouba",
+      "lat": 7.4828884,
+      "lon": 20.1711973,
+      "osm_id": "node/6337336080",
+      "osm_tags": {
+        "name": "Balouba",
+        "place": "village",
+        "source": "RRM"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Niango",
+      "lat": 7.5731272,
+      "lon": 20.1768927,
+      "osm_id": "node/6337443141",
+      "osm_tags": {
+        "name": "Niango",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Niango 2",
+      "lat": 7.5815792,
+      "lon": 20.1829143,
+      "osm_id": "node/6337443142",
+      "osm_tags": {
+        "name": "Niango 2",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bamboulla",
+      "lat": 7.682461,
+      "lon": 20.2042753,
+      "osm_id": "node/6337443149",
+      "osm_tags": {
+        "name": "Bamboulla",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Vata",
+      "lat": 7.7008128,
+      "lon": 20.2013425,
+      "osm_id": "node/6337443158",
+      "osm_tags": {
+        "name": "Vata",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dangavo",
+      "lat": 7.8559062,
+      "lon": 20.2416196,
+      "osm_id": "node/6337443161",
+      "osm_tags": {
+        "name": "Dangavo",
+        "place": "village",
+        "source": "RRM"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bangoran",
+      "lat": 8.080296,
+      "lon": 20.343199,
+      "osm_id": "node/6337443172",
+      "osm_tags": {
+        "name": "Bangoran",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gbakolekpa",
+      "lat": 8.1036788,
+      "lon": 20.3569987,
+      "osm_id": "node/6337443183",
+      "osm_tags": {
+        "name": "Gbakolekpa",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Odigba",
+      "lat": 8.1270651,
+      "lon": 20.3713742,
+      "osm_id": "node/6337443997",
+      "osm_tags": {
+        "name": "Odigba",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kotissako",
+      "lat": 8.1470221,
+      "lon": 20.3904336,
+      "osm_id": "node/6337443998",
+      "osm_tags": {
+        "name": "Kotissako",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dakpa-Mindou",
+      "lat": 8.1685432,
+      "lon": 20.4174401,
+      "osm_id": "node/6337444021",
+      "osm_tags": {
+        "name": "Dakpa-Mindou",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngoussoua",
+      "lat": 8.1723012,
+      "lon": 20.4224055,
+      "osm_id": "node/6337444022",
+      "osm_tags": {
+        "name": "Ngoussoua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kovogomea",
+      "lat": 8.1888884,
+      "lon": 20.4768849,
+      "osm_id": "node/6337444026",
+      "osm_tags": {
+        "name": "Kovogomea",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kava",
+      "lat": 8.2017833,
+      "lon": 20.5280777,
+      "osm_id": "node/6337444035",
+      "osm_tags": {
+        "name": "Kava",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Meafondo",
+      "lat": 8.2029525,
+      "lon": 20.5349909,
+      "osm_id": "node/6337444043",
+      "osm_tags": {
+        "name": "Meafondo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bissingou 2",
+      "lat": 8.2555074,
+      "lon": 20.5703821,
+      "osm_id": "node/6337444054",
+      "osm_tags": {
+        "name": "Bissingou 2",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bissingou",
+      "lat": 8.2686174,
+      "lon": 20.5773611,
+      "osm_id": "node/6337444062",
+      "osm_tags": {
+        "name": "Bissingou",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Adoumindou",
+      "lat": 8.3582246,
+      "lon": 20.6003412,
+      "osm_id": "node/6337444075",
+      "osm_tags": {
+        "name": "Adoumindou",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Batelu",
+      "lat": 8.402992,
+      "lon": 20.6753676,
+      "osm_id": "node/6337444311",
+      "osm_tags": {
+        "name": "Batelu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Doum",
+      "lat": 9.0204339,
+      "lon": 20.7402647,
+      "osm_id": "node/6339928062",
+      "osm_tags": {
+        "name": "Doum",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "K\u00e9liba",
+      "lat": 9.076592,
+      "lon": 19.13547,
+      "osm_id": "node/7719662451",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10340318",
+        "GNS:modify_date": "2008-10-30",
+        "alt_name:fr": "Keliba",
+        "name": "K\u00e9liba",
+        "name:fr": "K\u00e9liba",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kouyako",
+      "lat": 9.063,
+      "lon": 19.1648,
+      "osm_id": "node/7719662452",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10340317",
+        "GNS:modify_date": "2008-10-30",
+        "name": "Kouyako",
+        "name:fr": "Kouyako",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kemgo",
+      "lat": 8.7153,
+      "lon": 18.9692,
+      "osm_id": "node/7719697420",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318291",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Kemgo",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bokalgu\u00e9",
+      "lat": 8.369722,
+      "lon": 18.878344,
+      "osm_id": "node/7719697424",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318349",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Bokalgue",
+        "name": "Bokalgu\u00e9",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Jingana",
+      "lat": 8.6491,
+      "lon": 18.9365,
+      "osm_id": "node/7719697435",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318294",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Jingana",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kourouar\u00e9",
+      "lat": 9.020269,
+      "lon": 18.895795,
+      "osm_id": "node/7719723555",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1098830",
+        "GNS:modify_date": "2008-10-29",
+        "alt_name": "Kourouare;Orouar\u00e9;Orouare;Orware",
+        "name": "Kourouar\u00e9",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gongo",
+      "lat": 9.027695,
+      "lon": 18.971935,
+      "osm_id": "node/7719723789",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1095504",
+        "GNS:modify_date": "2008-10-29",
+        "alt_name": "Bulumoda;Bouloumoda;Boulamada;Bouloumola",
+        "name": "Gongo",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dagigona",
+      "lat": 9.054072,
+      "lon": 19.213528,
+      "osm_id": "node/7719723813",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1092349",
+        "GNS:modify_date": "2008-10-30",
+        "alt_name:fr": "D\u00e9gui Gona;Degui Gona",
+        "name": "Dagigona",
+        "name:fr": "Dagigona",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kayengo",
+      "lat": 9.2013,
+      "lon": 19.1659,
+      "osm_id": "node/7719723869",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10340320",
+        "GNS:modify_date": "2008-10-30",
+        "name": "Kayengo",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "B\u00e9guigui",
+      "lat": 8.994772,
+      "lon": 18.931927,
+      "osm_id": "node/7719725229",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1090653",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Beguigui",
+        "name": "B\u00e9guigui",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "B\u00e9guid\u00e9",
+      "lat": 8.70243,
+      "lon": 18.817796,
+      "osm_id": "node/7719725233",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1090652",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Beguide",
+        "name": "B\u00e9guid\u00e9",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "B\u00e9dinga",
+      "lat": 8.6974,
+      "lon": 18.9682,
+      "osm_id": "node/7719725982",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1090586",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Bedinga",
+        "name": "B\u00e9dinga",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Doro",
+      "lat": 8.523442,
+      "lon": 18.953859,
+      "osm_id": "node/7719725994",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1093801",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Doro",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ma\u00ef\u00e9l\u00e9",
+      "lat": 8.675442,
+      "lon": 18.791683,
+      "osm_id": "node/7719726189",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1099728",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Maiele",
+        "name": "Ma\u00ef\u00e9l\u00e9",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dangadjaye",
+      "lat": 8.7142,
+      "lon": 18.9861,
+      "osm_id": "node/7719726190",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318292",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Dangadjaye",
+        "name:fr": "Dangadjaye",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Isako",
+      "lat": 8.438727,
+      "lon": 18.833042,
+      "osm_id": "node/7719726211",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318352",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Isako",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mamodjio",
+      "lat": 8.4001,
+      "lon": 18.8756,
+      "osm_id": "node/7719726212",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318350",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Mamodjio",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ma\u00efngara",
+      "lat": 8.683076,
+      "lon": 18.78512,
+      "osm_id": "node/7719726288",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1099800",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Maingara",
+        "name": "Ma\u00efngara",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ndingamba",
+      "lat": 8.5524,
+      "lon": 18.9601,
+      "osm_id": "node/7719726289",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318343",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Ndingamba",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ndoungo",
+      "lat": 9.0341,
+      "lon": 19.1372,
+      "osm_id": "node/7719726291",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10340316",
+        "GNS:modify_date": "2008-10-30",
+        "name": "Ndoungo",
+        "name:fr": "Ndoungo",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dandira",
+      "lat": 8.527615,
+      "lon": 18.957156,
+      "osm_id": "node/7719726388",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318345",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Dandira",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Takira",
+      "lat": 8.533,
+      "lon": 18.9594,
+      "osm_id": "node/7719726389",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318344",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Takira",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bourb\u00e9",
+      "lat": 8.5651,
+      "lon": 18.9776,
+      "osm_id": "node/7719726436",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318342",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Bourbe",
+        "name": "Bourb\u00e9",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ma\u00efkandjia",
+      "lat": 8.5305,
+      "lon": 18.6314,
+      "osm_id": "node/7719726437",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318340",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Maikandjia",
+        "name": "Ma\u00efkandjia",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dakono",
+      "lat": 8.5666,
+      "lon": 18.6034,
+      "osm_id": "node/7719726472",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1092374",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Dakono",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Morkouata",
+      "lat": 8.6456,
+      "lon": 18.9035,
+      "osm_id": "node/7719726490",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318295",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Morkouata",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Modkion",
+      "lat": 8.7135,
+      "lon": 18.7493,
+      "osm_id": "node/7719726493",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1100989",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Modkion",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ma\u00efmassa",
+      "lat": 8.801899,
+      "lon": 18.763942,
+      "osm_id": "node/7719726524",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318289",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Maimassa",
+        "name": "Ma\u00efmassa",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kira",
+      "lat": 8.8251,
+      "lon": 18.6116,
+      "osm_id": "node/7719726528",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318284",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Kira",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kemgo",
+      "lat": 8.680849,
+      "lon": 18.966484,
+      "osm_id": "node/7719726566",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1097466",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Kemgo",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Derss\u00e9",
+      "lat": 8.6727,
+      "lon": 18.7704,
+      "osm_id": "node/7719726572",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "10318297",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Dersse",
+        "name": "Derss\u00e9",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "K\u00e9mata",
+      "lat": 8.562856,
+      "lon": 18.652029,
+      "osm_id": "node/7719726602",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1097446",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Kemata",
+        "name": "K\u00e9mata",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kemkaba",
+      "lat": 8.816667,
+      "lon": 18.666667,
+      "osm_id": "node/7719726771",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1097471",
+        "GNS:modify_date": "2010-04-14",
+        "name": "Kemkaba",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Laposso",
+      "lat": 8.649,
+      "lon": 18.7776,
+      "osm_id": "node/7719727984",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1099159",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Laposso",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Guessangolo",
+      "lat": 8.5,
+      "lon": 18.7,
+      "osm_id": "node/7719728067",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:dsg_name": "populated place",
+        "GNS:id": "-1096020",
+        "GNS:modify_date": "2010-04-14",
+        "name": "Guessangolo",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Koudou",
+      "lat": 8.674,
+      "lon": 18.7779,
+      "osm_id": "node/7732109479",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1098390",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Koudou",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mologondjia",
+      "lat": 8.4366,
+      "lon": 18.9275,
+      "osm_id": "node/7732109492",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1101092",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Mologondjia",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gatamainda",
+      "lat": 8.7692819,
+      "lon": 19.4159961,
+      "osm_id": "node/8118669198",
+      "osm_tags": {
+        "name": "Gatamainda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bangoran 1",
+      "lat": 8.7544766,
+      "lon": 19.2924213,
+      "osm_id": "node/8118669199",
+      "osm_tags": {
+        "name": "Bangoran 1",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mialoutou",
+      "lat": 8.9013133,
+      "lon": 19.204013,
+      "osm_id": "node/8118679121",
+      "osm_tags": {
+        "name": "Mialoutou",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Golongoso",
+      "lat": 9.0055112,
+      "lon": 19.1449964,
+      "osm_id": "node/8126915260",
+      "osm_tags": {
+        "alt_name": "Golongosso",
+        "name": "Golongoso",
+        "place": "village",
+        "wikipedia": "en:Golongoso"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chari 1",
+      "lat": 8.7109453,
+      "lon": 19.1088456,
+      "osm_id": "node/8151621803",
+      "osm_tags": {
+        "name": "Chari 1",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Chari 2",
+      "lat": 8.7075145,
+      "lon": 19.1065818,
+      "osm_id": "node/8151621804",
+      "osm_tags": {
+        "name": "Chari 2",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Marinda",
+      "lat": 8.7855358,
+      "lon": 19.5727457,
+      "osm_id": "node/8152065892",
+      "osm_tags": {
+        "name": "Marinda",
+        "place": "village",
+        "wikidata": "Q22431060",
+        "wikipedia": "ceb:Marinda (suba sa Tunga-tungang Aprikanhong Republika)"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Sido",
+      "lat": 8.2359129,
+      "lon": 18.7142229,
+      "osm_id": "node/8303196981",
+      "osm_tags": {
+        "capital": "6",
+        "name": "Sido",
+        "note": "rank=0 + town car sous-prefecture",
+        "place": "town",
+        "rank": "0"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Belom \u0628\u064a\u0644\u0648\u0645",
+      "lat": 8.4444199,
+      "lon": 18.7563443,
+      "osm_id": "node/9155212204",
+      "osm_tags": {
+        "amenity": "refugee_site",
+        "name": "Belom \u0628\u064a\u0644\u0648\u0645",
+        "name:ar": "\u0628\u064a\u0644\u0648\u0645",
+        "name:de": "Belom",
+        "name:es": "Belom",
+        "name:fr": "Belom",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Diki",
+      "lat": 8.8032132,
+      "lon": 19.6591842,
+      "osm_id": "node/9645358444",
+      "osm_tags": {
+        "name": "Diki",
+        "place": "village",
+        "wikidata": "Q5276528",
+        "wikipedia": "en:Diki"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr K\u00e9ita",
+      "lat": 9.1969423,
+      "lon": 18.4984155,
+      "osm_id": "way/32080592",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1097381",
+        "GNS:modify_date": "2008-10-29",
+        "alt_name": "Bahr Keita;Bahr Doka;Bahr Ke\u00efta",
+        "boat": "no",
+        "intermittent": "no",
+        "name": "Bahr K\u00e9ita",
+        "source": "GNS",
+        "tidal": "no",
+        "waterway": "river",
+        "wikidata": "Q65129486",
+        "wikipedia": "fr:Bahr Ke\u00efta"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bamingui",
+      "lat": 8.3292463,
+      "lon": 19.1979259,
+      "osm_id": "way/32080738",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Bamingui",
+        "name:en": "Bamingui River",
+        "seasonal": "no",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bamingui",
+      "lat": 8.4754601,
+      "lon": 19.114311,
+      "osm_id": "way/79801680",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Bamingui",
+        "name:en": "Bamingui River",
+        "seasonal": "no",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chari",
+      "lat": 8.6146395,
+      "lon": 19.077854,
+      "osm_id": "way/79801689",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Chari",
+        "name:ar": "\u0646\u0647\u0631 \u0634\u0627\u0631\u064a",
+        "name:be": "\u0428\u0430\u0440\u044b",
+        "name:be-tarask": "\u0428\u0430\u0440\u044b",
+        "name:de": "Schari",
+        "name:en": "Chari River",
+        "name:es": "R\u00edo Chari",
+        "name:sr": "\u0428\u0430\u0440\u0438",
+        "name:uk": "\u0428\u0430\u0440\u0456",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gribingui",
+      "lat": 8.4788422,
+      "lon": 19.0545393,
+      "osm_id": "way/79801702",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Gribingui",
+        "name:en": "Gribingui",
+        "seasonal": "no",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr Aouk",
+      "lat": 9.0359907,
+      "lon": 19.6736068,
+      "osm_id": "way/79801708",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bahr Aouk",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Vassako",
+      "lat": 8.237163,
+      "lon": 19.4535249,
+      "osm_id": "way/79801738",
+      "osm_tags": {
+        "boat": "no",
+        "fixme": "more details",
+        "name": "Vassako",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bangoran",
+      "lat": 8.5378082,
+      "lon": 19.7778827,
+      "osm_id": "way/79801744",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bangoran",
+        "name:en": "Bangoran River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chari \u0634\u0627\u0631\u064a",
+      "lat": 9.0195535,
+      "lon": 18.6184654,
+      "osm_id": "way/79801747",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Chari \u0634\u0627\u0631\u064a",
+        "name:ar": "\u0646\u0647\u0631 \u0634\u0627\u0631\u064a",
+        "name:be": "\u0428\u0430\u0440\u044b",
+        "name:be-tarask": "\u0428\u0430\u0440\u044b",
+        "name:de": "Schari",
+        "name:en": "Chari River",
+        "name:es": "R\u00edo Chari",
+        "name:fr": "Chari",
+        "name:sr": "\u0428\u0430\u0440\u0438",
+        "name:uk": "\u0428\u0430\u0440\u0456",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr Aouk",
+      "lat": 8.8881184,
+      "lon": 18.9046709,
+      "osm_id": "way/79802104",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1338328",
+        "GNS:modify_date": "2008-10-10",
+        "boat": "no",
+        "name": "Bahr Aouk",
+        "waterway": "river",
+        "wikidata": "Q769856"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chari",
+      "lat": 8.7597197,
+      "lon": 19.0011402,
+      "osm_id": "way/79802383",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Chari",
+        "name:ar": "\u0646\u0647\u0631 \u0634\u0627\u0631\u064a",
+        "name:be": "\u0428\u0430\u0440\u044b",
+        "name:be-tarask": "\u0428\u0430\u0440\u044b",
+        "name:de": "Schari",
+        "name:en": "Chari River",
+        "name:es": "R\u00edo Chari",
+        "name:sr": "\u0428\u0430\u0440\u0438",
+        "name:uk": "\u0428\u0430\u0440\u0456",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "N\u00e9b\u00e9",
+      "lat": 9.118205,
+      "lon": 18.5350038,
+      "osm_id": "way/117837644",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1101821",
+        "GNS:modify_date": "2008-10-29",
+        "alt_name": "Nebe",
+        "name": "N\u00e9b\u00e9",
+        "note": "Seasonal river; villages alongside experience seasonal transmission of Guinea Worm as of April 2016.",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mya",
+      "lat": 9.1925052,
+      "lon": 19.2538949,
+      "osm_id": "way/117947893",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1101554",
+        "GNS:modify_date": "2010-04-14",
+        "alt_name": "Bahr Mia",
+        "name": "Mya",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "\u062a\u0634\u0627\u062f - \u062c\u0645\u0647\u0648\u0631\u064a\u0629 \u0623\u0641\u0631\u064a\u0642\u064a\u0627 \u0627\u0644\u0648\u0633\u0637\u0649",
+      "lat": 8.2593206,
+      "lon": 18.7837642,
+      "osm_id": "way/197251212",
+      "osm_tags": {
+        "admin_level": "2",
+        "boundary": "administrative",
+        "name": "\u062a\u0634\u0627\u062f - \u062c\u0645\u0647\u0648\u0631\u064a\u0629 \u0623\u0641\u0631\u064a\u0642\u064a\u0627 \u0627\u0644\u0648\u0633\u0637\u0649",
+        "name:ar": "\u062a\u0634\u0627\u062f - \u062c\u0645\u0647\u0648\u0631\u064a\u0629 \u0623\u0641\u0631\u064a\u0642\u064a\u0627 \u0627\u0644\u0648\u0633\u0637\u0649",
+        "name:de": "Tschad - Zentralafrikanische Republik",
+        "name:es": "Chad - Rep\u00fablica Centroafricana",
+        "name:pl": "Czad - Republika \u015arodkowoafryka\u0144ska",
+        "name:ur": "\u0686\u0627\u0688 - \u0648\u0633\u0637\u06cc \u0627\u0641\u0631\u06cc\u0642\u06cc \u062c\u0645\u06c1\u0648\u0631\u06cc\u06c1",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Tend\u00e9gu\u00e9",
+      "lat": 8.4003211,
+      "lon": 18.8127215,
+      "osm_id": "way/204892621",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1104696",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Tendegue",
+        "name": "Tend\u00e9gu\u00e9",
+        "source": "GNS",
+        "waterway": "stream",
+        "wikidata": "Q34964620"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gribingui",
+      "lat": 7.4619341,
+      "lon": 18.9991134,
+      "osm_id": "way/218586137",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Gribingui",
+        "name:en": "Gribingui",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mya",
+      "lat": 9.1725248,
+      "lon": 18.9702674,
+      "osm_id": "way/225239644",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1101554",
+        "GNS:modify_date": "2010-04-14",
+        "alt_name": "Bahr Mia",
+        "name": "Mya",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mya",
+      "lat": 9.1499811,
+      "lon": 18.7330794,
+      "osm_id": "way/227635110",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1101554",
+        "GNS:modify_date": "2010-04-14",
+        "alt_name": "Bahr Mia",
+        "name": "Mya",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gribingui",
+      "lat": 7.8610635,
+      "lon": 18.9808449,
+      "osm_id": "way/229474689",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Gribingui",
+        "name:en": "Gribingui",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gribingui",
+      "lat": 8.3174374,
+      "lon": 19.0229889,
+      "osm_id": "way/229475034",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Gribingui",
+        "name:en": "Gribingui",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bamingui",
+      "lat": 7.5312932,
+      "lon": 20.0449742,
+      "osm_id": "way/240751208",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "no",
+        "name": "Bamingui",
+        "name:en": "Bamingui River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bamingui",
+      "lat": 7.5179599,
+      "lon": 19.9571028,
+      "osm_id": "way/240751209",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bamingui",
+        "name:en": "Bamingui River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bamingui",
+      "lat": 7.5055593,
+      "lon": 19.8273449,
+      "osm_id": "way/240751213",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bamingui",
+        "name:en": "Bamingui River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bamingui",
+      "lat": 8.221995,
+      "lon": 19.2708041,
+      "osm_id": "way/240751214",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Bamingui",
+        "name:en": "Bamingui River",
+        "seasonal": "no",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bamingui",
+      "lat": 8.1098997,
+      "lon": 19.3427947,
+      "osm_id": "way/240751216",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Bamingui",
+        "name:en": "Bamingui River",
+        "seasonal": "no",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bamingui",
+      "lat": 7.5824681,
+      "lon": 20.153746,
+      "osm_id": "way/240751218",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "no",
+        "name": "Bamingui",
+        "name:en": "Bamingui River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bamingui",
+      "lat": 7.7908807,
+      "lon": 19.5160942,
+      "osm_id": "way/240751220",
+      "osm_tags": {
+        "admin_level": "4",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Bamingui",
+        "name:en": "Bamingui River",
+        "seasonal": "no",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+      "lat": 8.3541612,
+      "lon": 18.8661978,
+      "osm_id": "way/240751224",
+      "osm_tags": {
+        "admin_level": "2",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:ar": "\u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:fr": "Grande-Sido",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gribingui",
+      "lat": 8.0700074,
+      "lon": 19.0452931,
+      "osm_id": "way/240751225",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Gribingui",
+        "name:en": "Gribingui",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gribingui",
+      "lat": 8.2231345,
+      "lon": 19.0365043,
+      "osm_id": "way/240751226",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Gribingui",
+        "name:en": "Gribingui",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gribingui",
+      "lat": 7.7657356,
+      "lon": 18.9878573,
+      "osm_id": "way/240751227",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Gribingui",
+        "name:en": "Gribingui",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gribingui",
+      "lat": 8.1595998,
+      "lon": 19.0496304,
+      "osm_id": "way/240751228",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Gribingui",
+        "name:en": "Gribingui",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gribingui",
+      "lat": 7.9733691,
+      "lon": 19.0031843,
+      "osm_id": "way/240751229",
+      "osm_tags": {
+        "admin_level": "4",
+        "boundary": "administrative",
+        "name": "Gribingui",
+        "name:en": "Gribingui",
+        "seasonal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gribingui",
+      "lat": 7.6457834,
+      "lon": 18.9744368,
+      "osm_id": "way/240751230",
+      "osm_tags": {
+        "name": "Gribingui",
+        "name:en": "Gribingui",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bamingui",
+      "lat": 7.5703757,
+      "lon": 20.1257151,
+      "osm_id": "way/240751249",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "no",
+        "name": "Bamingui",
+        "name:en": "Bamingui River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+      "lat": 8.5508683,
+      "lon": 19.0413599,
+      "osm_id": "way/240768856",
+      "osm_tags": {
+        "admin_level": "2",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:ar": "\u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:fr": "Grande-Sido",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+      "lat": 8.4798994,
+      "lon": 18.9802939,
+      "osm_id": "way/240768866",
+      "osm_tags": {
+        "admin_level": "2",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:ar": "\u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:fr": "Grande-Sido",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+      "lat": 8.5222933,
+      "lon": 19.0173082,
+      "osm_id": "way/240768874",
+      "osm_tags": {
+        "admin_level": "2",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:ar": "\u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:fr": "Grande-Sido",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+      "lat": 8.5056627,
+      "lon": 18.9927094,
+      "osm_id": "way/240768881",
+      "osm_tags": {
+        "admin_level": "2",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:ar": "\u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:fr": "Grande-Sido",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+      "lat": 8.3809194,
+      "lon": 18.9030744,
+      "osm_id": "way/240768882",
+      "osm_tags": {
+        "admin_level": "2",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:ar": "\u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:fr": "Grande-Sido",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+      "lat": 8.4347183,
+      "lon": 18.9423083,
+      "osm_id": "way/240768883",
+      "osm_tags": {
+        "admin_level": "2",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Grande-Sido \u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:ar": "\u0633\u064a\u062f\u0648 \u0627\u0644\u0643\u0628\u064a\u0631",
+        "name:fr": "Grande-Sido",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Moyenne-Sido",
+      "lat": 8.2997046,
+      "lon": 18.7379201,
+      "osm_id": "way/240768886",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1349799",
+        "GNS:modify_date": "2008-10-10",
+        "intermittent": "yes",
+        "name": "Moyenne-Sido",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q22561042"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Koutou",
+      "lat": 8.3802164,
+      "lon": 18.7810768,
+      "osm_id": "way/240768887",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1098909",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Koutou",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr Aouk",
+      "lat": 9.0647681,
+      "lon": 19.8249181,
+      "osm_id": "way/240790598",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bahr Aouk",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr Aouk",
+      "lat": 9.0221304,
+      "lon": 19.3985953,
+      "osm_id": "way/240790599",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "no",
+        "name": "Bahr Aouk",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bangoran",
+      "lat": 8.7145724,
+      "lon": 19.1619115,
+      "osm_id": "way/240790601",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bangoran",
+        "name:en": "Bangoran River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bangoran",
+      "lat": 8.7084756,
+      "lon": 19.4405971,
+      "osm_id": "way/240790602",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bangoran",
+        "name:en": "Bangoran River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bangoran",
+      "lat": 8.6691943,
+      "lon": 19.5600527,
+      "osm_id": "way/240790604",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bangoran",
+        "name:en": "Bangoran River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bangoran",
+      "lat": 8.7476328,
+      "lon": 19.2776333,
+      "osm_id": "way/240790609",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "no",
+        "name": "Bangoran",
+        "name:en": "Bangoran River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bangoran",
+      "lat": 8.7509504,
+      "lon": 19.3764774,
+      "osm_id": "way/240790610",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "no",
+        "name": "Bangoran",
+        "name:en": "Bangoran River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bangoran",
+      "lat": 8.680976,
+      "lon": 19.5055542,
+      "osm_id": "way/240790611",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bangoran",
+        "name:en": "Bangoran River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr Aouk",
+      "lat": 9.1420853,
+      "lon": 20.1110524,
+      "osm_id": "way/240799993",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bahr Aouk",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr Aouk",
+      "lat": 9.0984635,
+      "lon": 19.9700818,
+      "osm_id": "way/240799994",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bahr Aouk",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr Aouk",
+      "lat": 9.1366229,
+      "lon": 20.2754138,
+      "osm_id": "way/240799995",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bahr Aouk",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr Aouk",
+      "lat": 9.2534937,
+      "lon": 20.5106405,
+      "osm_id": "way/240799997",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bahr Aouk",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr Aouk",
+      "lat": 9.1395092,
+      "lon": 20.4058084,
+      "osm_id": "way/240799998",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bahr Aouk",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Vassako ou Bangal\u00e9l\u00e9",
+      "lat": 8.1396266,
+      "lon": 18.9600511,
+      "osm_id": "way/248657285",
+      "osm_tags": {
+        "name": "Vassako ou Bangal\u00e9l\u00e9",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bamingui",
+      "lat": 8.4082975,
+      "lon": 19.1370856,
+      "osm_id": "way/248796107",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bamingui",
+        "name:en": "Bamingui River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bamingui",
+      "lat": 8.490335,
+      "lon": 19.0937007,
+      "osm_id": "way/248796108",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bamingui",
+        "name:en": "Bamingui River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bamingui",
+      "lat": 8.5608119,
+      "lon": 19.0725123,
+      "osm_id": "way/248796109",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bamingui",
+        "name:en": "Bamingui River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bangoran",
+      "lat": 8.3499235,
+      "lon": 20.0676647,
+      "osm_id": "way/318840914",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bangoran",
+        "name:en": "Bangoran River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "N\u00e9b\u00e9",
+      "lat": 9.0815194,
+      "lon": 18.6569516,
+      "osm_id": "way/421301167",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1101821",
+        "GNS:modify_date": "2008-10-29",
+        "alt_name": "Nebe",
+        "name": "N\u00e9b\u00e9",
+        "note": "Seasonal river; villages alongside experience seasonal transmission of Guinea Worm as of April 2016.",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Iri",
+      "lat": 9.4914811,
+      "lon": 19.2705962,
+      "osm_id": "way/481006076",
+      "osm_tags": {
+        "name": "Iri",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bangoran",
+      "lat": 8.1451058,
+      "lon": 20.3112491,
+      "osm_id": "way/846846233",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bangoran",
+        "name:en": "Bangoran River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bangoran",
+      "lat": 8.191497,
+      "lon": 20.2528811,
+      "osm_id": "way/846846234",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Bangoran",
+        "name:en": "Bangoran River",
+        "source": "bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mya",
+      "lat": 9.1576802,
+      "lon": 19.4062903,
+      "osm_id": "way/869159227",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1101554",
+        "GNS:modify_date": "2010-04-14",
+        "alt_name": "Bahr Mia",
+        "name": "Mya",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Gongoro",
+      "lat": 9.1182777,
+      "lon": 19.2332625,
+      "osm_id": "way/894971577",
+      "osm_tags": {
+        "GNS:dsg_code": "STMI",
+        "GNS:dsg_name": "intermittent stream",
+        "GNS:id": "-1095511",
+        "GNS:modify_date": "2008-10-30",
+        "intermittent": "yes",
+        "name": "Gongoro",
+        "name:fr": "Gongoro",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Arap",
+      "lat": 9.1962615,
+      "lon": 19.7684936,
+      "osm_id": "way/894971578",
+      "osm_tags": {
+        "GNS:dsg_code": "PND",
+        "GNS:dsg_name": "pond",
+        "GNS:id": "-1089484",
+        "GNS:modify_date": "2009-11-24",
+        "intermittent": "yes",
+        "name": "Arap",
+        "name:fr": "Arap",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Baouda",
+      "lat": 9.3035778,
+      "lon": 20.0855505,
+      "osm_id": "way/894971597",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1090294",
+        "GNS:modify_date": "2009-11-13",
+        "alt_name:fr": "Bahr Baouda;Bauda",
+        "name": "Baouda",
+        "name:fr": "Baouda",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q32446905"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "B\u00e9s\u00e9",
+      "lat": 9.1889095,
+      "lon": 19.5643329,
+      "osm_id": "way/894971605",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1090978",
+        "GNS:modify_date": "2008-10-30",
+        "alt_name": "Bese;B\u00e9ss\u00e9;Besse;Bahr B\u00e9ch\u00e9;Bahr Beche",
+        "name": "B\u00e9s\u00e9",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q32568106"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mya",
+      "lat": 9.3940529,
+      "lon": 19.6942162,
+      "osm_id": "way/894971606",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1101554",
+        "GNS:modify_date": "2010-04-14",
+        "alt_name": "Bahr Mia",
+        "name": "Mya",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Mare de Gongo",
+      "lat": 9.1566079,
+      "lon": 18.9109468,
+      "osm_id": "way/894971609",
+      "osm_tags": {
+        "GNS:dsg_code": "LK",
+        "GNS:dsg_name": "lake",
+        "GNS:id": "10338276",
+        "GNS:modify_date": "2008-10-29",
+        "intermittent": "yes",
+        "name": "Mare de Gongo",
+        "natural": "water",
+        "source": "GNS",
+        "water": "lake"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Man Moul",
+      "lat": 8.7693037,
+      "lon": 18.8285172,
+      "osm_id": "way/990897537",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1101315",
+        "GNS:modify_date": "2008-10-10",
+        "name": "Man Moul",
+        "source": "GNS",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Bahr Keita",
+      "lat": 9.1870209,
+      "lon": 18.5491869,
+      "osm_id": "way/1007077365",
+      "osm_tags": {
+        "name": "Bahr Keita",
+        "natural": "water",
+        "water": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bahr Aouk",
+      "lat": 8.9841388,
+      "lon": 19.0828415,
+      "osm_id": "way/1047941225",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1338328",
+        "GNS:modify_date": "2008-10-10",
+        "boat": "no",
+        "intermittent": "no",
+        "name": "Bahr Aouk",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Moyenne-Sido",
+      "lat": 8.2296768,
+      "lon": 18.5785554,
+      "osm_id": "way/1224538447",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1349799",
+        "GNS:modify_date": "2008-10-10",
+        "intermittent": "yes",
+        "name": "Moyenne-Sido",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q22561042"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bourou",
+      "lat": 8.6260847,
+      "lon": 18.5578442,
+      "osm_id": "way/1275704773",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:dsg_name": "stream",
+        "GNS:id": "-1091960",
+        "GNS:modify_date": "2008-10-10",
+        "alt_name": "Buru;Bourgou;Bourzo",
+        "name": "Bourou",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q32526290"
+      }
+    }
+  ]
+}

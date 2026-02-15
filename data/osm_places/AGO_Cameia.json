@@ -1,0 +1,2953 @@
+{
+  "park_id": "AGO_Cameia",
+  "downloaded_at": "2026-02-15T08:46:26.008531+00:00",
+  "buffer_km": 50,
+  "place_count": 226,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Cazombo",
+      "lat": -11.8981934,
+      "lon": 22.9061022,
+      "osm_id": "node/561106241",
+      "osm_tags": {
+        "is_in": "Angola",
+        "name": "Cazombo",
+        "name:el": "\u039a\u03b1\u03b6\u03cc\u03bc\u03c0\u03bf",
+        "place": "town",
+        "wikidata": "Q17122629"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lucusse",
+      "lat": -12.5252945,
+      "lon": 20.8192253,
+      "osm_id": "node/668910420",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:id": "-2866519",
+        "alt_name": "Lukuzi",
+        "is_in": "Angola",
+        "name": "Lucusse",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Luacano",
+      "lat": -11.2110832,
+      "lon": 21.6536109,
+      "osm_id": "node/1718720844",
+      "osm_tags": {
+        "name": "Luacano",
+        "place": "town",
+        "wikidata": "Q1620686",
+        "wikipedia": "pt:Luacano"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Malari",
+      "lat": -11.4886128,
+      "lon": 22.8430409,
+      "osm_id": "node/2051843166",
+      "osm_tags": {
+        "name": "Malari",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Nana Candundo",
+      "lat": -11.5186585,
+      "lon": 23.0211941,
+      "osm_id": "node/2051843167",
+      "osm_tags": {
+        "alt_name": "Nhacandundo-Cavungo",
+        "name": "Nana Candundo",
+        "place": "town",
+        "wikidata": "Q10314036"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lumbala Caquengue",
+      "lat": -12.6412937,
+      "lon": 22.5872144,
+      "osm_id": "node/2052643522",
+      "osm_tags": {
+        "alt_name": "Lumbala-Kakengue",
+        "name": "Lumbala Caquengue",
+        "place": "village",
+        "wikidata": "Q10320951"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lago Dilolo",
+      "lat": -11.503205,
+      "lon": 22.0156915,
+      "osm_id": "node/2137122939",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:id": "-2865711",
+        "alt_name": "Dil\u00f4lo;Dilolu",
+        "name": "Lago Dilolo",
+        "place": "village",
+        "source": "GNS",
+        "wikidata": "Q10315591"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Funete",
+      "lat": -11.4944064,
+      "lon": 21.0131676,
+      "osm_id": "node/2182323281",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:id": "11105273",
+        "name": "Funete",
+        "place": "hamlet",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lumeje",
+      "lat": -11.5599107,
+      "lon": 20.7779668,
+      "osm_id": "node/2182323289",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:id": "-2866786",
+        "alt_name": "Lumege;Cameia",
+        "name": "Lumeje",
+        "place": "village",
+        "source": "GNS",
+        "wikidata": "Q3840597"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sautata",
+      "lat": -11.2902184,
+      "lon": 20.3997614,
+      "osm_id": "node/2186540774",
+      "osm_tags": {
+        "GNS:dsg_code": "PPL",
+        "GNS:id": "11101526",
+        "alt_name": "Camanongue",
+        "name": "Sautata",
+        "place": "village",
+        "source": "GNS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Samah\u00edna",
+      "lat": -11.0817174,
+      "lon": 20.3242305,
+      "osm_id": "node/3023133378",
+      "osm_tags": {
+        "name": "Samah\u00edna",
+        "place": "village",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cavuma",
+      "lat": -11.0265374,
+      "lon": 20.6391421,
+      "osm_id": "node/3033619229",
+      "osm_tags": {
+        "name": "Cavuma",
+        "place": "village",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Cazaje",
+      "lat": -11.0676768,
+      "lon": 20.7024415,
+      "osm_id": "node/3033637776",
+      "osm_tags": {
+        "GNS:id": "-2861970",
+        "alt_name": "Cazage; Kazagi; Cazaji",
+        "name": "Cazaje",
+        "place": "village",
+        "source:name": "http://maps.lib.utexas.edu/maps/onc/txu-pclmaps-oclc-8322829_n_4.jpg"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sagimbo",
+      "lat": -11.0714712,
+      "lon": 20.6315169,
+      "osm_id": "node/3033637824",
+      "osm_tags": {
+        "name": "Sagimbo",
+        "place": "village",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sandando",
+      "lat": -11.6599385,
+      "lon": 20.6940901,
+      "osm_id": "node/7443296964",
+      "osm_tags": {
+        "name": "Sandando",
+        "place": "village",
+        "source": "http://maps.lib.utexas.edu/maps/onc/txu-pclmaps-oclc-8322829_n_4.jpg"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Samicano",
+      "lat": -11.2950002,
+      "lon": 22.52892,
+      "osm_id": "node/9631684551",
+      "osm_tags": {
+        "name": "Samicano",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Caxita",
+      "lat": -11.1966446,
+      "lon": 22.4989334,
+      "osm_id": "node/9631684552",
+      "osm_tags": {
+        "name": "Caxita",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Massibi",
+      "lat": -11.0997405,
+      "lon": 22.676934,
+      "osm_id": "node/9631684553",
+      "osm_tags": {
+        "alt_name": "Maxivi",
+        "name": "Massibi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Samacai",
+      "lat": -12.8720397,
+      "lon": 22.8029101,
+      "osm_id": "node/9631903101",
+      "osm_tags": {
+        "name": "Samacai",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Chinde",
+      "lat": -12.7019871,
+      "lon": 22.8610521,
+      "osm_id": "node/9631903347",
+      "osm_tags": {
+        "name": "Chinde",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lunache",
+      "lat": -12.1615314,
+      "lon": 22.7221782,
+      "osm_id": "node/9631953963",
+      "osm_tags": {
+        "name": "Lunache",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Curendende",
+      "lat": -11.8390333,
+      "lon": 22.2993343,
+      "osm_id": "node/9633504093",
+      "osm_tags": {
+        "name": "Curendende",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Titima",
+      "lat": -11.6144917,
+      "lon": 21.5524885,
+      "osm_id": "node/9633594845",
+      "osm_tags": {
+        "name": "Titima",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mucova",
+      "lat": -11.7781342,
+      "lon": 21.8537671,
+      "osm_id": "node/9633595066",
+      "osm_tags": {
+        "name": "Mucova",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Cassai-Gare",
+      "lat": -11.5103033,
+      "lon": 20.9513858,
+      "osm_id": "node/9633825729",
+      "osm_tags": {
+        "name": "Cassai-Gare",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Camacuze",
+      "lat": -11.6070774,
+      "lon": 20.617698,
+      "osm_id": "node/9633861172",
+      "osm_tags": {
+        "name": "Camacuze",
+        "place": "hamlet",
+        "source": "http://maps.lib.utexas.edu/maps/onc/txu-pclmaps-oclc-8322829_n_4.jpg"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Forte da Cameia Sudoeste",
+      "lat": -11.7053259,
+      "lon": 20.8077963,
+      "osm_id": "node/9633861190",
+      "osm_tags": {
+        "name": "Forte da Cameia Sudoeste",
+        "place": "hamlet",
+        "source": "http://maps.lib.utexas.edu/maps/onc/txu-pclmaps-oclc-8322829_n_4.jpg"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Forte da Cameia",
+      "lat": -11.6868021,
+      "lon": 20.849585,
+      "osm_id": "node/9633861365",
+      "osm_tags": {
+        "name": "Forte da Cameia",
+        "place": "hamlet",
+        "source": "http://maps.lib.utexas.edu/maps/onc/txu-pclmaps-oclc-8322829_n_4.jpg"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Gando",
+      "lat": -11.7557001,
+      "lon": 20.3439448,
+      "osm_id": "node/9633927708",
+      "osm_tags": {
+        "name": "Gando",
+        "place": "hamlet",
+        "source:name": "http://maps.lib.utexas.edu/maps/onc/txu-pclmaps-oclc-8322829_n_4.jpg"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "L\u00e9ua",
+      "lat": -11.6542475,
+      "lon": 20.4442454,
+      "osm_id": "node/9633927998",
+      "osm_tags": {
+        "name": "L\u00e9ua",
+        "place": "town",
+        "wikidata": "Q1620853",
+        "wikipedia": "pt:L\u00e9ua"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "B\u00e9u",
+      "lat": -12.1024163,
+      "lon": 20.6398454,
+      "osm_id": "node/9633958188",
+      "osm_tags": {
+        "name": "B\u00e9u",
+        "place": "hamlet",
+        "source:name": "http://maps.lib.utexas.edu/maps/onc/txu-pclmaps-oclc-8322829_n_4.jpg"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Muquele",
+      "lat": -11.9190377,
+      "lon": 20.4398022,
+      "osm_id": "node/9633958229",
+      "osm_tags": {
+        "name": "Muquele",
+        "place": "hamlet",
+        "source:name": "http://maps.lib.utexas.edu/maps/onc/txu-pclmaps-oclc-8322829_n_4.jpg"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mulonguesse",
+      "lat": -12.490102,
+      "lon": 20.7084593,
+      "osm_id": "node/9634059851",
+      "osm_tags": {
+        "name": "Mulonguesse",
+        "place": "hamlet",
+        "source:name": "http://maps.lib.utexas.edu/maps/onc/txu-pclmaps-oclc-8322829_n_4.jpg"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lungue",
+      "lat": -12.7555791,
+      "lon": 20.7296708,
+      "osm_id": "node/9634197474",
+      "osm_tags": {
+        "name": "Lungue",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lu\u00e1teche",
+      "lat": -11.4426162,
+      "lon": 20.5173306,
+      "osm_id": "node/9645964598",
+      "osm_tags": {
+        "name": "Lu\u00e1teche",
+        "place": "hamlet",
+        "source": "http://maps.lib.utexas.edu/maps/onc/txu-pclmaps-oclc-8322829_n_4.jpg"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lungamanga",
+      "lat": -12.1090279,
+      "lon": 20.4077909,
+      "osm_id": "node/11126804015",
+      "osm_tags": {
+        "name": "Lungamanga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Praia",
+      "lat": -12.1822017,
+      "lon": 20.5415286,
+      "osm_id": "node/11126807817",
+      "osm_tags": {
+        "name": "Praia",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kamba",
+      "lat": -12.2000502,
+      "lon": 20.5528744,
+      "osm_id": "node/11126807912",
+      "osm_tags": {
+        "name": "Kamba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sachicondo",
+      "lat": -11.5457694,
+      "lon": 20.4780223,
+      "osm_id": "node/11174922038",
+      "osm_tags": {
+        "alt_name": "Satchicondo",
+        "name": "Sachicondo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nunes",
+      "lat": -12.1026962,
+      "lon": 20.3953309,
+      "osm_id": "node/11407376170",
+      "osm_tags": {
+        "name": "Nunes",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Canagi",
+      "lat": -12.2285243,
+      "lon": 20.3741814,
+      "osm_id": "node/11407391372",
+      "osm_tags": {
+        "name": "Canagi",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kamawe",
+      "lat": -12.1916544,
+      "lon": 20.5239774,
+      "osm_id": "node/11435365473",
+      "osm_tags": {
+        "name": "Kamawe",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kassumbi",
+      "lat": -12.2181359,
+      "lon": 20.4499239,
+      "osm_id": "node/11435365672",
+      "osm_tags": {
+        "name": "Kassumbi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Semi\u00e3o",
+      "lat": -12.1896816,
+      "lon": 20.5321089,
+      "osm_id": "node/11435366572",
+      "osm_tags": {
+        "name": "Semi\u00e3o",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nhamupenda",
+      "lat": -12.1597217,
+      "lon": 20.6402178,
+      "osm_id": "node/11595477069",
+      "osm_tags": {
+        "name": "Nhamupenda",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Kamwimba",
+      "lat": -12.097149,
+      "lon": 20.3872323,
+      "osm_id": "node/11644976869",
+      "osm_tags": {
+        "name": "Kamwimba",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Seque",
+      "lat": -12.4790632,
+      "lon": 22.9905794,
+      "osm_id": "node/12085227072",
+      "osm_tags": {
+        "name": "Seque",
+        "name:source": "geonames.nga.mil",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Muchica",
+      "lat": -12.0452223,
+      "lon": 20.8656389,
+      "osm_id": "node/12522758198",
+      "osm_tags": {
+        "name": "Muchica",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Nacavungo",
+      "lat": -11.5371793,
+      "lon": 20.4778075,
+      "osm_id": "node/12610644985",
+      "osm_tags": {
+        "alt_name": "Nhacavungo",
+        "name": "Nacavungo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Caliata",
+      "lat": -11.532433,
+      "lon": 20.5973697,
+      "osm_id": "node/12610650974",
+      "osm_tags": {
+        "name": "Caliata",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ngongo",
+      "lat": -11.6275868,
+      "lon": 20.6604686,
+      "osm_id": "node/12610650975",
+      "osm_tags": {
+        "name": "Ngongo",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sandando Gare",
+      "lat": -11.6005756,
+      "lon": 20.6300121,
+      "osm_id": "node/12610650976",
+      "osm_tags": {
+        "name": "Sandando Gare",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Saussaqui",
+      "lat": -11.5567415,
+      "lon": 20.6251359,
+      "osm_id": "node/12610650977",
+      "osm_tags": {
+        "name": "Saussaqui",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ngundungo",
+      "lat": -11.543242,
+      "lon": 20.6540608,
+      "osm_id": "node/12610650978",
+      "osm_tags": {
+        "name": "Ngundungo",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Catombola",
+      "lat": -11.5560872,
+      "lon": 20.6900293,
+      "osm_id": "node/12610650979",
+      "osm_tags": {
+        "alt_name": "Calomboca",
+        "name": "Catombola",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Samussamba Novo",
+      "lat": -11.6234542,
+      "lon": 20.7733762,
+      "osm_id": "node/12610650980",
+      "osm_tags": {
+        "name": "Samussamba Novo",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Samussamba Velho",
+      "lat": -11.6149315,
+      "lon": 20.7587099,
+      "osm_id": "node/12610650981",
+      "osm_tags": {
+        "name": "Samussamba Velho",
+        "place": "village",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Cameia",
+      "lat": -11.6029508,
+      "lon": 20.7351065,
+      "osm_id": "node/12610650982",
+      "osm_tags": {
+        "alt_name": "Cambuta",
+        "name": "Cameia",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Passagem de Nivel",
+      "lat": -11.5646118,
+      "lon": 20.7294041,
+      "osm_id": "node/12610650989",
+      "osm_tags": {
+        "name": "Passagem de Nivel",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Cau\u00edui",
+      "lat": -11.4523499,
+      "lon": 20.7490754,
+      "osm_id": "node/12610668369",
+      "osm_tags": {
+        "name": "Cau\u00edui",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dege",
+      "lat": -11.3714447,
+      "lon": 20.9637594,
+      "osm_id": "node/12610668376",
+      "osm_tags": {
+        "name": "Dege",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Muacavula",
+      "lat": -11.5353449,
+      "lon": 20.7345754,
+      "osm_id": "node/12610668379",
+      "osm_tags": {
+        "name": "Muacavula",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Iabia",
+      "lat": -11.5080173,
+      "lon": 20.7600188,
+      "osm_id": "node/12610668380",
+      "osm_tags": {
+        "name": "Iabia",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Luele",
+      "lat": -11.5238024,
+      "lon": 20.810498,
+      "osm_id": "node/12610668381",
+      "osm_tags": {
+        "name": "Luele",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Cassuamo",
+      "lat": -11.5138678,
+      "lon": 20.9170622,
+      "osm_id": "node/12610668388",
+      "osm_tags": {
+        "name": "Cassuamo",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Camatchipo",
+      "lat": -11.4622919,
+      "lon": 21.0912985,
+      "osm_id": "node/12610674474",
+      "osm_tags": {
+        "name": "Camatchipo",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Cassombo",
+      "lat": -11.4519346,
+      "lon": 21.0641867,
+      "osm_id": "node/12610680257",
+      "osm_tags": {
+        "name": "Cassombo",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Samafuanda",
+      "lat": -11.5433288,
+      "lon": 20.5502701,
+      "osm_id": "node/12610680621",
+      "osm_tags": {
+        "name": "Samafuanda",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sauta",
+      "lat": -11.5381884,
+      "lon": 20.5009603,
+      "osm_id": "node/12610680622",
+      "osm_tags": {
+        "name": "Sauta",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Caluena",
+      "lat": -11.3551252,
+      "lon": 21.1729503,
+      "osm_id": "node/12610691002",
+      "osm_tags": {
+        "name": "Caluena",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbinda",
+      "lat": -11.3223046,
+      "lon": 21.2287617,
+      "osm_id": "node/12610691011",
+      "osm_tags": {
+        "name": "Mbinda",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Saulombo",
+      "lat": -11.3462525,
+      "lon": 21.2743163,
+      "osm_id": "node/12610691016",
+      "osm_tags": {
+        "alt_name": "Calomba;Calamba",
+        "name": "Saulombo",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tchissombo",
+      "lat": -11.4404254,
+      "lon": 20.7521063,
+      "osm_id": "node/12610691022",
+      "osm_tags": {
+        "name": "Tchissombo",
+        "place": "village",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Titima",
+      "lat": -11.5174212,
+      "lon": 20.8610094,
+      "osm_id": "node/12610691030",
+      "osm_tags": {
+        "name": "Titima",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tchimbongue",
+      "lat": -11.5731282,
+      "lon": 20.7342213,
+      "osm_id": "node/12610698901",
+      "osm_tags": {
+        "name": "Tchimbongue",
+        "place": "village",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Luvunga",
+      "lat": -11.7432447,
+      "lon": 20.8889848,
+      "osm_id": "node/12644211791",
+      "osm_tags": {
+        "name": "Luvunga",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Niatchihungo",
+      "lat": -11.7126729,
+      "lon": 20.9062636,
+      "osm_id": "node/12644211797",
+      "osm_tags": {
+        "alt_name": "Tchicanga",
+        "name": "Niatchihungo",
+        "place": "village",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tchindela",
+      "lat": -11.5460986,
+      "lon": 20.4423916,
+      "osm_id": "node/12644246943",
+      "osm_tags": {
+        "name": "Tchindela",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tchinganga-Mois\u00e9s",
+      "lat": -11.647697,
+      "lon": 20.3665924,
+      "osm_id": "node/12644247074",
+      "osm_tags": {
+        "name": "Tchinganga-Mois\u00e9s",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tchinganga-Samateu",
+      "lat": -11.6697765,
+      "lon": 20.3713755,
+      "osm_id": "node/12644247075",
+      "osm_tags": {
+        "name": "Tchinganga-Samateu",
+        "place": "village",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tchilundo",
+      "lat": -11.7619679,
+      "lon": 20.3951579,
+      "osm_id": "node/12644247083",
+      "osm_tags": {
+        "name": "Tchilundo",
+        "place": "village",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tchimbombombo",
+      "lat": -11.6355811,
+      "lon": 20.8387202,
+      "osm_id": "node/12644263305",
+      "osm_tags": {
+        "name": "Tchimbombombo",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sauazumba",
+      "lat": -11.6209689,
+      "lon": 20.8247808,
+      "osm_id": "node/12644263306",
+      "osm_tags": {
+        "name": "Sauazumba",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Sacaluaco",
+      "lat": -11.1048945,
+      "lon": 20.4394251,
+      "osm_id": "node/12646653983",
+      "osm_tags": {
+        "name": "Sacaluaco",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngua",
+      "lat": -11.0936135,
+      "lon": 20.4989755,
+      "osm_id": "node/12646653995",
+      "osm_tags": {
+        "name": "Ngua",
+        "place": "village",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Txiongo",
+      "lat": -12.2467938,
+      "lon": 21.0503197,
+      "osm_id": "node/12830612641",
+      "osm_tags": {
+        "alt_name": "Chicambo",
+        "name": "Txiongo",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ndala",
+      "lat": -12.40151,
+      "lon": 21.0587928,
+      "osm_id": "node/12830612738",
+      "osm_tags": {
+        "alt_name": "Dala",
+        "name": "Ndala",
+        "place": "hamlet",
+        "source:name": "geonames.nga.mil"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lulua",
+      "lat": -10.8540602,
+      "lon": 22.9683872,
+      "osm_id": "way/10925464",
+      "osm_tags": {
+        "alt_name": "Luluwa",
+        "boat": "no",
+        "name": "Lulua",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -12.1320914,
+      "lon": 22.6756641,
+      "osm_id": "way/31518621",
+      "osm_tags": {
+        "alt_name": "Zambesi",
+        "alt_name:br": "Ar Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:ru": "\u0417\u0430\u043c\u0431\u0435\u0437\u0438",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lungu\u00e9-Bungo",
+      "lat": -12.8270103,
+      "lon": 21.0927982,
+      "osm_id": "way/44125560",
+      "osm_tags": {
+        "alt_name": "Lungwevungu",
+        "boat": "no",
+        "name": "Lungu\u00e9-Bungo",
+        "name:en": "Lungwebungu",
+        "name:pt": "Lungu\u00e9-Bungo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lungu\u00e9-Bungo",
+      "lat": -12.7374019,
+      "lon": 20.7378781,
+      "osm_id": "way/44125580",
+      "osm_tags": {
+        "alt_name": "Lungwevungu",
+        "boat": "no",
+        "name": "Lungu\u00e9-Bungo",
+        "name:en": "Lungwebungu",
+        "name:pt": "Lungu\u00e9-Bungo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lungu\u00e9-Bungo",
+      "lat": -12.6597484,
+      "lon": 20.3877318,
+      "osm_id": "way/44125585",
+      "osm_tags": {
+        "alt_name": "Lungwevungu",
+        "boat": "no",
+        "name": "Lungu\u00e9-Bungo",
+        "name:en": "Lungwebungu",
+        "name:pt": "Lungu\u00e9-Bungo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chifumage",
+      "lat": -11.6374197,
+      "lon": 21.9642706,
+      "osm_id": "way/44165479",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Chifumage",
+        "name:en": "Chifumage River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Longonho",
+      "lat": -12.5519511,
+      "lon": 22.4650706,
+      "osm_id": "way/44169402",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866136",
+        "alt_name": "Rio Lungonha;Rio Luangage;Rio Lungoje;Rio Lungoge;Lumgonyo",
+        "boat": "no",
+        "name": "Longonho",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q21407213"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luena",
+      "lat": -12.4577842,
+      "lon": 22.4337255,
+      "osm_id": "way/44169501",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Luena",
+        "name:en": "Luena River",
+        "name:pt": "Rio Luena",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luena",
+      "lat": -12.4067907,
+      "lon": 22.2455835,
+      "osm_id": "way/44169532",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Luena",
+        "name:en": "Luena River",
+        "name:pt": "Rio Luena",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -11.8198786,
+      "lon": 22.993564,
+      "osm_id": "way/123449889",
+      "osm_tags": {
+        "alt_name:br": "Ar Zambezi",
+        "int_name": "Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Cassai",
+      "lat": -11.0201285,
+      "lon": 21.6315382,
+      "osm_id": "way/159765537",
+      "osm_tags": {
+        "name": "Cassai",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chifumage",
+      "lat": -12.1240463,
+      "lon": 22.4465189,
+      "osm_id": "way/159799018",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Chifumage",
+        "name:en": "Chifumage River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Cassai",
+      "lat": -11.274138,
+      "lon": 21.3237883,
+      "osm_id": "way/159801284",
+      "osm_tags": {
+        "name": "Cassai",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Cassai",
+      "lat": -11.433899,
+      "lon": 20.965873,
+      "osm_id": "way/159802419",
+      "osm_tags": {
+        "name": "Cassai",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Cassai",
+      "lat": -11.2678326,
+      "lon": 20.3393505,
+      "osm_id": "way/159805084",
+      "osm_tags": {
+        "name": "Cassai",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Cassai",
+      "lat": -11.4113758,
+      "lon": 20.6652751,
+      "osm_id": "way/159805086",
+      "osm_tags": {
+        "name": "Cassai",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwawu",
+      "lat": -10.7320476,
+      "lon": 22.250575,
+      "osm_id": "way/159813487",
+      "osm_tags": {
+        "admin_level": "2",
+        "attribution": "US Dept. of State Office of the Geographer",
+        "border_type": "nation",
+        "boundary": "administrative",
+        "name": "Lwawu",
+        "source": "Large Scale International Boundary (US DoS/INR/GGI-07/2015)",
+        "source:date": "2015-07",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lulua",
+      "lat": -10.9153416,
+      "lon": 23.189409,
+      "osm_id": "way/160359197",
+      "osm_tags": {
+        "alt_name": "Luluwa",
+        "name": "Lulua",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lulua",
+      "lat": -10.788664,
+      "lon": 22.8711124,
+      "osm_id": "way/160449036",
+      "osm_tags": {
+        "alt_name": "Luluwa",
+        "boat": "no",
+        "name": "Lulua",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -12.8268332,
+      "lon": 22.6806259,
+      "osm_id": "way/194677075",
+      "osm_tags": {
+        "alt_name": "Zambesi",
+        "alt_name:br": "Ar Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:ru": "\u0417\u0430\u043c\u0431\u0435\u0437\u0438",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luena",
+      "lat": -12.3873337,
+      "lon": 22.1042647,
+      "osm_id": "way/202976017",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Luena",
+        "name:en": "Luena River",
+        "name:pt": "Rio Luena",
+        "source": "Bing LoRes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luena",
+      "lat": -12.3298957,
+      "lon": 21.9361738,
+      "osm_id": "way/202976019",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Luena",
+        "name:en": "Luena River",
+        "name:pt": "Rio Luena",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luena",
+      "lat": -12.2460833,
+      "lon": 21.5047582,
+      "osm_id": "way/202976020",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Luena",
+        "name:en": "Luena River",
+        "name:pt": "Rio Luena",
+        "source": "Bing LoRes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lagoa Calundo",
+      "lat": -11.7193383,
+      "lon": 20.80135,
+      "osm_id": "way/202984275",
+      "osm_tags": {
+        "GNS:dsg_code": "LK",
+        "GNS:id": "-2859927",
+        "alt_name": "Lagoa Cameia",
+        "name": "Lagoa Calundo",
+        "natural": "water",
+        "source": "GNS",
+        "wikidata": "Q21407773"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luena",
+      "lat": -11.9982909,
+      "lon": 20.7425898,
+      "osm_id": "way/202984280",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Luena",
+        "name:en": "Luena River",
+        "name:pt": "Rio Luena",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luena",
+      "lat": -12.1103446,
+      "lon": 21.0149678,
+      "osm_id": "way/202984281",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Luena",
+        "name:en": "Luena River",
+        "name:pt": "Rio Luena",
+        "source": "Bing LoRes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumeje",
+      "lat": -11.6193941,
+      "lon": 20.8025157,
+      "osm_id": "way/203022539",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866787",
+        "alt_name": "Lumezhi;Lumeje River;Rio Lumege",
+        "name": "Lumeje",
+        "source": "Bing LoRes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumbala",
+      "lat": -12.7356149,
+      "lon": 22.2435904,
+      "osm_id": "way/206536966",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866754",
+        "name": "Lumbala",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumbala",
+      "lat": -12.6549444,
+      "lon": 22.4782016,
+      "osm_id": "way/206536967",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866754",
+        "name": "Lumbala",
+        "source": "Bing LoRes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chiumbe",
+      "lat": -10.8836725,
+      "lon": 20.4952988,
+      "osm_id": "way/208355037",
+      "osm_tags": {
+        "name": "Chiumbe",
+        "name:fr": "Tshiumbe",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chiumbe",
+      "lat": -10.9950553,
+      "lon": 20.2518054,
+      "osm_id": "way/208355040",
+      "osm_tags": {
+        "name": "Chiumbe",
+        "name:fr": "Tshiumbe",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Canaji",
+      "lat": -12.1826637,
+      "lon": 20.5633766,
+      "osm_id": "way/231505480",
+      "osm_tags": {
+        "name": "Canaji",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lufuige",
+      "lat": -12.588324,
+      "lon": 22.8994516,
+      "osm_id": "way/231505482",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866632",
+        "alt_name": "Rio Lufuidge;Rio Lufuidje;Rio Lufige",
+        "name": "Lufuige",
+        "seasonal": "yes",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chicaluege",
+      "lat": -11.6636017,
+      "lon": 22.303084,
+      "osm_id": "way/242546013",
+      "osm_tags": {
+        "fixme": "rough river cours",
+        "name": "Chicaluege",
+        "waterway": "river",
+        "wikidata": "Q21407804"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lutembo",
+      "lat": -11.8853142,
+      "lon": 22.3117382,
+      "osm_id": "way/242588891",
+      "osm_tags": {
+        "name": "Lutembo",
+        "waterway": "river",
+        "wikidata": "Q21406933",
+        "wikipedia": "ceb:Lutembo (suba sa Anggola, Moxico, lat -11,97, long 22,33)"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luvua",
+      "lat": -11.5700568,
+      "lon": 22.5937399,
+      "osm_id": "way/242593236",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "river",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Calunda",
+      "lat": -11.5988947,
+      "lon": 22.8589104,
+      "osm_id": "way/242597569",
+      "osm_tags": {
+        "name": "Calunda",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luembe",
+      "lat": -11.0262517,
+      "lon": 20.9502638,
+      "osm_id": "way/298282439",
+      "osm_tags": {
+        "alt_name": "Luembi;Luemba River;Tshumbwe;Luimbe",
+        "name": "Luembe",
+        "name:en": "Lubembe River",
+        "name:pt": "Rio Luembe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luembe",
+      "lat": -11.0406985,
+      "lon": 20.8820014,
+      "osm_id": "way/298282440",
+      "osm_tags": {
+        "alt_name": "Luembi;Luemba River;Tshumbwe;Luimbe",
+        "name": "Luembe",
+        "name:en": "Lubembe River",
+        "name:pt": "Rio Luembe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luembe",
+      "lat": -10.8504016,
+      "lon": 21.1380769,
+      "osm_id": "way/298282441",
+      "osm_tags": {
+        "alt_name": "Luembi;Luemba River;Tshumbwe;Luimbe",
+        "name": "Luembe",
+        "name:en": "Lubembe River",
+        "name:pt": "Rio Luembe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lupue",
+      "lat": -10.6878576,
+      "lon": 21.0180156,
+      "osm_id": "way/298285092",
+      "osm_tags": {
+        "name": "Lupue",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lupue",
+      "lat": -10.983544,
+      "lon": 20.8334795,
+      "osm_id": "way/298285104",
+      "osm_tags": {
+        "name": "Lupue",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luembe",
+      "lat": -11.0511124,
+      "lon": 20.8121887,
+      "osm_id": "way/299382388",
+      "osm_tags": {
+        "alt_name": "Luembi;Luemba River;Tshumbwe;Luimbe",
+        "name": "Luembe",
+        "name:en": "Lubembe River",
+        "name:pt": "Rio Luembe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luembe",
+      "lat": -11.0641752,
+      "lon": 20.7740953,
+      "osm_id": "way/299382389",
+      "osm_tags": {
+        "alt_name": "Luembi;Luemba River;Tshumbwe;Luimbe",
+        "name": "Luembe",
+        "name:en": "Lubembe River",
+        "name:pt": "Rio Luembe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwawu",
+      "lat": -11.1461875,
+      "lon": 22.240013,
+      "osm_id": "way/400553735",
+      "osm_tags": {
+        "admin_level": "2",
+        "attribution": "US Dept. of State Office of the Geographer",
+        "border_type": "nation",
+        "boundary": "administrative",
+        "name": "Lwawu",
+        "source": "Large Scale International Boundary (US DoS/INR/GGI-07/2015)",
+        "source:date": "2015-07",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lwawu",
+      "lat": -10.9712055,
+      "lon": 22.1929805,
+      "osm_id": "way/400553759",
+      "osm_tags": {
+        "admin_level": "2",
+        "attribution": "US Dept. of State Office of the Geographer",
+        "border_type": "nation",
+        "boundary": "administrative",
+        "name": "Lwawu",
+        "source": "Large Scale International Boundary (US DoS/INR/GGI-07/2015)",
+        "source:date": "2015-07",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lucuano",
+      "lat": -11.2245275,
+      "lon": 21.6231583,
+      "osm_id": "way/439435426",
+      "osm_tags": {
+        "alt_name": "Luacano",
+        "name": "Lucuano",
+        "name:pt": "Rio Lucuano",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumeje",
+      "lat": -11.5569371,
+      "lon": 20.719048,
+      "osm_id": "way/499499151",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866787",
+        "alt_name": "Lumezhi;Lumeje River;Rio Lumege",
+        "name": "Lumeje",
+        "source": "Bing LoRes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumeje",
+      "lat": -11.8406937,
+      "lon": 20.8676974,
+      "osm_id": "way/499499154",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866787",
+        "alt_name": "Lumezhi;Lumeje River;Rio Lumege",
+        "name": "Lumeje",
+        "source": "Bing LoRes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumeje",
+      "lat": -11.5397746,
+      "lon": 20.4797287,
+      "osm_id": "way/549155169",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866787",
+        "alt_name": "Lumezhi;Lumeje River;Rio Lumege",
+        "name": "Lumeje",
+        "source": "Bing LoRes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chifumage",
+      "lat": -11.8996773,
+      "lon": 22.2206506,
+      "osm_id": "way/590241210",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Chifumage",
+        "name:en": "Chifumage River",
+        "source": "Peace Parks Foundation",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luena",
+      "lat": -11.9680011,
+      "lon": 20.5264738,
+      "osm_id": "way/631604886",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Luena",
+        "name:en": "Luena River",
+        "name:pt": "Rio Luena",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Cubangui",
+      "lat": -12.6976973,
+      "lon": 20.4646776,
+      "osm_id": "way/717779774",
+      "osm_tags": {
+        "name": "Cubangui",
+        "waterway": "river",
+        "wikidata": "Q21407833"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Cubangui",
+      "lat": -12.7029561,
+      "lon": 20.450795,
+      "osm_id": "way/717779775",
+      "osm_tags": {
+        "name": "Cubangui",
+        "waterway": "river",
+        "wikidata": "Q21407833"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lungu\u00e9-Bungo",
+      "lat": -12.9550907,
+      "lon": 21.2717204,
+      "osm_id": "way/717789329",
+      "osm_tags": {
+        "alt_name": "Lungwevungu",
+        "boat": "no",
+        "name": "Lungu\u00e9-Bungo",
+        "name:en": "Lungwebungu",
+        "name:pt": "Lungu\u00e9-Bungo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lwawu",
+      "lat": -11.235551,
+      "lon": 22.2518745,
+      "osm_id": "way/875457913",
+      "osm_tags": {
+        "admin_level": "2",
+        "attribution": "US Dept. of State Office of the Geographer",
+        "border_type": "nation",
+        "boundary": "administrative",
+        "name": "Lwawu",
+        "source": "Large Scale International Boundary (US DoS/INR/GGI-07/2015)",
+        "source:date": "2015-07",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luembe",
+      "lat": -11.1147679,
+      "lon": 20.6310404,
+      "osm_id": "way/1044537781",
+      "osm_tags": {
+        "alt_name": "Luembi;Luemba River;Tshumbwe;Luimbe",
+        "name": "Luembe",
+        "name:en": "Lubembe River",
+        "name:pt": "Rio Luembe",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lualo",
+      "lat": -10.838945,
+      "lon": 21.6016718,
+      "osm_id": "way/1046920715",
+      "osm_tags": {
+        "name": "Rio Lualo",
+        "name:pt": "Rio Lualo",
+        "waterway": "river",
+        "width": "10"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lualo",
+      "lat": -10.9210228,
+      "lon": 21.5789482,
+      "osm_id": "way/1046935696",
+      "osm_tags": {
+        "name": "Rio Lualo",
+        "name:pt": "Rio Lualo",
+        "waterway": "river",
+        "width": "10"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lualo",
+      "lat": -10.9997228,
+      "lon": 21.538082,
+      "osm_id": "way/1046943152",
+      "osm_tags": {
+        "name": "Rio Lualo",
+        "name:pt": "Rio Lualo",
+        "waterway": "river",
+        "width": "10"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Rio Lualo",
+      "lat": -11.0310091,
+      "lon": 21.4789098,
+      "osm_id": "way/1046943161",
+      "osm_tags": {
+        "name": "Rio Lualo",
+        "name:pt": "Rio Lualo",
+        "waterway": "river",
+        "width": "4"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Cassepe",
+      "lat": -11.2909202,
+      "lon": 22.6627826,
+      "osm_id": "way/1047452931",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Cassepe",
+        "waterway": "stream",
+        "wikidata": "Q21425693"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Luvua",
+      "lat": -11.2903689,
+      "lon": 22.701852,
+      "osm_id": "way/1047452932",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "stream",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chefumage",
+      "lat": -11.6418217,
+      "lon": 21.3648419,
+      "osm_id": "way/1047650394",
+      "osm_tags": {
+        "name": "Chefumage",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chefumage",
+      "lat": -11.720302,
+      "lon": 21.9253831,
+      "osm_id": "way/1047653786",
+      "osm_tags": {
+        "name": "Chefumage",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chefumage",
+      "lat": -11.6098694,
+      "lon": 21.6569526,
+      "osm_id": "way/1047656921",
+      "osm_tags": {
+        "name": "Chefumage",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luena",
+      "lat": -11.8324308,
+      "lon": 20.3457906,
+      "osm_id": "way/1047679782",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Luena",
+        "name:en": "Luena River",
+        "name:pt": "Rio Luena",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Luatamba",
+      "lat": -12.1007663,
+      "lon": 20.4647367,
+      "osm_id": "way/1047682751",
+      "osm_tags": {
+        "name": "Luatamba",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lucuano",
+      "lat": -11.2799876,
+      "lon": 21.5932897,
+      "osm_id": "way/1056029320",
+      "osm_tags": {
+        "alt_name": "Luacano",
+        "name": "Lucuano",
+        "name:pt": "Rio Lucuano",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lucuano",
+      "lat": -11.304456,
+      "lon": 21.5224529,
+      "osm_id": "way/1056029326",
+      "osm_tags": {
+        "alt_name": "Luacano",
+        "name": "Lucuano",
+        "name:pt": "Rio Lucuano",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Lufige",
+      "lat": -10.584786,
+      "lon": 20.9641885,
+      "osm_id": "way/1056029331",
+      "osm_tags": {
+        "name": "Lufige",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luxico",
+      "lat": -10.6538775,
+      "lon": 21.4926331,
+      "osm_id": "way/1056029347",
+      "osm_tags": {
+        "name": "Luxico",
+        "name:pt": "Rio Luxico",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Zambezi",
+      "lat": -12.3829942,
+      "lon": 22.5683843,
+      "osm_id": "way/1157495013",
+      "osm_tags": {
+        "alt_name": "Zambesi",
+        "alt_name:br": "Ar Zambezi",
+        "name": "Zambezi",
+        "name:ar": "\u0646\u0647\u0631 \u0632\u0645\u0628\u064a\u0632\u064a",
+        "name:br": "Ar Zambez",
+        "name:ca": "riu Zambezi",
+        "name:de": "Sambesi",
+        "name:en": "Zambezi",
+        "name:eu": "Zambezi",
+        "name:fa": "\u0632\u0627\u0645\u0628\u0632\u06cc",
+        "name:fr": "Zamb\u00e8ze",
+        "name:kn": "\u0c9c\u0cbe\u0c82\u0cac\u0cc6\u0c9c\u0cbf",
+        "name:ml": "\u0d38\u0d3e\u0d02\u0d2c\u0d46\u0d38\u0d3f",
+        "name:pl": "Zambezi",
+        "name:pt": "Rio Zambeze",
+        "name:ru": "\u0417\u0430\u043c\u0431\u0435\u0437\u0438",
+        "name:uk": "\u0417\u0430\u043c\u0431\u0435\u0437\u0456",
+        "old_name:fr": "Zamb\u00e8se",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lufuige",
+      "lat": -12.487317,
+      "lon": 23.1401753,
+      "osm_id": "way/1162897128",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866632",
+        "alt_name": "Rio Lufuidge;Rio Lufuidje;Rio Lufige",
+        "intermittent": "no",
+        "name": "Lufuige",
+        "seasonal": "yes",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lufuige",
+      "lat": -12.789567,
+      "lon": 22.7807393,
+      "osm_id": "way/1165963983",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866632",
+        "alt_name": "Rio Lufuidge;Rio Lufuidje;Rio Lufige",
+        "intermittent": "no",
+        "name": "Lufuige",
+        "seasonal": "yes",
+        "source": "GNS",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumeje",
+      "lat": -11.67962,
+      "lon": 20.8423988,
+      "osm_id": "way/1238028034",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866787",
+        "alt_name": "Lumezhi;Lumeje River;Rio Lumege",
+        "name": "Lumeje",
+        "source": "Bing LoRes",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luvua",
+      "lat": -11.3055113,
+      "lon": 22.7060345,
+      "osm_id": "way/1241109837",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "river",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Luvua",
+      "lat": -11.2715249,
+      "lon": 22.700648,
+      "osm_id": "way/1241110755",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "stream",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Luvua",
+      "lat": -11.256022,
+      "lon": 22.6967747,
+      "osm_id": "way/1241110756",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "stream",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luvua",
+      "lat": -11.2374926,
+      "lon": 22.6921613,
+      "osm_id": "way/1241110757",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "river",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luvua",
+      "lat": -11.2181369,
+      "lon": 22.686915,
+      "osm_id": "way/1241110977",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "river",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Conoegi",
+      "lat": -11.2039576,
+      "lon": 22.6964356,
+      "osm_id": "way/1241111235",
+      "osm_tags": {
+        "name": "Conoegi",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Conoegi",
+      "lat": -11.1948156,
+      "lon": 22.7135339,
+      "osm_id": "way/1241111558",
+      "osm_tags": {
+        "name": "Conoegi",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Conoegi",
+      "lat": -11.1905538,
+      "lon": 22.7265273,
+      "osm_id": "way/1241112074",
+      "osm_tags": {
+        "name": "Conoegi",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Conoegi",
+      "lat": -11.1811788,
+      "lon": 22.7568725,
+      "osm_id": "way/1241113304",
+      "osm_tags": {
+        "name": "Conoegi",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Conoegi",
+      "lat": -11.1734238,
+      "lon": 22.7820937,
+      "osm_id": "way/1241114104",
+      "osm_tags": {
+        "name": "Conoegi",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Conoegi",
+      "lat": -11.1622714,
+      "lon": 22.7887914,
+      "osm_id": "way/1241114106",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Conoegi",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Conoegi",
+      "lat": -11.1462009,
+      "lon": 22.791932,
+      "osm_id": "way/1241114303",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Conoegi",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luvua",
+      "lat": -11.206446,
+      "lon": 22.6769446,
+      "osm_id": "way/1241117107",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "river",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luvua",
+      "lat": -11.1950171,
+      "lon": 22.6601723,
+      "osm_id": "way/1241117353",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "river",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luvua",
+      "lat": -11.1858795,
+      "lon": 22.6443489,
+      "osm_id": "way/1241117598",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "river",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luvua",
+      "lat": -11.1798818,
+      "lon": 22.6314781,
+      "osm_id": "way/1241117718",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "river",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Quenga",
+      "lat": -11.1878008,
+      "lon": 22.6202891,
+      "osm_id": "way/1241118085",
+      "osm_tags": {
+        "name": "Quenga",
+        "waterway": "stream",
+        "wikidata": "Q21425683"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luvua",
+      "lat": -11.1748484,
+      "lon": 22.616146,
+      "osm_id": "way/1241118555",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "river",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumbala",
+      "lat": -12.8456074,
+      "lon": 22.1696921,
+      "osm_id": "way/1241190176",
+      "osm_tags": {
+        "name": "Lumbala",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumbala",
+      "lat": -12.8758878,
+      "lon": 22.092608,
+      "osm_id": "way/1241191911",
+      "osm_tags": {
+        "name": "Lumbala",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumbala",
+      "lat": -12.8869062,
+      "lon": 21.9767612,
+      "osm_id": "way/1241192157",
+      "osm_tags": {
+        "name": "Lumbala",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumbala",
+      "lat": -12.8785267,
+      "lon": 21.8846078,
+      "osm_id": "way/1241209628",
+      "osm_tags": {
+        "name": "Lumbala",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumbala",
+      "lat": -12.8959136,
+      "lon": 21.7805011,
+      "osm_id": "way/1241213910",
+      "osm_tags": {
+        "name": "Lumbala",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumbala",
+      "lat": -12.925582,
+      "lon": 21.6566718,
+      "osm_id": "way/1241215049",
+      "osm_tags": {
+        "name": "Lumbala",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lumbala",
+      "lat": -12.9116292,
+      "lon": 21.5859031,
+      "osm_id": "way/1241215100",
+      "osm_tags": {
+        "name": "Lumbala",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Camicevo",
+      "lat": -11.4275416,
+      "lon": 22.7263141,
+      "osm_id": "way/1241495706",
+      "osm_tags": {
+        "GNS:id": "11119200",
+        "name": "Camicevo",
+        "waterway": "stream",
+        "wikidata": "Q21425699"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Camicevo",
+      "lat": -11.3823634,
+      "lon": 22.765605,
+      "osm_id": "way/1241497134",
+      "osm_tags": {
+        "GNS:id": "11119200",
+        "name": "Camicevo",
+        "waterway": "stream",
+        "wikidata": "Q21425699"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Camicevo",
+      "lat": -11.3385075,
+      "lon": 22.7879476,
+      "osm_id": "way/1241497325",
+      "osm_tags": {
+        "GNS:id": "11119200",
+        "intermittent": "yes",
+        "name": "Camicevo",
+        "waterway": "stream",
+        "wikidata": "Q21425699"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Capalala",
+      "lat": -11.4057662,
+      "lon": 22.7755485,
+      "osm_id": "way/1241498335",
+      "osm_tags": {
+        "GNS:id": "11119202",
+        "intermittent": "yes",
+        "name": "Capalala",
+        "waterway": "stream",
+        "wikidata": "Q21425697"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Cauengue",
+      "lat": -11.3647288,
+      "lon": 22.7857918,
+      "osm_id": "way/1241499982",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Cauengue",
+        "waterway": "stream",
+        "wikidata": "Q21425696"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Cassalanga",
+      "lat": -11.4252243,
+      "lon": 22.7708691,
+      "osm_id": "way/1241500442",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Cassalanga",
+        "waterway": "stream",
+        "wikidata": "Q21425698"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Capelequete",
+      "lat": -11.3554898,
+      "lon": 22.7238883,
+      "osm_id": "way/1241500647",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Capelequete",
+        "waterway": "stream",
+        "wikidata": "Q21425695"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Caloloa",
+      "lat": -11.3055359,
+      "lon": 22.7364255,
+      "osm_id": "way/1241500706",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Caloloa",
+        "waterway": "stream",
+        "wikidata": "Q21425694"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mucunduegi",
+      "lat": -11.2813578,
+      "lon": 22.6538138,
+      "osm_id": "way/1241500899",
+      "osm_tags": {
+        "name": "Mucunduegi",
+        "waterway": "stream",
+        "wikidata": "Q21425692"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Maquenhe",
+      "lat": -11.2555518,
+      "lon": 22.7477748,
+      "osm_id": "way/1241501181",
+      "osm_tags": {
+        "name": "Maquenhe",
+        "waterway": "stream",
+        "wikidata": "Q21425691"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Tauni",
+      "lat": -11.2723174,
+      "lon": 22.7465257,
+      "osm_id": "way/1241501182",
+      "osm_tags": {
+        "name": "Tauni",
+        "waterway": "stream",
+        "wikidata": "Q21425690"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Camboa",
+      "lat": -11.2307596,
+      "lon": 22.7128606,
+      "osm_id": "way/1241502034",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Camboa",
+        "waterway": "stream",
+        "wikidata": "Q21425689"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luvua",
+      "lat": -11.1641955,
+      "lon": 22.5995628,
+      "osm_id": "way/1241502039",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "river",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Camiava",
+      "lat": -11.1633837,
+      "lon": 22.709149,
+      "osm_id": "way/1241502104",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Camiava",
+        "waterway": "stream",
+        "wikidata": "Q21425688"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Manhingue",
+      "lat": -11.156738,
+      "lon": 22.7491227,
+      "osm_id": "way/1241502299",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Manhingue",
+        "waterway": "stream",
+        "wikidata": "Q21425687"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Catocola",
+      "lat": -11.1927716,
+      "lon": 22.7811614,
+      "osm_id": "way/1241502485",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Catocola",
+        "waterway": "stream",
+        "wikidata": "Q21425686"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Cassau",
+      "lat": -11.1799311,
+      "lon": 22.6642217,
+      "osm_id": "way/1241502556",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Cassau",
+        "waterway": "stream",
+        "wikidata": "Q21425685"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Caxinacagi",
+      "lat": -11.1605889,
+      "lon": 22.6503648,
+      "osm_id": "way/1241502721",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Caxinacagi",
+        "waterway": "stream",
+        "wikidata": "Q21425684"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Maxivi",
+      "lat": -11.1315872,
+      "lon": 22.6330476,
+      "osm_id": "way/1241502965",
+      "osm_tags": {
+        "name": "Maxivi",
+        "waterway": "stream",
+        "wikidata": "Q21425682"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Cacoloegi",
+      "lat": -11.090101,
+      "lon": 22.6007726,
+      "osm_id": "way/1241502966",
+      "osm_tags": {
+        "name": "Cacoloegi",
+        "waterway": "stream",
+        "wikidata": "Q21425681"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luvua",
+      "lat": -11.1575931,
+      "lon": 22.5588682,
+      "osm_id": "way/1241503534",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "river",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Cassa",
+      "lat": -11.1097013,
+      "lon": 22.5352796,
+      "osm_id": "way/1241503535",
+      "osm_tags": {
+        "name": "Cassa",
+        "waterway": "stream",
+        "wikidata": "Q21425680"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Luvua",
+      "lat": -11.1699446,
+      "lon": 22.5242222,
+      "osm_id": "way/1241503536",
+      "osm_tags": {
+        "name": "Luvua",
+        "waterway": "river",
+        "wikidata": "Q21406941"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Capombo",
+      "lat": -11.1597223,
+      "lon": 22.5185191,
+      "osm_id": "way/1241503537",
+      "osm_tags": {
+        "name": "Capombo",
+        "waterway": "stream",
+        "wikidata": "Q21425679"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Chifumage",
+      "lat": -11.9572771,
+      "lon": 22.3053344,
+      "osm_id": "way/1241626086",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Chifumage",
+        "name:en": "Chifumage River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Longonho",
+      "lat": -12.5360148,
+      "lon": 22.3457577,
+      "osm_id": "way/1243011934",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866136",
+        "alt_name": "Rio Lungonha;Rio Luangage;Rio Lungoje;Rio Lungoge;Lumgonyo",
+        "boat": "no",
+        "name": "Longonho",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q21407213"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Longonho",
+      "lat": -12.5566693,
+      "lon": 22.2750318,
+      "osm_id": "way/1243011946",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866136",
+        "alt_name": "Rio Lungonha;Rio Luangage;Rio Lungoje;Rio Lungoge;Lumgonyo",
+        "boat": "no",
+        "name": "Longonho",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q21407213"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Longonho",
+      "lat": -12.5601069,
+      "lon": 22.286395,
+      "osm_id": "way/1243011949",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866136",
+        "alt_name": "Rio Lungonha;Rio Luangage;Rio Lungoje;Rio Lungoge;Lumgonyo",
+        "boat": "no",
+        "name": "Longonho",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q21407213"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Longonho",
+      "lat": -12.5657102,
+      "lon": 22.2685015,
+      "osm_id": "way/1243011951",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866136",
+        "alt_name": "Rio Lungonha;Rio Luangage;Rio Lungoje;Rio Lungoge;Lumgonyo",
+        "boat": "no",
+        "name": "Longonho",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q21407213"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Longonho",
+      "lat": -12.5616658,
+      "lon": 22.2366565,
+      "osm_id": "way/1243011954",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866136",
+        "alt_name": "Rio Lungonha;Rio Luangage;Rio Lungoje;Rio Lungoge;Lumgonyo",
+        "boat": "no",
+        "name": "Longonho",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q21407213"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Longonho",
+      "lat": -12.5646067,
+      "lon": 22.1809222,
+      "osm_id": "way/1243011955",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866136",
+        "alt_name": "Rio Lungonha;Rio Luangage;Rio Lungoje;Rio Lungoge;Lumgonyo",
+        "boat": "no",
+        "name": "Longonho",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q21407213"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Longonho",
+      "lat": -12.5820235,
+      "lon": 22.0831212,
+      "osm_id": "way/1243011960",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866136",
+        "alt_name": "Rio Lungonha;Rio Luangage;Rio Lungoje;Rio Lungoge;Lumgonyo",
+        "boat": "no",
+        "name": "Longonho",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q21407213"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Longonho",
+      "lat": -12.626035,
+      "lon": 21.9778243,
+      "osm_id": "way/1243011961",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866136",
+        "alt_name": "Rio Lungonha;Rio Luangage;Rio Lungoje;Rio Lungoge;Lumgonyo",
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Longonho",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q21407213"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Longonho",
+      "lat": -12.6015073,
+      "lon": 22.0238831,
+      "osm_id": "way/1243011962",
+      "osm_tags": {
+        "GNS:dsg_code": "STM",
+        "GNS:id": "-2866136",
+        "alt_name": "Rio Lungonha;Rio Luangage;Rio Lungoje;Rio Lungoge;Lumgonyo",
+        "boat": "no",
+        "name": "Longonho",
+        "source": "GNS",
+        "waterway": "river",
+        "wikidata": "Q21407213"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Katapa",
+      "lat": -12.2045121,
+      "lon": 20.3952432,
+      "osm_id": "way/1245712428",
+      "osm_tags": {
+        "name": "Katapa",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Kamawe",
+      "lat": -12.2092486,
+      "lon": 20.5219609,
+      "osm_id": "way/1245928411",
+      "osm_tags": {
+        "name": "Kamawe",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mbalangandu",
+      "lat": -12.2195471,
+      "lon": 20.5106843,
+      "osm_id": "way/1245929848",
+      "osm_tags": {
+        "name": "Mbalangandu",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mavunda",
+      "lat": -12.4450199,
+      "lon": 22.1159506,
+      "osm_id": "way/1247407786",
+      "osm_tags": {
+        "name": "Mavunda",
+        "waterway": "stream",
+        "wikidata": "Q21406965"
+      }
+    }
+  ]
+}

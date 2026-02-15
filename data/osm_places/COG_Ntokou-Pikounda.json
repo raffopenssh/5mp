@@ -1,0 +1,909 @@
+{
+  "park_id": "COG_Ntokou-Pikounda",
+  "downloaded_at": "2026-02-15T13:49:11.584413+00:00",
+  "buffer_km": 50,
+  "place_count": 67,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Pokola",
+      "lat": 1.411796,
+      "lon": 16.3228219,
+      "osm_id": "node/921273084",
+      "osm_tags": {
+        "name": "Pokola",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ngomb\u00e9",
+      "lat": 1.4308379,
+      "lon": 16.1834897,
+      "osm_id": "node/921393345",
+      "osm_tags": {
+        "name": "Ngomb\u00e9",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Makoua",
+      "lat": -0.0065571,
+      "lon": 15.6181598,
+      "osm_id": "node/923915821",
+      "osm_tags": {
+        "name": "Makoua",
+        "place": "town",
+        "population": "20038",
+        "population:date": "2018",
+        "wikidata": "Q1667693",
+        "wikipedia": "fr:Makoua"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ntokou",
+      "lat": 0.0361635,
+      "lon": 16.335962,
+      "osm_id": "node/925183361",
+      "osm_tags": {
+        "name": "Ntokou",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Liouesso",
+      "lat": 1.0504856,
+      "lon": 15.6925591,
+      "osm_id": "node/925207395",
+      "osm_tags": {
+        "name": "Liouesso",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boko",
+      "lat": -0.4169413,
+      "lon": 15.7361043,
+      "osm_id": "node/928220180",
+      "osm_tags": {
+        "name": "Boko",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Attention",
+      "lat": 1.317124,
+      "lon": 15.8252363,
+      "osm_id": "node/3300961816",
+      "osm_tags": {
+        "name": "Attention",
+        "place": "hamlet",
+        "source_type": "Carte_IGN"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Epere",
+      "lat": 0.2591797,
+      "lon": 15.4921511,
+      "osm_id": "node/3300965098",
+      "osm_tags": {
+        "name": "Epere",
+        "place": "hamlet",
+        "source_type": "GPS"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ik\u00e9lemba",
+      "lat": 1.2278319,
+      "lon": 16.505102,
+      "osm_id": "node/3300965133",
+      "osm_tags": {
+        "name": "Ik\u00e9lemba",
+        "place": "village",
+        "source": "Annuaire Statistique de la Sangha 2018 (\u00e9d.2020)",
+        "source_type": "Carte_IGN"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lengou\u00e9",
+      "lat": 1.2616268,
+      "lon": 15.6450076,
+      "osm_id": "node/3300966490",
+      "osm_tags": {
+        "name": "Lengou\u00e9",
+        "place": "hamlet",
+        "source_type": "Carte_IGN"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Liouesso",
+      "lat": 1.0511785,
+      "lon": 15.6925048,
+      "osm_id": "node/3300966498",
+      "osm_tags": {
+        "name": "Liouesso",
+        "place": "hamlet",
+        "source_type": "GPS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Lobo",
+      "lat": 1.1419246,
+      "lon": 15.7392674,
+      "osm_id": "node/3300966506",
+      "osm_tags": {
+        "name": "Lobo",
+        "place": "hamlet",
+        "source_type": "Carte_IGN"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mambili",
+      "lat": 0.3726579,
+      "lon": 15.4106857,
+      "osm_id": "node/3300967017",
+      "osm_tags": {
+        "name": "Mambili",
+        "place": "hamlet",
+        "source_type": "GPS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mil\u00e9l\u00e9k\u00e9",
+      "lat": 1.2892376,
+      "lon": 15.8215589,
+      "osm_id": "node/3300967671",
+      "osm_tags": {
+        "name": "Mil\u00e9l\u00e9k\u00e9",
+        "place": "hamlet",
+        "source_type": "Carte_IGN"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Moyoye",
+      "lat": 0.8372595,
+      "lon": 15.5193278,
+      "osm_id": "node/3300967774",
+      "osm_tags": {
+        "name": "Moyoye",
+        "place": "hamlet",
+        "source_type": "Carte_IGN"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ombele",
+      "lat": -0.4109923,
+      "lon": 15.883143,
+      "osm_id": "node/3300968226",
+      "osm_tags": {
+        "name": "Ombele",
+        "place": "hamlet",
+        "source_type": "GPS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Otala",
+      "lat": 0.1507268,
+      "lon": 15.5454642,
+      "osm_id": "node/3300968242",
+      "osm_tags": {
+        "name": "Otala",
+        "place": "hamlet",
+        "source_type": "GPS"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Tsiako",
+      "lat": 0.1219009,
+      "lon": 15.5666796,
+      "osm_id": "node/3300968710",
+      "osm_tags": {
+        "name": "Tsiako",
+        "place": "hamlet",
+        "source_type": "GPS"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Pikounda",
+      "lat": 0.549536,
+      "lon": 16.6357583,
+      "osm_id": "node/9616208372",
+      "osm_tags": {
+        "name": "Pikounda",
+        "name:ko": "\ud53c\ucfe4\ub2e4",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matali",
+      "lat": 0.7599072,
+      "lon": 16.6290105,
+      "osm_id": "node/13267131264",
+      "osm_tags": {
+        "name": "Matali",
+        "place": "village",
+        "source": "RGPH5(2019)",
+        "source:2": "Annuaire Statistique de la Sangha 2018 (\u00e9d.2020)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bussinde",
+      "lat": 0.8438981,
+      "lon": 16.594163,
+      "osm_id": "node/13267200705",
+      "osm_tags": {
+        "alt_name": "Bosende",
+        "name": "Bussinde",
+        "place": "hamlet",
+        "source": "GetAMap"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bemb\u00e9",
+      "lat": 1.2122117,
+      "lon": 16.5404526,
+      "osm_id": "node/13267200768",
+      "osm_tags": {
+        "alt_name": "Pemb\u00e9",
+        "name": "Bemb\u00e9",
+        "place": "hamlet",
+        "source": "GetAMap"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ibamba",
+      "lat": 1.2076052,
+      "lon": 16.7676439,
+      "osm_id": "node/13277646618",
+      "osm_tags": {
+        "name": "Ibamba",
+        "place": "hamlet",
+        "source": "PLAN D'AMENAGEMENT DE L'UFA LOUNDOUNGOU-TOUKOULAKA 2014"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala",
+      "lat": -0.145592,
+      "lon": 16.4603879,
+      "osm_id": "way/23479618",
+      "osm_tags": {
+        "boat": "no;yes",
+        "name": "Likouala",
+        "name:en": "Likouala River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sangha",
+      "lat": 1.5321479,
+      "lon": 16.176381,
+      "osm_id": "way/78498206",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "name": "Sangha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sangha",
+      "lat": 0.8184814,
+      "lon": 16.700429,
+      "osm_id": "way/78507564",
+      "osm_tags": {
+        "name": "Sangha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sangha",
+      "lat": 0.1731344,
+      "lon": 16.9971424,
+      "osm_id": "way/78508510",
+      "osm_tags": {
+        "name": "Sangha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala",
+      "lat": 0.0850769,
+      "lon": 16.1909448,
+      "osm_id": "way/78520221",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala",
+        "name:en": "Likouala River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala",
+      "lat": 0.0203178,
+      "lon": 15.6998558,
+      "osm_id": "way/78524040",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala",
+        "name:en": "Likouala River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala",
+      "lat": -0.4815303,
+      "lon": 16.595207,
+      "osm_id": "way/78524041",
+      "osm_tags": {
+        "boat": "yes",
+        "name": "Likouala",
+        "name:en": "Likouala River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala",
+      "lat": 0.0306918,
+      "lon": 15.8647854,
+      "osm_id": "way/78524049",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala",
+        "name:en": "Likouala River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala",
+      "lat": 0.065834,
+      "lon": 16.003459,
+      "osm_id": "way/78524089",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala",
+        "name:en": "Likouala River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kouyou",
+      "lat": -0.6130586,
+      "lon": 15.3007251,
+      "osm_id": "way/78536032",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Kouyou",
+        "name:en": "Kouyou River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala",
+      "lat": 0.0486546,
+      "lon": 15.520665,
+      "osm_id": "way/79013670",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala",
+        "name:en": "Likouala River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 0.9336699,
+      "lon": 17.1132961,
+      "osm_id": "way/79013697",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala",
+      "lat": 0.090885,
+      "lon": 15.3682189,
+      "osm_id": "way/79013748",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala",
+        "name:en": "Likouala River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mambili",
+      "lat": 0.2725612,
+      "lon": 15.9987232,
+      "osm_id": "way/79040963",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Mambili",
+        "name:en": "Mambili River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mambili",
+      "lat": 0.3757231,
+      "lon": 15.8164676,
+      "osm_id": "way/79040969",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Mambili",
+        "name:en": "Mambili River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mambili",
+      "lat": 0.1714749,
+      "lon": 16.062313,
+      "osm_id": "way/79040976",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Mambili",
+        "name:en": "Mambili River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mambili",
+      "lat": 0.3851145,
+      "lon": 15.7250229,
+      "osm_id": "way/79040982",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Mambili",
+        "name:en": "Mambili River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mambili",
+      "lat": 0.3416729,
+      "lon": 15.9089042,
+      "osm_id": "way/79040987",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Mambili",
+        "name:en": "Mambili River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bailly",
+      "lat": 1.2942657,
+      "lon": 17.0104511,
+      "osm_id": "way/79175703",
+      "osm_tags": {
+        "alt_name": "Bali",
+        "boat": "no",
+        "name": "Bailly",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bailly",
+      "lat": 1.0436687,
+      "lon": 17.050679,
+      "osm_id": "way/79175710",
+      "osm_tags": {
+        "alt_name": "Bali",
+        "boat": "no",
+        "name": "Bailly",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bailly",
+      "lat": 0.9512428,
+      "lon": 17.0646014,
+      "osm_id": "way/79175730",
+      "osm_tags": {
+        "alt_name": "Bali",
+        "boat": "no",
+        "name": "Bailly",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndoki",
+      "lat": 1.3609581,
+      "lon": 16.4913266,
+      "osm_id": "way/79177683",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ndoki",
+        "name:en": "Ndoki River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.3318499,
+      "lon": 16.1471116,
+      "osm_id": "way/79183482",
+      "osm_tags": {
+        "admin_level": "6",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.3666689,
+      "lon": 16.1521085,
+      "osm_id": "way/79183485",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.1015432,
+      "lon": 16.3098156,
+      "osm_id": "way/79183487",
+      "osm_tags": {
+        "admin_level": "6",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.272031,
+      "lon": 16.2030449,
+      "osm_id": "way/79183488",
+      "osm_tags": {
+        "admin_level": "6",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.4951096,
+      "lon": 16.0805411,
+      "osm_id": "way/79183490",
+      "osm_tags": {
+        "admin_level": "6",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.1966183,
+      "lon": 16.2693369,
+      "osm_id": "way/79183494",
+      "osm_tags": {
+        "admin_level": "6",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.4169219,
+      "lon": 16.1266958,
+      "osm_id": "way/79183495",
+      "osm_tags": {
+        "admin_level": "6",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.641836,
+      "lon": 15.9422462,
+      "osm_id": "way/79184497",
+      "osm_tags": {
+        "boat": "no",
+        "fixme": "rough outline",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.8327894,
+      "lon": 15.767734,
+      "osm_id": "way/79184502",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.7915333,
+      "lon": 15.792929,
+      "osm_id": "way/79184508",
+      "osm_tags": {
+        "boat": "no",
+        "fixme": "rough outline",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.8873041,
+      "lon": 15.7541909,
+      "osm_id": "way/79184516",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.9514794,
+      "lon": 15.7324131,
+      "osm_id": "way/79184852",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 1.1249004,
+      "lon": 15.6673134,
+      "osm_id": "way/79187183",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 1.0333094,
+      "lon": 15.7076431,
+      "osm_id": "way/79187193",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mambili",
+      "lat": 0.3731574,
+      "lon": 15.4819895,
+      "osm_id": "way/358976557",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Mambili",
+        "name:en": "Mambili River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.7606632,
+      "lon": 15.8203916,
+      "osm_id": "way/485572999",
+      "osm_tags": {
+        "boat": "no",
+        "fixme": "rough outline",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.7698682,
+      "lon": 15.8096464,
+      "osm_id": "way/485573000",
+      "osm_tags": {
+        "boat": "no",
+        "fixme": "rough outline",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mambili",
+      "lat": 0.3718454,
+      "lon": 15.8659141,
+      "osm_id": "way/1171218821",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Mambili",
+        "name:en": "Mambili River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala",
+      "lat": 0.0475462,
+      "lon": 16.3161204,
+      "osm_id": "way/1171218822",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala",
+        "name:en": "Likouala River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Lengoue",
+      "lat": 0.0489428,
+      "lon": 16.3276799,
+      "osm_id": "way/1171218823",
+      "osm_tags": {
+        "admin_level": "6",
+        "boat": "no",
+        "boundary": "administrative",
+        "name": "Lengoue",
+        "name:en": "Lengoue River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sangha",
+      "lat": 1.2896123,
+      "lon": 16.4169769,
+      "osm_id": "way/1199237657",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "name": "Sangha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 0.8517144,
+      "lon": 17.0922682,
+      "osm_id": "way/1223463162",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    }
+  ]
+}

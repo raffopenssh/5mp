@@ -1,0 +1,1181 @@
+{
+  "park_id": "BWA_Central_Kalahari",
+  "downloaded_at": "2026-02-15T09:10:37.855423+00:00",
+  "buffer_km": 50,
+  "place_count": 95,
+  "places": [
+    {
+      "place_type": "village",
+      "name": "Tamaku",
+      "lat": -20.666914,
+      "lon": 25.8315825,
+      "osm_id": "node/331981787",
+      "osm_tags": {
+        "name": "Tamaku",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rakops",
+      "lat": -21.029809,
+      "lon": 24.4026117,
+      "osm_id": "node/532133931",
+      "osm_tags": {
+        "alt_name": "Tsienyane",
+        "name": "Rakops",
+        "place": "village",
+        "wikidata": "Q168026",
+        "wikipedia": "en:Rakops"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kg\u2019oesakene",
+      "lat": -22.1225298,
+      "lon": 22.4142328,
+      "osm_id": "node/920160948",
+      "osm_tags": {
+        "name": "Kg\u2019oesakene",
+        "name:en": "New Xade",
+        "place": "village",
+        "wikidata": "Q171129",
+        "wikipedia": "en:New Xade"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Xade",
+      "lat": -22.3382586,
+      "lon": 23.0083082,
+      "osm_id": "node/920189206",
+      "osm_tags": {
+        "name": "Xade",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mmatshumo",
+      "lat": -21.146859,
+      "lon": 25.656272,
+      "osm_id": "node/1714535070",
+      "osm_tags": {
+        "name": "Mmatshumo",
+        "place": "village",
+        "wikidata": "Q167808",
+        "wikipedia": "en:Mmatshumo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Botlhatlogo",
+      "lat": -20.552367,
+      "lon": 22.748394,
+      "osm_id": "node/2312985566",
+      "osm_tags": {
+        "name": "Botlhatlogo",
+        "place": "village",
+        "wikidata": "Q165875"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bodibeng",
+      "lat": -20.628853,
+      "lon": 22.603514,
+      "osm_id": "node/2312985872",
+      "osm_tags": {
+        "name": "Bodibeng",
+        "place": "village",
+        "wikidata": "Q166951",
+        "wikipedia": "en:Bodibeng"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Orapa",
+      "lat": -21.3361957,
+      "lon": 25.364964,
+      "osm_id": "node/2319508320",
+      "osm_tags": {
+        "capital": "4",
+        "name": "Orapa",
+        "name:ru": "\u041e\u0440\u0430\u043f\u0430",
+        "place": "town",
+        "population": "9500",
+        "wikidata": "Q859708",
+        "wikipedia": "ru:\u041e\u0440\u0430\u043f\u0430"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Salajwe",
+      "lat": -23.694817,
+      "lon": 24.721615,
+      "osm_id": "node/2342086456",
+      "osm_tags": {
+        "name": "Salajwe",
+        "place": "village",
+        "wikidata": "Q171161",
+        "wikipedia": "en:Salajwe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sorilatholo",
+      "lat": -23.6344618,
+      "lon": 24.9661294,
+      "osm_id": "node/2343341575",
+      "osm_tags": {
+        "name": "Sorilatholo",
+        "place": "village",
+        "wikidata": "Q171075",
+        "wikipedia": "en:Sorilatholo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boatlaname",
+      "lat": -23.601597,
+      "lon": 25.823844,
+      "osm_id": "node/2466752411",
+      "osm_tags": {
+        "name": "Boatlaname",
+        "place": "village",
+        "wikidata": "Q38863",
+        "wikipedia": "en:Boatlaname"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kaudwane",
+      "lat": -23.384404,
+      "lon": 24.656328,
+      "osm_id": "node/2466759194",
+      "osm_tags": {
+        "name": "Kaudwane",
+        "place": "village",
+        "wikidata": "Q171086",
+        "wikipedia": "en:Kaudwane"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lephephe",
+      "lat": -23.36109,
+      "lon": 25.854912,
+      "osm_id": "node/2466792781",
+      "osm_tags": {
+        "name": "Lephephe",
+        "place": "village",
+        "wikidata": "Q38476",
+        "wikipedia": "en:Lephephe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Shadishadi",
+      "lat": -23.476061,
+      "lon": 25.670065,
+      "osm_id": "node/2466839635",
+      "osm_tags": {
+        "name": "Shadishadi",
+        "place": "village",
+        "wikidata": "Q171015",
+        "wikipedia": "it:Shadishadi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Sojwe",
+      "lat": -23.435825,
+      "lon": 25.751414,
+      "osm_id": "node/2466841788",
+      "osm_tags": {
+        "name": "Sojwe",
+        "place": "village",
+        "wikidata": "Q38868",
+        "wikipedia": "en:Sojwe"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tsetseng",
+      "lat": -23.5655525,
+      "lon": 23.0636134,
+      "osm_id": "node/2466850279",
+      "osm_tags": {
+        "name": "Tsetseng",
+        "place": "village",
+        "wikidata": "Q171158",
+        "wikipedia": "en:Tsetseng"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kedia",
+      "lat": -21.366116,
+      "lon": 24.730456,
+      "osm_id": "node/2468183754",
+      "osm_tags": {
+        "name": "Kedia",
+        "place": "village",
+        "wikidata": "Q167210",
+        "wikipedia": "en:Kedia"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Khwee",
+      "lat": -21.942737,
+      "lon": 25.448513,
+      "osm_id": "node/2468191775",
+      "osm_tags": {
+        "name": "Khwee",
+        "place": "village",
+        "wikidata": "Q167234",
+        "wikipedia": "en:Khwee"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mmadikola",
+      "lat": -21.089626,
+      "lon": 24.479878,
+      "osm_id": "node/2468280671",
+      "osm_tags": {
+        "name": "Mmadikola",
+        "place": "village",
+        "wikidata": "Q167775",
+        "wikipedia": "en:Mmadikola"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mokoboxane",
+      "lat": -21.258702,
+      "lon": 24.947048,
+      "osm_id": "node/2468337919",
+      "osm_tags": {
+        "name": "Mokoboxane",
+        "place": "village",
+        "wikidata": "Q167841",
+        "wikipedia": "en:Mokoboxane"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mopipi",
+      "lat": -21.200741,
+      "lon": 24.8608167,
+      "osm_id": "node/2468344309",
+      "osm_tags": {
+        "name": "Mopipi",
+        "place": "village",
+        "wikidata": "Q167864",
+        "wikipedia": "en:Mopipi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Otse",
+      "lat": -23.326733,
+      "lon": 25.867119,
+      "osm_id": "node/2468372076",
+      "osm_tags": {
+        "name": "Otse",
+        "place": "village",
+        "wikidata": "Q71901",
+        "wikipedia": "en:Otse, Central District"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Toromoja",
+      "lat": -21.066764,
+      "lon": 24.568155,
+      "osm_id": "node/2469203608",
+      "osm_tags": {
+        "name": "Toromoja",
+        "place": "village",
+        "wikidata": "Q168006",
+        "wikipedia": "en:Toromoja"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Xere",
+      "lat": -21.002109,
+      "lon": 23.96391,
+      "osm_id": "node/2469215190",
+      "osm_tags": {
+        "name": "Xere",
+        "place": "village",
+        "wikidata": "Q168102",
+        "wikipedia": "it:Xere"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Xhumo",
+      "lat": -21.1732,
+      "lon": 24.605077,
+      "osm_id": "node/2469216809",
+      "osm_tags": {
+        "name": "Xhumo",
+        "place": "village",
+        "wikidata": "Q168139",
+        "wikipedia": "en:Xhumo"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Diphuduhudu",
+      "lat": -23.675168,
+      "lon": 25.308094,
+      "osm_id": "node/2469628460",
+      "osm_tags": {
+        "name": "Diphuduhudu",
+        "place": "village",
+        "wikidata": "Q170841",
+        "wikipedia": "it:Diphuduhudu"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Leologane",
+      "lat": -23.478558,
+      "lon": 25.667333,
+      "osm_id": "node/2469633012",
+      "osm_tags": {
+        "name": "Leologane",
+        "place": "village",
+        "wikidata": "Q170780",
+        "wikipedia": "it:Leologane"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kikao",
+      "lat": -23.0154725,
+      "lon": 24.096901,
+      "osm_id": "node/2584195877",
+      "osm_tags": {
+        "name": "Kikao",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Metsiamonong",
+      "lat": -22.4339097,
+      "lon": 24.2329945,
+      "osm_id": "node/2754249930",
+      "osm_tags": {
+        "name": "Metsiamonong",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Dauga",
+      "lat": -20.7634646,
+      "lon": 24.3840211,
+      "osm_id": "node/3008761732",
+      "osm_tags": {
+        "name": "Dauga",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Palamakoloi",
+      "lat": -23.3357067,
+      "lon": 22.4661768,
+      "osm_id": "node/3028823566",
+      "osm_tags": {
+        "name": "Palamakoloi",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Xhorodomo",
+      "lat": -21.3874326,
+      "lon": 24.6796672,
+      "osm_id": "node/3107212057",
+      "osm_tags": {
+        "name": "Xhorodomo",
+        "place": "hamlet"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kuke",
+      "lat": -21.0509133,
+      "lon": 22.4042745,
+      "osm_id": "node/3149837673",
+      "osm_tags": {
+        "name": "Kuke",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madista",
+      "lat": -21.0474753,
+      "lon": 25.1862537,
+      "osm_id": "node/3961917661",
+      "osm_tags": {
+        "name": "Madista",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Letlhakane",
+      "lat": -21.4219913,
+      "lon": 25.5880424,
+      "osm_id": "node/4389690497",
+      "osm_tags": {
+        "name": "Letlhakane",
+        "place": "village",
+        "population": "20841"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Thabatshukudu",
+      "lat": -20.7105608,
+      "lon": 25.7984616,
+      "osm_id": "node/5300744524",
+      "osm_tags": {
+        "name": "Thabatshukudu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tshwagong",
+      "lat": -20.7996261,
+      "lon": 25.7304874,
+      "osm_id": "node/5544309750",
+      "osm_tags": {
+        "name": "Tshwagong",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Thabatshukudu",
+      "lat": -20.72287,
+      "lon": 25.7588729,
+      "osm_id": "node/6423594656",
+      "osm_tags": {
+        "name": "Thabatshukudu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kang",
+      "lat": -23.6723199,
+      "lon": 22.7907732,
+      "osm_id": "node/7651531528",
+      "osm_tags": {
+        "name": "Kang",
+        "place": "village",
+        "population": "5985"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Kubu island",
+      "lat": -20.8895623,
+      "lon": 25.8295896,
+      "osm_id": "node/12175410176",
+      "osm_tags": {
+        "ele": "917",
+        "name": "Kubu island",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Boteti River",
+      "lat": -21.0347608,
+      "lon": 25.1551889,
+      "osm_id": "way/38311277",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Boteti River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Boteti",
+      "lat": -20.9146656,
+      "lon": 24.3763087,
+      "osm_id": "way/44181480",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Boteti",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Okwa",
+      "lat": -22.3312543,
+      "lon": 22.9514451,
+      "osm_id": "way/79369819",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Okwa",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lake Ngami",
+      "lat": -20.4857311,
+      "lon": 22.7286928,
+      "osm_id": "way/222317797",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Lake Ngami",
+        "natural": "water",
+        "source": "Bing",
+        "water": "lake",
+        "wikidata": "Q849108"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Sekushuwe Pan",
+      "lat": -23.2855538,
+      "lon": 24.3939203,
+      "osm_id": "way/226868026",
+      "osm_tags": {
+        "name": "Sekushuwe Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Sunday Pan Waterhole",
+      "lat": -21.3346386,
+      "lon": 23.6820838,
+      "osm_id": "way/232747949",
+      "osm_tags": {
+        "name": "Sunday Pan Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Molose Pan",
+      "lat": -23.3804982,
+      "lon": 24.1839028,
+      "osm_id": "way/269577210",
+      "osm_tags": {
+        "name": "Molose Pan",
+        "natural": "water",
+        "water": "pond"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Mareswe Pan",
+      "lat": -23.564793,
+      "lon": 24.1035424,
+      "osm_id": "way/269577213",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mareswe Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Molose Pan",
+      "lat": -23.4055751,
+      "lon": 24.1642139,
+      "osm_id": "way/269577218",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Molose Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Mabuakolobe Pan",
+      "lat": -23.586682,
+      "lon": 24.0615012,
+      "osm_id": "way/269807261",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mabuakolobe Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Mabuakolobe Pan",
+      "lat": -23.5822032,
+      "lon": 24.0738501,
+      "osm_id": "way/269807262",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Mabuakolobe Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Gwia Pan",
+      "lat": -23.4184368,
+      "lon": 24.4361212,
+      "osm_id": "way/270375508",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Gwia Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Motailane Pan",
+      "lat": -23.3284695,
+      "lon": 24.4551378,
+      "osm_id": "way/270375509",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Motailane Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Khutse Pan 2",
+      "lat": -23.3376903,
+      "lon": 24.4932388,
+      "osm_id": "way/270378657",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Khutse Pan 2",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Motopi Pan",
+      "lat": -21.1343641,
+      "lon": 23.093181,
+      "osm_id": "way/270432878",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Motopi Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Xaxa Waterhole",
+      "lat": -22.2893855,
+      "lon": 23.5874707,
+      "osm_id": "way/270463126",
+      "osm_tags": {
+        "name": "Xaxa Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Piper Pan",
+      "lat": -21.7749927,
+      "lon": 23.2240712,
+      "osm_id": "way/270532224",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Piper Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Piper Pan",
+      "lat": -21.7446604,
+      "lon": 23.1987865,
+      "osm_id": "way/270532226",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Piper Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Hoodla Pan",
+      "lat": -21.5901453,
+      "lon": 23.255081,
+      "osm_id": "way/270533935",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Hoodla Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Tau Pan",
+      "lat": -21.4734075,
+      "lon": 23.4043188,
+      "osm_id": "way/270535766",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Tau Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Deception Pan",
+      "lat": -21.5080083,
+      "lon": 23.8224784,
+      "osm_id": "way/270541782",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Deception Pan",
+        "natural": "water",
+        "salt": "no",
+        "seasonal": "yes",
+        "tidal": "no"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Salt Pan",
+      "lat": -21.4197414,
+      "lon": 23.8046461,
+      "osm_id": "way/270541784",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Salt Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Passarge Valley Pan",
+      "lat": -21.2677868,
+      "lon": 23.4848171,
+      "osm_id": "way/270554692",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Passarge Valley Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Passarge Pan",
+      "lat": -21.3912779,
+      "lon": 23.2403251,
+      "osm_id": "way/270555950",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Passarge Pan",
+        "natural": "water",
+        "seasonal": "wet_season"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Letiahau Valley Pan",
+      "lat": -21.5990818,
+      "lon": 23.6573563,
+      "osm_id": "way/270557062",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Letiahau Valley Pan",
+        "natural": "water",
+        "salt": "no",
+        "seasonal": "yes",
+        "tidal": "no"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Qwee Pan",
+      "lat": -22.859112,
+      "lon": 23.2599415,
+      "osm_id": "way/272821901",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Qwee Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Dqaezana Pan",
+      "lat": -22.8521325,
+      "lon": 23.3020551,
+      "osm_id": "way/272822568",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Dqaezana Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Quoxo",
+      "lat": -22.1339393,
+      "lon": 24.3613789,
+      "osm_id": "way/272825581",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Quoxo",
+        "source": "Yahoo",
+        "tidal": "no",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Qwee Waterhole",
+      "lat": -22.8670711,
+      "lon": 23.2532582,
+      "osm_id": "way/277233687",
+      "osm_tags": {
+        "name": "Qwee Waterhole",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Boteti",
+      "lat": -20.7469574,
+      "lon": 24.3851921,
+      "osm_id": "way/289411022",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Boteti",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Boteti",
+      "lat": -20.544704,
+      "lon": 24.4626764,
+      "osm_id": "way/290496821",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Boteti",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Boteti",
+      "lat": -20.8380364,
+      "lon": 24.3699439,
+      "osm_id": "way/290510915",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Boteti",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Boteti",
+      "lat": -21.1401746,
+      "lon": 24.5824171,
+      "osm_id": "way/330097618",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Boteti",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Passarge Waterhole",
+      "lat": -21.400169,
+      "lon": 23.2346253,
+      "osm_id": "way/441850665",
+      "osm_tags": {
+        "name": "Passarge Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Serorome",
+      "lat": -23.5447535,
+      "lon": 26.1151379,
+      "osm_id": "way/444203496",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Serorome",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Quoxo",
+      "lat": -23.0635951,
+      "lon": 24.4400063,
+      "osm_id": "way/444212052",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Quoxo",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Letiahau Waterhole",
+      "lat": -21.608121,
+      "lon": 23.6172444,
+      "osm_id": "way/451513350",
+      "osm_tags": {
+        "name": "Letiahau Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Phukwi Pan",
+      "lat": -21.4933635,
+      "lon": 23.2622865,
+      "osm_id": "way/451685926",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Phukwi Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Letiahau River",
+      "lat": -21.6207838,
+      "lon": 23.0495636,
+      "osm_id": "way/452107358",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Letiahau River",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Boteti River",
+      "lat": -21.1720033,
+      "lon": 24.8364723,
+      "osm_id": "way/541715899",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Boteti River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Tshilwane Pan",
+      "lat": -23.310213,
+      "lon": 24.4303214,
+      "osm_id": "way/549270009",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Tshilwane Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Nqao Pan",
+      "lat": -23.3784422,
+      "lon": 24.4602378,
+      "osm_id": "way/549272355",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Nqao Pan",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Watering hole: manmade",
+      "lat": -21.5077322,
+      "lon": 22.3852056,
+      "osm_id": "way/686342009",
+      "osm_tags": {
+        "name": "Watering hole: manmade",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Watering hole:manmade",
+      "lat": -21.4420646,
+      "lon": 22.4595952,
+      "osm_id": "way/686342010",
+      "osm_tags": {
+        "name": "Watering hole:manmade",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Watering hole:manmade",
+      "lat": -21.3896907,
+      "lon": 22.4930699,
+      "osm_id": "way/686342011",
+      "osm_tags": {
+        "name": "Watering hole:manmade",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Watering hole:natural",
+      "lat": -21.2832747,
+      "lon": 22.5424883,
+      "osm_id": "way/686342012",
+      "osm_tags": {
+        "name": "Watering hole:natural",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Watering hole:manmade",
+      "lat": -21.2721485,
+      "lon": 22.5657486,
+      "osm_id": "way/686342013",
+      "osm_tags": {
+        "name": "Watering hole:manmade",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Watering hole:manmade",
+      "lat": -21.2719807,
+      "lon": 22.5655669,
+      "osm_id": "way/686342014",
+      "osm_tags": {
+        "name": "Watering hole:manmade",
+        "natural": "water",
+        "water": "reservoir"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole (man made)",
+      "lat": -23.3277184,
+      "lon": 24.4576746,
+      "osm_id": "way/720574532",
+      "osm_tags": {
+        "basin": "retention",
+        "landuse": "basin",
+        "name": "Waterhole (man made)",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -23.5614278,
+      "lon": 24.1016147,
+      "osm_id": "way/720574934",
+      "osm_tags": {
+        "basin": "retention",
+        "name": "Waterhole",
+        "natural": "water",
+        "water": "basin"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -23.3417977,
+      "lon": 24.5058578,
+      "osm_id": "way/720575919",
+      "osm_tags": {
+        "landuse": "basin",
+        "name": "Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Waterhole",
+      "lat": -21.2340887,
+      "lon": 25.3826288,
+      "osm_id": "way/1292590105",
+      "osm_tags": {
+        "intermittent": "yes",
+        "name": "Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "man made waterhole",
+      "lat": -21.2567535,
+      "lon": 25.3312556,
+      "osm_id": "way/1292590776",
+      "osm_tags": {
+        "name": "man made waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Motopi Waterhole",
+      "lat": -21.1330561,
+      "lon": 23.0928843,
+      "osm_id": "way/1393646926",
+      "osm_tags": {
+        "intermittent": "no",
+        "name": "Motopi Waterhole",
+        "natural": "water"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Boteti",
+      "lat": -20.8341799,
+      "lon": 24.3647152,
+      "osm_id": "way/1415625836",
+      "osm_tags": {
+        "boat": "no",
+        "intermittent": "yes",
+        "name": "Boteti",
+        "waterway": "river"
+      }
+    }
+  ]
+}

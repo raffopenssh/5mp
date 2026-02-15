@@ -1,0 +1,928 @@
+{
+  "park_id": "COG_Lac_T\u00e9l\u00e9",
+  "downloaded_at": "2026-02-15T12:01:47.060350+00:00",
+  "buffer_km": 50,
+  "place_count": 71,
+  "places": [
+    {
+      "place_type": "village",
+      "name": "Moboza",
+      "lat": 1.00019,
+      "lon": 17.8699399,
+      "osm_id": "node/631478975",
+      "osm_tags": {
+        "code_ins": "0",
+        "is_in:collectivit\u00e9": "Djamba",
+        "is_in:groupement": "Mamba",
+        "is_in:territoire": "Bomongo",
+        "name": "Moboza",
+        "place": "village",
+        "source": "www.rgc.cd;survey"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Boyoka",
+      "lat": 1.1034308,
+      "lon": 17.9091086,
+      "osm_id": "node/631478977",
+      "osm_tags": {
+        "code_ins": "0",
+        "name": "Boyoka",
+        "place": "village",
+        "source": "www.rgc.cd;survey"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bikondo",
+      "lat": 1.1278299,
+      "lon": 17.92931,
+      "osm_id": "node/631478978",
+      "osm_tags": {
+        "code_ins": "0",
+        "name": "Bikondo",
+        "place": "village",
+        "source": "www.rgc.cd;survey"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bas-Congo",
+      "lat": 1.3275601,
+      "lon": 17.97633,
+      "osm_id": "node/631478991",
+      "osm_tags": {
+        "code_ins": "0",
+        "name": "Bas-Congo",
+        "place": "village",
+        "source": "www.rgc.cd;survey"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ep\u00e9na",
+      "lat": 1.3553849,
+      "lon": 17.4519713,
+      "osm_id": "node/922635540",
+      "osm_tags": {
+        "name": "Ep\u00e9na",
+        "place": "town",
+        "wikidata": "Q5382097",
+        "wikipedia": "fr:Epena"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Toukoulaka",
+      "lat": 1.6832785,
+      "lon": 17.057519,
+      "osm_id": "node/5631295965",
+      "osm_tags": {
+        "name": "Toukoulaka",
+        "place": "village",
+        "source": "Annuaire statistique de la Likouala 2018 (\u00e9d.2020)",
+        "source:2": "RGPH5 (2019)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mobangui",
+      "lat": 1.6864153,
+      "lon": 17.127943,
+      "osm_id": "node/5631303260",
+      "osm_tags": {
+        "name": "Mobangui",
+        "place": "village",
+        "source": "Annuaire Statistique",
+        "source:2": "RGPH5 (2019)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bene",
+      "lat": 1.6911876,
+      "lon": 17.1092105,
+      "osm_id": "node/5631305057",
+      "osm_tags": {
+        "name": "Bene",
+        "place": "village",
+        "source": "Annuaire Statistique de la Likouala 2018 (\u00e9d.2020)",
+        "source:2": "RGPH5 (2019)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Minganga",
+      "lat": 1.7076866,
+      "lon": 17.0003772,
+      "osm_id": "node/5631305071",
+      "osm_tags": {
+        "name": "Minganga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mokengui",
+      "lat": 1.6246859,
+      "lon": 17.3580336,
+      "osm_id": "node/5631309025",
+      "osm_tags": {
+        "name": "Mokengui",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ibolo",
+      "lat": 1.3495885,
+      "lon": 17.4931036,
+      "osm_id": "node/6537620486",
+      "osm_tags": {
+        "name": "Ibolo",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Botala",
+      "lat": 1.4176593,
+      "lon": 17.6127647,
+      "osm_id": "node/6537749906",
+      "osm_tags": {
+        "name": "Botala",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mboua",
+      "lat": 1.682529,
+      "lon": 17.1510562,
+      "osm_id": "node/7086874485",
+      "osm_tags": {
+        "name": "Mboua",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matoko",
+      "lat": 1.3883028,
+      "lon": 17.4747254,
+      "osm_id": "node/7091108085",
+      "osm_tags": {
+        "name": "Matoko",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bass\u00e9la",
+      "lat": 1.3817868,
+      "lon": 17.5984997,
+      "osm_id": "node/8491114639",
+      "osm_tags": {
+        "name": "Bass\u00e9la",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bouaniela",
+      "lat": 0.5067104,
+      "lon": 17.290188,
+      "osm_id": "node/9616203669",
+      "osm_tags": {
+        "name": "Bouaniela",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Pikounda",
+      "lat": 0.549536,
+      "lon": 16.6357583,
+      "osm_id": "node/9616208372",
+      "osm_tags": {
+        "name": "Pikounda",
+        "name:ko": "\ud53c\ucfe4\ub2e4",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbandza",
+      "lat": 1.9821697,
+      "lon": 17.3316761,
+      "osm_id": "node/13259681244",
+      "osm_tags": {
+        "alt_name": "Mbanza",
+        "name": "Mbandza",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Itouzi",
+      "lat": 1.9619633,
+      "lon": 17.3373372,
+      "osm_id": "node/13260482701",
+      "osm_tags": {
+        "name": "Itouzi",
+        "place": "village",
+        "source": "Annuaire Statistique de la Likouala 2018 (\u00e9d.2020)",
+        "source:2": "RGPH5 (2019)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bond\u00e9ko",
+      "lat": 1.9066833,
+      "lon": 17.3513106,
+      "osm_id": "node/13260482736",
+      "osm_tags": {
+        "name": "Bond\u00e9ko",
+        "place": "village",
+        "source": "Annuaire Statistique de la Likouala 2018 (\u00e9d.2020)",
+        "source:2": "RGPH5 (2019)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mbeti",
+      "lat": 1.9353595,
+      "lon": 17.3438132,
+      "osm_id": "node/13260482737",
+      "osm_tags": {
+        "name": "Mbeti",
+        "place": "village",
+        "source": "Annuaire Statistique de la Likouala 2018 (\u00e9d.2020)",
+        "source:2": "RGPH5 (2019)",
+        "source:3": "Mapcarta"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Matali",
+      "lat": 0.7599072,
+      "lon": 16.6290105,
+      "osm_id": "node/13267131264",
+      "osm_tags": {
+        "name": "Matali",
+        "place": "village",
+        "source": "RGPH5(2019)",
+        "source:2": "Annuaire Statistique de la Sangha 2018 (\u00e9d.2020)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bussinde",
+      "lat": 0.8438981,
+      "lon": 16.594163,
+      "osm_id": "node/13267200705",
+      "osm_tags": {
+        "alt_name": "Bosende",
+        "name": "Bussinde",
+        "place": "hamlet",
+        "source": "GetAMap"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bemb\u00e9",
+      "lat": 1.2122117,
+      "lon": 16.5404526,
+      "osm_id": "node/13267200768",
+      "osm_tags": {
+        "alt_name": "Pemb\u00e9",
+        "name": "Bemb\u00e9",
+        "place": "hamlet",
+        "source": "GetAMap"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndoki I",
+      "lat": 1.5824928,
+      "lon": 16.609771,
+      "osm_id": "node/13267235143",
+      "osm_tags": {
+        "name": "Ndoki I",
+        "place": "village",
+        "source": "RGPH5 (2019)",
+        "source:2": "Annuaire Statistique de la Sangha 2018 (\u00e9d.2020)"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndoki II",
+      "lat": 1.8714217,
+      "lon": 16.6179032,
+      "osm_id": "node/13267235182",
+      "osm_tags": {
+        "alt_name": "Mokobo",
+        "name": "Ndoki II",
+        "place": "village",
+        "source": "RGPH5(2019)",
+        "source:2": "Annuaire Statistique de la Sangha 2018 (\u00e9d.2020)"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Komo",
+      "lat": 1.6642639,
+      "lon": 16.8184861,
+      "osm_id": "node/13267266417",
+      "osm_tags": {
+        "name": "Komo",
+        "place": "hamlet",
+        "source": "Annuaire Stati"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Ibamba",
+      "lat": 1.2076052,
+      "lon": 16.7676439,
+      "osm_id": "node/13277646618",
+      "osm_tags": {
+        "name": "Ibamba",
+        "place": "hamlet",
+        "source": "PLAN D'AMENAGEMENT DE L'UFA LOUNDOUNGOU-TOUKOULAKA 2014"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makossos",
+      "lat": 1.8161185,
+      "lon": 17.3761047,
+      "osm_id": "node/13316681355",
+      "osm_tags": {
+        "name": "Makossos",
+        "place": "village",
+        "source": "PLAN D AMENAGEMENT DE L'UFA LOUNDOUNGOU-TOUKOULAKA 2014"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sangha",
+      "lat": 0.8184814,
+      "lon": 16.700429,
+      "osm_id": "way/78507564",
+      "osm_tags": {
+        "name": "Sangha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sangha",
+      "lat": 0.1731344,
+      "lon": 16.9971424,
+      "osm_id": "way/78508510",
+      "osm_tags": {
+        "name": "Sangha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndoki",
+      "lat": 1.8635353,
+      "lon": 16.6145146,
+      "osm_id": "way/78635480",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ndoki",
+        "name:en": "Ndoki River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 1.7009587,
+      "lon": 17.3574973,
+      "osm_id": "way/78642666",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ubangi",
+      "lat": 0.0171086,
+      "lon": 17.8145748,
+      "osm_id": "way/78669404",
+      "osm_tags": {
+        "alt_name": "Oubangui",
+        "name": "Ubangi",
+        "name:en": "Ubangi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ubangi",
+      "lat": 1.3457842,
+      "lon": 17.9598355,
+      "osm_id": "way/78669427",
+      "osm_tags": {
+        "alt_name": "Oubangui",
+        "name": "Ubangi",
+        "name:en": "Ubangi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ngiri",
+      "lat": 0.4372225,
+      "lon": 17.9839318,
+      "osm_id": "way/78723257",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ngiri",
+        "name:en": "Ngiri River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ngiri",
+      "lat": 0.6670935,
+      "lon": 18.0145267,
+      "osm_id": "way/78724089",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ngiri",
+        "name:en": "Ngiri River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 1.1147233,
+      "lon": 17.3418786,
+      "osm_id": "way/79013681",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 0.9336699,
+      "lon": 17.1132961,
+      "osm_id": "way/79013697",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 0.2674808,
+      "lon": 17.4347578,
+      "osm_id": "way/79013725",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aus-Herbes",
+      "lat": 1.2089092,
+      "lon": 17.4060895,
+      "osm_id": "way/79013731",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aus-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aus-Herbes",
+      "lat": 1.0200244,
+      "lon": 17.2281317,
+      "osm_id": "way/79013741",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aus-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 0.0633535,
+      "lon": 17.45305,
+      "osm_id": "way/79013756",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 0.7184616,
+      "lon": 17.1397804,
+      "osm_id": "way/79013765",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 0.5667854,
+      "lon": 17.2497952,
+      "osm_id": "way/79013781",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bailly",
+      "lat": 1.2942657,
+      "lon": 17.0104511,
+      "osm_id": "way/79175703",
+      "osm_tags": {
+        "alt_name": "Bali",
+        "boat": "no",
+        "name": "Bailly",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Tanga",
+      "lat": 1.3976351,
+      "lon": 17.5535834,
+      "osm_id": "way/79175705",
+      "osm_tags": {
+        "name": "Tanga",
+        "source": "landsat",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Batanga",
+      "lat": 0.5944594,
+      "lon": 17.3260868,
+      "osm_id": "way/79175707",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Batanga",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bailly",
+      "lat": 1.0436687,
+      "lon": 17.050679,
+      "osm_id": "way/79175710",
+      "osm_tags": {
+        "alt_name": "Bali",
+        "boat": "no",
+        "name": "Bailly",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 0.4300025,
+      "lon": 17.3777427,
+      "osm_id": "way/79175715",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Bailly",
+      "lat": 0.9512428,
+      "lon": 17.0646014,
+      "osm_id": "way/79175730",
+      "osm_tags": {
+        "alt_name": "Bali",
+        "boat": "no",
+        "name": "Bailly",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 1.3936953,
+      "lon": 17.4665739,
+      "osm_id": "way/79175735",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 1.3098691,
+      "lon": 17.4553471,
+      "osm_id": "way/79175739",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndoki",
+      "lat": 1.5650884,
+      "lon": 16.5724167,
+      "osm_id": "way/79177698",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ndoki",
+        "name:en": "Ndoki River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndoki",
+      "lat": 2.0368097,
+      "lon": 16.559294,
+      "osm_id": "way/79177713",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ndoki",
+        "name:en": "Ndoki River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndoki",
+      "lat": 1.6982904,
+      "lon": 16.6152027,
+      "osm_id": "way/79177725",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ndoki",
+        "name:en": "Ndoki River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lac T\u00e9l\u00e9",
+      "lat": 1.3433413,
+      "lon": 17.1488525,
+      "osm_id": "way/139189237",
+      "osm_tags": {
+        "name": "Lac T\u00e9l\u00e9",
+        "name:en": "Lake T\u00e9l\u00e9",
+        "natural": "water",
+        "source:position": "Bing Imagery",
+        "source:tracer": "scanaerial",
+        "source:zoomlevel": "13",
+        "water": "lake",
+        "wikidata": "Q1799617",
+        "wikipedia": "fr:Lac T\u00e9l\u00e9 (R\u00e9publique du Congo)"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ngiri",
+      "lat": 0.3113649,
+      "lon": 17.9275131,
+      "osm_id": "way/158867555",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ngiri",
+        "name:en": "Ngiri River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Mpoka",
+      "lat": -0.0996625,
+      "lon": 17.8527915,
+      "osm_id": "way/219638850",
+      "osm_tags": {
+        "name": "Mpoka",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndoki",
+      "lat": 2.1343684,
+      "lon": 16.472059,
+      "osm_id": "way/321698842",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ndoki",
+        "name:en": "Ndoki River",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 1.5924086,
+      "lon": 17.3743684,
+      "osm_id": "way/485577511",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 1.5063288,
+      "lon": 17.4026117,
+      "osm_id": "way/485577512",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 1.4385998,
+      "lon": 17.4303901,
+      "osm_id": "way/485577516",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ubangi",
+      "lat": 0.6362701,
+      "lon": 17.8782798,
+      "osm_id": "way/775682929",
+      "osm_tags": {
+        "alt_name": "Oubangui",
+        "name": "Ubangi",
+        "name:en": "Ubangi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ubangi",
+      "lat": 0.7291799,
+      "lon": 17.8696097,
+      "osm_id": "way/775687010",
+      "osm_tags": {
+        "alt_name": "Oubangui",
+        "name": "Ubangi",
+        "name:en": "Ubangi River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "lake",
+      "name": "Lac Mboukou",
+      "lat": 0.9509877,
+      "lon": 17.3802911,
+      "osm_id": "way/821375389",
+      "osm_tags": {
+        "name": "Lac Mboukou",
+        "name:en": "Lake Mboukou",
+        "natural": "water",
+        "water": "lake",
+        "wikidata": "Q28223428",
+        "wikipedia": "en:Lake Mboukou"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Sangha",
+      "lat": 1.2896123,
+      "lon": 16.4169769,
+      "osm_id": "way/1199237657",
+      "osm_tags": {
+        "admin_level": "6",
+        "boundary": "administrative",
+        "name": "Sangha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 0.8517144,
+      "lon": 17.0922682,
+      "osm_id": "way/1223463162",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Likouala-aux-Herbes",
+      "lat": 1.6536284,
+      "lon": 17.3627342,
+      "osm_id": "way/1223463163",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Likouala-aux-Herbes",
+        "source": "landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndoki",
+      "lat": 1.9583867,
+      "lon": 16.5866533,
+      "osm_id": "way/1379084554",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ndoki",
+        "name:en": "Ndoki River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ndoki",
+      "lat": 1.8023118,
+      "lon": 16.6230599,
+      "osm_id": "way/1379084555",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Ndoki",
+        "name:en": "Ndoki River",
+        "source": "Yahoo",
+        "waterway": "river"
+      }
+    }
+  ]
+}

@@ -1,0 +1,2365 @@
+{
+  "park_id": "COD_Garamba",
+  "downloaded_at": "2026-02-15T11:09:24.872499+00:00",
+  "buffer_km": 50,
+  "place_count": 179,
+  "places": [
+    {
+      "place_type": "town",
+      "name": "Maridi",
+      "lat": 4.9143633,
+      "lon": 29.4645282,
+      "osm_id": "node/217893617",
+      "osm_tags": {
+        "name": "Maridi",
+        "name:ar": "\u0645\u0627\u0631\u064a\u062f\u064a",
+        "name:ru": "\u041c\u0430\u0440\u0438\u0434\u0438",
+        "place": "town",
+        "wikidata": "Q3132444",
+        "wikipedia": "en:Maridi"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Madebe",
+      "lat": 4.7993256,
+      "lon": 28.99853,
+      "osm_id": "node/243454869",
+      "osm_tags": {
+        "name": "Madebe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mambe",
+      "lat": 5.0242656,
+      "lon": 29.7129773,
+      "osm_id": "node/435797976",
+      "osm_tags": {
+        "name": "Mambe",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Dungu",
+      "lat": 3.6195433,
+      "lon": 28.5699237,
+      "osm_id": "node/478519180",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:groupement": "Dungu",
+        "is_in:territoire": "Dungu",
+        "name": "Dungu",
+        "place": "town",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Faradje",
+      "lat": 3.7318588,
+      "lon": 29.7064664,
+      "osm_id": "node/626623360",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Logo-Ogambi",
+        "is_in:territoire": "Faradje",
+        "name": "Faradje",
+        "name:ru": "\u0424\u0430\u0440\u0430\u0434\u0436\u0435",
+        "place": "town",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Tadu",
+      "lat": 3.4634465,
+      "lon": 29.7017059,
+      "osm_id": "node/1154349430",
+      "osm_tags": {
+        "name": "Tadu",
+        "place": "town",
+        "source": "GeoNames"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Wando",
+      "lat": 3.6281223,
+      "lon": 29.1577842,
+      "osm_id": "node/1154462619",
+      "osm_tags": {
+        "fixme": "yes",
+        "name": "Wando",
+        "place": "village",
+        "source": "UN OCHA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lipye",
+      "lat": 3.444198,
+      "lon": 28.6624638,
+      "osm_id": "node/1154462709",
+      "osm_tags": {
+        "fixme": "yes",
+        "name": "Lipye",
+        "place": "village",
+        "source": "UN OCHA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndedu",
+      "lat": 3.3251244,
+      "lon": 28.6346831,
+      "osm_id": "node/1154462750",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Ndedu",
+        "place": "village",
+        "source": "GPS;UN OCHA",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Bumva",
+      "lat": 3.4717946,
+      "lon": 29.3814474,
+      "osm_id": "node/1154493860",
+      "osm_tags": {
+        "name": "Bumva",
+        "place": "town",
+        "source": "UN OCHA"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Adau",
+      "lat": 3.7268448,
+      "lon": 30.3084613,
+      "osm_id": "node/1157841079",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Logo-Bagela",
+        "is_in:territoire": "Faradje",
+        "name": "Adau",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Li Lungbu",
+      "lat": 3.315851,
+      "lon": 28.7257634,
+      "osm_id": "node/1157841100",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Li Lungbu",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nakolomba",
+      "lat": 3.6503907,
+      "lon": 29.0972548,
+      "osm_id": "node/1157841117",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Nakolomba",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bitima",
+      "lat": 4.354117,
+      "lon": 28.6268018,
+      "osm_id": "node/1157841152",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "name": "Bitima",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2007/05/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kidri",
+      "lat": 3.7854149,
+      "lon": 29.7878802,
+      "osm_id": "node/1157841184",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Logo-Ogambi",
+        "is_in:territoire": "Faradje",
+        "name": "Kidri",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dukpa",
+      "lat": 3.4325746,
+      "lon": 28.6347184,
+      "osm_id": "node/1157841196",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Dukpa",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Banga",
+      "lat": 3.9218378,
+      "lon": 30.344176,
+      "osm_id": "node/1157841208",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Faradje",
+        "name": "Banga",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kumbo Longo",
+      "lat": 3.9703361,
+      "lon": 28.70428,
+      "osm_id": "node/1157841218",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "fixme": "no village located here",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Kumbo Longo",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/06/10",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Udu",
+      "lat": 3.7920054,
+      "lon": 29.8684322,
+      "osm_id": "node/1157841232",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Logo-Ogambi",
+        "is_in:territoire": "Faradje",
+        "name": "Udu",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Avuku",
+      "lat": 3.8059521,
+      "lon": 30.2699693,
+      "osm_id": "node/1157841253",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Logo-Bagela",
+        "is_in:territoire": "Faradje",
+        "name": "Avuku",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nambili",
+      "lat": 3.9948349,
+      "lon": 28.701057,
+      "osm_id": "node/1157841272",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Nambili",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2007/05/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Laso",
+      "lat": 3.9278997,
+      "lon": 30.3608076,
+      "osm_id": "node/1157841297",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "name": "Laso",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Lagabe",
+      "lat": 3.7776237,
+      "lon": 30.2968804,
+      "osm_id": "node/1157841304",
+      "osm_tags": {
+        "alt_name": "Langabe",
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Logo-Bagela",
+        "is_in:territoire": "Faradje",
+        "name": "Lagabe",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Biodi",
+      "lat": 3.2989591,
+      "lon": 28.5844838,
+      "osm_id": "node/1157841316",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Biodi",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Togo",
+      "lat": 3.9114551,
+      "lon": 28.743808,
+      "osm_id": "node/1157841320",
+      "osm_tags": {
+        "alt_name": "Kiliwa",
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Togo",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Doya",
+      "lat": 3.8068394,
+      "lon": 29.892755,
+      "osm_id": "node/1157841357",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Logo-Ogambi",
+        "is_in:groupement": "Djabir",
+        "is_in:territoire": "Faradje",
+        "name": "Doya",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndada Centre",
+      "lat": 3.4579265,
+      "lon": 28.9936886,
+      "osm_id": "node/1157841373",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Ndada Centre",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Linakofo",
+      "lat": 3.6887395,
+      "lon": 28.6123968,
+      "osm_id": "node/1157841408",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Linakofo",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2007/05/17",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ataki",
+      "lat": 3.7593152,
+      "lon": 30.1590703,
+      "osm_id": "node/1157841469",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Logo-Lolia",
+        "is_in:territoire": "Faradje",
+        "name": "Ataki",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bunga",
+      "lat": 3.3534315,
+      "lon": 28.7962991,
+      "osm_id": "node/1157841502",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Bunga",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nabiapay",
+      "lat": 4.3837396,
+      "lon": 28.5758704,
+      "osm_id": "node/1157841509",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "name": "Nabiapay",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/06/10",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Limai",
+      "lat": 3.81369,
+      "lon": 28.633833,
+      "osm_id": "node/1157841557",
+      "osm_tags": {
+        "alt_name": "Mai",
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Limai",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2007/05/17",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Aba",
+      "lat": 3.8627171,
+      "lon": 30.2355777,
+      "osm_id": "node/1157841598",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "name": "Aba",
+        "place": "town",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nambia",
+      "lat": 4.193367,
+      "lon": 28.7653709,
+      "osm_id": "node/1157841624",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Nambia",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2007/05/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nagero",
+      "lat": 3.7183688,
+      "lon": 29.5346166,
+      "osm_id": "node/1157841644",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Nagero",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Kurkwata",
+      "lat": 3.8218365,
+      "lon": 30.0520218,
+      "osm_id": "node/1157841662",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Mondo",
+        "is_in:territoire": "Faradje",
+        "name": "Kurkwata",
+        "place": "town",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bungu",
+      "lat": 3.516159,
+      "lon": 28.5125199,
+      "osm_id": "node/1157841669",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:territoire": "Niangara",
+        "name": "Bungu",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Urusu",
+      "lat": 3.6517172,
+      "lon": 30.3434817,
+      "osm_id": "node/1157841688",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Logo-Bagela",
+        "is_in:territoire": "Faradje",
+        "name": "Urusu",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Duru",
+      "lat": 4.245066,
+      "lon": 28.7524811,
+      "osm_id": "node/1157841700",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Duru",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2007/05/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Falasumba",
+      "lat": 3.65018,
+      "lon": 29.3016155,
+      "osm_id": "node/1157841714",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Falasumba",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nambiongo",
+      "lat": 3.7715648,
+      "lon": 28.6188067,
+      "osm_id": "node/1157841717",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Nambiongo",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2007/05/17",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dramba",
+      "lat": 3.6629359,
+      "lon": 30.3096012,
+      "osm_id": "node/1157841762",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Logo-Bagela",
+        "is_in:territoire": "Faradje",
+        "name": "Dramba",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2008/06/13",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dungumai",
+      "lat": 3.6505691,
+      "lon": 28.5741117,
+      "osm_id": "node/1157841764",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Dungumai",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2007/05/17",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ndada",
+      "lat": 3.4860598,
+      "lon": 28.9352755,
+      "osm_id": "node/1157841798",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Ndada",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2009/01/15",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kpaika",
+      "lat": 4.0668489,
+      "lon": 28.6749518,
+      "osm_id": "node/1157841862",
+      "osm_tags": {
+        "attribution": "\u00abCes donn\u00e9es g\u00e9ographiques proviennent du R\u00e9f\u00e9rentiel G\u00e9ographique Commun (www.rgc.cd).\u00bb",
+        "is_in:collectivit\u00e9": "Wando",
+        "is_in:territoire": "Dungu",
+        "name": "Kpaika",
+        "place": "village",
+        "source": "GPS",
+        "source:date": "2007/05/17",
+        "source_ref": "www.rgc.cd"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Gangala-na-Bodio",
+      "lat": 3.6797386,
+      "lon": 29.1362535,
+      "osm_id": "node/1931036800",
+      "osm_tags": {
+        "name": "Gangala-na-Bodio",
+        "place": "village",
+        "wikidata": "Q5521041",
+        "wikipedia": "en:Gangala-na-Bodio"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Bagunda",
+      "lat": 4.0705192,
+      "lon": 29.5830967,
+      "osm_id": "node/1931556895",
+      "osm_tags": {
+        "ele": "980",
+        "name": "Mont Bagunda",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Kpaza",
+      "lat": 4.2405731,
+      "lon": 29.6386513,
+      "osm_id": "node/1931556896",
+      "osm_tags": {
+        "ele": "870",
+        "name": "Mont Kpaza",
+        "natural": "peak"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Simia",
+      "lat": 3.50268,
+      "lon": 29.976746,
+      "osm_id": "node/2147955591",
+      "osm_tags": {
+        "name": "Simia",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nabanga",
+      "lat": 4.489687,
+      "lon": 29.0851012,
+      "osm_id": "node/2605757963",
+      "osm_tags": {
+        "name": "Nabanga",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Yei",
+      "lat": 4.5890072,
+      "lon": 29.856913,
+      "osm_id": "node/2605758243",
+      "osm_tags": {
+        "name": "Yei",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nagero",
+      "lat": 3.7512148,
+      "lon": 29.5192738,
+      "osm_id": "node/3234943267",
+      "osm_tags": {
+        "name": "Nagero",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nzopi",
+      "lat": 3.2852258,
+      "lon": 29.5924285,
+      "osm_id": "node/4069802705",
+      "osm_tags": {
+        "name": "Nzopi",
+        "place": "village",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/206818/nzopi.html"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Tore",
+      "lat": 4.5044766,
+      "lon": 30.1549843,
+      "osm_id": "node/4985225200",
+      "osm_tags": {
+        "name": "Tore",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Zumoi",
+      "lat": 3.2704158,
+      "lon": 29.4001758,
+      "osm_id": "node/5869742710",
+      "osm_tags": {
+        "name": "Zumoi",
+        "place": "village",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/8028510/zumoi.html"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Mendu",
+      "lat": 3.2739773,
+      "lon": 29.3355667,
+      "osm_id": "node/5869742759",
+      "osm_tags": {
+        "name": "Mendu",
+        "place": "village",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/8025477/mendu.html"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Kengengu",
+      "lat": 3.3063571,
+      "lon": 29.254446,
+      "osm_id": "node/5869742760",
+      "osm_tags": {
+        "name": "Kengengu",
+        "place": "village",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/213469/kengengu.html"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Bakordi",
+      "lat": 4.79193,
+      "lon": 28.7777009,
+      "osm_id": "node/7193166779",
+      "osm_tags": {
+        "name": "Bakordi",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Rimenze",
+      "lat": 4.7101451,
+      "lon": 28.5904101,
+      "osm_id": "node/7193522649",
+      "osm_tags": {
+        "name": "Rimenze",
+        "place": "village",
+        "wikidata": "Q59773490",
+        "wikipedia": "de:Rimenze"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Ibba",
+      "lat": 4.7914257,
+      "lon": 29.1364822,
+      "osm_id": "node/8656529902",
+      "osm_tags": {
+        "name": "Ibba",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Dikilimbi",
+      "lat": 3.2510415,
+      "lon": 29.7730524,
+      "osm_id": "node/13015393346",
+      "osm_tags": {
+        "name": "Dikilimbi",
+        "name:ru": "\u0414\u0438\u043a\u0438\u043b\u0438\u043c\u0431\u0438",
+        "place": "village",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/217295/dikilimbi.html"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Nzoro",
+      "lat": 3.3228838,
+      "lon": 29.4991465,
+      "osm_id": "node/13015473273",
+      "osm_tags": {
+        "name": "Nzoro",
+        "name:ru": "\u041d\u0437\u043e\u0440\u043e",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Magobo",
+      "lat": 3.2849219,
+      "lon": 29.4073792,
+      "osm_id": "node/13015473274",
+      "osm_tags": {
+        "name": "Magobo",
+        "place": "hamlet",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/8028509/magobo.html"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Motsho",
+      "lat": 3.3098443,
+      "lon": 29.3971879,
+      "osm_id": "node/13015473386",
+      "osm_tags": {
+        "name": "Mont Motsho",
+        "natural": "peak",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/8025473/mont-motsho.html"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Aginaso",
+      "lat": 3.3351456,
+      "lon": 29.3930171,
+      "osm_id": "node/13015473396",
+      "osm_tags": {
+        "name": "Aginaso",
+        "place": "village",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/220472/aginaso.html"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Subani",
+      "lat": 3.3583008,
+      "lon": 29.2837418,
+      "osm_id": "node/13015473413",
+      "osm_tags": {
+        "name": "Subani",
+        "place": "village",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/205416/subani.html"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Mbiri",
+      "lat": 3.3233519,
+      "lon": 29.2325292,
+      "osm_id": "node/13015473425",
+      "osm_tags": {
+        "name": "Mbiri",
+        "place": "hamlet",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/8025480/mbiri.html"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Tora",
+      "lat": 3.3308313,
+      "lon": 29.1770561,
+      "osm_id": "node/13015473426",
+      "osm_tags": {
+        "name": "Tora",
+        "place": "village",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/205115/tora.html"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Esuaka",
+      "lat": 3.4297337,
+      "lon": 29.1869477,
+      "osm_id": "node/13015473435",
+      "osm_tags": {
+        "alt_name": "Essuka",
+        "name": "Esuaka",
+        "place": "village",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/216621/esuaka.html"
+      }
+    },
+    {
+      "place_type": "hamlet",
+      "name": "Bibi",
+      "lat": 3.3976385,
+      "lon": 29.1956397,
+      "osm_id": "node/13015473445",
+      "osm_tags": {
+        "name": "Bibi",
+        "place": "hamlet",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/218964/bibi.html"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Ao",
+      "lat": 3.4193325,
+      "lon": 29.0314906,
+      "osm_id": "node/13015489202",
+      "osm_tags": {
+        "name": "Ao",
+        "place": "village",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/8198567/ao.html"
+      }
+    },
+    {
+      "place_type": "mountain",
+      "name": "Mont Liwa",
+      "lat": 3.3495301,
+      "lon": 30.4057811,
+      "osm_id": "node/13029256130",
+      "osm_tags": {
+        "name": "Mont Liwa",
+        "natural": "peak",
+        "wikidata": "Q22544446"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Uele",
+      "lat": 3.6447116,
+      "lon": 28.4623747,
+      "osm_id": "way/93055913",
+      "osm_tags": {
+        "alt_name": "Ou\u00e9l\u00e9",
+        "name": "Uele",
+        "name:ln": "W\u025bl\u025b",
+        "waterway": "river",
+        "wikipedia": "en:Uele River",
+        "wikipedia:fr": "Uele (rivi\u00e8re)"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.6293971,
+      "lon": 28.5720409,
+      "osm_id": "way/93055914",
+      "osm_tags": {
+        "name": "Dungu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.6093359,
+      "lon": 28.5698211,
+      "osm_id": "way/93055915",
+      "osm_tags": {
+        "name": "Kibali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.7417954,
+      "lon": 30.0142895,
+      "osm_id": "way/93830549",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Garamba",
+      "lat": 4.0391697,
+      "lon": 29.6130185,
+      "osm_id": "way/93830551",
+      "osm_tags": {
+        "name": "Garamba",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Aka",
+      "lat": 3.8776471,
+      "lon": 29.0770913,
+      "osm_id": "way/93830552",
+      "osm_tags": {
+        "name": "Aka",
+        "note": "relation delineating Garamba National Park is currently broken, needs fixing!",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Aka",
+      "lat": 4.0008805,
+      "lon": 29.2331813,
+      "osm_id": "way/93830553",
+      "osm_tags": {
+        "name": "Aka",
+        "note": "relation delineating Garamba National Park is currently broken, needs fixing!",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.59748,
+      "lon": 29.0058951,
+      "osm_id": "way/99863039",
+      "osm_tags": {
+        "name": "Kibali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.6885833,
+      "lon": 28.6445038,
+      "osm_id": "way/121950401",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.3185541,
+      "lon": 29.2998866,
+      "osm_id": "way/122060944",
+      "osm_tags": {
+        "name": "Kibali",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3108859,
+      "lon": 29.4478861,
+      "osm_id": "way/122060947",
+      "osm_tags": {
+        "name": "Nzoro",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Narukenge",
+      "lat": 3.7721178,
+      "lon": 29.1044273,
+      "osm_id": "way/182797157",
+      "osm_tags": {
+        "name": "Narukenge",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Utua",
+      "lat": 3.9260752,
+      "lon": 30.0624259,
+      "osm_id": "way/182797158",
+      "osm_tags": {
+        "name": "Utua",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.8301856,
+      "lon": 28.926539,
+      "osm_id": "way/317247675",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.7772851,
+      "lon": 29.4557872,
+      "osm_id": "way/317247677",
+      "osm_tags": {
+        "name": "Dungu",
+        "note": "relation delineating Garamba National Park is currently broken, needs fixing!",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.7940599,
+      "lon": 28.9996002,
+      "osm_id": "way/317247686",
+      "osm_tags": {
+        "name": "Dungu",
+        "note": "relation delineating Garamba National Park is currently broken, needs fixing!",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Garamba",
+      "lat": 3.9493008,
+      "lon": 29.3807104,
+      "osm_id": "way/317247687",
+      "osm_tags": {
+        "name": "Garamba",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "village",
+      "name": "Makpandu",
+      "lat": 4.753234,
+      "lon": 28.7012025,
+      "osm_id": "way/375001234",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Makpandu",
+        "place": "village"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0082357,
+      "lon": 28.7278742,
+      "osm_id": "way/455510068",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 4.9932396,
+      "lon": 28.7819195,
+      "osm_id": "way/455513272",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 4.9622286,
+      "lon": 28.8023201,
+      "osm_id": "way/455514501",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Garamba",
+      "lat": 4.1105315,
+      "lon": 29.6845717,
+      "osm_id": "way/530225826",
+      "osm_tags": {
+        "name": "Garamba",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Garamba",
+      "lat": 4.1732559,
+      "lon": 29.8331149,
+      "osm_id": "way/530225827",
+      "osm_tags": {
+        "name": "Garamba",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3692229,
+      "lon": 30.3347781,
+      "osm_id": "way/530288583",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3783187,
+      "lon": 30.0665251,
+      "osm_id": "way/530288599",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu Muke",
+      "lat": 3.7504493,
+      "lon": 29.5415352,
+      "osm_id": "way/530324185",
+      "osm_tags": {
+        "name": "Dungu Muke",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.2619046,
+      "lon": 29.4986048,
+      "osm_id": "way/530510228",
+      "osm_tags": {
+        "name": "Kibali",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.3581808,
+      "lon": 29.2701596,
+      "osm_id": "way/530510298",
+      "osm_tags": {
+        "name": "Kibali",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.2881965,
+      "lon": 29.3810348,
+      "osm_id": "way/530510299",
+      "osm_tags": {
+        "name": "Kibali",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3057782,
+      "lon": 29.6920381,
+      "osm_id": "way/533559782",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3454507,
+      "lon": 29.8692426,
+      "osm_id": "way/533559783",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.8436556,
+      "lon": 29.6285486,
+      "osm_id": "way/540213269",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.6195306,
+      "lon": 28.5638872,
+      "osm_id": "way/540962191",
+      "osm_tags": {
+        "name": "Dungu",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.2692723,
+      "lon": 29.6254615,
+      "osm_id": "way/541885586",
+      "osm_tags": {
+        "name": "Nzoro",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.748264,
+      "lon": 29.7034344,
+      "osm_id": "way/541885595",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "town",
+      "name": "Faradje",
+      "lat": 3.7059178,
+      "lon": 29.7053281,
+      "osm_id": "way/585735417",
+      "osm_tags": {
+        "landuse": "residential",
+        "name": "Faradje",
+        "name:ru": "\u0424\u0430\u0440\u0430\u0434\u0436\u0435",
+        "place": "town"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Yei River",
+      "lat": 5.0790293,
+      "lon": 30.4481983,
+      "osm_id": "way/596722588",
+      "osm_tags": {
+        "boat": "no",
+        "name": "Yei River",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0028358,
+      "lon": 28.7599225,
+      "osm_id": "way/614133409",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 4.7712209,
+      "lon": 28.8701594,
+      "osm_id": "way/689095927",
+      "osm_tags": {
+        "fixme": "accuracy",
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Utua",
+      "lat": 3.8953907,
+      "lon": 29.8092676,
+      "osm_id": "way/743554610",
+      "osm_tags": {
+        "name": "Utua",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Duru",
+      "lat": 4.2105109,
+      "lon": 28.7226939,
+      "osm_id": "way/745836296",
+      "osm_tags": {
+        "name": "Duru",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "River-alpha",
+      "lat": 4.4374017,
+      "lon": 29.4275981,
+      "osm_id": "way/746555777",
+      "osm_tags": {
+        "name": "River-alpha",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Duru",
+      "lat": 3.9117132,
+      "lon": 28.4415216,
+      "osm_id": "way/747116568",
+      "osm_tags": {
+        "name": "Duru",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Duru",
+      "lat": 4.1698146,
+      "lon": 28.6818966,
+      "osm_id": "way/747359646",
+      "osm_tags": {
+        "name": "Duru",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Duru",
+      "lat": 4.0052151,
+      "lon": 28.5671947,
+      "osm_id": "way/747359647",
+      "osm_tags": {
+        "name": "Duru",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "stream",
+      "name": "Solo",
+      "lat": 4.4300271,
+      "lon": 28.7581747,
+      "osm_id": "way/750117924",
+      "osm_tags": {
+        "name": "Solo",
+        "waterway": "stream"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Solo",
+      "lat": 4.2707287,
+      "lon": 28.737649,
+      "osm_id": "way/750117929",
+      "osm_tags": {
+        "name": "Solo",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Duru",
+      "lat": 4.1049411,
+      "lon": 28.6374524,
+      "osm_id": "way/755806877",
+      "osm_tags": {
+        "name": "Duru",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0166446,
+      "lon": 28.5387001,
+      "osm_id": "way/770641298",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source:name": "PerryCasta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0164308,
+      "lon": 28.6395107,
+      "osm_id": "way/770641300",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source:name": "PerryCasta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Ibba",
+      "lat": 5.114657,
+      "lon": 29.0609049,
+      "osm_id": "way/770744593",
+      "osm_tags": {
+        "name": "Ibba",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3049647,
+      "lon": 30.2227691,
+      "osm_id": "way/775113621",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3063443,
+      "lon": 30.2619125,
+      "osm_id": "way/775113622",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Uele",
+      "lat": 3.6150444,
+      "lon": 28.5513383,
+      "osm_id": "way/775126352",
+      "osm_tags": {
+        "alt_name": "Ou\u00e9l\u00e9",
+        "name": "Uele",
+        "name:ln": "W\u025bl\u025b",
+        "waterway": "river",
+        "wikipedia": "en:Uele River",
+        "wikipedia:fr": "Uele (rivi\u00e8re)"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Uele",
+      "lat": 3.621373,
+      "lon": 28.5237562,
+      "osm_id": "way/775126358",
+      "osm_tags": {
+        "alt_name": "Ou\u00e9l\u00e9",
+        "name": "Uele",
+        "name:ln": "W\u025bl\u025b",
+        "waterway": "river",
+        "wikipedia": "en:Uele River",
+        "wikipedia:fr": "Uele (rivi\u00e8re)"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Garamba",
+      "lat": 4.087035,
+      "lon": 29.6705129,
+      "osm_id": "way/775252022",
+      "osm_tags": {
+        "name": "Garamba",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Garamba",
+      "lat": 3.9930556,
+      "lon": 29.5539039,
+      "osm_id": "way/775252023",
+      "osm_tags": {
+        "name": "Garamba",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.8015816,
+      "lon": 29.6667091,
+      "osm_id": "way/775252025",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.4565176,
+      "lon": 29.1831901,
+      "osm_id": "way/775252027",
+      "osm_tags": {
+        "name": "Kibali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.4064616,
+      "lon": 29.2349261,
+      "osm_id": "way/775252028",
+      "osm_tags": {
+        "name": "Kibali",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3151608,
+      "lon": 29.5486415,
+      "osm_id": "way/775258221",
+      "osm_tags": {
+        "name": "Nzoro",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3219065,
+      "lon": 30.1971527,
+      "osm_id": "way/775258222",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.2916947,
+      "lon": 29.7118324,
+      "osm_id": "way/775268490",
+      "osm_tags": {
+        "fixme": "inaccurate",
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.338982,
+      "lon": 29.4893914,
+      "osm_id": "way/775320482",
+      "osm_tags": {
+        "name": "Nzoro",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.2981899,
+      "lon": 29.4579261,
+      "osm_id": "way/775320483",
+      "osm_tags": {
+        "name": "Kibali",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.4012575,
+      "lon": 30.4177869,
+      "osm_id": "way/949719651",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.4114078,
+      "lon": 30.4081525,
+      "osm_id": "way/949731917",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3255778,
+      "lon": 30.278559,
+      "osm_id": "way/958404319",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.4072277,
+      "lon": 30.3763282,
+      "osm_id": "way/958404336",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3169956,
+      "lon": 30.265663,
+      "osm_id": "way/958404338",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.2901726,
+      "lon": 29.3229639,
+      "osm_id": "way/958793112",
+      "osm_tags": {
+        "name": "Kibali",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3453253,
+      "lon": 30.1575427,
+      "osm_id": "way/958822629",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3055083,
+      "lon": 30.2575405,
+      "osm_id": "way/958847619",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Duru",
+      "lat": 3.9578941,
+      "lon": 28.502279,
+      "osm_id": "way/958850566",
+      "osm_tags": {
+        "name": "Duru",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.2784787,
+      "lon": 29.586591,
+      "osm_id": "way/958865739",
+      "osm_tags": {
+        "name": "Nzoro",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.7369652,
+      "lon": 29.7349096,
+      "osm_id": "way/958868780",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3059607,
+      "lon": 29.7421921,
+      "osm_id": "way/958876434",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3824902,
+      "lon": 30.0137299,
+      "osm_id": "way/958883337",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.2780514,
+      "lon": 29.6559915,
+      "osm_id": "way/958894169",
+      "osm_tags": {
+        "name": "Nzoro",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3030594,
+      "lon": 29.6630908,
+      "osm_id": "way/958894176",
+      "osm_tags": {
+        "name": "Nzoro",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.7632223,
+      "lon": 29.790081,
+      "osm_id": "way/958898787",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.765444,
+      "lon": 29.6998768,
+      "osm_id": "way/958898789",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.7490137,
+      "lon": 29.7719331,
+      "osm_id": "way/958898790",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.7374388,
+      "lon": 29.7061103,
+      "osm_id": "way/958898791",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3733704,
+      "lon": 29.9899334,
+      "osm_id": "way/958898806",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.5745923,
+      "lon": 28.7851399,
+      "osm_id": "way/960102592",
+      "osm_tags": {
+        "name": "Kibali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.8275593,
+      "lon": 28.9427098,
+      "osm_id": "way/960102594",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.7080381,
+      "lon": 28.7715737,
+      "osm_id": "way/960102600",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Duru",
+      "lat": 4.0660904,
+      "lon": 28.6225607,
+      "osm_id": "way/960102602",
+      "osm_tags": {
+        "name": "Duru",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.7901632,
+      "lon": 28.8713865,
+      "osm_id": "way/960102604",
+      "osm_tags": {
+        "name": "Dungu",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.5696182,
+      "lon": 28.855572,
+      "osm_id": "way/960102605",
+      "osm_tags": {
+        "name": "Kibali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.5581176,
+      "lon": 29.1234161,
+      "osm_id": "way/960102607",
+      "osm_tags": {
+        "name": "Kibali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.5950119,
+      "lon": 28.6763276,
+      "osm_id": "way/960102608",
+      "osm_tags": {
+        "name": "Kibali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.6151605,
+      "lon": 28.5613428,
+      "osm_id": "way/960116414",
+      "osm_tags": {
+        "name": "Kibali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.5077175,
+      "lon": 29.1424258,
+      "osm_id": "way/960127898",
+      "osm_tags": {
+        "name": "Kibali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nzoro",
+      "lat": 3.3365937,
+      "lon": 30.3009689,
+      "osm_id": "way/997474000",
+      "osm_tags": {
+        "name": "Nzoro",
+        "source": "Bing, Landsat",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.6163658,
+      "lon": 28.5607487,
+      "osm_id": "way/997710961",
+      "osm_tags": {
+        "name": "Kibali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kibali",
+      "lat": 3.4322404,
+      "lon": 29.2147977,
+      "osm_id": "way/997791537",
+      "osm_tags": {
+        "name": "Kibali",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 4.5986188,
+      "lon": 28.9319597,
+      "osm_id": "way/1008685798",
+      "osm_tags": {
+        "fixme": "accuracy",
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "waterway": "river",
+        "wikidata": "Q2003254"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Nahr al Jur",
+      "lat": 5.0137749,
+      "lon": 28.7041305,
+      "osm_id": "way/1008685799",
+      "osm_tags": {
+        "name": "Nahr al Jur",
+        "name:ar": "\u0646\u0647\u0631 \u0627\u0644\u062c\u0648\u0631",
+        "name:en": "Jur",
+        "source:name": "PerryCasta\u00f1eda",
+        "waterway": "river",
+        "wikidata": "Q2003254",
+        "wikipedia": "en:Jur River"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.7199826,
+      "lon": 29.0990326,
+      "osm_id": "way/1267460477",
+      "osm_tags": {
+        "name": "Dungu",
+        "note": "relation delineating Garamba National Park is currently broken, needs fixing!",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.7422776,
+      "lon": 29.2847998,
+      "osm_id": "way/1267460478",
+      "osm_tags": {
+        "name": "Dungu",
+        "note": "relation delineating Garamba National Park is currently broken, needs fixing!",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.7224505,
+      "lon": 29.2464444,
+      "osm_id": "way/1267460479",
+      "osm_tags": {
+        "name": "Dungu",
+        "note": "relation delineating Garamba National Park is currently broken, needs fixing!",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.713752,
+      "lon": 29.2000191,
+      "osm_id": "way/1267460480",
+      "osm_tags": {
+        "name": "Dungu",
+        "note": "relation delineating Garamba National Park is currently broken, needs fixing!",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Dungu",
+      "lat": 3.7092685,
+      "lon": 29.1586692,
+      "osm_id": "way/1267460481",
+      "osm_tags": {
+        "name": "Dungu",
+        "note": "relation delineating Garamba National Park is currently broken, needs fixing!",
+        "source": "Bing",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Mendu",
+      "lat": 3.2693943,
+      "lon": 29.3382056,
+      "osm_id": "way/1416305488",
+      "osm_tags": {
+        "name": "Mendu",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/8025355/mendu.html",
+        "waterway": "river"
+      }
+    },
+    {
+      "place_type": "river",
+      "name": "Kobukagua",
+      "lat": 3.2517946,
+      "lon": 29.3357338,
+      "osm_id": "way/1416305489",
+      "osm_tags": {
+        "name": "Kobukagua",
+        "source": "GeoNames",
+        "source:url": "https://www.geonames.org/8025318/kobukagua.html",
+        "waterway": "river"
+      }
+    }
+  ]
+}
