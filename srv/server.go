@@ -233,7 +233,7 @@ func (s *Server) Serve(addr string) error {
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
 	
 	// Initialize MBTiles queue
-	InitMBTilesQueue("data/mbtiles_output")
+	InitMBTilesQueue("data/mbtiles_output", s.DB)
 	
 	slog.Info("starting server", "addr", addr)
 	

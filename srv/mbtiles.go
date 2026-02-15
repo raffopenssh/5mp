@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -81,12 +82,13 @@ type MBTilesQueue struct {
 	cancel     context.CancelFunc
 	outputDir  string
 	maxCPU     int // Max concurrent downloads
+	db         interface{ Exec(string, ...interface{}) (sql.Result, error) }
 }
 
 var mbtilesQueue *MBTilesQueue
 
 // InitMBTilesQueue initializes the MBTiles generation queue
-func InitMBTilesQueue(outputDir string) {
+func InitMBTilesQueue(outputDir string, db interface{ Exec(string, ...interface{}) (sql.Result, error) }) {
 	ctx, cancel := context.WithCancel(context.Background())
 	mbtilesQueue = &MBTilesQueue{
 		jobs:      make(map[string]*MBTilesJob),
@@ -94,6 +96,7 @@ func InitMBTilesQueue(outputDir string) {
 		cancel:    cancel,
 		outputDir: outputDir,
 		maxCPU:    runtime.NumCPU() / 2, // Use half of available CPUs
+		db:        db,
 	}
 	if mbtilesQueue.maxCPU < 1 {
 		mbtilesQueue.maxCPU = 1
@@ -198,13 +201,38 @@ func (q *MBTilesQueue) executeJob(job *MBTilesJob) {
 		job.Status = "failed"
 		job.Error = err.Error()
 		slog.Error("MBTiles job failed", "id", job.ID, "error", err)
+		// Create failure notification
+		q.createNotification(job.ParkID, "mbtiles_failed", 
+			fmt.Sprintf("MBTiles Failed: %s", job.ParkName),
+			fmt.Sprintf("Tile generation for %s failed: %s", job.ParkName, err.Error()),
+			"")
 	} else {
 		job.Status = "completed"
 		now := time.Now()
 		job.CompletedAt = &now
 		slog.Info("MBTiles job completed", "id", job.ID, "path", outputPath)
+		// Create success notification
+		fileSizeMB := job.EstimatedSize / (1024 * 1024)
+		q.createNotification(job.ParkID, "mbtiles_complete",
+			fmt.Sprintf("MBTiles Ready: %s", job.ParkName),
+			fmt.Sprintf("Offline tiles for %s (%s, %d MB) ready for download", job.ParkName, job.Source, fileSizeMB),
+			fmt.Sprintf("/api/parks/%s/mbtiles/download/%s", job.ParkID, job.ID))
 	}
 	q.mu.Unlock()
+}
+
+// createNotification creates a notification for MBTiles events
+func (q *MBTilesQueue) createNotification(parkID, notifType, title, message, link string) {
+	if q.db == nil {
+		return
+	}
+	_, err := q.db.Exec(`
+		INSERT INTO notifications (park_id, notification_type, title, message, link, created_at)
+		VALUES (?, ?, ?, ?, ?, datetime('now'))
+	`, parkID, notifType, title, message, link)
+	if err != nil {
+		slog.Warn("Failed to create MBTiles notification", "error", err)
+	}
 }
 
 // generateMBTiles creates the MBTiles file
@@ -633,6 +661,16 @@ func (s *Server) HandleAPIMBTilesEstimate(w http.ResponseWriter, r *http.Request
 	
 	minZoom := 1
 	maxZoom := 15
+	
+	// Get maxZoom from query parameter
+	if maxZoomStr := r.URL.Query().Get("maxZoom"); maxZoomStr != "" {
+		if mz, err := strconv.Atoi(maxZoomStr); err == nil && mz >= 1 && mz <= 20 {
+			maxZoom = mz
+			if maxZoom > 15 {
+				maxZoom = 15 // Cap at 15 for now
+			}
+		}
+	}
 	
 	tiles := calculateTiles(bbox, minZoom, maxZoom)
 	estimatedSize := int64(len(tiles)) * 15 * 1024
