@@ -60,9 +60,9 @@ def update_settlements(conn):
     return count
 
 def update_deforestation(conn):
-    """Update deforestation matching by park_id and year.
+    """Update deforestation matching by (park_id, year, lat, lon).
     
-    Uses (park_id, year) as the natural UNIQUE key.
+    Multiple clusters can exist per park-year, so we match by coordinates.
     Also updates polygon_ids for feature_geometries display.
     """
     defo_dir = DATA_DIR / 'deforestation_events'
@@ -77,8 +77,10 @@ def update_deforestation(conn):
                 events = json.load(f)
             
             for e in events:
+                lat = e.get('lat')
+                lon = e.get('lon')
                 year = e.get('year')
-                if year is None:
+                if lat is None or lon is None or year is None:
                     continue
                     
                 cursor = conn.execute('''
@@ -89,13 +91,17 @@ def update_deforestation(conn):
                         polygon_ids = ?
                     WHERE park_id = ?
                       AND year = ?
+                      AND ABS(lat - ?) < 0.0001
+                      AND ABS(lon - ?) < 0.0001
                 ''', (
                     e.get('classification'),
                     e.get('classification_confidence'),
                     e.get('narrative'),
                     e.get('polygon_ids'),
                     park_id,
-                    year
+                    year,
+                    lat,
+                    lon
                 ))
                 if cursor.rowcount > 0:
                     count += cursor.rowcount

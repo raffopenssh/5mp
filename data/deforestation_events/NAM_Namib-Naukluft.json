@@ -1,6 +1,6 @@
 [
   {
-    "id": 4192,
+    "id": 11464,
     "park_id": "NAM_Namib-Naukluft",
     "year": 2011,
     "area_km2": 0.0052,
@@ -9,16 +9,16 @@
     "lon": 15.200563,
     "geojson": null,
     "description": null,
-    "pattern_type": "scattered",
+    "pattern_type": "single_patch",
     "pixel_count": 1,
-    "created_at": "2026-02-10 18:21:58",
-    "classification": "natural",
-    "classification_confidence": 0.5,
-    "narrative": "In 2011, Namib-Naukluft experienced minor forest loss of 0.01 km\u00b2 across 1 distinct patches. Low fire association and scattered pattern may indicate natural disturbance. Peak clearing typically occurs during dry season (May-Oct).",
+    "created_at": "2026-02-15 10:57:02",
+    "classification": "encroachment",
+    "classification_confidence": 0.55,
+    "narrative": "Forest encroachment detected in 2011. Affected area: 0.01 km\u00b2 across 1 patch. Located 28.9km from Barrowberg.",
     "fires_same_year": 0,
     "fire_ratio": 0.0,
     "nearest_settlement_km": null,
-    "classified_at": null,
+    "classified_at": "2026-02-15T10:57:02.577503",
     "polygon_ids": "deforest_NAM_Namib-Naukluft_2011_0"
   }
 ]

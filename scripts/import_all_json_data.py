@@ -404,8 +404,8 @@ def load_settlement_events(conn):
 def load_deforestation_events(conn):
     """Load classified deforestation events.
     
-    Matches by (park_id, year) which is the natural UNIQUE key,
-    instead of auto-increment ID which can differ between databases.
+    Matches by (park_id, year, lat, lon) since multiple events can exist
+    per park-year (each is a distinct spatial cluster).
     """
     defo_dir = DATA_DIR / 'deforestation_events'
     if not defo_dir.exists():
@@ -420,11 +420,13 @@ def load_deforestation_events(conn):
                 events = json.load(f)
             
             for e in events:
+                lat = e.get('lat')
+                lon = e.get('lon')
                 year = e.get('year')
-                if year is None:
+                if lat is None or lon is None or year is None:
                     continue
                 
-                # Match by (park_id, year) - the natural UNIQUE key
+                # Match by (park_id, year, lat, lon) - coordinates identify the cluster
                 # Also update polygon_ids for UI polygon display
                 cursor = conn.execute('''
                     UPDATE deforestation_events 
@@ -434,13 +436,17 @@ def load_deforestation_events(conn):
                         polygon_ids = ?
                     WHERE park_id = ?
                       AND year = ?
+                      AND ABS(lat - ?) < 0.0001
+                      AND ABS(lon - ?) < 0.0001
                 ''', (
                     e.get('classification'),
                     e.get('classification_confidence'),
                     e.get('narrative'),
                     e.get('polygon_ids'),
                     park_id,
-                    year
+                    year,
+                    lat,
+                    lon
                 ))
                 if cursor.rowcount > 0:
                     count += cursor.rowcount
