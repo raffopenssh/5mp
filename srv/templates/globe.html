@@ -1516,7 +1516,7 @@
                 isPopupOpen(parkId) {
                     if (!parkId) return !!document.querySelector('.pa-popup');
                     const popup = document.querySelector('.pa-popup');
-                    return popup && currentPAPopupData?.paId === parkId;
+                    return popup && (currentPAPopupData?.paId === parkId || currentPAPopupData?.props?.id === parkId);
                 },
                 
                 isAccordionOpen(parkId, section) {
