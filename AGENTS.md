@@ -111,18 +111,17 @@ curl -X POST "http://localhost:8000/api/upload/async?pwd=test2026" -F "gpx=@file
 
 | Table | Records | Description |
 |-------|---------|-------------|
-| fire_detections | 5.7M | VIIRS satellite fires (2018-2026) |
-| feature_geometries | 443K | GeoJSON polygons/lines |
-| park_fire_analysis | 1,214 | Fire analysis by park/year (160 parks) |
-| park_rivers | 32,200 | HydroRIVERS data (161 parks) |
-| park_settlements | 15K | GHSL built-up areas (154 parks) |
-| deforestation_events | 3.2K | Hansen forest loss (149 parks) |
-| osm_places | 105K | Place names for narratives (141 parks) |
+| fire_detections | 6.1M | VIIRS satellite fires (2018-2026) |
+| feature_geometries | 453K | GeoJSON polygons/lines |
+| park_fire_analysis | 1,195 | Fire analysis by park/year (157 parks) |
+| park_rivers | 215K | HydroRIVERS data (161 parks) |
+| park_settlements | 9,933 | Classified settlement clusters |
+| deforestation_events | 16,119 | Classified deforestation clusters (5km) |
+| osm_places | 271K | Place names for narratives (161 parks) |
 | park_climate | 162 | Monthly climate/seasons |
 | park_species | 39.5K | IUCN mammal species |
-| park_waterbodies | 2.6K | Lake/reservoir polygons (145 parks) |
 | fire_narrative_cache | 162 | Precomputed fire narratives |
-| fire_group_alerts | varies | Active fire group alerts |
+| legal_documents | varies | FAOLEX conservation laws (created on first sync) |
 
 **Feature geometries by type:**
 - deforestation: 221,277 (2001-2024)
@@ -191,6 +190,111 @@ See `docs/` directory:
 - `ARCHITECTURE.md` - System design
 - `SHELLEY_PROMPT_UI.md` - UI development
 - `SHELLEY_PROMPT_ADMIN_UI.md` - Admin panel
+
+---
+
+## Testing
+
+### Run Tests
+
+```bash
+# Run all tests
+./tests/run_all.sh
+
+# Run specific test suites
+./tests/run_all.sh db    # Database tests (37 tests)
+./tests/run_all.sh api   # API tests (31 tests)
+./tests/run_all.sh ui    # UI URL tests (20 tests)
+```
+
+### Browser Test Mode
+
+Add `?test=1` to URL to enable `window.TEST` helper:
+
+```javascript
+// Navigate to: http://localhost:8000/?pwd=test2026&test=1
+// In browser console:
+TEST.assertExists('#map', 'Map exists');
+TEST.assertVisible('.stats-panel', 'Stats visible');
+TEST.isPanelOpen('admin');  // Returns true/false
+TEST.isPopupOpen('CAF_Chinko');
+TEST.done();  // Print results
+```
+
+### Share Link Testing
+
+URL params encode full UI state for reproducible tests:
+
+| Param | Example | Description |
+|-------|---------|-------------|
+| `test` | `1` | Enable TEST helper |
+| `panel` | `filter,star,admin,upload` | Open panel |
+| `admin_tab` | `learning,features` | Admin tab |
+| `popup` | `CAF_Chinko` | Open park popup |
+| `sections` | `fire,deforestation` | Open accordions |
+| `pinned` | `CAF_Chinko:fire_trajectory` | Pin layers |
+| `starred_parks` | `CAF_Chinko,COD_Virunga` | Star parks |
+
+### Playwright (Full UI)
+
+```bash
+npm install -D @playwright/test
+npx playwright test tests/playwright/
+```
+
+---
+
+## Authentication
+
+### Password-Protected Endpoints
+
+Most endpoints require password via:
+- Cookie: `access_pwd=test2026`
+- Query param: `?pwd=test2026`
+
+Valid passwords: `test2026`, `REDACTED_PWD`, `REDACTED_PWD`
+
+### Unauthenticated Endpoints
+
+These paths bypass password check (see `srv/auth_middleware.go`):
+- `/static/downloads/*` - Downloadable files
+- `/robots.txt` - SEO
+- `/sitemap.xml` - SEO
+- `/static/robots.txt`
+- `/static/sitemap.xml`
+
+### Admin-Only Endpoints
+
+Require admin login (see `srv/server.go` lines with `RequireAdmin`):
+- `POST /admin/approve`, `/admin/reject`
+- `POST /admin/upload/fire`, `/admin/upload/ghsl`
+- `POST /api/admin/approve-feature`, `/api/admin/reject-feature`
+- `POST /api/admin/bulk-approve`, `/api/admin/bulk-reject`
+- `POST /api/admin/delete-upload`, `/api/admin/hide-notification`
+
+---
+
+## Background Workers
+
+| Worker | Schedule | File | Description |
+|--------|----------|------|-------------|
+| Upload Queue | Every 2s | `srv/upload_queue.go` | Process GPX uploads |
+| GPX Learner | Continuous | `srv/gpx_learner.go` | Pattern detection |
+| Fire NRT | 3am UTC | `srv/fire_nrt.go` | Download daily fires |
+| Fire Backfill | 4am UTC | `srv/fire_nrt.go` | Historical data |
+| Narrative Cache | Weekly | `srv/fire_narrative_cache.go` | Pre-compute narratives |
+| Publication Sync | Daily | `srv/research.go` | OpenAlex publications |
+| FAOLEX Sync | Sundays | `srv/faolex_scraper.go` | Legal documents |
+
+### FAOLEX Legal Documents
+
+Syncs conservation-related legal documents from FAO FAOLEX database:
+- Runs weekly on Sundays via `RunFAOLEXSync()`
+- Creates `legal_documents` table on first run
+- Searches by country ISO code and GADM region names
+- Creates notifications for relevant new documents
+
+API endpoint: `GET /api/parks/{id}/legal`
 
 ---
 
