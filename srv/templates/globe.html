@@ -6726,20 +6726,6 @@
             </div>`;
         }
         
-        // Infrastructure section
-        const infra = data.infrastructure || {};
-        if (infra.roads_km > 0 || infra.rivers_count > 0 || infra.places_count > 0) {
-            html += `<div class="starred-report-section" style="border-color:#60a5fa;">
-                <div class="starred-report-section-title">═ Roads, Rivers & Places</div>
-                <div class="starred-report-section-stats">
-                    <span>Roads: ${(stats.roadless?.total_road_km || infra.roads_km || 0).toFixed(1)} km</span>
-                    <span>Rivers: ${infra.rivers_count || 0}</span>
-                    <span>Places: ${infra.places_count || 0}</span>
-                </div>
-                ${infra.major_roads && infra.major_roads.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Major Roads:</div>${infra.major_roads.slice(0, 5).map(r => `<div style="margin:2px 0;font-size:10px;">${r.name || 'Road'}: ${r.surface || 'unknown'} (${(r.length_km || 0).toFixed(1)} km)</div>`).join('')}</div>` : ''}
-            </div>`;
-        }
-        
         // Species section
         const species = data.species || {};
         if (species.total_species > 0 || (species.species && species.species.length > 0)) {
@@ -6959,17 +6945,16 @@
         const pwdParam = pwd ? `?pwd=${pwd}` : '';
         const dateParams = (dateFrom ? `&from=${dateFrom}` : '') + (dateTo ? `&to=${dateTo}` : '');
         
-        const [fire, deforestation, settlement, stats, infrastructure, species, climate] = await Promise.all([
+        const [fire, deforestation, settlement, stats, species, climate] = await Promise.all([
             fetch(`/api/parks/${parkId}/fire-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/deforestation-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/settlement-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/stats${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`/api/parks/${parkId}/infrastructure${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/species${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/climate${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null)
         ]);
         
-        return { fire, deforestation, settlement, stats, infrastructure, species, climate };
+        return { fire, deforestation, settlement, stats, species, climate };
     }
     
     // Generate full report with nested data
