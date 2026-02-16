@@ -1,0 +1,1 @@
+{"park_id": "TCD_Ouadi_Rim\u00e9-Ouadi_Achim", "year": 2026, "buffer_km": 50, "fires": [{"lat": 13.88833, "lon": 18.69475, "date": "2026-02-15", "time": "1121", "frp": 7.06, "confidence": "n", "inside": false, "dist_to_boundary_km": 26.9}], "near_boundary": [], "count_inside": 0, "count_buffer": 1, "count_near_boundary": 0}

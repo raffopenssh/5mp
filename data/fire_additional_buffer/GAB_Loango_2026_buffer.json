@@ -1,0 +1,1 @@
+{"park_id": "GAB_Loango", "year": 2026, "buffer_km": 50, "fires": [{"lat": -2.07374, "lon": 9.16306, "date": "2026-02-15", "time": "1257", "frp": 1.94, "confidence": "n", "inside": false, "dist_to_boundary_km": 22.93}], "near_boundary": [], "count_inside": 0, "count_buffer": 1, "count_near_boundary": 0}

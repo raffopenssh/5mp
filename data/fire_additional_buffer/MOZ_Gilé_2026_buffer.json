@@ -1,0 +1,1 @@
+{"park_id": "MOZ_Gil\u00e9", "year": 2026, "buffer_km": 50, "fires": [{"lat": -17.01441, "lon": 38.55614, "date": "2026-02-15", "time": "1112", "frp": 2.26, "confidence": "n", "inside": false, "dist_to_boundary_km": 31.66}], "near_boundary": [], "count_inside": 0, "count_buffer": 1, "count_near_boundary": 0}

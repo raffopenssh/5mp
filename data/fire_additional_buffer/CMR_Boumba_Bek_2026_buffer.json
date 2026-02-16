@@ -1,0 +1,1 @@
+{"park_id": "CMR_Boumba_Bek", "year": 2026, "buffer_km": 50, "fires": [{"lat": 3.11757, "lon": 14.96136, "date": "2026-02-15", "time": "15", "frp": 1.82, "confidence": "n", "inside": false, "dist_to_boundary_km": 21.08}], "near_boundary": [], "count_inside": 0, "count_buffer": 1, "count_near_boundary": 0}

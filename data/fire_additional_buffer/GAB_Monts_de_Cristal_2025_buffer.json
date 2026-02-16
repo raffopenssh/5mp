@@ -1,0 +1,1 @@
+{"park_id": "GAB_Monts_de_Cristal", "year": 2025, "buffer_km": 50, "fires": [{"lat": 0.38882, "lon": 9.82082, "date": "2025-08-13", "time": "1241", "frp": 17.13, "confidence": "n", "inside": false, "dist_to_boundary_km": 44.58}], "near_boundary": [], "count_inside": 0, "count_buffer": 1, "count_near_boundary": 0}
