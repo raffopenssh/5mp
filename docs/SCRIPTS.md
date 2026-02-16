@@ -285,3 +285,28 @@ The `UNIQUE(park_id, year)` constraint was removed. Each distinct spatial cluste
 ### Import/Export
 - Export: `python scripts/export_events_from_db.py`
 - Import: Match by coordinates with 0.0001° tolerance
+
+### Fire Groups v2 (Cross-park clustering)
+```bash
+python scripts/rebuild_park_fire_analysis_v2.py
+```
+- **Cross-park/country aware**: Clusters fires globally, not per-park
+- **Cross-chunk stitching**: Handles geographic chunk boundaries
+- **Memory-safe batching**: Processes in 400k group batches
+- Input: `fire_detections` table + `data/fire_additional_buffer/*.json`
+- Output: `data/fire_groups_v2/*.json` + `park_fire_weekly` table
+- Includes: trajectory with timestamps, affected_parks list, cross_border flag
+- ~1M groups, 25% cross-border
+
+### Fire Buffer Backfill (50km zone)
+```bash
+# 2025-2026 NRT data
+python scripts/backfill_fires_extended_buffer.py
+
+# 2018-2024 historical data (from Google Drive)
+python scripts/process_historical_fire_buffer.py
+```
+- Downloads fire detections in 50km buffer around parks
+- Output: `data/fire_additional_buffer/*_YEAR_buffer.json`
+- Resumable with progress tracking
+
