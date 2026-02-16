@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-Precompute Narratives v4 - Limited to Jun 2020 onwards
+Precompute Narratives v4 - Compatible with Go API structure
 
-Uses fire data from 2020-06-01 onwards to reduce storage requirements.
+Outputs JSON in format expected by Go FireNarrative struct.
+Filters fire data to 2020-06-01 onwards.
 """
 
 import json
@@ -17,7 +18,6 @@ SETTLE_DIR = DATA_DIR / 'settlement_events'
 DEFOREST_DIR = DATA_DIR / 'deforestation_events'
 EXPORT_DIR = DATA_DIR / 'export'
 
-# Date filter - only process fire data from this date onwards
 MIN_DATE = '2020-06-01'
 
 def log(msg):
@@ -31,7 +31,6 @@ class NarrativeGeneratorV4:
         self._load_park_info()
     
     def _load_context(self):
-        """Load all context data"""
         log("Loading context data...")
         
         self.climate = {}
@@ -43,29 +42,17 @@ class NarrativeGeneratorV4:
         
         self.rivers = defaultdict(list)
         try:
-            cursor = self.conn.execute('''
-                SELECT park_id, name, stream_order
-                FROM park_rivers_hydro
-                WHERE name IS NOT NULL AND name != ''
-            ''')
+            cursor = self.conn.execute('SELECT park_id, name, stream_order FROM park_rivers_hydro WHERE name IS NOT NULL AND name != ""')
             for row in cursor:
                 self.rivers[row['park_id']].append({'name': row['name'], 'order': row['stream_order']})
         except: pass
         log(f"  Rivers: {len(self.rivers)} parks")
         
-        self.lakes = defaultdict(list)
-        try:
-            cursor = self.conn.execute('SELECT park_id, name, area_km2 FROM park_lakes_hydro WHERE name IS NOT NULL')
-            for row in cursor:
-                self.lakes[row['park_id']].append({'name': row['name'], 'area_km2': row['area_km2']})
-        except: pass
-        log(f"  Lakes: {len(self.lakes)} parks")
-        
         self.places = defaultdict(list)
         try:
-            cursor = self.conn.execute('SELECT park_id, name, place_type FROM osm_places WHERE name IS NOT NULL')
+            cursor = self.conn.execute('SELECT park_id, name, place_type, lat, lon FROM osm_places WHERE name IS NOT NULL')
             for row in cursor:
-                self.places[row['park_id']].append({'name': row['name'], 'type': row['place_type']})
+                self.places[row['park_id']].append({'name': row['name'], 'type': row['place_type'], 'lat': row['lat'], 'lon': row['lon']})
         except: pass
         log(f"  Places: {len(self.places)} parks")
     
@@ -79,7 +66,7 @@ class NarrativeGeneratorV4:
         log(f"Loaded info for {len(self.parks)} parks")
     
     def generate_fire_narratives(self):
-        """Generate fire narratives from feature_geometries (filtered by date)"""
+        """Generate fire narratives in Go API compatible format"""
         log("=" * 70)
         log(f"FIRE NARRATIVES (from {MIN_DATE} onwards)")
         log("=" * 70)
@@ -114,32 +101,37 @@ class NarrativeGeneratorV4:
             
             park_info = self.parks.get(park_id, {})
             park_name = park_info.get('name', park_id.split('_', 1)[1].replace('_', ' ') if '_' in park_id else park_id)
+            park_area = park_info.get('area_km2', 10000)
             park_climate = self.climate.get(park_id, {})
             
-            # Build narratives list
+            # Build narratives list (FireGroupStory format)
             traj_narratives = []
-            for t in trajectories:
+            for i, t in enumerate(trajectories):
                 traj_narratives.append({
+                    'group_num': i + 1,
                     'feature_id': t.get('feature_id'),
                     'year': t.get('year'),
                     'start_date': t.get('start_date'),
                     'end_date': t.get('end_date'),
                     'days': t.get('days'),
-                    'fires': t.get('fires'),
+                    'fires_total': t.get('fires'),
                     'distance_km': t.get('distance_km'),
-                    'speed_km_day': t.get('speed_km_day'),
+                    'avg_speed_km_day': t.get('speed_km_day'),
                     'direction': t.get('direction'),
                     'group_type': t.get('group_type'),
-                    'primary_type': t.get('primary_type'),
+                    'refined_type': t.get('primary_type'),
                     'pct_inside': t.get('pct_inside'),
                     'cross_border': t.get('cross_border'),
-                    'nearest_river': t.get('nearest_river'),
-                    'nearest_place': t.get('nearest_place'),
+                    'affected_parks': t.get('affected_parks'),
                     'season': t.get('season'),
+                    'origin': {
+                        'nearest_place': {'name': t.get('nearest_place')} if t.get('nearest_place') else None,
+                        'nearest_river': {'name': t.get('nearest_river')} if t.get('nearest_river') else None
+                    },
                     'narrative': t.get('narrative', '')
                 })
             
-            # Aggregates
+            # Aggregates by year
             by_year = defaultdict(list)
             for t in trajectories:
                 by_year[t.get('year', 0)].append(t)
@@ -147,22 +139,64 @@ class NarrativeGeneratorV4:
             total_fires = sum(t.get('fires', 0) for t in trajectories)
             total_groups = len(trajectories)
             
+            # Type breakdown
             type_counts = defaultdict(int)
             for t in trajectories:
                 type_counts[t.get('group_type', 'unknown')] += 1
             
-            management_count = sum(1 for t in trajectories if 'management' in (t.get('group_type', '') or '').lower())
+            management_count = sum(1 for t in trajectories if 'management' in (t.get('group_type', '') or '').lower() or 'management' in (t.get('primary_type', '') or '').lower())
             cross_border_count = sum(1 for t in trajectories if t.get('cross_border'))
+            outside_count = sum(1 for t in trajectories if (t.get('pct_inside') or 0) < 50)
             
-            # Years summary
+            # Build FireYearSummary list
             years_summary = []
             for year in sorted(by_year.keys()):
                 year_trajs = by_year[year]
+                year_fires = sum(t.get('fires', 0) for t in year_trajs)
+                year_management = sum(1 for t in year_trajs if 'management' in (t.get('group_type', '') or '').lower())
+                year_stopped = sum(1 for t in year_trajs if (t.get('pct_inside') or 0) > 80)
+                year_transited = len(year_trajs) - year_stopped
+                response_rate = (year_stopped / len(year_trajs) * 100) if year_trajs else 0
+                avg_days = sum(t.get('days', 0) for t in year_trajs) / max(1, len(year_trajs))
+                
                 years_summary.append({
                     'year': year,
                     'total_groups': len(year_trajs),
-                    'total_fires': sum(t.get('fires', 0) for t in year_trajs)
+                    'groups_per_km2': round(len(year_trajs) / park_area * 1000, 4) if park_area > 0 else 0,
+                    'stopped_inside': year_stopped,
+                    'transited': year_transited,
+                    'response_rate': round(response_rate, 1),
+                    'total_fires': year_fires,
+                    'avg_days_burning': round(avg_days, 1),
+                    'management_fires': year_management
                 })
+            
+            # Trend analysis
+            if len(years_summary) >= 3:
+                recent = years_summary[-2:]
+                older = years_summary[:-2]
+                recent_avg = sum(y['total_groups'] for y in recent) / len(recent)
+                older_avg = sum(y['total_groups'] for y in older) / max(1, len(older))
+                if recent_avg > older_avg * 1.2:
+                    trend_direction = 'increasing'
+                elif recent_avg < older_avg * 0.8:
+                    trend_direction = 'decreasing'
+                else:
+                    trend_direction = 'stable'
+            else:
+                trend_direction = 'insufficient_data'
+            
+            # Worst/best year
+            if years_summary:
+                worst = max(years_summary, key=lambda y: y['total_groups'])
+                best = min(years_summary, key=lambda y: y['total_groups'])
+                worst_year = worst['year']
+                worst_year_groups = worst['total_groups']
+                best_year = best['year']
+                best_year_rate = best.get('response_rate', 0)
+            else:
+                worst_year = worst_year_groups = best_year = 0
+                best_year_rate = 0
             
             # Peak month
             month_counts = defaultdict(int)
@@ -174,31 +208,90 @@ class NarrativeGeneratorV4:
                     except: pass
             peak_month = max(month_counts, key=month_counts.get) if month_counts else None
             
-            # Summary
-            year_range = f"{min(by_year.keys())}-{max(by_year.keys())}" if by_year else "N/A"
-            summary = f"From {year_range}, {park_name} experienced {total_fires:,} fire detections across {total_groups} groups."
-            if management_count > 0:
-                summary += f" {management_count} appear to be management burns."
-            if peak_month:
-                summary += f" Peak activity: {peak_month}."
+            # Response rate (groups that stayed mostly inside)
+            stopped = sum(1 for t in trajectories if (t.get('pct_inside') or 0) > 80)
+            response_rate = (stopped / total_groups * 100) if total_groups > 0 else 0
             
+            # Key places
+            park_places = self.places.get(park_id, [])[:10]
+            key_places = [{'name': p['name'], 'type': p['type'], 'lat': p['lat'], 'lon': p['lon']} for p in park_places]
+            
+            # Summary text
+            year_range = f"{min(by_year.keys())}-{max(by_year.keys())}" if by_year else "N/A"
+            summary_parts = [f"From {year_range}, {park_name} experienced {total_fires:,} fire detections across {total_groups} fire groups."]
+            
+            if management_count > 0:
+                mgmt_pct = round(management_count / total_groups * 100, 1)
+                summary_parts.append(f"{management_count} groups ({mgmt_pct}%) appear to be management/controlled burns.")
+            
+            if cross_border_count > 0:
+                cross_pct = round(cross_border_count / total_groups * 100, 1)
+                summary_parts.append(f"{cross_border_count} groups ({cross_pct}%) crossed park boundaries.")
+            
+            if outside_count > 0:
+                outside_pct = round(outside_count / total_groups * 100, 1)
+                summary_parts.append(f"{outside_count} groups ({outside_pct}%) originated outside the park.")
+            
+            if response_rate > 50:
+                summary_parts.append(f"{round(response_rate)}% of groups were contained inside the park.")
+            
+            if peak_month:
+                summary_parts.append(f"Peak activity: {peak_month}.")
+            
+            if park_climate.get('dry_season'):
+                summary_parts.append(f"Dry season: {park_climate.get('dry_season')}.")
+            
+            # Build trend narrative
+            trend_narrative_parts = []
+            if trend_direction == 'increasing':
+                trend_narrative_parts.append("Fire activity has increased in recent years.")
+            elif trend_direction == 'decreasing':
+                trend_narrative_parts.append("Fire activity has decreased in recent years.")
+            else:
+                trend_narrative_parts.append("Fire activity has remained relatively stable.")
+            
+            if worst_year:
+                trend_narrative_parts.append(f"Worst year: {worst_year} with {worst_year_groups} fire groups.")
+            
+            # FireNarrative structure (matching Go struct)
             narratives[park_id] = {
                 'park_id': park_id,
                 'park_name': park_name,
-                'summary': summary,
+                'year': max(by_year.keys()) if by_year else 2024,
+                'summary': ' '.join(summary_parts),
+                'narratives': traj_narratives,
+                'key_places': key_places,
+                'trend': {
+                    'years': years_summary,
+                    'trend_direction': trend_direction,
+                    'avg_response_rate': round(sum(y['response_rate'] for y in years_summary) / max(1, len(years_summary)), 1),
+                    'worst_year': worst_year,
+                    'worst_year_groups': worst_year_groups,
+                    'best_year': best_year,
+                    'best_year_rate': best_year_rate,
+                    'narrative': ' '.join(trend_narrative_parts),
+                    'avg_groups_per_km2': round(total_groups / park_area * 1000, 4) if park_area > 0 else 0,
+                    'peak_months': [peak_month] if peak_month else [],
+                    'seasonality': f"dry season peaks {park_climate.get('dry_season', 'unknown')}" if park_climate.get('dry_season') else None
+                },
+                'response_rate': round(response_rate, 1),
                 'total_fires': total_fires,
+                'peak_month': peak_month,
+                # Extra fields for enhanced analysis
                 'total_groups': total_groups,
                 'management_fires': management_count,
                 'cross_border_groups': cross_border_count,
-                'peak_month': peak_month,
+                'outside_park_groups': outside_count,
                 'group_types': dict(type_counts),
-                'trend': {'years': years_summary},
-                'climate': {'dry_season': park_climate.get('dry_season'), 'rainy_season': park_climate.get('rainy_season')},
-                'narratives': traj_narratives
+                'climate': {
+                    'dry_season': park_climate.get('dry_season'),
+                    'rainy_season': park_climate.get('rainy_season'),
+                    'climate_zone': park_climate.get('climate_zone')
+                }
             }
             
             if idx % 20 == 0:
-                log(f"[{idx}/{len(parks)}] {park_id}: {total_groups} groups")
+                log(f"[{idx}/{len(parks)}] {park_id}: {total_groups} groups, {management_count} mgmt, {cross_border_count} cross-border")
         
         # Export
         EXPORT_DIR.mkdir(exist_ok=True)
@@ -212,8 +305,11 @@ class NarrativeGeneratorV4:
         # Update cache
         log("Updating fire_narrative_cache...")
         for park_id, data in narratives.items():
-            self.conn.execute('INSERT OR REPLACE INTO fire_narrative_cache (park_id, narrative_json, computed_at) VALUES (?, ?, ?)',
-                              (park_id, json.dumps(data), datetime.now().isoformat()))
+            years = data.get('trend', {}).get('years', [])
+            from_year = min(y['year'] for y in years) if years else None
+            to_year = max(y['year'] for y in years) if years else None
+            self.conn.execute('INSERT OR REPLACE INTO fire_narrative_cache (park_id, narrative_json, computed_at, from_year, to_year) VALUES (?, ?, ?, ?, ?)',
+                              (park_id, json.dumps(data), datetime.now().isoformat(), from_year, to_year))
         self.conn.commit()
         
         log(f"Fire narratives: {len(narratives)} parks")

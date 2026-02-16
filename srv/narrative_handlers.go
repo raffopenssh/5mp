@@ -414,6 +414,10 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 	// Always try to serve from cache - cache contains full history (2000-present)
 	// Date filters are applied by the UI to subset the cached data
 	if cached, computedAt, err := s.GetCachedFireNarrative(internalID); err == nil {
+		// Add weekly data computed from feature_geometries (not in cache)
+		if cached.Trend != nil && len(cached.Trend.Weeks) == 0 {
+			s.addWeeklyDataToTrend(internalID, cached.Trend)
+		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("X-Cache", "HIT")
 		w.Header().Set("X-Cache-Date", computedAt.Format(time.RFC3339))
@@ -2202,6 +2206,51 @@ func (s *Server) analyzeFireTrend(parkID string, currentYear int) *FireTrendAnal
 	s.enrichTrendWithMonthlyData(parkID, trend)
 	
 	return trend
+}
+
+// addWeeklyDataToTrend computes weekly fire counts from feature_geometries
+func (s *Server) addWeeklyDataToTrend(parkID string, trend *FireTrendAnalysis) {
+	if trend == nil {
+		return
+	}
+	
+	// Get park area for groups_per_km2
+	var areaKm2 float64
+	if s.AreaStore != nil {
+		for _, area := range s.AreaStore.Areas {
+			if area.ID == parkID {
+				areaKm2 = area.AreaKm2
+				break
+			}
+		}
+	}
+	
+	// Query weekly data (all available data from 2020-06-01)
+	weekRows, err := s.DB.Query(`
+		SELECT strftime('%Y-W%W', start_date) as week, 
+		       COUNT(*) as groups
+		FROM feature_geometries 
+		WHERE park_id = ? AND feature_type = 'fire_trajectory' 
+		  AND start_date >= '2020-06-01'
+		GROUP BY week 
+		ORDER BY week
+	`, parkID)
+	if err != nil {
+		return
+	}
+	defer weekRows.Close()
+	
+	for weekRows.Next() {
+		var week string
+		var groups int
+		if err := weekRows.Scan(&week, &groups); err == nil && week != "" {
+			ws := FireWeekSummary{Week: week, Groups: groups}
+			if areaKm2 > 0 {
+				ws.GroupsPerKm2 = float64(groups) / areaKm2
+			}
+			trend.Weeks = append(trend.Weeks, ws)
+		}
+	}
 }
 
 // enrichTrendWithMonthlyData adds monthly breakdown and groups_per_km2 calculations
