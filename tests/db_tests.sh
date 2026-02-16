@@ -98,6 +98,8 @@ test_query "park_species exists" "SELECT COUNT(*) FROM park_species LIMIT 1" "no
 test_query "legal_documents exists" "SELECT COUNT(*) FROM legal_documents LIMIT 1" "nonempty"
 test_query "notifications exists" "SELECT COUNT(*) FROM notifications LIMIT 1" "nonempty"
 test_query "pa_publications exists" "SELECT COUNT(*) FROM pa_publications LIMIT 1" "nonempty"
+test_query "gpx_upload_logs exists" "SELECT COUNT(*) FROM gpx_upload_logs" "nonempty"
+test_query "gpx_learning_results exists" "SELECT 1 FROM gpx_learning_results LIMIT 1" ""
 
 yellow "\n=== Data Counts ==="
 test_query "fire_detections count" "SELECT COUNT(*) FROM fire_detections" "nonempty"
