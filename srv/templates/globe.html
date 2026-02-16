@@ -298,6 +298,30 @@
         .starred-empty-text { font-size: 14px; margin-bottom: 4px; }
         .starred-empty-hint { font-size: 12px; color: #555; }
 
+        /* Report loading and in-place display */
+        .starred-report-loading { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(59,130,246,0.1); border-radius: 6px; font-size: 11px; color: #60a5fa; }
+        .starred-report-loading .spinner { width: 14px; height: 14px; border: 2px solid rgba(59,130,246,0.3); border-top-color: #60a5fa; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .starred-report-ready { color: #22c55e; font-size: 10px; display: flex; align-items: center; gap: 4px; }
+        .starred-report-content { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; margin-top: 8px; max-height: 500px; overflow-y: auto; }
+        .starred-report-section { margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 6px; border-left: 3px solid; }
+        .starred-report-section.fire { border-color: #ef4444; }
+        .starred-report-section.deforestation { border-color: #a855f7; }
+        .starred-report-section.settlement { border-color: #fbbf24; }
+        .starred-report-section.patrol { border-color: #22c55e; }
+        .starred-report-section-title { font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .starred-report-section-stats { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; color: #aaa; margin-bottom: 6px; }
+        .starred-report-section-text { font-size: 11px; color: #888; line-height: 1.5; }
+        .starred-report-group { margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; font-size: 10px; color: #666; }
+        .starred-report-group-title { font-size: 10px; color: #888; margin-bottom: 4px; }
+        .starred-park-nested { margin: 8px 0; padding: 12px; background: rgba(34,197,94,0.05); border: 1px solid rgba(34,197,94,0.1); border-radius: 8px; }
+        .starred-park-nested-header { font-size: 13px; font-weight: 600; color: #22c55e; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .starred-park-nested-meta { font-size: 11px; color: #666; }
+        .starred-bbox-parks-count { font-size: 11px; color: #a855f7; margin-top: 4px; }
+        .starred-export-btns { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+        .starred-export-btn { font-size: 10px; padding: 4px 8px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 4px; color: #60a5fa; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .starred-export-btn:hover { background: rgba(59,130,246,0.25); }
+
         /* Activity highlight marker on map */
         .activity-marker { width: 24px; height: 24px; background: rgba(34,197,94,0.3); border: 2px solid #22c55e; border-radius: 50%; position: relative; }
         .activity-marker::after { content: ''; position: absolute; inset: -8px; border: 2px solid rgba(34,197,94,0.5); border-radius: 50%; animation: marker-pulse 1.5s ease-out infinite; }
@@ -1459,7 +1483,14 @@
             notifications: [], // {index, location, type, date, starredAt}
             narratives: []  // {parkId, parkName, type, title, content, starredAt}
         };
-
+        
+        // Report data cache - stores pre-fetched data for starred items
+        let reportDataCache = {
+            parks: new Map(),      // parkId -> {fire, deforestation, settlement, stats, fetchedAt}
+            bboxes: new Map(),     // bboxKey -> {parks: [{id, name, ...fullData}], fetchedAt}
+            loading: new Set(),    // Currently loading park IDs
+            version: '{{.Version}}' // App version from server
+        };
         
         map.on('load', function() {
             // Add arrow icon for fire trajectory direction indicators
@@ -2540,11 +2571,199 @@
         function csvEscape(value) {
             if (value === null || value === undefined) return '';
             var str = String(value);
-            // If contains comma, quote, or newline, wrap in quotes and escape internal quotes
             if (str.includes(',') || str.includes('"') || str.includes('\n')) {
                 return '"' + str.replace(/"/g, '""') + '"';
             }
             return str;
+        }
+        
+        // Export starred bbox report as XLSX (with SheetJS)
+        async function exportBboxXlsx(bboxStr, name) {
+            const bboxKey = bboxStr;
+            const cached = reportDataCache.bboxes.get(bboxKey);
+            if (!cached || !cached.parks) {
+                showToast('Report data not loaded. Expand the item first.', 'error');
+                return;
+            }
+            
+            showToast('Generating XLSX...');
+            
+            // Load SheetJS if not already loaded
+            if (!window.XLSX) {
+                await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+            }
+            
+            const wb = XLSX.utils.book_new();
+            
+            // Summary sheet
+            const summaryData = [['5MP Conservation Report - ' + name], ['Generated: ' + new Date().toLocaleString()], ['Version: ' + reportDataCache.version], ['Filter: ' + (dateFrom || 'all') + ' to ' + (dateTo || 'present')], [], ['Park', 'Country', 'Area (km²)', 'Fire Detections', 'Deforestation (km²)', 'Settlements', 'Population']];
+            
+            for (const park of cached.parks) {
+                const rd = park.reportData || {};
+                summaryData.push([park.name, park.country || '', park.area_km2 || '', rd.fire?.total_fires || 0, rd.deforestation?.total_loss_km2?.toFixed(2) || 0, rd.settlement?.settlement_count || 0, rd.settlement?.total_population || 0]);
+            }
+            const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+            XLSX.utils.book_append_sheet(wb, summarySheet, 'Summary');
+            
+            // Per-park sheets
+            for (const park of cached.parks) {
+                const rd = park.reportData || {};
+                const sheetName = (park.name || park.id).substring(0, 31).replace(/[\[\]\*\?\/\\:]/g, '');
+                const parkData = [['Park: ' + park.name], ['Country: ' + (park.country || '')], ['Area: ' + (park.area_km2 || '') + ' km²'], []];
+                
+                // Fire data
+                if (rd.fire) {
+                    parkData.push(['FIRE ACTIVITY'], ['Total Detections', rd.fire.total_fires], ['Response Rate', (rd.fire.response_rate || 0) + '%'], ['Peak Month', rd.fire.peak_month || 'N/A'], []);
+                    if (rd.fire.narratives?.length > 0) {
+                        parkData.push(['Fire Groups']);
+                        rd.fire.narratives.forEach(n => parkData.push([n.narrative || n.title || 'Fire group']));
+                        parkData.push([]);
+                    }
+                }
+                
+                // Deforestation data
+                if (rd.deforestation) {
+                    parkData.push(['DEFORESTATION'], ['Total Loss (km²)', rd.deforestation.total_loss_km2?.toFixed(2) || 0], ['Trend', rd.deforestation.trend_direction || 'unknown'], ['Worst Year', rd.deforestation.worst_year || 'N/A'], []);
+                    if (rd.deforestation.hotspots?.length > 0) {
+                        parkData.push(['Hotspots', 'Area (km²)']);
+                        rd.deforestation.hotspots.forEach(h => parkData.push([h.name || h.description || 'Hotspot', h.area_km2?.toFixed(2) || 0]));
+                        parkData.push([]);
+                    }
+                }
+                
+                // Settlement data
+                if (rd.settlement) {
+                    parkData.push(['SETTLEMENTS'], ['Count', rd.settlement.settlement_count || 0], ['Population', rd.settlement.total_population || 0], ['Density (/km²)', rd.settlement.population_density_per_km2?.toFixed(1) || 0], []);
+                    if (rd.settlement.largest_settlements?.length > 0) {
+                        parkData.push(['Settlement', 'Population']);
+                        rd.settlement.largest_settlements.forEach(s => parkData.push([s.name || 'Unnamed', s.population || 0]));
+                    }
+                }
+                
+                const parkSheet = XLSX.utils.aoa_to_sheet(parkData);
+                XLSX.utils.book_append_sheet(wb, parkSheet, sheetName);
+            }
+            
+            const filterStr = buildFilterString();
+            XLSX.writeFile(wb, `5MP_Report_${name.replace(/[^a-zA-Z0-9]/g, '_')}${filterStr}.xlsx`);
+            showToast('XLSX downloaded', 'success');
+        }
+        
+        // Export bbox as CSV (flat format)
+        async function exportBboxCsv(bboxStr, name) {
+            const bboxKey = bboxStr;
+            const cached = reportDataCache.bboxes.get(bboxKey);
+            if (!cached || !cached.parks) {
+                showToast('Report data not loaded', 'error');
+                return;
+            }
+            
+            const rows = [['Park', 'Country', 'Area_km2', 'Fire_Detections', 'Fire_Response_Rate', 'Deforestation_km2', 'Settlements', 'Population'].join(',')];
+            
+            for (const park of cached.parks) {
+                const rd = park.reportData || {};
+                rows.push([csvEscape(park.name), csvEscape(park.country || ''), park.area_km2 || '', rd.fire?.total_fires || 0, rd.fire?.response_rate || 0, rd.deforestation?.total_loss_km2?.toFixed(2) || 0, rd.settlement?.settlement_count || 0, rd.settlement?.total_population || 0].join(','));
+            }
+            
+            const csv = rows.join('\n');
+            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            const filterStr = buildFilterString();
+            link.download = `5MP_Report_${name.replace(/[^a-zA-Z0-9]/g, '_')}${filterStr}.csv`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            showToast('CSV downloaded', 'success');
+        }
+        
+        // Helper to load external scripts
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+        
+        // Export full starred report as CSV
+        async function exportFullReportCsv() {
+            const allParks = [];
+            
+            // Collect all parks (direct stars + bbox)
+            for (const park of starredItems.parks) {
+                const data = reportDataCache.parks.get(park.id) || {};
+                allParks.push({ park, data, source: 'starred' });
+            }
+            
+            for (const bbox of starredItems.bboxes) {
+                const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
+                if (bboxData?.parks) {
+                    for (const p of bboxData.parks) {
+                        allParks.push({ park: p, data: p.reportData || {}, source: 'bbox:' + (bbox.name || 'area') });
+                    }
+                }
+            }
+            
+            if (allParks.length === 0) {
+                showToast('No park data to export', 'error');
+                return;
+            }
+            
+            const rows = [['Source', 'Park', 'Country', 'Area_km2', 'Fire_Total', 'Fire_Response%', 'Deforest_km2', 'Deforest_Trend', 'Settlement_Count', 'Population'].join(',')];
+            
+            for (const {park, data, source} of allParks) {
+                rows.push([csvEscape(source), csvEscape(park.name || park.id), csvEscape(park.country || ''), park.area_km2 || '', data.fire?.total_fires || 0, data.fire?.response_rate || 0, data.deforestation?.total_loss_km2?.toFixed(2) || 0, data.deforestation?.trend_direction || '', data.settlement?.settlement_count || 0, data.settlement?.total_population || 0].join(','));
+            }
+            
+            const csv = rows.join('\n');
+            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            const filterStr = buildFilterString();
+            link.download = `5MP_Full_Report${filterStr}.csv`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            showToast(`Exported ${allParks.length} parks to CSV`, 'success');
+        }
+        
+        // Export KMLs for all starred parks
+        async function exportFullReportKml() {
+            const parkIds = new Set();
+            
+            // Collect all park IDs
+            for (const park of starredItems.parks) {
+                if (park.id) parkIds.add(park.id);
+            }
+            for (const bbox of starredItems.bboxes) {
+                const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
+                if (bboxData?.parks) {
+                    for (const p of bboxData.parks) {
+                        if (p.id) parkIds.add(p.id);
+                    }
+                }
+            }
+            
+            if (parkIds.size === 0) {
+                showToast('No parks to export', 'error');
+                return;
+            }
+            
+            showToast(`Downloading ${parkIds.size} KML files...`);
+            const filterStr = buildFilterString();
+            
+            // Download each park's KML
+            for (const parkId of parkIds) {
+                const url = `/api/parks/${parkId}/export.kml?pwd=${getPwd()}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}`;
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${parkId}${filterStr}.kml`;
+                link.click();
+                await new Promise(r => setTimeout(r, 200)); // Small delay between downloads
+            }
+            
+            showToast(`Downloaded ${parkIds.size} KML files`, 'success');
         }
 
         var mapLoaded = false;
@@ -6079,18 +6298,147 @@
             existingIndex = items.findIndex(i => i.parkId === data.parkId && i.type === data.type);
         }
         
+        const isNowStarred = existingIndex < 0;
+        
         if (existingIndex >= 0) {
             items.splice(existingIndex, 1);
+            // Clean up cache on unstar
+            if (type === 'parks' && data.id) {
+                reportDataCache.parks.delete(data.id);
+            } else if (type === 'bboxes' && data.bbox) {
+                reportDataCache.bboxes.delete(data.bbox.join(','));
+            }
         } else {
             data.starredAt = new Date().toISOString();
             items.push(data);
+            // Trigger async pre-fetch for report data
+            if (type === 'parks' && data.id) {
+                prefetchParkReportData(data.id);
+            } else if (type === 'bboxes' && data.bbox) {
+                prefetchBboxReportData(data.bbox, data.name);
+            } else if (type === 'narratives' && data.parkId) {
+                prefetchParkReportData(data.parkId);
+            }
         }
         
         saveStarredItems();
         updateStarBadge();
         
-        // Return whether item is now starred
-        return existingIndex < 0;
+        return isNowStarred;
+    }
+    
+    // Async pre-fetch park report data
+    async function prefetchParkReportData(parkId) {
+        if (reportDataCache.parks.has(parkId) || reportDataCache.loading.has(parkId)) {
+            return; // Already cached or loading
+        }
+        
+        reportDataCache.loading.add(parkId);
+        console.log(`[Report] Pre-fetching data for ${parkId}...`);
+        
+        try {
+            const data = await fetchParkFullData(parkId);
+            reportDataCache.parks.set(parkId, {
+                ...data,
+                fetchedAt: new Date().toISOString()
+            });
+            console.log(`[Report] Cached data for ${parkId}`);
+            // Re-render if modal is open
+            if (document.getElementById('star-modal')?.classList.contains('active')) {
+                renderStarredItems();
+            }
+        } catch (err) {
+            console.error(`[Report] Error fetching ${parkId}:`, err);
+        } finally {
+            reportDataCache.loading.delete(parkId);
+        }
+    }
+    
+    // Async pre-fetch bbox report data (all parks in bbox)
+    async function prefetchBboxReportData(bbox, name) {
+        const bboxKey = bbox.join(',');
+        if (reportDataCache.bboxes.has(bboxKey) || reportDataCache.loading.has('bbox:' + bboxKey)) {
+            return;
+        }
+        
+        reportDataCache.loading.add('bbox:' + bboxKey);
+        console.log(`[Report] Pre-fetching bbox data for ${name || bboxKey}...`);
+        
+        try {
+            // Find all parks in this bbox
+            const parksInBbox = await findParksInBbox(bbox);
+            
+            // Fetch data for each park
+            const parksWithData = [];
+            for (const park of parksInBbox) {
+                if (!reportDataCache.parks.has(park.id)) {
+                    const data = await fetchParkFullData(park.id);
+                    reportDataCache.parks.set(park.id, {
+                        ...data,
+                        fetchedAt: new Date().toISOString()
+                    });
+                }
+                parksWithData.push({
+                    ...park,
+                    reportData: reportDataCache.parks.get(park.id)
+                });
+            }
+            
+            reportDataCache.bboxes.set(bboxKey, {
+                parks: parksWithData,
+                fetchedAt: new Date().toISOString()
+            });
+            console.log(`[Report] Cached bbox data: ${parksWithData.length} parks`);
+            
+            // Re-render if modal is open
+            if (document.getElementById('star-modal')?.classList.contains('active')) {
+                renderStarredItems();
+            }
+        } catch (err) {
+            console.error(`[Report] Error fetching bbox:`, err);
+        } finally {
+            reportDataCache.loading.delete('bbox:' + bboxKey);
+        }
+    }
+    
+    // Find parks within a bounding box
+    async function findParksInBbox(bbox) {
+        const parks = [];
+        const seen = new Set();
+        
+        // First try keystoneAreas
+        const areas = window.keystoneAreas || [];
+        for (const pa of areas) {
+            let center = pa.center;
+            if (!center && pa.bbox && pa.bbox.length === 4) {
+                center = [(pa.bbox[0] + pa.bbox[2]) / 2, (pa.bbox[1] + pa.bbox[3]) / 2];
+            }
+            if (center && center[0] >= bbox[0] && center[0] <= bbox[2] && 
+                center[1] >= bbox[1] && center[1] <= bbox[3]) {
+                if (!seen.has(pa.id)) {
+                    seen.add(pa.id);
+                    parks.push({ id: pa.id, name: pa.name || pa.pa_name, country: pa.country, area_km2: pa.area_km2, bbox: pa.bbox, center: center });
+                }
+            }
+        }
+        
+        // Also try map source features
+        if (typeof map !== 'undefined' && map.getSource('areas')) {
+            const features = map.querySourceFeatures('areas');
+            for (const f of features) {
+                const props = f.properties;
+                const parkId = props.id;
+                if (!parkId || seen.has(parkId)) continue;
+                
+                let center = props.center ? JSON.parse(props.center) : null;
+                if (center && center[0] >= bbox[0] && center[0] <= bbox[2] && 
+                    center[1] >= bbox[1] && center[1] <= bbox[3]) {
+                    seen.add(parkId);
+                    parks.push({ id: parkId, name: props.name, country: props.country, area_km2: props.area_km2, center: center });
+                }
+            }
+        }
+        return parks;
     }
     
     function saveStarredItems() {
@@ -6143,15 +6491,20 @@
         
         // Parks section - includes ALL nested data
         if (starredItems.parks.length > 0) {
-            html += renderStarredSection('Parks', 'park', starredItems.parks, item => ({
-                id: item.id,
-                name: item.name,
-                meta: item.country || '',
-                icon: '▣',
-                hint: 'Includes: fire, deforestation, settlements, patrol activity',
-                onClick: () => flyToPark(item),
-                onRemove: () => { toggleStar('parks', item); renderStarredItems(); }
-            }), 'Full park subscription — all narratives & stats');
+            html += renderStarredSection('Parks', 'park', starredItems.parks, item => {
+                const cached = reportDataCache.parks.get(item.id);
+                const isLoading = reportDataCache.loading.has(item.id);
+                return {
+                    id: item.id,
+                    parkId: item.id,
+                    name: item.name,
+                    meta: item.country || '',
+                    icon: '▣',
+                    hint: 'Includes: fire, deforestation, settlements, patrol activity',
+                    status: cached ? '<div class="starred-report-ready">✓ Report ready</div>' : (isLoading ? '<div class="starred-report-loading" style="padding:2px 0;"><div class="spinner" style="width:10px;height:10px;"></div><span style="font-size:10px;">Loading...</span></div>' : ''),
+                    reportHtml: cached ? renderParkReportInline(item, cached) : (isLoading ? '<div class="starred-report-loading"><div class="spinner"></div>Loading report data...</div>' : '<div style="color:#666;font-size:11px;">Report data not yet loaded. <button onclick="prefetchParkReportData(\'' + item.id + '\')" style="color:#60a5fa;background:none;border:none;cursor:pointer;text-decoration:underline;">Load now</button></div>')
+                };
+            }, 'Full park subscription — all narratives & stats');
         }
         
         // Countries section
@@ -6168,15 +6521,21 @@
         
         // Bounding boxes section - includes ALL parks in area
         if (starredItems.bboxes.length > 0) {
-            html += renderStarredSection('Monitored Areas', 'bbox', starredItems.bboxes, item => ({
-                id: item.bbox.join(','),
-                name: item.name || 'Custom Area',
-                meta: `${item.bbox[0].toFixed(2)}°, ${item.bbox[1].toFixed(2)}° to ${item.bbox[2].toFixed(2)}°, ${item.bbox[3].toFixed(2)}°`,
-                icon: '□',
-                hint: 'Includes: all parks in area with full data',
-                onClick: () => flyToBbox(item.bbox),
-                onRemove: () => { toggleStar('bboxes', item); renderStarredItems(); }
-            }), 'Regional subscription — all parks & their data');
+            html += renderStarredSection('Monitored Areas', 'bbox', starredItems.bboxes, item => {
+                const bboxKey = item.bbox.join(',');
+                const cached = reportDataCache.bboxes.get(bboxKey);
+                const isLoading = reportDataCache.loading.has('bbox:' + bboxKey);
+                const parkCount = cached ? cached.parks.length : '?';
+                return {
+                    id: bboxKey,
+                    name: item.name || 'Custom Area',
+                    meta: `${item.bbox[0].toFixed(2)}°, ${item.bbox[1].toFixed(2)}° to ${item.bbox[2].toFixed(2)}°, ${item.bbox[3].toFixed(2)}°`,
+                    icon: '□',
+                    hint: cached ? `Contains ${parkCount} parks with full data` : 'Includes: all parks in area with full data',
+                    status: cached ? '<div class="starred-report-ready">✓ ' + parkCount + ' parks ready</div>' : (isLoading ? '<div class="starred-report-loading" style="padding:2px 0;"><div class="spinner" style="width:10px;height:10px;"></div><span style="font-size:10px;">Loading...</span></div>' : ''),
+                    reportHtml: cached ? renderBboxReportInline(item, cached) : (isLoading ? '<div class="starred-report-loading"><div class="spinner"></div>Loading parks in area...</div>' : '<div style="color:#666;font-size:11px;">Report data not yet loaded. <button onclick="prefetchBboxReportData([' + item.bbox.join(',') + '],\'' + (item.name || 'Area') + '\')" style="color:#60a5fa;background:none;border:none;cursor:pointer;text-decoration:underline;">Load now</button></div>')
+                };
+            }, 'Regional subscription — all parks & their data');
         }
         
         // Notifications section
@@ -6193,15 +6552,19 @@
         
         // Narratives section - specific narrative only
         if (starredItems.narratives.length > 0) {
-            html += renderStarredSection('Specific Narratives', 'narrative', starredItems.narratives, item => ({
-                id: item.parkId + '_' + item.type,
-                name: item.title || item.type,
-                meta: item.parkName || '',
-                icon: {'fire': '◆', 'deforestation': '▲', 'settlement': '■', 'road': '═'}[item.type] || '●',
-                onClick: () => flyToParkAndShowNarrative(item),
-                onRemove: () => { toggleStar('narratives', item); renderStarredItems(); },
-                content: item.content
-            }), 'Single narrative type for specific park');
+            html += renderStarredSection('Specific Narratives', 'narrative', starredItems.narratives, item => {
+                const cached = reportDataCache.parks.get(item.parkId);
+                const isLoading = reportDataCache.loading.has(item.parkId);
+                return {
+                    id: item.parkId + '_' + item.type,
+                    parkId: item.parkId,
+                    name: item.title || item.type,
+                    meta: item.parkName || '',
+                    icon: {'fire': '◆', 'deforestation': '▲', 'settlement': '■', 'road': '═'}[item.type] || '●',
+                    status: cached ? '<div class="starred-report-ready">✓ Ready</div>' : '',
+                    reportHtml: cached ? renderNarrativeReportInline(item, cached) : (isLoading ? '<div class="starred-report-loading"><div class="spinner"></div>Loading...</div>' : '<div style="color:#666;font-size:11px;">Report data not yet loaded. <button onclick="prefetchParkReportData(\'' + item.parkId + '\')" style="color:#60a5fa;background:none;border:none;cursor:pointer;text-decoration:underline;">Load now</button></div>')
+                };
+            }, 'Single narrative type for specific park');
         }
         
         body.innerHTML = html;
@@ -6228,15 +6591,16 @@
                                     <div class="starred-item-name">${escapeHtml(item.name)}</div>
                                     ${item.meta ? `<div class="starred-item-meta">${escapeHtml(item.meta)}</div>` : ''}
                                     ${item.hint ? `<div class="starred-item-hint">${item.hint}</div>` : ''}
+                                    ${item.status || ''}
                                 </div>
                             </div>
                             <div class="starred-item-actions">
-                                <button class="starred-item-expand" title="Show details">▼</button>
+                                <button class="starred-item-expand" title="View report">▼</button>
                                 <button class="starred-item-remove" title="Remove">×</button>
                             </div>
                         </div>
-                        <div class="starred-item-details">
-                            ${item.content ? `<div style="font-size: 12px; color: #aaa; line-height: 1.5;">${item.content}</div>` : '<div style="color: #666; font-size: 12px;">Click to view on map</div>'}
+                        <div class="starred-item-details" data-park-id="${item.parkId || item.id || ''}">
+                            ${item.reportHtml || '<div class="starred-report-loading"><div class="spinner"></div>Loading report data...</div>'}
                         </div>
                     </div>
                 `).join('')}
@@ -6290,6 +6654,201 @@
         });
     }
     
+    // Render park report inline (for starred items)
+    function renderParkReportInline(park, data, expanded = true) {
+        const fmt = n => n ? n.toLocaleString() : '0';
+        const stats = data.stats || {};
+        let html = '<div class="starred-report-content">';
+        
+        // Patrol Activity Summary (at top as requested)
+        const fireStats = stats.fire || {};
+        html += `<div class="starred-report-section patrol" style="margin-bottom:12px;">
+            <div class="starred-report-section-title">○ Patrol & Activity Summary</div>
+            <div class="starred-report-section-stats" style="flex-wrap:wrap;">
+                <span title="Fire response rate">🔥 Response: ${Math.round(fireStats.response_rate || 0)}%</span>
+                <span title="Roadless wilderness">🌲 Roadless: ${(stats.roadless?.roadless_percentage || 0).toFixed(1)}%</span>
+                <span title="Settlement built-up area">🏠 Built-up: ${(stats.settlement?.built_up_km2 || 0).toFixed(2)} km²</span>
+            </div>
+            ${stats.insights && stats.insights.length > 0 ? `<div class="starred-report-group" style="margin-top:8px;"><div class="starred-report-group-title">Key Insights:</div>${stats.insights.slice(0, expanded ? 100 : 3).map(i => `<div style="margin:4px 0;font-size:10px;color:#aaa;">${i}</div>`).join('')}${!expanded && stats.insights.length > 3 ? `<div style="color:#60a5fa;font-size:10px;cursor:pointer;" onclick="this.parentElement.innerHTML=this.parentElement.innerHTML.replace('...show more', '')+reportDataCache.parks.get('${park.id}')?.stats?.insights?.slice(3).map(i=>'<div style=margin:4px\\ 0;font-size:10px;color:#aaa;>'+i+'</div>').join('')">...show ${stats.insights.length - 3} more</div>` : ''}</div>` : ''}
+        </div>`;
+        
+        // Fire section
+        const fire = data.fire || {};
+        if (fire.total_fires > 0 || fireStats.total_fires > 0) {
+            const totalFires = fire.total_fires || fireStats.total_fires || 0;
+            const groups = fireStats.groups_entered || 0;
+            const stopped = fireStats.groups_stopped_inside || 0;
+            const transited = fireStats.groups_transited || 0;
+            html += `<div class="starred-report-section fire">
+                <div class="starred-report-section-title">◆ Fire Activity</div>
+                <div class="starred-report-section-stats">
+                    <span>Total: ${fmt(totalFires)}</span>
+                    <span>Groups: ${fmt(groups)} (${fmt(stopped)} stopped, ${fmt(transited)} transited)</span>
+                    <span>Peak: ${fireStats.peak_month || fire.peak_month || 'N/A'}</span>
+                </div>
+                ${fire.summary ? `<div class="starred-report-section-text">${fire.summary}</div>` : ''}
+                ${fire.narratives && fire.narratives.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Fire Groups (${fire.narratives.length}):</div>${fire.narratives.slice(0, expanded ? 100 : 5).map(n => `<div style="margin:4px 0;font-size:10px;">${n.narrative || n.title || 'Fire group'}</div>`).join('')}${!expanded && fire.narratives.length > 5 ? `<div style="color:#60a5fa;font-size:10px;">...${fire.narratives.length - 5} more</div>` : ''}</div>` : ''}
+            </div>`;
+        }
+        
+        // Deforestation section
+        const deforest = data.deforestation || {};
+        const deforestStats = stats.deforestation || {};
+        if ((deforest.total_loss_km2 || deforestStats.total_loss_km2 || 0) > 0) {
+            const totalLoss = deforest.total_loss_km2 || deforestStats.total_loss_km2 || 0;
+            html += `<div class="starred-report-section deforestation">
+                <div class="starred-report-section-title">▲ Deforestation</div>
+                <div class="starred-report-section-stats">
+                    <span>Loss: ${totalLoss.toFixed(2)} km²</span>
+                    <span>Trend: ${deforest.trend_direction || deforestStats.trend || '?'} (${deforest.trend_percent_change > 0 ? '+' : ''}${(deforest.trend_percent_change || 0).toFixed(1)}%)</span>
+                    <span>Worst: ${deforest.worst_year || deforestStats.worst_year || 'N/A'} (${(deforest.worst_year_km2 || deforestStats.worst_year_km2 || 0).toFixed(2)} km²)</span>
+                </div>
+                ${deforest.summary ? `<div class="starred-report-section-text">${deforest.summary}</div>` : ''}
+                ${deforest.hotspots && deforest.hotspots.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Hotspots (${deforest.hotspots.length}):</div>${deforest.hotspots.map(h => `<div style="margin:4px 0;font-size:10px;">${h.name || h.description || 'Hotspot'}: ${(h.area_km2 || 0).toFixed(2)} km²</div>`).join('')}</div>` : ''}
+                ${deforestStats.yearly_data && deforestStats.yearly_data.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Yearly Loss:</div><div style="font-size:9px;color:#666;display:flex;flex-wrap:wrap;gap:8px;">${deforestStats.yearly_data.slice(-10).map(y => `${y.year}: ${y.loss_km2.toFixed(1)}`).join(' | ')}</div></div>` : ''}
+            </div>`;
+        }
+        
+        // Settlement section
+        const settle = data.settlement || {};
+        const settleStats = stats.settlement || {};
+        const settleCount = settle.settlement_count || settleStats.settlement_count || 0;
+        if (settleCount > 0) {
+            html += `<div class="starred-report-section settlement">
+                <div class="starred-report-section-title">■ Settlements</div>
+                <div class="starred-report-section-stats">
+                    <span>Count: ${fmt(settleCount)}</span>
+                    <span>Built-up: ${(settleStats.built_up_km2 || 0).toFixed(2)} km²</span>
+                    <span>Pop: ${fmt(settle.total_population || 0)}</span>
+                </div>
+                ${settle.summary ? `<div class="starred-report-section-text">${settle.summary}</div>` : ''}
+                ${settle.largest_settlements && settle.largest_settlements.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Settlements (${settle.largest_settlements.length}):</div>${settle.largest_settlements.map(s => `<div style="margin:4px 0;font-size:10px;">${s.name || 'Settlement'}: pop. ${fmt(s.population || 0)}${s.classification ? ' (' + s.classification + ')' : ''}</div>`).join('')}</div>` : ''}
+            </div>`;
+        }
+        
+        // Infrastructure section
+        const infra = data.infrastructure || {};
+        if (infra.roads_km > 0 || infra.rivers_count > 0 || infra.places_count > 0) {
+            html += `<div class="starred-report-section" style="border-color:#60a5fa;">
+                <div class="starred-report-section-title">═ Roads, Rivers & Places</div>
+                <div class="starred-report-section-stats">
+                    <span>Roads: ${(stats.roadless?.total_road_km || infra.roads_km || 0).toFixed(1)} km</span>
+                    <span>Rivers: ${infra.rivers_count || 0}</span>
+                    <span>Places: ${infra.places_count || 0}</span>
+                </div>
+                ${infra.major_roads && infra.major_roads.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Major Roads:</div>${infra.major_roads.slice(0, 5).map(r => `<div style="margin:2px 0;font-size:10px;">${r.name || 'Road'}: ${r.surface || 'unknown'} (${(r.length_km || 0).toFixed(1)} km)</div>`).join('')}</div>` : ''}
+            </div>`;
+        }
+        
+        // Species section
+        const species = data.species || {};
+        if (species.total_species > 0 || (species.species && species.species.length > 0)) {
+            const endangered = species.species?.filter(s => s.category === 'CR' || s.category === 'EN').length || 0;
+            html += `<div class="starred-report-section" style="border-color:#10b981;">
+                <div class="starred-report-section-title">❦ Species</div>
+                <div class="starred-report-section-stats">
+                    <span>Total: ${species.total_species || species.species?.length || 0}</span>
+                    <span>Endangered: ${endangered}</span>
+                </div>
+                ${species.species && species.species.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Notable Species:</div>${species.species.filter(s => s.category === 'CR' || s.category === 'EN' || s.category === 'VU').slice(0, 10).map(s => `<div style="margin:2px 0;font-size:10px;">${s.common_name || s.scientific_name} (${s.category})</div>`).join('')}</div>` : ''}
+            </div>`;
+        }
+        
+        // Climate section
+        const climate = data.climate || {};
+        if (climate.annual_rainfall_mm || climate.seasons) {
+            html += `<div class="starred-report-section" style="border-color:#f59e0b;">
+                <div class="starred-report-section-title">☼ Climate</div>
+                <div class="starred-report-section-stats">
+                    <span>Rainfall: ${climate.annual_rainfall_mm || 0} mm/yr</span>
+                    <span>Dry: ${climate.dry_season || 'N/A'}</span>
+                    <span>Wet: ${climate.wet_season || 'N/A'}</span>
+                </div>
+            </div>`;
+        }
+        
+        // Export buttons
+        html += `<div class="starred-export-btns">
+            <a href="/api/parks/${park.id}/export.kml?pwd=${getPwd()}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" class="starred-export-btn" download>↓ KML</a>
+        </div>`;
+        
+        html += '</div>';
+        return html;
+    }
+    
+    // Render bbox report inline with nested parks
+    function renderBboxReportInline(bbox, data) {
+        let html = '<div class="starred-report-content">';
+        html += `<div style="font-size:11px;color:#a855f7;margin-bottom:12px;">□ ${data.parks.length} parks in this area</div>`;
+        
+        for (const park of data.parks) {
+            const rd = park.reportData || {};
+            html += `<div class="starred-park-nested">
+                <div class="starred-park-nested-header">
+                    <span>${escapeHtml(park.name || park.id)}</span>
+                    <span class="starred-park-nested-meta">${escapeHtml(park.country || '')}${park.area_km2 ? ' • ' + Math.round(park.area_km2).toLocaleString() + ' km²' : ''}</span>
+                </div>
+                ${renderParkReportInline(park, rd)}
+            </div>`;
+        }
+        
+        // Export buttons for bbox
+        html += `<div class="starred-export-btns" style="margin-top:12px;">
+            <button onclick="exportBboxXlsx('${bbox.bbox.join(',')}','${escapeHtml(bbox.name || 'Area')}')" class="starred-export-btn">↓ XLSX Report</button>
+            <button onclick="exportBboxCsv('${bbox.bbox.join(',')}','${escapeHtml(bbox.name || 'Area')}')" class="starred-export-btn">↓ CSV</button>
+        </div>`;
+        
+        html += '</div>';
+        return html;
+    }
+    
+    // Render single narrative type report
+    function renderNarrativeReportInline(item, data) {
+        const type = item.type;
+        const typeData = type === 'fire' ? data.fire : type === 'deforestation' ? data.deforestation : type === 'settlement' ? data.settlement : null;
+        
+        if (!typeData) {
+            return '<div style="color:#666;font-size:11px;">No data available for this narrative type.</div>';
+        }
+        
+        let html = '<div class="starred-report-content">';
+        const fmt = n => n ? n.toLocaleString() : '0';
+        
+        if (type === 'fire' && typeData.total_fires > 0) {
+            html += `<div class="starred-report-section fire">
+                <div class="starred-report-section-stats">
+                    <span>Total: ${fmt(typeData.total_fires)}</span>
+                    <span>Response: ${Math.round(typeData.response_rate || 0)}%</span>
+                </div>
+                ${typeData.summary ? `<div class="starred-report-section-text">${typeData.summary}</div>` : ''}
+                ${typeData.narratives && typeData.narratives.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">All Fire Groups (${typeData.narratives.length}):</div>${typeData.narratives.map(n => `<div style="margin:4px 0;">${n.narrative || n.title || 'Fire group'}</div>`).join('')}</div>` : ''}
+            </div>`;
+        } else if (type === 'deforestation' && typeData.total_loss_km2 > 0) {
+            html += `<div class="starred-report-section deforestation">
+                <div class="starred-report-section-stats">
+                    <span>Loss: ${typeData.total_loss_km2?.toFixed(2) || 0} km²</span>
+                    <span>Trend: ${typeData.trend_direction || '?'}</span>
+                </div>
+                ${typeData.summary ? `<div class="starred-report-section-text">${typeData.summary}</div>` : ''}
+                ${typeData.hotspots && typeData.hotspots.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">All Hotspots (${typeData.hotspots.length}):</div>${typeData.hotspots.map(h => `<div style="margin:4px 0;">${h.name || h.description || 'Hotspot'}: ${h.area_km2?.toFixed(2)} km²</div>`).join('')}</div>` : ''}
+            </div>`;
+        } else if (type === 'settlement' && typeData.settlement_count > 0) {
+            html += `<div class="starred-report-section settlement">
+                <div class="starred-report-section-stats">
+                    <span>Count: ${fmt(typeData.settlement_count)}</span>
+                    <span>Pop: ${fmt(typeData.total_population || 0)}</span>
+                </div>
+                ${typeData.summary ? `<div class="starred-report-section-text">${typeData.summary}</div>` : ''}
+                ${typeData.largest_settlements && typeData.largest_settlements.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">All Settlements (${typeData.largest_settlements.length}):</div>${typeData.largest_settlements.map(s => `<div style="margin:4px 0;">${s.name || 'Settlement'}: pop. ${fmt(s.population || 0)}</div>`).join('')}</div>` : ''}
+            </div>`;
+        } else {
+            html += '<div style="color:#666;font-size:11px;">No significant data for this narrative.</div>';
+        }
+        
+        html += '</div>';
+        return html;
+    }
+    
     function flyToPark(item) {
         if (item.bbox && item.bbox.length === 4) {
             map.fitBounds([[item.bbox[0], item.bbox[1]], [item.bbox[2], item.bbox[3]]], { padding: 50, duration: 1500 });
@@ -6327,10 +6886,12 @@
         const meta = document.getElementById('star-report-meta');
         const now = new Date();
         const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0);
+        const loadedParks = reportDataCache.parks.size;
+        const loadingCount = reportDataCache.loading.size;
         
         meta.innerHTML = `
-            <div>Report: ${now.toLocaleDateString()} ${now.toLocaleTimeString()} • v0.70</div>
-            <div>Time range: ${dateFrom || 'all'} to ${dateTo || 'now'} • ${total} items</div>
+            <div>Report: ${now.toLocaleDateString()} ${now.toLocaleTimeString()} • v${reportDataCache.version}</div>
+            <div>Time range: ${dateFrom || 'all'} to ${dateTo || 'now'} • ${total} items${loadedParks > 0 ? ` • ${loadedParks} cached` : ''}${loadingCount > 0 ? ` • ${loadingCount} loading` : ''}</div>
         `;
     }
     
@@ -6358,7 +6919,7 @@
     
     // Export starred report with full nested data
     async function printStarredReport() {
-        showToast('Preparing print view...');
+        showToast('Generating PDF report...');
         
         try {
             const report = await generateStarredReportAsync();
@@ -6368,16 +6929,15 @@
             printWindow.document.write(report);
             printWindow.document.close();
             
+            // Set document title for PDF filename with filters
+            const filterStr = buildFilterString();
+            printWindow.document.title = `5MP_Report_${new Date().toISOString().slice(0,10)}${filterStr}`;
+            
             // Expand all collapsibles and trigger print
             printWindow.onload = function() {
-                // Expand all details elements
                 const details = printWindow.document.querySelectorAll('details');
                 details.forEach(d => d.open = true);
-                
-                // Slight delay then print
-                setTimeout(() => {
-                    printWindow.print();
-                }, 300);
+                setTimeout(() => printWindow.print(), 300);
             };
         } catch (err) {
             console.error('Report generation error:', err);
@@ -6385,19 +6945,31 @@
         }
     }
     
+    // Build filter string for filenames
+    function buildFilterString() {
+        let str = '';
+        if (dateFrom) str += `_from_${dateFrom}`;
+        if (dateTo) str += `_to_${dateTo}`;
+        return str;
+    }
+    
     // Fetch all nested data for a park
     async function fetchParkFullData(parkId) {
         const pwd = new URLSearchParams(window.location.search).get('pwd');
         const pwdParam = pwd ? `?pwd=${pwd}` : '';
+        const dateParams = (dateFrom ? `&from=${dateFrom}` : '') + (dateTo ? `&to=${dateTo}` : '');
         
-        const [fire, deforestation, settlement, stats] = await Promise.all([
+        const [fire, deforestation, settlement, stats, infrastructure, species, climate] = await Promise.all([
             fetch(`/api/parks/${parkId}/fire-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/deforestation-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/settlement-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`/api/parks/${parkId}/stats${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null)
+            fetch(`/api/parks/${parkId}/stats${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/infrastructure${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/species${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/climate${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null)
         ]);
         
-        return { fire, deforestation, settlement, stats };
+        return { fire, deforestation, settlement, stats, infrastructure, species, climate };
     }
     
     // Generate full report with nested data
@@ -6475,8 +7047,8 @@
         ${fire.summary ? `<div class="narrative-text">${fire.summary}</div>` : ''}
         ${fire.narratives && fire.narratives.length > 0 ? `
         <div class="fire-groups">
-            <div class="fire-groups-title">Recent Fire Groups (showing first 5):</div>
-            ${fire.narratives.slice(0, 5).map(n => `<div class="fire-group-item">${n.narrative}</div>`).join('')}
+            <div class="fire-groups-title">Fire Groups (${fire.narratives.length} total):</div>
+            ${fire.narratives.map(n => `<div class="fire-group-item">${n.narrative}</div>`).join('')}
         </div>` : ''}
     </div>` : ''}
     
@@ -6491,8 +7063,8 @@
         ${deforest.summary ? `<div class="narrative-text">${deforest.summary}</div>` : ''}
         ${deforest.hotspots && deforest.hotspots.length > 0 ? `
         <div class="hotspots">
-            <div class="hotspots-title">Deforestation Hotspots:</div>
-            ${deforest.hotspots.slice(0, 3).map(h => `<div class="hotspot-item">${h.name || h.description}: ${h.area_km2?.toFixed(2)} km²</div>`).join('')}
+            <div class="hotspots-title">Deforestation Hotspots (${deforest.hotspots.length} total):</div>
+            ${deforest.hotspots.map(h => `<div class="hotspot-item">${h.name || h.description}: ${h.area_km2?.toFixed(2)} km²</div>`).join('')}
         </div>` : ''}
     </div>` : ''}
     
@@ -6507,8 +7079,8 @@
         ${settle.summary ? `<div class="narrative-text">${settle.summary}</div>` : ''}
         ${settle.largest_settlements && settle.largest_settlements.length > 0 ? `
         <div class="settlements-list">
-            <div class="settlements-title">Largest Settlements:</div>
-            ${settle.largest_settlements.slice(0, 3).map(s => `<div class="settlement-item">${s.name || 'Unnamed'}: pop. ${formatNumber(s.population || 0)}</div>`).join('')}
+            <div class="settlements-title">Settlements (${settle.largest_settlements.length} total):</div>
+            ${settle.largest_settlements.map(s => `<div class="settlement-item">${s.name || 'Unnamed'}: pop. ${formatNumber(s.population || 0)}</div>`).join('')}
         </div>` : ''}
     </div>` : ''}
     
@@ -6563,7 +7135,8 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; }
     <div><strong>Generated:</strong> ${now.toLocaleString()}</div>
     <div><strong>Time range:</strong> ${dateFrom || 'Jan 2023'} to ${dateTo || 'present'}</div>
     <div><strong>Total items:</strong> ${total} (${starredItems.parks.length} parks, ${starredItems.bboxes.length} areas, ${starredItems.narratives.length} narratives)</div>
-    <div><strong>Version:</strong> 0.70</div>
+    <div><strong>Version:</strong> ${reportDataCache.version}</div>
+    <div><strong>Filters:</strong> ${dateFrom || 'all dates'} to ${dateTo || 'present'}</div>
 </div>
 
 <div class="toc">
@@ -8623,7 +9196,9 @@ ${starredItems.narratives.map(n => {
                 </div>
                 <div class="star-report-actions">
                     <button class="star-report-btn secondary" onclick="clearAllStars()">Clear All</button>
-                    <button class="star-report-btn" onclick="printStarredReport()">Print Report</button>
+                    <button class="star-report-btn secondary" onclick="exportFullReportCsv()" title="Export all data as CSV">↓ CSV</button>
+                    <button class="star-report-btn secondary" onclick="exportFullReportKml()" title="Export all park KMLs">↓ KML</button>
+                    <button class="star-report-btn" onclick="printStarredReport()">⎙ Print Report</button>
                 </div>
             </div>
         </div>
