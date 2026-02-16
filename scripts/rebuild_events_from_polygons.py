@@ -39,18 +39,17 @@ class EventRebuilder:
         
         rivers = []
         cursor = self.conn.execute("""
-            SELECT r.name, r.discharge_cms, r.stream_order, 
-                   json_extract(r.geojson, '$.coordinates') as coords
-            FROM park_rivers pr
-            JOIN rivers r ON r.hyriv_id = pr.hyriv_id
-            WHERE pr.park_id = ? AND r.name != '' AND r.stream_order >= 4
-            ORDER BY r.discharge_cms DESC
+            SELECT name, stream_order, length_km,
+                   json_extract(geojson, '$.coordinates') as coords
+            FROM park_rivers_hydro
+            WHERE park_id = ? AND name != '' AND stream_order >= 4
+            ORDER BY stream_order DESC, length_km DESC
             LIMIT 10
         """, (park_id,))
         for row in cursor:
             rivers.append({
                 'name': row['name'],
-                'discharge': row['discharge_cms'],
+                'discharge': None,
                 'order': row['stream_order']
             })
         self.rivers[park_id] = rivers

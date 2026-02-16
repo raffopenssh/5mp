@@ -1,0 +1,1 @@
+{"park_id": "CMR_Lob\u00e9k\u00e9", "year": 2023, "buffer_km": 50, "fires": [{"lat": 2.54608, "lon": 15.11787, "date": "2023-12-30", "time": "1149", "frp": 4.58, "confidence": "n"}, {"lat": 2.54783, "lon": 15.11605, "date": "2023-12-30", "time": "1149", "frp": 5.03, "confidence": "n"}], "count_buffer": 2}

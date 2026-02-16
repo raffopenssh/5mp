@@ -1,0 +1,1 @@
+{"park_id": "NAM_Skeleton_Coast", "year": 2023, "buffer_km": 50, "fires": [{"lat": -16.94407, "lon": 12.36824, "date": "2023-05-18", "time": "2332", "frp": 0.49, "confidence": "n"}, {"lat": -16.70629, "lon": 11.99873, "date": "2023-01-14", "time": "2356", "frp": 0.83, "confidence": "n"}], "count_buffer": 2}

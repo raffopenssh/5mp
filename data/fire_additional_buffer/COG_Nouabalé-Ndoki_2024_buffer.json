@@ -1,0 +1,1 @@
+{"park_id": "COG_Nouabal\u00e9-Ndoki", "year": 2024, "buffer_km": 50, "fires": [{"lat": 1.62487, "lon": 17.35882, "date": "2024-03-13", "time": "1201", "frp": 8.69, "confidence": "l"}, {"lat": 2.58146, "lon": 16.07834, "date": "2024-02-14", "time": "1227", "frp": 4.25, "confidence": "n"}], "count_buffer": 2}
