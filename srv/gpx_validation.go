@@ -145,24 +145,53 @@ func ValidateAndClassifyGPX(data *gpx.GPXData) *GPXValidationResult {
 			continue
 		}
 
-		// Default: classify as patrol (valid for effort mapping)
 		// Determine movement type from speed
 		movementType := "foot"
+		avgSpeed := 0.0
 		if len(seg) >= 2 {
 			tempSeg := gpx.Segment{Points: seg}
-			tempSeg.AvgSpeedKmh = gpx.CalculateSpeed(seg)
+			avgSpeed = gpx.CalculateSpeed(seg)
+			tempSeg.AvgSpeedKmh = avgSpeed
 			movementType = gpx.ClassifyMovementType(tempSeg)
 		}
 
+		distanceKm := calculateSegmentDistance(seg)
+		
+		// Aircraft movements are not counted as patrol effort
+		// They are logged separately as transfer/logistics
+		if movementType == "aircraft" {
+			classified := ClassifiedSegment{
+				Classification:  "aircraft",
+				MovementType:    "aircraft",
+				StartIndex:      0,
+				EndIndex:        len(seg) - 1,
+				DistanceKm:      distanceKm,
+				AvgSpeedKmh:     avgSpeed,
+				Reason:          fmt.Sprintf("Aircraft movement (avg %.0f km/h)", avgSpeed),
+				IncludeInEffort: false,
+				Points:          seg,
+			}
+			if len(seg) > 0 && seg[0].Time != nil && seg[len(seg)-1].Time != nil {
+				duration := seg[len(seg)-1].Time.Sub(*seg[0].Time)
+				classified.Duration = duration
+				classified.DurationStr = formatDuration(duration)
+			}
+			result.ClassifiedSegments = append(result.ClassifiedSegments, classified)
+			result.ExcludedKm += distanceKm
+			continue
+		}
+
+		// Valid patrol track (foot or vehicle)
 		classified := ClassifiedSegment{
 			Classification:  "patrol",
 			MovementType:    movementType,
 			StartIndex:      0,
 			EndIndex:        len(seg) - 1,
-			DistanceKm:      calculateSegmentDistance(seg),
+			DistanceKm:      distanceKm,
+			AvgSpeedKmh:     avgSpeed,
 			Reason:          "Valid patrol track",
 			IncludeInEffort: true,
-			Points:          seg, // Store points for persistence
+			Points:          seg,
 		}
 		if len(seg) > 0 && seg[0].Time != nil && seg[len(seg)-1].Time != nil {
 			duration := seg[len(seg)-1].Time.Sub(*seg[0].Time)
@@ -170,7 +199,7 @@ func ValidateAndClassifyGPX(data *gpx.GPXData) *GPXValidationResult {
 			classified.DurationStr = formatDuration(duration)
 		}
 		result.ClassifiedSegments = append(result.ClassifiedSegments, classified)
-		result.PatrolKm += classified.DistanceKm
+		result.PatrolKm += distanceKm
 	}
 
 	// Final validation checks

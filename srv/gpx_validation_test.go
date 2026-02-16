@@ -226,3 +226,60 @@ func TestValidateAndClassifyGPX_RealisticDistances(t *testing.T) {
 	t.Logf("Results: %d segments, %.2f total km for 30-day track with %d points", 
 		len(result.ClassifiedSegments), totalKm, result.TotalPoints)
 }
+
+// TestValidateAndClassifyGPX_AircraftSeparation ensures aircraft movements
+// are separated from patrol distances (they shouldn't count toward patrol effort)
+func TestValidateAndClassifyGPX_AircraftSeparation(t *testing.T) {
+	baseTime := time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC)
+	
+	var points []gpx.Point
+	
+	// Simulate a flight: 500km in 2 hours = 250 km/h
+	// Points every 10 minutes = 12 points over 2 hours
+	for i := 0; i < 12; i++ {
+		pt := gpx.Point{
+			// Move ~42 km between points (0.38 degrees at equator)
+			Lat:  0.0 + float64(i)*0.38,
+			Lon:  30.0,
+			Time: func() *time.Time { t := baseTime.Add(time.Duration(i*10) * time.Minute); return &t }(),
+		}
+		points = append(points, pt)
+	}
+	
+	data := &gpx.GPXData{
+		Tracks: []gpx.Track{{
+			Segments: [][]gpx.Point{points},
+		}},
+	}
+	
+	result := ValidateAndClassifyGPX(data)
+	
+	if !result.IsValid {
+		t.Errorf("Expected valid GPX, got invalid: %v", result.ValidationErrors)
+	}
+	
+	// Patrol km should be 0 or very low (aircraft shouldn't count)
+	if result.PatrolKm > 10 {
+		t.Errorf("Patrol km %.2f is too high - aircraft should not count as patrol", result.PatrolKm)
+	}
+	
+	// Excluded km should include the aircraft distance
+	// Flight distance should be in excluded (at least 300km)
+	if result.ExcludedKm < 300 {
+		t.Errorf("Excluded km %.2f is too low - aircraft distance should be excluded", result.ExcludedKm)
+	}
+	
+	// Check we have an aircraft segment
+	hasAircraft := false
+	for _, seg := range result.ClassifiedSegments {
+		if seg.Classification == "aircraft" {
+			hasAircraft = true
+			t.Logf("Aircraft segment: %.2f km, avg %.0f km/h", seg.DistanceKm, seg.AvgSpeedKmh)
+		}
+	}
+	if !hasAircraft {
+		t.Error("Expected aircraft classification for high-speed movement")
+	}
+	
+	t.Logf("Results: patrol=%.2f km, excluded=%.2f km", result.PatrolKm, result.ExcludedKm)
+}
