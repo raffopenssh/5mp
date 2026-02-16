@@ -1,21 +1,21 @@
 #!/bin/bash
 # Daily fire data download - runs at 3am UTC
-# Downloads last 5 days of NRT data to catch any updates
+# Downloads last 5 days of NRT data with 50km buffer around parks
 
 LOG_DIR=/home/exedev/5mp/logs
 LOG_FILE="$LOG_DIR/fire_nrt_daily_$(date +%Y%m%d).log"
 mkdir -p "$LOG_DIR"
 
 cd /home/exedev/5mp
-echo "Starting daily fire download at $(date)" >> "$LOG_FILE"
+source .venv/bin/activate 2>/dev/null || true
 
-# Download last 5 days of NRT data
-python3 scripts/fire_nrt/download_nrt.py --all --days 5 >> "$LOG_FILE" 2>&1
+echo "=== Daily Fire Update Started: $(date) ===" >> "$LOG_FILE"
 
-# Run trajectory analysis (to be implemented)
-# python3 scripts/fire_nrt/analyze_trajectories.py >> "$LOG_FILE" 2>&1
+# Download last 5 days of NRT data (with 50km buffer)
+echo "[1/1] Downloading NRT fire data (50km buffer)..." >> "$LOG_FILE"
+python3 scripts/fire_nrt/download_nrt.py --all --days 5 --buffer 50 >> "$LOG_FILE" 2>&1
 
-echo "Completed at $(date)" >> "$LOG_FILE"
+echo "=== Daily Fire Update Completed: $(date) ===" >> "$LOG_FILE"
 
 # Keep only last 30 days of logs
 find "$LOG_DIR" -name "fire_nrt_daily_*.log" -mtime +30 -delete

@@ -82,9 +82,20 @@ def get_working_proxy(proxies: List[str] = PROXIES) -> Optional[str]:
     return None
 
 
-def get_park_bbox(park_id: str) -> Optional[Tuple[float, float, float, float]]:
-    """Get bounding box for a park from keystones data."""
+def get_park_bbox(park_id: str, buffer_km: float = 0) -> Optional[Tuple[float, float, float, float]]:
+    """Get bounding box for a park from keystones data.
+    
+    Args:
+        park_id: Park identifier (e.g., 'COD_Virunga')
+        buffer_km: Buffer in kilometers to extend bbox (default 0, use 50 for NRT)
+    
+    Returns:
+        (min_lon, min_lat, max_lon, max_lat) or None
+    """
     parks = load_park_data()
+    
+    # Convert buffer_km to approximate degrees (1 degree ≈ 111km at equator)
+    buffer_deg = buffer_km / 111.0 if buffer_km > 0 else 0
     
     for park in parks:
         # Match by id field (e.g., "COD_Virunga")
@@ -94,7 +105,8 @@ def get_park_bbox(park_id: str) -> Optional[Tuple[float, float, float, float]]:
                 coords = geom['coordinates'][0]
                 lons = [c[0] for c in coords]
                 lats = [c[1] for c in coords]
-                return (min(lons), min(lats), max(lons), max(lats))
+                return (min(lons) - buffer_deg, min(lats) - buffer_deg, 
+                        max(lons) + buffer_deg, max(lats) + buffer_deg)
             elif geom.get('type') == 'MultiPolygon':
                 all_lons = []
                 all_lats = []
@@ -104,13 +116,15 @@ def get_park_bbox(park_id: str) -> Optional[Tuple[float, float, float, float]]:
                             all_lons.append(c[0])
                             all_lats.append(c[1])
                 if all_lons and all_lats:
-                    return (min(all_lons), min(all_lats), max(all_lons), max(all_lats))
+                    return (min(all_lons) - buffer_deg, min(all_lats) - buffer_deg,
+                            max(all_lons) + buffer_deg, max(all_lats) + buffer_deg)
             
             # Fallback to coordinates if no geometry
             coords = park.get('coordinates')
             if coords:
                 lon, lat = coords.get("lon", 0), coords.get("lat", 0)
-                return (lon - 0.5, lat - 0.5, lon + 0.5, lat + 0.5)
+                half = 0.5 + buffer_deg
+                return (lon - half, lat - half, lon + half, lat + half)
     
     logger.warning(f"Park {park_id} not found in keystones data")
     return None
@@ -262,9 +276,18 @@ def download_park_fires(
     park_id: str,
     db_path: str = DB_PATH,
     days: int = 5,
-    proxy: Optional[str] = None
+    proxy: Optional[str] = None,
+    buffer_km: float = 0
 ) -> int:
-    """Download NRT fire data for a single park."""
+    """Download NRT fire data for a single park.
+    
+    Args:
+        park_id: Park identifier
+        db_path: Database path
+        days: Days of NRT data (1-10)
+        proxy: HTTP proxy to use
+        buffer_km: Buffer around park in km (0 = park boundary only, 50 = include 50km buffer)
+    """
     
     if not proxy:
         proxy = get_working_proxy()
@@ -272,12 +295,13 @@ def download_park_fires(
             logger.error("No working proxy found")
             return 0
     
-    bbox = get_park_bbox(park_id)
+    bbox = get_park_bbox(park_id, buffer_km=buffer_km)
     if not bbox:
         logger.warning(f"No bbox found for park {park_id}")
         return 0
     
-    logger.info(f"Downloading fires for {park_id}, bbox={[f'{x:.2f}' for x in bbox]}, days={days}")
+    buffer_str = f" (+{buffer_km}km buffer)" if buffer_km > 0 else ""
+    logger.info(f"Downloading fires for {park_id}{buffer_str}, bbox={[f'{x:.2f}' for x in bbox]}, days={days}")
     
     fires = fetch_fire_data(bbox, proxy, days=days)
     
@@ -291,8 +315,14 @@ def download_park_fires(
     return 0
 
 
-def download_all_parks(days: int = 5, db_path: str = DB_PATH) -> Dict[str, int]:
-    """Download NRT fire data for all parks."""
+def download_all_parks(days: int = 5, db_path: str = DB_PATH, buffer_km: float = 0) -> Dict[str, int]:
+    """Download NRT fire data for all parks.
+    
+    Args:
+        days: Days of NRT data (1-10)
+        db_path: Database path
+        buffer_km: Buffer around each park in km (0 = park only, 50 = include 50km buffer)
+    """
     
     proxy = get_working_proxy()
     if not proxy:
@@ -300,12 +330,13 @@ def download_all_parks(days: int = 5, db_path: str = DB_PATH) -> Dict[str, int]:
         return {}
     
     park_ids = get_all_park_ids()
-    logger.info(f"Downloading fires for {len(park_ids)} parks")
+    buffer_str = f" with {buffer_km}km buffer" if buffer_km > 0 else ""
+    logger.info(f"Downloading fires for {len(park_ids)} parks{buffer_str}")
     
     results = {}
     for i, park_id in enumerate(park_ids):
         try:
-            inserted = download_park_fires(park_id, db_path, days, proxy)
+            inserted = download_park_fires(park_id, db_path, days, proxy, buffer_km=buffer_km)
             results[park_id] = inserted
             
             # Rate limiting
@@ -328,9 +359,17 @@ def download_all_parks(days: int = 5, db_path: str = DB_PATH) -> Dict[str, int]:
 def backfill_date_range(
     start_date: str,
     end_date: str,
-    db_path: str = DB_PATH
+    db_path: str = DB_PATH,
+    buffer_km: float = 0
 ) -> int:
-    """Backfill fire data for a date range."""
+    """Backfill fire data for a date range.
+    
+    Args:
+        start_date: Start date (YYYY-MM-DD)
+        end_date: End date (YYYY-MM-DD)
+        db_path: Database path
+        buffer_km: Buffer around each park in km (0 = park only, 50 = include 50km buffer)
+    """
     
     proxy = get_working_proxy()
     if not proxy:
@@ -341,6 +380,9 @@ def backfill_date_range(
     start = datetime.strptime(start_date, "%Y-%m-%d")
     end = datetime.strptime(end_date, "%Y-%m-%d")
     
+    buffer_str = f" with {buffer_km}km buffer" if buffer_km > 0 else ""
+    logger.info(f"Backfilling {start_date} to {end_date}{buffer_str}")
+    
     total_inserted = 0
     current = start
     
@@ -349,7 +391,7 @@ def backfill_date_range(
         logger.info(f"Backfilling {date_str}")
         
         for park_id in park_ids:
-            bbox = get_park_bbox(park_id)
+            bbox = get_park_bbox(park_id, buffer_km=buffer_km)
             if not bbox:
                 continue
             
@@ -376,6 +418,7 @@ def main():
     parser.add_argument("--park", help="Specific park ID (e.g., COD_Virunga)")
     parser.add_argument("--all", action="store_true", help="Download for all parks")
     parser.add_argument("--days", type=int, default=5, help="Days of data (1-10)")
+    parser.add_argument("--buffer", type=float, default=0, help="Buffer in km around park (default 0, use 50 for full coverage)")
     parser.add_argument("--backfill", action="store_true", help="Backfill historical data")
     parser.add_argument("--start", help="Start date for backfill (YYYY-MM-DD)")
     parser.add_argument("--end", help="End date for backfill (YYYY-MM-DD)")
@@ -383,14 +426,18 @@ def main():
     
     args = parser.parse_args()
     
+    # Store buffer in global for use by get_park_bbox
+    global _buffer_km
+    _buffer_km = args.buffer
+    
     if args.backfill:
         if not args.start or not args.end:
             parser.error("--backfill requires --start and --end dates")
-        backfill_date_range(args.start, args.end, args.db)
+        backfill_date_range(args.start, args.end, args.db, buffer_km=args.buffer)
     elif args.all:
-        download_all_parks(args.days, args.db)
+        download_all_parks(args.days, args.db, buffer_km=args.buffer)
     elif args.park:
-        download_park_fires(args.park, args.db, args.days)
+        download_park_fires(args.park, args.db, args.days, buffer_km=args.buffer)
     else:
         parser.print_help()
 

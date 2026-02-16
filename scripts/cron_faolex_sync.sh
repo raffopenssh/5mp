@@ -1,14 +1,21 @@
 #!/bin/bash
-# FAOLEX Legal Documents Sync - Weekly
-# Add to crontab: 0 3 * * 0 /home/exedev/5mpglobe/scripts/cron_faolex_sync.sh
+# FAOLEX Legal Documents Sync - Weekly (Sunday 4am UTC)
+# Syncs conservation-related legal documents from FAO FAOLEX database
 
-cd /home/exedev/5mpglobe
+LOG_DIR=/home/exedev/5mp/logs
+LOG_FILE="$LOG_DIR/faolex_sync_$(date +%Y%m%d).log"
+mkdir -p "$LOG_DIR"
 
-# Trigger FAOLEX sync via API or direct database operations
-# The server's RunFAOLEXSync is called periodically by the research worker
+cd /home/exedev/5mp
 
-# Log the execution
-echo "$(date) - FAOLEX sync triggered" >> logs/faolex_sync.log
+echo "=== FAOLEX Sync Started: $(date) ===" >> "$LOG_FILE"
 
-# Note: The actual sync is handled by the Go server's background worker
-# This script is for manual triggering or additional processing
+# Trigger FAOLEX sync via curl to the running server
+# The server's background worker handles the actual sync
+curl -s "http://localhost:8000/api/admin/trigger-faolex-sync?pwd=REDACTED_PWD" >> "$LOG_FILE" 2>&1 || \
+  echo "Server not running or endpoint unavailable" >> "$LOG_FILE"
+
+echo "=== FAOLEX Sync Triggered: $(date) ===" >> "$LOG_FILE"
+
+# Keep only last 8 weeks of logs
+find "$LOG_DIR" -name "faolex_sync_*.log" -mtime +56 -delete
