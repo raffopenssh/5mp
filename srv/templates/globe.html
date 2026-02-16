@@ -4710,11 +4710,24 @@
                         }
                     }
                 } else {
-                    el.innerHTML = '<div class="pa-popup-section-empty">No fire activity recorded</div>';
+                    // No fire data - show informative empty state
+                    const rangeLabel = formatDateRangeLabel(dateFrom, dateTo);
+                    el.innerHTML = `
+                        <div class="pa-popup-section-empty" style="color: #22c55e;">
+                            <div style="margin-bottom: 6px;">✓ No fire activity detected</div>
+                            <div style="font-size: 9px; color: #666; font-style: normal;">
+                                No fire groups or detections recorded for this park${dateFrom || dateTo ? ` in ${rangeLabel}` : ' (2018-present)'}.
+                                This may indicate effective fire management or low fire risk.
+                            </div>
+                        </div>`;
                 }
             } catch (e) {
                 console.error('Fire data fetch error:', e);
-                el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
+                el.innerHTML = `
+                    <div class="pa-popup-section-empty">
+                        <div style="color: #f59e0b; margin-bottom: 4px;">⚠ Unable to load fire data</div>
+                        <div style="font-size: 9px; color: #666;">Check connection and try again. Error: ${e.message || 'Unknown'}</div>
+                    </div>`;
             }
         }
         
@@ -4822,14 +4835,28 @@
                             });
                         }
                     }
-                } else if (data.status === 'complete') {
-                    el.innerHTML = '<div class="pa-popup-section-empty" style="color: #22c55e;">✓ Pristine wilderness - no settlements detected</div>';
+                } else if (data.status === 'complete' || data.settlement_count === 0) {
+                    el.innerHTML = `
+                        <div class="pa-popup-section-empty" style="color: #22c55e;">
+                            <div style="margin-bottom: 6px;">✓ Pristine wilderness - no settlements detected</div>
+                            <div style="font-size: 9px; color: #666; font-style: normal;">
+                                ${data.summary || 'No human settlements detected within park boundaries. This intact habitat status is critical for wildlife.'}
+                            </div>
+                        </div>`;
                 } else {
-                    el.innerHTML = '<div class="pa-popup-section-empty">No settlement data</div>';
+                    el.innerHTML = `
+                        <div class="pa-popup-section-empty">
+                            <div style="color: #888; margin-bottom: 4px;">No settlement data available</div>
+                            <div style="font-size: 9px; color: #555;">Settlement analysis has not been completed for this park yet.</div>
+                        </div>`;
                 }
             } catch (e) {
                 console.error('Settlement data fetch error:', e);
-                el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
+                el.innerHTML = `
+                    <div class="pa-popup-section-empty">
+                        <div style="color: #f59e0b; margin-bottom: 4px;">⚠ Unable to load settlement data</div>
+                        <div style="font-size: 9px; color: #666;">Check connection and try again. Error: ${e.message || 'Unknown'}</div>
+                    </div>`;
             }
         }
         
@@ -4995,11 +5022,23 @@
                         }, 100);
                     }
                 } else {
-                    el.innerHTML = '<div class="pa-popup-section-empty" style="color: #22c55e;">✓ No deforestation detected in this period</div>';
+                    // No deforestation - show positive empty state
+                    const rangeLabel = formatDateRangeLabel(dateFrom, dateTo);
+                    el.innerHTML = `
+                        <div class="pa-popup-section-empty" style="color: #22c55e;">
+                            <div style="margin-bottom: 6px;">✓ No significant deforestation detected</div>
+                            <div style="font-size: 9px; color: #666; font-style: normal;">
+                                ${data.summary || `No forest loss events recorded for this park${dateFrom || dateTo ? ` in ${rangeLabel}` : ' (2001-present)'}. Forest cover appears stable.`}
+                            </div>
+                        </div>`;
                 }
             } catch (e) {
                 console.error('Deforestation data fetch error:', e);
-                el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
+                el.innerHTML = `
+                    <div class="pa-popup-section-empty">
+                        <div style="color: #f59e0b; margin-bottom: 4px;">⚠ Unable to load deforestation data</div>
+                        <div style="font-size: 9px; color: #666;">Check connection and try again. Error: ${e.message || 'Unknown'}</div>
+                    </div>`;
             }
         }
         
