@@ -8321,7 +8321,7 @@ ${starredItems.narratives.map(n => {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Loading...</td></tr>';
         
         try {
-            const res = await fetch('/api/admin/pending-features');
+            const res = await fetch('/api/admin/pending-approvals');
             const data = await res.json();
             
             if (!data.features || data.features.length === 0) {
@@ -8329,24 +8329,26 @@ ${starredItems.narratives.map(n => {
                 return;
             }
             
-            tbody.innerHTML = data.features.map(f => `
+            tbody.innerHTML = data.features.map(f => {
+                const confidence = f.confidence_pct || f.confidence || 0;
+                return `
                 <tr data-id="${f.id}" data-type="${f.type}" onclick="handleAdminRowClick(event, '${f.type}', ${f.id})">
-                    <td>${escapeHtml(f.park_name || 'Unknown')}</td>
+                    <td>${escapeHtml(f.park_id || f.park_name || 'Unknown')}</td>
                     <td><span class="feature-type-badge type-${f.type}">${f.type}</span></td>
-                    <td>${escapeHtml(f.name || 'Unnamed')}</td>
+                    <td style="font-size:11px;">${escapeHtml(f.details || f.name || 'Unnamed')}</td>
                     <td>
                         <div class="confidence-bar">
-                            <div class="confidence-fill" style="width:${f.confidence || 0}%;background:${getConfidenceColor(f.confidence)}"></div>
+                            <div class="confidence-fill" style="width:${confidence}%;background:${getConfidenceColor(confidence)}"></div>
                         </div>
-                        <span class="confidence-text">${(f.confidence || 0).toFixed(0)}%</span>
+                        <span class="confidence-text">${confidence.toFixed(0)}%</span>
                     </td>
-                    <td>${f.hit_count || 0} hits</td>
+                    <td style="font-size:11px;color:#888;">${f.created_at ? new Date(f.created_at).toLocaleDateString() : '-'}</td>
                     <td>
                         <button class="admin-btn admin-btn-success" onclick="event.stopPropagation();approveFeature('${f.type}',${f.id})">Approve</button>
                         <button class="admin-btn admin-btn-danger" onclick="event.stopPropagation();rejectFeature('${f.type}',${f.id})">Reject</button>
                     </td>
-                </tr>
-            `).join('');
+                </tr>`;
+            }).join('');
         } catch (err) {
             tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#f87171;">${err.message}</td></tr>`;
         }
@@ -8355,28 +8357,46 @@ ${starredItems.narratives.map(n => {
     async function loadLearningResults() {
         const tbody = document.getElementById('learning-table-body');
         if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">Loading...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Loading...</td></tr>';
         
         try {
             const res = await fetch('/api/admin/learning-results?limit=50');
+            if (!res.ok) throw new Error('Failed to load results');
             const data = await res.json();
             
             if (!data.results || data.results.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#888;">No learning results</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#888;">No learning results</td></tr>';
                 return;
             }
             
-            tbody.innerHTML = data.results.map(r => `
+            // Update stats
+            const stats = data.stats || {};
+            const statRoads = document.getElementById('stat-new-roads');
+            const statPlaces = document.getElementById('stat-new-places');
+            const statAirstrips = document.getElementById('stat-new-airstrips');
+            if (statRoads) statRoads.textContent = (stats.total_new_roads || 0) + ' (' + (stats.total_new_roads_km || 0).toFixed(1) + ' km)';
+            if (statPlaces) statPlaces.textContent = stats.total_new_places || 0;
+            if (statAirstrips) statAirstrips.textContent = stats.total_new_airstrips || 0;
+            
+            tbody.innerHTML = data.results.map(r => {
+                const roadsStr = (r.new_roads_found || 0) > 0 ? `${r.new_roads_found} (${(r.new_roads_km || 0).toFixed(1)} km)` : '0';
+                const placesStr = (r.new_places_found || 0) > 0 ? `${r.new_places_found}` : '0';
+                const airstripsStr = (r.new_airstrips_found || 0) > 0 ? `${r.new_airstrips_found}` : '0';
+                const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString() : '-';
+                const summary = r.summary_text || '-';
+                return `
                 <tr>
-                    <td>${new Date(r.processed_at).toLocaleString()}</td>
-                    <td>${escapeHtml(r.park_name || 'Unknown')}</td>
-                    <td>${r.features_found || 0} features</td>
-                    <td>${(r.total_distance_km || 0).toFixed(2)} km</td>
-                    <td><span class="status-badge status-${r.status}">${r.status}</span></td>
-                </tr>
-            `).join('');
+                    <td style="font-weight:500;">${escapeHtml(r.park_name || r.park_id || 'Unknown')}</td>
+                    <td>${roadsStr}</td>
+                    <td>${placesStr}</td>
+                    <td>${airstripsStr}</td>
+                    <td style="max-width:300px;font-size:11px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(summary)}">${escapeHtml(summary.substring(0, 80))}${summary.length > 80 ? '...' : ''}</td>
+                    <td style="font-size:11px;color:#666;">${dateStr}</td>
+                </tr>`;
+            }).join('');
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#f87171;">${err.message}</td></tr>`;
+            console.error('Learning results error:', err);
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#f87171;">Error: ${err.message}</td></tr>`;
         }
     }
     
