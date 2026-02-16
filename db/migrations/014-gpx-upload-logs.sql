@@ -31,6 +31,31 @@ CREATE TABLE IF NOT EXISTS gpx_upload_logs (
     static_segments INTEGER NOT NULL DEFAULT 0,
     excluded_segments INTEGER NOT NULL DEFAULT 0,
     
+    -- Movement type stats
+    foot_segments INTEGER DEFAULT 0,
+    foot_km REAL DEFAULT 0,
+    foot_minutes REAL DEFAULT 0,
+    vehicle_segments INTEGER DEFAULT 0,
+    vehicle_km REAL DEFAULT 0,
+    vehicle_minutes REAL DEFAULT 0,
+    aircraft_segments INTEGER DEFAULT 0,
+    aircraft_km REAL DEFAULT 0,
+    aircraft_minutes REAL DEFAULT 0,
+    
+    -- Special categories for admin insights
+    recon_segments INTEGER DEFAULT 0,      -- Foot reconnaissance (0.5-4 km/h)
+    recon_km REAL DEFAULT 0,
+    recon_minutes REAL DEFAULT 0,
+    fast_vehicle_segments INTEGER DEFAULT 0, -- Fast vehicle transit (>60 km/h)
+    fast_vehicle_km REAL DEFAULT 0,
+    fast_vehicle_minutes REAL DEFAULT 0,
+    
+    -- Activity type stats
+    transit_segments INTEGER DEFAULT 0,
+    transit_km REAL DEFAULT 0,
+    logistics_segments INTEGER DEFAULT 0,
+    logistics_km REAL DEFAULT 0,
+    
     -- Store classified segments as JSON (not original file)
     classified_segments_json TEXT,
     

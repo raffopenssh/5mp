@@ -208,6 +208,25 @@ type GpxUploadLog struct {
 	PatrolSegments         int64     `json:"patrol_segments"`
 	StaticSegments         int64     `json:"static_segments"`
 	ExcludedSegments       int64     `json:"excluded_segments"`
+	FootSegments           *int64    `json:"foot_segments"`
+	FootKm                 *float64  `json:"foot_km"`
+	FootMinutes            *float64  `json:"foot_minutes"`
+	VehicleSegments        *int64    `json:"vehicle_segments"`
+	VehicleKm              *float64  `json:"vehicle_km"`
+	VehicleMinutes         *float64  `json:"vehicle_minutes"`
+	AircraftSegments       *int64    `json:"aircraft_segments"`
+	AircraftKm             *float64  `json:"aircraft_km"`
+	AircraftMinutes        *float64  `json:"aircraft_minutes"`
+	ReconSegments          *int64    `json:"recon_segments"`
+	ReconKm                *float64  `json:"recon_km"`
+	ReconMinutes           *float64  `json:"recon_minutes"`
+	FastVehicleSegments    *int64    `json:"fast_vehicle_segments"`
+	FastVehicleKm          *float64  `json:"fast_vehicle_km"`
+	FastVehicleMinutes     *float64  `json:"fast_vehicle_minutes"`
+	TransitSegments        *int64    `json:"transit_segments"`
+	TransitKm              *float64  `json:"transit_km"`
+	LogisticsSegments      *int64    `json:"logistics_segments"`
+	LogisticsKm            *float64  `json:"logistics_km"`
 	ClassifiedSegmentsJson *string   `json:"classified_segments_json"`
 	ProcessingStatus       *string   `json:"processing_status"`
 	RejectionReason        *string   `json:"rejection_reason"`

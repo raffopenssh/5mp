@@ -872,6 +872,7 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 	var err error
 	
 	// Log the upload processing
+	ms := validationResult.MovementStats
 	logID, err = q.CreateGPXUploadLog(ctx, dbgen.CreateGPXUploadLogParams{
 		UploadID:              uploadID,
 		UserID:                userID,
@@ -895,6 +896,28 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		ClassifiedSegmentsJson: strPtr(string(segmentsJSON)),
 		ProcessingStatus:      &processingStatus,
 		RejectionReason:       rejectionReason,
+		// Movement type stats
+		FootSegments:          ptrInt64(int64(ms.FootSegments)),
+		FootKm:                ptrFloat64(ms.FootKm),
+		FootMinutes:           ptrFloat64(ms.FootMinutes),
+		VehicleSegments:       ptrInt64(int64(ms.VehicleSegments)),
+		VehicleKm:             ptrFloat64(ms.VehicleKm),
+		VehicleMinutes:        ptrFloat64(ms.VehicleMinutes),
+		AircraftSegments:      ptrInt64(int64(ms.AircraftSegments)),
+		AircraftKm:            ptrFloat64(ms.AircraftKm),
+		AircraftMinutes:       ptrFloat64(ms.AircraftMinutes),
+		// Special categories
+		ReconSegments:         ptrInt64(int64(ms.ReconSegments)),
+		ReconKm:               ptrFloat64(ms.ReconKm),
+		ReconMinutes:          ptrFloat64(ms.ReconMinutes),
+		FastVehicleSegments:   ptrInt64(int64(ms.FastVehicleSegments)),
+		FastVehicleKm:         ptrFloat64(ms.FastVehicleKm),
+		FastVehicleMinutes:    ptrFloat64(ms.FastVehicleMinutes),
+		// Activity type stats
+		TransitSegments:       ptrInt64(int64(ms.TransitSegments)),
+		TransitKm:             ptrFloat64(ms.TransitKm),
+		LogisticsSegments:     ptrInt64(int64(ms.LogisticsSegments)),
+		LogisticsKm:           ptrFloat64(ms.LogisticsKm),
 	})
 	if err != nil {
 		slog.Warn("failed to create gpx upload log", "error", err)
