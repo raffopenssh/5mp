@@ -128,7 +128,6 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 	
 	// Point density (points per km²)
 	if metrics.BoundingBoxKm > 0.01 {
-		// Approximate area as rectangle
 		latDist := haversineDistance(Point{Lat: minLat, Lon: minLon}, Point{Lat: maxLat, Lon: minLon})
 		lonDist := haversineDistance(Point{Lat: minLat, Lon: minLon}, Point{Lat: minLat, Lon: maxLon})
 		area := latDist * lonDist
@@ -166,35 +165,30 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 		}
 	}
 	
-	// Bearing variance (how erratic the direction changes are)
+	// Bearing variance
 	if len(bearingChanges) > 0 {
 		var sum float64
 		for _, bc := range bearingChanges {
 			sum += bc
 		}
 		avgBearingChange := sum / float64(len(bearingChanges))
-		// Normalize: 0 = straight line, 1 = very erratic (avg 90+ degree turns)
 		metrics.BearingVariance = avgBearingChange / 90.0
 		if metrics.BearingVariance > 1 {
 			metrics.BearingVariance = 1
 		}
 	}
 	
-	// Linearity score: how close to a straight line
-	// Compare direct distance to total traveled distance
+	// Linearity score
 	if totalDist > 0 {
 		directDist := haversineDistance(points[0], points[len(points)-1])
 		metrics.LinearityScore = directDist / totalDist
 		if metrics.LinearityScore > 1 {
 			metrics.LinearityScore = 1
 		}
-		// Linear if >0.85 (traveled path is close to straight line)
 		metrics.IsLinear = metrics.LinearityScore > 0.85 && metrics.BearingVariance < 0.15
 	}
 	
-	// Smoothness factor: combination of speed consistency and bearing consistency
-	// High smoothness = transit/logistics (smooth, consistent movement)
-	// Low smoothness = patrol (erratic, searching movement)
+	// Smoothness factor
 	metrics.SmoothnessFactor = 1.0 - (metrics.SpeedVariance*0.5 + metrics.BearingVariance*0.5)
 	if metrics.SmoothnessFactor < 0 {
 		metrics.SmoothnessFactor = 0
@@ -206,14 +200,13 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 		metrics.StopFrequency = float64(stopCount) / float64(totalPoints)
 	}
 	
-	// Acceleration score (normalized)
+	// Acceleration score
 	if len(accelerations) > 0 {
 		var sum float64
 		for _, a := range accelerations {
 			sum += a
 		}
 		avgAccel := sum / float64(len(accelerations))
-		// Normalize by average speed
 		if metrics.AvgSpeedKmh > 0 {
 			metrics.AccelerationScore = avgAccel / metrics.AvgSpeedKmh
 			if metrics.AccelerationScore > 1 {
@@ -222,25 +215,21 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 		}
 	}
 	
-	// Detect landing pattern: high speed -> low speed -> stop, smooth trajectory
-	// Check last 1/3 of points for deceleration
+	// Detect landing/takeoff patterns
 	if len(speeds) >= 6 {
 		lastThird := speeds[len(speeds)*2/3:]
 		if len(lastThird) >= 2 {
 			firstSpeed := lastThird[0]
 			lastSpeed := lastThird[len(lastThird)-1]
-			// Landing: significant deceleration with smooth trajectory
 			if firstSpeed > 30 && lastSpeed < 10 && metrics.SmoothnessFactor > 0.6 {
 				metrics.HasLandingPattern = true
 			}
 		}
 		
-		// Detect takeoff pattern: stop/slow -> high speed, smooth trajectory
 		firstThird := speeds[:len(speeds)/3]
 		if len(firstThird) >= 2 {
 			firstSpeed := firstThird[0]
 			lastSpeed := firstThird[len(firstThird)-1]
-			// Takeoff: significant acceleration with smooth trajectory  
 			if firstSpeed < 10 && lastSpeed > 30 && metrics.SmoothnessFactor > 0.6 {
 				metrics.HasTakeoffPattern = true
 			}
@@ -269,12 +258,9 @@ func ClassifyMovementFull(points []Point) MovementClassification {
 	linear := metrics.LinearityScore
 	
 	// === MOVEMENT TYPE CLASSIFICATION ===
-	// Determines: foot, vehicle, or aircraft
-	
-	// Aircraft detection: based on smoothness and patterns, not just speed
 	isAircraft := false
 	
-	// Check for takeoff/landing patterns - strong indicator of aircraft
+	// Check for takeoff/landing patterns
 	if metrics.HasLandingPattern || metrics.HasTakeoffPattern {
 		isAircraft = true
 		result.Confidence = 0.95
@@ -287,20 +273,17 @@ func ClassifyMovementFull(points []Point) MovementClassification {
 	}
 	
 	// High speed (100-150 km/h) with smooth trajectory = aircraft
-	// Even highways in Africa rarely allow sustained 100+ km/h
 	if speed >= 100 && smooth > 0.5 {
 		isAircraft = true
 		result.Confidence = 0.9
 	}
 	
-	// Medium-high speed (80-100 km/h) - could be highway or aircraft
-	// Use smoothness to distinguish: aircraft is much smoother
+	// 80-100 km/h - could be highway or aircraft
 	if speed >= 80 && speed < 100 {
 		if smooth > 0.7 && bearingVar < 0.1 {
 			isAircraft = true
 			result.Confidence = 0.8
 		}
-		// Otherwise it's likely highway driving
 	}
 	
 	// Slow but very smooth and linear = likely aircraft (ULM, helicopter)
@@ -324,24 +307,18 @@ func ClassifyMovementFull(points []Point) MovementClassification {
 	}
 	
 	// === ACTIVITY TYPE CLASSIFICATION ===
-	// Determines: patrol, reconnaissance, transit, or logistics
-	// Based on smoothness (erratic = patrol, smooth = transit)
-	
 	switch result.MovementType {
 	case "foot":
-		// Foot: reconnaissance (slow, careful) vs patrol (faster, purposeful)
 		if speed >= 0.5 && speed <= 4 {
 			result.ActivityType = "reconnaissance"
 		} else {
 			result.ActivityType = "patrol"
 		}
-		// Very erratic movement with stops = active searching
 		if metrics.StopFrequency > 0.3 || bearingVar > 0.5 {
 			result.ActivityType = "reconnaissance"
 		}
 		
 	case "vehicle":
-		// Vehicle: patrol (slow, erratic) vs transit (fast, smooth)
 		if speed > 60 && smooth > 0.6 {
 			result.ActivityType = "transit"
 		} else if speed > 40 && smooth > 0.7 && linear > 0.8 {
@@ -353,7 +330,6 @@ func ClassifyMovementFull(points []Point) MovementClassification {
 		}
 		
 	case "aircraft":
-		// Aircraft: patrol (searching) vs logistics (point-to-point)
 		if linear > 0.8 && smooth > 0.7 {
 			result.ActivityType = "logistics"
 		} else if bearingVar > 0.2 || metrics.StopFrequency > 0.1 {
