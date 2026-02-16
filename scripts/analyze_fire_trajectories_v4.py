@@ -22,10 +22,11 @@ Detailed classification based on:
 """
 
 import json
+import argparse
 import sqlite3
 import math
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
 import gc
 
@@ -620,19 +621,39 @@ class TrajectoryAnalyzerV4:
         
         return enhanced
     
-    def run(self):
-        """Process all parks"""
+    def run(self, incremental=False, days=14):
+        """Process all parks
+        
+        Args:
+            incremental: If True, only process parks with recent fire data
+            days: Days to consider "recent" in incremental mode
+        """
         OUTPUT_DIR.mkdir(exist_ok=True)
         
         # Get list of parks from input
         park_files = list(INPUT_DIR.glob("*.json"))
         log(f"Processing {len(park_files)} parks...")
         
+        if incremental:
+            cutoff_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+            log(f"INCREMENTAL: Only parks with fires since {cutoff_date}")
+        
         total_trajectories = 0
         parks_processed = 0
+        parks_skipped = 0
         
         for i, park_file in enumerate(sorted(park_files), 1):
             park_id = park_file.stem
+            
+            # In incremental mode, check if park has recent fires
+            if incremental:
+                with open(park_file) as f:
+                    groups = json.load(f)
+                
+                has_recent = any(g.get('end_date', '') >= cutoff_date for g in groups)
+                if not has_recent:
+                    parks_skipped += 1
+                    continue
             
             enhanced = self.process_park(park_id)
             if enhanced:
@@ -651,11 +672,21 @@ class TrajectoryAnalyzerV4:
                 gc.collect()
         
         log(f"\nComplete!")
-        log(f"  Parks: {parks_processed}")
+        log(f"  Parks processed: {parks_processed}")
+        if incremental:
+            log(f"  Parks skipped (no recent fires): {parks_skipped}")
         log(f"  Trajectories: {total_trajectories}")
         log(f"  Output: {OUTPUT_DIR}")
 
+
 def main():
+    parser = argparse.ArgumentParser(description="Fire Trajectory Analysis v4")
+    parser.add_argument("--incremental", action="store_true",
+                        help="Only process parks with recent fire data")
+    parser.add_argument("--days", type=int, default=14,
+                        help="Days to consider recent in incremental mode")
+    args = parser.parse_args()
+    
     log("=" * 60)
     log("Enhanced Fire Trajectory Analysis v4")
     log("=" * 60)
@@ -663,7 +694,7 @@ def main():
     analyzer = TrajectoryAnalyzerV4()
     log("Context data loaded")
     
-    analyzer.run()
+    analyzer.run(incremental=args.incremental, days=args.days)
 
 if __name__ == "__main__":
     main()

@@ -7,9 +7,10 @@ Filters fire data to 2020-06-01 onwards.
 """
 
 import json
+import argparse
 import sqlite3
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
 
 DB_PATH = Path(__file__).parent.parent / 'db.sqlite3'
@@ -413,7 +414,20 @@ class NarrativeGeneratorV4:
         log(f"Deforestation narratives: {len(narratives)} parks")
         return narratives
     
-    def run(self):
+    def run(self, incremental=False, days=14):
+        """Run narrative generation.
+        
+        Args:
+            incremental: If True, only update parks with recent changes
+            days: Days to consider recent in incremental mode
+        """
+        self.incremental = incremental
+        self.incremental_days = days
+        
+        if incremental:
+            self.cutoff_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+            log(f"INCREMENTAL: Only parks with changes since {self.cutoff_date}")
+        
         fire = self.generate_fire_narratives()
         settlement = self.generate_settlement_narratives()
         deforest = self.generate_deforestation_narratives()
@@ -424,10 +438,20 @@ class NarrativeGeneratorV4:
         self.conn.close()
 
 def main():
+    parser = argparse.ArgumentParser(description="Precompute Narratives v4")
+    parser.add_argument("--incremental", action="store_true",
+                        help="Only update parks with recent fire data")
+    parser.add_argument("--days", type=int, default=14,
+                        help="Days to consider recent in incremental mode")
+    args = parser.parse_args()
+    
     log("=" * 70)
     log(f"Precompute Narratives v4 (from {MIN_DATE})")
+    if args.incremental:
+        log(f"INCREMENTAL MODE: {args.days} days")
     log("=" * 70)
-    NarrativeGeneratorV4().run()
+    
+    NarrativeGeneratorV4().run(incremental=args.incremental, days=args.days)
 
 if __name__ == "__main__":
     main()
