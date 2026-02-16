@@ -28,21 +28,56 @@ type GPXValidationResult struct {
 	ExcludedSegments int     `json:"excluded_segments"`
 	ExcludedKm       float64 `json:"excluded_km"`
 
+	// Detailed movement stats
+	MovementStats    MovementStats `json:"movement_stats"`
+
 	// Protected area detection
 	ProtectedAreaID   string `json:"protected_area_id,omitempty"`
 	ProtectedAreaName string `json:"protected_area_name,omitempty"`
 }
 
+// MovementStats provides detailed breakdown by movement and activity type
+type MovementStats struct {
+	// By movement type
+	FootSegments     int     `json:"foot_segments"`
+	FootKm           float64 `json:"foot_km"`
+	FootMinutes      float64 `json:"foot_minutes"`
+	VehicleSegments  int     `json:"vehicle_segments"`
+	VehicleKm        float64 `json:"vehicle_km"`
+	VehicleMinutes   float64 `json:"vehicle_minutes"`
+	AircraftSegments int     `json:"aircraft_segments"`
+	AircraftKm       float64 `json:"aircraft_km"`
+	AircraftMinutes  float64 `json:"aircraft_minutes"`
+
+	// Special categories for admin insights
+	ReconSegments       int     `json:"recon_segments"`       // Foot 0.5-4 km/h (reconnaissance)
+	ReconKm             float64 `json:"recon_km"`
+	ReconMinutes        float64 `json:"recon_minutes"`
+	FastVehicleSegments int     `json:"fast_vehicle_segments"` // Vehicle >60 km/h (transit)
+	FastVehicleKm       float64 `json:"fast_vehicle_km"`
+	FastVehicleMinutes  float64 `json:"fast_vehicle_minutes"`
+
+	// By activity type
+	PatrolSegments      int     `json:"patrol_segments"`
+	PatrolKm            float64 `json:"patrol_km_total"`
+	TransitSegments     int     `json:"transit_segments"`
+	TransitKm           float64 `json:"transit_km"`
+	LogisticsSegments   int     `json:"logistics_segments"`
+	LogisticsKm         float64 `json:"logistics_km"`
+}
+
 // ClassifiedSegment represents a classified portion of a GPX track
 type ClassifiedSegment struct {
-	Classification  string        `json:"classification"` // patrol, boundary, road, poi, static, auto_generated
+	Classification  string        `json:"classification"` // patrol, boundary, road, poi, static, auto_generated, aircraft
 	MovementType    string        `json:"movement_type,omitempty"` // foot, vehicle, aircraft
+	ActivityType    string        `json:"activity_type,omitempty"` // patrol, reconnaissance, transit, logistics
 	StartIndex      int           `json:"start_index"`
 	EndIndex        int           `json:"end_index"`
 	DistanceKm      float64       `json:"distance_km"`
 	Duration        time.Duration `json:"-"`
 	DurationStr     string        `json:"duration,omitempty"`
 	AvgSpeedKmh     float64       `json:"avg_speed_kmh,omitempty"`
+	Smoothness      float64       `json:"smoothness,omitempty"` // 0-1, trajectory smoothness
 	Reason          string        `json:"reason"`
 	IncludeInEffort bool          `json:"include_in_effort"`
 	GeoJSON         string        `json:"geojson,omitempty"`
@@ -145,75 +180,130 @@ func ValidateAndClassifyGPX(data *gpx.GPXData) *GPXValidationResult {
 			continue
 		}
 
-		// Determine movement type using advanced trajectory analysis
-		// This considers speed, smoothness, and bearing variance to distinguish:
-		// - foot: <7 km/h, erratic pattern
-		// - vehicle: 7-80 km/h, moderate smoothness (African parks rarely have highways)
-		// - aircraft: smooth trajectory regardless of speed (ULM can fly slow)
-		movementType := "foot"
-		avgSpeed := 0.0
-		var metrics gpx.MovementMetrics
+		// Use full movement classification (movement type + activity type)
+		var classification gpx.MovementClassification
 		if len(seg) >= 3 {
-			metrics = gpx.AnalyzeTrajectory(seg)
-			avgSpeed = metrics.AvgSpeedKmh
-			movementType = gpx.ClassifyMovementAdvanced(seg)
+			classification = gpx.ClassifyMovementFull(seg)
 		} else if len(seg) >= 2 {
-			avgSpeed = gpx.CalculateSpeed(seg)
+			avgSpeed := gpx.CalculateSpeed(seg)
+			classification.Metrics.AvgSpeedKmh = avgSpeed
 			if avgSpeed < 7 {
-				movementType = "foot"
-			} else if avgSpeed < 80 {
-				movementType = "vehicle"
+				classification.MovementType = "foot"
+				classification.ActivityType = "patrol"
+			} else if avgSpeed < 100 {
+				classification.MovementType = "vehicle"
+				classification.ActivityType = "patrol"
 			} else {
-				movementType = "aircraft"
+				classification.MovementType = "aircraft"
+				classification.ActivityType = "logistics"
 			}
 		}
 
 		distanceKm := calculateSegmentDistance(seg)
-		
-		// Aircraft movements are not counted as patrol effort
-		// They are logged separately as transfer/logistics
-		if movementType == "aircraft" {
-			reason := fmt.Sprintf("Aircraft movement (avg %.0f km/h, smoothness %.2f)", avgSpeed, metrics.SmoothnessFactor)
-			classified := ClassifiedSegment{
-				Classification:  "aircraft",
-				MovementType:    "aircraft",
-				StartIndex:      0,
-				EndIndex:        len(seg) - 1,
-				DistanceKm:      distanceKm,
-				AvgSpeedKmh:     avgSpeed,
-				Reason:          reason,
-				IncludeInEffort: false,
-				Points:          seg,
+		avgSpeed := classification.Metrics.AvgSpeedKmh
+		smooth := classification.Metrics.SmoothnessFactor
+		movementType := classification.MovementType
+		activityType := classification.ActivityType
+
+		// Build reason string
+		var reason string
+		switch movementType {
+		case "aircraft":
+			reason = fmt.Sprintf("Aircraft %s (avg %.0f km/h, smoothness %.2f)", activityType, avgSpeed, smooth)
+		case "vehicle":
+			if avgSpeed > 60 {
+				reason = fmt.Sprintf("Vehicle %s - fast (avg %.0f km/h, smoothness %.2f)", activityType, avgSpeed, smooth)
+			} else {
+				reason = fmt.Sprintf("Vehicle %s (avg %.0f km/h)", activityType, avgSpeed)
 			}
-			if len(seg) > 0 && seg[0].Time != nil && seg[len(seg)-1].Time != nil {
-				duration := seg[len(seg)-1].Time.Sub(*seg[0].Time)
-				classified.Duration = duration
-				classified.DurationStr = formatDuration(duration)
+		case "foot":
+			if activityType == "reconnaissance" {
+				reason = fmt.Sprintf("Foot reconnaissance (avg %.1f km/h)", avgSpeed)
+			} else {
+				reason = fmt.Sprintf("Foot patrol (avg %.1f km/h)", avgSpeed)
 			}
-			result.ClassifiedSegments = append(result.ClassifiedSegments, classified)
-			result.ExcludedKm += distanceKm
-			continue
 		}
 
-		// Valid patrol track (foot or vehicle)
+		// Determine classification type and whether to include in patrol effort
+		classType := "patrol"
+		includeInEffort := true
+		if movementType == "aircraft" {
+			classType = "aircraft"
+			includeInEffort = false // Aircraft excluded from patrol effort
+		}
+
 		classified := ClassifiedSegment{
-			Classification:  "patrol",
+			Classification:  classType,
 			MovementType:    movementType,
+			ActivityType:    activityType,
 			StartIndex:      0,
 			EndIndex:        len(seg) - 1,
 			DistanceKm:      distanceKm,
 			AvgSpeedKmh:     avgSpeed,
-			Reason:          "Valid patrol track",
-			IncludeInEffort: true,
+			Smoothness:      smooth,
+			Reason:          reason,
+			IncludeInEffort: includeInEffort,
 			Points:          seg,
 		}
+
+		// Calculate duration
+		var durationMin float64
 		if len(seg) > 0 && seg[0].Time != nil && seg[len(seg)-1].Time != nil {
 			duration := seg[len(seg)-1].Time.Sub(*seg[0].Time)
 			classified.Duration = duration
 			classified.DurationStr = formatDuration(duration)
+			durationMin = duration.Minutes()
 		}
+
 		result.ClassifiedSegments = append(result.ClassifiedSegments, classified)
-		result.PatrolKm += distanceKm
+
+		// Update stats
+		if includeInEffort {
+			result.PatrolKm += distanceKm
+		} else {
+			result.ExcludedKm += distanceKm
+		}
+
+		// Update movement stats
+		switch movementType {
+		case "foot":
+			result.MovementStats.FootSegments++
+			result.MovementStats.FootKm += distanceKm
+			result.MovementStats.FootMinutes += durationMin
+			// Reconnaissance: foot patrol at 0.5-4 km/h
+			if avgSpeed >= 0.5 && avgSpeed <= 4 {
+				result.MovementStats.ReconSegments++
+				result.MovementStats.ReconKm += distanceKm
+				result.MovementStats.ReconMinutes += durationMin
+			}
+		case "vehicle":
+			result.MovementStats.VehicleSegments++
+			result.MovementStats.VehicleKm += distanceKm
+			result.MovementStats.VehicleMinutes += durationMin
+			// Fast vehicle: >60 km/h (likely transit)
+			if avgSpeed > 60 {
+				result.MovementStats.FastVehicleSegments++
+				result.MovementStats.FastVehicleKm += distanceKm
+				result.MovementStats.FastVehicleMinutes += durationMin
+			}
+		case "aircraft":
+			result.MovementStats.AircraftSegments++
+			result.MovementStats.AircraftKm += distanceKm
+			result.MovementStats.AircraftMinutes += durationMin
+		}
+
+		// Update activity stats
+		switch activityType {
+		case "patrol", "reconnaissance":
+			result.MovementStats.PatrolSegments++
+			result.MovementStats.PatrolKm += distanceKm
+		case "transit":
+			result.MovementStats.TransitSegments++
+			result.MovementStats.TransitKm += distanceKm
+		case "logistics":
+			result.MovementStats.LogisticsSegments++
+			result.MovementStats.LogisticsKm += distanceKm
+		}
 	}
 
 	// Final validation checks

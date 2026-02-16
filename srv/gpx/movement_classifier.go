@@ -28,6 +28,14 @@ type MovementMetrics struct {
 	HasTakeoffPattern bool    // Accelerating from stop (aircraft takeoff)
 }
 
+// MovementClassification contains both movement type and activity type
+type MovementClassification struct {
+	MovementType string  // "foot", "vehicle", "aircraft"
+	ActivityType string  // "patrol", "reconnaissance", "transit", "logistics"
+	Confidence   float64 // 0-1 confidence in classification
+	Metrics      MovementMetrics
+}
+
 // AnalyzeTrajectory computes movement metrics for a set of points
 func AnalyzeTrajectory(points []Point) MovementMetrics {
 	if len(points) < 3 {
@@ -185,9 +193,8 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 	}
 	
 	// Smoothness factor: combination of speed consistency and bearing consistency
-	// Aircraft: very smooth (low variance in both)
-	// Vehicle: medium smoothness (some variance due to terrain)
-	// Foot: low smoothness (high variance in both)
+	// High smoothness = transit/logistics (smooth, consistent movement)
+	// Low smoothness = patrol (erratic, searching movement)
 	metrics.SmoothnessFactor = 1.0 - (metrics.SpeedVariance*0.5 + metrics.BearingVariance*0.5)
 	if metrics.SmoothnessFactor < 0 {
 		metrics.SmoothnessFactor = 0
@@ -243,90 +250,125 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 	return metrics
 }
 
-// ClassifyMovementAdvanced uses trajectory analysis for better classification
-// Returns "foot", "vehicle", or "aircraft"
-//
-// Thresholds calibrated for African conservation areas:
-// - Foot: typically <7 km/h, erratic bearing changes
-// - Vehicle: 7-80 km/h, rarely faster due to poor roads
-// - Aircraft: any speed with very smooth trajectory, or >80 km/h
-func ClassifyMovementAdvanced(points []Point) string {
+// ClassifyMovementFull provides complete classification with movement type and activity type
+func ClassifyMovementFull(points []Point) MovementClassification {
 	if len(points) < 3 {
-		return "foot" // Default for very short segments
+		return MovementClassification{
+			MovementType: "foot",
+			ActivityType: "patrol",
+			Confidence:   0.5,
+		}
 	}
 	
 	metrics := AnalyzeTrajectory(points)
+	result := MovementClassification{Metrics: metrics}
 	
-	// Decision tree based on speed AND trajectory characteristics
 	speed := metrics.AvgSpeedKmh
 	smooth := metrics.SmoothnessFactor
 	bearingVar := metrics.BearingVariance
 	linear := metrics.LinearityScore
 	
+	// === MOVEMENT TYPE CLASSIFICATION ===
+	// Determines: foot, vehicle, or aircraft
+	
+	// Aircraft detection: based on smoothness and patterns, not just speed
+	isAircraft := false
+	
 	// Check for takeoff/landing patterns - strong indicator of aircraft
 	if metrics.HasLandingPattern || metrics.HasTakeoffPattern {
-		return "aircraft"
+		isAircraft = true
+		result.Confidence = 0.95
 	}
 	
-	// Very high speed (>120 km/h) = definitely aircraft
-	// No vehicle in African parks goes this fast
-	if speed > 120 {
-		return "aircraft"
+	// Very high speed (>150 km/h) = definitely aircraft
+	if speed > 150 {
+		isAircraft = true
+		result.Confidence = 0.99
 	}
 	
-	// High speed (80-120 km/h) - almost certainly aircraft in African parks
-	// Vehicles rarely exceed 60-80 km/h due to road conditions
-	if speed >= 80 {
-		// Only classify as vehicle if very rough trajectory (unlikely aircraft)
-		if smooth < 0.4 && bearingVar > 0.3 {
-			return "vehicle" // Very bumpy, probably vehicle on bad road
+	// High speed (100-150 km/h) with smooth trajectory = aircraft
+	// Even highways in Africa rarely allow sustained 100+ km/h
+	if speed >= 100 && smooth > 0.5 {
+		isAircraft = true
+		result.Confidence = 0.9
+	}
+	
+	// Medium-high speed (80-100 km/h) - could be highway or aircraft
+	// Use smoothness to distinguish: aircraft is much smoother
+	if speed >= 80 && speed < 100 {
+		if smooth > 0.7 && bearingVar < 0.1 {
+			isAircraft = true
+			result.Confidence = 0.8
 		}
-		return "aircraft"
+		// Otherwise it's likely highway driving
 	}
 	
-	// Medium-high speed (50-80 km/h) - usually vehicle in African parks
-	if speed >= 50 {
-		// Very smooth + linear = likely aircraft (ULM, helicopter)
-		if smooth > 0.7 && bearingVar < 0.12 && linear > 0.8 {
-			return "aircraft"
-		}
-		return "vehicle"
+	// Slow but very smooth and linear = likely aircraft (ULM, helicopter)
+	if speed >= 40 && smooth > 0.85 && linear > 0.9 && bearingVar < 0.05 {
+		isAircraft = true
+		result.Confidence = 0.75
 	}
 	
-	// Medium speed (40-50 km/h) - vehicle or slow ULM
-	if speed >= 40 {
-		// Very smooth + highly linear = slow aircraft
-		if smooth > 0.8 && bearingVar < 0.1 && linear > 0.85 {
-			return "aircraft"
+	if isAircraft {
+		result.MovementType = "aircraft"
+	} else if speed < 7 {
+		result.MovementType = "foot"
+		if result.Confidence == 0 {
+			result.Confidence = 0.9
 		}
-		return "vehicle"
+	} else {
+		result.MovementType = "vehicle"
+		if result.Confidence == 0 {
+			result.Confidence = 0.85
+		}
 	}
 	
-	// Medium speed (15-40 km/h) - typically vehicle
-	if speed >= 15 {
-		return "vehicle"
+	// === ACTIVITY TYPE CLASSIFICATION ===
+	// Determines: patrol, reconnaissance, transit, or logistics
+	// Based on smoothness (erratic = patrol, smooth = transit)
+	
+	switch result.MovementType {
+	case "foot":
+		// Foot: reconnaissance (slow, careful) vs patrol (faster, purposeful)
+		if speed >= 0.5 && speed <= 4 {
+			result.ActivityType = "reconnaissance"
+		} else {
+			result.ActivityType = "patrol"
+		}
+		// Very erratic movement with stops = active searching
+		if metrics.StopFrequency > 0.3 || bearingVar > 0.5 {
+			result.ActivityType = "reconnaissance"
+		}
+		
+	case "vehicle":
+		// Vehicle: patrol (slow, erratic) vs transit (fast, smooth)
+		if speed > 60 && smooth > 0.6 {
+			result.ActivityType = "transit"
+		} else if speed > 40 && smooth > 0.7 && linear > 0.8 {
+			result.ActivityType = "transit"
+		} else if smooth < 0.4 || bearingVar > 0.3 {
+			result.ActivityType = "patrol"
+		} else {
+			result.ActivityType = "patrol"
+		}
+		
+	case "aircraft":
+		// Aircraft: patrol (searching) vs logistics (point-to-point)
+		if linear > 0.8 && smooth > 0.7 {
+			result.ActivityType = "logistics"
+		} else if bearingVar > 0.2 || metrics.StopFrequency > 0.1 {
+			result.ActivityType = "patrol"
+		} else {
+			result.ActivityType = "logistics"
+		}
 	}
 	
-	// Low-medium speed (7-15 km/h) - could be foot (running) or slow vehicle
-	if speed >= 7 {
-		// Vehicle: more consistent speed, smoother trajectory
-		// Running: more erratic, higher bearing variance
-		if smooth > 0.5 && bearingVar < 0.3 {
-			return "vehicle"
-		}
-		// Erratic pattern = likely foot
-		if bearingVar > 0.4 {
-			return "foot"
-		}
-		// Ambiguous - check speed variance
-		if metrics.SpeedVariance < 0.3 {
-			return "vehicle" // Consistent speed = vehicle
-		}
-		return "foot"
-	}
-	
-	// Very low speed (<7 km/h) = foot patrol
-	return "foot"
+	return result
+}
+
+// ClassifyMovementAdvanced returns just the movement type (for backward compatibility)
+func ClassifyMovementAdvanced(points []Point) string {
+	return ClassifyMovementFull(points).MovementType
 }
 
 // calculateBearing returns the bearing in degrees from point 1 to point 2
