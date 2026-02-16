@@ -95,6 +95,9 @@ test_query "osm_places exists" "SELECT COUNT(*) FROM osm_places LIMIT 1" "nonemp
 test_query "park_rivers exists" "SELECT COUNT(*) FROM park_rivers LIMIT 1" "nonempty"
 test_query "park_climate exists" "SELECT COUNT(*) FROM park_climate LIMIT 1" "nonempty"
 test_query "park_species exists" "SELECT COUNT(*) FROM park_species LIMIT 1" "nonempty"
+test_query "legal_documents exists" "SELECT COUNT(*) FROM legal_documents LIMIT 1" "nonempty"
+test_query "notifications exists" "SELECT COUNT(*) FROM notifications LIMIT 1" "nonempty"
+test_query "pa_publications exists" "SELECT COUNT(*) FROM pa_publications LIMIT 1" "nonempty"
 
 yellow "\n=== Data Counts ==="
 test_query "fire_detections count" "SELECT COUNT(*) FROM fire_detections" "nonempty"

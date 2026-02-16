@@ -138,11 +138,20 @@ test_api "admin_learning_results" "/api/admin/learning-results" "200" "true"
 test_api "admin_pending" "/api/admin/pending-approvals" "200" "true"
 test_api "admin_learned_features" "/api/admin/learned-features?park_id=CAF_Chinko" "200" "true"
 
+yellow "\n=== Notifications ==="
+test_api "notifications_list" "/api/notifications" "200" ".total >= 0"
+test_api "notifications_has_items" "/api/notifications" "200" ".notifications | type == \"array\""
+
+yellow "\n=== Publications ==="
+test_api "publications_virunga" "/api/parks/COD_Virunga/publications" "200" "type == \"array\""
+test_api "publications_count" "/api/parks/COD_Virunga/publications/count" "200" ".count >= 0"
+# Publications use WDPA IDs - test with known WDPA ID 669 (Mole)
+test_api "publications_wdpa" "/api/parks/669/publications" "200" "length >= 0"
+
 yellow "\n=== Infrastructure ==="
 test_api "infrastructure_chinko" "/api/parks/CAF_Chinko/infrastructure" "200" "true"
-test_api "publications_virunga" "/api/parks/COD_Virunga/publications" "200" "true"
-# Note: legal endpoint requires legal_documents table which may not exist
-# test_api "legal_docs" "/api/parks/COD_Virunga/legal" "200" "true"
+test_api "legal_docs_virunga" "/api/parks/COD_Virunga/legal" "200" ".count >= 0"
+test_api "legal_docs_serengeti" "/api/parks/TZA_Serengeti/legal" "200" ".count >= 0"
 
 echo
 echo "======================================="
