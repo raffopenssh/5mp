@@ -1492,6 +1492,194 @@
             version: '{{.Version}}' // App version from server
         };
         
+        // Test mode helper - enabled via ?test=1 URL param
+        const testMode = new URLSearchParams(window.location.search).get('test') === '1';
+        if (testMode) {
+            window.TEST = {
+                passed: 0,
+                failed: 0,
+                errors: [],
+                startTime: Date.now(),
+                
+                // State queries
+                isPanelOpen(name) {
+                    const selectors = {
+                        filter: '#filter-panel.open',
+                        star: '#star-modal.active',
+                        admin: '#admin-panel.active',
+                        upload: '#modal-upload.active',
+                        notification: '#notification-dropdown.open'
+                    };
+                    return !!document.querySelector(selectors[name]);
+                },
+                
+                isPopupOpen(parkId) {
+                    if (!parkId) return !!document.querySelector('.pa-popup');
+                    const popup = document.querySelector('.pa-popup');
+                    return popup && currentPAPopupData?.paId === parkId;
+                },
+                
+                isAccordionOpen(parkId, section) {
+                    const sec = document.getElementById(`${section}-section-${parkId}`);
+                    return sec && sec.classList.contains('open');
+                },
+                
+                isPinned(parkId, type) {
+                    const key = getPinKey(parkId, type);
+                    return !!pinnedLayers[key];
+                },
+                
+                isStarred(type, id) {
+                    switch(type) {
+                        case 'parks': return starredItems.parks.some(p => p.id === id);
+                        case 'countries': return starredItems.countries.some(c => c.name === id);
+                        case 'narratives': return starredItems.narratives.some(n => `${n.park_id}:${n.type}` === id);
+                        default: return false;
+                    }
+                },
+                
+                getMapCenter() {
+                    const c = map.getCenter();
+                    return { lat: c.lat, lng: c.lng, zoom: map.getZoom() };
+                },
+                
+                getAdminTab() {
+                    const active = document.querySelector('.admin-tab.active');
+                    return active ? active.dataset.tab : null;
+                },
+                
+                getVisibleParkIds() {
+                    return Array.from(selectedPAIds);
+                },
+                
+                getStarredCount() {
+                    return starredItems.parks.length + starredItems.countries.length + 
+                           starredItems.bboxes.length + starredItems.narratives.length;
+                },
+                
+                getPinnedCount() {
+                    return Object.keys(pinnedLayers || {}).length;
+                },
+                
+                // Element queries
+                exists(selector) {
+                    return !!document.querySelector(selector);
+                },
+                
+                isVisible(selector) {
+                    const el = document.querySelector(selector);
+                    if (!el) return false;
+                    const style = window.getComputedStyle(el);
+                    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+                },
+                
+                getText(selector) {
+                    const el = document.querySelector(selector);
+                    return el ? el.textContent.trim() : null;
+                },
+                
+                getCount(selector) {
+                    return document.querySelectorAll(selector).length;
+                },
+                
+                hasClass(selector, className) {
+                    const el = document.querySelector(selector);
+                    return el && el.classList.contains(className);
+                },
+                
+                // Assertions
+                assert(condition, msg) {
+                    if (condition) {
+                        this.passed++;
+                        console.log(`✓ ${msg}`);
+                        return true;
+                    } else {
+                        this.failed++;
+                        this.errors.push(msg);
+                        console.error(`✗ ${msg}`);
+                        return false;
+                    }
+                },
+                
+                assertEqual(actual, expected, msg) {
+                    return this.assert(actual === expected, `${msg}: expected ${expected}, got ${actual}`);
+                },
+                
+                assertVisible(selector, msg) {
+                    return this.assert(this.isVisible(selector), msg || `${selector} should be visible`);
+                },
+                
+                assertNotVisible(selector, msg) {
+                    return this.assert(!this.isVisible(selector), msg || `${selector} should not be visible`);
+                },
+                
+                assertExists(selector, msg) {
+                    return this.assert(this.exists(selector), msg || `${selector} should exist`);
+                },
+                
+                assertText(selector, text, msg) {
+                    const actual = this.getText(selector);
+                    return this.assert(actual && actual.includes(text), 
+                        msg || `${selector} should contain "${text}", got "${actual}"`);
+                },
+                
+                assertCount(selector, n, msg) {
+                    const count = this.getCount(selector);
+                    return this.assert(count === n, msg || `${selector} count: expected ${n}, got ${count}`);
+                },
+                
+                assertCountMin(selector, n, msg) {
+                    const count = this.getCount(selector);
+                    return this.assert(count >= n, msg || `${selector} count: expected >= ${n}, got ${count}`);
+                },
+                
+                // Wait helpers
+                async waitFor(conditionFn, timeoutMs = 5000, intervalMs = 100) {
+                    const start = Date.now();
+                    while (Date.now() - start < timeoutMs) {
+                        if (conditionFn()) return true;
+                        await new Promise(r => setTimeout(r, intervalMs));
+                    }
+                    return false;
+                },
+                
+                async waitForSelector(selector, timeoutMs = 5000) {
+                    return this.waitFor(() => this.exists(selector), timeoutMs);
+                },
+                
+                async waitForVisible(selector, timeoutMs = 5000) {
+                    return this.waitFor(() => this.isVisible(selector), timeoutMs);
+                },
+                
+                // Signal completion
+                done() {
+                    const elapsed = Date.now() - this.startTime;
+                    const result = { passed: this.passed, failed: this.failed, errors: this.errors, elapsed };
+                    console.log(`TEST_COMPLETE ${JSON.stringify(result)}`);
+                    // Also set on window for easy retrieval
+                    window.TEST_RESULT = result;
+                    return result;
+                },
+                
+                // Run a test suite (array of {name, fn} objects)
+                async runSuite(tests) {
+                    console.log(`Running ${tests.length} tests...`);
+                    for (const test of tests) {
+                        console.log(`\n--- ${test.name} ---`);
+                        try {
+                            await test.fn();
+                        } catch (e) {
+                            this.failed++;
+                            this.errors.push(`${test.name}: ${e.message}`);
+                            console.error(`✗ ${test.name}: ${e.message}`);
+                        }
+                    }
+                    return this.done();
+                }
+            };
+            console.log('TEST mode enabled. Use window.TEST for assertions.');
+        }
+        
         map.on('load', function() {
             // Add arrow icon for fire trajectory direction indicators
             const arrowSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ef4444"><path d="M12 2l-7 7h5v13h4V9h5z"/></svg>`;
@@ -8805,6 +8993,29 @@ ${starredItems.narratives.map(n => {
             params.set('keystones', '0');
         }
         
+        // Add panel states
+        const filterPanel = document.getElementById('filter-panel');
+        if (filterPanel && filterPanel.classList.contains('open')) {
+            params.set('panel', 'filter');
+        }
+        const starModal = document.getElementById('star-modal');
+        if (starModal && starModal.classList.contains('active')) {
+            params.set('panel', 'star');
+        }
+        const adminPanel = document.getElementById('admin-panel');
+        if (adminPanel && adminPanel.classList.contains('active')) {
+            params.set('panel', 'admin');
+            // Also capture active admin tab
+            const activeTab = document.querySelector('.admin-tab.active');
+            if (activeTab) {
+                params.set('admin_tab', activeTab.dataset.tab);
+            }
+        }
+        const uploadModal = document.getElementById('modal-upload');
+        if (uploadModal && uploadModal.classList.contains('active')) {
+            params.set('panel', 'upload');
+        }
+        
         const url = window.location.origin + window.location.pathname + '?' + params.toString();
         
         // Copy to clipboard
@@ -9023,6 +9234,34 @@ ${starredItems.narratives.map(n => {
         
         // Restore pinned layers from URL
         setTimeout(restorePinnedFromURL, 1500);
+        
+        // Restore panel states
+        const panelParam = params.get('panel');
+        if (panelParam) {
+            setTimeout(() => {
+                switch (panelParam) {
+                    case 'filter':
+                        const filterPanel = document.getElementById('filter-panel');
+                        if (filterPanel) filterPanel.classList.add('open');
+                        break;
+                    case 'star':
+                        const starModal = document.getElementById('star-modal');
+                        if (starModal) starModal.classList.add('active');
+                        renderStarredItems();
+                        break;
+                    case 'admin':
+                        toggleAdminPanel();
+                        const adminTab = params.get('admin_tab');
+                        if (adminTab) {
+                            setTimeout(() => switchAdminTab(adminTab), 100);
+                        }
+                        break;
+                    case 'upload':
+                        showModal('upload');
+                        break;
+                }
+            }, 1000);
+        }
     }
     
     // Initialize state restoration when map is ready
