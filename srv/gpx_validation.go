@@ -145,14 +145,27 @@ func ValidateAndClassifyGPX(data *gpx.GPXData) *GPXValidationResult {
 			continue
 		}
 
-		// Determine movement type from speed
+		// Determine movement type using advanced trajectory analysis
+		// This considers speed, smoothness, and bearing variance to distinguish:
+		// - foot: <7 km/h, erratic pattern
+		// - vehicle: 7-80 km/h, moderate smoothness (African parks rarely have highways)
+		// - aircraft: smooth trajectory regardless of speed (ULM can fly slow)
 		movementType := "foot"
 		avgSpeed := 0.0
-		if len(seg) >= 2 {
-			tempSeg := gpx.Segment{Points: seg}
+		var metrics gpx.MovementMetrics
+		if len(seg) >= 3 {
+			metrics = gpx.AnalyzeTrajectory(seg)
+			avgSpeed = metrics.AvgSpeedKmh
+			movementType = gpx.ClassifyMovementAdvanced(seg)
+		} else if len(seg) >= 2 {
 			avgSpeed = gpx.CalculateSpeed(seg)
-			tempSeg.AvgSpeedKmh = avgSpeed
-			movementType = gpx.ClassifyMovementType(tempSeg)
+			if avgSpeed < 7 {
+				movementType = "foot"
+			} else if avgSpeed < 80 {
+				movementType = "vehicle"
+			} else {
+				movementType = "aircraft"
+			}
 		}
 
 		distanceKm := calculateSegmentDistance(seg)
@@ -160,6 +173,7 @@ func ValidateAndClassifyGPX(data *gpx.GPXData) *GPXValidationResult {
 		// Aircraft movements are not counted as patrol effort
 		// They are logged separately as transfer/logistics
 		if movementType == "aircraft" {
+			reason := fmt.Sprintf("Aircraft movement (avg %.0f km/h, smoothness %.2f)", avgSpeed, metrics.SmoothnessFactor)
 			classified := ClassifiedSegment{
 				Classification:  "aircraft",
 				MovementType:    "aircraft",
@@ -167,7 +181,7 @@ func ValidateAndClassifyGPX(data *gpx.GPXData) *GPXValidationResult {
 				EndIndex:        len(seg) - 1,
 				DistanceKm:      distanceKm,
 				AvgSpeedKmh:     avgSpeed,
-				Reason:          fmt.Sprintf("Aircraft movement (avg %.0f km/h)", avgSpeed),
+				Reason:          reason,
 				IncludeInEffort: false,
 				Points:          seg,
 			}
