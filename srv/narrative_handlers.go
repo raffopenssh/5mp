@@ -845,10 +845,9 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	
 	// Query deforestation events with time filter, including geojson_id
 	rows, err := s.DB.Query(`
-		SELECT de.year, de.area_km2, de.pattern_type, de.lat, de.lon, de.description,
-		       fg.id, COALESCE(de.pattern_type, '')
+		SELECT de.year, de.area_km2, de.pattern_type, de.lat, de.lon, de.narrative,
+		       de.id, COALESCE(de.classification, '')
 		FROM deforestation_events de
-		LEFT JOIN feature_geometries fg ON fg.feature_id = 'deforestation_' || de.id AND fg.feature_type = 'deforestation'
 		WHERE de.park_id = ? AND de.year >= ? AND de.year <= ?
 		ORDER BY de.year ASC
 	`, internalID, fromYear, toYear)
