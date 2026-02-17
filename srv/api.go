@@ -2661,7 +2661,8 @@ func (s *Server) HandleAPIParkClimate(w http.ResponseWriter, r *http.Request) {
 	data.ParkID = internalID
 	
 	err := s.DB.QueryRow(`
-		SELECT temp_annual_c, temp_max_c, temp_min_c, precip_annual_mm, precip_wettest_mm, precip_driest_mm,
+		SELECT COALESCE(temp_annual_c, 0), COALESCE(temp_max_c, 0), COALESCE(temp_min_c, 0), 
+		       COALESCE(precip_annual_mm, 0), COALESCE(precip_wettest_mm, 0), COALESCE(precip_driest_mm, 0),
 		       COALESCE(climate_zone, ''), COALESCE(rainy_season, ''), COALESCE(dry_season, '')
 		FROM park_climate
 		WHERE park_id = ?
