@@ -3118,34 +3118,75 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	}
 	kml.WriteString("</Folder>\n")
 
-	// HydroRIVERS folder (from park_rivers)
+	// HydroRIVERS folder (from park_rivers_hydro - includes geometry)
 	kml.WriteString("<Folder><name>Rivers (HydroRIVERS)</name>\n")
-	riverDataRows, _ := s.DB.Query(`SELECT hyriv_id, river_name, length_km, discharge_cms, stream_order, centroid_lon, centroid_lat FROM park_rivers WHERE park_id = ? ORDER BY discharge_cms DESC LIMIT 500`, parkID)
+	riverDataRows, _ := s.DB.Query(`SELECT hyriv_id, name, length_km, stream_order, lat, lon, geojson FROM park_rivers_hydro WHERE park_id = ? ORDER BY stream_order DESC, length_km DESC LIMIT 200`, parkID)
 	if riverDataRows != nil {
 		defer riverDataRows.Close()
 		for riverDataRows.Next() {
 			var hyrivID int64
 			var riverName sql.NullString
-			var lengthKm, dischargeCms sql.NullFloat64
+			var lengthKm sql.NullFloat64
 			var streamOrder sql.NullInt64
-			var centroidLon, centroidLat float64
-			riverDataRows.Scan(&hyrivID, &riverName, &lengthKm, &dischargeCms, &streamOrder, &centroidLon, &centroidLat)
+			var lat, lon float64
+			var geojson sql.NullString
+			riverDataRows.Scan(&hyrivID, &riverName, &lengthKm, &streamOrder, &lat, &lon, &geojson)
 			
 			// Build name
 			name := "River"
 			if riverName.Valid && riverName.String != "" {
 				name = riverName.String
 			}
-			if dischargeCms.Valid && dischargeCms.Float64 > 0 {
-				name = fmt.Sprintf("%s (%.1f m³/s)", name, dischargeCms.Float64)
+			if lengthKm.Valid && lengthKm.Float64 > 0 {
+				name = fmt.Sprintf("%s (%.1f km)", name, lengthKm.Float64)
 			}
 			if streamOrder.Valid {
 				name = fmt.Sprintf("%s [order %d]", name, streamOrder.Int64)
 			}
 			
-			// Create point for river centroid
-			pointGeoJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, centroidLon, centroidLat)
-			writeGeoJSONToKML(&kml, pointGeoJSON, "water", name)
+			// Use actual geometry if available, else point
+			if geojson.Valid && geojson.String != "" {
+				writeGeoJSONToKML(&kml, geojson.String, "water", name)
+			} else {
+				pointGeoJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat)
+				writeGeoJSONToKML(&kml, pointGeoJSON, "water", name)
+			}
+		}
+	}
+	kml.WriteString("</Folder>\n")
+
+	// Lakes folder (from park_lakes_hydro)
+	kml.WriteString("<Folder><name>Lakes (HydroLAKES)</name>\n")
+	lakeRows, _ := s.DB.Query(`SELECT hylak_id, name, area_km2, depth_avg, lat, lon, geojson FROM park_lakes_hydro WHERE park_id = ? ORDER BY area_km2 DESC LIMIT 50`, parkID)
+	if lakeRows != nil {
+		defer lakeRows.Close()
+		for lakeRows.Next() {
+			var hylakID int64
+			var lakeName sql.NullString
+			var areaKm2, depthAvg sql.NullFloat64
+			var lat, lon float64
+			var geojson sql.NullString
+			lakeRows.Scan(&hylakID, &lakeName, &areaKm2, &depthAvg, &lat, &lon, &geojson)
+			
+			// Build name
+			name := "Lake"
+			if lakeName.Valid && lakeName.String != "" {
+				name = lakeName.String
+			}
+			if areaKm2.Valid && areaKm2.Float64 > 0 {
+				name = fmt.Sprintf("%s (%.1f km²)", name, areaKm2.Float64)
+			}
+			if depthAvg.Valid && depthAvg.Float64 > 0 {
+				name = fmt.Sprintf("%s [depth %.0fm]", name, depthAvg.Float64)
+			}
+			
+			// Use actual geometry if available, else point
+			if geojson.Valid && geojson.String != "" {
+				writeGeoJSONToKML(&kml, geojson.String, "water", name)
+			} else {
+				pointGeoJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat)
+				writeGeoJSONToKML(&kml, pointGeoJSON, "water", name)
+			}
 		}
 	}
 	kml.WriteString("</Folder>\n")
@@ -3612,13 +3653,13 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 	}
 	response.Summary.RoadSurfaces = make(map[string]int)
 	
-	// Get rivers (top 20 by discharge)
+	// Get rivers from park_rivers_hydro (top 20 by stream order)
 	rows, err := s.DB.QueryContext(ctx, `
-		SELECT hyriv_id, COALESCE(river_name, ''), COALESCE(length_km, 0), 
-		       COALESCE(discharge_cms, 0), COALESCE(stream_order, 0), relation, COALESCE(distance_km, 0)
-		FROM park_rivers 
+		SELECT hyriv_id, COALESCE(name, ''), COALESCE(length_km, 0), 
+		       COALESCE(stream_order, 0), COALESCE(ord_flow, 0)
+		FROM park_rivers_hydro 
 		WHERE park_id = ?
-		ORDER BY discharge_cms DESC
+		ORDER BY stream_order DESC, length_km DESC
 		LIMIT 20
 	`, internalID)
 	if err == nil {
@@ -3626,9 +3667,11 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 		majorRivers := []string{}
 		for rows.Next() {
 			var r River
-			if rows.Scan(&r.HyrivID, &r.Name, &r.LengthKm, &r.DischargeCms, &r.StreamOrder, &r.Relation, &r.DistanceKm) == nil {
+			var ordFlow int
+			if rows.Scan(&r.HyrivID, &r.Name, &r.LengthKm, &r.StreamOrder, &ordFlow) == nil {
+				r.Relation = "inside"  // hydro data is all park rivers
 				response.Rivers = append(response.Rivers, r)
-				if r.Name != "" && r.DischargeCms > 100 {
+				if r.Name != "" && r.StreamOrder >= 4 {
 					majorRivers = append(majorRivers, r.Name)
 				}
 			}
@@ -3637,7 +3680,7 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 	}
 	
 	// Count total rivers
-	s.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM park_rivers WHERE park_id = ?`, internalID).Scan(&response.Summary.TotalRivers)
+	s.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM park_rivers_hydro WHERE park_id = ?`, internalID).Scan(&response.Summary.TotalRivers)
 	
 	// Get roads with HeiGIT attributes
 	roadRows, err := s.DB.QueryContext(ctx, `

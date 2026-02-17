@@ -6218,7 +6218,7 @@
     <script>
     (function() {
         // Time slider configuration
-        const SLIDER_START_DATE = new Date('2020-06-01');
+        const SLIDER_START_DATE = new Date('2020-01-01');
         const SLIDER_END_DATE = new Date(); // Today
         const TOTAL_MONTHS = monthsBetween(SLIDER_START_DATE, SLIDER_END_DATE);
         
@@ -8088,7 +8088,7 @@ ${starredItems.narratives.map(n => {
                     dateParams = `&start=${startDateEl.value}&end=${endDateEl.value}`;
                 }
             }
-            const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=500&pwd=${window.accessPwd || ''}`);
+            const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=2000&pwd=${window.accessPwd || ''}`);
             if (!response.ok) throw new Error('Failed to fetch features');
             
             const geojson = await response.json();
@@ -8265,20 +8265,35 @@ ${starredItems.narratives.map(n => {
         
         indicator.classList.add('active');
         
-        let items = '';
-        
-        // Category pins
-        items += categoryKeys.map(key => {
+        // Group pins by park
+        const byPark = {};
+        categoryKeys.forEach(key => {
             const layer = pinnedLayers[key];
-            const count = layer.featureCount;
-            return `<span class="pinned-item ${layer.type}">${layer.parkName} ${layer.type} (${count})</span>`;
-        }).join('');
-        
-        // Single feature pins
-        items += singleKeys.map(key => {
+            const park = layer.parkName;
+            if (!byPark[park]) byPark[park] = [];
+            byPark[park].push({ type: layer.type, count: layer.featureCount, key });
+        });
+        singleKeys.forEach(key => {
             const pin = singlePinnedFeatures[key];
-            return `<span class="pinned-item ${pin.type} single" style="font-size:9px;">${pin.parkName} ${pin.type}</span>`;
-        }).join('');
+            const park = pin.parkName;
+            if (!byPark[park]) byPark[park] = [];
+            byPark[park].push({ type: pin.type, count: 1, single: true, key });
+        });
+        
+        // Build compact display
+        const parkNames = Object.keys(byPark);
+        let items = '';
+        if (parkNames.length <= 3) {
+            // Show detailed
+            items = parkNames.map(park => {
+                const pins = byPark[park];
+                const types = pins.map(p => `${p.type}${p.count > 1 ? '('+p.count+')' : ''}`).join(',');
+                return `<span class="pinned-item">${park}: ${types}</span>`;
+            }).join('');
+        } else {
+            // Compact: show count per park
+            items = `<span class="pinned-item">${parkNames.length} parks pinned (${totalCount} layers)</span>`;
+        }
         
         itemsContainer.innerHTML = items;
     }
@@ -8301,7 +8316,7 @@ ${starredItems.narratives.map(n => {
                 }
                 
                 // Fetch updated data
-                const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=500&pwd=${window.accessPwd || ''}`);
+                const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=2000&pwd=${window.accessPwd || ''}`);
                 if (!response.ok) continue;
                 
                 const geojson = await response.json();
