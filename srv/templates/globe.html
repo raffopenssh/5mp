@@ -8352,11 +8352,47 @@ ${starredItems.narratives.map(n => {
             }
             
             // Add hover effect
-            map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
-            map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
+            // Add hover effect with popup
+            let categoryHoverPopup = null;
+            map.on('mouseenter', layerId, (e) => {
+                map.getCanvas().style.cursor = 'pointer';
+                if (e.features && e.features.length > 0) {
+                    const props = e.features[0].properties;
+                    const name = props.name || props.feature_id || type;
+                    let hoverText = `<strong>${name}</strong>`;
+                    if (props.narrative) {
+                        const shortNarrative = props.narrative.length > 100 ? props.narrative.substring(0, 97) + '...' : props.narrative;
+                        hoverText = shortNarrative;
+                    } else if (type === 'river') {
+                        hoverText = `<strong>${props.name || 'River'}</strong>`;
+                        if (props.ord_flow) hoverText += `<br><span style="color:#888;">Order: ${props.ord_flow}</span>`;
+                    } else if (type === 'road') {
+                        hoverText = `<strong>${props.name || 'Road'}</strong>`;
+                        if (props.surface) hoverText += `<br><span style="color:#888;">Surface: ${props.surface}</span>`;
+                    } else if (type === 'place') {
+                        hoverText = `<strong>${props.name || 'Place'}</strong>`;
+                        if (props.place_type) hoverText += `<br><span style="color:#888;">${props.place_type}</span>`;
+                    }
+                    categoryHoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, maxWidth: '250px' })
+                        .setLngLat(e.lngLat)
+                        .setHTML(`<div style="font-size:11px;line-height:1.3;">${hoverText}</div>`)
+                        .addTo(map);
+                }
+            });
+            map.on('mouseleave', layerId, () => {
+                map.getCanvas().style.cursor = '';
+                if (categoryHoverPopup) {
+                    categoryHoverPopup.remove();
+                    categoryHoverPopup = null;
+                }
+            });
             
             // Add click handler for feature details
             map.on('click', layerId, (e) => {
+                if (categoryHoverPopup) {
+                    categoryHoverPopup.remove();
+                    categoryHoverPopup = null;
+                }
                 if (e.features && e.features.length > 0) {
                     const props = e.features[0].properties;
                     showPinnedFeaturePopup(props, e.lngLat, type, parkName);
