@@ -5934,10 +5934,10 @@
                     console.log('PA click handler - found PA:', paFeatures[0].properties?.name);
                     const props = paFeatures[0].properties;
                     
-                    // Shift+click: toggle park in multi-selection
-                    console.log('PA click - originalEvent:', !!originalEvent, 'shiftKey:', originalEvent?.shiftKey);
-                    if (originalEvent && originalEvent.shiftKey) {
-                        console.log('SHIFT+CLICK triggered for:', props.id);
+                    // Shift+click or Cmd+click (Mac): toggle park in multi-selection
+                    const isMultiSelect = originalEvent && (originalEvent.shiftKey || originalEvent.metaKey || originalEvent.ctrlKey);
+                    if (isMultiSelect) {
+                        console.log('Multi-select click triggered for:', props.id);
                         handleShiftClickPark(props);
                         return true;
                     }
