@@ -5242,7 +5242,8 @@
                 if (!resp.ok) throw new Error('Climate data not available');
                 const data = await resp.json();
                 
-                if (!data.temp_annual_c) {
+                // Check if we have any meaningful climate data (precip, climate_zone, or seasons)
+                if (!data.precip_annual_mm && !data.climate_zone && !data.rainy_season) {
                     el.innerHTML = '<div class="pa-popup-section-empty">Climate data not available</div>';
                     return;
                 }
