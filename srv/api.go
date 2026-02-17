@@ -1095,6 +1095,18 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		s.handleWaterbodyFeatures(w, internalID, limitStr)
 		return
 	}
+	
+	// Handle rivers from park_rivers_hydro table
+	if featureType == "river" {
+		s.handleRiverFeatures(w, internalID, limitStr)
+		return
+	}
+	
+	// Handle roads from roads_heigit table
+	if featureType == "road" {
+		s.handleRoadFeatures(w, internalID, limitStr)
+		return
+	}
 
 	// Build query for feature_geometries table
 	query := `
@@ -1205,7 +1217,7 @@ func (s *Server) handlePlaceFeatures(w http.ResponseWriter, parkID string, limit
 	}
 
 	rows, err := s.DB.Query(`
-		SELECT id, place_type, name, lat, lon, geojson, osm_id, osm_tags
+		SELECT id, place_type, name, lat, lon, osm_id, osm_tags
 		FROM osm_places
 		WHERE park_id = ?
 		ORDER BY
@@ -1245,19 +1257,14 @@ func (s *Server) handlePlaceFeatures(w http.ResponseWriter, parkID string, limit
 		var id int
 		var placeType, name string
 		var lat, lon float64
-		var geojson sql.NullString
 		var osmID, osmTags sql.NullString
 
-		if err := rows.Scan(&id, &placeType, &name, &lat, &lon, &geojson, &osmID, &osmTags); err != nil {
+		if err := rows.Scan(&id, &placeType, &name, &lat, &lon, &osmID, &osmTags); err != nil {
 			continue
 		}
 
-		var geometry json.RawMessage
-		if geojson.Valid && geojson.String != "" {
-			geometry = json.RawMessage(geojson.String)
-		} else {
-			geometry = json.RawMessage(fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat))
-		}
+		// Create Point geometry from lat/lon
+		geometry := json.RawMessage(fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat))
 
 		props := map[string]interface{}{
 			"feature_type": "place",
@@ -1398,6 +1405,146 @@ func (s *Server) handleWaterbodyFeatures(w http.ResponseWriter, parkID string, l
 				},
 			})
 		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(fc)
+}
+
+// handleRiverFeatures returns GeoJSON features for HydroRIVERS data
+func (s *Server) handleRiverFeatures(w http.ResponseWriter, parkID string, limitStr string) {
+	limit := 500
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 2000 {
+			limit = l
+		}
+	}
+
+	type GeoJSONFeature struct {
+		Type       string                 `json:"type"`
+		Geometry   json.RawMessage        `json:"geometry"`
+		Properties map[string]interface{} `json:"properties"`
+	}
+
+	type FeatureCollection struct {
+		Type     string           `json:"type"`
+		Features []GeoJSONFeature `json:"features"`
+	}
+
+	fc := FeatureCollection{
+		Type:     "FeatureCollection",
+		Features: []GeoJSONFeature{},
+	}
+
+	// Get rivers from park_rivers_hydro
+	rows, err := s.DB.Query(`
+		SELECT hyriv_id, COALESCE(name, ''), stream_order, ord_flow, length_km, lat, lon, geojson
+		FROM park_rivers_hydro
+		WHERE park_id = ? AND geojson IS NOT NULL
+		ORDER BY stream_order DESC, length_km DESC
+		LIMIT ?
+	`, parkID, limit)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var hyrivID int
+		var name string
+		var streamOrder, ordFlow int
+		var lengthKm, lat, lon float64
+		var geojson string
+
+		if err := rows.Scan(&hyrivID, &name, &streamOrder, &ordFlow, &lengthKm, &lat, &lon, &geojson); err != nil {
+			continue
+		}
+
+		fc.Features = append(fc.Features, GeoJSONFeature{
+			Type:     "Feature",
+			Geometry: json.RawMessage(geojson),
+			Properties: map[string]interface{}{
+				"feature_type":  "river",
+				"feature_id":    fmt.Sprintf("river_%d", hyrivID),
+				"hyriv_id":      hyrivID,
+				"name":          name,
+				"stream_order":  streamOrder,
+				"ord_flow":      ordFlow,
+				"length_km":     lengthKm,
+				"lat":           lat,
+				"lon":           lon,
+			},
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(fc)
+}
+
+// handleRoadFeatures returns GeoJSON features for HeiGIT roads
+func (s *Server) handleRoadFeatures(w http.ResponseWriter, parkID string, limitStr string) {
+	limit := 500
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 2000 {
+			limit = l
+		}
+	}
+
+	type GeoJSONFeature struct {
+		Type       string                 `json:"type"`
+		Geometry   json.RawMessage        `json:"geometry"`
+		Properties map[string]interface{} `json:"properties"`
+	}
+
+	type FeatureCollection struct {
+		Type     string           `json:"type"`
+		Features []GeoJSONFeature `json:"features"`
+	}
+
+	fc := FeatureCollection{
+		Type:     "FeatureCollection",
+		Features: []GeoJSONFeature{},
+	}
+
+	// Get roads from roads_heigit
+	rows, err := s.DB.Query(`
+		SELECT osm_id, COALESCE(name, ''), highway_type, COALESCE(surface, ''), 
+		       COALESCE(passability, ''), length_km, geojson
+		FROM roads_heigit
+		WHERE park_id = ? AND geojson IS NOT NULL
+		ORDER BY length_km DESC
+		LIMIT ?
+	`, parkID, limit)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var osmID, name, highwayType, surface, passability string
+		var lengthKm float64
+		var geojson string
+
+		if err := rows.Scan(&osmID, &name, &highwayType, &surface, &passability, &lengthKm, &geojson); err != nil {
+			continue
+		}
+
+		fc.Features = append(fc.Features, GeoJSONFeature{
+			Type:     "Feature",
+			Geometry: json.RawMessage(geojson),
+			Properties: map[string]interface{}{
+				"feature_type":  "road",
+				"feature_id":    fmt.Sprintf("road_%s", osmID),
+				"osm_id":        osmID,
+				"name":          name,
+				"highway_type":  highwayType,
+				"surface":       surface,
+				"passability":   passability,
+				"length_km":     lengthKm,
+			},
+		})
 	}
 
 	w.Header().Set("Content-Type", "application/json")

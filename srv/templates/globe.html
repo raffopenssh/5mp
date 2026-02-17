@@ -8157,7 +8157,10 @@ ${starredItems.narratives.map(n => {
                 'settlement': 'settlement',
                 'deforestation': 'deforestation',
                 'road': 'road',
-                'water': 'waterbody'
+                'river': 'river',
+                'place': 'place',
+                'water': 'waterbody',
+                'infrastructure': 'infrastructure'
             }[type] || type;
             
             // Get date range from time slider for time-filtered features
@@ -8169,10 +8172,41 @@ ${starredItems.narratives.map(n => {
                     dateParams = `&start=${startDateEl.value}&end=${endDateEl.value}`;
                 }
             }
-            const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=2000&pwd=${window.accessPwd || ''}`);
-            if (!response.ok) throw new Error('Failed to fetch features');
             
-            const geojson = await response.json();
+            let geojson;
+            
+            // Infrastructure comes from learned features endpoint
+            if (type === 'infrastructure') {
+                const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&pwd=${window.accessPwd || ''}`);
+                if (!response.ok) throw new Error('Failed to fetch features');
+                const learned = await response.json();
+                
+                // Convert learned features to GeoJSON
+                const features = [];
+                (learned.airstrips || []).filter(a => a.status === 'auto_approved' || a.status === 'approved').forEach(a => {
+                    if (a.lat && a.lon) {
+                        features.push({
+                            type: 'Feature',
+                            geometry: { type: 'Point', coordinates: [a.lon, a.lat] },
+                            properties: { feature_type: 'airstrip', feature_id: `airstrip_${a.id}`, name: a.name || 'Airstrip', type: 'airstrip' }
+                        });
+                    }
+                });
+                (learned.places || []).filter(p => p.status === 'auto_approved' || p.status === 'approved').forEach(p => {
+                    if (p.lat && p.lon) {
+                        features.push({
+                            type: 'Feature',
+                            geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
+                            properties: { feature_type: 'learned_place', feature_id: `learned_place_${p.id}`, name: p.name || p.place_type, place_type: p.place_type }
+                        });
+                    }
+                });
+                geojson = { type: 'FeatureCollection', features };
+            } else {
+                const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=2000&pwd=${window.accessPwd || ''}`);
+                if (!response.ok) throw new Error('Failed to fetch features');
+                geojson = await response.json();
+            }
             
             if (!geojson.features || geojson.features.length === 0) {
                 showToast(`No ${type} features found for ${parkName}`, 'warning');
@@ -8185,9 +8219,9 @@ ${starredItems.narratives.map(n => {
             map.addSource(sourceId, { type: 'geojson', data: geojson });
             
             // Style based on type
-            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', water: '#3b82f6' };
+            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', river: '#3b82f6', water: '#3b82f6', place: '#a855f7', infrastructure: '#22c55e' };
             const color = colors[type] || '#22c55e';
-            const lineWidths = { fire: 3, settlement: 3, deforestation: 3, road: 1.5, water: 2 };
+            const lineWidths = { fire: 3, settlement: 3, deforestation: 3, road: 2, river: 2.5, water: 2, place: 2, infrastructure: 2 };
             const lineWidth = lineWidths[type] || 2;
             
             // Store reference early so we can add arrowLayerId
