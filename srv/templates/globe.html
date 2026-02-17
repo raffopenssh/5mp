@@ -7618,6 +7618,7 @@ ${starredItems.narratives.map(n => {
     
     // ===== Single Feature Pinning =====
     let singlePinnedFeatures = {}; // { 'parkId_type_featureId': { sourceId, layerId, ... } }
+    let realtimeFireLayers = {}; // Track realtime fire trajectories for clearing
     
     // Show realtime fire group trajectory on map
     function showRealtimeTrajectory(parkId, parkName, groupName, trajectory) {
@@ -7708,15 +7709,15 @@ ${starredItems.narratives.map(n => {
         
         map.fitBounds(bounds, { padding: 50, duration: 1500 });
         
-        showToast(`Showing trajectory: ${groupName} (${coords.length} points)`, 'success');
+        // Track this realtime layer for clearing
+        const key = `${parkId}_rt_${groupName}`;
+        realtimeFireLayers[key] = {
+            sourceId, layerId, arrowLayerId, pointLayerId, parkId, parkName, groupName,
+            coords: lastPoint
+        };
+        updatePinnedIndicator();
         
-        // Auto-remove after 30 seconds
-        setTimeout(() => {
-            [layerId, arrowLayerId, pointLayerId].forEach(id => {
-                if (map.getLayer(id)) map.removeLayer(id);
-            });
-            if (map.getSource(sourceId)) map.removeSource(sourceId);
-        }, 30000);
+        showToast(`Showing trajectory: ${groupName} (${coords.length} points)`, 'success');
     }
     
     // Show more active groups in the fire alert box
@@ -8116,8 +8117,29 @@ ${starredItems.narratives.map(n => {
         document.querySelectorAll('.single-pin-icon.pinned').forEach(icon => {
             icon.classList.remove('pinned');
             icon.style.opacity = '0.4';
-            // icon no longer used for single pins
         });
+    }
+    
+    function clearAllRealtimeFireLayers() {
+        Object.keys(realtimeFireLayers).forEach(key => {
+            const layer = realtimeFireLayers[key];
+            [layer.layerId, layer.arrowLayerId, layer.pointLayerId].forEach(id => {
+                if (map.getLayer(id)) map.removeLayer(id);
+            });
+            if (map.getSource(layer.sourceId)) map.removeSource(layer.sourceId);
+        });
+        realtimeFireLayers = {};
+    }
+    
+    function removeRealtimeFireLayer(key) {
+        const layer = realtimeFireLayers[key];
+        if (!layer) return;
+        [layer.layerId, layer.arrowLayerId, layer.pointLayerId].forEach(id => {
+            if (map.getLayer(id)) map.removeLayer(id);
+        });
+        if (map.getSource(layer.sourceId)) map.removeSource(layer.sourceId);
+        delete realtimeFireLayers[key];
+        updatePinnedIndicator();
     }
     
     async function togglePinLayer(parkId, parkName, type, btn) {
@@ -8373,6 +8395,7 @@ ${starredItems.narratives.map(n => {
         Object.keys(pinnedLayers).forEach(key => removePinnedLayer(key));
         pinnedLayers = {};
         clearAllSingleFeaturePins();
+        clearAllRealtimeFireLayers();
         updatePinnedIndicator();
         savePinnedToURL();
         
@@ -8387,7 +8410,8 @@ ${starredItems.narratives.map(n => {
         const itemsContainer = document.getElementById('pinned-items');
         const categoryKeys = Object.keys(pinnedLayers);
         const singleKeys = Object.keys(singlePinnedFeatures);
-        const totalCount = categoryKeys.length + singleKeys.length;
+        const rtKeys = Object.keys(realtimeFireLayers);
+        const totalCount = categoryKeys.length + singleKeys.length + rtKeys.length;
         
         if (totalCount === 0) {
             indicator.classList.remove('active');
@@ -8409,6 +8433,12 @@ ${starredItems.narratives.map(n => {
             const park = pin.parkName;
             if (!byPark[park]) byPark[park] = [];
             byPark[park].push({ type: pin.type, count: 1, single: true, key });
+        });
+        rtKeys.forEach(key => {
+            const rt = realtimeFireLayers[key];
+            const park = rt.parkName;
+            if (!byPark[park]) byPark[park] = [];
+            byPark[park].push({ type: 'active-fire', count: 1, realtime: true, key, groupName: rt.groupName });
         });
         
         // Build compact display
