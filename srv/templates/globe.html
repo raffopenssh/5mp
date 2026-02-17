@@ -7282,8 +7282,8 @@
             if (bbox.bbox) {
                 // Find parks in this bbox from loaded data
                 const parksInBbox = [];
-                if (typeof map !== 'undefined' && map.getSource('protected-areas')) {
-                    const features = map.querySourceFeatures('protected-areas', { sourceLayer: 'protected-areas' });
+                if (typeof map !== 'undefined' && map.getSource('areas')) {
+                    const features = map.querySourceFeatures('areas');
                     for (const f of features) {
                         const center = f.properties.center ? JSON.parse(f.properties.center) : null;
                         if (center && center[0] >= bbox.bbox[0] && center[0] <= bbox.bbox[2] && 
