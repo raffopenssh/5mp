@@ -509,6 +509,34 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		}
 	}
 
+	// Create notification for new upload (non-fatal)
+	if parkID != nil {
+		var totalDistKm float64
+		for _, seg := range segments {
+			totalDistKm += seg.DistanceKm
+		}
+		parkName := *parkID
+		if s.AreaStore != nil {
+			for _, a := range s.AreaStore.Areas {
+				if a.ID == *parkID {
+					parkName = a.Name
+					break
+				}
+			}
+		}
+		_, err := s.DB.ExecContext(ctx, `
+			INSERT INTO notifications (park_id, notification_type, title, message, reference_id, created_at)
+			VALUES (?, 'new_upload', ?, ?, ?, CURRENT_TIMESTAMP)`,
+			*parkID,
+			fmt.Sprintf("New Patrol Data: %s", parkName),
+			fmt.Sprintf("%.1f km patrol uploaded with %d track points", totalDistKm, len(segments)),
+			fmt.Sprintf("%d", uploadID),
+		)
+		if err != nil {
+			slog.Warn("failed to create upload notification", "uploadID", uploadID, "error", err)
+		}
+	}
+
 	return uploadID, nil
 }
 

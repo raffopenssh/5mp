@@ -446,17 +446,18 @@ func detectStaticSegments(points []gpx.Point) []ClassifiedSegment {
 }
 
 // isBoundaryTrace detects if segment is a park boundary trace
-// Characteristics: forms a closed polygon, area > 1 km², low sinuosity
+// Must be: very large area (>100 km²), closed polygon, low point density per km² (boundary tracing)
+// Normal patrols that return to base should NOT be detected as boundaries
 func isBoundaryTrace(points []gpx.Point) bool {
-	if len(points) < 20 {
-		return false
+	if len(points) < 100 {
+		return false // Boundary traces need many points
 	}
 
-	// Check if it forms a closed polygon (start and end within 500m)
+	// Check if it forms a closed polygon (start and end within 200m)
 	startEnd := haversineDistanceKm(points[0].Lat, points[0].Lon,
 		points[len(points)-1].Lat, points[len(points)-1].Lon)
-	if startEnd > 0.5 {
-		return false // Not a closed polygon
+	if startEnd > 0.2 {
+		return false // Not a tightly closed polygon
 	}
 
 	// Calculate approximate area using shoelace formula
@@ -470,13 +471,30 @@ func isBoundaryTrace(points []gpx.Point) bool {
 	// Convert to approximate km² (rough conversion at equator)
 	areaKm2 := area * 111 * 111
 
-	// Boundary traces typically enclose large areas (> 1 km²)
-	if areaKm2 > 1.0 {
-		// Also check if it has very consistent bearing changes (regular polygon shape)
-		return true
+	// Boundary traces must enclose VERY large areas (> 100 km²)
+	// Normal patrol walks might cover 1-50 km², so use high threshold
+	if areaKm2 < 100.0 {
+		return false
 	}
 
-	return false
+	// Calculate total distance walked
+	var totalDistKm float64
+	for i := 1; i < len(points); i++ {
+		totalDistKm += haversineDistanceKm(points[i-1].Lat, points[i-1].Lon,
+			points[i].Lat, points[i].Lon)
+	}
+
+	// Boundary traces have LOW area-to-perimeter ratio (thin boundary line)
+	// A circular area of 100km² has perimeter ~35km, ratio ~2.9
+	// Patrol walks have HIGH ratio (wandering inside area)
+	if totalDistKm < 10 {
+		return false
+	}
+	ratio := areaKm2 / totalDistKm
+	
+	// Boundary traces: ratio < 5 (thin perimeter around large area)
+	// Patrol walks: ratio > 5 (lots of walking inside smaller area)
+	return ratio < 5.0
 }
 
 // isRoadTrace detects if segment is a road network trace
