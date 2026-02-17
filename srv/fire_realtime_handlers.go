@@ -1,6 +1,7 @@
 package srv
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -177,6 +178,16 @@ func (s *Server) HandleAPIFireRealtime(w http.ResponseWriter, r *http.Request) {
 	endDate := time.Now()
 	startDate := endDate.AddDate(0, 0, -days)
 
+	// Check if we have raw fire detections or should use feature_geometries
+	var fireCount int
+	s.DB.QueryRow(`SELECT COUNT(*) FROM fire_detections WHERE acq_date >= ?`, startDate.Format("2006-01-02")).Scan(&fireCount)
+	
+	if fireCount < 100 {
+		// Use feature_geometries instead (from pipeline)
+		s.handleFireRealtimeFromFeatures(w, r, internalID, parkName, startDate, endDate, days)
+		return
+	}
+	
 	// Expand bbox by 300km buffer for trajectory detection
 	bufferDeg := 300.0 / 111.0
 	if minLat == 0 && maxLat == 0 {
@@ -186,13 +197,8 @@ func (s *Server) HandleAPIFireRealtime(w http.ResponseWriter, r *http.Request) {
 			FROM fire_detections WHERE protected_area_id = ?
 		`, internalID).Scan(&minLat, &maxLat, &minLon, &maxLon)
 		if minLat == 0 && maxLat == 0 {
-			// No data at all
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(FireRealtimeResponse{
-				ParkID:    internalID,
-				ParkName:  parkName,
-				Narrative: fmt.Sprintf("No fire data available for %s.", parkName),
-			})
+			// No data at all - use feature_geometries
+			s.handleFireRealtimeFromFeatures(w, r, internalID, parkName, startDate, endDate, days)
 			return
 		}
 	}
@@ -308,7 +314,7 @@ func detectDailyClustersRT(fires []firePoint) map[string][]FireCluster {
 		byDate[f.date] = append(byDate[f.date], f)
 	}
 
-	epsDeg := 15.0 / 111.0 // 15 km
+	epsDeg := 30.0 / 111.0 // 30 km clustering radius
 	minFires := 5
 
 	dailyClusters := make(map[string][]FireCluster)
@@ -400,7 +406,7 @@ func detectDailyClustersRT(fires []firePoint) map[string][]FireCluster {
 }
 
 func trackClustersRT(dailyClusters map[string][]FireCluster) [][]FireCluster {
-	maxLinkKm := 25.0
+	maxLinkKm := 50.0 // 50 km max link between days (2x clustering radius)
 	maxGapDays := 3
 
 	var sortedDates []string
@@ -730,10 +736,10 @@ type FireGroupAlert struct {
 	LeftAt            *time.Time `json:"left_at,omitempty"`
 	FireCount         int        `json:"fire_count"`
 	DaysActive        int        `json:"days_active"`
-	CentroidLat       float64    `json:"centroid_lat"`
-	CentroidLon       float64    `json:"centroid_lon"`
-	LatestLat         float64    `json:"latest_lat"`
-	LatestLon         float64    `json:"latest_lon"`
+	CentroidLat       *float64   `json:"centroid_lat,omitempty"`
+	CentroidLon       *float64   `json:"centroid_lon,omitempty"`
+	LatestLat         *float64   `json:"latest_lat,omitempty"`
+	LatestLon         *float64   `json:"latest_lon,omitempty"`
 	MovementDirection string     `json:"movement_direction,omitempty"`
 	Message           string     `json:"message,omitempty"`
 }
@@ -753,11 +759,12 @@ func (s *Server) HandleAPIFireAlerts(w http.ResponseWriter, r *http.Request) {
 		       left_at, fire_count, days_active, centroid_lat, centroid_lon,
 		       latest_lat, latest_lon, movement_direction
 		FROM fire_group_alerts
-		WHERE is_dismissed = FALSE
+		WHERE is_dismissed = 0
 		  AND (left_at IS NULL OR left_at > datetime('now', '-1 day'))
 		ORDER BY CASE WHEN left_at IS NULL THEN 0 ELSE 1 END, last_updated_at DESC
 		LIMIT ?
 	`
+	// Query fire alerts
 
 	rows, err := s.DB.Query(query, limit)
 	if err != nil {
@@ -767,22 +774,38 @@ func (s *Server) HandleAPIFireAlerts(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	alerts := make([]FireGroupAlert, 0)
+	rowCount := 0
 	for rows.Next() {
+		rowCount++
 		var a FireGroupAlert
-		var leftAt, direction *string
+		var leftAt, direction sql.NullString
+		var centroidLat, centroidLon, latestLat, latestLon sql.NullFloat64
 		err := rows.Scan(&a.ID, &a.ParkID, &a.GroupName, &a.AlertType,
 			&a.FirstDetectedAt, &a.LastUpdatedAt, &leftAt,
-			&a.FireCount, &a.DaysActive, &a.CentroidLat, &a.CentroidLon,
-			&a.LatestLat, &a.LatestLon, &direction)
+			&a.FireCount, &a.DaysActive, &centroidLat, &centroidLon,
+			&latestLat, &latestLon, &direction)
 		if err != nil {
+			fmt.Printf("[Fire Alerts] Scan error: %v\n", err)
 			continue
 		}
-		if leftAt != nil {
-			t, _ := time.Parse("2006-01-02 15:04:05", *leftAt)
+		if leftAt.Valid {
+			t, _ := time.Parse("2006-01-02 15:04:05", leftAt.String)
 			a.LeftAt = &t
 		}
-		if direction != nil {
-			a.MovementDirection = *direction
+		if direction.Valid {
+			a.MovementDirection = direction.String
+		}
+		if centroidLat.Valid {
+			a.CentroidLat = &centroidLat.Float64
+		}
+		if centroidLon.Valid {
+			a.CentroidLon = &centroidLon.Float64
+		}
+		if latestLat.Valid {
+			a.LatestLat = &latestLat.Float64
+		}
+		if latestLon.Valid {
+			a.LatestLon = &latestLon.Float64
 		}
 
 		if s.AreaStore != nil {
@@ -820,6 +843,14 @@ func (s *Server) HandleAPIFireAlerts(w http.ResponseWriter, r *http.Request) {
 
 // UpdateFireGroupAlerts analyzes parks with recent fire activity and updates alerts.
 func (s *Server) UpdateFireGroupAlerts() error {
+	// Check if we have fire_detections data
+	var fireCount int
+	s.DB.QueryRow(`SELECT COUNT(*) FROM fire_detections WHERE acq_date >= date('now', '-28 days')`).Scan(&fireCount)
+	if fireCount < 100 {
+		// Use feature_geometries instead (fire_detections table is empty)
+		return s.updateFireGroupAlertsFromFeatures()
+	}
+	
 	parksQuery := `SELECT DISTINCT protected_area_id FROM fire_detections 
 		WHERE acq_date >= date('now', '-28 days') AND protected_area_id IS NOT NULL`
 	rows, err := s.DB.Query(parksQuery)
@@ -841,6 +872,101 @@ func (s *Server) UpdateFireGroupAlerts() error {
 	}
 
 	s.DB.Exec(`DELETE FROM fire_group_alerts WHERE left_at IS NOT NULL AND left_at < datetime('now', '-1 day')`)
+	return nil
+}
+
+// updateFireGroupAlertsFromFeatures creates alerts from feature_geometries
+func (s *Server) updateFireGroupAlertsFromFeatures() error {
+	now := time.Now()
+	cutoff := now.AddDate(0, 0, -14).Format("2006-01-02") // 14 days for active alerts
+
+	
+	// Get recent active fire groups
+	rows, err := s.DB.Query(`
+		SELECT park_id, feature_id, properties_json, start_date, end_date
+		FROM feature_geometries
+		WHERE feature_type = 'fire_trajectory' AND end_date >= ?
+		ORDER BY end_date DESC
+	`, cutoff)
+	if err != nil {
+
+		return err
+	}
+	defer rows.Close()
+	
+	alertsByPark := make(map[string]int)
+	
+	for rows.Next() {
+		var parkID, featureID, propsJSON string
+		var startDate, endDate sql.NullString
+		if rows.Scan(&parkID, &featureID, &propsJSON, &startDate, &endDate) != nil {
+			continue
+		}
+		
+		var props map[string]interface{}
+		json.Unmarshal([]byte(propsJSON), &props)
+		
+		fires := 0
+		if f, ok := props["fires_total"].(float64); ok {
+			fires = int(f)
+		}
+		daysActive := 1
+		if d, ok := props["days"].(float64); ok {
+			daysActive = int(d)
+		}
+		// groupType unused for now - could add column to alerts table
+		_ = props["group_type"]
+		
+		// Determine alert type
+		alertType := "active"
+		if endDate.Valid {
+			if t, err := time.Parse("2006-01-02", endDate.String); err == nil {
+				daysSince := int(time.Since(t).Hours() / 24)
+				if daysSince > 3 {
+					alertType = "cooling"
+				}
+			}
+		}
+		
+		// Check if alert already exists
+		var existingID int64
+		s.DB.QueryRow(`SELECT id FROM fire_group_alerts WHERE park_id = ? AND group_name = ?`,
+			parkID, featureID).Scan(&existingID)
+		
+		if existingID > 0 {
+			// Update existing
+			s.DB.Exec(`UPDATE fire_group_alerts SET 
+				alert_type = ?, last_updated_at = ?, fire_count = ?, days_active = ?
+				WHERE id = ?`,
+				alertType, now, fires, daysActive, existingID)
+		} else {
+			// Insert new - use startDate if available, otherwise use now
+			firstDetected := now.Format("2006-01-02 15:04:05")
+			if startDate.Valid {
+				firstDetected = startDate.String
+			}
+			_, err := s.DB.Exec(`INSERT INTO fire_group_alerts 
+				(park_id, group_name, alert_type, fire_count, days_active, first_detected_at, last_updated_at)
+				VALUES (?, ?, ?, ?, ?, ?, ?)`,
+				parkID, featureID, alertType, fires, daysActive, firstDetected, now)
+			if err != nil {
+				// Log but continue
+				fmt.Printf("Error inserting fire alert: %v\n", err)
+			}
+		}
+		
+		alertsByPark[parkID]++
+	}
+	
+	totalAlerts := 0
+	for _, count := range alertsByPark {
+		totalAlerts += count
+	}
+	fmt.Printf("[Fire Alerts] Created/updated %d alerts across %d parks\n", totalAlerts, len(alertsByPark))
+	
+	// Clean up old alerts
+	s.DB.Exec(`DELETE FROM fire_group_alerts WHERE left_at IS NOT NULL AND left_at < datetime('now', '-1 day')`)
+	
 	return nil
 }
 
@@ -983,4 +1109,180 @@ func (s *Server) HandleAPIUpdateFireAlerts(w http.ResponseWriter, r *http.Reques
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
+
+// handleFireRealtimeFromFeatures serves fire-realtime data from feature_geometries
+// Used when fire_detections table is empty (pipeline-based approach)
+func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.Request, 
+    parkID, parkName string, startDate, endDate time.Time, days int) {
+    
+    // Query recent fire trajectories from feature_geometries
+    rows, err := s.DB.Query(`
+        SELECT feature_id, geojson, properties_json, start_date, end_date
+        FROM feature_geometries
+        WHERE park_id = ? AND feature_type = 'fire_trajectory'
+          AND start_date >= ? 
+        ORDER BY start_date DESC
+    `, parkID, startDate.Format("2006-01-02"))
+    
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    defer rows.Close()
+    
+    var groups []FireGroup
+    totalFires := 0
+    activeCount := 0
+    insideCount := 0
+    
+    groupIndex := 0
+    for rows.Next() {
+        var featureID, geojson, propsJSON string
+        var startDateStr, endDateStr sql.NullString
+        
+        if err := rows.Scan(&featureID, &geojson, &propsJSON, &startDateStr, &endDateStr); err != nil {
+            continue
+        }
+        
+        var props map[string]interface{}
+        json.Unmarshal([]byte(propsJSON), &props)
+        
+        fires := int(props["fires_total"].(float64))
+        totalFires += fires
+        
+        daysActive := int(props["days"].(float64))
+        direction := ""
+        if d, ok := props["direction"].(string); ok {
+            direction = d
+        }
+        distKm := 0.0
+        if d, ok := props["distance_km"].(float64); ok {
+            distKm = d
+        }
+        avgSpeed := 0.0
+        if d, ok := props["avg_speed_km_day"].(float64); ok {
+            avgSpeed = d
+        }
+        groupType := "unknown"
+        if t, ok := props["group_type"].(string); ok {
+            groupType = t
+        }
+        narrative := ""
+        if n, ok := props["narrative"].(string); ok {
+            narrative = n
+        }
+        
+        // Determine if active (last seen within 3 days)
+        lastSeen := endDateStr.String
+        daysSince := 0
+        if lastSeen != "" {
+            if t, err := time.Parse("2006-01-02", lastSeen); err == nil {
+                daysSince = int(time.Since(t).Hours() / 24)
+            }
+        }
+        isActive := daysSince <= 3
+        if isActive {
+            activeCount++
+        }
+        
+        // Parse trajectory from geojson
+        var geom struct {
+            Coordinates [][]float64 `json:"coordinates"`
+        }
+        json.Unmarshal([]byte(geojson), &geom)
+        
+        var trajectory []FireCluster
+        for i, coord := range geom.Coordinates {
+            if len(coord) >= 2 {
+                trajectory = append(trajectory, FireCluster{
+                    Date:  startDateStr.String,
+                    Lat:   coord[1],
+                    Lon:   coord[0],
+                    Fires: fires / max(1, len(geom.Coordinates)),
+                })
+                if i == 0 && startDateStr.Valid {
+                    trajectory[i].Date = startDateStr.String
+                }
+            }
+        }
+        
+        status := "active"
+        if !isActive {
+            if daysSince > 7 {
+                status = "dormant"
+            } else {
+                status = "cooling"
+            }
+        }
+        
+        group := FireGroup{
+            Name:       getGroupName(groupIndex),
+            Type:       groupType,
+            IsActive:   isActive,
+            IsInside:   true, // From feature_geometries, assume inside
+            Status:     status,
+            LastSeen:   lastSeen,
+            DaysSince:  daysSince,
+            DaysInside: daysActive,
+            Metrics: map[string]interface{}{
+                "fires":        fires,
+                "days":         daysActive,
+                "distance_km":  distKm,
+                "avg_speed":    avgSpeed,
+                "direction":    direction,
+                "narrative":    narrative,
+            },
+            Trajectory: trajectory,
+        }
+        
+        groups = append(groups, group)
+        insideCount++
+        groupIndex++
+    }
+    
+    // Sort by last seen date (most recent first)
+    sort.Slice(groups, func(i, j int) bool {
+        return groups[i].LastSeen > groups[j].LastSeen
+    })
+    
+    // Limit to reasonable number
+    if len(groups) > 100 {
+        groups = groups[:100]
+    }
+    
+    // Build active and inside lists
+    var activeGroups, groupsInside []FireGroup
+    for _, g := range groups {
+        if g.IsActive {
+            activeGroups = append(activeGroups, g)
+        }
+        if g.IsInside {
+            groupsInside = append(groupsInside, g)
+        }
+    }
+    
+    // Build narrative
+    narrative := fmt.Sprintf("In the past %d days, %s has %d tracked fire groups with %d total fire detections.",
+        days, parkName, len(groups), totalFires)
+    if activeCount > 0 {
+        narrative += fmt.Sprintf(" %d groups are currently active.", activeCount)
+    }
+    
+    resp := FireRealtimeResponse{
+        ParkID:            parkID,
+        ParkName:          parkName,
+        AnalysisPeriod:    fmt.Sprintf("%s to %s", startDate.Format("2006-01-02"), endDate.Format("2006-01-02")),
+        TotalFires:        totalFires,
+        TotalGroups:       len(groups),
+        ActiveGroupsCount: activeCount,
+        GroupsInsideCount: insideCount,
+        Groups:            groups,
+        ActiveGroups:      activeGroups,
+        GroupsInside:      groupsInside,
+        Narrative:         narrative,
+    }
+    
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(resp)
 }

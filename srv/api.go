@@ -1068,6 +1068,7 @@ func (s *Server) HandleAPIParkInfractionSummary(w http.ResponseWriter, r *http.R
 func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 	parkID := r.PathValue("id")
 	featureType := r.URL.Query().Get("type")
+	featureID := r.URL.Query().Get("feature_id") // Fetch specific feature by ID
 	startDate := r.URL.Query().Get("start")
 	endDate := r.URL.Query().Get("end")
 	limitStr := r.URL.Query().Get("limit")
@@ -1108,6 +1109,12 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		args = append(args, featureType)
 	}
 	
+	// Allow fetching specific feature by ID (for pinning)
+	if featureID != "" {
+		query += " AND feature_id = ?"
+		args = append(args, featureID)
+	}
+	
 	if startDate != "" {
 		query += " AND (end_date IS NULL OR end_date >= ?)"
 		args = append(args, startDate)
@@ -1121,12 +1128,15 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 	query += " ORDER BY start_date DESC, feature_id"
 	
 	limit := 1000 // Default limit
-	if limitStr != "" {
-		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 10000 {
-			limit = l
+	// If fetching by feature_id, don't limit
+	if featureID == "" {
+		if limitStr != "" {
+			if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 10000 {
+				limit = l
+			}
 		}
+		query += fmt.Sprintf(" LIMIT %d", limit)
 	}
-	query += fmt.Sprintf(" LIMIT %d", limit)
 	
 	rows, err := s.DB.Query(query, args...)
 	if err != nil {
