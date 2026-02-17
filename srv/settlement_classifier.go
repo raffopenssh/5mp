@@ -148,6 +148,24 @@ func (s *Server) loadSettlementContext(parkID string, st *ClassifiedSettlement) 
 		WHERE park_id = ? 
 		AND ABS(lat - ?) < 0.2 AND ABS(lon - ?) < 0.2
 	`, parkID, st.Lat, st.Lon).Scan(&st.DeforestNearby, &st.DeforestPattern)
+	
+	// Get nearest road from roads_heigit (extract centroid from geojson)
+	var roadLon, roadLat sql.NullFloat64
+	s.DB.QueryRow(`
+		SELECT 
+			json_extract(geojson, '$.coordinates[0][0]') as lon,
+			json_extract(geojson, '$.coordinates[0][1]') as lat
+		FROM roads_heigit
+		WHERE park_id = ? AND geojson IS NOT NULL
+		ORDER BY 
+			(json_extract(geojson, '$.coordinates[0][1]') - ?) * (json_extract(geojson, '$.coordinates[0][1]') - ?) +
+			(json_extract(geojson, '$.coordinates[0][0]') - ?) * (json_extract(geojson, '$.coordinates[0][0]') - ?)
+		LIMIT 1
+	`, parkID, st.Lat, st.Lat, st.Lon, st.Lon).Scan(&roadLon, &roadLat)
+	
+	if roadLat.Valid && roadLon.Valid {
+		st.NearestRoad = haversineDistance(st.Lat, st.Lon, roadLat.Float64, roadLon.Float64)
+	}
 }
 
 // Scoring functions for each classification

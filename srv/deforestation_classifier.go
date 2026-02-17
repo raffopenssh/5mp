@@ -150,6 +150,22 @@ func (s *Server) loadDeforestContext(parkID string, df *ClassifiedDeforestation)
 	
 	// Check if linear pattern
 	df.IsLinear = strings.Contains(df.OriginalPattern, "linear") || strings.Contains(df.OriginalPattern, "edge")
+	
+	// Check if near road (from roads_heigit - extract from geojson)
+	var roadDist sql.NullFloat64
+	s.DB.QueryRow(`
+		SELECT MIN(
+			SQRT(
+				POW((json_extract(geojson, '$.coordinates[0][1]') - ?) * 111, 2) + 
+				POW((json_extract(geojson, '$.coordinates[0][0]') - ?) * 111 * COS(? * 3.14159/180), 2)
+			)
+		)
+		FROM roads_heigit WHERE park_id = ? AND geojson IS NOT NULL
+	`, df.Lat, df.Lon, df.Lat, parkID).Scan(&roadDist)
+	
+	if roadDist.Valid {
+		df.IsNearRoad = roadDist.Float64 < 2 // Within 2km of a road
+	}
 }
 
 // Scoring functions
