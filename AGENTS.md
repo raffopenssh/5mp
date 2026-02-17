@@ -296,8 +296,3 @@ Syncs conservation-related legal documents from FAO FAOLEX database:
 
 API endpoint: `GET /api/parks/{id}/legal`
 
----
-
-## Current Status
-
-See `TODO.md` for sprint status.
