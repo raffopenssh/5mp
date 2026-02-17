@@ -450,6 +450,14 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 			WHERE week_start >= ? AND week_start <= ?
 		`, fromStr, toStr).Scan(&totalFires)
 		
+		// If no weekly data, fall back to fire_group_alerts count
+		if totalFires == 0 {
+			s.DB.QueryRow(`
+				SELECT COUNT(*) FROM fire_group_alerts 
+				WHERE alert_type IN ('active_inside', 'entered', 'cooling')
+			`).Scan(&totalFires)
+		}
+		
 		// Get previous period for trend
 		fromTime, _ := time.Parse("2006-01-02", fromStr)
 		toTime, _ := time.Parse("2006-01-02", toStr)
