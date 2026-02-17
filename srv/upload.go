@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -646,12 +647,25 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 			}
 		}
 		
-		// Build reference_data JSON with grid cells and centroid
+		// Get date range from track points
+		var minDate, maxDate sql.NullString
+		s.DB.QueryRowContext(ctx, `
+			SELECT MIN(DATE(timestamp)), MAX(DATE(timestamp)) 
+			FROM track_points WHERE upload_id = ? AND timestamp IS NOT NULL
+		`, uploadID).Scan(&minDate, &maxDate)
+
+		// Build reference_data JSON with grid cells, centroid, and date range
 		refData := map[string]interface{}{
 			"grid_cells": gridCells,
 			"lat":        centroidLat,
 			"lon":        centroidLon,
 			"upload_id":  uploadID,
+		}
+		if minDate.Valid {
+			refData["date_from"] = minDate.String
+		}
+		if maxDate.Valid {
+			refData["date_to"] = maxDate.String
 		}
 		refDataJSON, _ := json.Marshal(refData)
 		

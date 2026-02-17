@@ -3739,6 +3739,8 @@
                         return {
                             date: n.created_at ? new Date(n.created_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : '',
                             full_date: n.created_at ? n.created_at.slice(0, 10) : '',
+                            date_from: refData.date_from || null,
+                            date_to: refData.date_to || null,
                             location: n.title ? n.title.replace('New Patrol Data: ', '') : 'Unknown',
                             lat: refData.lat,
                             lon: refData.lon,
@@ -4003,9 +4005,16 @@
                 gridCells = [latCell.toFixed(1) + '_' + lonCell.toFixed(1)];
             }
             
-            // Build date range if we have the upload date
+            // Build date range - prefer patrol dates from reference_data, fall back to upload date
             let dateRange = null;
-            if (activity.full_date) {
+            if (activity.date_from && activity.date_to) {
+                // Use actual patrol date range from GPX timestamps
+                dateRange = {
+                    start: activity.date_from,
+                    end: activity.date_to
+                };
+            } else if (activity.full_date) {
+                // Fall back to upload date +/- 1 month
                 const uploadDate = new Date(activity.full_date);
                 const startDate = new Date(uploadDate);
                 startDate.setMonth(startDate.getMonth() - 1);
