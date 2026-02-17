@@ -11,14 +11,15 @@ import (
 // Notification represents a notification record
 type Notification struct {
 	ID               int64     `json:"id"`
-	ParkID           string    `json:"park_id"`
-	NotificationType string    `json:"notification_type"`
-	Title            string    `json:"title"`
-	Message          string    `json:"message,omitempty"`
-	ReferenceID      string    `json:"reference_id,omitempty"`
-	ReferenceURL     string    `json:"reference_url,omitempty"`
-	IsRead           bool      `json:"is_read"`
-	CreatedAt        time.Time `json:"created_at"`
+	ParkID           string                 `json:"park_id"`
+	NotificationType string                 `json:"notification_type"`
+	Title            string                 `json:"title"`
+	Message          string                 `json:"message,omitempty"`
+	ReferenceID      string                 `json:"reference_id,omitempty"`
+	ReferenceURL     string                 `json:"reference_url,omitempty"`
+	ReferenceData    map[string]interface{} `json:"reference_data,omitempty"`
+	IsRead           bool                   `json:"is_read"`
+	CreatedAt        time.Time              `json:"created_at"`
 }
 
 // HandleGetNotifications returns unread or filtered notifications
@@ -39,19 +40,19 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 	var args []interface{}
 
 	if parkID != "" {
-		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, is_read, created_at
+		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
 		         FROM notifications WHERE park_id = ? ORDER BY created_at DESC LIMIT ?`
 		args = []interface{}{parkID, limit}
 	} else if notifType != "" {
-		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, is_read, created_at
+		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
 		         FROM notifications WHERE notification_type = ? ORDER BY created_at DESC LIMIT ?`
 		args = []interface{}{notifType, limit}
 	} else if unreadOnly {
-		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, is_read, created_at
+		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
 		         FROM notifications WHERE is_read = 0 ORDER BY created_at DESC LIMIT ?`
 		args = []interface{}{limit}
 	} else {
-		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, is_read, created_at
+		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
 		         FROM notifications ORDER BY created_at DESC LIMIT ?`
 		args = []interface{}{limit}
 	}
@@ -66,12 +67,12 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 	notifications := []Notification{}
 	for rows.Next() {
 		var n Notification
-		var message, refID, refURL sql.NullString
+		var message, refID, refURL, refData sql.NullString
 		var isRead int
 		var createdAt string
 
 		err := rows.Scan(&n.ID, &n.ParkID, &n.NotificationType, &n.Title,
-			&message, &refID, &refURL, &isRead, &createdAt)
+			&message, &refID, &refURL, &refData, &isRead, &createdAt)
 		if err != nil {
 			continue
 		}
@@ -80,6 +81,15 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 		n.ReferenceID = refID.String
 		n.ReferenceURL = refURL.String
 		n.IsRead = isRead == 1
+		
+		// Parse reference_data JSON if present
+		if refData.Valid && refData.String != "" {
+			var data map[string]interface{}
+			if json.Unmarshal([]byte(refData.String), &data) == nil {
+				n.ReferenceData = data
+			}
+		}
+		
 		// Try multiple time formats
 		if t, err := time.Parse("2006-01-02 15:04:05", createdAt); err == nil {
 			n.CreatedAt = t

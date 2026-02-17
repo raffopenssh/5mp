@@ -3724,22 +3724,35 @@
 
         async function loadNotifications() {
             try {
-                // Fetch both GPX activity and fire alerts in parallel
-                const [activityRes, fireRes] = await Promise.all([
-                    fetch('/api/activity'),
+                // Fetch notifications (for uploads with reference_data) and fire alerts
+                const [notifRes, fireRes] = await Promise.all([
+                    fetch('/api/notifications?type=new_upload&limit=10'),
                     fetch('/api/fire-alerts?limit=10')
                 ]);
                 
-                // Process GPX activity
-                if (activityRes.ok) {
-                    const data = await activityRes.json();
-                    latestActivities = (Array.isArray(data) ? data : (data.activities || [])).filter(a => a.lat && a.lon);
+                // Process upload notifications
+                if (notifRes.ok) {
+                    const data = await notifRes.json();
+                    const notifs = data.notifications || [];
+                    latestActivities = notifs.map(n => {
+                        const refData = n.reference_data || {};
+                        return {
+                            date: n.created_at ? new Date(n.created_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : '',
+                            full_date: n.created_at ? n.created_at.slice(0, 10) : '',
+                            location: n.title ? n.title.replace('New Patrol Data: ', '') : 'Unknown',
+                            lat: refData.lat,
+                            lon: refData.lon,
+                            grid_cells: refData.grid_cells || [],
+                            upload_id: refData.upload_id,
+                            type: 'foot',
+                            distance: parseFloat(n.message?.match(/([\d.]+)\s*km/)?.[1]) || 0
+                        };
+                    }).filter(a => a.lat && a.lon);
                 }
                 
                 // Process fire alerts
                 if (fireRes.ok) {
                     fireAlerts = await fireRes.json();
-                    // Mark as fire alerts for rendering
                     fireAlerts = fireAlerts.map(a => ({
                         ...a,
                         _type: 'fire',
@@ -3937,20 +3950,62 @@
             // Remove existing marker
             removeActivityMarker();
             
-            // Get grid cells - use provided array or calculate from coordinates
-            let gridCells = activity.grid_cells || [];
-            if (gridCells.length === 0 && activity.lat && activity.lon) {
-                // Fallback: calculate single grid cell from coordinates
-                const cellSize = 0.1;
-                const latCell = Math.floor(activity.lat / cellSize) * cellSize;
-                const lonCell = Math.floor(activity.lon / cellSize) * cellSize;
+            if (!activity.lat || !activity.lon) {
+                showToast('No location data for this activity', 'info');
+                return;
+            }
+            
+            // Get grid cells and filter to only those near the activity location
+            let allCells = activity.grid_cells || [];
+            const actLat = activity.lat;
+            const actLon = activity.lon;
+            const cellSize = 0.1;
+            
+            // Filter cells to only those within ~200km of the activity centroid
+            // 200km ≈ 1.8 degrees at equator
+            const maxDist = 2.0;
+            let gridCells = allCells.filter(cellId => {
+                const parts = cellId.split('_');
+                if (parts.length !== 2) return false;
+                const cellLat = parseFloat(parts[0]);
+                const cellLon = parseFloat(parts[1]);
+                if (isNaN(cellLat) || isNaN(cellLon)) return false;
+                const latDiff = Math.abs(cellLat - actLat);
+                const lonDiff = Math.abs(cellLon - actLon);
+                return latDiff < maxDist && lonDiff < maxDist;
+            });
+            
+            // If no cells match (centroid might be wrong), use cells nearest to centroid
+            if (gridCells.length === 0 && allCells.length > 0) {
+                // Sort by distance to centroid and take nearest cluster
+                const sorted = allCells.map(cellId => {
+                    const parts = cellId.split('_');
+                    const cellLat = parseFloat(parts[0]) || 0;
+                    const cellLon = parseFloat(parts[1]) || 0;
+                    const dist = Math.sqrt(Math.pow(cellLat - actLat, 2) + Math.pow(cellLon - actLon, 2));
+                    return { cellId, dist, lat: cellLat, lon: cellLon };
+                }).sort((a, b) => a.dist - b.dist);
+                
+                // Take cells within 3 degrees of the nearest cell
+                if (sorted.length > 0) {
+                    const nearestLat = sorted[0].lat;
+                    const nearestLon = sorted[0].lon;
+                    gridCells = sorted.filter(c => 
+                        Math.abs(c.lat - nearestLat) < 3 && Math.abs(c.lon - nearestLon) < 3
+                    ).map(c => c.cellId);
+                }
+            }
+            
+            // Fallback: single cell from coordinates
+            if (gridCells.length === 0) {
+                const latCell = Math.floor(actLat / cellSize) * cellSize;
+                const lonCell = Math.floor(actLon / cellSize) * cellSize;
                 gridCells = [latCell.toFixed(1) + '_' + lonCell.toFixed(1)];
             }
             
             // Build date range if we have the upload date
             let dateRange = null;
             if (activity.full_date) {
-                // Set time slider to show 1 month before and after upload
                 const uploadDate = new Date(activity.full_date);
                 const startDate = new Date(uploadDate);
                 startDate.setMonth(startDate.getMonth() - 1);
@@ -3962,7 +4017,7 @@
                 };
             }
             
-            // Highlight all grid cells from the upload
+            // Highlight filtered grid cells
             highlightUploadedPixels(gridCells, dateRange);
             
             // Show toast with activity info

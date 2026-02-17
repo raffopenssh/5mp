@@ -509,28 +509,160 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		}
 	}
 
-	// Create notification for new upload (non-fatal)
-	if parkID != nil {
+	// Create notification for new upload (non-fatal) - always create, even outside parks
+	{
 		var totalDistKm float64
 		for _, seg := range segments {
 			totalDistKm += seg.DistanceKm
 		}
-		parkName := *parkID
-		if s.AreaStore != nil {
-			for _, a := range s.AreaStore.Areas {
-				if a.ID == *parkID {
-					parkName = a.Name
-					break
+		
+		// Calculate centroid from all points
+		var centroidLat, centroidLon float64
+		var pointCount int
+		for _, seg := range segments {
+			for _, pt := range seg.Points {
+				centroidLat += pt.Lat
+				centroidLon += pt.Lon
+				pointCount++
+			}
+		}
+		if pointCount > 0 {
+			centroidLat /= float64(pointCount)
+			centroidLon /= float64(pointCount)
+		}
+		
+		// Determine location name and bounds
+		var locationName string
+		var notifParkID string
+		var minLat, maxLat, minLon, maxLon float64
+		var hasBounds bool
+		
+		if parkID != nil {
+			notifParkID = *parkID
+			locationName = *parkID
+			if s.AreaStore != nil {
+				for _, a := range s.AreaStore.Areas {
+					if a.ID == *parkID {
+						locationName = a.Name
+						minLat, maxLat, minLon, maxLon = a.GetBoundingBox()
+						hasBounds = true
+						break
+					}
+				}
+			}
+		} else {
+			// Outside any park - use coordinates as location
+			notifParkID = "_outside"
+			latDir := "N"
+			if centroidLat < 0 {
+				latDir = "S"
+			}
+			lonDir := "E"
+			if centroidLon < 0 {
+				lonDir = "W"
+			}
+			locationName = fmt.Sprintf("%.2f°%s, %.2f°%s", math.Abs(centroidLat), latDir, math.Abs(centroidLon), lonDir)
+		}
+		
+		// Get grid cells for this upload and find the largest cluster
+		type cellInfo struct {
+			id  string
+			lat float64
+			lon float64
+		}
+		var allCells []cellInfo
+		rows, err := s.DB.QueryContext(ctx, `
+			SELECT DISTINCT grid_cell_id FROM track_points 
+			WHERE upload_id = ? AND grid_cell_id IS NOT NULL
+		`, uploadID)
+		if err == nil {
+			defer rows.Close()
+			for rows.Next() {
+				var cellID string
+				if rows.Scan(&cellID) == nil {
+					parts := strings.Split(cellID, "_")
+					if len(parts) == 2 {
+						lat, _ := strconv.ParseFloat(parts[0], 64)
+						lon, _ := strconv.ParseFloat(parts[1], 64)
+						allCells = append(allCells, cellInfo{cellID, lat, lon})
+					}
 				}
 			}
 		}
-		_, err := s.DB.ExecContext(ctx, `
-			INSERT INTO notifications (park_id, notification_type, title, message, reference_id, created_at)
-			VALUES (?, 'new_upload', ?, ?, ?, CURRENT_TIMESTAMP)`,
-			*parkID,
-			fmt.Sprintf("New Patrol Data: %s", parkName),
-			fmt.Sprintf("%.1f km patrol uploaded with %d track points", totalDistKm, len(segments)),
+
+		// Find largest cluster (prefer cells within park if hasBounds)
+		gridCells := []string{}
+		if len(allCells) > 0 {
+			clusters := make(map[string][]cellInfo)
+			for _, c := range allCells {
+				// If inside park bounds, put in "park" cluster
+				if hasBounds {
+					buffer := 0.5
+					if c.lat >= minLat-buffer && c.lat <= maxLat+buffer &&
+						c.lon >= minLon-buffer && c.lon <= maxLon+buffer {
+						clusters["park"] = append(clusters["park"], c)
+						continue
+					}
+				}
+				// Cluster by 10-degree grid
+				key := fmt.Sprintf("%.0f_%.0f", math.Floor(c.lat/10)*10, math.Floor(c.lon/10)*10)
+				clusters[key] = append(clusters[key], c)
+			}
+
+			// Find best cluster (prefer park, then largest)
+			var bestCluster []cellInfo
+			if parkCells, ok := clusters["park"]; ok && len(parkCells) > 0 {
+				bestCluster = parkCells
+			} else {
+				for _, v := range clusters {
+					if len(v) > len(bestCluster) {
+						bestCluster = v
+					}
+				}
+			}
+
+			// Use cluster cells and recalculate centroid
+			var clusterLat, clusterLon float64
+			for _, c := range bestCluster {
+				gridCells = append(gridCells, c.id)
+				clusterLat += c.lat
+				clusterLon += c.lon
+			}
+			if len(bestCluster) > 0 {
+				centroidLat = clusterLat / float64(len(bestCluster))
+				centroidLon = clusterLon / float64(len(bestCluster))
+				// Update location name if outside park
+				if notifParkID == "_outside" {
+					latDir := "N"
+					if centroidLat < 0 {
+						latDir = "S"
+					}
+					lonDir := "E"
+					if centroidLon < 0 {
+						lonDir = "W"
+					}
+					locationName = fmt.Sprintf("%.2f°%s, %.2f°%s", math.Abs(centroidLat), latDir, math.Abs(centroidLon), lonDir)
+				}
+			}
+		}
+		
+		// Build reference_data JSON with grid cells and centroid
+		refData := map[string]interface{}{
+			"grid_cells": gridCells,
+			"lat":        centroidLat,
+			"lon":        centroidLon,
+			"upload_id":  uploadID,
+		}
+		refDataJSON, _ := json.Marshal(refData)
+		
+		_, err = s.DB.ExecContext(ctx, `
+			INSERT INTO notifications (park_id, notification_type, title, message, reference_id, reference_data, created_at)
+			VALUES (?, 'new_upload', ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+			notifParkID,
+			fmt.Sprintf("New Patrol Data: %s", locationName),
+			fmt.Sprintf("%.1f km patrol uploaded with %d segments", totalDistKm, len(segments)),
 			fmt.Sprintf("%d", uploadID),
+			string(refDataJSON),
 		)
 		if err != nil {
 			slog.Warn("failed to create upload notification", "uploadID", uploadID, "error", err)

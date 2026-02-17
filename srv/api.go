@@ -3516,7 +3516,14 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 		s.DB.QueryRow(`SELECT COALESCE(SUM(area_km2), 0), COUNT(*) FROM deforestation_events WHERE park_id = ?`, area.ID).Scan(&defoKm2, &defoEvents)
 		s.DB.QueryRow(`SELECT COUNT(*), COALESCE(SUM(population_est), 0) FROM park_settlements WHERE park_id = ?`, area.ID).Scan(&settlements, &pop)
 		s.DB.QueryRow(`SELECT COALESCE(road_length_km, 0), COALESCE(roadless_percentage, 0) FROM osm_roadless_data WHERE park_id = ?`, area.ID).Scan(&roadsKm, &roadlessPct)
-		s.DB.QueryRow(`SELECT COUNT(*), COALESCE(SUM(total_distance_km), 0), COALESCE(AVG(intensity), 0) FROM grid_cells WHERE park_id = ?`, area.ID).Scan(&pixels, &patrolDist, &intensity)
+		// Count grid cells within park bounds
+		latMin, latMax, lonMin, lonMax := area.GetBoundingBox()
+		s.DB.QueryRow(`
+			SELECT COUNT(DISTINCT g.id), COALESCE(SUM(e.total_distance_km), 0)
+			FROM grid_cells g
+			LEFT JOIN effort_data e ON g.id = e.grid_cell_id
+			WHERE g.lat_center >= ? AND g.lat_center <= ? AND g.lon_center >= ? AND g.lon_center <= ?`,
+			latMin, latMax, lonMin, lonMax).Scan(&pixels, &patrolDist)
 		s.DB.QueryRow(`SELECT COUNT(*) FROM pa_publications WHERE pa_id = ?`, area.WDPAID).Scan(&pubs)
 		
 		results = append(results, ParkExport{
