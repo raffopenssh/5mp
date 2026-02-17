@@ -3937,27 +3937,39 @@
             // Remove existing marker
             removeActivityMarker();
             
-            // Calculate grid cell ID from coordinates (0.1 degree cells)
-            const cellSize = 0.1;
-            const latCell = Math.floor(activity.lat / cellSize) * cellSize;
-            const lonCell = Math.floor(activity.lon / cellSize) * cellSize;
-            const gridCellId = latCell.toFixed(1) + '_' + lonCell.toFixed(1);
+            // Get grid cells - use provided array or calculate from coordinates
+            let gridCells = activity.grid_cells || [];
+            if (gridCells.length === 0 && activity.lat && activity.lon) {
+                // Fallback: calculate single grid cell from coordinates
+                const cellSize = 0.1;
+                const latCell = Math.floor(activity.lat / cellSize) * cellSize;
+                const lonCell = Math.floor(activity.lon / cellSize) * cellSize;
+                gridCells = [latCell.toFixed(1) + '_' + lonCell.toFixed(1)];
+            }
             
-            // Highlight the grid cell (same as GPX upload)
-            highlightUploadedPixels([gridCellId], null);
+            // Build date range if we have the upload date
+            let dateRange = null;
+            if (activity.full_date) {
+                // Set time slider to show 1 month before and after upload
+                const uploadDate = new Date(activity.full_date);
+                const startDate = new Date(uploadDate);
+                startDate.setMonth(startDate.getMonth() - 1);
+                const endDate = new Date(uploadDate);
+                endDate.setMonth(endDate.getMonth() + 1);
+                dateRange = {
+                    start: startDate.toISOString().slice(0, 10),
+                    end: endDate.toISOString().slice(0, 10)
+                };
+            }
             
-            // Fly to location
-            map.flyTo({
-                center: [activity.lon, activity.lat],
-                zoom: 10,
-                duration: 1500,
-                essential: true
-            });
+            // Highlight all grid cells from the upload
+            highlightUploadedPixels(gridCells, dateRange);
             
             // Show toast with activity info
             const locationText = activity.location || 'Unknown location';
             const distanceText = activity.distance ? activity.distance.toFixed(1) + ' km' : '';
-            showToast(locationText + (distanceText ? ' • ' + distanceText : ''), 'success');
+            const cellsText = gridCells.length > 1 ? ` (${gridCells.length} pixels)` : '';
+            showToast(locationText + (distanceText ? ' • ' + distanceText : '') + cellsText, 'success');
         }
 
         function zoomToActivity(activity) {

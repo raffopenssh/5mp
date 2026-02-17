@@ -733,16 +733,34 @@ func (s *Server) HandleAPIActivity(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		activity := map[string]interface{}{
-			"date":     u.UploadDate.Format("Jan 02"),
-			"location": location,
-			"distance": u.TotalDistanceKm,
-			"type":     u.MovementType,
+			"upload_id": u.ID,
+			"date":      u.UploadDate.Format("Jan 02"),
+			"full_date": u.UploadDate.Format("2006-01-02"),
+			"location":  location,
+			"distance":  u.TotalDistanceKm,
+			"type":      u.MovementType,
 		}
 		// Include coordinates if available
 		if u.CentroidLat != nil && u.CentroidLon != nil {
 			activity["lat"] = *u.CentroidLat
 			activity["lon"] = *u.CentroidLon
 		}
+		// Get grid cells for this upload
+		gridCells := []string{}
+		rows, err := s.DB.QueryContext(ctx, `
+			SELECT DISTINCT grid_cell_id FROM track_points 
+			WHERE upload_id = ? AND grid_cell_id IS NOT NULL
+		`, u.ID)
+		if err == nil {
+			defer rows.Close()
+			for rows.Next() {
+				var cellID string
+				if rows.Scan(&cellID) == nil {
+					gridCells = append(gridCells, cellID)
+				}
+			}
+		}
+		activity["grid_cells"] = gridCells
 		activities = append(activities, activity)
 	}
 
