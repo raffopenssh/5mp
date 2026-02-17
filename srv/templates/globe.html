@@ -693,6 +693,8 @@
         .pa-popup-btn:hover { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
         .pa-popup-btn svg { width: 12px; height: 12px; }
         .pa-popup-btn.selected { background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.3); color: #a855f7; }
+        .pa-export-btn { display: inline-block; text-decoration: none; font-size: 10px; padding: 4px 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; cursor: pointer; line-height: 1.2; }
+        .pa-export-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
 
         /* Enhanced PA Popup with Collapsible Sections */
         .pa-popup-section { margin-top: 8px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
@@ -4453,8 +4455,8 @@
                         <div class="pa-popup-name" style="display: flex; align-items: center; justify-content: space-between;">
                             <span>${escapeHtml(name)}</span>
                             <span style="display: flex; gap: 4px; align-items: center;">
-                                <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}${dateFrom ? '_from_' + dateFrom : ''}${dateTo ? '_to_' + dateTo : ''}.kml" title="Download KML for Google Earth" style="text-decoration: none; font-size: 10px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 3px; color: #888;">KML</a>
-                                <button onclick="showMBTilesDialog('${paId}', '${escapeHtml(name)}')" title="Download offline satellite tiles" style="font-size: 10px; padding: 2px 6px; background: rgba(255,255,255,0.1); border: none; border-radius: 3px; color: #888; cursor: pointer;" id="mbtiles-btn-${paId}">MBTiles</button>
+                                <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}${dateFrom ? '_from_' + dateFrom : ''}${dateTo ? '_to_' + dateTo : ''}.kml" title="Download KML for Google Earth" class="pa-export-btn">KML</a>
+                                <button onclick="showMBTilesDialog('${paId}', '${escapeHtml(name)}')" title="Download offline satellite tiles" class="pa-export-btn" id="mbtiles-btn-${paId}">MBTiles</button>
                                 ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
                             </span>
                         </div>
@@ -4676,8 +4678,8 @@
                         }
                         // Ensure it's one sentence - truncate if too long, add title for full text on hover
                         const fullText = text;
-                        if (text.length > 120) {
-                            text = text.substring(0, 117) + '...';
+                        if (text.length > 200) {
+                            text = text.substring(0, 197) + '...';
                         }
                         // Use feature_id from API if available, otherwise construct from group_num
                         const fireFeatureId = n.feature_id || (data.park_id + '_' + (n.entry_date ? n.entry_date.substring(0,4) : data.year) + '_grp_' + n.group_num);
@@ -4858,7 +4860,7 @@
                         };
                         const color = classColors[s.classification] || '#fbbf24';
                         const text = s.narrative || `${s.classification || 'Unknown'} settlement at ${s.lat?.toFixed(3) || '?'}°, ${s.lon?.toFixed(3) || '?'}°`;
-                        const shortText = text.length > 120 ? text.substring(0, 117) + '...' : text;
+                        const shortText = text.length > 200 ? text.substring(0, 197) + '...' : text;
                         return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}"><span style="color: ${color}; flex-shrink: 0;">◻</span> <span style="flex:1;">${shortText}</span></div>`;
                     };
                     
@@ -7798,7 +7800,7 @@ ${starredItems.narratives.map(n => {
             
             // If not found by direct ID, fall back to searching in larger result set
             if (features.length === 0) {
-                response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&limit=2000&pwd=${window.accessPwd || ''}`);
+                response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&limit=5000&pwd=${window.accessPwd || ''}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 allFeatures = await response.json();
                 
@@ -7854,18 +7856,7 @@ ${starredItems.narratives.map(n => {
             const geomType = feature.geometry?.type || 'Point';
             
             if (geomType.includes('Line')) {
-                // Add glow effect for line
-                map.addLayer({
-                    id: layerId + '-glow',
-                    type: 'line',
-                    source: sourceId,
-                    paint: {
-                        'line-color': '#ff9500',
-                        'line-width': 8,
-                        'line-blur': 4,
-                        'line-opacity': 0.6
-                    }
-                });
+                // Main line layer (no excessive glow)
                 map.addLayer({
                     id: layerId,
                     type: 'line',
@@ -7950,13 +7941,14 @@ ${starredItems.narratives.map(n => {
                     }
                 }
             } else if (geomType.includes('Polygon')) {
+                // Subtle fill for polygons
                 map.addLayer({
-                    id: layerId + '-glow',
+                    id: layerId + '-fill',
                     type: 'fill',
                     source: sourceId,
                     paint: {
-                        'fill-color': '#ff9500',
-                        'fill-opacity': 0.4
+                        'fill-color': color,
+                        'fill-opacity': 0.15
                     }
                 });
                 map.addLayer({
@@ -7965,19 +7957,20 @@ ${starredItems.narratives.map(n => {
                     source: sourceId,
                     paint: {
                         'line-color': color,
-                        'line-width': 3
+                        'line-width': 2.5
                     }
                 });
             } else {
+                // Point features - simple circle, no glow
                 map.addLayer({
                     id: layerId,
                     type: 'circle',
                     source: sourceId,
                     paint: {
-                        'circle-radius': 10,
+                        'circle-radius': 8,
                         'circle-color': color,
-                        'circle-stroke-width': 3,
-                        'circle-stroke-color': '#ff9500'
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#fff'
                     }
                 });
             }
@@ -8015,29 +8008,52 @@ ${starredItems.narratives.map(n => {
                 }
             });
             
-            // Click shows detailed info
+            // Click shows detailed info and closes park popup
             map.on('click', layerId, (e) => {
+                e.preventDefault();
+                e.originalEvent?.stopPropagation();
                 if (hoverPopup) hoverPopup.remove();
+                
+                // Close park popup if open
+                const parkPopup = document.querySelector('.pa-popup');
+                if (parkPopup) parkPopup.remove();
+                
                 const props = e.features[0]?.properties || {};
                 const pin = singlePinnedFeatures[key];
+                let title = '';
                 let description = '';
                 
-                // Prefer narrative if available
-                if (pin && pin.narrative) {
-                    description = pin.narrative;
-                } else if (type === 'fire') {
-                    description = `Fire Group: ${props.group_id || featureId}<br>` +
-                        `${props.start_date || ''} - ${props.end_date || ''}<br>` +
-                        `${props.fires_inside || '?'} detections, ${props.days_inside || '?'} days`;
+                // Build title based on type
+                if (type === 'fire') {
+                    title = `<strong style="color:#ef4444;">Fire Trajectory</strong>`;
+                    const groupType = props.group_type || props.classification?.type || 'unknown';
+                    description = props.narrative || pin?.narrative || 
+                        `${groupType} fire pattern from ${props.start_date || '?'} to ${props.end_date || '?'}`;
+                    if (props.fires_total) description += `<br><span style="color:#888;">Detections: ${props.fires_total}, Distance: ${props.distance_km || '?'} km</span>`;
+                } else if (type === 'settlement') {
+                    title = `<strong style="color:#fbbf24;">Settlement</strong>`;
+                    const cat = props.classification || props.category || 'settlement';
+                    description = props.narrative || `${cat} (${(props.area_m2 / 1e6).toFixed(3)} km²)`;
+                    if (props.name) description = `<strong>${props.name}</strong><br>` + description;
+                } else if (type === 'deforestation') {
+                    title = `<strong style="color:#a855f7;">Deforestation</strong>`;
+                    description = props.narrative || `${props.year || '?'}: ${props.area_km2?.toFixed(2) || '?'} km² lost`;
+                    if (props.classification) description += ` (${props.classification})`;
                 } else {
-                    description = Object.entries(props)
-                        .filter(([k]) => !k.startsWith('_'))
-                        .map(([k, v]) => `${k}: ${v}`)
+                    // Generic display for other types
+                    title = `<strong>${type}</strong>`;
+                    const name = props.name || props.feature_id || '';
+                    description = name ? `<strong>${name}</strong><br>` : '';
+                    description += Object.entries(props)
+                        .filter(([k]) => !['feature_id', 'feature_type', 'name', 'narrative'].includes(k) && !k.startsWith('_'))
+                        .slice(0, 6)
+                        .map(([k, v]) => `<span style="color:#888;">${k}:</span> ${v}`)
                         .join('<br>');
                 }
-                new maplibregl.Popup({ maxWidth: '350px' })
+                
+                new maplibregl.Popup({ maxWidth: '350px', closeButton: true })
                     .setLngLat(e.lngLat)
-                    .setHTML(`<div style="font-size:11px;max-width:330px;line-height:1.4;">${description}</div>`)
+                    .setHTML(`<div style="font-size:12px;max-width:330px;line-height:1.5;">${title}<br>${description}</div>`)
                     .addTo(map);
             });
             
@@ -8203,7 +8219,7 @@ ${starredItems.narratives.map(n => {
                 });
                 geojson = { type: 'FeatureCollection', features };
             } else {
-                const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=2000&pwd=${window.accessPwd || ''}`);
+                const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.accessPwd || ''}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 geojson = await response.json();
             }
@@ -8431,7 +8447,7 @@ ${starredItems.narratives.map(n => {
                 }
                 
                 // Fetch updated data
-                const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=2000&pwd=${window.accessPwd || ''}`);
+                const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.accessPwd || ''}`);
                 if (!response.ok) continue;
                 
                 const geojson = await response.json();
@@ -8452,31 +8468,60 @@ ${starredItems.narratives.map(n => {
     }
     
     function showPinnedFeaturePopup(props, lngLat, type, parkName) {
-        const typeLabels = { fire: 'Fire Trajectory', settlement: 'Settlement', deforestation: 'Deforestation', road: 'Road' };
+        const typeLabels = { 
+            fire: 'Fire Trajectory', settlement: 'Settlement', deforestation: 'Deforestation', 
+            road: 'Road', river: 'River', place: 'Place', water: 'Waterbody' 
+        };
+        const typeColors = { 
+            fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', 
+            road: '#60a5fa', river: '#3b82f6', place: '#a855f7', water: '#3b82f6' 
+        };
         
+        // Close park popup if open
+        const parkPopup = document.querySelector('.pa-popup');
+        if (parkPopup) parkPopup.remove();
+        
+        let title = props.name || props.feature_id || typeLabels[type] || type;
         let details = '';
-        if (type === 'fire' && props.outcome) {
-            details = `<div><strong>Outcome:</strong> ${props.outcome}</div>`;
-            if (props.fires_inside) details += `<div><strong>Fires Inside:</strong> ${props.fires_inside}</div>`;
-            if (props.days_inside) details += `<div><strong>Days:</strong> ${props.days_inside}</div>`;
+        
+        if (type === 'fire') {
+            if (props.narrative) details += `<div style="margin-bottom:6px;">${props.narrative}</div>`;
+            if (props.outcome) details += `<div><span style="color:#888;">Outcome:</span> ${props.outcome}</div>`;
+            if (props.fires_total || props.fires_inside) details += `<div><span style="color:#888;">Fires:</span> ${props.fires_total || props.fires_inside}</div>`;
+            if (props.days || props.days_inside) details += `<div><span style="color:#888;">Days:</span> ${props.days || props.days_inside}</div>`;
+            if (props.distance_km) details += `<div><span style="color:#888;">Distance:</span> ${props.distance_km} km</div>`;
         } else if (type === 'settlement') {
-            if (props.population_est) details += `<div><strong>Population:</strong> ${formatNumber(props.population_est)}</div>`;
-            if (props.area_m2) details += `<div><strong>Area:</strong> ${(props.area_m2/1000000).toFixed(3)} km²</div>`;
+            if (props.narrative) details += `<div style="margin-bottom:6px;">${props.narrative}</div>`;
+            if (props.classification || props.category) details += `<div><span style="color:#888;">Type:</span> ${props.classification || props.category}</div>`;
+            if (props.population_est) details += `<div><span style="color:#888;">Population:</span> ${formatNumber(props.population_est)}</div>`;
+            if (props.area_m2) details += `<div><span style="color:#888;">Area:</span> ${(props.area_m2/1e6).toFixed(3)} km²</div>`;
         } else if (type === 'deforestation') {
-            if (props.area_km2) details += `<div><strong>Area:</strong> ${props.area_km2.toFixed(2)} km²</div>`;
-            if (props.year) details += `<div><strong>Year:</strong> ${props.year}</div>`;
-            if (props.pattern_type) details += `<div><strong>Pattern:</strong> ${props.pattern_type}</div>`;
+            if (props.narrative) details += `<div style="margin-bottom:6px;">${props.narrative}</div>`;
+            if (props.classification) details += `<div><span style="color:#888;">Type:</span> ${props.classification}</div>`;
+            if (props.area_km2) details += `<div><span style="color:#888;">Area:</span> ${props.area_km2.toFixed(2)} km²</div>`;
+            if (props.year) details += `<div><span style="color:#888;">Year:</span> ${props.year}</div>`;
+        } else if (type === 'road') {
+            if (props.highway_type) details += `<div><span style="color:#888;">Type:</span> ${props.highway_type}</div>`;
+            if (props.surface) details += `<div><span style="color:#888;">Surface:</span> ${props.surface}</div>`;
+            if (props.passability) details += `<div><span style="color:#888;">Passability:</span> ${props.passability}</div>`;
+            if (props.length_km) details += `<div><span style="color:#888;">Length:</span> ${props.length_km.toFixed(1)} km</div>`;
+        } else if (type === 'river') {
+            if (props.stream_order) details += `<div><span style="color:#888;">Order:</span> ${props.stream_order}</div>`;
+            if (props.length_km) details += `<div><span style="color:#888;">Length:</span> ${props.length_km.toFixed(1)} km</div>`;
+        } else if (type === 'place') {
+            if (props.place_type) details += `<div><span style="color:#888;">Type:</span> ${props.place_type}</div>`;
         }
         
+        const color = typeColors[type] || '#22c55e';
         const html = `
-            <div style="font-size:12px;">
-                <div style="font-weight:600;color:#22c55e;margin-bottom:6px;">${typeLabels[type] || type}</div>
-                <div style="color:#888;font-size:11px;margin-bottom:8px;">${parkName}</div>
-                ${details || '<div style="color:#666;">No additional details</div>'}
+            <div style="font-size:12px;line-height:1.4;">
+                <div style="font-weight:600;color:${color};margin-bottom:4px;">${title}</div>
+                <div style="color:#666;font-size:10px;margin-bottom:6px;">${parkName}</div>
+                ${details || '<div style="color:#666;">Click for details</div>'}
             </div>
         `;
         
-        new maplibregl.Popup({ closeButton: true, maxWidth: '250px' })
+        new maplibregl.Popup({ closeButton: true, maxWidth: '300px' })
             .setLngLat(lngLat)
             .setHTML(html)
             .addTo(map);
