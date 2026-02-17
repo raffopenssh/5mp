@@ -1,46 +1,50 @@
 #!/usr/bin/env python3
-"""
-Load fire trajectories from JSON files into feature_geometries table.
-This enables pinning individual fires on the map.
-"""
+"""Load fire trajectories from JSON files into feature_geometries table."""
 
+import argparse
 import json
 import sqlite3
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / "db.sqlite3"
-FIRE_ANALYSIS_DIR = BASE_DIR / "data" / "fire_analysis"
-FIRE_TRAJ_DIR = BASE_DIR / "data" / "fire_trajectories"
+FIRE_TRAJ_V2_DIR = BASE_DIR / "data" / "fire_trajectories_v2"  # Primary source (has feature_id)
+FIRE_TRAJ_DIR = BASE_DIR / "data" / "fire_trajectories"  # Fallback source
 
 def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
 
-def load_fire_trajectories(park_id=None):
+def load_fire_trajectories(park_id=None, force=False):
     conn = sqlite3.connect(DB_PATH)
     
     # Get existing fire trajectory count
     existing = conn.execute("SELECT COUNT(*) FROM feature_geometries WHERE feature_type='fire_trajectory'").fetchone()[0]
     log(f"Existing fire_trajectory records: {existing}")
     
-    if existing > 0 and not park_id:
-        log("Fire trajectories already loaded. Use --park to reload specific park.")
+    if existing > 0 and not park_id and not force:
+        log("Fire trajectories already loaded. Use --park to reload specific park or --force for full reload.")
         conn.close()
         return
     
     # Delete existing fire trajectories for specified park or all
     if park_id:
         conn.execute("DELETE FROM feature_geometries WHERE feature_type='fire_trajectory' AND park_id=?", (park_id,))
-    else:
+    elif force:
         conn.execute("DELETE FROM feature_geometries WHERE feature_type='fire_trajectory'")
     
-    # Load from fire_analysis JSON files (has trajectory coordinates)
-    json_files = list(FIRE_ANALYSIS_DIR.glob("*.json"))
-    if park_id:
-        json_files = [f for f in json_files if park_id in f.name]
+    # Try v2 first, then fall back to v1
+    if FIRE_TRAJ_V2_DIR.exists():
+        json_files = list(FIRE_TRAJ_V2_DIR.glob("*.json"))
+        source = "v2"
+    else:
+        json_files = list(FIRE_TRAJ_DIR.glob("*.json"))
+        source = "v1"
     
-    log(f"Processing {len(json_files)} parks...")
+    if park_id:
+        json_files = [f for f in json_files if park_id in f.stem]
+    
+    log(f"Processing {len(json_files)} parks from {source}...")
     
     total_count = 0
     for json_file in json_files:
@@ -48,91 +52,89 @@ def load_fire_trajectories(park_id=None):
             with open(json_file) as f:
                 data = json.load(f)
             
-            pid = data.get('park_id', json_file.stem)
-            groups = data.get('groups', [])
-            
-            # Also load narrative from fire_trajectories if available
-            narratives = {}
-            traj_file = FIRE_TRAJ_DIR / f"{pid}.json"
-            if traj_file.exists():
-                with open(traj_file) as f:
-                    traj_data = json.load(f)
-                for i, t in enumerate(traj_data.get('trajectories', [])):
-                    narratives[i] = t.get('narrative', '')
+            # v2 format: list of trajectories directly
+            # v1 format: {'trajectories': [...]}
+            if isinstance(data, list):
+                trajectories = data
+                pid = json_file.stem
+            else:
+                trajectories = data.get('trajectories', [])
+                pid = data.get('park_id', json_file.stem)
             
             count = 0
-            for i, g in enumerate(groups):
-                trajectory = g.get('trajectory', [])
+            for i, t in enumerate(trajectories):
+                # Get trajectory coordinates
+                trajectory = t.get('trajectory', t.get('trajectory_with_time', []))
                 if not trajectory or len(trajectory) < 2:
                     continue
                 
                 # Build LineString from trajectory
-                coords = [[pt['lon'], pt['lat']] for pt in trajectory]
+                if isinstance(trajectory[0], dict):
+                    coords = [[pt['lon'], pt['lat']] for pt in trajectory]
+                else:
+                    coords = [[pt[0], pt[1]] for pt in trajectory]
+                
                 geojson = json.dumps({
                     "type": "LineString",
                     "coordinates": coords
                 })
                 
+                # Get feature_id
+                feature_id = t.get('feature_id', f"{pid}_grp_{i}")
+                
                 # Build properties
                 props = {
-                    "feature_id": f"{pid}_grp_{i}",
+                    "feature_id": feature_id,
                     "feature_type": "fire_trajectory",
-                    "group_type": g.get('group_type', 'unknown'),
-                    "days": g.get('days', 0),
-                    "fires_total": g.get('fires', 0),
-                    "direction": g.get('direction', ''),
-                    "distance_km": g.get('total_distance_km', 0),
-                    "avg_speed_km_day": g.get('avg_speed_km_day', 0),
-                    "cross_border": g.get('cross_border', False),
-                    "affected_parks": g.get('affected_parks', [pid]),
-                    "narrative": narratives.get(i, '')
+                    "group_type": t.get('classification', {}).get('type', t.get('group_type', 'unknown')),
+                    "days": t.get('days', 1),
+                    "fires_total": t.get('fires', t.get('fires_total', 0)),
+                    "direction": t.get('direction', ''),
+                    "distance_km": round(t.get('distance_km', 0), 1),
+                    "avg_speed_km_day": round(t.get('speed_km_day', t.get('avg_speed_km_day', 0)), 1),
+                    "cross_border": len(t.get('affected_parks', [])) > 1,
+                    "affected_parks": t.get('affected_parks', [pid]),
+                    "narrative": t.get('narrative', '')
                 }
                 
-                start_date = g.get('start_date', '')
-                end_date = g.get('end_date', '')
+                # Date range
+                start_date = t.get('start_date', '')
+                end_date = t.get('end_date', '')
                 
-                # Get bounding box
-                lats = [pt['lat'] for pt in trajectory]
-                lons = [pt['lon'] for pt in trajectory]
+                # Calculate bbox
+                lons = [c[0] for c in coords]
+                lats = [c[1] for c in coords]
                 
                 conn.execute("""
-                    INSERT INTO feature_geometries 
-                    (feature_type, feature_id, park_id, geojson, properties_json, 
-                     bbox_minx, bbox_miny, bbox_maxx, bbox_maxy, start_date, end_date)
+                    INSERT OR REPLACE INTO feature_geometries 
+                    (feature_type, feature_id, park_id, geojson, 
+                     bbox_minx, bbox_miny, bbox_maxx, bbox_maxy,
+                     start_date, end_date, properties_json)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
-                    'fire_trajectory',
-                    f"{pid}_grp_{i}",
-                    pid,
-                    geojson,
-                    json.dumps(props),
+                    'fire_trajectory', feature_id, pid, geojson,
                     min(lons), min(lats), max(lons), max(lats),
-                    start_date, end_date
+                    start_date, end_date, json.dumps(props)
                 ))
                 count += 1
             
             total_count += count
             if count > 0:
                 log(f"  {pid}: {count} trajectories")
-                
+            
         except Exception as e:
-            log(f"Error processing {json_file.name}: {e}")
+            log(f"Error processing {json_file}: {e}")
+            continue
     
     conn.commit()
     conn.close()
     log(f"Total: {total_count} fire trajectories loaded")
 
-if __name__ == '__main__':
-    import argparse
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--park', help='Load specific park only')
-    parser.add_argument('--force', action='store_true', help='Force reload all')
+    parser.add_argument("--park", help="Load specific park only")
+    parser.add_argument("--force", action="store_true", help="Force reload all")
     args = parser.parse_args()
     
-    if args.force:
-        conn = sqlite3.connect(DB_PATH)
-        conn.execute("DELETE FROM feature_geometries WHERE feature_type='fire_trajectory'")
-        conn.commit()
-        conn.close()
-    
-    load_fire_trajectories(args.park)
+    load_fire_trajectories(args.park, args.force)

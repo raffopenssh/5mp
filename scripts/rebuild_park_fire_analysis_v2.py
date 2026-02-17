@@ -26,6 +26,7 @@ import gc
 BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / "db.sqlite3"
 BUFFER_DIR = BASE_DIR / "data" / "fire_additional_buffer"
+NRT_DIR = BASE_DIR / "data" / "fire_nrt"  # NRT fire data from daily download
 KEYSTONES_FILE = BASE_DIR / "data" / "keystones_with_boundaries.json"
 OUTPUT_DIR = BASE_DIR / "data" / "fire_groups_v2"
 
@@ -124,20 +125,60 @@ def preindex_buffer_fires(min_date=MIN_DATE):
     log("Pre-indexing buffer fires...")
     BUFFER_FIRES_BY_GRID = defaultdict(list)
     count = 0
+    
+    # Load from historical buffer files
     for f in BUFFER_DIR.glob("*_buffer.json"):
         with open(f) as fp:
             try:
-                fires = json.load(fp)
+                data = json.load(fp)
+                fires = data.get('fires', data) if isinstance(data, dict) else data
             except:
                 continue
         for fire in fires:
-            if fire.get('acq_date', '') < min_date:
+            date = fire.get('acq_date', fire.get('date', ''))
+            if date < min_date:
                 continue
-            lon, lat = fire.get('longitude'), fire.get('latitude')
+            lon = fire.get('longitude', fire.get('lon'))
+            lat = fire.get('latitude', fire.get('lat'))
             if lon and lat:
                 key = grid_key(lon, lat)
-                BUFFER_FIRES_BY_GRID[key].append(fire)
+                # Normalize fire format
+                BUFFER_FIRES_BY_GRID[key].append({
+                    'latitude': lat, 'longitude': lon,
+                    'acq_date': date,
+                    'acq_time': fire.get('acq_time', fire.get('time', '')),
+                    'frp': fire.get('frp', 0),
+                    'confidence': fire.get('confidence', ''),
+                    'brightness': fire.get('brightness', 0)
+                })
                 count += 1
+    
+    # Load from NRT daily download files
+    if NRT_DIR.exists():
+        for f in NRT_DIR.glob("*_nrt.json"):
+            with open(f) as fp:
+                try:
+                    data = json.load(fp)
+                    fires = data.get('fires', [])
+                except:
+                    continue
+            for fire in fires:
+                date = fire.get('date', '')
+                if date < min_date:
+                    continue
+                lon, lat = fire.get('lon'), fire.get('lat')
+                if lon and lat:
+                    key = grid_key(lon, lat)
+                    BUFFER_FIRES_BY_GRID[key].append({
+                        'latitude': lat, 'longitude': lon,
+                        'acq_date': date,
+                        'acq_time': fire.get('time', ''),
+                        'frp': fire.get('frp', 0),
+                        'confidence': fire.get('confidence', ''),
+                        'brightness': 0
+                    })
+                    count += 1
+    
     log(f"  Indexed {count/1e6:.1f}M buffer fires")
     return count
 

@@ -136,8 +136,7 @@ class TrajectoryAnalyzerV4:
         self.park_roads = defaultdict(list)
         cursor = self.conn.execute('''
             SELECT park_id, osm_id, name, highway_type, surface,
-                   osm_surface_class, dl_class_2024, passability_desc, 
-                   passability_risk, length_km,
+                   dl_class_2024, passability, length_km,
                    json_extract(geojson, '$.coordinates[0][0]') as lon,
                    json_extract(geojson, '$.coordinates[0][1]') as lat
             FROM roads_heigit
@@ -151,10 +150,10 @@ class TrajectoryAnalyzerV4:
                         'id': row['osm_id'],
                         'name': row['name'],
                         'highway': row['highway_type'],
-                        'surface': row['surface'] or row['osm_surface_class'],
+                        'surface': row['surface'],
                         'surface_2024': row['dl_class_2024'],
-                        'passability': row['passability_desc'],
-                        'passability_risk': row['passability_risk'],
+                        'passability': row['passability'],
+                        'passability_risk': None,
                         'length_km': row['length_km'],
                         'lat': lat,
                         'lon': lon
@@ -543,7 +542,7 @@ class TrajectoryAnalyzerV4:
         
         return '. '.join(parts) + '.'
     
-    def analyze_trajectory(self, group, park_id):
+    def analyze_trajectory(self, group, park_id, group_index=0):
         """Analyze a single fire group trajectory"""
         # Extract trajectory points
         trajectory = group.get('trajectory', [])
@@ -588,9 +587,16 @@ class TrajectoryAnalyzerV4:
         # Generate narrative
         narrative = self.generate_narrative(group, context, classification)
         
+        # Generate feature_id if not present
+        feature_id = group.get('feature_id')
+        if not feature_id:
+            group_id = group.get('group_id', group_index)
+            feature_id = f"{park_id}_grp_{group_id}"
+        
         # Build enhanced trajectory
         enhanced = {
             **group,  # Keep all original fields
+            'feature_id': feature_id,
             'context': context,
             'classification': classification,
             'narrative': narrative,
@@ -604,8 +610,13 @@ class TrajectoryAnalyzerV4:
         
         return enhanced
     
-    def process_park(self, park_id):
-        """Process all fire groups for a park"""
+    def process_park(self, park_id, cutoff_date=None):
+        """Process fire groups for a park
+        
+        Args:
+            park_id: Park identifier
+            cutoff_date: If set, only process groups ending after this date (incremental mode)
+        """
         input_file = INPUT_DIR / f"{park_id}.json"
         if not input_file.exists():
             return None
@@ -614,8 +625,11 @@ class TrajectoryAnalyzerV4:
             groups = json.load(f)
         
         enhanced = []
-        for group in groups:
-            result = self.analyze_trajectory(group, park_id)
+        for idx, group in enumerate(groups):
+            # In incremental mode, skip old groups
+            if cutoff_date and group.get('end_date', '') < cutoff_date:
+                continue
+            result = self.analyze_trajectory(group, park_id, group_index=idx)
             if result:
                 enhanced.append(result)
         
@@ -634,11 +648,13 @@ class TrajectoryAnalyzerV4:
         park_files = list(INPUT_DIR.glob("*.json"))
         log(f"Processing {len(park_files)} parks...")
         
+        cutoff_date = None
         if incremental:
             cutoff_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
-            log(f"INCREMENTAL: Only parks with fires since {cutoff_date}")
+            log(f"INCREMENTAL: Only processing groups since {cutoff_date}")
         
         total_trajectories = 0
+        new_trajectories = 0
         parks_processed = 0
         parks_skipped = 0
         
@@ -650,22 +666,39 @@ class TrajectoryAnalyzerV4:
                 with open(park_file) as f:
                     groups = json.load(f)
                 
-                has_recent = any(g.get('end_date', '') >= cutoff_date for g in groups)
-                if not has_recent:
+                recent_count = sum(1 for g in groups if g.get('end_date', '') >= cutoff_date)
+                if recent_count == 0:
                     parks_skipped += 1
                     continue
             
-            enhanced = self.process_park(park_id)
+            # Process only recent groups in incremental mode
+            enhanced = self.process_park(park_id, cutoff_date if incremental else None)
+            
             if enhanced:
                 output_file = OUTPUT_DIR / f"{park_id}.json"
+                
+                # In incremental mode, merge with existing trajectories
+                if incremental and output_file.exists():
+                    with open(output_file) as f:
+                        existing = json.load(f)
+                    # Keep old trajectories, add new ones
+                    existing_ids = {t.get('feature_id') for t in existing}
+                    for t in enhanced:
+                        if t.get('feature_id') not in existing_ids:
+                            existing.append(t)
+                            new_trajectories += 1
+                    enhanced = existing
+                else:
+                    new_trajectories += len(enhanced)
+                
                 with open(output_file, 'w') as f:
                     json.dump(enhanced, f)
                 
                 total_trajectories += len(enhanced)
                 parks_processed += 1
                 
-                if i % 20 == 0:
-                    log(f"[{i}/{len(park_files)}] {park_id}: {len(enhanced)} trajectories")
+                if parks_processed % 20 == 0:
+                    log(f"[{parks_processed}] {park_id}: {len(enhanced)} trajectories")
             
             # Memory management
             if i % 50 == 0:
@@ -675,7 +708,8 @@ class TrajectoryAnalyzerV4:
         log(f"  Parks processed: {parks_processed}")
         if incremental:
             log(f"  Parks skipped (no recent fires): {parks_skipped}")
-        log(f"  Trajectories: {total_trajectories}")
+            log(f"  New trajectories: {new_trajectories}")
+        log(f"  Total trajectories: {total_trajectories}")
         log(f"  Output: {OUTPUT_DIR}")
 
 
