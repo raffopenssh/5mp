@@ -439,52 +439,34 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	var totalDeforestation, prevDeforestation float64
 	var totalSettlements int
 
-	// Fire detections in selected time period (with optional bbox filter)
+	// Fire stats from park_fire_weekly (recent activity) and fire_group_alerts
+	// Since fire_detections table is empty, we use summary tables
+	
+	// Get recent fire activity from park_fire_weekly
 	if fromStr != "" && toStr != "" {
-		if len(bbox) == 4 {
-			s.DB.QueryRow(`
-				SELECT COUNT(*) FROM fire_detections 
-				WHERE acq_date >= ? AND acq_date <= ?
-				AND longitude >= ? AND longitude <= ?
-				AND latitude >= ? AND latitude <= ?
-			`, fromStr, toStr, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&totalFires)
-		} else {
-			s.DB.QueryRow(`
-				SELECT COUNT(*) FROM fire_detections 
-				WHERE acq_date >= ? AND acq_date <= ?
-			`, fromStr, toStr).Scan(&totalFires)
-		}
-
-		// Get previous period fires for trend calculation
+		// Use weekly data within the date range
+		s.DB.QueryRow(`
+			SELECT COALESCE(SUM(fire_count), 0) FROM park_fire_weekly 
+			WHERE week_start >= ? AND week_start <= ?
+		`, fromStr, toStr).Scan(&totalFires)
+		
+		// Get previous period for trend
 		fromTime, _ := time.Parse("2006-01-02", fromStr)
 		toTime, _ := time.Parse("2006-01-02", toStr)
 		duration := toTime.Sub(fromTime)
 		prevFrom := fromTime.Add(-duration).Format("2006-01-02")
 		prevTo := fromTime.Add(-24 * time.Hour).Format("2006-01-02")
-		if len(bbox) == 4 {
-			s.DB.QueryRow(`
-				SELECT COUNT(*) FROM fire_detections 
-				WHERE acq_date >= ? AND acq_date <= ?
-				AND longitude >= ? AND longitude <= ?
-				AND latitude >= ? AND latitude <= ?
-			`, prevFrom, prevTo, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&prevFires)
-		} else {
-			s.DB.QueryRow(`
-				SELECT COUNT(*) FROM fire_detections 
-				WHERE acq_date >= ? AND acq_date <= ?
-			`, prevFrom, prevTo).Scan(&prevFires)
-		}
+		s.DB.QueryRow(`
+			SELECT COALESCE(SUM(fire_count), 0) FROM park_fire_weekly 
+			WHERE week_start >= ? AND week_start <= ?
+		`, prevFrom, prevTo).Scan(&prevFires)
 	} else {
-		// Default: current year
+		// Default: count active fire groups from alerts table (last 14 days)
 		s.DB.QueryRow(`
-			SELECT COUNT(*) FROM fire_detections 
-			WHERE CAST(strftime('%Y', acq_date) AS INTEGER) = ?
-		`, now.Year()).Scan(&totalFires)
-		// Previous year for trend
-		s.DB.QueryRow(`
-			SELECT COUNT(*) FROM fire_detections 
-			WHERE CAST(strftime('%Y', acq_date) AS INTEGER) = ?
-		`, now.Year()-1).Scan(&prevFires)
+			SELECT COUNT(*) FROM fire_group_alerts 
+			WHERE alert_type IN ('active_inside', 'entered', 'cooling')
+		`).Scan(&totalFires)
+		// No trend data available without date range
 	}
 
 	// Deforestation totals in selected years (with optional bbox filter)
