@@ -344,7 +344,9 @@
         @keyframes uploadHighlightPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.5; } }
 
         @media (max-width: 768px) {
-            .notification-dropdown { left: auto; right: -10px; width: calc(100vw - 40px); max-width: 300px; bottom: 60px; top: auto; }
+            .notification-dropdown { left: 10px; right: 10px; width: auto; max-width: none; bottom: 70px; top: auto; }
+            .notification-item { padding: 10px 12px; }
+            .notification-text { font-size: 12px; word-break: break-word; }
         }
 
         /* Time Slider - Google Timelapse Style */
@@ -6712,24 +6714,44 @@
         const parks = [];
         const seen = new Set();
         
-        // First try keystoneAreas
-        const areas = window.keystoneAreas || [];
-        for (const pa of areas) {
-            let center = pa.center;
-            if (!center && pa.bbox && pa.bbox.length === 4) {
-                center = [(pa.bbox[0] + pa.bbox[2]) / 2, (pa.bbox[1] + pa.bbox[3]) / 2];
+        // Fetch all areas from API (cached after first call)
+        if (!window._cachedAreasGeoJSON) {
+            try {
+                const resp = await fetch(`/api/areas?pwd=${encodeURIComponent(getPwd())}`);
+                if (resp.ok) {
+                    window._cachedAreasGeoJSON = await resp.json();
+                }
+            } catch (e) {
+                console.warn('Failed to fetch areas:', e);
             }
-            if (center && center[0] >= bbox[0] && center[0] <= bbox[2] && 
-                center[1] >= bbox[1] && center[1] <= bbox[3]) {
-                if (!seen.has(pa.id)) {
-                    seen.add(pa.id);
-                    parks.push({ id: pa.id, name: pa.name || pa.pa_name, country: pa.country, area_km2: pa.area_km2, bbox: pa.bbox, center: center });
+        }
+        
+        // Search in cached GeoJSON features
+        if (window._cachedAreasGeoJSON && window._cachedAreasGeoJSON.features) {
+            for (const f of window._cachedAreasGeoJSON.features) {
+                const props = f.properties;
+                const parkId = props.id;
+                if (!parkId || seen.has(parkId)) continue;
+                
+                let center = props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null;
+                if (!center && f.geometry?.type === 'Point') {
+                    center = f.geometry.coordinates;
+                }
+                if (!center && props.bbox) {
+                    const b = typeof props.bbox === 'string' ? JSON.parse(props.bbox) : props.bbox;
+                    if (b && b.length === 4) center = [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2];
+                }
+                
+                if (center && center[0] >= bbox[0] && center[0] <= bbox[2] && 
+                    center[1] >= bbox[1] && center[1] <= bbox[3]) {
+                    seen.add(parkId);
+                    parks.push({ id: parkId, name: props.name, country: props.country, area_km2: props.area_km2, center: center });
                 }
             }
         }
         
-        // Also try map source features
-        if (typeof map !== 'undefined' && map.getSource('areas')) {
+        // Fallback: try map source features if API didn't work
+        if (parks.length === 0 && typeof map !== 'undefined' && map.getSource('areas')) {
             const features = map.querySourceFeatures('areas');
             for (const f of features) {
                 const props = f.properties;
