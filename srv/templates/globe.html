@@ -3867,22 +3867,24 @@
         function handleFireAlertClick(index) {
             if (index >= 0 && index < fireAlerts.length) {
                 const alert = fireAlerts[index];
-                if (alert.lat && alert.lon) {
+                const lat = alert.centroid_lat || alert.lat;
+                const lon = alert.centroid_lon || alert.lon;
+                if (lat && lon) {
                     // Zoom to location
                     zoomToActivityWithHighlight({
-                        lat: alert.lat,
-                        lon: alert.lon,
+                        lat: lat,
+                        lon: lon,
                         type: 'fire',
                         location: alert.park_name
                     });
                     
-                    // Also pin the fire trajectory if group_id available
-                    if (alert.park_id && alert.group_id) {
-                        const year = new Date().getFullYear();
-                        const featureId = `${alert.park_id}_${alert.year || year}_grp_${alert.group_id}`;
-                        const narrative = alert.message || formatFireAlertMessage(alert);
+                    // Pin the fire trajectory - extract group_id from group_name
+                    if (alert.park_id && alert.group_name) {
+                        // group_name is like "AGO_Luando_grp_8646", use it directly as featureId
+                        const featureId = alert.group_name;
+                        const narrative = alert.message || `Fire group ${alert.group_name} in ${alert.park_name}`;
                         
-                        // Pin it (without clicking a button, pass null)
+                        // Pin it
                         if (!isSingleFeaturePinned(alert.park_id, 'fire', featureId)) {
                             addSinglePinnedFeature(alert.park_id, alert.park_name || alert.park_id, 'fire', featureId, narrative);
                             updatePinnedIndicator();
