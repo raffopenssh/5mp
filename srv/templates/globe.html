@@ -791,15 +791,18 @@
             /* FAB button */
             .fab { bottom: 80px; right: 10px; width: 48px; height: 48px; font-size: 20px; }
             
-            /* Footer attribution - position in top-left on mobile to avoid time slider */
+            /* Hide MapLibre attribution on mobile - we show our own */
+            .maplibregl-ctrl-attrib { display: none !important; }
+            
+            /* Footer attribution - replace MapLibre spot at bottom right */
             .footer-attribution { 
-                bottom: auto; top: 70px; right: auto; left: 10px;
-                padding: 6px 12px; font-size: 11px; gap: 8px; 
-                background: rgba(18,18,18,0.95); border-radius: 8px;
+                bottom: 76px; right: 10px; left: auto; top: auto;
+                padding: 4px 10px; font-size: 10px; gap: 8px; 
+                background: rgba(18,18,18,0.95); border-radius: 6px;
             }
             .footer-sep { display: none; }
             .footer-btn { display: none; }
-            .footer-btn.info-btn { display: flex; }  /* Only show info button on mobile */
+            .footer-btn.info-btn, .footer-btn.share-btn { display: flex; }  /* Show info and share on mobile */
             .desktop-only { display: none !important; }
             
             /* Auth buttons */
