@@ -16,6 +16,7 @@ import logging
 import sqlite3
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime
@@ -35,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 # OpenAlex API
 OPENALEX_BASE = "https://api.openalex.org/works"
+OPENALEX_API_KEY = "o6W24VcVQJHk3OJlNfDjQv"
 USER_AGENT = "5mp-conservation-app/1.0 (mailto:research@5mp.org)"
 
 # Country translations for better search
@@ -92,18 +94,33 @@ def fetch_publications(park_name: str, country: str = "") -> List[Dict]:
         "sort": "publication_date:desc"
     }
     
+    # Add API key to params
+    params["api_key"] = OPENALEX_API_KEY
     url = f"{OPENALEX_BASE}?{urllib.parse.urlencode(params)}"
     
     req = urllib.request.Request(url)
     req.add_header("User-Agent", USER_AGENT)
     
-    try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read().decode())
-            return data.get("results", [])
-    except Exception as e:
-        logger.error(f"Failed to fetch from OpenAlex: {e}")
-        return []
+    # Retry with exponential backoff on rate limit
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                data = json.loads(resp.read().decode())
+                return data.get("results", [])
+        except urllib.error.HTTPError as e:
+            if e.code == 429:  # Rate limited
+                wait_time = (2 ** attempt) * 5  # 5s, 10s, 20s
+                logger.warning(f"Rate limited, waiting {wait_time}s (attempt {attempt + 1}/3)")
+                time.sleep(wait_time)
+                continue
+            logger.error(f"Failed to fetch from OpenAlex: {e}")
+            return []
+        except Exception as e:
+            logger.error(f"Failed to fetch from OpenAlex: {e}")
+            return []
+    
+    logger.error("Max retries exceeded for OpenAlex")
+    return []
 
 
 # Conservation/ecology keywords to help filter relevant papers
