@@ -23,9 +23,18 @@ python3 scripts/rebuild_park_fire_analysis_v2.py --incremental --days 14 >> "$LO
 echo "[3/4] Running incremental trajectory analysis v4..." >> "$LOG_FILE"
 python3 scripts/analyze_fire_trajectories_v4.py --incremental --days 14 >> "$LOG_FILE" 2>&1
 
-# 4. Update narrative cache for affected parks
-echo "[4/4] Running incremental narrative precompute v4..." >> "$LOG_FILE"
+# 4. Load fire trajectories to database
+echo "[4/5] Loading fire trajectories to database..." >> "$LOG_FILE"
+python3 scripts/load_fire_trajectories_to_db.py --force >> "$LOG_FILE" 2>&1
+
+# 5. Update narrative cache for affected parks
+echo "[5/6] Running incremental narrative precompute v4..." >> "$LOG_FILE"
 python3 scripts/precompute_narratives_v4.py --incremental --days 14 >> "$LOG_FILE" 2>&1
+
+# 6. Update fire group alerts in the Go server
+echo "[6/6] Updating fire group alerts..." >> "$LOG_FILE"
+curl -s -X POST "http://localhost:8000/api/admin/update-fire-alerts?pwd=test2026" >> "$LOG_FILE" 2>&1
+echo "" >> "$LOG_FILE"
 
 echo "=== Daily Fire Update Completed: $(date) ===" >> "$LOG_FILE"
 

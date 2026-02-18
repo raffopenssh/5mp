@@ -761,7 +761,8 @@ func (s *Server) HandleAPIFireAlerts(w http.ResponseWriter, r *http.Request) {
 		FROM fire_group_alerts
 		WHERE is_dismissed = 0
 		  AND (left_at IS NULL OR left_at > datetime('now', '-1 day'))
-		ORDER BY CASE WHEN left_at IS NULL THEN 0 ELSE 1 END, last_updated_at DESC
+		ORDER BY CASE alert_type WHEN 'entered' THEN 0 WHEN 'active_inside' THEN 1 WHEN 'active' THEN 2 ELSE 3 END,
+		         CASE WHEN left_at IS NULL THEN 0 ELSE 1 END, last_updated_at DESC
 		LIMIT ?
 	`
 	// Query fire alerts
