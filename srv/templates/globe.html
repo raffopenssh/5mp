@@ -791,11 +791,12 @@
             /* FAB button */
             .fab { bottom: 80px; right: 10px; width: 48px; height: 48px; font-size: 20px; }
             
-            /* Footer attribution - move to bottom right, simplified */
-            .footer-attribution { bottom: 4px; right: 60px; left: auto; padding: 2px 8px; font-size: 9px; gap: 4px; background: rgba(18,18,18,0.7); }
+            /* Footer attribution - move above time slider on mobile */
+            .footer-attribution { bottom: 75px; right: 10px; left: auto; padding: 4px 10px; font-size: 10px; gap: 6px; background: rgba(18,18,18,0.9); border-radius: 8px; }
             .footer-sep { display: none; }
             .footer-btn { display: none; }
-            .footer-btn.share-btn, .footer-btn.info-btn { display: flex; }
+            .footer-btn.info-btn { display: flex; }  /* Only show info button on mobile */
+            .footer-btn.share-btn { display: none; }  /* Hide share on mobile - use native share */
             .desktop-only { display: none !important; }
             
             /* Auth buttons */
@@ -1216,9 +1217,9 @@
     </div>
 
     
-    <!-- 5MP Manifest Modal -->
+    <!-- 5MP Info Modal -->
     <div id="modal-manifest" class="modal-overlay" onclick="closeModalOnOverlay(event)">
-        <div class="modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal" style="max-width: 600px; max-height: 85vh; overflow-y: auto;">
             <div class="modal-header">
                 <h2 class="modal-title" style="display: flex; align-items: center; gap: 10px;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
@@ -1226,99 +1227,137 @@
                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                         <path d="M2 12h20"></path>
                     </svg>
-                    FIVE MEGAPIXELS CONSERVATION EFFORT
+                    5MP Conservation Monitor
                 </h2>
                 <button class="modal-close" onclick="closeModal('manifest')">×</button>
             </div>
             <div style="padding: 20px; font-size: 14px; line-height: 1.7; color: #c0c0c0;">
-                <p style="font-size: 16px; color: #fff; margin-bottom: 16px;"><strong>A transparent map of global conservation effort</strong></p>
                 
-                <p style="margin-bottom: 16px;">In 2017, the OECD estimated global biodiversity finance at USD 78-91 billion, while potentially harmful investments reached USD 500 billion. Despite this spending, we lack a comprehensive map of where conservation effort actually happens on the ground.</p>
-                
-                <p style="margin-bottom: 16px;">We have Google Earth and high-resolution satellite imagery, but no global map showing conservation coverage. Meanwhile, satellite timelapse reveals protected area boundaries being eroded since 2008, accelerating during the 6th mass extinction.</p>
-                
-                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">The 5MP Vision</h3>
-                <p style="margin-bottom: 16px;">With Earth's surface at 510 million km², dividing into 100 km² pixels gives us <strong>5.1 million pixels</strong> – the resolution of an average digital camera in 2010. We aim to create a transparent map showing conservation patrol coverage for each of these pixels.</p>
-                
-                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">How It Works</h3>
-                <ul style="margin-bottom: 16px; padding-left: 20px;">
-                    <li style="margin-bottom: 8px;">Rangers and conservation staff upload GPS patrol tracks</li>
-                    <li style="margin-bottom: 8px;">Tracks are aggregated into 10×10 km grid cells</li>
-                    <li style="margin-bottom: 8px;">Coverage intensity shows patrol density per pixel</li>
-                    <li style="margin-bottom: 8px;">Transparency ensures accountability and prevents double-counting</li>
-                </ul>
-                
-                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">Why This Matters</h3>
-                <p style="margin-bottom: 16px;">Before climate-driven increases in conservation finance, we need transparent reporting. This map reveals gaps, highlights effective coverage, and ensures resources reach where they're needed most.</p>
-                
-                <div style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 16px; margin-top: 20px;">
-                    <p style="color: #22c55e; font-weight: 600; margin-bottom: 8px;">Join the Initiative</p>
-                    <p style="margin: 0;">Upload your patrol data to contribute to the global conservation map. Every track helps build a complete picture of where conservation happens.</p>
+                <!-- Quick Start -->
+                <div style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                    <p style="color: #22c55e; font-weight: 600; margin-bottom: 8px;">🗺️ How to Use</p>
+                    <ul style="margin: 0; padding-left: 18px; font-size: 13px;">
+                        <li><strong>Click a park</strong> to see fire, settlement & deforestation data</li>
+                        <li><strong>Use time slider</strong> to filter data by date range</li>
+                        <li><strong>Upload GPX</strong> to add patrol tracks (upload button)</li>
+                        <li><strong>Star parks</strong> to save and generate reports</li>
+                        <li><strong>Bell icon</strong> shows fire alerts & notifications</li>
+                    </ul>
                 </div>
 
-                <h3 style="color: #22c55e; margin: 28px 0 16px; font-size: 16px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 24px;">Methodology</h3>
-
-                <h4 style="color: #fff; margin: 16px 0 8px; font-size: 14px;">▸ Patrol Effort Intensity</h4>
+                <!-- What This App Shows -->
+                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">What You See</h3>
+                <p style="margin-bottom: 12px;">Real-time monitoring of <strong>162 African protected areas</strong> covering 2.1 million km²:</p>
                 <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px;">
-                    <li style="margin-bottom: 6px;">10×10 km grid cells (0.1° × 0.1°)</li>
-                    <li style="margin-bottom: 6px;">Intensity = spatial coverage: % of 1 km subcells visited</li>
-                    <li style="margin-bottom: 6px;">Color gradient: low coverage → full intensity (>80%)</li>
-                    <li style="margin-bottom: 6px;">Data source: uploaded GPX patrol tracks</li>
-                    <li style="margin-bottom: 6px;">Foot patrol filtering: excludes tracks &lt;1km/day or within 500m of bases</li>
-                    <li style="margin-bottom: 6px;">Movement classification: foot (&lt;7 km/h), vehicle (7-80 km/h), aircraft (&gt;80 km/h)</li>
+                    <li style="margin-bottom: 6px;"><span style="color: #f97316;">🔥 Fire Activity</span> – Daily satellite detections grouped into fire events with movement tracking</li>
+                    <li style="margin-bottom: 6px;"><span style="color: #a855f7;">🏘️ Settlements</span> – Built-up areas detected inside/near park boundaries</li>
+                    <li style="margin-bottom: 6px;"><span style="color: #ef4444;">🌳 Deforestation</span> – Forest loss events clustered and classified</li>
+                    <li style="margin-bottom: 6px;"><span style="color: #22c55e;">📍 Patrol Effort</span> – GPS tracks showing ranger coverage intensity</li>
                 </ul>
 
-                <h4 style="color: #fff; margin: 16px 0 8px; font-size: 14px;">▸ Fire Analysis</h4>
-                <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px;">
-                    <li style="margin-bottom: 6px;">NASA VIIRS satellite fire detections</li>
-                    <li style="margin-bottom: 6px;">Group tracking: DBSCAN clustering (15km radius) + trajectory linking</li>
-                    <li style="margin-bottom: 6px;">Infraction detection: fires inside PA boundaries</li>
-                    <li style="margin-bottom: 6px;">Response metrics: groups stopped inside (possible ranger contact) vs transited through</li>
+                <!-- Data Processing -->
+                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">How We Process Data</h3>
+                
+                <h4 style="color: #fff; margin: 14px 0 6px; font-size: 13px;">🔥 Fire Detection & Grouping</h4>
+                <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
+                    <li>Source: NASA VIIRS satellite (375m resolution, 12-hour revisit)</li>
+                    <li>Daily download at 5am CAT for all 162 parks + 50km buffer</li>
+                    <li>Fires clustered using DBSCAN (15km radius) into groups</li>
+                    <li>Groups tracked across days to form trajectories</li>
+                    <li>Movement direction and speed calculated</li>
+                    <li>"Response rate" = fires that stopped inside park vs transited through</li>
                 </ul>
 
-                <h4 style="color: #888; margin: 16px 0 8px; font-size: 14px;">▸ Roadless Areas</h4>
-                <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px; color: #888;">
-                    <li style="margin-bottom: 6px;">OpenStreetMap road data</li>
-                    <li style="margin-bottom: 6px;">Roadless = area >1km from any road</li>
-                    <li style="margin-bottom: 6px;">Based on: "A global map of roadless areas and their conservation status" (Science, 2016)</li>
+                <h4 style="color: #fff; margin: 14px 0 6px; font-size: 13px;">🏘️ Settlement Detection</h4>
+                <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
+                    <li>Source: EU Global Human Settlement Layer (10m resolution)</li>
+                    <li>Built-up pixels clustered into settlement polygons</li>
+                    <li>Classified: village, hamlet, farm compound, mining camp</li>
+                    <li>Distance to park boundary and nearest road calculated</li>
                 </ul>
 
-                <h4 style="color: #888; margin: 16px 0 8px; font-size: 14px;">▸ Human Settlement (GHSL)</h4>
-                <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px; color: #888;">
-                    <li style="margin-bottom: 6px;">Global Human Settlement Layer (EU JRC)</li>
-                    <li style="margin-bottom: 6px;">Built-up surface area within/near PA</li>
-                    <li style="margin-bottom: 6px;">Population estimates at 100 m resolution</li>
+                <h4 style="color: #fff; margin: 14px 0 6px; font-size: 13px;">🌳 Deforestation Analysis</h4>
+                <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
+                    <li>Source: Hansen Global Forest Change (30m resolution)</li>
+                    <li>Annual tree cover loss 2001-2024</li>
+                    <li>Clustered into events (5km radius)</li>
+                    <li>Classified: agricultural clearing, logging, charcoal production</li>
                 </ul>
 
-                <h3 style="color: #22c55e; margin: 28px 0 16px; font-size: 16px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 24px;">Data Sources & Links</h3>
-                <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+                <h4 style="color: #fff; margin: 14px 0 6px; font-size: 13px;">📍 Patrol Effort</h4>
+                <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
+                    <li>Upload GPX tracks from GPS devices or apps</li>
+                    <li>Tracks split into 10×10 km grid cells</li>
+                    <li>Movement classified: foot (<7 km/h), vehicle (7-80), aircraft (>80)</li>
+                    <li>Intensity = % of 1km subcells visited in each grid cell</li>
+                </ul>
+
+                <!-- Update Schedule -->
+                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">Update Schedule</h3>
+                <table style="width: 100%; font-size: 12px; border-collapse: collapse; margin-bottom: 16px;">
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 8px 0; color: #fff;">Fire Detections</td>
-                        <td style="padding: 8px 0;"><a href="https://firms.modaps.eosdis.nasa.gov/" target="_blank" style="color: #22c55e;">NASA FIRMS VIIRS</a></td>
+                        <td style="padding: 6px 0; color: #f97316;">Fire data</td>
+                        <td style="padding: 6px 0;">Daily at 5am CAT</td>
                     </tr>
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 8px 0; color: #fff;">Forest Loss</td>
-                        <td style="padding: 8px 0;"><a href="https://glad.earthengine.app/view/global-forest-change" target="_blank" style="color: #22c55e;">Hansen Global Forest Change v1.10</a></td>
+                        <td style="padding: 6px 0; color: #3b82f6;">Research papers</td>
+                        <td style="padding: 6px 0;">Daily (OpenAlex API)</td>
                     </tr>
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 8px 0; color: #fff;">Settlements</td>
-                        <td style="padding: 8px 0;"><a href="https://ghsl.jrc.ec.europa.eu/ghs_buS2023.php" target="_blank" style="color: #22c55e;">GHSL GHS-BUILT-S 2018</a></td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 8px 0; color: #fff;">Place Names</td>
-                        <td style="padding: 8px 0;"><a href="https://www.openstreetmap.org/" target="_blank" style="color: #22c55e;">OpenStreetMap</a></td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 8px 0; color: #fff;">Park Boundaries</td>
-                        <td style="padding: 8px 0;"><a href="https://www.protectedplanet.net/" target="_blank" style="color: #22c55e;">WDPA</a></td>
+                        <td style="padding: 6px 0; color: #8b5cf6;">Legal documents</td>
+                        <td style="padding: 6px 0;">Weekly (FAOLEX)</td>
                     </tr>
                     <tr>
-                        <td style="padding: 8px 0; color: #fff;">Base Map</td>
-                        <td style="padding: 8px 0;"><a href="https://carto.com/" target="_blank" style="color: #22c55e;">CARTO Dark</a></td>
+                        <td style="padding: 6px 0; color: #22c55e;">Patrol data</td>
+                        <td style="padding: 6px 0;">On upload (instant)</td>
                     </tr>
                 </table>
 
-                <p style="margin-top: 20px; font-size: 11px; color: #666;">Database download: <a href="/static/downloads/five-megapixel-conservation_latest.sqlite3" style="color: #22c55e;">SQLite (~1.5GB)</a></p>
+                <!-- Data Sources -->
+                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">Data Sources</h3>
+                <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 6px 0; color: #fff;">Fire</td>
+                        <td style="padding: 6px 0;"><a href="https://firms.modaps.eosdis.nasa.gov/" target="_blank" style="color: #22c55e;">NASA FIRMS VIIRS</a></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 6px 0; color: #fff;">Forest</td>
+                        <td style="padding: 6px 0;"><a href="https://glad.earthengine.app/view/global-forest-change" target="_blank" style="color: #22c55e;">Hansen/UMD v1.11</a></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 6px 0; color: #fff;">Settlements</td>
+                        <td style="padding: 6px 0;"><a href="https://ghsl.jrc.ec.europa.eu/" target="_blank" style="color: #22c55e;">EU JRC GHSL</a></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 6px 0; color: #fff;">Rivers</td>
+                        <td style="padding: 6px 0;"><a href="https://www.hydrosheds.org/products/hydrorivers" target="_blank" style="color: #22c55e;">HydroRIVERS</a></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 6px 0; color: #fff;">Roads</td>
+                        <td style="padding: 6px 0;"><a href="https://heigit.org/" target="_blank" style="color: #22c55e;">HeiGIT/OSM</a></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 6px 0; color: #fff;">Parks</td>
+                        <td style="padding: 6px 0;"><a href="https://www.protectedplanet.net/" target="_blank" style="color: #22c55e;">WDPA</a></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 6px 0; color: #fff;">Species</td>
+                        <td style="padding: 6px 0;"><a href="https://www.iucnredlist.org/" target="_blank" style="color: #22c55e;">IUCN Red List</a></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; color: #fff;">Research</td>
+                        <td style="padding: 6px 0;"><a href="https://openalex.org/" target="_blank" style="color: #22c55e;">OpenAlex</a></td>
+                    </tr>
+                </table>
+
+                <!-- Footer -->
+                <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: #666;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <span>Version: <strong id="modal-version" style="color: #22c55e;">{{.Version}}</strong></span>
+                        <span><a href="https://github.com/5mp-conservation/5mp" target="_blank" style="color: #888;">GitHub</a></span>
+                        <span><a href="/static/downloads/five-megapixel-conservation_latest.sqlite3" style="color: #888;">Download DB</a></span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
