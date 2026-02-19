@@ -496,6 +496,37 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 	}
 	
 	if err == sql.ErrNoRows || totalGroups == 0 {
+		// DB table empty, try JSON files
+		ctx := s.getNarrativeContext(internalID, parkName)
+		narratives := s.getTrajectoryNarrativesFromJSON(internalID, fromYear, toYear, ctx)
+		if len(narratives) > 0 {
+			// Compute stats from JSON narratives
+			narrative.Narratives = narratives
+			for _, n := range narratives {
+				totalGroups++
+				if n.Outcome == "STOPPED_INSIDE" {
+					stoppedInside++
+				} else if n.Outcome == "TRANSITED" {
+					transited++
+				}
+				narrative.TotalFires += n.FiresInside
+			}
+			if totalGroups > 0 {
+				narrative.ResponseRate = float64(stoppedInside) / float64(totalGroups) * 100
+			}
+			// Build summary
+			narrative.Summary = s.buildFireSummary(parkName, fromYear, toYear, 1, narrative.TotalFires, totalGroups, stoppedInside, transited, narrative.ResponseRate, "", 0)
+			narrative.Trend = s.analyzeFireTrendFast(internalID, toYear)
+			// Save to cache
+			if jsonData, err := json.Marshal(narrative); err == nil {
+				s.DB.Exec(`INSERT OR REPLACE INTO fire_narrative_cache (park_id, narrative_json, computed_at) VALUES (?, ?, datetime('now'))`,
+					internalID, string(jsonData))
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(narrative)
+			return
+		}
+		// No JSON data either
 		periodDesc := fmt.Sprintf("%d", fromYear)
 		if fromYear != toYear {
 			periodDesc = fmt.Sprintf("%d-%d", fromYear, toYear)

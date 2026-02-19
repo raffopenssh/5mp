@@ -6,8 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
+
+	"srv.exe.dev/srv/areas"
 )
 
 // PrecomputeFireNarratives computes and caches fire narratives for all parks
@@ -113,7 +116,31 @@ func (s *Server) computeFireNarrativeForCache(parkID, parkName string, fromYear,
 	narrative.TotalFires = totalFires
 
 	if totalGroups == 0 {
-		narrative.Summary = "No significant fire group incursions recorded."
+		// Even if DB table is empty, try to load from JSON files
+		log.Printf("[FireNarrativeCache] DB empty for %s, trying JSON files (years %d-%d)", parkID, fromYear, toYear)
+		ctx := s.getNarrativeContext(parkID, parkName)
+		narrative.Narratives = s.getTrajectoryNarrativesFromJSON(parkID, fromYear, toYear, ctx)
+		log.Printf("[FireNarrativeCache] JSON returned %d narratives for %s", len(narrative.Narratives), parkID)
+		if len(narrative.Narratives) == 0 {
+			narrative.Summary = "No significant fire group incursions recorded."
+			return narrative
+		}
+		// Compute stats from loaded narratives
+		for _, n := range narrative.Narratives {
+			totalGroups++
+			if n.Outcome == "STOPPED_INSIDE" {
+				stoppedInside++
+			} else if n.Outcome == "TRANSITED" {
+				transited++
+			}
+			totalFires += n.FiresInside
+		}
+		narrative.TotalFires = totalFires
+		if totalGroups > 0 {
+			narrative.ResponseRate = float64(stoppedInside) / float64(totalGroups) * 100
+		}
+		narrative.Summary = s.buildFireSummary(parkName, fromYear, toYear, 1, totalFires, totalGroups, stoppedInside, transited, narrative.ResponseRate, "", 0)
+		narrative.Trend = s.analyzeFireTrendFast(parkID, toYear)
 		return narrative
 	}
 
@@ -153,8 +180,13 @@ func (s *Server) computeFireNarrativeForCache(parkID, parkName string, fromYear,
 	// Get narrative context for enhanced location descriptions
 	ctx := s.getNarrativeContext(parkID, parkName)
 	
-	// Trajectory narratives from most recent year with context
-	narrative.Narratives = s.getTrajectoryNarratives(parkID, fromYear, toYear, ctx)
+	// Trajectory narratives - try JSON files first (has proper outcome calculation),
+	// then fall back to DB table
+	narrative.Narratives = s.getTrajectoryNarrativesFromJSON(parkID, fromYear, toYear, ctx)
+	if len(narrative.Narratives) == 0 {
+		// Fall back to DB-based trajectories (legacy)
+		narrative.Narratives = s.getTrajectoryNarratives(parkID, fromYear, toYear, ctx)
+	}
 
 	return narrative
 }
@@ -519,6 +551,143 @@ func (s *Server) getTrajectoryNarratives(parkID string, fromYear, toYear int, ct
 		}
 
 		story.Narrative = narr.String()
+		stories = append(stories, story)
+	}
+
+	return stories
+}
+
+// TrajectoryV2 represents a fire trajectory from the v2 JSON files
+type TrajectoryV2 struct {
+	Fires              int               `json:"fires"`
+	StartDate          string            `json:"start_date"`
+	EndDate            string            `json:"end_date"`
+	Days               int               `json:"days"`
+	Direction          string            `json:"direction"`
+	DistanceKm         float64           `json:"distance_km"`
+	GroupType          string            `json:"group_type"`
+	PctInside          float64           `json:"pct_inside"`
+	CrossBorder        bool              `json:"cross_border"`
+	AffectedParks      []string          `json:"affected_parks"`
+	Year               int               `json:"year"`
+	Narrative          string            `json:"narrative"`
+	TrajectoryWithTime []TrajectoryPoint `json:"trajectory_with_time"`
+}
+
+type TrajectoryPoint struct {
+	Lon  float64 `json:"lon"`
+	Lat  float64 `json:"lat"`
+	Date string  `json:"date"`
+}
+
+// getTrajectoryNarrativesFromJSON loads trajectories from v2 JSON files and computes outcomes
+// based on whether the last detection point is inside the park boundary
+func (s *Server) getTrajectoryNarrativesFromJSON(parkID string, fromYear, toYear int, ctx *NarrativeContext) []FireGroupStory {
+	var stories []FireGroupStory
+
+	// Load trajectory JSON file
+	trajFile := fmt.Sprintf("data/fire_trajectories_v2/%s.json", parkID)
+	data, err := os.ReadFile(trajFile)
+	if err != nil {
+		log.Printf("[FireNarrativeCache] No trajectory file for %s: %v", parkID, err)
+		return stories
+	}
+
+	var trajs []TrajectoryV2
+	if err := json.Unmarshal(data, &trajs); err != nil {
+		log.Printf("[FireNarrativeCache] Error parsing trajectories for %s: %v", parkID, err)
+		return stories
+	}
+	log.Printf("[FireNarrativeCache] Loaded %d trajectories for %s (years %d-%d)", len(trajs), parkID, fromYear, toYear)
+
+	// Find the park in AreaStore for boundary checking
+	var parkArea *areas.ProtectedArea
+	if s.AreaStore != nil {
+		for i := range s.AreaStore.Areas {
+			if s.AreaStore.Areas[i].ID == parkID {
+				parkArea = &s.AreaStore.Areas[i]
+				break
+			}
+		}
+	}
+
+	groupNum := 0
+	for _, t := range trajs {
+		// Filter by year range
+		if t.Year < fromYear || t.Year > toYear {
+			continue
+		}
+		groupNum++
+
+		// Determine outcome based on last point location
+		outcome := "UNKNOWN"
+		if len(t.TrajectoryWithTime) > 0 && parkArea != nil {
+			lastPt := t.TrajectoryWithTime[len(t.TrajectoryWithTime)-1]
+			// Use ContainsPoint with zero buffer for strict inside check
+			if parkArea.ContainsPoint(lastPt.Lat, lastPt.Lon) {
+				outcome = "STOPPED_INSIDE"
+			} else {
+				outcome = "TRANSITED"
+			}
+		}
+
+		story := FireGroupStory{
+			GroupNum:    groupNum,
+			FeatureID:   fmt.Sprintf("%s_%d_grp_%d", parkID, t.Year, groupNum),
+			Year:        t.Year,
+			EntryDate:   t.StartDate,
+			LastInside:  t.EndDate,
+			DaysInside:  t.Days,
+			FiresInside: t.Fires,
+			Outcome:     outcome,
+		}
+
+		// Get origin and destination from trajectory
+		if len(t.TrajectoryWithTime) > 0 {
+			firstPt := t.TrajectoryWithTime[0]
+			lastPt := t.TrajectoryWithTime[len(t.TrajectoryWithTime)-1]
+
+			// Calculate bearing
+			trajBearing := bearingTo(firstPt.Lat, firstPt.Lon, lastPt.Lat, lastPt.Lon)
+			movementDesc := fmt.Sprintf("moving %s", bearingToCardinalWithDegrees(trajBearing))
+
+			// Describe origin
+			if ctx != nil {
+				originLoc := ctx.describeLocationWithContext(firstPt.Lat, firstPt.Lon)
+				if originLoc != "" && !strings.HasPrefix(originLoc, "at (") {
+					story.OriginDesc = fmt.Sprintf("%s, %s", originLoc, movementDesc)
+				} else {
+					story.OriginDesc = fmt.Sprintf("(%.3f°, %.3f°), %s", firstPt.Lat, firstPt.Lon, movementDesc)
+				}
+				story.DestDesc = ctx.describeLocationWithContext(lastPt.Lat, lastPt.Lon)
+				if story.DestDesc == "" || strings.HasPrefix(story.DestDesc, "at (") {
+					story.DestDesc = fmt.Sprintf("at (%.3f°, %.3f°)", lastPt.Lat, lastPt.Lon)
+				}
+			} else {
+				story.OriginDesc = fmt.Sprintf("(%.3f°, %.3f°), %s", firstPt.Lat, firstPt.Lon, movementDesc)
+				story.DestDesc = fmt.Sprintf("at (%.3f°, %.3f°)", lastPt.Lat, lastPt.Lon)
+			}
+		}
+
+		// Use existing narrative or build one
+		if t.Narrative != "" {
+			story.Narrative = t.Narrative
+		} else {
+			var narr strings.Builder
+			narr.WriteString(fmt.Sprintf("Fire group originated %s on %s. ", story.OriginDesc, t.StartDate))
+			daysWord := "days"
+			if t.Days == 1 {
+				daysWord = "day"
+			}
+			narr.WriteString(fmt.Sprintf("Burned for %d %s (%d detections). ", t.Days, daysWord, t.Fires))
+			if outcome == "STOPPED_INSIDE" {
+				narr.WriteString("Fire stopped inside the park.")
+			} else if outcome == "TRANSITED" {
+				narr.WriteString("Fire transited through the park.")
+			}
+			story.Narrative = narr.String()
+		}
+
 		stories = append(stories, story)
 	}
 
