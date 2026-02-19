@@ -371,20 +371,31 @@ def main():
         total_new = sync_park(conn, parks_by_id[args.park], notify=args.notify)
     
     elif args.stale:
-        # Parks not synced in 7 days
+        # Get parks that were synced more than 7 days ago
         cursor = conn.execute("""
             SELECT pa_id FROM pa_publication_sync 
             WHERE last_sync < datetime('now', '-7 days')
-            ORDER BY last_sync ASC
-            LIMIT ?
-        """, (args.limit,))
-        stale_ids = [row[0] for row in cursor]
+        """)
+        stale_ids = set(row[0] for row in cursor)
         
-        # Map WDPA IDs back to park IDs
+        # Get parks that have NEVER been synced
+        cursor = conn.execute("SELECT pa_id FROM pa_publication_sync")
+        synced_ids = set(row[0] for row in cursor)
+        
+        count = 0
         for park in parks:
+            if count >= args.limit:
+                break
             wdpa_id = str(park.get("wdpa_id", ""))
-            if wdpa_id in stale_ids or park["id"] in stale_ids:
+            park_id = park["id"]
+            
+            # Sync if: never synced OR stale
+            never_synced = wdpa_id not in synced_ids and park_id not in synced_ids
+            is_stale = wdpa_id in stale_ids or park_id in stale_ids
+            
+            if never_synced or is_stale:
                 total_new += sync_park(conn, park, notify=args.notify)
+                count += 1
                 time.sleep(1)  # Rate limit
     
     else:
