@@ -3028,7 +3028,7 @@
             showToast(`Exported ${allParks.length} parks to CSV`, 'success');
         }
         
-        // Export KMLs for all starred parks
+        // Export merged KML for all starred parks
         async function exportFullReportKml() {
             const parkIds = new Set();
             
@@ -3050,20 +3050,18 @@
                 return;
             }
             
-            showToast(`Downloading ${parkIds.size} KML files...`);
-            const filterStr = buildFilterString();
+            showToast(`Exporting ${parkIds.size} parks to KML...`);
             
-            // Download each park's KML
-            for (const parkId of parkIds) {
-                const url = `/api/parks/${parkId}/export.kml?pwd=${getPwd()}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}`;
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `${parkId}${filterStr}.kml`;
-                link.click();
-                await new Promise(r => setTimeout(r, 200)); // Small delay between downloads
-            }
+            // Download merged KML with all parks as folders
+            const url = `/api/export/merged.kml?pwd=${getPwd()}&parks=${Array.from(parkIds).join(',')}`
+                + (dateFrom ? '&from=' + dateFrom : '')
+                + (dateTo ? '&to=' + dateTo : '');
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `5mp_conservation_${parkIds.size}_parks.kml`;
+            link.click();
             
-            showToast(`Downloaded ${parkIds.size} KML files`, 'success');
+            showToast(`Exported ${parkIds.size} parks to single KML`, 'success');
         }
 
         var mapLoaded = false;
@@ -7103,9 +7101,9 @@
         html += `<div class="starred-report-section patrol" style="margin-bottom:12px;">
             <div class="starred-report-section-title">○ Patrol & Activity Summary</div>
             <div class="starred-report-section-stats" style="flex-wrap:wrap;">
-                <span title="Fire response rate">🔥 Response: ${Math.round(fireStats.response_rate || 0)}%</span>
-                <span title="Roadless wilderness">🌲 Roadless: ${(stats.roadless?.roadless_percentage || 0).toFixed(1)}%</span>
-                <span title="Settlement built-up area">🏠 Built-up: ${(stats.settlement?.built_up_km2 || 0).toFixed(2)} km²</span>
+                <span title="Fire response rate">Response: ${Math.round(fireStats.response_rate || 0)}%</span>
+                <span title="Roadless wilderness">Roadless: ${(stats.roadless?.roadless_percentage || 0).toFixed(1)}%</span>
+                <span title="Settlement built-up area">Built-up: ${(stats.settlement?.built_up_km2 || 0).toFixed(2)} km²</span>
             </div>
             ${stats.insights && stats.insights.length > 0 ? `<div class="starred-report-group" style="margin-top:8px;"><div class="starred-report-group-title">Key Insights:</div>${stats.insights.slice(0, expanded ? 100 : 3).map(i => `<div style="margin:4px 0;font-size:10px;color:#aaa;">${i}</div>`).join('')}${!expanded && stats.insights.length > 3 ? `<div style="color:#60a5fa;font-size:10px;cursor:pointer;" onclick="this.parentElement.innerHTML=this.parentElement.innerHTML.replace('...show more', '')+reportDataCache.parks.get('${park.id}')?.stats?.insights?.slice(3).map(i=>'<div style=margin:4px\\ 0;font-size:10px;color:#aaa;>'+i+'</div>').join('')">...show ${stats.insights.length - 3} more</div>` : ''}</div>` : ''}
         </div>`;

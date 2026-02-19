@@ -173,6 +173,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/parks/{id}/features", s.HandleAPIParkFeatures)
 	mux.HandleFunc("GET /api/parks/{id}/feature-stats", s.HandleAPIParkFeatureStats)
 	mux.HandleFunc("GET /api/parks/{id}/export.kml", s.HandleAPIParkKML)
+	mux.HandleFunc("GET /api/export/merged.kml", s.HandleAPIMergedKML)
 	
 	// MBTiles generation endpoints
 	mux.HandleFunc("POST /api/parks/{id}/mbtiles", s.HandleAPIMBTilesCreate)

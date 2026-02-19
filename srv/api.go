@@ -3906,3 +3906,152 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+// HandleAPIMergedKML exports multiple parks as a single KML with folders
+// GET /api/export/merged.kml?parks=ID1,ID2,ID3&from=&to=
+func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
+	parksParam := r.URL.Query().Get("parks")
+	if parksParam == "" {
+		http.Error(w, "parks parameter required (comma-separated IDs)", http.StatusBadRequest)
+		return
+	}
+	
+	parkIDs := strings.Split(parksParam, ",")
+	if len(parkIDs) == 0 {
+		http.Error(w, "No park IDs provided", http.StatusBadRequest)
+		return
+	}
+	
+	// Parse date filters
+	fromDate := r.URL.Query().Get("from")
+	toDate := r.URL.Query().Get("to")
+	
+	// Build KML header
+	var kml strings.Builder
+	kml.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+	kml.WriteString("<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n")
+	kml.WriteString("<Document>\n")
+	kml.WriteString(fmt.Sprintf("<name>5MP Conservation Data - %d Parks</name>\n", len(parkIDs)))
+	kml.WriteString(fmt.Sprintf("<description>Fire, settlement, and deforestation data from 5MP Conservation Monitoring. Date range: %s to %s</description>\n", fromDate, toDate))
+	
+	// Define shared styles
+	kml.WriteString("<Style id=\"boundary\"><LineStyle><color>ff00ff00</color><width>3</width></LineStyle><PolyStyle><color>2000ff00</color></PolyStyle></Style>\n")
+	kml.WriteString("<Style id=\"fire\"><IconStyle><color>ff0000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/firedept.png</href></Icon></IconStyle><LineStyle><color>ff0000ff</color><width>2</width></LineStyle></Style>\n")
+	kml.WriteString("<Style id=\"settlement\"><IconStyle><color>ff00d7ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/homegardenbusiness.png</href></Icon></IconStyle><PolyStyle><color>5000d7ff</color></PolyStyle></Style>\n")
+	kml.WriteString("<Style id=\"deforestation\"><IconStyle><color>ffff00ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/triangle.png</href></Icon></IconStyle><PolyStyle><color>50ff00ff</color></PolyStyle></Style>\n")
+	kml.WriteString("<Style id=\"road\"><LineStyle><color>ff60a5fa</color><width>2</width></LineStyle></Style>\n")
+	kml.WriteString("<Style id=\"place\"><IconStyle><color>ffffffff</color><scale>0.8</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>\n")
+	
+	// Process each park as a folder
+	for _, parkID := range parkIDs {
+		parkID = strings.TrimSpace(parkID)
+		if parkID == "" {
+			continue
+		}
+		
+		// Get park info
+		parkName := parkID
+		var boundary string
+		for _, pa := range s.AreaStore.Areas {
+			if pa.ID == parkID {
+				parkName = pa.Name
+				if pa.Geometry.Type != "" {
+					if geomBytes, err := json.Marshal(pa.Geometry); err == nil {
+						boundary = string(geomBytes)
+					}
+				}
+				break
+			}
+		}
+		
+		// Start park folder
+		kml.WriteString(fmt.Sprintf("<Folder><name>%s</name>\n", parkName))
+		
+		// Boundary
+		if boundary != "" {
+			kml.WriteString("<Folder><name>Boundary</name>\n")
+			writeGeoJSONToKML(&kml, boundary, "boundary", parkName)
+			kml.WriteString("</Folder>\n")
+		}
+		
+		// Build date filter
+		dateFilter := ""
+		if fromDate != "" {
+			dateFilter = fmt.Sprintf(" AND start_date >= '%s'", fromDate)
+		}
+		if toDate != "" {
+			dateFilter += fmt.Sprintf(" AND (end_date <= '%s' OR end_date IS NULL)", toDate)
+		}
+		
+		// Fire trajectories
+		kml.WriteString("<Folder><name>Fire Activity</name>\n")
+		fireRows, _ := s.DB.Query(`SELECT geojson, properties_json, start_date, end_date 
+			FROM feature_geometries WHERE park_id = ? AND feature_type = 'fire_trajectory'`+dateFilter+` LIMIT 500`, parkID)
+		if fireRows != nil {
+			for fireRows.Next() {
+				var geojson, props string
+				var startDate, endDate sql.NullString
+				fireRows.Scan(&geojson, &props, &startDate, &endDate)
+				var propMap map[string]interface{}
+				json.Unmarshal([]byte(props), &propMap)
+				name := fmt.Sprintf("Fire %v", propMap["feature_id"])
+				desc := ""
+				if narrative, ok := propMap["narrative"].(string); ok {
+					desc = narrative
+				}
+				writeGeoJSONToKMLWithDesc(&kml, geojson, "fire", name, desc, startDate.String, endDate.String)
+			}
+			fireRows.Close()
+		}
+		kml.WriteString("</Folder>\n")
+		
+		// Settlements
+		kml.WriteString("<Folder><name>Settlements</name>\n")
+		settlementRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries 
+			WHERE park_id = ? AND feature_type = 'settlement' LIMIT 200`, parkID)
+		if settlementRows != nil {
+			for settlementRows.Next() {
+				var geojson, props string
+				settlementRows.Scan(&geojson, &props)
+				var propMap map[string]interface{}
+				json.Unmarshal([]byte(props), &propMap)
+				name := "Settlement"
+				if n, ok := propMap["name"].(string); ok && n != "" {
+					name = n
+				}
+				writeGeoJSONToKML(&kml, geojson, "settlement", name)
+			}
+			settlementRows.Close()
+		}
+		kml.WriteString("</Folder>\n")
+		
+		// Deforestation
+		kml.WriteString("<Folder><name>Deforestation</name>\n")
+		deforestRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries 
+			WHERE park_id = ? AND feature_type = 'deforestation'`+dateFilter+` LIMIT 200`, parkID)
+		if deforestRows != nil {
+			for deforestRows.Next() {
+				var geojson, props string
+				deforestRows.Scan(&geojson, &props)
+				var propMap map[string]interface{}
+				json.Unmarshal([]byte(props), &propMap)
+				name := "Forest Loss"
+				if y, ok := propMap["year"].(float64); ok {
+					name = fmt.Sprintf("Forest Loss %d", int(y))
+				}
+				writeGeoJSONToKML(&kml, geojson, "deforestation", name)
+			}
+			deforestRows.Close()
+		}
+		kml.WriteString("</Folder>\n")
+		
+		// Close park folder
+		kml.WriteString("</Folder>\n")
+	}
+	
+	kml.WriteString("</Document>\n</kml>")
+	
+	w.Header().Set("Content-Type", "application/vnd.google-earth.kml+xml")
+	w.Header().Set("Content-Disposition", `attachment; filename="5mp_conservation_export.kml"`)
+	w.Write([]byte(kml.String()))
+}
