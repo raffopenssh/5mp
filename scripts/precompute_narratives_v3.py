@@ -97,7 +97,7 @@ class NarrativeGenerator:
                     'start_date': t['start_date'],
                     'end_date': t['end_date'],
                     'days': t['days'],
-                    'fires': t['fires_total'],
+                    'fires': t.get('fires') or t.get('fires_total') or 0,
                     'season': t.get('season'),
                     'direction': t.get('direction', {}).get('direction'),
                     'distance_km': t.get('total_distance_km'),
@@ -114,7 +114,7 @@ class NarrativeGenerator:
             for t in trajectories:
                 by_year[t.get('year', 0)].append(t)
             
-            total_fires = sum(t.get('fires_total', 0) for t in trajectories)
+            total_fires = sum(t.get('fires') or t.get('fires_total') or 0 for t in trajectories)
             total_groups = len(trajectories)
             
             type_counts = defaultdict(int)
@@ -153,7 +153,7 @@ class NarrativeGenerator:
                 year_trajs = by_year[year]
                 total_year_groups = len(year_trajs)
                 stopped = sum(1 for t in year_trajs if t.get('outcome') == 'stopped_inside')
-                total_year_fires = sum(t.get('fires_total', 0) for t in year_trajs)
+                total_year_fires = sum(t.get('fires') or t.get('fires_total') or 0 for t in year_trajs)
                 avg_days = sum(t.get('days', 0) for t in year_trajs) / max(1, total_year_groups)
                 
                 years_summary.append({
@@ -285,7 +285,7 @@ class NarrativeGenerator:
             parts.append(f"({traj.get('season')} season)")
         
         # Duration and fires
-        parts.append(f"Burned for {traj.get('days', 0)} days ({traj.get('fires_total', 0)} fire detections).")
+        parts.append(f"Burned for {traj.get('days', 0)} days ({traj.get('fires') or traj.get('fires_total') or 0} fire detections).")
         
         # River crossings (use river_crossings list, not rivers_crossed)
         river_crossings = traj.get('river_crossings', [])

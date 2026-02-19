@@ -1437,7 +1437,7 @@
             
             if (displayWeeks.every(d => d.current === null && d.priorAvg === 0)) return '';
             
-            const w = 220, h = 70, pad = 6;
+            const w = 280, h = 70, pad = 6;
             const chartW = w - pad * 2, chartH = h - pad * 2 - 14;
             const maxVal = Math.max(...displayWeeks.map(d => Math.max(d.current || 0, d.priorAvg)), 1);
             const barW = chartW / displayWeeks.length - 2;
@@ -5034,7 +5034,7 @@
                         </div>`;
                     };
                     // Calculate filtered fire count (sum fires_inside from filtered narratives)
-                    const filteredFireCount = allNarratives.reduce((sum, n) => sum + (n.fires_inside || 0), 0);
+                    const filteredFireCount = allNarratives.reduce((sum, n) => sum + (n.fires_inside || n.fires_total || n.fires || 0), 0);
                     const filteredGroupCount = allNarratives.length;
                     
                     // Update count in header with filtered count
