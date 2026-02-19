@@ -1233,38 +1233,44 @@
                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                         <path d="M2 12h20"></path>
                     </svg>
-                    5MP Conservation Monitor
+                    5 Megapixels of Global Conservation
                 </h2>
                 <button class="modal-close" onclick="closeModal('manifest')">×</button>
             </div>
             <div style="padding: 20px; font-size: 14px; line-height: 1.7; color: #c0c0c0;">
                 
-                <!-- Quick Start -->
-                <div style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-                    <p style="color: #22c55e; font-weight: 600; margin-bottom: 8px;">🗺️ How to Use</p>
-                    <ul style="margin: 0; padding-left: 18px; font-size: 13px;">
-                        <li><strong>Click a park</strong> to see fire, settlement & deforestation data</li>
-                        <li><strong>Use time slider</strong> to filter data by date range</li>
-                        <li><strong>Upload GPX</strong> to add patrol tracks (upload button)</li>
-                        <li><strong>Star parks</strong> to save and generate reports</li>
-                        <li><strong>Bell icon</strong> shows fire alerts & notifications</li>
-                    </ul>
+                <!-- About Section -->
+                <div style="background: linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 100%); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                    <p style="font-size: 15px; color: #fff; margin-bottom: 12px;"><strong>A transparent map of global conservation effort</strong></p>
+                    <p style="margin-bottom: 12px; font-size: 13px;">In 2017, the OECD estimated global biodiversity finance at USD 78-91 billion, while potentially harmful investments reached USD 500 billion. Despite this spending, we lack a comprehensive map of where conservation effort actually happens on the ground.</p>
+                    <p style="margin-bottom: 12px; font-size: 13px;">With Earth's surface at 510 million km², dividing into 100 km² pixels gives us <strong style="color: #22c55e;">5.1 million pixels</strong> – the resolution of an average digital camera in 2010. We aim to create a transparent map showing conservation patrol coverage for each of these pixels.</p>
+                    <p style="margin: 0; font-size: 13px;">This tool monitors <strong>162 African keystone protected areas</strong> covering 2.1 million km², tracking fire events, deforestation, settlements, and patrol effort to ensure accountability and reveal where resources are needed most.</p>
                 </div>
+                
+                <!-- Quick Start -->
+                <!-- Quick Start -->
+                <h3 style="color: #22c55e; margin: 16px 0 12px; font-size: 15px;">Quick Start</h3>
+                <ul style="margin: 0 0 16px; padding-left: 18px; font-size: 13px;">
+                    <li><strong>Click a park</strong> to see fire, settlement & deforestation data</li>
+                    <li><strong>Use time slider</strong> to filter data by date range</li>
+                    <li><strong>Upload GPX</strong> to add patrol tracks (upload button)</li>
+                    <li><strong>Star parks</strong> to save and generate reports</li>
+                    <li><strong>Bell icon</strong> shows fire alerts & notifications</li>
+                </ul>
 
-                <!-- What This App Shows -->
-                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">What You See</h3>
-                <p style="margin-bottom: 12px;">Real-time monitoring of <strong>162 African protected areas</strong> covering 2.1 million km²:</p>
+                <!-- What You See -->
+                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">Data Layers</h3>
                 <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px;">
-                    <li style="margin-bottom: 6px;"><span style="color: #f97316;">🔥 Fire Activity</span> – Daily satellite detections grouped into fire events with movement tracking</li>
-                    <li style="margin-bottom: 6px;"><span style="color: #a855f7;">🏘️ Settlements</span> – Built-up areas detected inside/near park boundaries</li>
-                    <li style="margin-bottom: 6px;"><span style="color: #ef4444;">🌳 Deforestation</span> – Forest loss events clustered and classified</li>
-                    <li style="margin-bottom: 6px;"><span style="color: #22c55e;">📍 Patrol Effort</span> – GPS tracks showing ranger coverage intensity</li>
+                    <li style="margin-bottom: 6px;"><span style="color: #f97316;">Fire Activity</span> – Satellite detections grouped into trajectories with origin/destination</li>
+                    <li style="margin-bottom: 6px;"><span style="color: #a855f7;">Settlements</span> – Built-up areas classified by type and distance to park</li>
+                    <li style="margin-bottom: 6px;"><span style="color: #ef4444;">Deforestation</span> – Forest loss events clustered and classified by cause</li>
+                    <li style="margin-bottom: 6px;"><span style="color: #22c55e;">Patrol Tracks</span> – GPS coverage intensity in 10×10 km grid cells</li>
                 </ul>
 
                 <!-- Data Processing -->
                 <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">How We Process Data</h3>
                 
-                <h4 style="color: #fff; margin: 14px 0 6px; font-size: 13px;">🔥 Fire Detection & Grouping</h4>
+                <h4 style="color: #f97316; margin: 14px 0 6px; font-size: 13px;">Fire Detection</h4>
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li>Source: NASA VIIRS satellite (375m resolution, 12-hour revisit)</li>
                     <li>Daily download at 5am CAT for all 162 parks + 50km buffer</li>
@@ -1274,7 +1280,7 @@
                     <li>"Response rate" = fires that stopped inside park vs transited through</li>
                 </ul>
 
-                <h4 style="color: #fff; margin: 14px 0 6px; font-size: 13px;">🏘️ Settlement Detection</h4>
+                <h4 style="color: #a855f7; margin: 14px 0 6px; font-size: 13px;">Settlement Detection</h4>
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li>Source: EU Global Human Settlement Layer (10m resolution)</li>
                     <li>Built-up pixels clustered into settlement polygons</li>
@@ -1282,7 +1288,7 @@
                     <li>Distance to park boundary and nearest road calculated</li>
                 </ul>
 
-                <h4 style="color: #fff; margin: 14px 0 6px; font-size: 13px;">🌳 Deforestation Analysis</h4>
+                <h4 style="color: #ef4444; margin: 14px 0 6px; font-size: 13px;">Deforestation Analysis</h4>
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li>Source: Hansen Global Forest Change (30m resolution)</li>
                     <li>Annual tree cover loss 2001-2024</li>
@@ -1290,7 +1296,7 @@
                     <li>Classified: agricultural clearing, logging, charcoal production</li>
                 </ul>
 
-                <h4 style="color: #fff; margin: 14px 0 6px; font-size: 13px;">📍 Patrol Effort</h4>
+                <h4 style="color: #22c55e; margin: 14px 0 6px; font-size: 13px;">Patrol Tracking</h4>
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li>Upload GPX tracks from GPS devices or apps</li>
                     <li>Tracks split into 10×10 km grid cells</li>
