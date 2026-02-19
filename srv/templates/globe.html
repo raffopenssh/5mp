@@ -3028,6 +3028,216 @@
             showToast(`Exported ${allParks.length} parks to CSV`, 'success');
         }
         
+        // Export detailed XLSX with summary and per-park tabs
+        async function exportFullReportXlsx() {
+            const allParks = [];
+            
+            // Collect all parks (direct stars + bbox)
+            for (const park of starredItems.parks) {
+                const data = reportDataCache.parks.get(park.id) || {};
+                const stats = data.stats || {};
+                allParks.push({ park, data, stats, source: 'starred' });
+            }
+            
+            for (const bbox of starredItems.bboxes) {
+                const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
+                if (bboxData?.parks) {
+                    for (const p of bboxData.parks) {
+                        allParks.push({ park: p, data: p.reportData || {}, stats: p.reportData?.stats || {}, source: 'bbox:' + (bbox.name || 'area') });
+                    }
+                }
+            }
+            
+            if (allParks.length === 0) {
+                showToast('No park data to export', 'error');
+                return;
+            }
+            
+            showToast('Generating detailed XLSX...');
+            
+            // Load SheetJS if not already loaded
+            if (!window.XLSX) {
+                await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+            }
+            
+            const wb = XLSX.utils.book_new();
+            const filterStr = buildFilterString();
+            
+            // === Summary Sheet ===
+            const summaryData = [
+                ['5MP Conservation Monitoring Report'],
+                ['Generated: ' + new Date().toISOString()],
+                ['Date Range: ' + (dateFrom || '2018-01-01') + ' to ' + (dateTo || 'present')],
+                ['Total Parks: ' + allParks.length],
+                [],
+                ['Park ID', 'Park Name', 'Country', 'Area (km²)', 'Fire Detections', 'Fire Groups', 'Response Rate (%)', 'Deforestation (km²)', 'Deforest Trend', 'Settlements', 'Population', 'Built-up (km²)', 'Roadless (%)']
+            ];
+            
+            let totalFires = 0, totalDeforest = 0, totalPop = 0, totalArea = 0;
+            
+            for (const {park, data, stats} of allParks) {
+                const fire = data.fire || stats.fire || {};
+                const deforest = data.deforestation || stats.deforestation || {};
+                const settlement = data.settlement || stats.settlement || {};
+                const roadless = stats.roadless || {};
+                
+                const fireTotal = fire.total_fires || fire.fires_total || 0;
+                const deforestKm2 = deforest.total_loss_km2 || deforest.loss_km2 || 0;
+                const pop = settlement.total_population || settlement.population || 0;
+                const area = park.area_km2 || park.rep_area || 0;
+                
+                totalFires += fireTotal;
+                totalDeforest += deforestKm2;
+                totalPop += pop;
+                totalArea += area;
+                
+                summaryData.push([
+                    park.id,
+                    park.name || park.id,
+                    park.country || '',
+                    area,
+                    fireTotal,
+                    fire.group_count || fire.active_groups || 0,
+                    Math.round(fire.response_rate || 0),
+                    Math.round(deforestKm2 * 100) / 100,
+                    deforest.trend_direction || deforest.trend || '',
+                    settlement.settlement_count || settlement.count || 0,
+                    pop,
+                    Math.round((settlement.built_up_km2 || 0) * 100) / 100,
+                    Math.round((roadless.roadless_percentage || 0) * 10) / 10
+                ]);
+            }
+            
+            // Totals row
+            summaryData.push([]);
+            summaryData.push(['TOTALS', '', '', Math.round(totalArea), totalFires, '', '', Math.round(totalDeforest * 100) / 100, '', '', totalPop, '', '']);
+            
+            const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+            // Set column widths
+            summarySheet['!cols'] = [{wch: 15}, {wch: 30}, {wch: 20}, {wch: 12}, {wch: 12}, {wch: 10}, {wch: 12}, {wch: 15}, {wch: 12}, {wch: 10}, {wch: 12}, {wch: 12}, {wch: 10}];
+            XLSX.utils.book_append_sheet(wb, summarySheet, 'Summary');
+            
+            // === Per-Park Sheets ===
+            for (const {park, data, stats} of allParks) {
+                const sheetName = (park.name || park.id).substring(0, 28).replace(/[\[\]\*\?\/\\:]/g, '');
+                const parkData = [];
+                
+                // Header
+                parkData.push(['Park: ' + (park.name || park.id)]);
+                parkData.push(['ID: ' + park.id]);
+                parkData.push(['Country: ' + (park.country || '')]);
+                parkData.push(['Area: ' + (park.area_km2 || park.rep_area || '') + ' km²']);
+                parkData.push(['Coordinates: ' + (park.lat ? park.lat.toFixed(4) + ', ' + park.lon.toFixed(4) : '')]);
+                parkData.push([]);
+                
+                const fire = data.fire || stats.fire || {};
+                const deforest = data.deforestation || stats.deforestation || {};
+                const settlement = data.settlement || stats.settlement || {};
+                const roadless = stats.roadless || {};
+                
+                // Fire section
+                parkData.push(['=== FIRE ACTIVITY ===']);
+                parkData.push(['Total Detections', fire.total_fires || fire.fires_total || 0]);
+                parkData.push(['Fire Groups', fire.group_count || fire.active_groups || 0]);
+                parkData.push(['Response Rate', (fire.response_rate || 0) + '%']);
+                parkData.push(['Peak Month', fire.peak_month || '']);
+                parkData.push(['Seasonality', fire.seasonality || '']);
+                if (fire.trend) {
+                    parkData.push(['Trend', fire.trend]);
+                }
+                parkData.push([]);
+                
+                // Fire narratives/groups
+                const narratives = fire.narratives || fire.groups || [];
+                if (narratives.length > 0) {
+                    parkData.push(['Fire Groups Detail:']);
+                    parkData.push(['Name', 'Fires', 'Area (km²)', 'Duration', 'Status']);
+                    for (const n of narratives.slice(0, 50)) {
+                        parkData.push([
+                            n.name || n.title || n.narrative?.substring(0, 50) || 'Fire group',
+                            n.fires_total || n.fire_count || n.fires || 0,
+                            Math.round((n.area_km2 || 0) * 100) / 100,
+                            n.duration_days ? n.duration_days + ' days' : '',
+                            n.status || ''
+                        ]);
+                    }
+                    if (narratives.length > 50) {
+                        parkData.push(['... and ' + (narratives.length - 50) + ' more groups']);
+                    }
+                    parkData.push([]);
+                }
+                
+                // Deforestation section
+                parkData.push(['=== DEFORESTATION ===']);
+                parkData.push(['Total Loss (km²)', Math.round((deforest.total_loss_km2 || deforest.loss_km2 || 0) * 100) / 100]);
+                parkData.push(['Trend', deforest.trend_direction || deforest.trend || '']);
+                parkData.push(['Worst Year', deforest.worst_year || '']);
+                parkData.push(['Recent Year Loss (km²)', Math.round((deforest.recent_year_loss_km2 || 0) * 100) / 100]);
+                parkData.push([]);
+                
+                // Deforestation hotspots
+                const hotspots = deforest.hotspots || deforest.events || [];
+                if (hotspots.length > 0) {
+                    parkData.push(['Deforestation Hotspots:']);
+                    parkData.push(['Location', 'Area (km²)', 'Year Range', 'Classification']);
+                    for (const h of hotspots.slice(0, 30)) {
+                        parkData.push([
+                            h.name || h.location || h.description || 'Hotspot',
+                            Math.round((h.area_km2 || h.loss_km2 || 0) * 100) / 100,
+                            h.year_range || (h.start_year ? h.start_year + '-' + h.end_year : ''),
+                            h.classification || h.type || ''
+                        ]);
+                    }
+                    parkData.push([]);
+                }
+                
+                // Settlement section
+                parkData.push(['=== SETTLEMENTS ===']);
+                parkData.push(['Settlement Count', settlement.settlement_count || settlement.count || 0]);
+                parkData.push(['Total Population', settlement.total_population || settlement.population || 0]);
+                parkData.push(['Population Density (/km²)', Math.round((settlement.population_density_per_km2 || 0) * 10) / 10]);
+                parkData.push(['Built-up Area (km²)', Math.round((settlement.built_up_km2 || 0) * 100) / 100]);
+                parkData.push([]);
+                
+                // Largest settlements
+                const settlements = settlement.largest_settlements || settlement.settlements || [];
+                if (settlements.length > 0) {
+                    parkData.push(['Largest Settlements:']);
+                    parkData.push(['Name', 'Population', 'Type']);
+                    for (const s of settlements.slice(0, 20)) {
+                        parkData.push([
+                            s.name || 'Unnamed',
+                            s.population || 0,
+                            s.type || s.classification || ''
+                        ]);
+                    }
+                    parkData.push([]);
+                }
+                
+                // Infrastructure section
+                parkData.push(['=== INFRASTRUCTURE ===']);
+                parkData.push(['Roadless Area (%)', Math.round((roadless.roadless_percentage || 0) * 10) / 10]);
+                parkData.push(['Road Density (km/km²)', Math.round((roadless.road_density_km_per_km2 || 0) * 100) / 100]);
+                parkData.push([]);
+                
+                // Key insights
+                const insights = stats.insights || data.insights || [];
+                if (insights.length > 0) {
+                    parkData.push(['=== KEY INSIGHTS ===']);
+                    for (const insight of insights) {
+                        parkData.push([insight]);
+                    }
+                }
+                
+                const parkSheet = XLSX.utils.aoa_to_sheet(parkData);
+                parkSheet['!cols'] = [{wch: 35}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 20}];
+                XLSX.utils.book_append_sheet(wb, parkSheet, sheetName);
+            }
+            
+            XLSX.writeFile(wb, `5MP_Detailed_Report${filterStr}.xlsx`);
+            showToast(`Exported ${allParks.length} parks to XLSX`, 'success');
+        }
+        
         // Export merged KML for all starred parks
         async function exportFullReportKml() {
             const parkIds = new Set();
