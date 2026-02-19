@@ -1401,6 +1401,69 @@
             return Math.abs(num) >= 1000 ? num.toLocaleString() : String(num);
         }
         
+        // Render weekly fire comparison chart (current year vs prior years avg)
+        function renderFireWeeklyChart(trendData, paId) {
+            if (!trendData.weeks || trendData.weeks.length < 10) return '';
+            
+            const weeks = trendData.weeks;
+            const currentYear = new Date().getFullYear();
+            
+            // Group by week number (W01-W52)
+            const byWeekNum = {};
+            weeks.forEach(w => {
+                const match = w.week.match(/(\d{4})-W(\d{2})/);
+                if (!match) return;
+                const year = parseInt(match[1]);
+                const weekNum = match[2];
+                if (!byWeekNum[weekNum]) byWeekNum[weekNum] = { prior: [], current: null };
+                if (year === currentYear) {
+                    byWeekNum[weekNum].current = w.groups;
+                } else {
+                    byWeekNum[weekNum].prior.push(w.groups);
+                }
+            });
+            
+            // Get last 12 weeks for display
+            const currentWeekNum = Math.ceil((new Date() - new Date(currentYear, 0, 1)) / (7 * 24 * 60 * 60 * 1000));
+            const displayWeeks = [];
+            for (let i = 11; i >= 0; i--) {
+                let wn = currentWeekNum - i;
+                if (wn <= 0) wn += 52;
+                const weekStr = String(wn).padStart(2, '0');
+                const data = byWeekNum[weekStr] || { prior: [], current: null };
+                const priorAvg = data.prior.length > 0 ? data.prior.reduce((a,b) => a+b, 0) / data.prior.length : 0;
+                displayWeeks.push({ week: weekStr, current: data.current, priorAvg: priorAvg });
+            }
+            
+            if (displayWeeks.every(d => d.current === null && d.priorAvg === 0)) return '';
+            
+            const w = 220, h = 70, pad = 6;
+            const chartW = w - pad * 2, chartH = h - pad * 2 - 14;
+            const maxVal = Math.max(...displayWeeks.map(d => Math.max(d.current || 0, d.priorAvg)), 1);
+            const barW = chartW / displayWeeks.length - 2;
+            
+            return `
+                <div style="margin-top: 10px;">
+                    <div style="font-size: 9px; color: #666; margin-bottom: 4px;">📊 Weekly fires: <span style="color:#f97316">●</span> ${currentYear} vs <span style="color:#666">●</span> prior avg</div>
+                    <svg width="${w}" height="${h}" style="background: rgba(0,0,0,0.2); border-radius: 4px;">
+                        ${displayWeeks.map((d, i) => {
+                            const x = pad + i * (chartW / displayWeeks.length);
+                            const priorH = (d.priorAvg / maxVal) * chartH;
+                            const currH = ((d.current || 0) / maxVal) * chartH;
+                            const priorY = pad + chartH - priorH;
+                            const currY = pad + chartH - currH;
+                            return `
+                                <rect x="${x}" y="${priorY.toFixed(1)}" width="${barW/2}" height="${priorH.toFixed(1)}" fill="#444" rx="1"/>
+                                ${d.current !== null ? `<rect x="${x + barW/2}" y="${currY.toFixed(1)}" width="${barW/2}" height="${currH.toFixed(1)}" fill="${d.current > d.priorAvg * 1.5 ? '#ef4444' : d.current < d.priorAvg * 0.5 ? '#22c55e' : '#f97316'}" rx="1"/>` : ''}
+                            `;
+                        }).join('')}
+                        <text x="${pad}" y="${h-2}" fill="#666" font-size="7">W${displayWeeks[0].week}</text>
+                        <text x="${w-pad}" y="${h-2}" fill="#666" font-size="7" text-anchor="end">W${displayWeeks[displayWeeks.length-1].week}</text>
+                    </svg>
+                </div>
+            `;
+        }
+        
         // Render fire trend sparkline chart with regional median
         function renderFireTrendChart(trendData, paId) {
             if (!trendData.years || trendData.years.length < 2) return '';
@@ -4807,6 +4870,7 @@
                             ${trendData.seasonality ? `<div style="font-size: 10px; color: #888; margin-bottom: 4px;">🔥 ${trendData.seasonality}</div>` : ''}
                             ${trendData.avg_groups_per_km2 ? `<div style="font-size: 10px; color: #888; margin-bottom: 4px;">📊 ${(trendData.avg_groups_per_km2 * 1000).toFixed(1)} groups per 1000 km² per year</div>` : ''}
                             ${trendData.latitude_comparison ? `<div style="font-size: 10px; color: ${trendData.latitude_comparison.percentile > 70 ? '#f59e0b' : trendData.latitude_comparison.percentile < 30 ? '#22c55e' : '#888'}; margin-bottom: 4px;">🌍 ${trendData.latitude_comparison.percentile > 70 ? 'Higher' : trendData.latitude_comparison.percentile < 30 ? 'Lower' : 'Similar'} fire activity than ${100 - Math.round(trendData.latitude_comparison.percentile)}% of ${trendData.latitude_comparison.latitude_band} parks</div>` : ''}
+                            ${trendData.weeks && trendData.weeks.length > 10 ? renderFireWeeklyChart(trendData, paId) : ''}
                             ${trendData.years && trendData.years.length > 2 ? renderFireTrendChart(trendData, paId) : ''}
                         </div>` : ''}
                         

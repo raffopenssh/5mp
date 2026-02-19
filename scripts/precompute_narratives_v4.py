@@ -135,7 +135,14 @@ class NarrativeGeneratorV4:
             # Aggregates by year
             by_year = defaultdict(list)
             for t in trajectories:
-                by_year[t.get('year', 0)].append(t)
+                # Extract year from start_date if year not present
+                year = t.get('year')
+                if not year and t.get('start_date'):
+                    try:
+                        year = int(t['start_date'][:4])
+                    except:
+                        year = 0
+                by_year[year or 0].append(t)
             
             total_fires = sum(t.get('fires', 0) for t in trajectories)
             total_groups = len(trajectories)
