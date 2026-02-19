@@ -144,7 +144,7 @@ class NarrativeGeneratorV4:
                         year = 0
                 by_year[year or 0].append(t)
             
-            total_fires = sum(t.get('fires', 0) for t in trajectories)
+            total_fires = sum(t.get('fires_total', t.get('fires', 0)) or 0 for t in trajectories)
             total_groups = len(trajectories)
             
             # Type breakdown
@@ -160,7 +160,7 @@ class NarrativeGeneratorV4:
             years_summary = []
             for year in sorted(by_year.keys()):
                 year_trajs = by_year[year]
-                year_fires = sum(t.get('fires', 0) for t in year_trajs)
+                year_fires = sum(t.get('fires_total', t.get('fires', 0)) or 0 for t in year_trajs)
                 year_management = sum(1 for t in year_trajs if 'management' in (t.get('group_type', '') or '').lower())
                 year_stopped = sum(1 for t in year_trajs if (t.get('pct_inside') or 0) > 80)
                 year_transited = len(year_trajs) - year_stopped
@@ -278,7 +278,7 @@ class NarrativeGeneratorV4:
                     'best_year': best_year,
                     'best_year_rate': best_year_rate,
                     'narrative': ' '.join(trend_narrative_parts),
-                    'avg_groups_per_km2': round(total_groups / park_area * 1000, 4) if park_area > 0 else 0,
+                    'avg_groups_per_km2': round(total_groups / max(1, len(years_summary)) / park_area * 1000, 4) if park_area > 0 else 0,
                     'peak_months': [peak_month] if peak_month else [],
                     'seasonality': f"dry season peaks {park_climate.get('dry_season', 'unknown')}" if park_climate.get('dry_season') else None
                 },

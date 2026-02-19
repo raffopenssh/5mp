@@ -1444,7 +1444,7 @@
             
             return `
                 <div style="margin-top: 10px;">
-                    <div style="font-size: 9px; color: #666; margin-bottom: 4px;">📊 Weekly fires: <span style="color:#f97316">●</span> ${currentYear} vs <span style="color:#666">●</span> prior avg</div>
+                    <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Weekly: <span style="color:#f97316">●</span> ${currentYear} vs <span style="color:#666">●</span> prior avg</div>
                     <svg width="${w}" height="${h}" style="background: rgba(0,0,0,0.2); border-radius: 4px;">
                         ${displayWeeks.map((d, i) => {
                             const x = pad + i * (chartW / displayWeeks.length);
@@ -4865,13 +4865,13 @@
                         
                         ${filteredSummary ? `<div style="margin-top: 8px; font-size: 10px; color: #aaa; line-height: 1.4;">${filteredSummary}</div>` : ''}
                         
-                        ${trendData.seasonality || trendData.avg_groups_per_km2 || trendData.latitude_comparison ? `
+                        ${trendData.seasonality || trendData.avg_groups_per_km2 ? `
                         <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08);">
-                            ${trendData.seasonality ? `<div style="font-size: 10px; color: #888; margin-bottom: 4px;">🔥 ${trendData.seasonality}</div>` : ''}
-                            ${trendData.avg_groups_per_km2 ? `<div style="font-size: 10px; color: #888; margin-bottom: 4px;">📊 ${(trendData.avg_groups_per_km2 * 1000).toFixed(1)} groups per 1000 km² per year</div>` : ''}
-                            ${trendData.latitude_comparison ? `<div style="font-size: 10px; color: ${trendData.latitude_comparison.percentile > 70 ? '#f59e0b' : trendData.latitude_comparison.percentile < 30 ? '#22c55e' : '#888'}; margin-bottom: 4px;">🌍 ${trendData.latitude_comparison.percentile > 70 ? 'Higher' : trendData.latitude_comparison.percentile < 30 ? 'Lower' : 'Similar'} fire activity than ${100 - Math.round(trendData.latitude_comparison.percentile)}% of ${trendData.latitude_comparison.latitude_band} parks</div>` : ''}
+                            ${trendData.seasonality ? `<div style="font-size: 10px; color: #888; margin-bottom: 4px;">Peak season: ${trendData.seasonality.replace('dry season peaks ', '')}</div>` : ''}
+                            ${trendData.avg_groups_per_km2 ? `<div style="font-size: 10px; color: #888; margin-bottom: 4px;">${trendData.avg_groups_per_km2.toFixed(1)} fire groups per 1000 km²/year</div>` : ''}
                             ${trendData.weeks && trendData.weeks.length > 10 ? renderFireWeeklyChart(trendData, paId) : ''}
                         </div>` : ''}
+                        ${trendData.latitude_comparison ? `<div style="font-size: 10px; color: ${trendData.latitude_comparison.percentile > 70 ? '#f59e0b' : trendData.latitude_comparison.percentile < 30 ? '#22c55e' : '#888'}; margin-bottom: 4px;">${trendData.latitude_comparison.percentile > 70 ? 'Higher' : trendData.latitude_comparison.percentile < 30 ? 'Lower' : 'Similar'} fire activity than ${100 - Math.round(trendData.latitude_comparison.percentile)}% of ${trendData.latitude_comparison.latitude_band} parks</div>` : ''
                         
                         ${initialNarratives.length > 0 ? `
                         <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
