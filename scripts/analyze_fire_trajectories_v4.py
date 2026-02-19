@@ -691,8 +691,11 @@ class TrajectoryAnalyzerV4:
                 else:
                     new_trajectories += len(enhanced)
                 
-                with open(output_file, 'w') as f:
+                # Atomic write: write to temp file then rename
+                temp_file = output_file.with_suffix('.json.tmp')
+                with open(temp_file, 'w') as f:
                     json.dump(enhanced, f)
+                temp_file.rename(output_file)
                 
                 total_trajectories += len(enhanced)
                 parks_processed += 1

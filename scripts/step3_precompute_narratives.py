@@ -112,7 +112,7 @@ def build_narrative_cache(traj_data, park_info):
             'outcome': t.get('group_type', 'unknown'),
             'narrative': t.get('narrative', ''),
             'nearby_places': [],
-            'rivers_crossed': []
+            'rivers_crossed': t.get('rivers_crossed', [])
         }
         
         # Add nearby places

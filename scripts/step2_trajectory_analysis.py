@@ -141,8 +141,20 @@ class Step2Analyzer:
         ns = self.find_nearest(start_lat, start_lon, ctx['settlements'], max_dist_km=10)
         near_settlement = ns[0] if ns else None
         
+        # Find rivers crossed by trajectory
+        rivers_crossed = []
+        if len(traj) >= 2 and ctx['rivers']:
+            seen_rivers = set()
+            for i in range(len(traj) - 1):
+                pt = traj[i]
+                # Check rivers near each trajectory point
+                nr = self.find_nearest(pt['lat'], pt['lon'], ctx['rivers'], max_dist_km=2)
+                if nr and nr[0]['name'] and nr[0]['name'] not in seen_rivers:
+                    seen_rivers.add(nr[0]['name'])
+                    rivers_crossed.append(nr[0]['name'])
+        
         # Build narrative
-        narrative = self.build_narrative(group, origin, destination, near_settlement)
+        narrative = self.build_narrative(group, origin, destination, near_settlement, rivers_crossed)
         
         return {
             'group_type': group.get('group_type'),
@@ -158,11 +170,12 @@ class Step2Analyzer:
             'origin': origin,
             'destination': destination,
             'near_settlement': near_settlement,
+            'rivers_crossed': rivers_crossed if rivers_crossed else None,
             'narrative': narrative,
             'trajectory': traj  # Keep for GeoJSON generation
         }
     
-    def build_narrative(self, group, origin, destination, near_settlement):
+    def build_narrative(self, group, origin, destination, near_settlement, rivers_crossed=None):
         """Build human-readable narrative"""
         parts = []
         
@@ -206,6 +219,15 @@ class Step2Analyzer:
         if destination.get('place') and destination['place'] != origin.get('place'):
             p = destination['place']
             parts.append(f"Ended near {p['name']}.")
+        
+        # Rivers crossed
+        if rivers_crossed:
+            if len(rivers_crossed) == 1:
+                parts.append(f"Crossed {rivers_crossed[0]} river.")
+            elif len(rivers_crossed) <= 3:
+                parts.append(f"Crossed rivers: {', '.join(rivers_crossed)}.")
+            else:
+                parts.append(f"Crossed {len(rivers_crossed)} rivers including {rivers_crossed[0]}.")
         
         # Settlement warning
         if near_settlement:

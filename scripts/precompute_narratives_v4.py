@@ -307,8 +307,12 @@ class NarrativeGeneratorV4:
         fire_dir.mkdir(exist_ok=True)
         
         for park_id, data in narratives.items():
-            with open(fire_dir / f'{park_id}.json', 'w') as f:
+            # Atomic write: write to temp file then rename
+            output_file = fire_dir / f'{park_id}.json'
+            temp_file = output_file.with_suffix('.json.tmp')
+            with open(temp_file, 'w') as f:
                 json.dump(data, f)
+            temp_file.rename(output_file)
         
         # Update cache
         log("Updating fire_narrative_cache...")

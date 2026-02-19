@@ -532,8 +532,11 @@ def main():
             final_groups = new_groups
         
         output_file = OUTPUT_DIR / f"{park_id}.json"
-        with open(output_file, 'w') as f:
+        # Atomic write: write to temp file then rename
+        temp_file = output_file.with_suffix('.json.tmp')
+        with open(temp_file, 'w') as f:
             json.dump(final_groups, f)
+        temp_file.rename(output_file)
     
     log("Saving weekly counts to database...")
     conn.execute("CREATE TABLE IF NOT EXISTS park_fire_weekly (park_id TEXT, week_start TEXT, fire_count INTEGER, PRIMARY KEY (park_id, week_start))")
