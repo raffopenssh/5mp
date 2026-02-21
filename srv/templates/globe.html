@@ -4980,15 +4980,13 @@
                         const fromDate = dateFrom ? new Date(dateFrom) : new Date('1900-01-01');
                         const toDate = dateTo ? new Date(dateTo) : new Date('2100-01-01');
                         allNarratives = allNarratives.filter(n => {
-                            // Include if any part of the fire group overlaps with the date range
-                            // Support both old (entry_date/last_inside) and new (start_date/end_date) field names
-                            const entryStr = n.entry_date || n.start_date;
-                            const lastStr = n.last_inside || n.end_date;
-                            const entryDate = entryStr ? new Date(entryStr) : null;
-                            const lastDate = lastStr ? new Date(lastStr) : entryDate;
-                            if (!entryDate) return true; // No date, include anyway
-                            // Overlap: entry <= toDate AND last >= fromDate
-                            return entryDate <= toDate && lastDate >= fromDate;
+                            // Filter by fire START date being within the selected range
+                            // Support both old (entry_date) and new (start_date) field names
+                            const startStr = n.entry_date || n.start_date;
+                            const startDate = startStr ? new Date(startStr) : null;
+                            if (!startDate) return true; // No date, include anyway
+                            // Include if fire started within the date range
+                            return startDate >= fromDate && startDate <= toDate;
                         });
                     }
                     const initialNarratives = allNarratives.slice(0, 10);
