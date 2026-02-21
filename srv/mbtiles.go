@@ -116,10 +116,11 @@ func (q *MBTilesQueue) AddJob(job *MBTilesJob) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	
-	// Check available disk space
+	// Check available disk space (require 1.2x estimated size)
 	availableSpace := getAvailableDiskSpace(q.outputDir)
-	if job.EstimatedSize > 0 && availableSpace < uint64(job.EstimatedSize*2) {
-		return fmt.Errorf("insufficient disk space: need %d bytes, have %d", job.EstimatedSize*2, availableSpace)
+	requiredSpace := uint64(float64(job.EstimatedSize) * 1.2)
+	if job.EstimatedSize > 0 && availableSpace < requiredSpace {
+		return fmt.Errorf("insufficient disk space: need %d bytes, have %d", requiredSpace, availableSpace)
 	}
 	
 	job.Status = "pending"
@@ -542,7 +543,8 @@ func (s *Server) HandleAPIMBTilesCreate(w http.ResponseWriter, r *http.Request) 
 	
 	// Check available space
 	availableSpace := getAvailableDiskSpace(mbtilesQueue.outputDir)
-	if uint64(estimatedSize*2) > availableSpace {
+	// Require 1.2x estimated size as safety margin
+	if uint64(float64(estimatedSize)*1.2) > availableSpace {
 		http.Error(w, "Insufficient disk space", http.StatusInsufficientStorage)
 		return
 	}
@@ -677,7 +679,8 @@ func (s *Server) HandleAPIMBTilesEstimate(w http.ResponseWriter, r *http.Request
 	estimatedSeconds := len(tiles) / 100
 	
 	availableSpace := getAvailableDiskSpace(mbtilesQueue.outputDir)
-	sufficient := uint64(estimatedSize*2) <= availableSpace
+	// Require 1.2x estimated size as safety margin (was 2x)
+	sufficient := uint64(float64(estimatedSize)*1.2) <= availableSpace
 	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
