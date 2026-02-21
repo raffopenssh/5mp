@@ -90,7 +90,7 @@
         .mbtiles-action-btn span { position: relative; z-index: 1; }
         /* MBTiles progress notification hint */
         .has-mbtiles-progress { position: relative; }
-        .has-mbtiles-progress::after { content: ''; position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; animation: mbtiles-pulse 1.5s infinite; }
+        .has-mbtiles-progress::after { content: ''; position: absolute; top: 4px; right: 4px; width: 10px; height: 10px; background: #3b82f6; border-radius: 50%; animation: mbtiles-pulse 1.5s infinite; z-index: 1; }
         @keyframes mbtiles-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         .modal-overlay.active { display: flex; }
         .modal { background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 100%; max-width: 420px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
@@ -715,7 +715,7 @@
         .pa-popup-section-star { margin-left: auto; margin-right: 8px; }
         .pa-popup-section-title { font-size: 10px; color: #888; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
         .pa-popup-section-count { color: #22c55e; margin-left: auto; font-weight: 500; }
-        .pa-popup-section-icon { font-size: 12px; }
+        .pa-popup-section-icon { font-size: 13px; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; text-align: center; line-height: 1; flex-shrink: 0; }
         .pa-popup-section-toggle { font-size: 10px; color: #555; transition: transform 0.2s; }
         .pa-popup-section.open .pa-popup-section-toggle { transform: rotate(180deg); }
         .pa-popup-section-content { display: none; padding: 8px 10px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); }
@@ -4279,21 +4279,23 @@
         }
         
         function renderPublicationNotification(pub) {
-            // Extract short title from message
-            let shortTitle = pub.message || pub.title || 'New publication';
-            if (shortTitle.startsWith('New publication: "')) {
-                shortTitle = shortTitle.slice(18).split('"')[0];
-                if (shortTitle.length > 60) shortTitle = shortTitle.slice(0, 57) + '...';
+            // Message format: "Author (Year) Title" or old format "New publication (Year): Title"
+            let citation = pub.message || 'New publication';
+            // Remove old format prefix if present
+            if (citation.startsWith('New publication (')) {
+                citation = citation.replace(/^New publication \(\d+\): /, '');
             }
+            if (citation.length > 80) citation = citation.slice(0, 77) + '...';
+            
             const parkName = pub.title ? pub.title.replace('New Research: ', '') : pub.park_id;
+            const url = pub.reference_url;
             
             return `
-                <div class="notification-item" onclick="${pub.reference_url ? `window.open('${pub.reference_url}', '_blank')` : ''}" style="${pub.reference_url ? '' : 'cursor:default;'}">
-                    <div class="notification-icon" style="background:rgba(168,85,247,0.15);color:#a855f7;">📄</div>
+                <div class="notification-item" onclick="${url ? `window.open('${url}', '_blank')` : ''}" style="${url ? '' : 'cursor:default;'}">
+                    <div class="notification-icon" style="background:rgba(168,85,247,0.15);color:#a855f7;">◉</div>
                     <div class="notification-content">
                         <div class="notification-location" style="color:#a855f7;">${escapeHtml(parkName)}</div>
-                        <div class="notification-details" style="font-size:11px;line-height:1.3;">${escapeHtml(shortTitle)}</div>
-                        <div style="font-size:10px;color:#666;margin-top:2px;">${pub.date || ''}</div>
+                        <div class="notification-details" style="font-size:11px;line-height:1.3;">${escapeHtml(citation)}</div>
                     </div>
                 </div>
             `;
@@ -4578,7 +4580,31 @@
             // Small delay to let other things initialize
             setTimeout(loadNotifications, 1000);
             setTimeout(loadFireActiveParks, 1500);
+            
+            // Periodically check for new notifications (every 30 seconds)
+            setInterval(checkForNewNotifications, 30000);
         });
+        
+        let lastNotificationCheck = 0;
+        async function checkForNewNotifications() {
+            try {
+                // Quick check for any notification newer than our last check
+                const resp = await fetch(`/api/notifications?limit=1&pwd=${encodeURIComponent(getPwd())}`);
+                if (!resp.ok) return;
+                const data = await resp.json();
+                const notifs = data.notifications || [];
+                if (notifs.length > 0) {
+                    const latestTime = new Date(notifs[0].created_at).getTime();
+                    if (latestTime > lastNotificationCheck) {
+                        lastNotificationCheck = latestTime;
+                        loadNotifications();  // Reload all notifications
+                        showNotificationBadge();  // Update badge
+                    }
+                }
+            } catch (e) {
+                // Ignore errors in background check
+            }
+        }
 
         
         initDateRange();
@@ -5094,10 +5120,25 @@
         }
         
         // Toggle collapsible popup section
+        let hasShownPinHint = localStorage.getItem('shownPinHint') === 'true';
+        
         function togglePopupSection(section) {
             // Prevent toggle if clicking on a link/button inside
             if (event.target.closest('a, button')) return;
+            
+            const wasOpen = section.classList.contains('open');
             section.classList.toggle('open');
+            
+            // Show pin hint on first accordion open
+            if (!wasOpen && !hasShownPinHint) {
+                hasShownPinHint = true;
+                localStorage.setItem('shownPinHint', 'true');
+                showToast(
+                    'Tip: Pin layers to map',
+                    'Click the icon (e.g. ◇) next to section titles to pin that layer to the map',
+                    null, null, 'info'
+                );
+            }
         }
         
         // Popup section data fetching functions
@@ -5669,19 +5710,19 @@
                 
                 if (s.total_rivers > 0) {
                     html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="river" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'river', this)" style="flex: 1; min-width: 70px;">
-                        <span style="color: #3b82f6;">∿</span> Rivers
+                        <span style="color: #3b82f6;">∿</span> ${s.total_rivers}
                     </button>`;
                 }
                 
                 if (s.total_roads > 0) {
                     html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="road" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'road', this)" style="flex: 1; min-width: 70px;">
-                        <span style="color: #60a5fa;">═</span> Roads
+                        <span style="color: #60a5fa;">═</span> ${s.total_roads}
                     </button>`;
                 }
                 
                 if (s.total_places > 0) {
                     html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="place" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'place', this)" style="flex: 1; min-width: 70px;">
-                        <span style="color: #a855f7;">●</span> Places
+                        <span style="color: #a855f7;">●</span> ${s.total_places}
                     </button>`;
                 }
                 
@@ -5863,18 +5904,34 @@
             const el = document.getElementById(`research-content-${paId}`);
             if (!el) return;
             try {
-                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/publications/count`);
-                const data = await resp.json();
-                if (data.count > 0) {
-                    el.innerHTML = `
-                        <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Publications found</span>
-                            <span class="pa-popup-mini-stat-value">${data.count}</span>
-                        </div>
-                        <button class="pa-popup-btn" style="margin-top: 8px; width: 100%;" onclick="event.stopPropagation(); showPublications('${paId}', '${escapeHtml(paName)}')">
-                            ▶ View papers
-                        </button>
-                    `;
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/publications?pwd=${encodeURIComponent(getPwd())}`);
+                const pubs = await resp.json();
+                if (pubs && pubs.length > 0) {
+                    let html = `<div style="font-size: 10px; color: #888; margin-bottom: 6px;">${pubs.length} publication${pubs.length > 1 ? 's' : ''}</div>`;
+                    html += '<div style="max-height: 200px; overflow-y: auto;">';
+                    pubs.slice(0, 10).forEach(pub => {
+                        const authors = pub.authors || [];
+                        const firstAuthor = authors[0] ? authors[0].split(' ').pop() : 'Unknown';
+                        const authorStr = authors.length > 1 ? `${firstAuthor} et al.` : firstAuthor;
+                        const year = pub.year || '';
+                        const title = pub.title || 'Untitled';
+                        const shortTitle = title.length > 80 ? title.slice(0, 77) + '...' : title;
+                        const url = pub.url || (pub.doi ? `https://doi.org/${pub.doi}` : null);
+                        
+                        html += `<div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 11px; line-height: 1.4;">`;
+                        html += `<div style="color: #888;">${escapeHtml(authorStr)}${year ? ` (${year})` : ''}</div>`;
+                        if (url) {
+                            html += `<a href="${escapeHtml(url)}" target="_blank" style="color: #a855f7; text-decoration: none;" onclick="event.stopPropagation();">${escapeHtml(shortTitle)}</a>`;
+                        } else {
+                            html += `<span style="color: #ccc;">${escapeHtml(shortTitle)}</span>`;
+                        }
+                        html += '</div>';
+                    });
+                    if (pubs.length > 10) {
+                        html += `<div style="padding: 6px 0; font-size: 10px; color: #666;">+ ${pubs.length - 10} more</div>`;
+                    }
+                    html += '</div>';
+                    el.innerHTML = html;
                 } else {
                     el.innerHTML = '<div class="pa-popup-section-empty">No publications found yet</div>';
                 }

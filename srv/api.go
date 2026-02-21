@@ -847,12 +847,27 @@ func (s *Server) HandleAPIWDPASearch(w http.ResponseWriter, r *http.Request) {
 // HandleAPIPublications returns publications for a protected area.
 // GET /api/parks/{id}/publications
 func (s *Server) HandleAPIPublications(w http.ResponseWriter, r *http.Request) {
-	paID := r.PathValue("id")
-	if paID == "" {
+	parkID := r.PathValue("id")
+	if parkID == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "missing park ID"})
 		return
+	}
+
+	// Look up park to get WDPA ID
+	area := s.AreaStore.GetByID(parkID)
+	if area == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{"error": "park not found"})
+		return
+	}
+
+	// Use WDPA ID if available, otherwise fall back to park ID
+	paID := parkID
+	if area.WDPAID != "" {
+		paID = area.WDPAID
 	}
 
 	ctx := r.Context()
@@ -905,12 +920,19 @@ func (s *Server) HandleAPIPublications(w http.ResponseWriter, r *http.Request) {
 // HandleAPIPublicationCount returns the publication count for a PA.
 // GET /api/parks/{id}/publications/count
 func (s *Server) HandleAPIPublicationCount(w http.ResponseWriter, r *http.Request) {
-	paID := r.PathValue("id")
-	if paID == "" {
+	parkID := r.PathValue("id")
+	if parkID == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "missing park ID"})
 		return
+	}
+
+	// Look up park to get WDPA ID
+	area := s.AreaStore.GetByID(parkID)
+	paID := parkID
+	if area != nil && area.WDPAID != "" {
+		paID = area.WDPAID
 	}
 
 	ctx := r.Context()

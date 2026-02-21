@@ -402,14 +402,31 @@ func (s *Server) createPublicationNotificationV2(ctx context.Context, parkID, pa
 		year = time.Now().Year()
 	}
 
+	// Build author string (LastName et al. format)
+	authorStr := "Unknown"
+	if len(work.Authorships) > 0 && work.Authorships[0].Author.DisplayName != "" {
+		name := work.Authorships[0].Author.DisplayName
+		// Extract last name (last word)
+		parts := strings.Fields(name)
+		if len(parts) > 0 {
+			lastName := parts[len(parts)-1]
+			if len(work.Authorships) > 1 {
+				authorStr = lastName + " et al."
+			} else {
+				authorStr = lastName
+			}
+		}
+	}
+
 	title := fmt.Sprintf("New Research: %s", parkName)
-	message := fmt.Sprintf("New publication (%d): %s", year, work.Title)
+	// Format: Author (Year) Title
+	message := fmt.Sprintf("%s (%d) %s", authorStr, year, work.Title)
 	if len(message) > 200 {
 		message = message[:197] + "..."
 	}
 
 	_, err := s.DB.ExecContext(ctx, `
-		INSERT INTO notifications (park_id, notification_type, title, message, link, created_at)
+		INSERT INTO notifications (park_id, notification_type, title, message, reference_url, created_at)
 		VALUES (?, 'new_publication', ?, ?, ?, datetime('now'))
 	`, parkID, title, message, work.ID)
 
