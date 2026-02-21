@@ -7573,24 +7573,49 @@
         const stats = data.stats || {};
         let html = '<div class="starred-report-content">';
         
-        // Patrol Activity Summary (at top as requested)
-        const fireData = data.fire || {};
+        // Pre-calculate filtered fire stats (used in both Patrol summary and Fire section)
+        const fire = data.fire || {};
+        let fireNarratives = fire.narratives || [];
+        
+        // Filter narratives by selected date range (same as popup does)
+        if (dateFrom || dateTo) {
+            const fromDate = dateFrom ? new Date(dateFrom) : new Date('1900-01-01');
+            const toDate = dateTo ? new Date(dateTo) : new Date('2100-01-01');
+            fireNarratives = fireNarratives.filter(n => {
+                const startStr = n.entry_date || n.start_date;
+                const startDate = startStr ? new Date(startStr) : null;
+                if (!startDate) return true;
+                return startDate >= fromDate && startDate <= toDate;
+            });
+        }
+        
+        // Calculate stats from filtered narratives
+        const fireGroups = fireNarratives.length;
+        const fireTotalDetections = fireNarratives.reduce((sum, n) => sum + (n.fires_inside || n.fires_total || n.fires || 0), 0);
+        const stoppedCount = fireNarratives.filter(n => n.outcome === 'STOPPED_INSIDE').length;
+        const fireResponseRate = fireGroups > 0 ? (stoppedCount / fireGroups) * 100 : 0;
+        
+        // Sort by date descending to show most recent first
+        fireNarratives.sort((a, b) => {
+            const dateA = new Date(a.entry_date || a.start_date || '1900-01-01');
+            const dateB = new Date(b.entry_date || b.start_date || '1900-01-01');
+            return dateB - dateA;
+        });
+        
+        // Patrol Activity Summary (at top)
         html += `<div class="starred-report-section patrol" style="margin-bottom:12px;">
             <div class="starred-report-section-title">○ Patrol & Activity Summary</div>
             <div class="starred-report-section-stats" style="flex-wrap:wrap;">
-                <span title="Fire response rate">Response: ${Math.round(fireData.response_rate || 0)}%</span>
+                <span title="Fire response rate">Response: ${Math.round(fireResponseRate)}%</span>
                 <span title="Roadless wilderness">Roadless: ${(stats.roadless?.roadless_percentage || 0).toFixed(1)}%</span>
                 <span title="Settlement built-up area">Built-up: ${(stats.settlement?.built_up_km2 || 0).toFixed(2)} km²</span>
             </div>
             ${stats.insights && stats.insights.length > 0 ? `<div class="starred-report-group" style="margin-top:8px;"><div class="starred-report-group-title">Key Insights:</div>${stats.insights.slice(0, expanded ? 100 : 3).map(i => `<div style="margin:4px 0;font-size:10px;color:#aaa;">${i}</div>`).join('')}${!expanded && stats.insights.length > 3 ? `<div style="color:#60a5fa;font-size:10px;cursor:pointer;" onclick="this.parentElement.innerHTML=this.parentElement.innerHTML.replace('...show more', '')+reportDataCache.parks.get('${park.id}')?.stats?.insights?.slice(3).map(i=>'<div style=margin:4px\\ 0;font-size:10px;color:#aaa;>'+i+'</div>').join('')">...show ${stats.insights.length - 3} more</div>` : ''}</div>` : ''}
         </div>`;
         
-        // Fire section - use data from fire-narrative API
-        const fire = data.fire || {};
-        const fireGroups = fire.narratives?.length || 0;
-        const fireTotalDetections = fire.total_fires || 0;
-        const fireResponseRate = fire.response_rate || 0;
+        // Fire section - using pre-calculated filtered data
         if (fireTotalDetections > 0 || fireGroups > 0) {
+            const rangeLabel = dateFrom && dateTo ? `${dateFrom} to ${dateTo}` : 'all time';
             html += `<div class="starred-report-section fire">
                 <div class="starred-report-section-title">◆ Fire Activity</div>
                 <div class="starred-report-section-stats">
@@ -7598,8 +7623,8 @@
                     <span>Groups: ${fmt(fireGroups)}</span>
                     <span>Response: ${Math.round(fireResponseRate)}%</span>
                 </div>
-                ${fire.summary ? `<div class="starred-report-section-text">${fire.summary}</div>` : ''}
-                ${fire.narratives && fire.narratives.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Recent Groups (${Math.min(5, fire.narratives.length)} of ${fire.narratives.length}):</div>${fire.narratives.slice(0, expanded ? 10 : 5).map(n => `<div style="margin:4px 0;font-size:10px;">${n.narrative || n.title || 'Fire group'}</div>`).join('')}${fire.narratives.length > (expanded ? 10 : 5) ? `<div style="color:#60a5fa;font-size:10px;">...${fire.narratives.length - (expanded ? 10 : 5)} more</div>` : ''}</div>` : ''}
+                <div class="starred-report-section-text" style="font-size:10px;color:#888;">Period: ${rangeLabel}</div>
+                ${fireNarratives.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Recent Groups (${Math.min(5, fireNarratives.length)} of ${fireNarratives.length}):</div>${fireNarratives.slice(0, expanded ? 10 : 5).map(n => `<div style="margin:4px 0;font-size:10px;">${n.narrative || n.title || 'Fire group'}</div>`).join('')}${fireNarratives.length > (expanded ? 10 : 5) ? `<div style="color:#60a5fa;font-size:10px;">...${fireNarratives.length - (expanded ? 10 : 5)} more</div>` : ''}</div>` : ''}
             </div>`;
         }
         
@@ -7806,7 +7831,11 @@
     }
     
     function copyStarredLink() {
-        const params = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams();
+        
+        // Always include password if present
+        const pwd = new URLSearchParams(window.location.search).get('pwd');
+        if (pwd) params.set('pwd', pwd);
         
         // Encode starred items in URL
         if (starredItems.parks.length > 0) {
@@ -7818,10 +7847,33 @@
         if (starredItems.bboxes.length > 0) {
             params.set('starred_bboxes', starredItems.bboxes.map(b => b.bbox.join(':')).join(','));
         }
+        if (starredItems.narratives.length > 0) {
+            params.set('starred_narratives', starredItems.narratives.map(n => `${n.parkId}:${n.type}`).join(','));
+        }
+        
+        // Include time filter
+        if (dateFrom) params.set('from', dateFrom);
+        if (dateTo) params.set('to', dateTo);
+        
+        // Include pinned layers
+        const pinnedKeys = Object.keys(pinnedLayers);
+        if (pinnedKeys.length > 0) {
+            params.set('pinned', pinnedKeys.join(','));
+        }
+        
+        // Include map view
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        params.set('lng', center.lng.toFixed(4));
+        params.set('lat', center.lat.toFixed(4));
+        params.set('zoom', zoom.toFixed(1));
+        
+        // Open star panel on load
+        params.set('panel', 'star');
         
         const url = window.location.origin + window.location.pathname + '?' + params.toString();
         navigator.clipboard.writeText(url).then(() => {
-            showToast('Link with starred items copied!');
+            showToast('Share link copied with full state!');
         }).catch(() => {
             prompt('Copy this link:', url);
         });
