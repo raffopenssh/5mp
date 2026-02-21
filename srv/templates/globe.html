@@ -7666,6 +7666,18 @@
             </div>`;
         }
         
+        // Publications section
+        const pubs = data.publications || [];
+        if (pubs.length > 0) {
+            html += `<div class="starred-report-section" style="border-color:#a855f7;">
+                <div class="starred-report-section-title">◎ Publications</div>
+                <div class="starred-report-section-stats">
+                    <span>${pubs.length} publication${pubs.length !== 1 ? 's' : ''}</span>
+                </div>
+                <div class="starred-report-group"><div class="starred-report-group-title">Recent:</div>${pubs.slice(0, 5).map(p => `<div style="margin:4px 0;font-size:10px;"><a href="${p.doi ? 'https://doi.org/' + p.doi : p.url || '#'}" target="_blank" style="color:#a78bfa;text-decoration:none;">${p.first_author || 'Author'} (${p.year || '?'}): ${(p.title || 'Untitled').substring(0, 60)}${(p.title || '').length > 60 ? '...' : ''}</a></div>`).join('')}${pubs.length > 5 ? `<div style="color:#888;font-size:10px;margin-top:4px;">+ ${pubs.length - 5} more</div>` : ''}</div>
+            </div>`;
+        }
+        
         // Export buttons
         html += `<div class="starred-export-btns">
             <a href="/api/parks/${park.id}/export.kml?pwd=${getPwd()}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" class="starred-export-btn" download>↓ KML</a>
@@ -7858,16 +7870,17 @@
         const pwdParam = pwd ? `?pwd=${pwd}` : '';
         const dateParams = (dateFrom ? `&from=${dateFrom}` : '') + (dateTo ? `&to=${dateTo}` : '');
         
-        const [fire, deforestation, settlement, stats, species, climate] = await Promise.all([
+        const [fire, deforestation, settlement, stats, species, climate, publications] = await Promise.all([
             fetch(`/api/parks/${parkId}/fire-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/deforestation-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/settlement-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/stats${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/species${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`/api/parks/${parkId}/climate${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null)
+            fetch(`/api/parks/${parkId}/climate${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/publications${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null)
         ]);
         
-        return { fire, deforestation, settlement, stats, species, climate };
+        return { fire, deforestation, settlement, stats, species, climate, publications };
     }
     
     // Generate full report with nested data
