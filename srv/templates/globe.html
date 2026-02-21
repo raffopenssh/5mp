@@ -4058,17 +4058,23 @@
             }
         }
 
+        // Store different notification types
+        let mbtilesJobs = [];
+        let publicationNotifications = [];
+        
         async function loadNotifications() {
             try {
-                // Fetch notifications (for uploads with reference_data) and fire alerts
-                const [notifRes, fireRes] = await Promise.all([
+                // Fetch all notification types, MBTiles jobs, and fire alerts
+                const [uploadRes, mbtilesRes, pubRes, fireRes] = await Promise.all([
                     fetch('/api/notifications?type=new_upload&limit=10'),
+                    fetch(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
+                    fetch('/api/notifications?type=new_publication&limit=10'),
                     fetch('/api/fire-alerts?limit=10')
                 ]);
                 
                 // Process upload notifications
-                if (notifRes.ok) {
-                    const data = await notifRes.json();
+                if (uploadRes.ok) {
+                    const data = await uploadRes.json();
                     const notifs = data.notifications || [];
                     latestActivities = notifs.map(n => {
                         const refData = n.reference_data || {};
@@ -4088,6 +4094,26 @@
                     }).filter(a => a.lat && a.lon);
                 }
                 
+                // Process MBTiles jobs (active and recently completed)
+                if (mbtilesRes.ok) {
+                    const jobs = await mbtilesRes.json();
+                    mbtilesJobs = (jobs || []).slice(0, 5);  // Show up to 5 recent jobs
+                }
+                
+                // Process publication notifications
+                if (pubRes.ok) {
+                    const data = await pubRes.json();
+                    publicationNotifications = (data.notifications || []).map(n => ({
+                        id: n.id,
+                        park_id: n.park_id,
+                        title: n.title,
+                        message: n.message,
+                        reference_url: n.reference_url,
+                        created_at: n.created_at,
+                        date: n.created_at ? new Date(n.created_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : ''
+                    }));
+                }
+                
                 // Process fire alerts
                 if (fireRes.ok) {
                     fireAlerts = await fireRes.json();
@@ -4101,6 +4127,11 @@
                 
                 updateNotificationList();
                 showNotificationBadge();
+                
+                // If any MBTiles job is processing, poll more frequently
+                if (mbtilesJobs.some(j => j.status === 'processing')) {
+                    setTimeout(loadNotifications, 3000);  // Poll every 3s during active job
+                }
             } catch (err) {
                 console.error('Notifications load error:', err);
                 updateNotificationList();
@@ -4111,21 +4142,58 @@
         function updateNotificationList() {
             const listEl = document.getElementById('notification-list');
             
-            // Merge fire alerts and GPX activity, fire alerts first (more urgent)
+            // Merge all notification types with timestamps for sorting
             const allItems = [];
             
-            // Add fire alerts first (sorted by urgency: active_inside > entered > left)
+            // Add MBTiles jobs (active ones first, then completed)
+            mbtilesJobs.forEach((job, i) => {
+                allItems.push({ 
+                    ...job, 
+                    _index: i, 
+                    _source: 'mbtiles',
+                    _sortTime: new Date(job.created_at).getTime(),
+                    _priority: job.status === 'processing' ? 0 : (job.status === 'completed' ? 1 : 3)  // Processing first, then completed, then failed
+                });
+            });
+            
+            // Add fire alerts (sorted by urgency)
             const sortOrder = { 'active_inside': 0, 'entered': 1, 'left': 2 };
-            const sortedFires = [...fireAlerts].sort((a, b) => 
-                (sortOrder[a.alert_type] || 3) - (sortOrder[b.alert_type] || 3)
-            );
-            sortedFires.forEach((alert, i) => {
-                allItems.push({ ...alert, _index: i, _source: 'fire' });
+            fireAlerts.forEach((alert, i) => {
+                allItems.push({ 
+                    ...alert, 
+                    _index: i, 
+                    _source: 'fire',
+                    _sortTime: Date.now(),  // Fire alerts are always "now"
+                    _priority: 2  // Fire alerts after MBTiles
+                });
+            });
+            
+            // Add publications
+            publicationNotifications.forEach((pub, i) => {
+                allItems.push({ 
+                    ...pub, 
+                    _index: i, 
+                    _source: 'publication',
+                    _sortTime: new Date(pub.created_at).getTime(),
+                    _priority: 3
+                });
             });
             
             // Add GPX activity
             latestActivities.forEach((activity, i) => {
-                allItems.push({ ...activity, _index: i, _source: 'activity' });
+                allItems.push({ 
+                    ...activity, 
+                    _index: i, 
+                    _source: 'activity',
+                    _sortTime: activity.full_date ? new Date(activity.full_date).getTime() : 0,
+                    _priority: 2
+                });
+            });
+            
+            // Sort by priority first, then by time (newest first)
+            allItems.sort((a, b) => {
+                if (a._priority !== b._priority) return a._priority - b._priority;
+                return b._sortTime - a._sortTime;
             });
             
             if (allItems.length === 0) {
@@ -4133,47 +4201,113 @@
                 return;
             }
             
-            listEl.innerHTML = allItems.slice(0, 12).map((item, displayIndex) => {
-                if (item._source === 'fire') {
-                    // Fire alert rendering
-                    const isActive = item.alert_type === 'active_inside' || item.alert_type === 'entered';
-                    const iconClass = isActive ? 'notification-icon fire fire-active' : 'notification-icon fire';
-                    const directionArrow = getDirectionArrow(item.movement_direction);
-                    
-                    return `
-                        <div class="notification-item" onclick="handleFireAlertClick(${item._index})">
-                            <div class="${iconClass}"><span style="font-size: 16px;">●</span></div>
-                            <div class="notification-content">
-                                <div class="notification-location">${escapeHtml(item.park_name || item.park_id)} ${directionArrow}</div>
-                                <div class="notification-details">${escapeHtml(item.message || formatFireAlertMessage(item))}</div>
-                            </div>
-                        </div>
-                    `;
+            listEl.innerHTML = allItems.slice(0, 15).map((item, displayIndex) => {
+                if (item._source === 'mbtiles') {
+                    return renderMBTilesNotification(item);
+                } else if (item._source === 'fire') {
+                    return renderFireNotification(item);
+                } else if (item._source === 'publication') {
+                    return renderPublicationNotification(item);
                 } else {
-                    // GPX activity rendering
-                    const location = item.location || 'Unknown location';
-                    const distance = item.distance ? item.distance.toFixed(1) + ' km' : '';
-                    const date = item.date || '';
-                    const typeIcon = {'foot': '○', 'vehicle': '□', 'aircraft': '△'}[item.type] || '◇';
-                    
-                    let details = '';
-                    if (distance && date) details = `${distance} • ${date}`;
-                    else if (distance) details = distance;
-                    else if (date) details = date;
-                    
-                    const notifData = { index: item._index, location, type: item.type, date, lat: item.lat, lng: item.lon };
-                    
-                    return `
-                        <div class="notification-item" onclick="handleNotificationClick(${item._index})">
-                            <div class="notification-icon">${typeIcon}</div>
-                            <div class="notification-content">
-                                <div class="notification-location">${escapeHtml(location)} ${createStarButton('notifications', notifData, 'small')}</div>
-                                <div class="notification-details">${details}</div>
-                            </div>
-                        </div>
-                    `;
+                    return renderActivityNotification(item);
                 }
             }).join('');
+        }
+        
+        function renderMBTilesNotification(job) {
+            const isProcessing = job.status === 'processing';
+            const isFailed = job.status === 'failed';
+            const progress = Math.round(job.progress || 0);
+            const iconBg = isProcessing ? 'rgba(59,130,246,0.2)' : isFailed ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.2)';
+            const iconColor = isProcessing ? '#3b82f6' : isFailed ? '#ef4444' : '#22c55e';
+            const icon = isProcessing ? '⟳' : isFailed ? '✕' : '↓';
+            
+            let details = '';
+            if (isProcessing) {
+                details = `<div style="margin-top:4px;background:rgba(255,255,255,0.1);border-radius:3px;height:4px;overflow:hidden;"><div style="width:${progress}%;height:100%;background:${iconColor};transition:width 0.3s;"></div></div>
+                           <div style="font-size:10px;color:#888;margin-top:2px;">${progress}% • ${job.downloaded_tiles || 0}/${job.total_tiles || 0} tiles</div>`;
+            } else if (isFailed) {
+                details = `<div style="color:#ef4444;font-size:11px;">${escapeHtml(job.error || 'Generation failed')}</div>`;
+            } else {
+                const sizeMB = job.estimated_size_bytes ? Math.round(job.estimated_size_bytes / 1024 / 1024) : 0;
+                details = `<a href="/api/mbtiles/${job.id}/download?pwd=${encodeURIComponent(getPwd())}" 
+                              onclick="event.stopPropagation()" 
+                              style="display:inline-block;margin-top:4px;padding:3px 10px;background:#22c55e;color:#000;border-radius:4px;font-size:11px;font-weight:500;text-decoration:none;">
+                              Download ${sizeMB}MB
+                           </a>`;
+            }
+            
+            return `
+                <div class="notification-item" style="cursor:default;">
+                    <div class="notification-icon" style="background:${iconBg};color:${iconColor};font-size:14px;">${icon}</div>
+                    <div class="notification-content">
+                        <div class="notification-location" style="color:${iconColor};">${escapeHtml(job.park_name || job.park_id)}</div>
+                        <div class="notification-details">Offline tiles (${job.source || 'esri'})</div>
+                        ${details}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderFireNotification(item) {
+            const isActive = item.alert_type === 'active_inside' || item.alert_type === 'entered';
+            const iconClass = isActive ? 'notification-icon fire fire-active' : 'notification-icon fire';
+            const directionArrow = getDirectionArrow(item.movement_direction);
+            
+            return `
+                <div class="notification-item" onclick="handleFireAlertClick(${item._index})">
+                    <div class="${iconClass}"><span style="font-size: 16px;">●</span></div>
+                    <div class="notification-content">
+                        <div class="notification-location">${escapeHtml(item.park_name || item.park_id)} ${directionArrow}</div>
+                        <div class="notification-details">${escapeHtml(item.message || formatFireAlertMessage(item))}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderPublicationNotification(pub) {
+            // Extract short title from message
+            let shortTitle = pub.message || pub.title || 'New publication';
+            if (shortTitle.startsWith('New publication: "')) {
+                shortTitle = shortTitle.slice(18).split('"')[0];
+                if (shortTitle.length > 60) shortTitle = shortTitle.slice(0, 57) + '...';
+            }
+            const parkName = pub.title ? pub.title.replace('New Research: ', '') : pub.park_id;
+            
+            return `
+                <div class="notification-item" onclick="${pub.reference_url ? `window.open('${pub.reference_url}', '_blank')` : ''}" style="${pub.reference_url ? '' : 'cursor:default;'}">
+                    <div class="notification-icon" style="background:rgba(168,85,247,0.15);color:#a855f7;">📄</div>
+                    <div class="notification-content">
+                        <div class="notification-location" style="color:#a855f7;">${escapeHtml(parkName)}</div>
+                        <div class="notification-details" style="font-size:11px;line-height:1.3;">${escapeHtml(shortTitle)}</div>
+                        <div style="font-size:10px;color:#666;margin-top:2px;">${pub.date || ''}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderActivityNotification(item) {
+            const location = item.location || 'Unknown location';
+            const distance = item.distance ? item.distance.toFixed(1) + ' km' : '';
+            const date = item.date || '';
+            const typeIcon = {'foot': '○', 'vehicle': '□', 'aircraft': '△'}[item.type] || '◇';
+            
+            let details = '';
+            if (distance && date) details = `${distance} • ${date}`;
+            else if (distance) details = distance;
+            else if (date) details = date;
+            
+            const notifData = { index: item._index, location, type: item.type, date, lat: item.lat, lng: item.lon };
+            
+            return `
+                <div class="notification-item" onclick="handleNotificationClick(${item._index})">
+                    <div class="notification-icon">${typeIcon}</div>
+                    <div class="notification-content">
+                        <div class="notification-location">${escapeHtml(location)} ${createStarButton('notifications', notifData, 'small')}</div>
+                        <div class="notification-details">${details}</div>
+                    </div>
+                </div>
+            `;
         }
         
         function getDirectionArrow(direction) {

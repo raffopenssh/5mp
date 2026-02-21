@@ -218,6 +218,14 @@ func (q *MBTilesQueue) executeJob(job *MBTilesJob) {
 			fmt.Sprintf("MBTiles Ready: %s", job.ParkName),
 			fmt.Sprintf("Offline tiles for %s (%s, %d MB) ready for download", job.ParkName, job.Source, fileSizeMB),
 			fmt.Sprintf("/api/parks/%s/mbtiles/download/%s", job.ParkID, job.ID))
+		
+		// Schedule cleanup of completed job from memory (keep for 1 hour)
+		go func(jobID string) {
+			time.Sleep(1 * time.Hour)
+			q.mu.Lock()
+			delete(q.jobs, jobID)
+			q.mu.Unlock()
+		}(job.ID)
 	}
 	q.mu.Unlock()
 }
