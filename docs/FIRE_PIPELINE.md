@@ -66,7 +66,9 @@ The fire analysis pipeline processes NASA VIIRS satellite fire detections into a
 2. Group by date
 3. Apply DBSCAN clustering (eps=15km, min_samples=1)
 4. Track clusters across consecutive days (same cluster if centroids <15km apart)
-5. Compute group attributes:
+5. Build trajectory using **daily centroids** (one point per day, not individual detections)
+   - This prevents zigzag artifacts when many detections occur across a large area in one day
+6. Compute group attributes:
    - `start_date`, `end_date`, `days`
    - `centroid` [lon, lat]
    - `trajectory` [[lon, lat, date], ...]

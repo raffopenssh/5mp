@@ -1,0 +1,1 @@
+{"park_id": "ZAF_Namaqua", "buffer_km": 50, "last_updated": "2026-02-21T04:50:05.923512", "fires": [{"lat": -30.17644, "lon": 17.62126, "date": "2026-02-14", "time": "43", "frp": 0.09, "confidence": "n", "inside": false, "dist_to_boundary_km": 3.76}], "count_inside": 0, "count_buffer": 1, "total_fires": 1}

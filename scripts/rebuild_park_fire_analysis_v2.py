@@ -18,6 +18,7 @@ import json
 import sqlite3
 import math
 import argparse
+import hashlib
 from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -284,9 +285,44 @@ def analyze_group(cluster, parks):
     lons = [f['longitude'] for f in cluster]
     centroid = [sum(lons)/len(lons), sum(lats)/len(lats)]
     
-    trajectory = []
+    # Build trajectory using 1-6 time-based centroids per day
+    # VIIRS has 3 satellites (Suomi NPP, NOAA-20, NOAA-21) each with ~2 overpasses
+    # Use 4-hour windows for up to 6 points per day:
+    # - Period 0: 0000-0400
+    # - Period 1: 0400-0800
+    # - Period 2: 0800-1200
+    # - Period 3: 1200-1600
+    # - Period 4: 1600-2000
+    # - Period 5: 2000-2400
+    # This shows intra-day fire movement while avoiding zigzags
+    fires_by_date = defaultdict(list)
     for f in sorted_fires:
-        trajectory.append([f['longitude'], f['latitude'], f['acq_date']])
+        fires_by_date[f['acq_date']].append(f)
+    
+    trajectory = []
+    for date in sorted(fires_by_date.keys()):
+        day_fires = fires_by_date[date]
+        
+        # Group by 4-hour time period (up to 6 periods per day)
+        periods = defaultdict(list)
+        for f in day_fires:
+            time_str = f.get('acq_time', '0000') or '0000'
+            try:
+                hour = int(time_str[:2]) if len(time_str) >= 2 else 0
+            except:
+                hour = 0
+            period = hour // 4  # 0-5 for 4-hour windows
+            periods[period].append(f)
+        
+        # Add centroid for each period that has fires
+        for period in sorted(periods.keys()):
+            period_fires = periods[period]
+            p_lons = [f['longitude'] for f in period_fires]
+            p_lats = [f['latitude'] for f in period_fires]
+            centroid_pt = [sum(p_lons)/len(p_lons), sum(p_lats)/len(p_lats)]
+            # Include time in trajectory for ordering
+            avg_time = period_fires[0].get('acq_time', '0000') or '0000'
+            trajectory.append([centroid_pt[0], centroid_pt[1], date, avg_time])
     
     if len(trajectory) >= 2:
         distance_km = sum(haversine(trajectory[i][0], trajectory[i][1], 
@@ -353,13 +389,25 @@ def analyze_group(cluster, parks):
     else:
         group_type = 'herder_local'
     
+    # Generate stable group_id from park + start_date + starting centroid
+    # This allows incremental updates to match existing groups
+    first_point = trajectory[0] if trajectory else centroid
+    hash_input = f"{primary_park}_{start_date}_{first_point[0]:.4f}_{first_point[1]:.4f}"
+    group_hash = hashlib.md5(hash_input.encode()).hexdigest()[:8]
+    group_id = f"{primary_park}_{start_date}_{group_hash}"
+    year = int(start_date[:4])
+    feature_id = f"{primary_park}_{year}_grp_{group_hash}"
+    
     return {
+        'group_id': group_id,
+        'feature_id': feature_id,
         'fires': total_fires, 'start_date': start_date, 'end_date': end_date,
         'days': days, 'centroid': centroid, 'distance_km': round(distance_km, 2),
         'speed_km_day': round(speed, 2), 'direction': direction,
         'primary_park': primary_park, 'affected_parks': affected_parks,
         'cross_border': cross_border, 'group_type': group_type,
-        'pct_inside': round(pct_inside, 1), 'trajectory': trajectory
+        'pct_inside': round(pct_inside, 1), 'trajectory': trajectory,
+        'year': year
     }
 
 def merge_groups_streaming(groups):
@@ -406,14 +454,34 @@ def load_existing_groups(park_id):
     return []
 
 def merge_incremental_groups(existing_groups, new_groups, cutoff_date):
-    """Merge new groups with existing, removing stale overlapping groups."""
-    # Keep existing groups that ended before cutoff
-    kept = [g for g in existing_groups if g['end_date'] < cutoff_date]
+    """Merge new groups with existing, using group_id for deduplication."""
+    # Build map of existing groups by group_id
+    by_id = {}
     
-    # Add all new groups
-    kept.extend(new_groups)
+    # First add existing groups that ended before cutoff (won't be updated)
+    for g in existing_groups:
+        gid = g.get('group_id')
+        if gid:
+            if g['end_date'] < cutoff_date:
+                by_id[gid] = g
+        else:
+            # Old format without group_id - regenerate it
+            first_point = g.get('trajectory', [[0,0]])[0]
+            hash_input = f"{g['primary_park']}_{g['start_date']}_{first_point[0]:.4f}_{first_point[1]:.4f}"
+            gid = f"{g['primary_park']}_{g['start_date']}_{hashlib.md5(hash_input.encode()).hexdigest()[:8]}"
+            g['group_id'] = gid
+            g['feature_id'] = f"{g['primary_park']}_{g['start_date'][:4]}_grp_{hashlib.md5(hash_input.encode()).hexdigest()[:8]}"
+            g['year'] = int(g['start_date'][:4])
+            if g['end_date'] < cutoff_date:
+                by_id[gid] = g
     
-    return kept
+    # Add/update with new groups (these have fresh data and may have updated end_dates)
+    for g in new_groups:
+        gid = g.get('group_id')
+        if gid:
+            by_id[gid] = g  # Replace existing with updated version
+    
+    return list(by_id.values())
 
 def main():
     parser = argparse.ArgumentParser(description="Fire Analysis v2")
@@ -458,7 +526,11 @@ def main():
                           lon + CHUNK_SIZE + CHUNK_OVERLAP, lat + CHUNK_SIZE + CHUNK_OVERLAP))
     
     groups_by_park = defaultdict(list)
-    weekly_counts = defaultdict(lambda: defaultdict(int))
+    # Track counts at multiple granularities for trend analysis
+    daily_counts = defaultdict(lambda: defaultdict(lambda: {'groups': 0, 'fires': 0}))
+    weekly_counts = defaultdict(lambda: defaultdict(lambda: {'groups': 0, 'fires': 0}))
+    monthly_counts = defaultdict(lambda: defaultdict(lambda: {'groups': 0, 'fires': 0}))
+    yearly_counts = defaultdict(lambda: defaultdict(lambda: {'groups': 0, 'fires': 0}))
     all_groups = []
     batch_num = 0
     
@@ -489,10 +561,21 @@ def main():
                 result = analyze_group(cluster, parks)
                 if result:
                     groups_by_park[result['primary_park']].append(result)
+                    # Track counts at multiple granularities
                     for park_id in result['affected_parks']:
-                        fire_date = datetime.strptime(result['start_date'], '%Y-%m-%d')
+                        start_date = result['start_date']
+                        fires = result['fires']
+                        fire_date = datetime.strptime(start_date, '%Y-%m-%d')
                         week_start = fire_date - timedelta(days=fire_date.weekday())
-                        weekly_counts[park_id][week_start.strftime('%Y-%m-%d')] += result['fires']
+                        
+                        daily_counts[park_id][start_date]['groups'] += 1
+                        daily_counts[park_id][start_date]['fires'] += fires
+                        weekly_counts[park_id][week_start.strftime('%Y-%m-%d')]['groups'] += 1
+                        weekly_counts[park_id][week_start.strftime('%Y-%m-%d')]['fires'] += fires
+                        monthly_counts[park_id][start_date[:7]]['groups'] += 1
+                        monthly_counts[park_id][start_date[:7]]['fires'] += fires
+                        yearly_counts[park_id][start_date[:4]]['groups'] += 1
+                        yearly_counts[park_id][start_date[:4]]['fires'] += fires
             
             del merged
             gc.collect()
@@ -512,10 +595,21 @@ def main():
             result = analyze_group(cluster, parks)
             if result:
                 groups_by_park[result['primary_park']].append(result)
+                # Track counts at multiple granularities
                 for park_id in result['affected_parks']:
-                    fire_date = datetime.strptime(result['start_date'], '%Y-%m-%d')
+                    start_date = result['start_date']
+                    fires = result['fires']
+                    fire_date = datetime.strptime(start_date, '%Y-%m-%d')
                     week_start = fire_date - timedelta(days=fire_date.weekday())
-                    weekly_counts[park_id][week_start.strftime('%Y-%m-%d')] += result['fires']
+                    
+                    daily_counts[park_id][start_date]['groups'] += 1
+                    daily_counts[park_id][start_date]['fires'] += fires
+                    weekly_counts[park_id][week_start.strftime('%Y-%m-%d')]['groups'] += 1
+                    weekly_counts[park_id][week_start.strftime('%Y-%m-%d')]['fires'] += fires
+                    monthly_counts[park_id][start_date[:7]]['groups'] += 1
+                    monthly_counts[park_id][start_date[:7]]['fires'] += fires
+                    yearly_counts[park_id][start_date[:4]]['groups'] += 1
+                    yearly_counts[park_id][start_date[:4]]['fires'] += fires
         
         del merged
         gc.collect()
@@ -538,22 +632,99 @@ def main():
             json.dump(final_groups, f)
         temp_file.rename(output_file)
     
-    log("Saving weekly counts to database...")
-    conn.execute("CREATE TABLE IF NOT EXISTS park_fire_weekly (park_id TEXT, week_start TEXT, fire_count INTEGER, PRIMARY KEY (park_id, week_start))")
+    log("Saving fire counts to database...")
+    # Update schema to include groups count
+    conn.execute("""CREATE TABLE IF NOT EXISTS park_fire_weekly (
+        park_id TEXT, week_start TEXT, 
+        fire_count INTEGER, group_count INTEGER DEFAULT 0,
+        PRIMARY KEY (park_id, week_start)
+    )""")
+    conn.execute("""CREATE TABLE IF NOT EXISTS park_fire_daily (
+        park_id TEXT, date TEXT,
+        fire_count INTEGER, group_count INTEGER,
+        PRIMARY KEY (park_id, date)
+    )""")
+    conn.execute("""CREATE TABLE IF NOT EXISTS park_fire_monthly (
+        park_id TEXT, month TEXT,
+        fire_count INTEGER, group_count INTEGER,
+        PRIMARY KEY (park_id, month)
+    )""")
     
     if args.incremental:
-        # Only update weeks we processed
+        # Only update periods we processed
+        for park_id, days in daily_counts.items():
+            for day, counts in days.items():
+                conn.execute("INSERT OR REPLACE INTO park_fire_daily VALUES (?, ?, ?, ?)",
+                            (park_id, day, counts['fires'], counts['groups']))
         for park_id, weeks in weekly_counts.items():
-            for week, count in weeks.items():
-                conn.execute("INSERT OR REPLACE INTO park_fire_weekly VALUES (?, ?, ?)", 
-                            (park_id, week, count))
+            for week, counts in weeks.items():
+                conn.execute("INSERT OR REPLACE INTO park_fire_weekly VALUES (?, ?, ?, ?)", 
+                            (park_id, week, counts['fires'], counts['groups']))
+        for park_id, months in monthly_counts.items():
+            for month, counts in months.items():
+                conn.execute("INSERT OR REPLACE INTO park_fire_monthly VALUES (?, ?, ?, ?)",
+                            (park_id, month, counts['fires'], counts['groups']))
     else:
+        conn.execute("DELETE FROM park_fire_daily")
         conn.execute("DELETE FROM park_fire_weekly")
+        conn.execute("DELETE FROM park_fire_monthly")
+        for park_id, days in daily_counts.items():
+            for day, counts in days.items():
+                conn.execute("INSERT INTO park_fire_daily VALUES (?, ?, ?, ?)",
+                            (park_id, day, counts['fires'], counts['groups']))
         for park_id, weeks in weekly_counts.items():
-            for week, count in weeks.items():
-                conn.execute("INSERT INTO park_fire_weekly VALUES (?, ?, ?)", 
-                            (park_id, week, count))
+            for week, counts in weeks.items():
+                conn.execute("INSERT INTO park_fire_weekly VALUES (?, ?, ?, ?)", 
+                            (park_id, week, counts['fires'], counts['groups']))
+        for park_id, months in monthly_counts.items():
+            for month, counts in months.items():
+                conn.execute("INSERT INTO park_fire_monthly VALUES (?, ?, ?, ?)",
+                            (park_id, month, counts['fires'], counts['groups']))
     conn.commit()
+    
+    # Generate trends JSON for GitHub (small, aggregated)
+    log("Generating fire trends JSON...")
+    trends_dir = DATA_DIR / 'fire_trends'
+    trends_dir.mkdir(exist_ok=True)
+    
+    all_trends = {}
+    for park_id in parks:
+        park_groups = groups_by_park.get(park_id, [])
+        if not park_groups and not args.incremental:
+            continue
+        all_trends[park_id] = {
+            'total_groups': len(park_groups),
+            'total_fires': sum(g.get('fires', 1) for g in park_groups),
+            'yearly': {k: dict(v) for k, v in sorted(yearly_counts.get(park_id, {}).items())},
+            'monthly': {k: dict(v) for k, v in sorted(monthly_counts.get(park_id, {}).items())},
+            'weekly': {k: dict(v) for k, v in sorted(weekly_counts.get(park_id, {}).items())}
+        }
+    
+    trends_file = trends_dir / 'park_fire_trends.json'
+    with open(trends_file, 'w') as f:
+        json.dump(all_trends, f, separators=(',', ':'))
+    
+    # Summary file (readable)
+    summary = {
+        'generated_at': datetime.now().isoformat(),
+        'parks_count': len(all_trends),
+        'total_groups': sum(t['total_groups'] for t in all_trends.values()),
+        'total_fires': sum(t['total_fires'] for t in all_trends.values()),
+        'yearly_totals': {}
+    }
+    for park_data in all_trends.values():
+        for year, counts in park_data.get('yearly', {}).items():
+            if year not in summary['yearly_totals']:
+                summary['yearly_totals'][year] = {'groups': 0, 'fires': 0}
+            summary['yearly_totals'][year]['groups'] += counts['groups']
+            summary['yearly_totals'][year]['fires'] += counts['fires']
+    summary['yearly_totals'] = dict(sorted(summary['yearly_totals'].items()))
+    
+    summary_file = trends_dir / 'fire_trends_summary.json'
+    with open(summary_file, 'w') as f:
+        json.dump(summary, f, indent=2)
+    
+    log(f"  Trends saved to {trends_file} ({trends_file.stat().st_size / 1024:.1f} KB)")
     
     total_groups = sum(len(load_existing_groups(p) if args.incremental else groups_by_park.get(p, [])) 
                        for p in parks)

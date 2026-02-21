@@ -1,0 +1,1 @@
+{"park_id": "NAM_Skeleton_Coast", "buffer_km": 50, "last_updated": "2026-02-21T04:47:55.090107", "fires": [{"lat": -16.86724, "lon": 14.13097, "date": "2026-02-19", "time": "45", "frp": 0.13, "confidence": "n", "inside": false, "dist_to_boundary_km": 233.09}], "count_inside": 0, "count_buffer": 1, "total_fires": 1}

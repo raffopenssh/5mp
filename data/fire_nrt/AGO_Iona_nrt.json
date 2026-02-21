@@ -1,0 +1,1 @@
+{"park_id": "AGO_Iona", "buffer_km": 50, "last_updated": "2026-02-21T04:44:30.883588", "fires": [{"lat": -15.63995, "lon": 13.0566, "date": "2026-02-21", "time": "7", "frp": 0.6, "confidence": "n", "inside": false, "dist_to_boundary_km": 80.11}], "count_inside": 0, "count_buffer": 1, "total_fires": 1}

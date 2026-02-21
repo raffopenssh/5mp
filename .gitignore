@@ -45,3 +45,6 @@ data/fire_realtime/
 data/export/deforestation_narratives.json
 data/export/settlement_narratives.json
 data/export/narrative_summary.json
+
+# Large trajectory files - download from backup
+data/fire_trajectories_v2/

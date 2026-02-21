@@ -8,8 +8,8 @@ echo "=== 5MP Installation Script ==="
 echo "Started at $(date)"
 
 # Configuration
-GITHUB_REPO="https://github.com/YOUR_ORG/5mp.git"  # Replace with actual
-DB_BACKUP_URL="https://five-megapixel-conservation.exe.xyz:8000/static/downloads/5mp_backup_20260221.sqlite3"
+GITHUB_REPO=""  # Code should already be on VM
+DB_BACKUP_URL="https://five-megapixel-conservation.exe.xyz:8000/static/downloads/5mp_backup_20260221.sqlite3?pwd=test2026"
 FIRMS_API_KEY="${FIRMS_API_KEY:-}"  # Set via environment
 INSTALL_DIR="/home/exedev/5mp"
 LOG_FILE="/tmp/5mp_install.log"

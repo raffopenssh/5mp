@@ -608,9 +608,9 @@ class TrajectoryAnalyzerV4:
             'classification': classification,
             'narrative': narrative,
             'year': year,
-            # Add trajectory with timestamps
+            # Add trajectory with timestamps (handle both 3 and 4-element arrays)
             'trajectory_with_time': [
-                {'lon': p[0], 'lat': p[1], 'date': p[2]} 
+                {'lon': p[0], 'lat': p[1], 'date': p[2], 'time': p[3] if len(p) > 3 else '0000'} 
                 for p in trajectory
             ]
         }

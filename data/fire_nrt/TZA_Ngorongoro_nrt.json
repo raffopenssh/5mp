@@ -1,0 +1,1 @@
+{"park_id": "TZA_Ngorongoro", "buffer_km": 50, "last_updated": "2026-02-21T04:49:18.107876", "fires": [{"lat": -2.76008, "lon": 35.91776, "date": "2026-02-16", "time": "2339", "frp": 0.62, "confidence": "n", "inside": false, "dist_to_boundary_km": 9.44}], "count_inside": 0, "count_buffer": 1, "total_fires": 1}
