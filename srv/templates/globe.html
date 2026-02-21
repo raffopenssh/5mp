@@ -3105,12 +3105,30 @@
             let totalFires = 0, totalDeforest = 0, totalPop = 0, totalArea = 0;
             
             for (const {park, data, stats} of allParks) {
-                const fire = data.fire || stats.fire || {};
+                const fire = data.fire || {};
                 const deforest = data.deforestation || stats.deforestation || {};
                 const settlement = data.settlement || stats.settlement || {};
                 const roadless = stats.roadless || {};
                 
-                const fireTotal = fire.total_fires || fire.fires_total || 0;
+                // Filter fire narratives by date range
+                let fireNarratives = fire.narratives || [];
+                if (dateFrom || dateTo) {
+                    const fromDate = dateFrom ? new Date(dateFrom) : new Date('1900-01-01');
+                    const toDate = dateTo ? new Date(dateTo) : new Date('2100-01-01');
+                    fireNarratives = fireNarratives.filter(n => {
+                        const startStr = n.entry_date || n.start_date;
+                        const startDate = startStr ? new Date(startStr) : null;
+                        if (!startDate) return true;
+                        return startDate >= fromDate && startDate <= toDate;
+                    });
+                }
+                
+                // Calculate fire stats from filtered narratives
+                const fireGroups = fireNarratives.length;
+                const fireTotal = fireNarratives.reduce((sum, n) => sum + (n.fires_inside || n.fires_total || n.fires || 0), 0);
+                const stoppedCount = fireNarratives.filter(n => n.outcome === 'STOPPED_INSIDE').length;
+                const responseRate = fireGroups > 0 ? Math.round((stoppedCount / fireGroups) * 100) : 0;
+                
                 const deforestKm2 = deforest.total_loss_km2 || deforest.loss_km2 || 0;
                 const pop = settlement.total_population || settlement.population || 0;
                 const area = park.area_km2 || park.rep_area || 0;
@@ -3126,8 +3144,8 @@
                     park.country || '',
                     area,
                     fireTotal,
-                    fire.group_count || fire.active_groups || 0,
-                    Math.round(fire.response_rate || 0),
+                    fireGroups,
+                    responseRate,
                     Math.round(deforestKm2 * 100) / 100,
                     deforest.trend_direction || deforest.trend || '',
                     settlement.settlement_count || settlement.count || 0,
@@ -3159,35 +3177,51 @@
                 parkData.push(['Coordinates: ' + (park.lat ? park.lat.toFixed(4) + ', ' + park.lon.toFixed(4) : '')]);
                 parkData.push([]);
                 
-                const fire = data.fire || stats.fire || {};
+                const fire = data.fire || {};
                 const deforest = data.deforestation || stats.deforestation || {};
                 const settlement = data.settlement || stats.settlement || {};
                 const roadless = stats.roadless || {};
                 
+                // Filter fire narratives by date range for per-park sheet
+                let parkFireNarratives = fire.narratives || [];
+                if (dateFrom || dateTo) {
+                    const fromDate = dateFrom ? new Date(dateFrom) : new Date('1900-01-01');
+                    const toDate = dateTo ? new Date(dateTo) : new Date('2100-01-01');
+                    parkFireNarratives = parkFireNarratives.filter(n => {
+                        const startStr = n.entry_date || n.start_date;
+                        const startDate = startStr ? new Date(startStr) : null;
+                        if (!startDate) return true;
+                        return startDate >= fromDate && startDate <= toDate;
+                    });
+                }
+                // Sort by date descending
+                parkFireNarratives.sort((a, b) => {
+                    const dateA = new Date(a.entry_date || a.start_date || '1900-01-01');
+                    const dateB = new Date(b.entry_date || b.start_date || '1900-01-01');
+                    return dateB - dateA;
+                });
+                const parkFireTotal = parkFireNarratives.reduce((sum, n) => sum + (n.fires_inside || n.fires_total || n.fires || 0), 0);
+                const parkStoppedCount = parkFireNarratives.filter(n => n.outcome === 'STOPPED_INSIDE').length;
+                const parkResponseRate = parkFireNarratives.length > 0 ? Math.round((parkStoppedCount / parkFireNarratives.length) * 100) : 0;
+                
                 // Fire section
                 parkData.push(['=== FIRE ACTIVITY ===']);
-                parkData.push(['Total Detections', fire.total_fires || fire.fires_total || 0]);
-                parkData.push(['Fire Groups', fire.group_count || fire.active_groups || 0]);
-                parkData.push(['Response Rate', (fire.response_rate || 0) + '%']);
-                parkData.push(['Peak Month', fire.peak_month || '']);
-                parkData.push(['Seasonality', fire.seasonality || '']);
-                if (fire.trend) {
-                    parkData.push(['Trend', fire.trend]);
-                }
+                parkData.push(['Date Range', (dateFrom || 'start') + ' to ' + (dateTo || 'present')]);
+                parkData.push(['Total Detections', parkFireTotal]);
+                parkData.push(['Fire Groups', parkFireNarratives.length]);
+                parkData.push(['Response Rate', parkResponseRate + '%']);
                 parkData.push([]);
                 
-                // Fire narratives/groups
-                const narratives = fire.narratives || fire.groups || [];
-                if (narratives.length > 0) {
-                    parkData.push(['Fire Groups Detail:']);
-                    parkData.push(['Name', 'Fires', 'Area (km²)', 'Duration', 'Status']);
-                    for (const n of narratives.slice(0, 50)) {
+                // Fire narratives/groups (filtered and sorted)
+                if (parkFireNarratives.length > 0) {
+                    parkData.push(['Fire Groups Detail (most recent first):']);
+                    parkData.push(['Date', 'Description', 'Fires', 'Status']);
+                    for (const n of parkFireNarratives.slice(0, 50)) {
                         parkData.push([
-                            n.name || n.title || n.narrative?.substring(0, 50) || 'Fire group',
-                            n.fires_total || n.fire_count || n.fires || 0,
-                            Math.round((n.area_km2 || 0) * 100) / 100,
-                            n.duration_days ? n.duration_days + ' days' : '',
-                            n.status || ''
+                            n.entry_date || n.start_date || '',
+                            (n.narrative || n.title || 'Fire group').substring(0, 80),
+                            n.fires_inside || n.fires_total || n.fires || 0,
+                            n.outcome || n.status || ''
                         ]);
                     }
                     if (narratives.length > 50) {
@@ -10655,6 +10689,7 @@ ${starredItems.narratives.map(n => {
                 <div class="star-report-actions">
                     <button class="star-report-btn secondary" onclick="clearAllStars()">Clear All</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportCsv()" title="Export all data as CSV">↓ CSV</button>
+                    <button class="star-report-btn secondary" onclick="exportFullReportXlsx()" title="Export detailed XLSX with summary + per-park tabs">↓ XLSX</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportKml()" title="Export all park KMLs">↓ KML</button>
                     <button class="star-report-btn" onclick="printStarredReport()">⎙ Print Report</button>
                 </div>
