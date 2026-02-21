@@ -2,57 +2,61 @@
 
 Last updated: 2026-02-21
 
-## ✅ Recently Completed
+## 🔄 Still Open (from remove-outdated-todos)
 
-### Session 2026-02-21
-1. ✅ Pulsing dot position - MBTiles progress dot now overlaps notification badge
-2. ✅ Publications in star reports - Added to fetchParkFullData and renderParkReportInline
-3. ✅ MBTiles modal - Tested and working (zoom slider, storage estimates, 8-hour retention)
+### High Priority
+1. **Fix narratives** - Settlements/deforestation narratives don't use polygon data for context
+2. **Fix pinning** - Individual narratives/notifications pinning, pinned info card display
+3. **Nested hierarchy** - For starred section and KML export (parks grouped by country/region)
 
-### Previous Sessions (continue-conversation)
-1. ✅ Publications API uses WDPA ID lookup (Lac Télé now shows publications)
-2. ✅ River/road names as text labels on map (zoom 10+)
-3. ✅ Bell notifications show MBTiles progress and publication citations
-4. ✅ Notification auto-refresh every 30s
-5. ✅ MBTiles max zoom increased to 17
-6. ✅ Accordion icons uniform 13px in 16x16 container
-7. ✅ Removed emojis from publication notifications (use ◉)
-8. ✅ Infrastructure pin buttons show counts directly
+### Medium Priority
+4. **Learning panel** - Test and fix the GPX learning/pattern detection UI
+5. **RSS feed** - Fix updates on places (notifications feed)
 
-### Previous Sessions (remove-outdated-todos)
-1. ✅ Mobile notification dropdown fixed
-2. ✅ Fire notification click handler fixed
-3. ✅ Fire alerts updating (trajectory load in cron)
-4. ✅ Publication sync rate limiting (added API key)
-5. ✅ Publication sync includes never-synced parks
-6. ✅ Mobile footer overlap fixed
-7. ✅ Info modal content updated
-8. ✅ Weekly fire comparison chart added
-9. ✅ Fire stats showing correct values
-10. ✅ Groups/km² calculation fixed (divide by years)
-11. ✅ Emojis removed from popup and star report
-12. ✅ JSON file corruption fixed (atomic writes)
-13. ✅ Merged KML export for multiple parks
-14. ✅ Detailed XLS export (summary + per-park tabs)
+### Low Priority (Code TODOs)
+6. `srv/api.go:3722` - Implement bbox filtering for notifications
+7. `srv/park_analysis.go:179` - Query Overpass API for roads in bbox
+8. `srv/upload.go:427` - Compute protected area ID from area store
+
+### Data Quality
+9. Deforestation classification improvements
+10. Settlement classification improvements
+11. Species "Endangered: 0" - needs IUCN category mapping fix
 
 ---
 
-## 🔄 In Progress / Low Priority
+## ✅ Completed
 
-### Code TODOs (from source)
-1. `srv/api.go:3722` - Implement bbox filtering for notifications
-2. `srv/park_analysis.go:179` - Query Overpass API for roads in bbox
-3. `srv/upload.go:427` - Compute protected area ID from area store
+### Session 2026-02-21
+- ✅ Pulsing dot position - MBTiles progress dot overlaps notification badge
+- ✅ Publications in star reports - Added to fetchParkFullData and rendering
+- ✅ MBTiles modal tested and working
 
-### Data Quality (lower priority)
-1. Deforestation classification improvements
-2. Settlement classification improvements
-3. Species "Endangered: 0" showing for parks with endangered species (needs IUCN category mapping)
+### Previous Sessions (continue-conversation)
+- ✅ Publications API uses WDPA ID lookup
+- ✅ River/road names as text labels (zoom 10+)
+- ✅ Bell notifications with MBTiles progress & publication citations
+- ✅ Notification auto-refresh every 30s
+- ✅ MBTiles max zoom 17, 8-hour retention
+- ✅ Accordion icons uniform 13px
+- ✅ Removed emojis from notifications
+- ✅ Infrastructure buttons show counts
 
-### UX Polish (nice-to-have)
-1. RSS feed improvements for places
-2. Learning panel testing
-3. Pin individual narratives/notifications
+### Previous Sessions (remove-outdated-todos)
+- ✅ Mobile notification dropdown
+- ✅ Fire notification click handler
+- ✅ Fire alerts updating (trajectory load in cron)
+- ✅ Publication sync rate limiting (API key)
+- ✅ Publication sync includes never-synced parks
+- ✅ Mobile footer overlap
+- ✅ Info modal content
+- ✅ Weekly fire comparison chart
+- ✅ Fire stats correct values
+- ✅ Groups/km² calculation (divide by years)
+- ✅ Emojis removed from popup/star report
+- ✅ JSON atomic writes
+- ✅ Merged KML export
+- ✅ Detailed XLS export (summary + per-park tabs)
 
 ---
 
@@ -61,7 +65,7 @@ Last updated: 2026-02-21
 ### Data Coverage
 - 162 protected areas with boundaries
 - 6.1M+ fire detections (2018-2026)
-- 453K feature geometries (deforestation, fire trajectories, settlements)
+- 453K feature geometries
 - 39.5K IUCN mammal species records
 - Publications synced via OpenAlex WDPA ID
 
@@ -76,16 +80,10 @@ Last updated: 2026-02-21
 | Publication Sync | Daily | ✅ Running |
 | FAOLEX Sync | Sundays | ✅ Configured |
 
-### API Health
-- Publications: ✅ Using WDPA ID lookup
-- Fire narratives: ✅ Cached and serving
-- MBTiles: ✅ Queue processing, 8hr retention
-
 ---
 
 ## 🔗 Quick Reference
 
 - **URL**: https://five-megapixel-conservation.exe.xyz:8000/?pwd=test2026
-- **Test parks**: COD_Virunga (full data), CAF_Chinko (fire trajectories), COG_Lac_Télé (publications)
-- **Server binary**: `/home/exedev/5mp/server`
+- **Test parks**: COD_Virunga, CAF_Chinko, COG_Lac_Télé
 - **Build**: `make build && pkill server; ./server &`
