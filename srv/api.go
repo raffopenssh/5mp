@@ -1117,8 +1117,10 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		args = append(args, featureID)
 	}
 	
+	// Filter by start_date being within the date range (not overlap)
+	// This matches the UI filtering behavior for fire narratives
 	if startDate != "" {
-		query += " AND (end_date IS NULL OR end_date >= ?)"
+		query += " AND (start_date IS NULL OR start_date >= ?)"
 		args = append(args, startDate)
 	}
 	

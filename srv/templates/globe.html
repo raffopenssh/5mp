@@ -8595,12 +8595,11 @@ ${starredItems.narratives.map(n => {
             }[type] || type;
             
             // Get date range from time slider for time-filtered features
+            // Use global dateFrom/dateTo variables (set by time slider)
             let dateParams = '';
             if (type === 'fire' || type === 'deforestation') {
-                const startDateEl = document.getElementById('date-from');
-                const endDateEl = document.getElementById('date-to');
-                if (startDateEl && endDateEl && startDateEl.value && endDateEl.value) {
-                    dateParams = `&start=${startDateEl.value}&end=${endDateEl.value}`;
+                if (window.dateFrom && window.dateTo) {
+                    dateParams = `&start=${window.dateFrom}&end=${window.dateTo}`;
                 }
             }
             
