@@ -710,11 +710,11 @@
 
         /* Enhanced PA Popup with Collapsible Sections */
         .pa-popup-section { margin-top: 8px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
-        .pa-popup-section-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: rgba(255,255,255,0.03); cursor: pointer; transition: background 0.2s; }
+        .pa-popup-section-header { display: flex; align-items: center; padding: 8px 10px; background: rgba(255,255,255,0.03); cursor: pointer; transition: background 0.2s; gap: 8px; }
         .pa-popup-section-header:hover { background: rgba(255,255,255,0.06); }
-        .pa-popup-section-star { margin-left: auto; margin-right: 8px; }
-        .pa-popup-section-title { font-size: 10px; color: #888; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
-        .pa-popup-section-count { color: #22c55e; margin-left: auto; font-weight: 500; }
+        .pa-popup-section-star { margin-right: 0; }
+        .pa-popup-section-title { font-size: 10px; color: #888; text-transform: uppercase; display: flex; align-items: center; gap: 6px; flex: 1; }
+        .pa-popup-section-count { color: #22c55e; font-weight: 500; font-size: 11px; margin-left: auto; }
         .pa-popup-section-icon { font-size: 13px; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; text-align: center; line-height: 1; flex-shrink: 0; }
         .pa-popup-section-toggle { font-size: 10px; color: #555; transition: transform 0.2s; }
         .pa-popup-section.open .pa-popup-section-toggle { transform: rotate(180deg); }
@@ -7674,7 +7674,7 @@
                 <div class="starred-report-section-stats">
                     <span>${pubs.length} publication${pubs.length !== 1 ? 's' : ''}</span>
                 </div>
-                <div class="starred-report-group"><div class="starred-report-group-title">Recent:</div>${pubs.slice(0, 5).map(p => `<div style="margin:4px 0;font-size:10px;"><a href="${p.doi ? 'https://doi.org/' + p.doi : p.url || '#'}" target="_blank" style="color:#a78bfa;text-decoration:none;">${p.first_author || 'Author'} (${p.year || '?'}): ${(p.title || 'Untitled').substring(0, 60)}${(p.title || '').length > 60 ? '...' : ''}</a></div>`).join('')}${pubs.length > 5 ? `<div style="color:#888;font-size:10px;margin-top:4px;">+ ${pubs.length - 5} more</div>` : ''}</div>
+                <div class="starred-report-group"><div class="starred-report-group-title">Recent:</div>${pubs.slice(0, 5).map(p => { const author = (p.authors && p.authors[0]) ? p.authors[0].split(' ').pop() + ' et al.' : 'Unknown'; return `<div style="margin:4px 0;font-size:10px;"><a href="${p.doi || p.url || '#'}" target="_blank" style="color:#a78bfa;text-decoration:none;">${author} (${p.year || '?'}): ${(p.title || 'Untitled').substring(0, 60)}${(p.title || '').length > 60 ? '...' : ''}</a></div>`; }).join('')}${pubs.length > 5 ? `<div style="color:#888;font-size:10px;margin-top:4px;">+ ${pubs.length - 5} more</div>` : ''}</div>
             </div>`;
         }
         
