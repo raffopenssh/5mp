@@ -3295,6 +3295,17 @@
                 const parkSheet = XLSX.utils.aoa_to_sheet(parkData);
                 parkSheet['!cols'] = [{wch: 35}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 20}];
                 XLSX.utils.book_append_sheet(wb, parkSheet, sheetName);
+                
+                // Add patrol grid sheet for this park
+                try {
+                    const patrolGridSheet = await createPatrolGridSheet(park, dateFrom, dateTo);
+                    if (patrolGridSheet) {
+                        const patrolSheetName = (park.name || park.id).substring(0, 25).replace(/[\[\]\*\?\/\\:]/g, '') + '_Patrol';
+                        XLSX.utils.book_append_sheet(wb, patrolGridSheet, patrolSheetName);
+                    }
+                } catch (e) {
+                    console.warn('Could not create patrol grid for', park.id, e);
+                }
             }
             
             XLSX.writeFile(wb, `5MP_Detailed_Report${filterStr}.xlsx`);
@@ -3302,6 +3313,96 @@
         }
         
         // Export merged KML for all starred parks
+        // Create patrol grid sheet for a park
+        async function createPatrolGridSheet(park, fromDate, toDate) {
+            // Get park boundary to determine bbox
+            let bounds = park.bounds || park.bbox;
+            
+            // If no bbox but we have center, create approximate bbox
+            if (!bounds && park.center) {
+                const [lon, lat] = park.center;
+                const size = 0.5; // ~50km at equator
+                bounds = [lon - size, lat - size, lon + size, lat + size];
+            }
+            if (!bounds) return null;
+            
+            // Fetch grid data for this park's bbox
+            let url = `/api/grid?pwd=${window.accessPwd || ''}`;
+            if (fromDate) url += `&from=${fromDate}`;
+            if (toDate) url += `&to=${toDate}`;
+            if (Array.isArray(bounds)) {
+                url += `&bbox=${bounds.join(',')}`;
+            } else if (bounds.west !== undefined) {
+                url += `&bbox=${bounds.west},${bounds.south},${bounds.east},${bounds.north}`;
+            }
+            
+            const resp = await fetch(url);
+            if (!resp.ok) return null;
+            const gridData = await resp.json();
+            
+            const features = gridData.features || [];
+            if (features.length === 0) return null;
+            
+            // Extract lat/lon ranges and build matrix
+            const lats = new Set();
+            const lons = new Set();
+            const cellData = {};
+            
+            features.forEach(f => {
+                const lat = f.geometry?.coordinates?.[1] || f.properties?.lat_center;
+                const lon = f.geometry?.coordinates?.[0] || f.properties?.lon_center;
+                const score = f.properties?.total_points || f.properties?.score || 0;
+                if (lat && lon) {
+                    const latRound = Math.round(lat * 10) / 10;
+                    const lonRound = Math.round(lon * 10) / 10;
+                    lats.add(latRound);
+                    lons.add(lonRound);
+                    cellData[`${latRound}_${lonRound}`] = score;
+                }
+            });
+            
+            if (lats.size === 0 || lons.size === 0) return null;
+            
+            // Sort lats descending (north to south), lons ascending (west to east)
+            const sortedLats = [...lats].sort((a, b) => b - a);
+            const sortedLons = [...lons].sort((a, b) => a - b);
+            
+            // Build matrix data
+            const data = [];
+            
+            // Header row: park name
+            data.push([`Patrol Effort Grid: ${park.name || park.id}`]);
+            data.push([`Period: ${fromDate || 'start'} to ${toDate || 'present'}`]);
+            data.push([`Cells with data: ${features.length}`]);
+            data.push([]);
+            
+            // Column headers (longitudes)
+            const headerRow = ['Lat \\ Lon', ...sortedLons.map(lon => lon.toFixed(1))];
+            data.push(headerRow);
+            
+            // Data rows (each latitude)
+            for (const lat of sortedLats) {
+                const row = [lat.toFixed(1)];
+                for (const lon of sortedLons) {
+                    const score = cellData[`${lat}_${lon}`] || '';
+                    row.push(score);
+                }
+                data.push(row);
+            }
+            
+            // Create worksheet
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            // Set column widths (square-ish: 5 chars wide)
+            const colWidth = 5;
+            ws['!cols'] = [{wch: 8}, ...sortedLons.map(() => ({wch: colWidth}))];
+            
+            // Set row heights to match column width (approx 15 points per char)
+            ws['!rows'] = data.map((_, i) => i < 5 ? {hpt: 15} : {hpt: 20});
+            
+            return ws;
+        }
+        
         async function exportFullReportKml() {
             const parkIds = new Set();
             
@@ -5720,6 +5821,14 @@
                 html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="place" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'place', this)" style="flex: 1;${s.total_places === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${s.total_places === 0 ? 'disabled' : ''}>
                     <span style="color: #a855f7;">●</span> Places ${s.total_places || 0}
                 </button>`;
+                
+                // Learned infrastructure (airstrips) - show only if there are approved ones
+                const airstripsApproved = (learned.airstrips || []).filter(a => a.status === 'auto_approved' || a.status === 'approved');
+                if (airstripsApproved.length > 0) {
+                    html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="infrastructure" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'infrastructure', this)" style="flex: 1;">
+                        <span style="color: #22c55e;">✈</span> Infra ${airstripsApproved.length}
+                    </button>`;
+                }
                 
                 html += '</div>';
                 
