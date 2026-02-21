@@ -8756,6 +8756,38 @@ ${starredItems.narratives.map(n => {
                     }
                 });
                 
+                // Add text labels for rivers and roads (only features with names)
+                if (type === 'river' || type === 'road') {
+                    const textLayerId = `${layerId}-text`;
+                    map.addLayer({
+                        id: textLayerId,
+                        type: 'symbol',
+                        source: sourceId,
+                        minzoom: 10,
+                        filter: ['has', 'name'],
+                        layout: {
+                            'symbol-placement': 'line-center',
+                            'text-field': ['get', 'name'],
+                            'text-size': [
+                                'interpolate', ['linear'], ['zoom'],
+                                10, 9,
+                                12, 11,
+                                14, 13
+                            ],
+                            'text-max-angle': 60,
+                            'text-anchor': 'center',
+                            'text-allow-overlap': false,
+                            'text-ignore-placement': false
+                        },
+                        paint: {
+                            'text-color': type === 'river' ? '#7dd3fc' : '#93c5fd',
+                            'text-halo-color': 'rgba(0,0,0,0.85)',
+                            'text-halo-width': 1.5
+                        }
+                    });
+                    pinnedLayers[key].textLayerId = textLayerId;
+                }
+                
                 // Add directional arrows for fire trajectories
                 if (type === 'fire') {
                     const arrowLayerId = `${layerId}-arrows`;
