@@ -8730,6 +8730,44 @@ ${starredItems.narratives.map(n => {
         delete singlePinnedFeatures[key];
     }
     
+    function flyToSinglePin(key) {
+        const pin = singlePinnedFeatures[key];
+        if (!pin || !pin.feature) return;
+        
+        // Get center of the feature
+        const geom = pin.feature.geometry;
+        let center;
+        
+        if (geom.type === 'Point') {
+            center = geom.coordinates;
+        } else if (geom.type === 'LineString') {
+            // Middle point of line
+            const coords = geom.coordinates;
+            const mid = Math.floor(coords.length / 2);
+            center = coords[mid];
+        } else if (geom.type === 'Polygon') {
+            // Centroid approximation
+            const coords = geom.coordinates[0];
+            let sumX = 0, sumY = 0;
+            coords.forEach(c => { sumX += c[0]; sumY += c[1]; });
+            center = [sumX / coords.length, sumY / coords.length];
+        } else if (geom.type === 'MultiPolygon') {
+            const coords = geom.coordinates[0][0];
+            let sumX = 0, sumY = 0;
+            coords.forEach(c => { sumX += c[0]; sumY += c[1]; });
+            center = [sumX / coords.length, sumY / coords.length];
+        }
+        
+        if (center) {
+            map.flyTo({
+                center: center,
+                zoom: Math.max(map.getZoom(), 10),
+                duration: 1500,
+                essential: true
+            });
+        }
+    }
+    
     function clearAllSingleFeaturePins() {
         Object.keys(singlePinnedFeatures).forEach(key => removeSinglePinnedFeature(key));
         singlePinnedFeatures = {};
@@ -8760,6 +8798,38 @@ ${starredItems.narratives.map(n => {
         if (map.getSource(layer.sourceId)) map.removeSource(layer.sourceId);
         delete realtimeFireLayers[key];
         updatePinnedIndicator();
+    }
+    
+    function flyToRealtimeFire(key) {
+        const layer = realtimeFireLayers[key];
+        if (!layer) return;
+        
+        const source = map.getSource(layer.sourceId);
+        if (!source || !source._data) return;
+        
+        const features = source._data.features || [];
+        if (features.length === 0) return;
+        
+        // Compute bounding box
+        let minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
+        features.forEach(f => {
+            const coords = f.geometry.coordinates;
+            const flatCoords = flattenCoords(coords);
+            flatCoords.forEach(([lng, lat]) => {
+                if (lng < minLng) minLng = lng;
+                if (lng > maxLng) maxLng = lng;
+                if (lat < minLat) minLat = lat;
+                if (lat > maxLat) maxLat = lat;
+            });
+        });
+        
+        if (minLng !== Infinity) {
+            map.fitBounds([[minLng, minLat], [maxLng, maxLat]], {
+                padding: 50,
+                maxZoom: 14,
+                duration: 1500
+            });
+        }
     }
     
     async function togglePinLayer(parkId, parkName, type, btn) {
@@ -9110,6 +9180,44 @@ ${starredItems.narratives.map(n => {
         }
     }
     
+    function flyToPinnedLayer(key) {
+        const layer = pinnedLayers[key];
+        if (!layer) return;
+        
+        // Get the source and compute bounds
+        const source = map.getSource(layer.sourceId);
+        if (!source || !source._data) return;
+        
+        const features = source._data.features || [];
+        if (features.length === 0) return;
+        
+        // Compute bounding box
+        let minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
+        features.forEach(f => {
+            const coords = f.geometry.coordinates;
+            const flatCoords = flattenCoords(coords);
+            flatCoords.forEach(([lng, lat]) => {
+                if (lng < minLng) minLng = lng;
+                if (lng > maxLng) maxLng = lng;
+                if (lat < minLat) minLat = lat;
+                if (lat > maxLat) maxLat = lat;
+            });
+        });
+        
+        if (minLng !== Infinity) {
+            map.fitBounds([[minLng, minLat], [maxLng, maxLat]], {
+                padding: 50,
+                maxZoom: 14,
+                duration: 1500
+            });
+        }
+    }
+    
+    function flattenCoords(coords) {
+        if (typeof coords[0] === 'number') return [coords];
+        return coords.flatMap(c => flattenCoords(c));
+    }
+    
     function removePinnedLayer(key) {
         const layer = pinnedLayers[key];
         if (!layer) return;
@@ -9229,27 +9337,28 @@ ${starredItems.narratives.map(n => {
                 totalLayers++;
                 
                 if (p.realtime) {
-                    // Active fire with group name
-                    html += `<span class="pinned-layer-chip active-fire" onclick="event.stopPropagation(); removeRealtimeFireLayer('${p.key}')" title="${p.groupName} - Click to remove">`;
+                    // Active fire with group name - click to fly, × to remove
+                    html += `<span class="pinned-layer-chip active-fire" style="cursor:pointer;" onclick="event.stopPropagation(); flyToRealtimeFire('${p.key}')" title="${p.groupName} - Click to fly to">`;
                     html += `<span class="chip-icon">${icon}</span>`;
                     html += `<span>${p.groupName}</span>`;
-                    html += `<span class="chip-remove">×</span>`;
+                    html += `<span class="chip-remove" onclick="event.stopPropagation(); removeRealtimeFireLayer('${p.key}')" title="Remove">×</span>`;
                     html += `</span>`;
                 } else if (p.isBulk) {
-                    // Bulk layer (all of type)
-                    html += `<span class="pinned-layer-chip ${p.type}" onclick="event.stopPropagation(); removePinnedLayer('${p.key}')" title="${typeLabels[p.type] || p.type}: ${count} features - Click to remove">`;
+                    // Bulk layer (all of type) - click to fly, × to remove
+                    html += `<span class="pinned-layer-chip ${p.type}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${p.key}')" title="${typeLabels[p.type] || p.type}: ${count} features - Click to fly to">`;
                     html += `<span class="chip-icon">${icon}</span>`;
                     html += `<span class="chip-count">${count}</span>`;
-                    html += `<span class="chip-remove">×</span>`;
+                    html += `<span class="chip-remove" onclick="event.stopPropagation(); removePinnedLayer('${p.key}')" title="Remove">×</span>`;
                     html += `</span>`;
                 } else if (p.isSingle) {
-                    // Individual pinned features
+                    // Individual pinned features - click to fly, × to remove
                     const label = count === 1 ? '1' : count;
-                    html += `<span class="pinned-layer-chip ${p.type}" style="opacity:0.8;" onclick="event.stopPropagation(); ${p.keys.map(k => `removeSingleFeaturePin('${k}')`).join(';')}" title="${count} individual ${typeLabels[p.type] || p.type} pinned - Click to remove">`;
+                    const firstKey = p.keys[0];
+                    html += `<span class="pinned-layer-chip ${p.type}" style="opacity:0.8;cursor:pointer;" onclick="event.stopPropagation(); flyToSinglePin('${firstKey}')" title="${count} individual ${typeLabels[p.type] || p.type} pinned - Click to fly to">`;
                     html += `<span class="chip-icon">${icon}</span>`;
                     html += `<span class="chip-count">${label}</span>`;
                     html += `<span style="font-size:8px;opacity:0.7;">ind</span>`;
-                    html += `<span class="chip-remove">×</span>`;
+                    html += `<span class="chip-remove" onclick="event.stopPropagation(); ${p.keys.map(k => `removeSinglePinnedFeature('${k}')`).join(';')}; updatePinnedIndicator()" title="Remove">×</span>`;
                     html += `</span>`;
                 }
             });
