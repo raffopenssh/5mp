@@ -2112,7 +2112,7 @@
         let currentMBTilesJobId = null;
         let mbtilesPollingInterval = null;
         let mbtilesState = 'idle'; // idle, generating, complete
-        let mbtilesMaxZoom = 15;
+        let mbtilesMaxZoom = 17;
         
         async function showMBTilesDialog(parkId, parkName) {
             // Check if we're resuming an active job for this park
@@ -2148,7 +2148,7 @@
         function hideMBTilesDialog() {
             document.getElementById('mbtiles-dialog').style.display = 'none';
             
-            // If still generating, show notification hint
+            // If still generating, show hint about bell notification
             if (mbtilesState === 'generating' && mbtilesPollingInterval) {
                 showMBTilesNotificationHint();
             }
@@ -2156,11 +2156,22 @@
         
         function showMBTilesNotificationHint() {
             // Add a notification badge to show progress is continuing
-            const notifBtn = document.getElementById('toolbar-notifications');
+            const notifBtn = document.getElementById('notification-toggle');
             if (notifBtn) {
                 notifBtn.classList.add('has-mbtiles-progress');
-                notifBtn.title = `MBTiles generating for ${currentMBTilesParkName}...`;
             }
+            
+            // Show toast pointing to bell
+            showToast(
+                'Generating in background',
+                `Track progress in the bell notification menu`,
+                'Show',
+                () => {
+                    document.getElementById('notification-toggle').click();
+                    loadNotifications();
+                },
+                'info'
+            );
         }
         
         function hideMBTilesNotificationHint() {
@@ -2215,13 +2226,9 @@
         
         function updateZoomLevel(value) {
             const intVal = parseInt(value);
-            mbtilesMaxZoom = Math.min(intVal, 15); // Cap at 15 for now
+            mbtilesMaxZoom = Math.min(intVal, 17);
             const label = document.getElementById('mbtiles-zoom-label');
-            if (intVal > 15) {
-                label.innerHTML = `1-15 <span style="color:#ef4444;">(${intVal} unavailable)</span>`;
-            } else {
-                label.textContent = `1-${intVal}`;
-            }
+            label.textContent = `1-${mbtilesMaxZoom}`;
             fetchMBTilesEstimate();
         }
         
@@ -2312,6 +2319,12 @@
                 
                 // Start polling for status
                 mbtilesPollingInterval = setInterval(pollMBTilesStatus, 2000);
+                
+                // Close dialog and show hint to check bell notification
+                setTimeout(() => {
+                    hideMBTilesDialog();
+                    loadNotifications();  // Refresh notifications to show new job
+                }, 500);
             } catch (err) {
                 mbtilesState = 'idle';
                 updateMBTilesButton();
@@ -10437,9 +10450,9 @@ ${starredItems.narratives.map(n => {
             </div>
             
             <!-- Zoom level slider -->
-            <div style="color: #666; font-size: 10px; margin-bottom: 6px;">Zoom levels: <span id="mbtiles-zoom-label">1-15</span></div>
+            <div style="color: #666; font-size: 10px; margin-bottom: 6px;">Zoom levels: <span id="mbtiles-zoom-label">1-17</span></div>
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                <input type="range" id="mbtiles-zoom-slider" min="10" max="20" value="15" 
+                <input type="range" id="mbtiles-zoom-slider" min="10" max="17" value="17" 
                     style="flex: 1; accent-color: #3b82f6;" oninput="updateZoomLevel(this.value)">
                 <div style="display: flex; font-size: 9px; color: #444;">
                     <span id="zoom-markers"></span>
@@ -10454,6 +10467,9 @@ ${starredItems.narratives.map(n => {
                 <span id="mbtiles-btn-text">Generate</span>
                 <div id="mbtiles-btn-progress" class="mbtiles-btn-progress" style="width: 0%;"></div>
             </button>
+            
+            <!-- Info about expiration -->
+            <div style="font-size: 10px; color: #666; margin-top: 10px; text-align: center;">⏱ Files available for 8 hours after generation</div>
             
             <!-- Hidden status for polling -->
             <div id="mbtiles-status" style="display: none;"></div>

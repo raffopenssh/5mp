@@ -219,13 +219,15 @@ func (q *MBTilesQueue) executeJob(job *MBTilesJob) {
 			fmt.Sprintf("Offline tiles for %s (%s, %d MB) ready for download", job.ParkName, job.Source, fileSizeMB),
 			fmt.Sprintf("/api/parks/%s/mbtiles/download/%s", job.ParkID, job.ID))
 		
-		// Schedule cleanup of completed job from memory (keep for 1 hour)
-		go func(jobID string) {
-			time.Sleep(1 * time.Hour)
+		// Schedule cleanup of completed job and file (keep for 8 hours)
+		go func(jobID, filePath string) {
+			time.Sleep(8 * time.Hour)
 			q.mu.Lock()
 			delete(q.jobs, jobID)
 			q.mu.Unlock()
-		}(job.ID)
+			os.Remove(filePath)
+			slog.Info("Auto-cleaned MBTiles file after 8 hours", "id", jobID, "path", filePath)
+		}(job.ID, outputPath)
 	}
 	q.mu.Unlock()
 }
@@ -546,7 +548,7 @@ func (s *Server) HandleAPIMBTilesCreate(w http.ResponseWriter, r *http.Request) 
 	
 	// Estimate size
 	minZoom := 1
-	maxZoom := 15 // Limited for testing
+	maxZoom := 17
 	estimatedSize := estimateMBTilesSize(bbox, minZoom, maxZoom)
 	
 	// Check available space
@@ -633,16 +635,7 @@ func (s *Server) HandleAPIMBTilesDownload(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/x-sqlite3")
 	
 	http.ServeFile(w, r, job.FilePath)
-	
-	// Schedule file deletion after download
-	go func() {
-		time.Sleep(5 * time.Minute)
-		os.Remove(job.FilePath)
-		mbtilesQueue.mu.Lock()
-		delete(mbtilesQueue.jobs, jobID)
-		mbtilesQueue.mu.Unlock()
-		slog.Info("Cleaned up MBTiles file", "id", jobID, "path", job.FilePath)
-	}()
+	// File cleanup handled by 8-hour auto-cleanup goroutine
 }
 
 // HandleAPIMBTilesList lists all jobs
@@ -670,15 +663,12 @@ func (s *Server) HandleAPIMBTilesEstimate(w http.ResponseWriter, r *http.Request
 	bbox := calculateBufferedBBox(area, bufferKm)
 	
 	minZoom := 1
-	maxZoom := 15
+	maxZoom := 17
 	
 	// Get maxZoom from query parameter
 	if maxZoomStr := r.URL.Query().Get("maxZoom"); maxZoomStr != "" {
-		if mz, err := strconv.Atoi(maxZoomStr); err == nil && mz >= 1 && mz <= 20 {
+		if mz, err := strconv.Atoi(maxZoomStr); err == nil && mz >= 1 && mz <= 17 {
 			maxZoom = mz
-			if maxZoom > 15 {
-				maxZoom = 15 // Cap at 15 for now
-			}
 		}
 	}
 	
