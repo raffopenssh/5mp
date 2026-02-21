@@ -4981,8 +4981,11 @@
                         const toDate = dateTo ? new Date(dateTo) : new Date('2100-01-01');
                         allNarratives = allNarratives.filter(n => {
                             // Include if any part of the fire group overlaps with the date range
-                            const entryDate = n.entry_date ? new Date(n.entry_date) : null;
-                            const lastDate = n.last_inside ? new Date(n.last_inside) : entryDate;
+                            // Support both old (entry_date/last_inside) and new (start_date/end_date) field names
+                            const entryStr = n.entry_date || n.start_date;
+                            const lastStr = n.last_inside || n.end_date;
+                            const entryDate = entryStr ? new Date(entryStr) : null;
+                            const lastDate = lastStr ? new Date(lastStr) : entryDate;
                             if (!entryDate) return true; // No date, include anyway
                             // Overlap: entry <= toDate AND last >= fromDate
                             return entryDate <= toDate && lastDate >= fromDate;

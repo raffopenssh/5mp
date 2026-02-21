@@ -25,6 +25,7 @@ import json
 import argparse
 import sqlite3
 import math
+import hashlib
 from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -587,11 +588,17 @@ class TrajectoryAnalyzerV4:
         # Generate narrative
         narrative = self.generate_narrative(group, context, classification)
         
-        # Generate feature_id if not present
+        # Generate feature_id if not present - use hash of trajectory for uniqueness
         feature_id = group.get('feature_id')
         if not feature_id:
-            group_id = group.get('group_id', group_index)
-            feature_id = f"{park_id}_grp_{group_id}"
+            # Create unique ID from start_date, end_date, and centroid
+            start = group.get('start_date', '')
+            end = group.get('end_date', '')
+            centroid = group.get('centroid', [0, 0])
+            # Hash to create unique ID
+            hash_input = f"{park_id}_{start}_{end}_{centroid[0]:.4f}_{centroid[1]:.4f}"
+            hash_suffix = hashlib.md5(hash_input.encode()).hexdigest()[:8]
+            feature_id = f"{park_id}_{year}_grp_{hash_suffix}"
         
         # Build enhanced trajectory
         enhanced = {
