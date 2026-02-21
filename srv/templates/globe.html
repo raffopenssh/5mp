@@ -492,28 +492,38 @@
         .pa-popup-section.loading { animation: section-pulse 1.5s ease-in-out infinite; }
         @keyframes section-pulse { 0%, 100% { background: rgba(255,255,255,0.03); } 50% { background: rgba(255,255,255,0.08); } }
         
-        .pinned-indicator { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.92); border: 1px solid rgba(34,197,94,0.3); border-radius: 6px; padding: 6px 12px; z-index: 300; font-size: 11px; color: #ccc; display: none; align-items: center; gap: 8px; max-width: 70vw; backdrop-filter: blur(8px); cursor: pointer; transition: all 0.2s; }
-        .pinned-indicator:hover { background: rgba(30,30,30,0.98); border-color: #22c55e; }
+        /* Pinned layers badge - redesigned for clarity */
+        .pinned-indicator { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(34,197,94,0.4); border-radius: 8px; padding: 8px 12px; z-index: 300; font-size: 11px; color: #ccc; display: none; flex-direction: column; gap: 6px; max-width: 90vw; min-width: 200px; backdrop-filter: blur(10px); transition: all 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
         .pinned-indicator.active { display: flex; }
-        .pinned-indicator-icon { color: #22c55e; display: flex; align-items: center; }
-        .pinned-indicator-icon svg { width: 14px; height: 14px; }
-        .pinned-indicator-text { flex: 1; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .pinned-indicator-items { display: flex; flex-wrap: wrap; gap: 4px; }
-        .pinned-item { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 3px; font-size: 10px; display: inline-flex; align-items: center; gap: 3px; }
-        .pinned-item.fire { border-left: 2px solid var(--color-fire); }
-        .pinned-item.settlement { border-left: 2px solid var(--color-settlement); }
-        .pinned-item.deforestation { border-left: 2px solid var(--color-deforestation); }
-        .pinned-item.road { border-left: 2px solid var(--color-road); }
-        .pinned-item.road { border-left: 2px solid #60a5fa; }
-        .pinned-item.single { font-style: italic; opacity: 0.9; }
+        .pinned-indicator-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .pinned-indicator-title { display: flex; align-items: center; gap: 6px; font-weight: 500; color: #22c55e; font-size: 11px; }
+        .pinned-indicator-title svg { width: 14px; height: 14px; }
+        .pinned-indicator-close { color: #666; font-size: 16px; padding: 2px 6px; cursor: pointer; border-radius: 4px; transition: all 0.15s; }
+        .pinned-indicator-close:hover { color: #ef4444; background: rgba(239,68,68,0.1); }
+        .pinned-indicator-items { display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; }
+        .pinned-park-group { display: flex; flex-direction: column; gap: 2px; }
+        .pinned-park-name { font-size: 10px; color: #888; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
+        .pinned-park-layers { display: flex; flex-wrap: wrap; gap: 4px; padding-left: 8px; }
+        .pinned-layer-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; transition: all 0.15s; }
+        .pinned-layer-chip:hover { filter: brightness(1.2); }
+        .pinned-layer-chip.fire { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+        .pinned-layer-chip.settlement { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+        .pinned-layer-chip.deforestation { background: rgba(168,85,247,0.2); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); }
+        .pinned-layer-chip.road { background: rgba(96,165,250,0.2); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+        .pinned-layer-chip.place { background: rgba(168,85,247,0.2); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); }
+        .pinned-layer-chip.river { background: rgba(59,130,246,0.2); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); }
+        .pinned-layer-chip.water { background: rgba(59,130,246,0.2); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); }
+        .pinned-layer-chip.active-fire { background: rgba(239,68,68,0.3); color: #ff6b6b; border: 1px solid rgba(239,68,68,0.5); animation: pulse-glow 2s ease-in-out infinite; }
+        @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 4px rgba(239,68,68,0.3); } 50% { box-shadow: 0 0 8px rgba(239,68,68,0.6); } }
+        .pinned-layer-chip .chip-icon { font-size: 9px; }
+        .pinned-layer-chip .chip-count { font-weight: 600; }
+        .pinned-layer-chip .chip-remove { opacity: 0.5; margin-left: 2px; font-size: 12px; }
+        .pinned-layer-chip:hover .chip-remove { opacity: 1; color: #fff; }
+        .pinned-summary { font-size: 10px; color: #666; text-align: center; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.05); }
         .single-pin-icon { user-select: none; }
         .single-pin-icon.pinned { opacity: 1 !important; }
         .single-pin-icon.loading { animation: pulse 0.6s ease-in-out infinite; }
         @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
-        .pinned-indicator-close { color: #666; font-size: 14px; padding: 2px 6px; }
-        .pinned-indicator-close:hover { color: #fff; }
-        .pinned-indicator .clear-hint { font-size: 10px; color: #666; margin-left: 8px; cursor: pointer; }
-        .pinned-indicator .clear-hint:hover { color: #ef4444; }
         /* ===== End Pinned GeoJSON Styles ===== */
          
          
@@ -8817,6 +8827,10 @@ ${starredItems.narratives.map(n => {
         if (map.getSource(layer.sourceId)) map.removeSource(layer.sourceId);
         
         delete pinnedLayers[key];
+        
+        // Update badge and URL
+        updatePinnedIndicator();
+        savePinnedToURL();
     }
     
     function clearAllPinnedLayers() {
@@ -8848,19 +8862,38 @@ ${starredItems.narratives.map(n => {
         
         indicator.classList.add('active');
         
+        // Type icons and labels
+        const typeIcons = {
+            'fire': '◇', 'settlement': '◻', 'deforestation': '△', 
+            'road': '═', 'place': '●', 'river': '~', 'water': '○',
+            'active-fire': '◆', 'infrastructure': '▣'
+        };
+        const typeLabels = {
+            'fire': 'Fire trajectories', 'settlement': 'Settlements', 'deforestation': 'Deforestation',
+            'road': 'Roads', 'place': 'Places', 'river': 'Rivers', 'water': 'Waterbodies',
+            'active-fire': 'Active fire', 'infrastructure': 'Infrastructure'
+        };
+        
         // Group pins by park
         const byPark = {};
         categoryKeys.forEach(key => {
             const layer = pinnedLayers[key];
             const park = layer.parkName;
             if (!byPark[park]) byPark[park] = [];
-            byPark[park].push({ type: layer.type, count: layer.featureCount, key });
+            byPark[park].push({ type: layer.type, count: layer.featureCount, key, isBulk: true });
         });
         singleKeys.forEach(key => {
             const pin = singlePinnedFeatures[key];
             const park = pin.parkName;
             if (!byPark[park]) byPark[park] = [];
-            byPark[park].push({ type: pin.type, count: 1, single: true, key });
+            // Group single pins by type
+            const existing = byPark[park].find(p => p.type === pin.type && p.isSingle);
+            if (existing) {
+                existing.count++;
+                existing.keys.push(key);
+            } else {
+                byPark[park].push({ type: pin.type, count: 1, isSingle: true, keys: [key] });
+            }
         });
         rtKeys.forEach(key => {
             const rt = realtimeFireLayers[key];
@@ -8869,22 +8902,61 @@ ${starredItems.narratives.map(n => {
             byPark[park].push({ type: 'active-fire', count: 1, realtime: true, key, groupName: rt.groupName });
         });
         
-        // Build compact display
-        const parkNames = Object.keys(byPark);
-        let items = '';
-        if (parkNames.length <= 3) {
-            // Show detailed
-            items = parkNames.map(park => {
-                const pins = byPark[park];
-                const types = pins.map(p => `${p.type}${p.count > 1 ? '('+p.count+')' : ''}`).join(',');
-                return `<span class="pinned-item">${park}: ${types}</span>`;
-            }).join('');
-        } else {
-            // Compact: show count per park
-            items = `<span class="pinned-item">${parkNames.length} parks pinned (${totalCount} layers)</span>`;
+        // Build improved display grouped by park
+        const parkNames = Object.keys(byPark).sort();
+        let html = '';
+        
+        // Calculate totals for summary
+        let totalFeatures = 0;
+        let totalLayers = 0;
+        
+        parkNames.forEach(park => {
+            const pins = byPark[park];
+            html += `<div class="pinned-park-group">`;
+            html += `<div class="pinned-park-name">${park}</div>`;
+            html += `<div class="pinned-park-layers">`;
+            
+            pins.forEach(p => {
+                const icon = typeIcons[p.type] || '●';
+                const count = p.count || 0;
+                totalFeatures += count;
+                totalLayers++;
+                
+                if (p.realtime) {
+                    // Active fire with group name
+                    html += `<span class="pinned-layer-chip active-fire" onclick="event.stopPropagation(); removeRealtimeFireLayer('${p.key}')" title="${p.groupName} - Click to remove">`;
+                    html += `<span class="chip-icon">${icon}</span>`;
+                    html += `<span>${p.groupName}</span>`;
+                    html += `<span class="chip-remove">×</span>`;
+                    html += `</span>`;
+                } else if (p.isBulk) {
+                    // Bulk layer (all of type)
+                    html += `<span class="pinned-layer-chip ${p.type}" onclick="event.stopPropagation(); removePinnedLayer('${p.key}')" title="${typeLabels[p.type] || p.type}: ${count} features - Click to remove">`;
+                    html += `<span class="chip-icon">${icon}</span>`;
+                    html += `<span class="chip-count">${count}</span>`;
+                    html += `<span class="chip-remove">×</span>`;
+                    html += `</span>`;
+                } else if (p.isSingle) {
+                    // Individual pinned features
+                    const label = count === 1 ? '1' : count;
+                    html += `<span class="pinned-layer-chip ${p.type}" style="opacity:0.8;" onclick="event.stopPropagation(); ${p.keys.map(k => `removeSingleFeaturePin('${k}')`).join(';')}" title="${count} individual ${typeLabels[p.type] || p.type} pinned - Click to remove">`;
+                    html += `<span class="chip-icon">${icon}</span>`;
+                    html += `<span class="chip-count">${label}</span>`;
+                    html += `<span style="font-size:8px;opacity:0.7;">ind</span>`;
+                    html += `<span class="chip-remove">×</span>`;
+                    html += `</span>`;
+                }
+            });
+            
+            html += `</div></div>`;
+        });
+        
+        // Add summary footer if multiple parks
+        if (parkNames.length > 1) {
+            html += `<div class="pinned-summary">${parkNames.length} parks · ${totalFeatures.toLocaleString()} features</div>`;
         }
         
-        itemsContainer.innerHTML = items;
+        itemsContainer.innerHTML = html;
     }
     
     // Refresh all pinned category layers with new date filter
@@ -9956,12 +10028,15 @@ ${starredItems.narratives.map(n => {
     </div>
     
     <!-- Pinned GeoJSON Indicator -->
-    <div class="pinned-indicator" id="pinned-indicator" onclick="clearAllPinnedLayers()" title="Click to clear all">
-        <div class="pinned-indicator-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+    <div class="pinned-indicator" id="pinned-indicator">
+        <div class="pinned-indicator-header">
+            <div class="pinned-indicator-title">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                <span>Pinned Layers</span>
+            </div>
+            <span class="pinned-indicator-close" onclick="event.stopPropagation(); clearAllPinnedLayers();" title="Clear all pins">&times;</span>
         </div>
         <div class="pinned-indicator-items" id="pinned-items"></div>
-        <span class="pinned-indicator-close" onclick="event.stopPropagation(); clearAllPinnedLayers();">&times;</span>
     </div>
 
     <!-- GPX Admin Panel -->
