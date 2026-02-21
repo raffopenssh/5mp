@@ -6244,6 +6244,45 @@
         // Set up PA click handler (enhanced popup with collapsible sections)
         // Cross-browser compatible: uses only general click + queryRenderedFeatures
         // Works reliably in Safari 18.6, Firefox 146, DuckDuckGo Android, and all major browsers
+        // Point-in-polygon check using ray casting algorithm
+        // Returns true if point [lng, lat] is inside polygon coordinates array
+        function pointInPolygon(lng, lat, coords) {
+            // Handle MultiPolygon or Polygon
+            if (!coords || coords.length === 0) return false;
+            
+            // Check if this is a ring (array of [lng, lat] pairs) or contains rings
+            const rings = Array.isArray(coords[0][0]) ? coords : [coords];
+            
+            let inside = false;
+            for (const ring of rings) {
+                // Ray casting: count intersections with polygon edges
+                for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+                    const xi = ring[i][0], yi = ring[i][1];
+                    const xj = ring[j][0], yj = ring[j][1];
+                    
+                    if (((yi > lat) !== (yj > lat)) &&
+                        (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi)) {
+                        inside = !inside;
+                    }
+                }
+            }
+            return inside;
+        }
+
+        // Check if point is inside feature geometry (Polygon or MultiPolygon)
+        function pointInFeature(lng, lat, feature) {
+            if (!feature.geometry) return false;
+            const geom = feature.geometry;
+            
+            if (geom.type === 'Polygon') {
+                return pointInPolygon(lng, lat, geom.coordinates[0]);
+            } else if (geom.type === 'MultiPolygon') {
+                // Check each polygon in the multipolygon
+                return geom.coordinates.some(poly => pointInPolygon(lng, lat, poly[0]));
+            }
+            return false;
+        }
+
         function setupPAClickHandler() {
             // Helper to handle PA feature interaction at a point
             function handlePAInteraction(point, lngLat, originalEvent) {
@@ -6259,9 +6298,16 @@
                 
                 // Query for PA features at the interaction point
                 const paFeatures = map.queryRenderedFeatures(point, { layers: ['areas-fill'] });
-                if (paFeatures.length > 0) {
-                    console.log('PA click handler - found PA:', paFeatures[0].properties?.name);
-                    const props = paFeatures[0].properties;
+                
+                // At low zoom, queryRenderedFeatures returns ALL visible features, not just those containing the point
+                // Filter to find features that actually contain the clicked point
+                const clickLng = lngLat.lng;
+                const clickLat = lngLat.lat;
+                const containingFeature = paFeatures.find(f => pointInFeature(clickLng, clickLat, f));
+                
+                if (containingFeature) {
+                    console.log('PA click handler - found PA:', containingFeature.properties?.name);
+                    const props = containingFeature.properties;
                     
                     // Shift+click or Cmd+click (Mac): toggle park in multi-selection
                     const isMultiSelect = originalEvent && (originalEvent.shiftKey || originalEvent.metaKey || originalEvent.ctrlKey);
