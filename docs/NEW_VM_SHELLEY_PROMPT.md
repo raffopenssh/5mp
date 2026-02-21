@@ -42,6 +42,20 @@ sqlite3 db.sqlite3 "PRAGMA integrity_check"
 
 **Note:** The `fire_detections` table is empty in the backup. Raw fire data is in JSON files.
 
+## Historic Fire Data Archive (Optional)
+
+If you need the full historic VIIRS fire CSVs (2018-2024, ~5GB uncompressed):
+
+**Google Drive:** https://drive.google.com/file/d/1w59TvLxsOjTSRQWeQx3XYEdzeSTydUXP/view?usp=share_link
+
+```bash
+# Download via gdown (pip install gdown)
+gdown 1w59TvLxsOjTSRQWeQx3XYEdzeSTydUXP -O fire_archive.zip
+unzip fire_archive.zip -d data/fire/
+```
+
+This archive contains the raw VIIRS CSVs that were processed into `fire_additional_buffer/*.json`.
+
 ---
 
 ## Data File Locations
