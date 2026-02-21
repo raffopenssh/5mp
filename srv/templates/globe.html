@@ -7574,33 +7574,32 @@
         let html = '<div class="starred-report-content">';
         
         // Patrol Activity Summary (at top as requested)
-        const fireStats = stats.fire || {};
+        const fireData = data.fire || {};
         html += `<div class="starred-report-section patrol" style="margin-bottom:12px;">
             <div class="starred-report-section-title">○ Patrol & Activity Summary</div>
             <div class="starred-report-section-stats" style="flex-wrap:wrap;">
-                <span title="Fire response rate">Response: ${Math.round(fireStats.response_rate || 0)}%</span>
+                <span title="Fire response rate">Response: ${Math.round(fireData.response_rate || 0)}%</span>
                 <span title="Roadless wilderness">Roadless: ${(stats.roadless?.roadless_percentage || 0).toFixed(1)}%</span>
                 <span title="Settlement built-up area">Built-up: ${(stats.settlement?.built_up_km2 || 0).toFixed(2)} km²</span>
             </div>
             ${stats.insights && stats.insights.length > 0 ? `<div class="starred-report-group" style="margin-top:8px;"><div class="starred-report-group-title">Key Insights:</div>${stats.insights.slice(0, expanded ? 100 : 3).map(i => `<div style="margin:4px 0;font-size:10px;color:#aaa;">${i}</div>`).join('')}${!expanded && stats.insights.length > 3 ? `<div style="color:#60a5fa;font-size:10px;cursor:pointer;" onclick="this.parentElement.innerHTML=this.parentElement.innerHTML.replace('...show more', '')+reportDataCache.parks.get('${park.id}')?.stats?.insights?.slice(3).map(i=>'<div style=margin:4px\\ 0;font-size:10px;color:#aaa;>'+i+'</div>').join('')">...show ${stats.insights.length - 3} more</div>` : ''}</div>` : ''}
         </div>`;
         
-        // Fire section
+        // Fire section - use data from fire-narrative API
         const fire = data.fire || {};
-        if (fire.total_fires > 0 || fireStats.total_fires > 0) {
-            const totalFires = fire.total_fires || fireStats.total_fires || 0;
-            const groups = fireStats.groups_entered || 0;
-            const stopped = fireStats.groups_stopped_inside || 0;
-            const transited = fireStats.groups_transited || 0;
+        const fireGroups = fire.narratives?.length || 0;
+        const fireTotalDetections = fire.total_fires || 0;
+        const fireResponseRate = fire.response_rate || 0;
+        if (fireTotalDetections > 0 || fireGroups > 0) {
             html += `<div class="starred-report-section fire">
                 <div class="starred-report-section-title">◆ Fire Activity</div>
                 <div class="starred-report-section-stats">
-                    <span>Total: ${fmt(totalFires)}</span>
-                    <span>Groups: ${fmt(groups)} (${fmt(stopped)} stopped, ${fmt(transited)} transited)</span>
-                    <span>Peak: ${fireStats.peak_month || fire.peak_month || 'N/A'}</span>
+                    <span>Detections: ${fmt(fireTotalDetections)}</span>
+                    <span>Groups: ${fmt(fireGroups)}</span>
+                    <span>Response: ${Math.round(fireResponseRate)}%</span>
                 </div>
                 ${fire.summary ? `<div class="starred-report-section-text">${fire.summary}</div>` : ''}
-                ${fire.narratives && fire.narratives.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Fire Groups (${fire.narratives.length}):</div>${fire.narratives.slice(0, expanded ? 100 : 5).map(n => `<div style="margin:4px 0;font-size:10px;">${n.narrative || n.title || 'Fire group'}</div>`).join('')}${!expanded && fire.narratives.length > 5 ? `<div style="color:#60a5fa;font-size:10px;">...${fire.narratives.length - 5} more</div>` : ''}</div>` : ''}
+                ${fire.narratives && fire.narratives.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Recent Groups (${Math.min(5, fire.narratives.length)} of ${fire.narratives.length}):</div>${fire.narratives.slice(0, expanded ? 10 : 5).map(n => `<div style="margin:4px 0;font-size:10px;">${n.narrative || n.title || 'Fire group'}</div>`).join('')}${fire.narratives.length > (expanded ? 10 : 5) ? `<div style="color:#60a5fa;font-size:10px;">...${fire.narratives.length - (expanded ? 10 : 5)} more</div>` : ''}</div>` : ''}
             </div>`;
         }
         
