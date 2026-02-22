@@ -450,11 +450,12 @@ class FireGroupLoader:
                 "cross_border": group.get('cross_border', False),
                 "affected_parks": group.get('affected_parks', [park_id]),
                 "narrative": narrative,
-                "context": {
-                    "season": context.get('season', ''),
-                    "nearest_place": (context.get('nearest_place') or {}).get('name', ''),
-                    "nearest_river": (context.get('nearest_river') or {}).get('name', ''),
-                }
+                # Flat context fields for precompute_narratives_v4 compatibility
+                "season": context.get('season', ''),
+                "nearest_place": (context.get('nearest_place') or {}).get('name', ''),
+                "nearest_river": (context.get('nearest_river') or {}).get('name', ''),
+                "nearest_place_dist": (context.get('nearest_place') or {}).get('distance_km'),
+                "nearest_river_dist": (context.get('nearest_river') or {}).get('distance_km'),
             }
             
             # Date range

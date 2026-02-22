@@ -122,6 +122,7 @@ class NarrativeGeneratorV4:
                     'group_type': t.get('group_type'),
                     'refined_type': t.get('primary_type'),
                     'pct_inside': t.get('pct_inside'),
+                    'position': t.get('position'),  # v3: starts_inside, ends_inside, transits, entirely_outside
                     'cross_border': t.get('cross_border'),
                     'affected_parks': t.get('affected_parks'),
                     'season': t.get('season'),
@@ -154,7 +155,10 @@ class NarrativeGeneratorV4:
             
             management_count = sum(1 for t in trajectories if 'management' in (t.get('group_type', '') or '').lower() or 'management' in (t.get('primary_type', '') or '').lower())
             cross_border_count = sum(1 for t in trajectories if t.get('cross_border'))
-            outside_count = sum(1 for t in trajectories if (t.get('pct_inside') or 0) < 50)
+            # Use position field if available (v3), else fall back to pct_inside
+            outside_count = sum(1 for t in trajectories if t.get('position') == 'entirely_outside' or (not t.get('position') and (t.get('pct_inside') or 0) < 50))
+            stopped_inside_count = sum(1 for t in trajectories if t.get('position') in ('ends_inside', 'contained'))
+            transited_count = sum(1 for t in trajectories if t.get('position') == 'transits')
             
             # Build FireYearSummary list
             years_summary = []
@@ -162,8 +166,9 @@ class NarrativeGeneratorV4:
                 year_trajs = by_year[year]
                 year_fires = sum(t.get('fires_total', t.get('fires', 0)) or 0 for t in year_trajs)
                 year_management = sum(1 for t in year_trajs if 'management' in (t.get('group_type', '') or '').lower())
-                year_stopped = sum(1 for t in year_trajs if (t.get('pct_inside') or 0) > 80)
-                year_transited = len(year_trajs) - year_stopped
+                # Use position field if available (v3)
+                year_stopped = sum(1 for t in year_trajs if t.get('position') in ('ends_inside', 'contained') or (not t.get('position') and (t.get('pct_inside') or 0) > 80))
+                year_transited = sum(1 for t in year_trajs if t.get('position') == 'transits' or (not t.get('position') and (t.get('pct_inside') or 0) <= 80 and (t.get('pct_inside') or 0) > 20))
                 response_rate = (year_stopped / len(year_trajs) * 100) if year_trajs else 0
                 avg_days = sum(t.get('days', 0) for t in year_trajs) / max(1, len(year_trajs))
                 
@@ -240,8 +245,13 @@ class NarrativeGeneratorV4:
                 outside_pct = round(outside_count / total_groups * 100, 1)
                 summary_parts.append(f"{outside_count} groups ({outside_pct}%) originated outside the park.")
             
-            if response_rate > 50:
-                summary_parts.append(f"{round(response_rate)}% of groups were contained inside the park.")
+            if stopped_inside_count > 0:
+                stopped_pct = round(stopped_inside_count / total_groups * 100, 1)
+                summary_parts.append(f"{stopped_inside_count} groups ({stopped_pct}%) stopped inside the park.")
+            
+            if transited_count > 0:
+                transit_pct = round(transited_count / total_groups * 100, 1)
+                summary_parts.append(f"{transited_count} groups ({transit_pct}%) transited through.")
             
             if peak_month:
                 summary_parts.append(f"Peak activity: {peak_month}.")
@@ -290,6 +300,8 @@ class NarrativeGeneratorV4:
                 'management_fires': management_count,
                 'cross_border_groups': cross_border_count,
                 'outside_park_groups': outside_count,
+                'stopped_inside_groups': stopped_inside_count,
+                'transited_groups': transited_count,
                 'group_types': dict(type_counts),
                 'climate': {
                     'dry_season': park_climate.get('dry_season'),

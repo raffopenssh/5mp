@@ -25,24 +25,48 @@ python3 scripts/build_unified_fire_dataset.py
 
 ---
 
-### `scripts/rebuild_park_fire_analysis_v2.py`
-**Purpose:** Cluster fires into groups and build trajectories.
+### `scripts/rebuild_park_fire_analysis_v3.py`
+**Purpose:** Cluster fires into groups and build trajectories (v3 algorithm).
 
 **Usage:**
 ```bash
-python3 scripts/rebuild_park_fire_analysis_v2.py           # Full rebuild
-python3 scripts/rebuild_park_fire_analysis_v2.py --incremental  # Last 14 days
+python3 scripts/rebuild_park_fire_analysis_v3.py           # Full rebuild
+python3 scripts/rebuild_park_fire_analysis_v3.py --park CAF_Chinko  # Single park
 ```
 
 **Inputs:**
-- `data/raw-fire-viirs-*/` or `data/fire_additional_buffer/`
-- `data/fire_nrt/`
+- `data/raw-fire-viirs-*/` unified fire dataset
 
-**Output:** `data/fire_groups_v2/{park_id}.json`
+**Output:** `data/fire_groups_*/{park_id}.json`
 
-**Algorithm:**
-- DBSCAN clustering: 3km distance, 2-day time gap
-- Trajectory: 4-hour time windows → 1-6 centroids/day (zigzag fix)
+**Algorithm (v3):**
+- 12-hour time windows for centroid calculation
+- 5km spatial clustering
+- Progressive linking: 10km + 5km/day across gaps
+- 3-day maximum gap between observations
+
+---
+
+### `scripts/load_fire_groups_to_db.py`
+**Purpose:** Load fire groups from JSON to database with context enrichment.
+
+**Usage:**
+```bash
+python3 scripts/load_fire_groups_to_db.py --force    # Full reload
+python3 scripts/load_fire_groups_to_db.py --park CAF_Chinko  # Single park
+```
+
+**Input:** `data/fire_groups_*/` JSON files
+
+**Output:**
+- `feature_geometries` (fire_trajectory records)
+- `park_group_infractions` (yearly stats)
+- `park_fire_weekly` (weekly counts)
+
+**Features:**
+- Adds context from rivers, lakes, roads, places, settlements
+- Classifies position: starts_inside, ends_inside, transits, entirely_outside
+- Generates narratives with geographic context
 
 ---
 

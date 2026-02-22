@@ -619,3 +619,19 @@ python scripts/load_fire_groups_v3.py --force
 # 3. Restart server
 sudo systemctl restart srv
 ```
+
+## Full Pipeline (v3)
+
+```bash
+# Step 1: Cluster fires into groups (2-3 hours)
+python3 scripts/rebuild_park_fire_analysis_v3.py
+
+# Step 2: Load to database with context (~20 minutes)
+python3 scripts/load_fire_groups_to_db.py --force
+
+# Step 3: Precompute narratives for cache (~30 minutes)
+python3 scripts/precompute_narratives_v4.py
+
+# Restart server
+sudo systemctl restart srv
+```
