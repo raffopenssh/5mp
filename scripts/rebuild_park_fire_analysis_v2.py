@@ -26,7 +26,7 @@ import gc
 
 BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / "db.sqlite3"
-BUFFER_DIR = BASE_DIR / "data" / "fire_additional_buffer"
+BUFFER_DIR = next(BASE_DIR.glob("data/raw-fire-viirs-*"), BASE_DIR / "data" / "fire_additional_buffer")
 NRT_DIR = BASE_DIR / "data" / "fire_nrt"  # NRT fire data from daily download
 KEYSTONES_FILE = BASE_DIR / "data" / "keystones_with_boundaries.json"
 OUTPUT_DIR = BASE_DIR / "data" / "fire_groups_v2"
@@ -128,7 +128,7 @@ def preindex_buffer_fires(min_date=MIN_DATE):
     count = 0
     
     # Load from historical buffer files
-    for f in BUFFER_DIR.glob("*_buffer.json"):
+    for f in BUFFER_DIR.glob("*.json"):
         with open(f) as fp:
             try:
                 data = json.load(fp)

@@ -516,3 +516,75 @@ for f in data/fire_groups_v2/*.json; do
   echo "$(jq length "$f") $(basename $f .json)"
 done | sort -n | tail -10
 ```
+
+---
+
+## Historical Data Rebuild
+
+### Script: `scripts/build_unified_fire_dataset.py`
+
+**Purpose:** Build a unified fire dataset from multiple sources for full historical analysis (2020-01-01 onwards).
+
+**Data Sources:**
+1. `fire_archive.zip` - Historical VIIRS CSVs (2018-2024) from NASA FIRMS
+2. `data/fire_detections_2025_2026/` - Recent fire detections (2025-2026)
+3. `data/fire_nrt/` - Near-real-time fires (last 7 days)
+
+**Output:** `data/raw-fire-viirs-YYYYMMDD-YYYYMMDD/` with one JSON per park
+
+**Processing Strategy:**
+- Uses **spatial windowing** to handle cross-border fires
+- 7 overlapping chunks: NW, NE, SW, SE_NW, SE_NE, SE_SW, SE_SE
+- Writes incrementally per-chunk to avoid OOM
+- Resumable via `build_fire_progress.json`
+
+**Filters Applied:**
+- Date: `>= 2020-01-01`
+- Buffer: 30km around each park boundary
+
+**Usage:**
+```bash
+source .venv/bin/activate
+python3 scripts/build_unified_fire_dataset.py
+```
+
+**Chunk Boundaries:**
+| Chunk | West | South | East | North | Notes |
+|-------|------|-------|------|-------|-------|
+| NW | -20 | 0 | 25 | 40 | North-West Africa |
+| NE | 15 | 0 | 55 | 40 | North-East Africa |
+| SW | -20 | -40 | 25 | 10 | South-West Africa |
+| SE_NW | 15 | -15 | 35 | 10 | SE quadrant split |
+| SE_NE | 30 | -15 | 55 | 10 | SE quadrant split |
+| SE_SW | 15 | -40 | 35 | -10 | SE quadrant split |
+| SE_SE | 30 | -40 | 55 | -10 | SE quadrant split |
+
+---
+
+## Zigzag Fix (Trajectory Smoothing)
+
+**Problem:** Raw fire detections create zigzag trajectories when connecting all points.
+
+**Solution:** Use time-based centroids instead of individual points.
+
+**Implementation in `rebuild_park_fire_analysis_v2.py`:**
+
+1. Group fires by date
+2. Within each day, group by 4-hour time windows (periods 0-5):
+   - Period 0: 0000-0400
+   - Period 1: 0400-0800
+   - Period 2: 0800-1200
+   - Period 3: 1200-1600
+   - Period 4: 1600-2000
+   - Period 5: 2000-2400
+3. Calculate centroid for each period that has fires
+4. Connect centroids in chronological order
+
+**Result:** 1-6 trajectory points per day instead of dozens, showing smooth fire progression.
+
+**Verification:**
+```python
+# Points should be ~1-6x days
+ratio = len(trajectory) / days
+assert 1 <= ratio <= 6, f"Zigzag detected: {ratio}"
+```
