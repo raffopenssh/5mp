@@ -15,19 +15,26 @@ FIRE_TRAJ_DIR = BASE_DIR / "data" / "fire_trajectories"  # Fallback source
 def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
 
-def load_fire_trajectories(park_id=None, force=False):
+def load_fire_trajectories(park_id=None, force=False, incremental=False):
     conn = sqlite3.connect(DB_PATH)
     
     # Get existing fire trajectory count
     existing = conn.execute("SELECT COUNT(*) FROM feature_geometries WHERE feature_type='fire_trajectory'").fetchone()[0]
     log(f"Existing fire_trajectory records: {existing}")
     
-    if existing > 0 and not park_id and not force:
-        log("Fire trajectories already loaded. Use --park to reload specific park or --force for full reload.")
+    if existing > 0 and not park_id and not force and not incremental:
+        log("Fire trajectories already loaded. Use --park to reload specific park, --force for full reload, or --incremental to add new.")
         conn.close()
         return
     
-    # Delete existing fire trajectories for specified park or all
+    # In incremental mode, get existing feature_ids to avoid duplicates
+    existing_ids = set()
+    if incremental:
+        rows = conn.execute("SELECT feature_id FROM feature_geometries WHERE feature_type='fire_trajectory'").fetchall()
+        existing_ids = {r[0] for r in rows}
+        log(f"Incremental mode: {len(existing_ids)} existing trajectories")
+    
+    # Delete existing fire trajectories for specified park or all (not in incremental mode)
     if park_id:
         conn.execute("DELETE FROM feature_geometries WHERE feature_type='fire_trajectory' AND park_id=?", (park_id,))
     elif force:
@@ -82,6 +89,10 @@ def load_fire_trajectories(park_id=None, force=False):
                 # Get feature_id
                 feature_id = t.get('feature_id', f"{pid}_grp_{i}")
                 
+                # Skip if already exists in incremental mode
+                if incremental and feature_id in existing_ids:
+                    continue
+                
                 # Build properties
                 props = {
                     "feature_id": feature_id,
@@ -134,7 +145,8 @@ def load_fire_trajectories(park_id=None, force=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--park", help="Load specific park only")
-    parser.add_argument("--force", action="store_true", help="Force reload all")
+    parser.add_argument("--force", action="store_true", help="Force reload all (deletes existing)")
+    parser.add_argument("--incremental", action="store_true", help="Add new trajectories without deleting existing")
     args = parser.parse_args()
     
-    load_fire_trajectories(args.park, args.force)
+    load_fire_trajectories(args.park, args.force, args.incremental)

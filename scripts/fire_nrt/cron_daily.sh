@@ -23,9 +23,9 @@ python3 scripts/rebuild_park_fire_analysis_v2.py --incremental --days 14 >> "$LO
 echo "[3/4] Running incremental trajectory analysis v4..." >> "$LOG_FILE"
 python3 scripts/analyze_fire_trajectories_v4.py --incremental --days 14 >> "$LOG_FILE" 2>&1
 
-# 4. Load fire trajectories to database
-echo "[4/5] Loading fire trajectories to database..." >> "$LOG_FILE"
-python3 scripts/load_fire_trajectories_to_db.py --force >> "$LOG_FILE" 2>&1
+# 4. Load fire trajectories to database (incremental - preserves historic data)
+echo "[4/5] Loading fire trajectories to database (incremental)..." >> "$LOG_FILE"
+python3 scripts/load_fire_trajectories_to_db.py --incremental >> "$LOG_FILE" 2>&1
 
 # 5. Update narrative cache for affected parks
 echo "[5/6] Running incremental narrative precompute v4..." >> "$LOG_FILE"
