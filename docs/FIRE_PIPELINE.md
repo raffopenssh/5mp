@@ -588,3 +588,34 @@ python3 scripts/build_unified_fire_dataset.py
 ratio = len(trajectory) / days
 assert 1 <= ratio <= 6, f"Zigzag detected: {ratio}"
 ```
+
+## v3 Pipeline Migration Notes
+
+### Step 1: rebuild_park_fire_analysis_v3.py
+- Input: `data/raw-fire-viirs-*/*.json` (unified fire dataset)
+- Output: `data/fire_groups_*/` (one JSON per park)
+- Params: 12h windows, 5km cluster, 10km+5km/day link, 3-day max gap
+
+### Step 3: load_fire_groups_v3.py
+- Input: `data/fire_groups_*/` JSON files
+- Output: `feature_geometries`, `park_group_infractions`, `park_fire_weekly`
+
+**New properties in feature_geometries.properties_json:**
+- `position`: trajectory relationship to park (starts_inside, ends_inside, transits, entirely_outside, contained)
+- `total_frp`: sum of fire radiative power
+- `pct_inside`: percentage of observations inside park
+- `context`: nested object with season, nearest_place, nearest_river
+
+**No schema changes required** - all new fields are in JSON columns.
+
+### Production Migration
+```bash
+# 1. Run Step 1 (takes ~2-3 hours for 162 parks)
+python scripts/rebuild_park_fire_analysis_v3.py
+
+# 2. Run Step 3 (takes ~20 minutes)
+python scripts/load_fire_groups_v3.py --force
+
+# 3. Restart server
+sudo systemctl restart srv
+```
