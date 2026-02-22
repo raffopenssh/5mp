@@ -9077,7 +9077,11 @@ ${starredItems.narratives.map(n => {
                 sourceId
             };
             
-            // Check geometry type from first feature
+            // Check geometry types - may have mixed Point and LineString (fire trajectories)
+            const geomTypes = new Set(geojson.features.map(f => f.geometry?.type).filter(Boolean));
+            const hasPoints = geomTypes.has('Point') || geomTypes.has('MultiPoint');
+            const hasLines = geomTypes.has('LineString') || geomTypes.has('MultiLineString');
+            const hasPolygons = geomTypes.has('Polygon') || geomTypes.has('MultiPolygon');
             const geomType = geojson.features[0]?.geometry?.type || 'Point';
             
             if (geomType === 'Point' || geomType === 'MultiPoint') {
@@ -9136,6 +9140,7 @@ ${starredItems.narratives.map(n => {
                         id: layerId,
                         type: 'circle',
                         source: sourceId,
+                        filter: ['==', ['geometry-type'], 'Point'],
                         paint: {
                             'circle-radius': 6,
                             'circle-color': color,
@@ -9145,19 +9150,81 @@ ${starredItems.narratives.map(n => {
                             'circle-stroke-opacity': 0.5
                         }
                     });
+                    
+                    // For fire: also add line layer for trajectories (mixed geometry support)
+                    if (type === 'fire' && hasLines) {
+                        const lineLayerId = `${layerId}-lines`;
+                        map.addLayer({
+                            id: lineLayerId,
+                            type: 'line',
+                            source: sourceId,
+                            filter: ['==', ['geometry-type'], 'LineString'],
+                            paint: {
+                                'line-color': color,
+                                'line-width': 3,
+                                'line-opacity': 0.8
+                            }
+                        });
+                        pinnedLayers[key].lineLayerId = lineLayerId;
+                        
+                        // Add directional arrows for fire trajectories
+                        const arrowLayerId = `${layerId}-arrows`;
+                        map.addLayer({
+                            id: arrowLayerId,
+                            type: 'symbol',
+                            source: sourceId,
+                            filter: ['==', ['geometry-type'], 'LineString'],
+                            layout: {
+                                'symbol-placement': 'line',
+                                'symbol-spacing': 100,
+                                'icon-image': 'arrow-right',
+                                'icon-size': 0.5,
+                                'icon-rotate': 90,
+                                'icon-rotation-alignment': 'map',
+                                'icon-allow-overlap': true,
+                                'icon-ignore-placement': true
+                            },
+                            paint: {
+                                'icon-color': color,
+                                'icon-opacity': 0.7
+                            }
+                        });
+                        pinnedLayers[key].arrowLayerId = arrowLayerId;
+                    }
                 }
             } else if (geomType === 'LineString' || geomType === 'MultiLineString') {
-                // Add main line layer
+                // Add main line layer (filter to LineStrings if mixed geometry)
                 map.addLayer({
                     id: layerId,
                     type: 'line',
                     source: sourceId,
+                    filter: hasPoints ? ['==', ['geometry-type'], 'LineString'] : true,
                     paint: {
                         'line-color': color,
                         'line-width': lineWidth,
                         'line-opacity': type === 'road' ? 0.6 : 0.8
                     }
                 });
+                
+                // For fire with mixed geometry: also add circles for single-point fires
+                if (type === 'fire' && hasPoints) {
+                    const pointLayerId = `${layerId}-points`;
+                    map.addLayer({
+                        id: pointLayerId,
+                        type: 'circle',
+                        source: sourceId,
+                        filter: ['==', ['geometry-type'], 'Point'],
+                        paint: {
+                            'circle-radius': 5,
+                            'circle-color': color,
+                            'circle-opacity': 0.8,
+                            'circle-stroke-width': 1.5,
+                            'circle-stroke-color': '#fff',
+                            'circle-stroke-opacity': 0.5
+                        }
+                    });
+                    pinnedLayers[key].pointLayerId = pointLayerId;
+                }
                 
                 // Add text labels for rivers and roads (only features with names)
                 if (type === 'river' || type === 'road') {
@@ -9351,6 +9418,16 @@ ${starredItems.narratives.map(n => {
         // Remove text layer if exists (for places)
         if (layer.textLayerId && map.getLayer(layer.textLayerId)) {
             map.removeLayer(layer.textLayerId);
+        }
+        
+        // Remove line layer if exists (for mixed fire geometry)
+        if (layer.lineLayerId && map.getLayer(layer.lineLayerId)) {
+            map.removeLayer(layer.lineLayerId);
+        }
+        
+        // Remove point layer if exists (for mixed fire geometry)
+        if (layer.pointLayerId && map.getLayer(layer.pointLayerId)) {
+            map.removeLayer(layer.pointLayerId);
         }
         
         if (map.getLayer(layer.layerId)) map.removeLayer(layer.layerId);
