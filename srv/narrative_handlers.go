@@ -35,7 +35,15 @@ type FireNarrative struct {
 	Trend        *FireTrendAnalysis `json:"trend,omitempty"`
 	ResponseRate float64           `json:"response_rate"`
 	TotalFires   int               `json:"total_fires"`
+	TotalFRP     float64           `json:"total_frp,omitempty"` // Total Fire Radiative Power
 	PeakMonth    string            `json:"peak_month,omitempty"`
+	// v3 aggregate fields
+	TotalGroups        int `json:"total_groups,omitempty"`
+	ManagementFires    int `json:"management_fires,omitempty"`
+	CrossBorderGroups  int `json:"cross_border_groups,omitempty"`
+	OutsideParkGroups  int `json:"outside_park_groups,omitempty"`
+	StoppedInsideGroups int `json:"stopped_inside_groups,omitempty"`
+	TransitedGroups    int `json:"transited_groups,omitempty"`
 }
 
 // FireHotspot represents a geographic concentration of fire activity
@@ -99,7 +107,10 @@ type FireYearSummary struct {
 	Transited       int     `json:"transited"`
 	ResponseRate    float64 `json:"response_rate"`
 	TotalFires      int     `json:"total_fires"`
+	TotalFRP        float64 `json:"total_frp,omitempty"`        // Fire Radiative Power (MW)
 	AvgDaysBurning  float64 `json:"avg_days_burning"`
+	AvgSpeedKmDay   float64 `json:"avg_speed_km_day,omitempty"` // Average trajectory speed
+	ManagementFires int     `json:"management_fires,omitempty"`
 }
 
 // FireGroupStory describes a single fire group's movement
@@ -118,6 +129,20 @@ type FireGroupStory struct {
 	Narrative     string   `json:"narrative"`
 	NearbyPlaces  []string `json:"nearby_places"`
 	RiversCrossed []string `json:"rivers_crossed,omitempty"`
+	// v3 fields
+	StartDate     string   `json:"start_date,omitempty"`
+	EndDate       string   `json:"end_date,omitempty"`
+	Days          int      `json:"days,omitempty"`
+	FiresTotal    int      `json:"fires_total,omitempty"`
+	TotalFRP      float64  `json:"total_frp,omitempty"`
+	DistanceKm    float64  `json:"distance_km,omitempty"`
+	AvgSpeedKmDay float64  `json:"avg_speed_km_day,omitempty"`
+	Direction     string   `json:"direction,omitempty"`
+	GroupType     string   `json:"group_type,omitempty"`
+	Position      string   `json:"position,omitempty"` // starts_inside, ends_inside, transits, entirely_outside
+	PctInside     float64  `json:"pct_inside,omitempty"`
+	CrossBorder   bool     `json:"cross_border,omitempty"`
+	Season        string   `json:"season,omitempty"`
 }
 
 // DeforestationNarrative contains rich textual description of forest loss

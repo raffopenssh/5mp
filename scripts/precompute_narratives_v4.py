@@ -115,20 +115,21 @@ class NarrativeGeneratorV4:
                     'start_date': t.get('start_date'),
                     'end_date': t.get('end_date'),
                     'days': t.get('days'),
-                    'fires_total': t.get('fires'),
+                    'fires_total': t.get('fires_total', t.get('fires', 0)),  # v3 uses fires_total
+                    'total_frp': t.get('total_frp', 0),  # Fire radiative power
                     'distance_km': t.get('distance_km'),
-                    'avg_speed_km_day': t.get('speed_km_day'),
+                    'avg_speed_km_day': t.get('avg_speed_km_day', t.get('speed_km_day', 0)),  # v3 uses avg_speed_km_day
                     'direction': t.get('direction'),
                     'group_type': t.get('group_type'),
                     'refined_type': t.get('primary_type'),
                     'pct_inside': t.get('pct_inside'),
-                    'position': t.get('position'),  # v3: starts_inside, ends_inside, transits, entirely_outside
+                    'position': t.get('position'),  # v3: starts_inside, ends_inside, transits, entirely_outside, contained
                     'cross_border': t.get('cross_border'),
                     'affected_parks': t.get('affected_parks'),
                     'season': t.get('season'),
                     'origin': {
-                        'nearest_place': {'name': t.get('nearest_place')} if t.get('nearest_place') else None,
-                        'nearest_river': {'name': t.get('nearest_river')} if t.get('nearest_river') else None
+                        'nearest_place': {'name': t.get('nearest_place'), 'distance_km': t.get('nearest_place_dist')} if t.get('nearest_place') else None,
+                        'nearest_river': {'name': t.get('nearest_river'), 'distance_km': t.get('nearest_river_dist')} if t.get('nearest_river') else None
                     },
                     'narrative': t.get('narrative', '')
                 })
@@ -146,6 +147,7 @@ class NarrativeGeneratorV4:
                 by_year[year or 0].append(t)
             
             total_fires = sum(t.get('fires_total', t.get('fires', 0)) or 0 for t in trajectories)
+            total_frp = sum(t.get('total_frp', 0) or 0 for t in trajectories)
             total_groups = len(trajectories)
             
             # Type breakdown
@@ -165,6 +167,7 @@ class NarrativeGeneratorV4:
             for year in sorted(by_year.keys()):
                 year_trajs = by_year[year]
                 year_fires = sum(t.get('fires_total', t.get('fires', 0)) or 0 for t in year_trajs)
+                year_frp = sum(t.get('total_frp', 0) or 0 for t in year_trajs)
                 year_management = sum(1 for t in year_trajs if 'management' in (t.get('group_type', '') or '').lower())
                 # Use position field if available (v3)
                 year_stopped = sum(1 for t in year_trajs if t.get('position') in ('ends_inside', 'contained') or (not t.get('position') and (t.get('pct_inside') or 0) > 80))
@@ -180,7 +183,9 @@ class NarrativeGeneratorV4:
                     'transited': year_transited,
                     'response_rate': round(response_rate, 1),
                     'total_fires': year_fires,
+                    'total_frp': round(year_frp, 1),
                     'avg_days_burning': round(avg_days, 1),
+                    'avg_speed_km_day': round(sum(t.get('avg_speed_km_day', t.get('speed_km_day', 0)) or 0 for t in year_trajs) / max(1, len(year_trajs)), 1),
                     'management_fires': year_management
                 })
             
@@ -294,6 +299,7 @@ class NarrativeGeneratorV4:
                 },
                 'response_rate': round(response_rate, 1),
                 'total_fires': total_fires,
+                'total_frp': round(total_frp, 1),  # Total fire radiative power (MW)
                 'peak_month': peak_month,
                 # Extra fields for enhanced analysis
                 'total_groups': total_groups,
