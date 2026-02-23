@@ -43,7 +43,7 @@ from collections import defaultdict
 
 BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / "db.sqlite3"
-INPUT_DIR = BASE_DIR / "data" / "fire_groups_20200101_20260222"
+INPUT_DIR = BASE_DIR / "data" / "fire_groups_v5"  # Updated for v5 trajectory output
 TRENDS_DIR = BASE_DIR / "data" / "fire_trends"
 KEYSTONES_FILE = BASE_DIR / "data" / "keystones_with_boundaries.json"
 
@@ -456,6 +456,10 @@ class FireGroupLoader:
                 "nearest_river": (context.get('nearest_river') or {}).get('name', ''),
                 "nearest_place_dist": (context.get('nearest_place') or {}).get('distance_km'),
                 "nearest_river_dist": (context.get('nearest_river') or {}).get('distance_km'),
+                # V5 fields
+                "trajectory_type": group.get('trajectory_type', 'unknown'),
+                "zigzag_ratio": group.get('zigzag_ratio', 0),
+                "year": group.get('year', 2024),
             }
             
             # Date range
@@ -467,9 +471,9 @@ class FireGroupLoader:
             lons = [c[0] for c in coords]
             lats = [c[1] for c in coords]
             
-            # Insert into feature_geometries
+            # Insert into feature_geometries (OR REPLACE for duplicates)
             self.conn.execute("""
-                INSERT INTO feature_geometries 
+                INSERT OR REPLACE INTO feature_geometries 
                 (feature_type, feature_id, park_id, geojson, 
                  bbox_minx, bbox_miny, bbox_maxx, bbox_maxy,
                  start_date, end_date, properties_json)
