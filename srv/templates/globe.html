@@ -1280,14 +1280,15 @@
                 <!-- Data Processing -->
                 <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">How We Process Data</h3>
                 
-                <h4 style="color: #f97316; margin: 14px 0 6px; font-size: 13px;">Fire Detection</h4>
+                <h4 style="color: #f97316; margin: 14px 0 6px; font-size: 13px;">Fire Detection (v5)</h4>
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li>Source: NASA VIIRS satellite (375m resolution, 12-hour revisit)</li>
-                    <li>Daily download at 5am CAT for all 162 parks + 50km buffer</li>
-                    <li>Fires clustered using DBSCAN (15km radius) into groups</li>
-                    <li>Groups tracked across days to form trajectories</li>
-                    <li>Movement direction and speed calculated</li>
-                    <li>"Response rate" = fires that stopped inside park vs transited through</li>
+                    <li>Daily download at 3am UTC from FIRMS NRT API + 30km buffer</li>
+                    <li>Fires clustered using DBSCAN (5km radius) into groups</li>
+                    <li>Groups tracked across days using 12-hour time windows</li>
+                    <li>Trajectories smoothed to eliminate zigzag artifacts</li>
+                    <li>Movement direction, speed, and trajectory quality calculated</li>
+                    <li>Position classified: stopped inside, transited, entirely outside</li>
                 </ul>
 
                 <h4 style="color: #a855f7; margin: 14px 0 6px; font-size: 13px;">Settlement Detection</h4>
