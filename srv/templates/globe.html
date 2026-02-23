@@ -8429,9 +8429,9 @@ ${starredItems.narratives.map(n => {
                 data: { type: 'Feature', geometry: { type: 'Point', coordinates: lastPoint }, properties: {} }
             },
             paint: {
-                'circle-radius': 10,
+                'circle-radius': 4,
                 'circle-color': '#ef4444',
-                'circle-stroke-width': 3,
+                'circle-stroke-width': 2,
                 'circle-stroke-color': '#fff',
                 'circle-opacity': 0.9
             }
@@ -8650,7 +8650,7 @@ ${starredItems.narratives.map(n => {
                             type: 'circle',
                             source: frontSourceId,
                             paint: {
-                                'circle-radius': 18,
+                                'circle-radius': 8,
                                 'circle-color': '#ff4444',
                                 'circle-opacity': 0.3,
                                 'circle-blur': 0.5
@@ -8663,9 +8663,9 @@ ${starredItems.narratives.map(n => {
                             type: 'circle',
                             source: frontSourceId,
                             paint: {
-                                'circle-radius': 8,
+                                'circle-radius': 4,
                                 'circle-color': '#ff4444',
-                                'circle-stroke-width': 3,
+                                'circle-stroke-width': 2,
                                 'circle-stroke-color': '#ffffff'
                             }
                         });
@@ -8704,7 +8704,7 @@ ${starredItems.narratives.map(n => {
                     type: 'circle',
                     source: sourceId,
                     paint: {
-                        'circle-radius': 8,
+                        'circle-radius': 4,
                         'circle-color': color,
                         'circle-stroke-width': 2,
                         'circle-stroke-color': '#fff'
@@ -9142,7 +9142,7 @@ ${starredItems.narratives.map(n => {
                         source: sourceId,
                         filter: ['==', ['geometry-type'], 'Point'],
                         paint: {
-                            'circle-radius': 6,
+                            'circle-radius': 4,
                             'circle-color': color,
                             'circle-opacity': 0.8,
                             'circle-stroke-width': 2,
@@ -9215,10 +9215,10 @@ ${starredItems.narratives.map(n => {
                         source: sourceId,
                         filter: ['==', ['geometry-type'], 'Point'],
                         paint: {
-                            'circle-radius': 5,
+                            'circle-radius': 4,
                             'circle-color': color,
                             'circle-opacity': 0.8,
-                            'circle-stroke-width': 1.5,
+                            'circle-stroke-width': 2,
                             'circle-stroke-color': '#fff',
                             'circle-stroke-opacity': 0.5
                         }
