@@ -106,7 +106,18 @@ def load_park_fires(park_id):
     with open(fire_file) as f:
         data = json.load(f)
     fires = data.get('fires', data) if isinstance(data, dict) else data
-    return [f for f in fires if f.get('acq_date', '') >= MIN_DATE]
+    # Filter: valid date, valid coordinates (lon=0.0 is invalid for African parks)
+    valid_fires = []
+    for f in fires:
+        if f.get('acq_date', '') < MIN_DATE:
+            continue
+        lon = f.get('longitude', 0)
+        lat = f.get('latitude', 0)
+        # Skip fires with invalid coordinates (lon=0 or lat=0 are data errors)
+        if lon == 0.0 or lat == 0.0:
+            continue
+        valid_fires.append(f)
+    return valid_fires
 
 def date_to_days(date_str, base_date):
     """Convert date string to days since base_date."""
@@ -123,7 +134,7 @@ def spatio_temporal_distance(f1, f2, base_date):
     time_gap = abs(d1 - d2)
     
     if time_gap > TEMPORAL_EPS_DAYS:
-        return float('inf')
+        return 1e6  # Large value instead of inf
     
     spatial_dist = haversine(f1['longitude'], f1['latitude'], 
                              f2['longitude'], f2['latitude'])
@@ -157,10 +168,13 @@ def cluster_fires_dbscan(fires):
         return cluster_fires_approximate(fires, base_date)
     
     # Full distance matrix for smaller datasets
+    # Use large value instead of inf (DBSCAN doesn't handle inf)
+    MAX_DIST = 1e6
     dist_matrix = np.zeros((n, n))
     for i in range(n):
         for j in range(i+1, n):
             d = spatio_temporal_distance(fires[i], fires[j], base_date)
+            d = min(d, MAX_DIST)  # Cap at MAX_DIST instead of inf
             dist_matrix[i, j] = d
             dist_matrix[j, i] = d
     

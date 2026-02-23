@@ -410,6 +410,13 @@ class FireGroupLoader:
             if len(trajectory) < 1:
                 continue
             
+            # Skip groups with invalid coordinates (lon=0 or lat=0)
+            centroid = group.get('centroid', [0, 0])
+            if centroid[0] == 0.0 or centroid[1] == 0.0:
+                continue
+            if trajectory[0][0] == 0.0 or trajectory[0][1] == 0.0:
+                continue
+            
             # Build GeoJSON
             if len(trajectory) == 1:
                 # Single point - make a Point
