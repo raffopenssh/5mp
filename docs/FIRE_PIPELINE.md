@@ -1,4 +1,4 @@
-# Fire Analysis Pipeline Specification
+# Fire Analysis Pipeline Specification (v5)
 
 ## Overview
 
@@ -8,11 +8,11 @@ The fire analysis pipeline processes NASA VIIRS satellite fire detections into a
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐    ┌──────────────────┐
-│  1. DOWNLOAD    │───>│  2. CLUSTERING   │───>│  3. ENRICHMENT  │───>│  4. CACHE        │
-│  (NRT fires)    │    │  (Daily groups)  │    │  (Trajectories) │    │  (Narratives)   │
+│  1. DOWNLOAD    │───>│  2. CLUSTERING   │───>│  3. LOAD TO DB  │───>│  4. NARRATIVES   │
+│  (NRT fires)    │    │  (v5 groups)     │    │  (enrichment)   │    │  (cache)         │
 └─────────────────┘    └──────────────────┘    └─────────────────┘    └──────────────────┘
-     5 days              DBSCAN 15km            Context + Class       JSON → DB cache
-     50km buffer         Track across days      Outcome computation   UI consumption
+     7 days              DBSCAN 5km            Context + Class       JSON → DB cache
+     Africa bbox         Track across days      Position compute      UI consumption
 ```
 
 ## Data Flow
@@ -24,179 +24,145 @@ The fire analysis pipeline processes NASA VIIRS satellite fire detections into a
 ### Intermediate Files
 | Directory | Purpose | Format |
 |-----------|---------|--------|
-| `data/fire_nrt/` | Raw NRT downloads | CSV per date |
-| `data/fire_groups_v2/{park}.json` | Clustered groups | JSON array |
-| `data/fire_trajectories_v2/{park}.json` | Enriched trajectories | JSON array |
+| `data/fire_groups_v5/{park}.json` | Clustered groups with trajectories | JSON array |
+| `data/export/fire_narratives/{park}.json` | Pre-computed narratives | JSON |
 
 ### Output
 | Table | Purpose |
 |-------|--------|
 | `fire_detections` | Raw points (6M+ records) |
+| `feature_geometries` | Trajectory LineStrings for map (type=fire_trajectory) |
 | `fire_narrative_cache` | Pre-computed narratives per park |
-| `fire_group_alerts` | Active fire alerts |
-| `feature_geometries` | Trajectory LineStrings for map |
+| `park_group_infractions` | Yearly stats per park |
+| `park_fire_weekly` | Weekly fire counts |
 
 ---
 
 ## Stage 1: Download
 
-**Script:** `scripts/fire_nrt/download_nrt.py`
+**Script:** `scripts/daily_fire_update.py`
 
 **Purpose:** Download near-real-time (NRT) fire detections from NASA FIRMS.
 
 **Parameters:**
-- `--days 5` - Look back window (catches late-arriving data)
-- `--buffer 50` - Kilometers outside park boundaries to include
-- `--all` - Process all 162 parks
+- `--days 7` - Look back window (default, ensures no gaps)
 
-**Output:** `data/fire_nrt/{date}.csv`
+**API:** `https://firms.modaps.eosdis.nasa.gov/api/area/csv/{API_KEY}/VIIRS_NOAA20_NRT/{bbox}/{days}`
 
-**Note:** Also inserts into `fire_detections` table with `protected_area_id` assigned.
+**Output:** Inserted directly into `fire_detections` table (upsert, no deletions)
 
 ---
 
-## Stage 2: Clustering (Daily Groups)
+## Stage 2: Clustering (v5 Groups)
 
-**Script:** `scripts/rebuild_park_fire_analysis_v2.py`
+**Script:** `scripts/rebuild_fire_trajectories_v5.py`
 
-**Purpose:** Cluster individual fire detections into fire "groups" that represent single fire events.
+**Purpose:** Cluster individual fire detections into fire "groups" representing single fire events.
 
-**Algorithm:**
-1. Load fire detections for park + buffer zone
+**Algorithm (v5):**
+1. Load fire detections for park + 30km buffer zone
 2. Group by date
-3. Apply DBSCAN clustering (eps=15km, min_samples=1)
-4. Track clusters across consecutive days (same cluster if centroids <15km apart)
-5. Build trajectory using **daily centroids** (one point per day, not individual detections)
-   - This prevents zigzag artifacts when many detections occur across a large area in one day
-6. Compute group attributes:
+3. Within each day, group by 12-hour time windows
+4. Apply DBSCAN clustering (eps=5km, min_samples=1)
+5. Track clusters across consecutive days (same cluster if centroids <10km + 5km/day)
+6. Build trajectory using **time-window centroids** (prevents zigzag artifacts)
+7. Compute trajectory quality metrics:
+   - `trajectory_type`: clean, cleaned, erratic
+   - `zigzag_ratio`: deviation from straight line (0 = straight, >2 = erratic)
+8. Compute group attributes:
    - `start_date`, `end_date`, `days`
    - `centroid` [lon, lat]
-   - `trajectory` [[lon, lat, date], ...]
-   - `fires` (detection count)
+   - `trajectory` [[lon, lat, date, time], ...]
+   - `fire_count` (detection count)
    - `distance_km`, `speed_km_day`, `direction`
    - `pct_inside` (% of trajectory inside park)
    - `cross_border`, `affected_parks`
-   - `group_type` (preliminary classification)
+   - `group_type` (spot_fire, local_fire, spreading_fire, etc.)
 
-**Output:** `data/fire_groups_v2/{park_id}.json`
+**Output:** `data/fire_groups_v5/{park_id}.json`
 
 ### Group Identification
 
-Groups are identified by a **stable ID** that survives incremental updates:
-
+Groups are identified by a **stable ID**:
 ```
-group_id = "{park_id}_{start_date}_{start_centroid_hash}"
+feature_id = "{park_id}_{year}_grp_{hash}"
 ```
 
-Where `start_centroid_hash` is the md5 hash of the group's first centroid position.
-
-This allows:
-- Active groups to update (add new days) without creating duplicates
-- Incremental processing to merge with existing data
-- Deterministic IDs that can be regenerated
-
-### Incremental Mode
-
-With `--incremental --days 14`:
-1. Only process detections from last 14 days
-2. Load existing groups from JSON
-3. Update groups that overlap with the window
-4. Add new groups
-5. Remove duplicate group_ids (keep latest version)
+Where `hash` is derived from the group's start date and centroid.
 
 ---
 
-## Stage 3: Enrichment (Trajectories)
+## Stage 3: Load to Database
 
-**Script:** `scripts/analyze_fire_trajectories_v4.py`
+**Script:** `scripts/load_fire_groups_to_db.py`
 
-**Purpose:** Enrich fire groups with context and compute final classification.
+**Purpose:** Load fire groups into database with context enrichment.
 
 **Context Data:**
-- Rivers (HydroRIVERS) - proximity and crossings
-- Lakes (HydroLAKES) - proximity
+- Rivers (HydroRIVERS) - proximity
 - Roads (HeiGIT) - proximity and surface type
 - Places (OSM) - nearby villages, towns
 - Settlements - nearby built-up areas
-- Deforestation events - correlation
-- Climate - seasonality (dry/wet season)
+- Climate - seasonality (dry/wet/transition)
 
-**Classification:**
-| Type | Criteria |
-|------|----------|
-| `management_controlled` | Short duration, stopped inside, near road |
-| `management_spot` | Very short (1-2 days), small area |
-| `transhumance` | Long trajectory, specific direction, dry season |
-| `agricultural` | Near settlements, deforestation correlation |
-| `external_fire` | Originated outside, entered park |
-| `spot_fire` | Isolated, no clear pattern |
+**Position Classification:**
+| Position | Criteria |
+|----------|----------|
+| `starts_inside` | First point inside park boundary |
+| `ends_inside` | Last point inside park boundary |
+| `transits` | Passes through without stopping |
+| `entirely_outside` | Never enters park |
+| `contained` | Entirely within park |
 
-**Outcome Computation:**
+**Output:**
+- `feature_geometries` (LineString/Point with properties_json)
+- `park_group_infractions` (yearly stats)
+- `park_fire_weekly` (weekly counts)
 
-```python
-# Determine if fire "stopped inside" vs "transited"
-last_point = trajectory[-1]
-if park_boundary.contains(Point(last_point.lon, last_point.lat)):
-    outcome = "STOPPED_INSIDE"
-else:
-    outcome = "TRANSITED"
-```
-
-**Output:** `data/fire_trajectories_v2/{park_id}.json`
-
-### Trajectory Schema
+### Properties JSON Schema (v5)
 
 ```json
 {
-  "group_id": "CAF_Chinko_2025-01-15_a1b2c3d4",
   "feature_id": "CAF_Chinko_2025_grp_a1b2c3d4",
-  "start_date": "2025-01-15",
-  "end_date": "2025-01-18",
+  "feature_type": "fire_trajectory",
+  "group_type": "spreading_fire",
+  "position": "ends_inside",
   "days": 4,
-  "fires": 45,
-  "centroid": [24.5, 6.2],
-  "trajectory": [[24.4, 6.1, "2025-01-15"], ...],
-  "trajectory_with_time": [{"lon": 24.4, "lat": 6.1, "date": "2025-01-15"}, ...],
-  "distance_km": 12.5,
-  "speed_km_day": 3.1,
+  "fires_total": 45,
   "direction": "NE",
+  "distance_km": 12.5,
+  "avg_speed_km_day": 3.1,
+  "total_frp": 1250.5,
   "pct_inside": 85.0,
   "cross_border": false,
   "affected_parks": ["CAF_Chinko"],
+  "season": "dry",
+  "nearest_place": "Bakouma",
+  "nearest_place_dist": 15.0,
+  "nearest_river": "Chinko",
+  "nearest_river_dist": 2.3,
+  "trajectory_type": "clean",
+  "zigzag_ratio": 0.3,
   "year": 2025,
-  "group_type": "transhumance",
-  "classification": {
-    "primary_type": "transhumance",
-    "confidence": 0.8,
-    "factors": ["speed", "direction", "season"]
-  },
-  "context": {
-    "nearest_river": {"name": "Chinko", "distance_km": 2.3},
-    "nearest_place": {"name": "Bakouma", "distance_km": 15.0},
-    "season": "dry"
-  },
-  "outcome": "STOPPED_INSIDE",
   "narrative": "Fire group detected 2025-01-15 near Bakouma..."
 }
 ```
 
 ---
 
-## Stage 4: Cache (Narratives)
+## Stage 4: Narratives
 
-**Script:** `scripts/precompute_narratives_v4.py`
+**Script:** `scripts/precompute_narratives_v5.py`
 
 **Purpose:** Pre-compute narrative summaries for fast UI loading.
 
 **Process:**
-1. Load trajectories from `data/fire_trajectories_v2/{park}.json`
-2. Aggregate statistics (total fires, stopped/transited counts, response rate)
+1. Load trajectories from `feature_geometries` table
+2. Aggregate statistics per park
 3. Build summary narrative text
-4. Store in `fire_narrative_cache` table as JSON
+4. Store in `fire_narrative_cache` table and `data/export/fire_narratives/`
 
-**Output:** `fire_narrative_cache` table
-
-### Cache Schema
+### Narrative Schema (v5)
 
 ```json
 {
@@ -204,434 +170,241 @@ else:
   "park_name": "Chinko",
   "year": 2026,
   "total_fires": 45000,
+  "total_groups": 2455,
+  "total_frp": 125000.5,
   "response_rate": 15.2,
-  "summary": "In 2018-2026, Chinko experienced...",
+  "peak_month": "January",
+  "summary": "From 2020-2026, Chinko experienced...",
+  
+  "management_fires": 150,
+  "cross_border_groups": 45,
+  "outside_park_groups": 800,
+  "stopped_inside_groups": 350,
+  "transited_groups": 25,
+  
+  "group_types": {"spot_fire": 500, "local_fire": 1200, ...},
+  "seasons": {"dry": 1800, "transition": 600, "wet": 55},
+  "directions": {"N": 300, "NE": 250, ...},
+  
+  "trajectory_types": {"clean": 1377, "cleaned": 754},
+  "erratic_count": 0,
+  "zigzag_count": 0,
+  "clean_count": 1377,
+  "avg_zigzag_ratio": 0.27,
+  
+  "trend": {
+    "years": [{"year": 2020, "total_groups": 489, ...}, ...],
+    "trend_direction": "stable",
+    "avg_response_rate": 15.2,
+    "worst_year": 2022,
+    "worst_year_groups": 499
+  },
+  
+  "climate": {
+    "dry_season": "Dec-Feb",
+    "rainy_season": "Jun-Sep",
+    "climate_zone": "tropical_savanna"
+  },
+  
   "narratives": [
     {
-      "group_id": "CAF_Chinko_2025-01-15_a1b2c3d4",
+      "group_num": 1,
       "feature_id": "CAF_Chinko_2025_grp_a1b2c3d4",
+      "year": 2025,
       "start_date": "2025-01-15",
       "end_date": "2025-01-18",
-      "entry_date": "2025-01-15",  // Alias for UI compatibility
-      "last_inside": "2025-01-18", // Alias for UI compatibility
       "days": 4,
-      "fires_inside": 45,
-      "fires_total": 45,           // Alias
-      "outcome": "STOPPED_INSIDE",
-      "narrative": "Fire group detected...",
-      "year": 2025
+      "fires_total": 45,
+      "total_frp": 125.5,
+      "distance_km": 12.5,
+      "avg_speed_km_day": 3.1,
+      "direction": "NE",
+      "group_type": "spreading_fire",
+      "position": "ends_inside",
+      "pct_inside": 85.0,
+      "cross_border": false,
+      "season": "dry",
+      "trajectory_type": "clean",
+      "zigzag_ratio": 0.3,
+      "origin": {
+        "nearest_place": {"name": "Bakouma", "distance_km": 15.0},
+        "nearest_river": {"name": "Chinko", "distance_km": 2.3}
+      },
+      "narrative": "Fire group detected..."
     }
-  ],
-  "trend": {
-    "avg_response_rate": 15.2,
-    "seasonality": "Dec-Feb",
-    "years": [...],
-    "weeks": [...]
-  }
+  ]
 }
 ```
 
 ---
 
-## Stage 5: Alerts (Go Server)
+## Daily Cron Job
 
-**Endpoint:** `POST /api/admin/update-fire-alerts`
+**Script:** `scripts/daily_fire_update.py`
 
-**Purpose:** Update `fire_group_alerts` table with currently active fire groups.
+**Schedule:** `0 3 * * *` (3am UTC daily)
 
-**Criteria for "active":**
-- Last detection within 3 days
-- Still burning (no long gap)
-
----
-
-## Database Load (Optional)
-
-**Script:** `scripts/load_fire_trajectories_to_db.py`
-
-**Purpose:** Load trajectory geometries into `feature_geometries` for map rendering.
-
----
-
-## Cron Configuration
-
+**Cron Entry:**
 ```bash
-# /etc/cron.d/5mp-fire
-# Daily fire NRT download and analysis (3am UTC)
-0 3 * * * /home/exedev/5mp/scripts/fire_nrt/cron_daily.sh
+0 3 * * * cd /home/exedev/5mp && python3 scripts/daily_fire_update.py --days 7 >> logs/daily_fire.log 2>&1
 ```
 
-### Daily Cron Script Steps
+**Steps:**
+1. Download NRT fires from FIRMS API (last 7 days, Africa bbox)
+2. Insert new fires to `fire_detections` (upsert, no deletions)
+3. Identify affected parks
+4. Rebuild fire groups for affected parks only
+5. Update `feature_geometries` for new groups
+6. Update `fire_narrative_cache` for affected parks
 
-`scripts/fire_nrt/cron_daily.sh` runs these steps in order:
-
-1. **Download NRT data** (5 days, 50km buffer)
-   ```bash
-   python3 scripts/fire_nrt/download_nrt.py --all --days 5 --buffer 50
-   ```
-
-2. **Incremental clustering** (14 day window)
-   ```bash
-   python3 scripts/rebuild_park_fire_analysis_v2.py --incremental --days 14
-   ```
-
-3. **Incremental trajectory enrichment**
-   ```bash
-   python3 scripts/analyze_fire_trajectories_v4.py --incremental --days 14
-   ```
-
-4. **Load trajectories to database**
-   ```bash
-   python3 scripts/load_fire_trajectories_to_db.py --force
-   ```
-
-5. **Update narrative cache**
-   ```bash
-   python3 scripts/precompute_narratives_v4.py --incremental --days 14
-   ```
-
-6. **Update fire alerts**
-   ```bash
-   curl -X POST "http://localhost:8000/api/admin/update-fire-alerts?pwd=test2026"
-   ```
-
-**Logs:** `/home/exedev/5mp/logs/fire_nrt_daily_YYYYMMDD.log`
+**Logs:** `/home/exedev/5mp/logs/daily_fire.log`
 
 ---
 
 ## Key Design Decisions
 
-### 1. Stable Group IDs
+### 1. Trajectory Smoothing (v5)
 
-Groups are identified by `{park}_{start_date}_{centroid_hash}` to:
-- Allow updates without duplicates
-- Support incremental processing
-- Enable feature pinning in UI
+Problem: Raw fire detections create zigzag trajectories.
 
-### 2. Field Name Aliases
+Solution:
+- Group fires by 12-hour time windows
+- Calculate centroid per window
+- Connect centroids chronologically
+- Track `zigzag_ratio` and `trajectory_type` for quality
 
-Both old and new field names are supported:
-- `start_date` / `entry_date`
-- `end_date` / `last_inside`
-- `fires` / `fires_inside` / `fires_total`
+### 2. Incremental Updates
 
-### 3. Outcome Computation
-
-Computed from trajectory geometry, not classification:
-- `STOPPED_INSIDE`: Last point inside park boundary
-- `TRANSITED`: Last point outside park boundary
-
-### 4. File-Based Intermediate Storage
-
-JSON files in `data/` directories because:
-- Easy to inspect and debug
-- Git-trackable for small parks
-- Atomic updates (write to .tmp, rename)
-- No database locks during heavy processing
-
-### 5. Incremental Processing
-
-Only process recent data (14 days) to:
+Only process recent data to:
 - Reduce daily processing time
 - Update active fire groups
 - Preserve historical analysis
+- No deletions (append-only)
 
----
+### 3. Stable IDs
 
-## Troubleshooting
+Groups identified by `{park}_{year}_grp_{hash}` to:
+- Allow updates without duplicates
+- Support feature pinning in UI
+- Enable consistent map layer management
 
-### Duplicate Groups
+### 4. Position vs Classification
 
-**Symptom:** Group count doubles after incremental update
+- `position`: Computed from trajectory geometry (starts_inside, ends_inside, transits, etc.)
+- `group_type`: Computed from behavior patterns (spot_fire, spreading_fire, etc.)
 
-**Cause:** `group_id` or `feature_id` is None/unstable
-
-**Fix:** Ensure group_id is generated from stable attributes:
-```python
-group_id = f"{park_id}_{start_date}_{hash(centroid)[:8]}"
-```
-
-### Date Filtering Not Working
-
-**Symptom:** UI shows all groups regardless of date filter
-
-**Cause:** Field name mismatch (JS expects `entry_date`, data has `start_date`)
-
-**Fix:** Support both field names in JS filter:
-```javascript
-const entryStr = n.entry_date || n.start_date;
-```
-
-### Wrong Outcome Counts
-
-**Symptom:** All groups show as TRANSITED or STOPPED_INSIDE
-
-**Cause:** Outcome computed from classification instead of trajectory
-
-**Fix:** Compute outcome from last trajectory point:
-```python
-if park_boundary.contains(last_point):
-    outcome = "STOPPED_INSIDE"
-```
-
----
-
-## Scripts Reference
-
-| Script | Stage | Purpose |
-|--------|-------|--------|
-| `fire_nrt/download_nrt.py` | 1 | Download NRT data |
-| `rebuild_park_fire_analysis_v2.py` | 2 | Cluster into groups |
-| `analyze_fire_trajectories_v4.py` | 3 | Enrich with context |
-| `precompute_narratives_v4.py` | 4 | Build cache |
-| `load_fire_trajectories_to_db.py` | - | Load to feature_geometries |
-
-### Deprecated Scripts (Do Not Use)
-
-- `rebuild_park_fire_analysis.py` (v1)
-- `analyze_fire_trajectories_v2.py`, `v3.py`
-- `precompute_narratives.py`, `v3.py`
-- `step1_*.py`, `step2_*.py`, `step3_*.py`
-
----
-
-## Manual Full Rebuild
-
-To rebuild all fire data from scratch (takes 1-2 hours):
-
-```bash
-# Activate venv if not already
-cd /home/exedev/5mp
-source .venv/bin/activate
-
-# 1. Rebuild all fire groups (from fire_detections table)
-python3 scripts/rebuild_park_fire_analysis_v2.py
-
-# 2. Enrich with trajectories and context
-python3 scripts/analyze_fire_trajectories_v4.py
-
-# 3. Load trajectories to feature_geometries
-python3 scripts/load_fire_trajectories_to_db.py --force
-
-# 4. Precompute all narratives
-python3 scripts/precompute_narratives_v4.py
-```
-
-### Full Rebuild for Single Park
-
-```bash
-# Rebuild just CAF_Chinko
-python3 scripts/rebuild_park_fire_analysis_v2.py --park CAF_Chinko
-python3 scripts/analyze_fire_trajectories_v4.py --park CAF_Chinko
-python3 scripts/precompute_narratives_v4.py --park CAF_Chinko
-```
+These are independent - a fire can be a "spot_fire" that "ends_inside".
 
 ---
 
 ## API Endpoints
 
 ### Fire Narrative (Cached)
-
 ```
 GET /api/parks/{park_id}/fire-narrative?pwd=XXX
 ```
-
 Returns pre-computed narrative from `fire_narrative_cache`.
 
-**Response:**
-```json
-{
-  "park_id": "CAF_Chinko",
-  "park_name": "Chinko",
-  "total_fires": 45000,
-  "response_rate": 15.2,
-  "summary": "In 2018-2026...",
-  "narratives": [...],
-  "trend": {...}
-}
-```
-
 ### Fire Realtime (Live)
-
 ```
 GET /api/parks/{park_id}/fire-realtime?pwd=XXX&days=28
 ```
-
-Computes fire groups dynamically for recent data (useful for testing).
-
-### Fire Alerts
-
-```
-GET /api/fire-alerts?pwd=XXX&limit=10
-```
-
-Returns active fire group alerts.
+Computes fire groups dynamically for recent data.
 
 ### Fire Features (Map)
-
 ```
 GET /api/parks/{park_id}/features?type=fire_trajectory&pwd=XXX
 ```
-
-Returns GeoJSON FeatureCollection of trajectory lines for rendering.
-
----
-
-## Data Validation
-
-### Check Narrative Cache Counts
-
-```sql
--- Parks with fire narratives
-SELECT COUNT(DISTINCT park_id) FROM fire_narrative_cache;
-
--- Sample narrative group counts
-SELECT park_id, 
-       json_array_length(json_extract(narrative_json, '$.narratives')) as groups
-FROM fire_narrative_cache
-ORDER BY groups DESC
-LIMIT 10;
-```
-
-### Check Trajectory Geometries
-
-```sql
--- Fire trajectories in feature_geometries
-SELECT COUNT(*) FROM feature_geometries WHERE feature_type = 'fire_trajectory';
-
--- Sample by park
-SELECT park_id, COUNT(*) as count
-FROM feature_geometries
-WHERE feature_type = 'fire_trajectory'
-GROUP BY park_id
-ORDER BY count DESC
-LIMIT 10;
-```
-
-### Verify Group Counts Match
-
-```bash
-# Count groups in JSON files
-for f in data/fire_groups_v2/*.json; do
-  echo "$(jq length "$f") $(basename $f .json)"
-done | sort -n | tail -10
-```
+Returns GeoJSON FeatureCollection for map rendering.
 
 ---
 
-## Historical Data Rebuild
+## Database Stats
 
-### Script: `scripts/build_unified_fire_dataset.py`
-
-**Purpose:** Build a unified fire dataset from multiple sources for full historical analysis (2020-01-01 onwards).
-
-**Data Sources:**
-1. `fire_archive.zip` - Historical VIIRS CSVs (2018-2024) from NASA FIRMS
-2. `data/fire_detections_2025_2026/` - Recent fire detections (2025-2026)
-3. `data/fire_nrt/` - Near-real-time fires (last 7 days)
-
-**Output:** `data/raw-fire-viirs-YYYYMMDD-YYYYMMDD/` with one JSON per park
-
-**Processing Strategy:**
-- Uses **spatial windowing** to handle cross-border fires
-- 7 overlapping chunks: NW, NE, SW, SE_NW, SE_NE, SE_SW, SE_SE
-- Writes incrementally per-chunk to avoid OOM
-- Resumable via `build_fire_progress.json`
-
-**Filters Applied:**
-- Date: `>= 2020-01-01`
-- Buffer: 30km around each park boundary
-
-**Usage:**
-```bash
-source .venv/bin/activate
-python3 scripts/build_unified_fire_dataset.py
-```
-
-**Chunk Boundaries:**
-| Chunk | West | South | East | North | Notes |
-|-------|------|-------|------|-------|-------|
-| NW | -20 | 0 | 25 | 40 | North-West Africa |
-| NE | 15 | 0 | 55 | 40 | North-East Africa |
-| SW | -20 | -40 | 25 | 10 | South-West Africa |
-| SE_NW | 15 | -15 | 35 | 10 | SE quadrant split |
-| SE_NE | 30 | -15 | 55 | 10 | SE quadrant split |
-| SE_SW | 15 | -40 | 35 | -10 | SE quadrant split |
-| SE_SE | 30 | -40 | 55 | -10 | SE quadrant split |
+| Table | Records | Description |
+|-------|---------|-------------|
+| `fire_detections` | 6.1M+ | Raw VIIRS fires (2018-2026) |
+| `feature_geometries` (fire_trajectory) | 173K+ | Trajectory LineStrings |
+| `fire_narrative_cache` | 162 | Pre-computed narratives |
+| `park_group_infractions` | ~1,200 | Yearly stats (162 parks × ~7 years) |
 
 ---
 
-## Zigzag Fix (Trajectory Smoothing)
+## Scripts Reference (v5)
 
-**Problem:** Raw fire detections create zigzag trajectories when connecting all points.
+| Script | Stage | Purpose |
+|--------|-------|--------|
+| `daily_fire_update.py` | 1-4 | Daily incremental pipeline |
+| `rebuild_fire_trajectories_v5.py` | 2 | Cluster into groups |
+| `load_fire_groups_to_db.py` | 3 | Load to database |
+| `precompute_narratives_v5.py` | 4 | Build narratives |
 
-**Solution:** Use time-based centroids instead of individual points.
+### Deprecated Scripts (Do Not Use)
 
-**Implementation in `rebuild_park_fire_analysis_v2.py`:**
+- `rebuild_park_fire_analysis*.py` (v1, v2, v3)
+- `analyze_fire_trajectories*.py`
+- `precompute_narratives*.py` (v1, v2, v3, v4)
+- `load_fire_trajectories_to_db.py`
+- `step1_*.py`, `step2_*.py`, `step3_*.py`
 
-1. Group fires by date
-2. Within each day, group by 4-hour time windows (periods 0-5):
-   - Period 0: 0000-0400
-   - Period 1: 0400-0800
-   - Period 2: 0800-1200
-   - Period 3: 1200-1600
-   - Period 4: 1600-2000
-   - Period 5: 2000-2400
-3. Calculate centroid for each period that has fires
-4. Connect centroids in chronological order
+---
 
-**Result:** 1-6 trajectory points per day instead of dozens, showing smooth fire progression.
-
-**Verification:**
-```python
-# Points should be ~1-6x days
-ratio = len(trajectory) / days
-assert 1 <= ratio <= 6, f"Zigzag detected: {ratio}"
-```
-
-## v3 Pipeline Migration Notes
-
-### Step 1: rebuild_park_fire_analysis_v3.py
-- Input: `data/raw-fire-viirs-*/*.json` (unified fire dataset)
-- Output: `data/fire_groups_*/` (one JSON per park)
-- Params: 12h windows, 5km cluster, 10km+5km/day link, 3-day max gap
-
-### Step 3: load_fire_groups_v3.py
-- Input: `data/fire_groups_*/` JSON files
-- Output: `feature_geometries`, `park_group_infractions`, `park_fire_weekly`
-
-**New properties in feature_geometries.properties_json:**
-- `position`: trajectory relationship to park (starts_inside, ends_inside, transits, entirely_outside, contained)
-- `total_frp`: sum of fire radiative power
-- `pct_inside`: percentage of observations inside park
-- `context`: nested object with season, nearest_place, nearest_river
-
-**No schema changes required** - all new fields are in JSON columns.
-
-### Production Migration
-```bash
-# 1. Run Step 1 (takes ~2-3 hours for 162 parks)
-python scripts/rebuild_park_fire_analysis_v3.py
-
-# 2. Run Step 3 (takes ~20 minutes)
-python scripts/load_fire_groups_v3.py --force
-
-# 3. Restart server
-sudo systemctl restart srv
-```
-
-## Full Pipeline (v3)
+## Manual Full Rebuild
 
 ```bash
-# Step 1: Cluster fires into groups (2-3 hours)
-python3 scripts/rebuild_park_fire_analysis_v3.py
+cd /home/exedev/5mp
 
-# Step 2: Load to database with context (~20 minutes)
+# 1. Rebuild all fire groups (from fire_detections, ~2-3 hours)
+python3 scripts/rebuild_fire_trajectories_v5.py
+
+# 2. Load to database with context (~20 minutes)
 python3 scripts/load_fire_groups_to_db.py --force
 
-# Step 3: Precompute narratives for cache (~30 minutes)
-python3 scripts/precompute_narratives_v4.py
+# 3. Generate narratives (~5 minutes)
+python3 scripts/precompute_narratives_v5.py
 
-# Restart server
-sudo systemctl restart srv
+# 4. Restart server
+make build && sudo systemctl restart srv
+```
+
+### Single Park Rebuild
+
+```bash
+python3 scripts/rebuild_fire_trajectories_v5.py --park CAF_Chinko
+python3 scripts/load_fire_groups_to_db.py --park CAF_Chinko --force
+python3 scripts/precompute_narratives_v5.py  # Updates cache for all
+```
+
+---
+
+## Troubleshooting
+
+### No New Fires Inserted
+
+**Symptom:** `Inserted 0 new fire records`
+
+**Cause:** Fires already exist (UNIQUE constraint on lat/lon/date/time/satellite)
+
+**This is normal** if running twice on same data.
+
+### Missing v5 Fields in API
+
+**Symptom:** `trajectory_types: None` in API response
+
+**Cause:** Go struct missing fields or narrative cache not updated
+
+**Fix:**
+1. Update Go struct in `srv/narrative_handlers.go`
+2. Run `make build && sudo systemctl restart srv`
+3. Re-run `python3 scripts/precompute_narratives_v5.py`
+
+### Zigzag Trajectories
+
+**Symptom:** Trajectory lines show erratic zigzag patterns
+
+**Cause:** Using raw detections instead of time-window centroids
+
+**Fix:** Rebuild with v5 algorithm:
+```bash
+python3 scripts/rebuild_fire_trajectories_v5.py --park PARK_ID
 ```

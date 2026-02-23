@@ -60,8 +60,8 @@ JSON data files in `data/` provide precomputed data:
 
 | Directory | Files | Description |
 |-----------|-------|-------------|
-| `data/fire_analysis/` | 161 | Fire groups with trajectories by year |
-| `data/fire_trajectories/` | 153 | Enhanced trajectories with context |
+| `data/fire_groups_v5/` | 162 | Fire groups with v5 trajectories |
+| `data/export/fire_narratives/` | 162 | Pre-computed fire narratives per park |
 | `data/settlement_events/` | 156 | Classified settlements |
 | `data/deforestation_events/` | 79 | Classified deforestation events |
 | `data/rivers/` | 161 | HydroRIVERS data per park |
@@ -70,7 +70,7 @@ JSON data files in `data/` provide precomputed data:
 | `data/climate/` | 1 | Monthly precipitation, seasons |
 | `data/species/` | 1 | IUCN mammal species |
 | `data/waterbodies/` | 137 | Global waterbody polygons |
-| `data/export/` | 7 | Precomputed narratives |
+| `data/export/` | 3 | Narrative summaries |
 
 ---
 
@@ -111,21 +111,18 @@ curl -X POST "http://localhost:8000/api/upload/async?pwd=test2026" -F "gpx=@file
 
 | Table | Records | Description |
 |-------|---------|-------------|
-| fire_detections | 6.1M | VIIRS satellite fires (2018-2026) |
-| feature_geometries | 453K | GeoJSON polygons/lines |
-| park_fire_analysis | 1,195 | Fire analysis by park/year (157 parks) |
+| fire_detections | 6.1M+ | VIIRS satellite fires (2018-2026) |
+| feature_geometries | 458K | GeoJSON polygons/lines |
+| fire_narrative_cache | 162 | Precomputed fire narratives (v5) |
 | park_rivers | 215K | HydroRIVERS data (161 parks) |
 | park_settlements | 9,933 | Classified settlement clusters |
-| deforestation_events | 16,119 | Classified deforestation clusters (5km) |
 | osm_places | 271K | Place names for narratives (161 parks) |
 | park_climate | 162 | Monthly climate/seasons |
 | park_species | 39.5K | IUCN mammal species |
-| fire_narrative_cache | 162 | Precomputed fire narratives |
-| legal_documents | varies | FAOLEX conservation laws (created on first sync) |
 
 **Feature geometries by type:**
+- fire_trajectory: 173,066 (2020-2026, v5)
 - deforestation: 221,277 (2001-2024)
-- fire_trajectory: 130,708 (2018-2026)
 - settlement: 64,016
 - road: 26,550
 
@@ -135,9 +132,12 @@ curl -X POST "http://localhost:8000/api/upload/async?pwd=test2026" -F "gpx=@file
 
 1. **Upload Queue** - Processes GPX uploads async (every 2s)
 2. **GPX Learner** - Pattern detection from uploads
-3. **Fire NRT Daily** - Downloads fire data (3am UTC)
-4. **Fire Backfill** - Historical data download (4am UTC)
-5. **Narrative Cache** - Pre-computes fire narratives (weekly)
+3. **Fire Daily Cron** - `scripts/daily_fire_update.py` (3am UTC)
+   - Downloads NRT fires from FIRMS API
+   - Updates fire_detections (upsert)
+   - Rebuilds groups for affected parks
+   - Updates narrative cache
+4. **Narrative Cache Worker** - Pre-computes narratives (weekly full refresh)
 
 ---
 
@@ -159,22 +159,24 @@ curl -X POST "http://localhost:8000/api/upload/async?pwd=test2026" -F "gpx=@file
 
 ---
 
-## Data Processing Scripts
+## Data Processing Scripts (v5)
 
-See `docs/SCRIPTS.md` for the full pipeline:
+See `docs/SCRIPTS.md` and `docs/FIRE_PIPELINE.md` for full details.
 
 ```bash
-# 1. Rebuild fire analysis from raw detections
-python scripts/rebuild_park_fire_analysis.py
+# Full rebuild pipeline:
 
-# 2. Generate enhanced trajectories with context
-python scripts/analyze_fire_trajectories_v3.py
+# 1. Rebuild fire groups with v5 algorithm
+python3 scripts/rebuild_fire_trajectories_v5.py
 
-# 3. Precompute narratives
-python scripts/precompute_narratives_v3.py
+# 2. Load to database with context enrichment
+python3 scripts/load_fire_groups_to_db.py --force
 
-# 4. Load JSON to database
-python scripts/load_json_data.py
+# 3. Precompute v5 narratives
+python3 scripts/precompute_narratives_v5.py
+
+# Daily incremental update (runs via cron at 3am UTC):
+python3 scripts/daily_fire_update.py --days 7
 ```
 
 ---
