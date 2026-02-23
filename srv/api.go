@@ -3226,6 +3226,10 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			var geojson, props string
 			var startDate, endDate sql.NullString
 			fireRows.Scan(&geojson, &props, &startDate, &endDate)
+			// Skip trajectories with lon=0 (bad data)
+			if strings.Contains(geojson, `"coordinates": [0.0,`) || strings.Contains(geojson, `"coordinates": [0,`) || strings.Contains(geojson, `[0.0, `) {
+				continue
+			}
 			var propMap map[string]interface{}
 			json.Unmarshal([]byte(props), &propMap)
 			name := "Fire Trajectory"
