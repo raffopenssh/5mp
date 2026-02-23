@@ -44,6 +44,14 @@ type FireNarrative struct {
 	OutsideParkGroups  int `json:"outside_park_groups,omitempty"`
 	StoppedInsideGroups int `json:"stopped_inside_groups,omitempty"`
 	TransitedGroups    int `json:"transited_groups,omitempty"`
+	// v5 trajectory analysis fields
+	TrajectoryTypes    map[string]int `json:"trajectory_types,omitempty"`
+	ErraticCount       int            `json:"erratic_count,omitempty"`
+	ZigzagCount        int            `json:"zigzag_count,omitempty"`
+	CleanCount         int            `json:"clean_count,omitempty"`
+	AvgZigzagRatio     float64        `json:"avg_zigzag_ratio,omitempty"`
+	Seasons            map[string]int `json:"seasons,omitempty"`
+	Directions         map[string]int `json:"directions,omitempty"`
 }
 
 // FireHotspot represents a geographic concentration of fire activity
@@ -141,8 +149,11 @@ type FireGroupStory struct {
 	GroupType     string   `json:"group_type,omitempty"`
 	Position      string   `json:"position,omitempty"` // starts_inside, ends_inside, transits, entirely_outside
 	PctInside     float64  `json:"pct_inside,omitempty"`
-	CrossBorder   bool     `json:"cross_border,omitempty"`
-	Season        string   `json:"season,omitempty"`
+	CrossBorder    bool    `json:"cross_border,omitempty"`
+	Season         string  `json:"season,omitempty"`
+	// v5 trajectory analysis
+	TrajectoryType string  `json:"trajectory_type,omitempty"`
+	ZigzagRatio    float64 `json:"zigzag_ratio,omitempty"`
 }
 
 // DeforestationNarrative contains rich textual description of forest loss
