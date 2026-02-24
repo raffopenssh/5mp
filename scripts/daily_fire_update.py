@@ -348,6 +348,55 @@ class DailyFireUpdater:
         except Exception as e:
             log(f"    Error: {e}")
     
+    def create_fire_notifications(self):
+        """Create notifications for parks with significant fire activity."""
+        if not self.affected_parks:
+            log("Step 6: No parks affected, skipping notifications")
+            return
+        
+        log(f"Step 6: Creating fire notifications for {len(self.affected_parks)} parks...")
+        
+        # Get recent fire groups for affected parks
+        cutoff_date = (datetime.now() - timedelta(days=self.days)).strftime('%Y-%m-%d')
+        
+        notifications_created = 0
+        for park_id in self.affected_parks:
+            try:
+                # Count new fire groups in the last N days
+                cursor = self.conn.execute("""
+                    SELECT COUNT(*) 
+                    FROM feature_geometries 
+                    WHERE park_id = ? 
+                    AND feature_type = 'fire_trajectory'
+                    AND json_extract(properties_json, '$.end_date') >= ?
+                """, (park_id, cutoff_date))
+                
+                group_count = cursor.fetchone()[0]
+                
+                if group_count == 0:
+                    continue
+                
+                # Get park name
+                park_name = self.parks.get(park_id, {}).get('name', park_id)
+                
+                # Create notification
+                title = f"New Fire Activity: {park_name}"
+                message = f"{group_count} fire trajectory group{'s' if group_count > 1 else ''} detected in the last {self.days} days"
+                
+                self.conn.execute("""
+                    INSERT INTO notifications (park_id, notification_type, title, message, created_at)
+                    VALUES (?, 'fire_alert', ?, ?, datetime('now'))
+                """, (park_id, title, message))
+                
+                notifications_created += 1
+                log(f"  Created notification for {park_id}: {group_count} groups")
+                
+            except Exception as e:
+                log(f"  Error creating notification for {park_id}: {e}")
+        
+        self.conn.commit()
+        log(f"  Created {notifications_created} fire notifications")
+    
     def run(self):
         log("=" * 70)
         log("DAILY FIRE UPDATE PIPELINE (v5 - Incremental)")
@@ -374,6 +423,9 @@ class DailyFireUpdater:
         
         # Step 5: Update narratives
         self.update_narratives()
+        
+        # Step 6: Create notifications for significant fire activity
+        self.create_fire_notifications()
         
         log("")
         log("=" * 70)
