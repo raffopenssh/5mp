@@ -16,8 +16,9 @@ def main():
         data = json.load(open(f))
         park_id = f.stem
         years = data.get('trend', {}).get('years', [])
-        from_year = min(years) if years else 2020
-        to_year = max(years) if years else 2025
+        year_nums = [y.get('year', 2020) if isinstance(y, dict) else y for y in years]
+        from_year = min(year_nums) if year_nums else 2020
+        to_year = max(year_nums) if year_nums else 2025
         
         conn.execute('''
             INSERT OR REPLACE INTO fire_narrative_cache 
