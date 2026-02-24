@@ -8960,9 +8960,13 @@ ${starredItems.narratives.map(n => {
         const sourceId = `pinned-source-${key}`;
         
         try {
+            // Normalize type (fire_trajectory -> fire for styling)
+            const normalizedType = type === 'fire_trajectory' ? 'fire' : type;
+            
             // Map type to API feature_type
             const featureType = {
                 'fire': 'fire_trajectory',
+                'fire_trajectory': 'fire_trajectory',
                 'settlement': 'settlement',
                 'deforestation': 'deforestation',
                 'road': 'road',
@@ -9028,9 +9032,9 @@ ${starredItems.narratives.map(n => {
             
             // Style based on type
             const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', river: '#3b82f6', water: '#3b82f6', place: '#a855f7', infrastructure: '#22c55e' };
-            const color = colors[type] || '#22c55e';
+            const color = colors[normalizedType] || '#22c55e';
             const lineWidths = { fire: 3, settlement: 3, deforestation: 3, road: 2, river: 2.5, water: 2, place: 2, infrastructure: 2 };
-            const lineWidth = lineWidths[type] || 2;
+            const lineWidth = lineWidths[normalizedType] || 2;
             
             // Store reference early so we can add arrowLayerId
             pinnedLayers[key] = {
@@ -9050,7 +9054,7 @@ ${starredItems.narratives.map(n => {
             const geomType = geojson.features[0]?.geometry?.type || 'Point';
             
             if (geomType === 'Point' || geomType === 'MultiPoint') {
-                if (type === 'place') {
+                if (normalizedType === 'place') {
                     // Places: small circle markers with text labels at higher zoom
                     // First add circle markers
                     map.addLayer({
@@ -9117,7 +9121,7 @@ ${starredItems.narratives.map(n => {
                     });
                     
                     // For fire: also add line layer for trajectories (mixed geometry support)
-                    if (type === 'fire' && hasLines) {
+                    if (normalizedType === 'fire' && hasLines) {
                         const lineLayerId = `${layerId}-lines`;
                         map.addLayer({
                             id: lineLayerId,
@@ -9172,7 +9176,7 @@ ${starredItems.narratives.map(n => {
                 });
                 
                 // For fire with mixed geometry: also add circles for single-point fires
-                if (type === 'fire' && hasPoints) {
+                if (normalizedType === 'fire' && hasPoints) {
                     const pointLayerId = `${layerId}-points`;
                     map.addLayer({
                         id: pointLayerId,
@@ -9192,7 +9196,7 @@ ${starredItems.narratives.map(n => {
                 }
                 
                 // Add text labels for rivers and roads (only features with names)
-                if (type === 'river' || type === 'road') {
+                if (normalizedType === 'river' || normalizedType === 'road') {
                     const textLayerId = `${layerId}-text`;
                     map.addLayer({
                         id: textLayerId,
@@ -9224,7 +9228,7 @@ ${starredItems.narratives.map(n => {
                 }
                 
                 // Add directional arrows for fire trajectories
-                if (type === 'fire') {
+                if (normalizedType === 'fire') {
                     const arrowLayerId = `${layerId}-arrows`;
                     map.addLayer({
                         id: arrowLayerId,
@@ -9274,20 +9278,32 @@ ${starredItems.narratives.map(n => {
             
             // Add hover effect with detailed popup
             let categoryHoverPopup = null;
-            map.on('mouseenter', layerId, (e) => {
-                map.getCanvas().style.cursor = 'pointer';
-                if (e.features && e.features.length > 0) {
-                    const props = e.features[0].properties;
-                    categoryHoverPopup = createFeatureHoverPopup(props, e.lngLat, type, parkName);
-                }
-            });
-            map.on('mouseleave', layerId, () => {
-                map.getCanvas().style.cursor = '';
-                if (categoryHoverPopup) {
-                    categoryHoverPopup.remove();
-                    categoryHoverPopup = null;
-                }
-            });
+            
+            // Helper function to add hover handlers to a layer
+            const addHoverToLayer = (targetLayerId) => {
+                map.on('mouseenter', targetLayerId, (e) => {
+                    map.getCanvas().style.cursor = 'pointer';
+                    if (e.features && e.features.length > 0) {
+                        const props = e.features[0].properties;
+                        categoryHoverPopup = createFeatureHoverPopup(props, e.lngLat, type, parkName);
+                    }
+                });
+                map.on('mouseleave', targetLayerId, () => {
+                    map.getCanvas().style.cursor = '';
+                    if (categoryHoverPopup) {
+                        categoryHoverPopup.remove();
+                        categoryHoverPopup = null;
+                    }
+                });
+            };
+            
+            // Add hover handlers to main layer
+            addHoverToLayer(layerId);
+            
+            // Also add hover handlers to line layer if it exists (for fire trajectories)
+            if (pinnedLayers[key].lineLayerId) {
+                addHoverToLayer(pinnedLayers[key].lineLayerId);
+            }
             
             showToast(`Pinned ${geojson.features.length} ${type} features from ${parkName}`, 'success');
             
