@@ -2318,14 +2318,12 @@
                 
                 btnText.textContent = '0%';
                 
-                // Start polling for status
+                // Start polling for status - poll immediately then every 2s
+                pollMBTilesStatus();
                 mbtilesPollingInterval = setInterval(pollMBTilesStatus, 2000);
                 
-                // Close dialog and show hint to check bell notification
-                setTimeout(() => {
-                    hideMBTilesDialog();
-                    loadNotifications();  // Refresh notifications to show new job
-                }, 500);
+                // Refresh notifications to show new job (but keep dialog open)
+                loadNotifications();
             } catch (err) {
                 mbtilesState = 'idle';
                 updateMBTilesButton();

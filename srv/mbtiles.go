@@ -549,6 +549,14 @@ func (s *Server) HandleAPIMBTilesCreate(w http.ResponseWriter, r *http.Request) 
 	// Estimate size
 	minZoom := 1
 	maxZoom := 17
+	
+	// Get maxZoom from query parameter
+	if maxZoomStr := r.URL.Query().Get("maxZoom"); maxZoomStr != "" {
+		if mz, err := strconv.Atoi(maxZoomStr); err == nil && mz >= 10 && mz <= 17 {
+			maxZoom = mz
+		}
+	}
+	
 	estimatedSize := estimateMBTilesSize(bbox, minZoom, maxZoom)
 	
 	// Check available space
