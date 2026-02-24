@@ -394,7 +394,7 @@ if __name__ == "__main__":
     parser.add_argument("--park", help="Single park ID to download")
     parser.add_argument("--all", action="store_true", help="Download all parks")
     parser.add_argument("--days", type=int, default=5, help="Number of days to fetch")
-    parser.add_argument("--buffer", type=float, default=50, help="Buffer in km around parks")
+    parser.add_argument("--buffer", type=float, default=30, help="Buffer in km around parks")
     parser.add_argument("--backfill", action="store_true", help="Backfill date range")
     parser.add_argument("--start", help="Start date for backfill (YYYY-MM-DD)")
     parser.add_argument("--end", help="End date for backfill (YYYY-MM-DD)")
