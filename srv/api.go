@@ -1119,6 +1119,18 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		s.handleRoadFeatures(w, internalID, limitStr)
 		return
 	}
+	
+	// Handle settlements with narrative from park_settlements
+	if featureType == "settlement" {
+		s.handleSettlementFeatures(w, internalID, limitStr)
+		return
+	}
+	
+	// Handle deforestation with narrative from deforestation_events
+	if featureType == "deforestation" {
+		s.handleDeforestationFeatures(w, internalID, limitStr, startDate, endDate)
+		return
+	}
 
 	// Build query for feature_geometries table
 	query := `
@@ -4082,4 +4094,201 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/vnd.google-earth.kml+xml")
 	w.Header().Set("Content-Disposition", `attachment; filename="5mp_conservation_export.kml"`)
 	w.Write([]byte(kml.String()))
+}
+
+// handleSettlementFeatures returns GeoJSON features for settlements with narratives
+func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, limitStr string) {
+	limit := 1000
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 10000 {
+			limit = l
+		}
+	}
+
+	// Join feature_geometries with park_settlements to get narrative
+	rows, err := s.DB.Query(`
+		SELECT 
+			fg.feature_id,
+			fg.geojson,
+			fg.properties_json,
+			ps.narrative,
+			ps.classification,
+			ps.nearest_place,
+			ps.distance_to_place_km
+		FROM feature_geometries fg
+		LEFT JOIN park_settlements ps ON fg.park_id = ps.park_id 
+			AND ABS(fg.properties_json->>'lat' - ps.lat) < 0.0001
+			AND ABS(fg.properties_json->>'lon' - ps.lon) < 0.0001
+		WHERE fg.park_id = ? AND fg.feature_type = 'settlement'
+		LIMIT ?
+	`, parkID, limit)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	type GeoJSONFeature struct {
+		Type       string                 `json:"type"`
+		Geometry   json.RawMessage        `json:"geometry"`
+		Properties map[string]interface{} `json:"properties"`
+	}
+
+	type FeatureCollection struct {
+		Type     string           `json:"type"`
+		Features []GeoJSONFeature `json:"features"`
+	}
+
+	fc := FeatureCollection{
+		Type:     "FeatureCollection",
+		Features: []GeoJSONFeature{},
+	}
+
+	for rows.Next() {
+		var featureID, geojson string
+		var propsJSON sql.NullString
+		var narrative, classification, nearestPlace sql.NullString
+		var distanceToPlace sql.NullFloat64
+
+		if err := rows.Scan(&featureID, &geojson, &propsJSON, &narrative, &classification, &nearestPlace, &distanceToPlace); err != nil {
+			continue
+		}
+
+		// Parse properties
+		props := make(map[string]interface{})
+		if propsJSON.Valid {
+			json.Unmarshal([]byte(propsJSON.String), &props)
+		}
+		props["feature_type"] = "settlement"
+		props["feature_id"] = featureID
+		
+		// Add narrative and other fields from park_settlements
+		if narrative.Valid {
+			props["narrative"] = narrative.String
+		}
+		if classification.Valid {
+			props["classification"] = classification.String
+		}
+		if nearestPlace.Valid {
+			props["nearest_place"] = nearestPlace.String
+		}
+		if distanceToPlace.Valid {
+			props["distance_to_place_km"] = distanceToPlace.Float64
+		}
+
+		fc.Features = append(fc.Features, GeoJSONFeature{
+			Type:       "Feature",
+			Geometry:   json.RawMessage(geojson),
+			Properties: props,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(fc)
+}
+
+// handleDeforestationFeatures returns GeoJSON features for deforestation with narratives
+func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID string, limitStr string, startDate string, endDate string) {
+	limit := 1000
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 10000 {
+			limit = l
+		}
+	}
+
+	// Build query with date filters
+	query := `
+		SELECT 
+			fg.feature_id,
+			fg.geojson,
+			fg.properties_json,
+			fg.start_date,
+			de.narrative,
+			de.classification,
+			de.pattern_type
+		FROM feature_geometries fg
+		LEFT JOIN deforestation_events de ON fg.park_id = de.park_id 
+			AND CAST(fg.properties_json->>'year' AS INTEGER) = de.year
+			AND ABS(fg.properties_json->>'lat' - de.lat) < 0.001
+			AND ABS(fg.properties_json->>'lon' - de.lon) < 0.001
+		WHERE fg.park_id = ? AND fg.feature_type = 'deforestation'
+	`
+	args := []interface{}{parkID}
+
+	if startDate != "" {
+		query += " AND (fg.start_date IS NULL OR fg.start_date >= ?)"
+		args = append(args, startDate)
+	}
+	if endDate != "" {
+		query += " AND (fg.start_date IS NULL OR fg.start_date <= ?)"
+		args = append(args, endDate)
+	}
+
+	query += " ORDER BY fg.start_date DESC LIMIT ?"
+	args = append(args, limit)
+
+	rows, err := s.DB.Query(query, args...)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	type GeoJSONFeature struct {
+		Type       string                 `json:"type"`
+		Geometry   json.RawMessage        `json:"geometry"`
+		Properties map[string]interface{} `json:"properties"`
+	}
+
+	type FeatureCollection struct {
+		Type     string           `json:"type"`
+		Features []GeoJSONFeature `json:"features"`
+	}
+
+	fc := FeatureCollection{
+		Type:     "FeatureCollection",
+		Features: []GeoJSONFeature{},
+	}
+
+	for rows.Next() {
+		var featureID, geojson string
+		var propsJSON, startDateStr sql.NullString
+		var narrative, classification, patternType sql.NullString
+
+		if err := rows.Scan(&featureID, &geojson, &propsJSON, &startDateStr, &narrative, &classification, &patternType); err != nil {
+			continue
+		}
+
+		// Parse properties
+		props := make(map[string]interface{})
+		if propsJSON.Valid {
+			json.Unmarshal([]byte(propsJSON.String), &props)
+		}
+		props["feature_type"] = "deforestation"
+		props["feature_id"] = featureID
+		
+		if startDateStr.Valid {
+			props["start_date"] = startDateStr.String
+		}
+		
+		// Add narrative and other fields from deforestation_events
+		if narrative.Valid {
+			props["narrative"] = narrative.String
+		}
+		if classification.Valid {
+			props["classification"] = classification.String
+		}
+		if patternType.Valid {
+			props["pattern_type"] = patternType.String
+		}
+
+		fc.Features = append(fc.Features, GeoJSONFeature{
+			Type:       "Feature",
+			Geometry:   json.RawMessage(geojson),
+			Properties: props,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(fc)
 }
