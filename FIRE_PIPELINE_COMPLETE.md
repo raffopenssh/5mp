@@ -147,3 +147,48 @@ The system is ready! When FIRMS API becomes available and new fires are detected
 **Status:** 🎉 COMPLETE - Fire pipeline fully operational with incremental updates
 **Date:** 2026-02-24
 **Commit:** 81bcc10e
+
+## Cache and Notifications
+
+### ✅ Cache Updates
+**Automatic:** Fire narrative cache (`fire_narrative_cache` table) is updated by:
+```python
+# Step 5 in daily_fire_update.py
+python3 scripts/precompute_narratives_v5.py --incremental --days 14
+```
+
+The script runs `INSERT OR REPLACE INTO fire_narrative_cache` for all affected parks.
+
+### ✅ Bell Notifications  
+**Automatic:** Fire alerts are created in Step 6 of daily pipeline:
+
+```sql
+INSERT INTO notifications (park_id, notification_type, title, message, created_at)
+VALUES (?, 'fire_alert', ?, ?, datetime('now'))
+```
+
+**Example notification:**
+- Type: `fire_alert`
+- Title: "New Fire Activity: Chinko"
+- Message: "26 fire trajectory groups detected in the last 5 days"
+
+**View in UI:** Click bell icon → See fire alerts for affected parks
+
+---
+
+## Complete Daily Workflow
+
+```
+03:00 UTC - Daily Fire Update Cron
+├─ Step 1: Download NRT fires (last 5 days)
+├─ Step 2a: Insert to fire_detections table
+├─ Step 2b: Add to raw-fire-viirs JSON files
+├─ Step 3: Rebuild trajectories (--incremental --days 14)
+├─ Step 4: Load to database (--incremental --days 14)
+├─ Step 5: Update narrative cache (--incremental --days 14)
+└─ Step 6: Create fire_alert notifications ✅
+
+Result: Database + Cache + Notifications all updated!
+```
+
+**Everything is fully automated!** 🎉
