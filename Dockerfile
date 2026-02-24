@@ -1,29 +1,21 @@
-# 5MP Conservation Monitoring - Docker Build
-FROM golang:1.22-alpine AS builder
+# 5MP Conservation Monitoring - Docker Runtime
+FROM debian:bookworm-slim
 
-WORKDIR /build
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . .
-RUN CGO_ENABLED=1 go build -ldflags "-X srv.exe.dev/srv.Version=docker" -o server ./cmd/srv
-
-# Runtime image
-FROM alpine:3.19
-
-RUN apk add --no-cache sqlite python3 py3-pip git curl bash && \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    sqlite3 python3 python3-pip git curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/* && \
     ln -sf python3 /usr/bin/python
 
 WORKDIR /app
-COPY --from=builder /build/server /app/server
-COPY data/ /app/data/
+
+# Copy pre-built server binary
+COPY server /app/server
+
+# Copy templates and static files
 COPY srv/templates/ /app/srv/templates/
-COPY static/ /app/static/
+COPY srv/static/ /app/srv/static/
 
-# Python dependencies for fire pipeline
-COPY requirements.txt /app/
-RUN pip3 install --break-system-packages -r requirements.txt 2>/dev/null || \
-    pip3 install -r requirements.txt
-
+# Scripts and docs (Python deps installed at runtime if needed)
 COPY scripts/ /app/scripts/
 COPY docs/ /app/docs/
 

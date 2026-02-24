@@ -257,3 +257,17 @@ func ptrIfNotEmpty(s string) *string {
 	}
 	return &s
 }
+
+// HandleAPITriggerFAOLEXSync triggers FAOLEX sync manually (admin only)
+func (s *Server) HandleAPITriggerFAOLEXSync(w http.ResponseWriter, r *http.Request) {
+	go s.RunFAOLEXSync(context.Background())
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "started", "message": "FAOLEX sync started in background"})
+}
+
+// HandleAPITriggerPublicationSync triggers publication sync manually (admin only)
+func (s *Server) HandleAPITriggerPublicationSync(w http.ResponseWriter, r *http.Request) {
+	go s.RunImprovedPublicationSync(context.Background())
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "started", "message": "Publication sync started in background"})
+}

@@ -1,0 +1,30 @@
+# Database
+db.sqlite3
+db.sqlite3-wal
+db.sqlite3-shm
+*.sqlite3.bak*
+*.sqlite3.gz
+
+# Large data directories (mounted as volumes)
+data/
+logs/
+
+# Build artifacts
+*.log
+
+# Git
+.git/
+
+# Backups
+*.bak
+*.backup
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+srv/static/downloads/

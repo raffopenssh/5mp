@@ -12,7 +12,7 @@ echo "=== FAOLEX Sync Started: $(date) ===" >> "$LOG_FILE"
 
 # Trigger FAOLEX sync via curl to the running server
 # The server's background worker handles the actual sync
-curl -s "http://localhost:8000/api/admin/trigger-faolex-sync?pwd=REDACTED_PWD" >> "$LOG_FILE" 2>&1 || \
+curl -s -X POST "http://localhost:8000/api/admin/trigger-faolex-sync?pwd=test2026" >> "$LOG_FILE" 2>&1 || \
   echo "Server not running or endpoint unavailable" >> "$LOG_FILE"
 
 echo "=== FAOLEX Sync Triggered: $(date) ===" >> "$LOG_FILE"

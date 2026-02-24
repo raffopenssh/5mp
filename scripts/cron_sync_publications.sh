@@ -1,20 +1,18 @@
 #!/bin/bash
 # Daily publication sync - runs at 5am UTC
-# Syncs research publications from OpenAlex for stale parks
+# Triggers publication sync via the running server
 
 LOG_DIR=/home/exedev/5mp/logs
 LOG_FILE="$LOG_DIR/publications_sync_$(date +%Y%m%d).log"
 mkdir -p "$LOG_DIR"
 
-cd /home/exedev/5mp
-source .venv/bin/activate 2>/dev/null || true
-
 echo "=== Publication Sync Started: $(date) ===" >> "$LOG_FILE"
 
-# Sync parks that haven't been updated in 7+ days
-python3 scripts/sync_publications.py --stale --notify --limit 20 >> "$LOG_FILE" 2>&1
+# Trigger publication sync via curl to the running server
+curl -s -X POST "http://localhost:8000/api/admin/trigger-publication-sync?pwd=test2026" >> "$LOG_FILE" 2>&1 || \
+  echo "Server not running or endpoint unavailable" >> "$LOG_FILE"
 
-echo "=== Publication Sync Completed: $(date) ===" >> "$LOG_FILE"
+echo "=== Publication Sync Triggered: $(date) ===" >> "$LOG_FILE"
 
 # Keep only last 30 days of logs
 find "$LOG_DIR" -name "publications_sync_*.log" -mtime +30 -delete
