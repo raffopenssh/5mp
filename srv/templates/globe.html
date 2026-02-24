@@ -5669,7 +5669,8 @@
                             
                             // Format classified deforestation event with pinning
                             const formatClassifiedDefo = (e) => {
-                                const featureId = `deforest_${paId}_${e.year}_${e.id || 0}`;
+                                // Split polygon_ids and create one row per polygon
+                                const polygonIds = e.polygon_ids ? e.polygon_ids.split(',').map(id => id.trim()) : [`deforest_${paId}_${e.year}_${e.id || 0}`];
                                 const classColors = {
                                     'slash_burn': '#f59e0b',
                                     'logging': '#ef4444',
@@ -5680,7 +5681,12 @@
                                 const color = classColors[e.classification] || '#a855f7';
                                 const text = e.narrative || `${e.classification || 'Unknown'} (${e.year}): ${e.area_km2?.toFixed(2) || '?'} km²`;
                                 const shortText = text.length > 150 ? text.substring(0, 147) + '...' : text;
-                                return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}"><span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${shortText}</span></div>`;
+                                
+                                // Return HTML for all polygons in this event
+                                return polygonIds.map((featureId, idx) => {
+                                    const patchInfo = polygonIds.length > 1 ? ` <span style="color: #666; font-size: 8px;">[patch ${idx+1}/${polygonIds.length}]</span>` : '';
+                                    return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}"><span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${shortText}${patchInfo}</span></div>`;
+                                }).join('');
                             };
                             
                             // Format yearly story without classified data
