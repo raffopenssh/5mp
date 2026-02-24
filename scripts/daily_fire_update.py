@@ -184,8 +184,8 @@ class DailyFireUpdater:
         
         RAW_DIR = DATA_DIR / "raw-fire-viirs-20200101-20260222"
         if not RAW_DIR.exists():
-            log(f"  Warning: Raw fire directory not found: {RAW_DIR}")
-            return
+            log(f"  Creating raw fire directory: {RAW_DIR}")
+            RAW_DIR.mkdir(parents=True, exist_ok=True)
         
         # Group fires by park
         fires_by_park = defaultdict(list)
@@ -220,14 +220,16 @@ class DailyFireUpdater:
         
         for park_id, park_fires in fires_by_park.items():
             raw_file = RAW_DIR / f"{park_id}.json"
-            if not raw_file.exists():
-                continue
             
             try:
-                with open(raw_file) as f:
-                    data = json.load(f)
-                
-                existing_fires = data.get('fires', [])
+                # Load existing or create new
+                if raw_file.exists():
+                    with open(raw_file) as f:
+                        data = json.load(f)
+                    existing_fires = data.get('fires', [])
+                else:
+                    data = {'park_id': park_id, 'fires': []}
+                    existing_fires = []
                 existing_keys = {(f['latitude'], f['longitude'], f['acq_date'], f.get('acq_time', '')) 
                                 for f in existing_fires}
                 
@@ -296,7 +298,7 @@ class DailyFireUpdater:
             try:
                 result = subprocess.run(
                     ['python3', 'scripts/load_fire_groups_to_db.py', 
-                     '--park', park_id, '--force'],
+                     '--park', park_id, '--incremental', '--days', str(INCREMENTAL_DAYS)],
                     cwd=str(BASE_DIR),
                     capture_output=True,
                     text=True,
@@ -325,9 +327,9 @@ class DailyFireUpdater:
         log(f"Step 5: Updating fire narratives...")
         
         try:
-            # Run full narrative precompute - it's fast enough
+            # Run incremental narrative precompute
             result = subprocess.run(
-                ['python3', 'scripts/precompute_narratives_v5.py'],
+                ['python3', 'scripts/precompute_narratives_v5.py', '--incremental', '--days', str(INCREMENTAL_DAYS)],
                 cwd=str(BASE_DIR),
                 capture_output=True,
                 text=True,
