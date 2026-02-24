@@ -2542,12 +2542,15 @@ type StarredItems struct {
 	Activities  []map[string]interface{} `json:"activities"`
 }
 
-// HandleAPIFeed generates an RSS feed for starred items
-// GET /api/feed?stars=<base64-encoded-starred-items>&format=rss
+// HandleAPIFeed generates an RSS feed for starred items or notifications
+// GET /api/feed?stars=<base64-encoded-starred-items> - RSS for starred reports with updates
+// GET /api/feed - RSS for recent notifications (main globe page)
 func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 	starsParam := r.URL.Query().Get("stars")
+	
+	// If no stars parameter, return notifications feed
 	if starsParam == "" {
-		http.Error(w, "Missing stars parameter", http.StatusBadRequest)
+		s.handleNotificationsFeed(w, r)
 		return
 	}
 
@@ -2574,38 +2577,60 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 
 	items := []string{}
 
-	// Add park items
+	// Add park items with recent updates/notifications
 	for _, park := range starred.Parks {
 		name, _ := park["name"].(string)
 		id, _ := park["id"].(string)
 		country, _ := park["country"].(string)
 		
-		if name == "" {
+		if name == "" || id == "" {
 			continue
 		}
 
 		link := baseURL
-		if id != "" {
-			if pwd != "" {
-				link = baseURL + "&popup=" + id
-			} else {
-				link = baseURL + "?popup=" + id
+		if pwd != "" {
+			link = baseURL + "&popup=" + id
+		} else {
+			link = baseURL + "?popup=" + id
+		}
+
+		// Fetch recent notifications for this park (last 7 days)
+		since := now.AddDate(0, 0, -7)
+		notifQuery := `SELECT notification_type, title, message, created_at 
+		               FROM notifications 
+		               WHERE park_id = ? AND created_at > ? 
+		               ORDER BY created_at DESC LIMIT 5`
+		notifRows, err := s.DB.Query(notifQuery, id, since.Format("2006-01-02 15:04:05"))
+		
+		updates := []string{}
+		if err == nil {
+			defer notifRows.Close()
+			for notifRows.Next() {
+				var notifType, title, message, createdAt string
+				if err := notifRows.Scan(&notifType, &title, &message, &createdAt); err == nil {
+					updates = append(updates, fmt.Sprintf("- %s: %s", notifType, title))
+				}
 			}
 		}
 
+		description := fmt.Sprintf("Conservation monitoring for %s in %s", name, country)
+		if len(updates) > 0 {
+			description += "\n\nRecent updates:\n" + strings.Join(updates, "\n")
+		}
+
 		items = append(items, fmt.Sprintf(`
-		<item>
-			<title>%s - %s</title>
-			<link>%s</link>
-			<description>Conservation monitoring for %s in %s</description>
-			<pubDate>%s</pubDate>
-			<guid>park-%s</guid>
-		</item>`, 
+	<item>
+		<title>%s - %s</title>
+		<link>%s</link>
+		<description>%s</description>
+		<pubDate>%s</pubDate>
+		<guid>park-%s-%d</guid>
+	</item>`, 
 			escapeXML(name), escapeXML(country),
 			escapeXML(link),
-			escapeXML(name), escapeXML(country),
+			escapeXML(description),
 			now.Format(time.RFC1123Z),
-			escapeXML(id)))
+			escapeXML(id), now.Unix()))
 	}
 
 	// Add narrative items
@@ -2688,6 +2713,115 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 		baseURL,
 		now.Format(time.RFC1123Z),
 		baseURL, starsParam,
+		strings.Join(items, ""))
+
+	w.Header().Set("Content-Type", "application/rss+xml; charset=utf-8")
+	w.Write([]byte(rss))
+}
+
+// handleNotificationsFeed generates RSS feed from recent notifications
+func (s *Server) handleNotificationsFeed(w http.ResponseWriter, r *http.Request) {
+	limit := 50
+	if l := r.URL.Query().Get("limit"); l != "" {
+		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 && parsed <= 200 {
+			limit = parsed
+		}
+	}
+
+	// Query recent notifications
+	query := `SELECT id, park_id, notification_type, title, message, reference_url, created_at
+	          FROM notifications ORDER BY created_at DESC LIMIT ?`
+	rows, err := s.DB.Query(query, limit)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	baseURL := "https://" + r.Host
+	pwd := r.URL.Query().Get("pwd")
+	pwdParam := ""
+	if pwd != "" {
+		pwdParam = "?pwd=" + pwd
+		baseURL += pwdParam
+	}
+
+	items := []string{}
+	for rows.Next() {
+		var id int64
+		var parkID, notifType, title, message sql.NullString
+		var refURL sql.NullString
+		var createdAt string
+
+		if err := rows.Scan(&id, &parkID, &notifType, &title, &message, &refURL, &createdAt); err != nil {
+			continue
+		}
+
+		// Parse timestamp
+		var pubDate time.Time
+		if t, err := time.Parse("2006-01-02 15:04:05", createdAt); err == nil {
+			pubDate = t
+		} else if t, err := time.Parse(time.RFC3339, createdAt); err == nil {
+			pubDate = t
+		} else {
+			pubDate = time.Now()
+		}
+
+		// Build link
+		link := baseURL
+		if parkID.Valid && parkID.String != "" {
+			if pwdParam != "" {
+				link = baseURL + "&popup=" + parkID.String
+			} else {
+				link = baseURL + "?popup=" + parkID.String
+			}
+		} else if refURL.Valid && refURL.String != "" {
+			link = refURL.String
+		}
+
+		desc := ""
+		if message.Valid {
+			desc = message.String
+		} else {
+			desc = fmt.Sprintf("%s notification", notifType.String)
+		}
+
+		items = append(items, fmt.Sprintf(`
+	<item>
+		<title>%s</title>
+		<link>%s</link>
+		<description>%s</description>
+		<pubDate>%s</pubDate>
+		<guid>notification-%d</guid>
+	</item>`,
+			escapeXML(title.String),
+			escapeXML(link),
+			escapeXML(desc),
+			pubDate.Format(time.RFC1123Z),
+			id))
+	}
+
+	now := time.Now().UTC()
+	feedURL := baseURL
+	if pwdParam == "" {
+		feedURL += "?feed=1"
+	} else {
+		feedURL += "&feed=1"
+	}
+
+	rss := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>5MP Conservation Monitoring - Notifications</title>
+		<link>%s</link>
+		<description>Recent conservation monitoring notifications and alerts</description>
+		<lastBuildDate>%s</lastBuildDate>
+		<atom:link href="%s/api/feed%s" rel="self" type="application/rss+xml"/>%s
+	</channel>
+</rss>`,
+		baseURL,
+		now.Format(time.RFC1123Z),
+		baseURL, pwdParam,
 		strings.Join(items, ""))
 
 	w.Header().Set("Content-Type", "application/rss+xml; charset=utf-8")
