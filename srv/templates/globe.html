@@ -8714,6 +8714,7 @@ ${starredItems.narratives.map(n => {
             }
             
             singlePinnedFeatures[key] = {
+                ...singlePinnedFeatures[key],  // Preserve frontSourceId, frontLayerId, frontGlowId
                 parkId, parkName, type, featureId,
                 sourceId, layerId,
                 feature, narrative
