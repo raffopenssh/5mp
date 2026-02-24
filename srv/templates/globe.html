@@ -9310,6 +9310,9 @@ ${starredItems.narratives.map(n => {
             
             // Add click handler for feature details
             map.on('click', layerId, (e) => {
+                e.preventDefault();
+                e.originalEvent?.stopPropagation();
+                
                 if (categoryHoverPopup) {
                     categoryHoverPopup.remove();
                     categoryHoverPopup = null;
@@ -9571,6 +9574,9 @@ ${starredItems.narratives.map(n => {
     }
     
     function showPinnedFeaturePopup(props, lngLat, type, parkName) {
+        // Normalize type names
+        if (type === 'fire_trajectory') type = 'fire';
+        
         const typeLabels = { 
             fire: 'Fire Group', settlement: 'Settlement', deforestation: 'Deforestation', 
             road: 'Road', river: 'River', place: 'Place', water: 'Waterbody' 
