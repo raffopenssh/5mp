@@ -4,33 +4,29 @@
 MAP_KEY = "REDACTED_FIRMS_KEY"
 BASE_URL = "https://firms.modaps.eosdis.nasa.gov/api"
 
-# Working proxies (tested and verified Feb 6, 2026)
-# These are verified to reach NASA FIRMS API
+# Working proxies (tested 2026-02-24 07:46)
 PROXIES = [
-    "95.213.217.168:52004",   # Russia - verified working
-    "89.208.85.78:443",       # Russia - verified working  
-    "66.80.0.115:3128",       # verified working
-    "46.161.6.165:8080",      # verified working
-    "43.130.6.42:80",         # verified working
+    "18.229.170.122:3128",
+    "43.161.214.161:1081",
 ]
 
-# Data sources (prefer NRT for recent data, standard for backfill)
+# Data sources
 SOURCES = {
-    "nrt": "VIIRS_SNPP_NRT",      # Near Real-Time (last ~48 hours)
-    "standard": "VIIRS_SNPP_SP",  # Standard Processing (2-3 days delay)
-    "modis_nrt": "MODIS_NRT",     # MODIS Near Real-Time
+    "nrt": "VIIRS_SNPP_NRT",
+    "standard": "VIIRS_SNPP_SP",
+    "modis_nrt": "MODIS_NRT",
 }
 
 # Transaction limits
 MAX_TRANSACTIONS_PER_10MIN = 5000
-RATE_LIMIT_DELAY = 0.5  # seconds between requests
+RATE_LIMIT_DELAY = 0.5
 
 # Trajectory analysis settings
-MIN_TRAJECTORY_DAYS = 28  # Minimum days for trajectory analysis
-CLUSTER_DISTANCE_KM = 5   # Max distance for clustering fires
-ACTIVE_FIRE_THRESHOLD_DAYS = 1  # Fires within this many days are "active"
+MIN_TRAJECTORY_DAYS = 28
+CLUSTER_DISTANCE_KM = 5
+ACTIVE_FIRE_THRESHOLD_DAYS = 1
 
-# Anonymous group naming (phonetic alphabet)
+# Anonymous group naming
 GROUP_NAMES = [
     "Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot", 
     "Golf", "Hotel", "India", "Juliet", "Kilo", "Lima",
