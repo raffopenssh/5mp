@@ -9556,50 +9556,56 @@ ${starredItems.narratives.map(n => {
         `;
 
         if (type === 'fire') {
-            const groupType = props.group_type ? props.group_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '';
-            const position = props.position ? props.position.replace(/_/g, ' ') : '';
-            
             html += `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
-            if (groupType) html += `<div style="margin-bottom: 5px; font-weight: 500;">${groupType}</div>`;
+            
+            // Use narrative if available
+            if (props.narrative) {
+                html += `<div style="font-size: 12px; line-height: 1.5; margin-bottom: 4px;">${props.narrative}</div>`;
+            }
+            
+            const groupType = props.group_type ? props.group_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '';
+            if (groupType && !props.narrative) html += `<div style="margin-bottom: 5px; font-weight: 500;">${groupType}</div>`;
             
             const details = [];
             if (props.fires_total) details.push(`${props.fires_total} detection${props.fires_total > 1 ? 's' : ''}`);
             if (props.days) details.push(`${props.days} day${props.days > 1 ? 's' : ''}`);
-            if (details.length) html += `<div style="margin-bottom: 3px; color: #6b7280; font-size: 12px;">${details.join(' • ')}</div>`;
+            if (details.length) html += `<div style="margin-bottom: 3px; color: #6b7280; font-size: 11px;">${details.join(' • ')}</div>`;
             
-            const movement = [];
-            if (props.distance_km !== undefined && props.distance_km > 0) movement.push(`${props.distance_km.toFixed(1)} km`);
-            if (props.direction) movement.push(props.direction);
-            if (props.avg_speed_km_day !== undefined && props.avg_speed_km_day > 0) movement.push(`${props.avg_speed_km_day.toFixed(1)} km/day`);
-            if (movement.length) html += `<div style="margin-bottom: 3px; font-size: 12px;">Movement: ${movement.join(' ')}</div>`;
-            
-            if (props.total_frp) html += `<div style="margin-bottom: 3px; font-size: 12px;">Intensity: ${props.total_frp.toFixed(0)} MW</div>`;
-            if (position) html += `<div style="margin-bottom: 3px; color: #6b7280; font-size: 12px; text-transform: capitalize;">${position}</div>`;
-            if (props.pct_inside !== undefined) html += `<div style="color: #6b7280; font-size: 12px;">${props.pct_inside.toFixed(0)}% inside park</div>`;
+            if (props.total_frp) html += `<div style="color: #6b7280; font-size: 11px;">Intensity: ${props.total_frp.toFixed(0)} MW</div>`;
             html += `</div>`;
             
         } else if (type === 'settlement' || type === 'place') {
             html += `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
-            if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${props.name}</div>`;
             
-            const info = [];
-            if (props.place) info.push(props.place.charAt(0).toUpperCase() + props.place.slice(1));
-            if (props.population) info.push(`Pop: ${props.population.toLocaleString()}`);
-            if (info.length) html += `<div style="margin-bottom: 3px; color: #6b7280; font-size: 12px;">${info.join(' • ')}</div>`;
-            
-            if (props.distance_to_park_km !== undefined) {
-                const location = props.inside_park ? 'Inside park' : `${props.distance_to_park_km.toFixed(1)} km from park`;
-                html += `<div style="color: #6b7280; font-size: 12px;">${location}</div>`;
+            // Use narrative if available
+            if (props.narrative) {
+                html += `<div style="font-size: 12px; line-height: 1.5;">${props.narrative}</div>`;
+            } else {
+                if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${props.name}</div>`;
+                
+                const info = [];
+                if (props.area_m2) info.push(`${(props.area_m2 / 10000).toFixed(2)} ha`);
+                if (props.population_est !== undefined) info.push(`Pop: ${props.population_est}`);
+                if (info.length) html += `<div style="margin-bottom: 3px; color: #6b7280; font-size: 12px;">${info.join(' • ')}</div>`;
+                
+                if (props.lat && props.lon) html += `<div style="color: #6b7280; font-size: 11px;">${props.lat.toFixed(4)}, ${props.lon.toFixed(4)}</div>`;
             }
             html += `</div>`;
             
         } else if (type === 'deforestation') {
             html += `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
-            const info = [];
-            if (props.area_ha) info.push(`${props.area_ha.toFixed(1)} ha`);
-            if (props.year) info.push(`Year ${props.year}`);
-            if (info.length) html += `<div style="margin-bottom: 3px; font-size: 12px;">${info.join(' • ')}</div>`;
-            if (props.confidence) html += `<div style="color: #6b7280; font-size: 12px;">Confidence: ${props.confidence}</div>`;
+            
+            // Use narrative if available
+            if (props.narrative) {
+                html += `<div style="font-size: 12px; line-height: 1.5;">${props.narrative}</div>`;
+            } else {
+                const info = [];
+                if (props.area_km2) info.push(`${props.area_km2.toFixed(3)} km²`);
+                if (props.year) info.push(`Year ${props.year}`);
+                if (info.length) html += `<div style="margin-bottom: 3px; font-size: 12px;">${info.join(' • ')}</div>`;
+                
+                if (props.lat && props.lon) html += `<div style="color: #6b7280; font-size: 11px;">${props.lat.toFixed(4)}, ${props.lon.toFixed(4)}</div>`;
+            }
             html += `</div>`;
             
         } else if (type === 'road') {
