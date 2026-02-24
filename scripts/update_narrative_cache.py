@@ -15,10 +15,11 @@ def main():
     for f in NARRATIVES_DIR.glob('*.json'):
         data = json.load(open(f))
         park_id = f.stem
-        years = data.get('trend', {}).get('years', [])
-        year_nums = [y.get('year', 2020) if isinstance(y, dict) else y for y in years]
+        years_data = data.get('trend', {}).get('years', [])
+        # years is array of objects with 'year' field
+        year_nums = [y.get('year') for y in years_data if isinstance(y, dict) and 'year' in y]
         from_year = min(year_nums) if year_nums else 2020
-        to_year = max(year_nums) if year_nums else 2025
+        to_year = max(year_nums) if year_nums else 2026
         
         conn.execute('''
             INSERT OR REPLACE INTO fire_narrative_cache 
