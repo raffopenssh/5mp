@@ -4106,6 +4106,7 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 	}
 
 	// Join feature_geometries with park_settlements to get narrative
+	// Use polygon_ids which contains comma-separated feature IDs
 	query := `
 		SELECT 
 			fg.feature_id,
@@ -4117,8 +4118,7 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 			ps.distance_to_place_km
 		FROM feature_geometries fg
 		LEFT JOIN park_settlements ps ON fg.park_id = ps.park_id 
-			AND ABS(fg.properties_json->>'lat' - ps.lat) < 0.0001
-			AND ABS(fg.properties_json->>'lon' - ps.lon) < 0.0001
+			AND (',' || ps.polygon_ids || ',') LIKE ('%,' || fg.feature_id || ',%')
 		WHERE fg.park_id = ? AND fg.feature_type = 'settlement'
 	`
 	args := []interface{}{parkID}
@@ -4207,6 +4207,7 @@ func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID strin
 	}
 
 	// Build query with date filters
+	// Join on polygon_ids which contains comma-separated feature IDs
 	query := `
 		SELECT 
 			fg.feature_id,
@@ -4219,8 +4220,7 @@ func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID strin
 		FROM feature_geometries fg
 		LEFT JOIN deforestation_events de ON fg.park_id = de.park_id 
 			AND CAST(fg.properties_json->>'year' AS INTEGER) = de.year
-			AND ABS(fg.properties_json->>'lat' - de.lat) < 0.001
-			AND ABS(fg.properties_json->>'lon' - de.lon) < 0.001
+			AND (',' || de.polygon_ids || ',') LIKE ('%,' || fg.feature_id || ',%')
 		WHERE fg.park_id = ? AND fg.feature_type = 'deforestation'
 	`
 	args := []interface{}{parkID}
