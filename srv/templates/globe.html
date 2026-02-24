@@ -8756,42 +8756,7 @@ ${starredItems.narratives.map(n => {
                 if (parkPopup) parkPopup.remove();
                 
                 const props = e.features[0]?.properties || {};
-                const pin = singlePinnedFeatures[key];
-                let title = '';
-                let description = '';
-                
-                // Build title based on type
-                if (type === 'fire') {
-                    title = `<strong style="color:#ef4444;">Fire Trajectory</strong>`;
-                    const groupType = props.group_type || props.classification?.type || 'unknown';
-                    description = props.narrative || pin?.narrative || 
-                        `${groupType} fire pattern from ${props.start_date || '?'} to ${props.end_date || '?'}`;
-                    if (props.fires_total) description += `<br><span style="color:#888;">Detections: ${props.fires_total}, Distance: ${props.distance_km || '?'} km</span>`;
-                } else if (type === 'settlement') {
-                    title = `<strong style="color:#fbbf24;">Settlement</strong>`;
-                    const cat = props.classification || props.category || 'settlement';
-                    description = props.narrative || `${cat} (${(props.area_m2 / 1e6).toFixed(3)} km²)`;
-                    if (props.name) description = `<strong>${props.name}</strong><br>` + description;
-                } else if (type === 'deforestation') {
-                    title = `<strong style="color:#a855f7;">Deforestation</strong>`;
-                    description = props.narrative || `${props.year || '?'}: ${props.area_km2?.toFixed(2) || '?'} km² lost`;
-                    if (props.classification) description += ` (${props.classification})`;
-                } else {
-                    // Generic display for other types
-                    title = `<strong>${type}</strong>`;
-                    const name = props.name || props.feature_id || '';
-                    description = name ? `<strong>${name}</strong><br>` : '';
-                    description += Object.entries(props)
-                        .filter(([k]) => !['feature_id', 'feature_type', 'name', 'narrative'].includes(k) && !k.startsWith('_'))
-                        .slice(0, 6)
-                        .map(([k, v]) => `<span style="color:#888;">${k}:</span> ${v}`)
-                        .join('<br>');
-                }
-                
-                new maplibregl.Popup({ maxWidth: '350px', closeButton: true })
-                    .setLngLat(e.lngLat)
-                    .setHTML(`<div style="font-size:12px;max-width:330px;line-height:1.5;">${title}<br>${description}</div>`)
-                    .addTo(map);
+                showPinnedFeaturePopup(props, e.lngLat, type, null);
             });
             
             // Pulse animation for glow - makes pinned feature easy to find
@@ -9607,59 +9572,103 @@ ${starredItems.narratives.map(n => {
     
     function showPinnedFeaturePopup(props, lngLat, type, parkName) {
         const typeLabels = { 
-            fire: 'Fire Trajectory', settlement: 'Settlement', deforestation: 'Deforestation', 
+            fire: 'Fire Group', settlement: 'Settlement', deforestation: 'Deforestation', 
             road: 'Road', river: 'River', place: 'Place', water: 'Waterbody' 
-        };
-        const typeColors = { 
-            fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', 
-            road: '#60a5fa', river: '#3b82f6', place: '#a855f7', water: '#3b82f6' 
         };
         
         // Close park popup if open
         const parkPopup = document.querySelector('.pa-popup');
         if (parkPopup) parkPopup.remove();
         
-        let title = props.name || props.feature_id || typeLabels[type] || type;
-        let details = '';
-        
-        if (type === 'fire') {
-            if (props.narrative) details += `<div style="margin-bottom:6px;">${props.narrative}</div>`;
-            if (props.outcome) details += `<div><span style="color:#888;">Outcome:</span> ${props.outcome}</div>`;
-            if (props.fires_total || props.fires_inside) details += `<div><span style="color:#888;">Fires:</span> ${props.fires_total || props.fires_inside}</div>`;
-            if (props.days || props.days_inside) details += `<div><span style="color:#888;">Days:</span> ${props.days || props.days_inside}</div>`;
-            if (props.distance_km) details += `<div><span style="color:#888;">Distance:</span> ${props.distance_km} km</div>`;
-        } else if (type === 'settlement') {
-            if (props.narrative) details += `<div style="margin-bottom:6px;">${props.narrative}</div>`;
-            if (props.classification || props.category) details += `<div><span style="color:#888;">Type:</span> ${props.classification || props.category}</div>`;
-            if (props.population_est) details += `<div><span style="color:#888;">Population:</span> ${formatNumber(props.population_est)}</div>`;
-            if (props.area_m2) details += `<div><span style="color:#888;">Area:</span> ${(props.area_m2/1e6).toFixed(3)} km²</div>`;
-        } else if (type === 'deforestation') {
-            if (props.narrative) details += `<div style="margin-bottom:6px;">${props.narrative}</div>`;
-            if (props.classification) details += `<div><span style="color:#888;">Type:</span> ${props.classification}</div>`;
-            if (props.area_km2) details += `<div><span style="color:#888;">Area:</span> ${props.area_km2.toFixed(2)} km²</div>`;
-            if (props.year) details += `<div><span style="color:#888;">Year:</span> ${props.year}</div>`;
-        } else if (type === 'road') {
-            if (props.highway_type) details += `<div><span style="color:#888;">Type:</span> ${props.highway_type}</div>`;
-            if (props.surface) details += `<div><span style="color:#888;">Surface:</span> ${props.surface}</div>`;
-            if (props.passability) details += `<div><span style="color:#888;">Passability:</span> ${props.passability}</div>`;
-            if (props.length_km) details += `<div><span style="color:#888;">Length:</span> ${props.length_km.toFixed(1)} km</div>`;
-        } else if (type === 'river') {
-            if (props.stream_order) details += `<div><span style="color:#888;">Order:</span> ${props.stream_order}</div>`;
-            if (props.length_km) details += `<div><span style="color:#888;">Length:</span> ${props.length_km.toFixed(1)} km</div>`;
-        } else if (type === 'place') {
-            if (props.place_type) details += `<div><span style="color:#888;">Type:</span> ${props.place_type}</div>`;
-        }
-        
-        const color = typeColors[type] || '#22c55e';
-        const html = `
-            <div style="font-size:12px;line-height:1.4;">
-                <div style="font-weight:600;color:${color};margin-bottom:4px;">${title}</div>
-                <div style="color:#666;font-size:10px;margin-bottom:6px;">${parkName}</div>
-                ${details || '<div style="color:#666;">Click for details</div>'}
-            </div>
+        let html = `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-width: 200px; max-width: 320px; color: #1f2937;">
+                <div style="font-weight: 600; font-size: 13px; color: #6b7280; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    ${typeLabels[type] || type}
+                </div>
         `;
-        
-        new maplibregl.Popup({ closeButton: true, maxWidth: '300px' })
+
+        if (type === 'fire') {
+            const groupType = props.group_type ? props.group_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '';
+            const position = props.position ? props.position.replace(/_/g, ' ') : '';
+            
+            html += `<div style="font-size: 14px; line-height: 1.8; color: #374151;">`;
+            if (groupType) html += `<div style="margin-bottom: 6px; font-weight: 500;">${groupType}</div>`;
+            
+            const details = [];
+            if (props.fires_total) details.push(`${props.fires_total} detection${props.fires_total > 1 ? 's' : ''}`);
+            if (props.days) details.push(`${props.days} day${props.days > 1 ? 's' : ''}`);
+            if (details.length) html += `<div style="margin-bottom: 4px; color: #6b7280;">${details.join(' • ')}</div>`;
+            
+            const movement = [];
+            if (props.distance_km !== undefined && props.distance_km > 0) movement.push(`${props.distance_km.toFixed(1)} km`);
+            if (props.direction) movement.push(props.direction);
+            if (props.avg_speed_km_day !== undefined && props.avg_speed_km_day > 0) movement.push(`${props.avg_speed_km_day.toFixed(1)} km/day`);
+            if (movement.length) html += `<div style="margin-bottom: 4px;">Movement: ${movement.join(' ')}</div>`;
+            
+            if (props.total_frp) html += `<div style="margin-bottom: 4px;">Intensity: ${props.total_frp.toFixed(0)} MW</div>`;
+            if (position) html += `<div style="margin-bottom: 4px; color: #6b7280; text-transform: capitalize;">${position}</div>`;
+            if (props.pct_inside !== undefined) html += `<div style="color: #6b7280;">${props.pct_inside.toFixed(0)}% inside park</div>`;
+            html += `</div>`;
+            
+        } else if (type === 'settlement' || type === 'place') {
+            html += `<div style="font-size: 14px; line-height: 1.8; color: #374151;">`;
+            if (props.name) html += `<div style="font-weight: 600; font-size: 15px; margin-bottom: 6px;">${props.name}</div>`;
+            
+            const info = [];
+            if (props.place) info.push(props.place.charAt(0).toUpperCase() + props.place.slice(1));
+            if (props.population) info.push(`Pop: ${props.population.toLocaleString()}`);
+            if (info.length) html += `<div style="margin-bottom: 4px; color: #6b7280;">${info.join(' • ')}</div>`;
+            
+            if (props.distance_to_park_km !== undefined) {
+                const location = props.inside_park ? 'Inside park' : `${props.distance_to_park_km.toFixed(1)} km from park`;
+                html += `<div style="color: #6b7280;">${location}</div>`;
+            }
+            html += `</div>`;
+            
+        } else if (type === 'deforestation') {
+            html += `<div style="font-size: 14px; line-height: 1.8; color: #374151;">`;
+            const info = [];
+            if (props.area_ha) info.push(`${props.area_ha.toFixed(1)} ha`);
+            if (props.year) info.push(`Year ${props.year}`);
+            if (info.length) html += `<div style="margin-bottom: 4px;">${info.join(' • ')}</div>`;
+            if (props.confidence) html += `<div style="color: #6b7280;">Confidence: ${props.confidence}</div>`;
+            html += `</div>`;
+            
+        } else if (type === 'road') {
+            html += `<div style="font-size: 14px; line-height: 1.8; color: #374151;">`;
+            if (props.name) html += `<div style="font-weight: 600; font-size: 15px; margin-bottom: 6px;">${props.name}</div>`;
+            
+            const roadType = [];
+            if (props.highway) roadType.push(props.highway.charAt(0).toUpperCase() + props.highway.slice(1));
+            if (props.surface) roadType.push(props.surface);
+            if (roadType.length) html += `<div style="margin-bottom: 4px; color: #6b7280;">${roadType.join(' • ')}</div>`;
+            
+            if (props.passability_desc) {
+                const condition = props.passability_desc.replace(/_/g, ' ').toLowerCase();
+                html += `<div style="margin-bottom: 4px;">Condition: ${condition}</div>`;
+            }
+            if (props.length_km) html += `<div style="color: #6b7280;">Length: ${props.length_km.toFixed(1)} km</div>`;
+            html += `</div>`;
+            
+        } else if (type === 'river' || type === 'water') {
+            html += `<div style="font-size: 14px; line-height: 1.8; color: #374151;">`;
+            if (props.name) html += `<div style="font-weight: 600; font-size: 15px; margin-bottom: 6px;">${props.name}</div>`;
+            
+            const info = [];
+            if (props.waterway) info.push(props.waterway.charAt(0).toUpperCase() + props.waterway.slice(1));
+            if (props.length_km) info.push(`${props.length_km.toFixed(1)} km`);
+            if (info.length) html += `<div style="margin-bottom: 4px; color: #6b7280;">${info.join(' • ')}</div>`;
+            
+            if (props.inside_park !== undefined) {
+                html += `<div style="color: #6b7280;">${props.inside_park ? 'Inside park' : 'Near park'}</div>`;
+            }
+            if (props.navigable) html += `<div style="color: #6b7280;">Navigable</div>`;
+            html += `</div>`;
+        }
+
+        html += `</div>`;
+
+        new maplibregl.Popup({ closeButton: true, closeOnClick: false, maxWidth: '320px' })
             .setLngLat(lngLat)
             .setHTML(html)
             .addTo(map);
