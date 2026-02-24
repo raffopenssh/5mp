@@ -562,6 +562,8 @@ class NarrativeGeneratorV5:
 
 def main():
     parser = argparse.ArgumentParser(description="Precompute Narratives v5")
+    parser.add_argument('--incremental', action='store_true', help='Incremental mode: only updated parks')
+    parser.add_argument('--days', type=int, default=60, help='Days window for incremental (default: 60)')
     args = parser.parse_args()
     
     log("=" * 70)

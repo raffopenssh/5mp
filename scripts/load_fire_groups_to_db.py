@@ -410,6 +410,10 @@ class FireGroupLoader:
             if len(trajectory) < 1:
                 continue
             
+            # Incremental mode: skip old groups
+            if self.cutoff_date and group.get('end_date', '9999-99-99') < self.cutoff_date:
+                continue
+            
             # Skip groups with invalid coordinates (lon=0 or lat=0)
             centroid = group.get('centroid', [0, 0])
             if centroid[0] == 0.0 or centroid[1] == 0.0:
@@ -535,10 +539,18 @@ class FireGroupLoader:
                 VALUES (?, ?, ?)
             """, (park_id, week_start, fire_count))
     
-    def run(self, park_id=None, force=False):
+    def run(self, park_id=None, force=False, incremental=False, days=60):
         """Run the loader"""
         log("Loading fire groups into database...")
         log(f"Input: {INPUT_DIR}")
+        
+        if incremental:
+            from datetime import datetime, timedelta
+            cutoff_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+            log(f"INCREMENTAL MODE: Only processing groups since {cutoff_date}")
+            self.cutoff_date = cutoff_date
+        else:
+            self.cutoff_date = None
         
         if park_id:
             park_ids = [park_id]
@@ -580,10 +592,12 @@ def main():
     parser = argparse.ArgumentParser(description="Load fire groups to database")
     parser.add_argument('--park', help='Process specific park only')
     parser.add_argument('--force', action='store_true', help='Force reload all')
+    parser.add_argument('--incremental', action='store_true', help='Incremental mode: only updated parks')
+    parser.add_argument('--days', type=int, default=60, help='Days window for incremental (default: 60)')
     args = parser.parse_args()
     
     loader = FireGroupLoader()
-    loader.run(args.park, args.force)
+    loader.run(args.park, args.force, args.incremental, args.days)
 
 
 if __name__ == '__main__':
