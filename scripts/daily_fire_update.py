@@ -349,53 +349,72 @@ class DailyFireUpdater:
             log(f"    Error: {e}")
     
     def create_fire_notifications(self):
-        """Create notifications for parks with significant fire activity."""
+        """Create notifications for parks with active fire groups.
+        
+        Active groups are those in fire_group_alerts table with alert_type = 'active_inside' or 'entered'.
+        The fire realtime API populates fire_group_alerts when called.
+        """
         if not self.affected_parks:
             log("Step 6: No parks affected, skipping notifications")
             return
         
-        log(f"Step 6: Creating fire notifications for {len(self.affected_parks)} parks...")
+        log(f"Step 6: Syncing fire alerts for {len(self.affected_parks)} parks...")
         
-        # Get recent fire groups for affected parks
-        cutoff_date = (datetime.now() - timedelta(days=self.days)).strftime('%Y-%m-%d')
+        # Trigger the fire realtime endpoint to update fire_group_alerts
+        # This is done via HTTP call to localhost API which handles alert logic
+        import requests
         
         notifications_created = 0
         for park_id in self.affected_parks:
             try:
-                # Count new fire groups in the last N days
-                cursor = self.conn.execute("""
-                    SELECT COUNT(*) 
-                    FROM feature_geometries 
-                    WHERE park_id = ? 
-                    AND feature_type = 'fire_trajectory'
-                    AND json_extract(properties_json, '$.end_date') >= ?
-                """, (park_id, cutoff_date))
+                # Call fire realtime API to update alerts (this populates fire_group_alerts table)
+                response = requests.get(
+                    f"http://localhost:8000/api/parks/{park_id}/fire-realtime",
+                    params={'pwd': 'test2026', 'days': 28},
+                    timeout=30
+                )
                 
-                group_count = cursor.fetchone()[0]
-                
-                if group_count == 0:
-                    continue
-                
-                # Get park name
-                park_name = self.parks.get(park_id, {}).get('name', park_id)
-                
-                # Create notification
-                title = f"New Fire Activity: {park_name}"
-                message = f"{group_count} fire trajectory group{'s' if group_count > 1 else ''} detected in the last {self.days} days"
-                
-                self.conn.execute("""
-                    INSERT INTO notifications (park_id, notification_type, title, message, created_at)
-                    VALUES (?, 'fire_alert', ?, ?, datetime('now'))
-                """, (park_id, title, message))
-                
-                notifications_created += 1
-                log(f"  Created notification for {park_id}: {group_count} groups")
-                
+                if response.status_code == 200:
+                    data = response.json()
+                    active_count = data.get('active_groups_count', 0)
+                    
+                    if active_count > 0:
+                        # Get park name
+                        park_name = self.parks.get(park_id, {}).get('name', park_id)
+                        
+                        # Check if notification already exists for these active groups
+                        cursor = self.conn.execute("""
+                            SELECT id FROM notifications 
+                            WHERE park_id = ? 
+                            AND notification_type = 'fire_alert'
+                            AND created_at > datetime('now', '-7 days')
+                            LIMIT 1
+                        """, (park_id,))
+                        
+                        existing = cursor.fetchone()
+                        
+                        if not existing:
+                            # Create notification for active fire groups
+                            title = f"Active Fire Alert: {park_name}"
+                            message = f"{active_count} active fire group{'s' if active_count > 1 else ''} currently burning"
+                            
+                            self.conn.execute("""
+                                INSERT INTO notifications (park_id, notification_type, title, message, created_at)
+                                VALUES (?, 'fire_alert', ?, ?, datetime('now'))
+                            """, (park_id, title, message))
+                            
+                            notifications_created += 1
+                            log(f"  Created notification for {park_id}: {active_count} active groups")
+                        else:
+                            log(f"  {park_id}: {active_count} active groups (notification exists)")
+                else:
+                    log(f"  Error calling API for {park_id}: {response.status_code}")
+                    
             except Exception as e:
-                log(f"  Error creating notification for {park_id}: {e}")
+                log(f"  Error processing {park_id}: {e}")
         
         self.conn.commit()
-        log(f"  Created {notifications_created} fire notifications")
+        log(f"  Created {notifications_created} new fire alert notifications")
     
     def run(self):
         log("=" * 70)
