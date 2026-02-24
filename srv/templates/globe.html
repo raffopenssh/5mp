@@ -9107,12 +9107,12 @@ ${starredItems.narratives.map(n => {
                         source: sourceId,
                         filter: ['==', ['geometry-type'], 'Point'],
                         paint: {
-                            'circle-radius': 2,
+                            'circle-radius': 5,
                             'circle-color': color,
-                            'circle-opacity': 0.5,
-                            'circle-stroke-width': 2,
+                            'circle-opacity': 0.6,
+                            'circle-stroke-width': 1.5,
                             'circle-stroke-color': '#fff',
-                            'circle-stroke-opacity': 0.5
+                            'circle-stroke-opacity': 0.8
                         }
                     });
                     
@@ -9180,12 +9180,12 @@ ${starredItems.narratives.map(n => {
                         source: sourceId,
                         filter: ['==', ['geometry-type'], 'Point'],
                         paint: {
-                            'circle-radius': 2,
+                            'circle-radius': 5,
                             'circle-color': color,
-                            'circle-opacity': 0.5,
-                            'circle-stroke-width': 2,
+                            'circle-opacity': 0.6,
+                            'circle-stroke-width': 1.5,
                             'circle-stroke-color': '#fff',
-                            'circle-stroke-opacity': 0.5
+                            'circle-stroke-opacity': 0.8
                         }
                     });
                     pinnedLayers[key].pointLayerId = pointLayerId;
@@ -9272,32 +9272,13 @@ ${starredItems.narratives.map(n => {
                 pinnedLayers[key].outlineLayerId = `${layerId}-outline`;
             }
             
-            // Add hover effect
-            // Add hover effect with popup
+            // Add hover effect with detailed popup
             let categoryHoverPopup = null;
             map.on('mouseenter', layerId, (e) => {
                 map.getCanvas().style.cursor = 'pointer';
                 if (e.features && e.features.length > 0) {
                     const props = e.features[0].properties;
-                    const name = props.name || props.feature_id || type;
-                    let hoverText = `<strong>${name}</strong>`;
-                    if (props.narrative) {
-                        const shortNarrative = props.narrative.length > 100 ? props.narrative.substring(0, 97) + '...' : props.narrative;
-                        hoverText = shortNarrative;
-                    } else if (type === 'river') {
-                        hoverText = `<strong>${props.name || 'River'}</strong>`;
-                        if (props.ord_flow) hoverText += `<br><span style="color:#888;">Order: ${props.ord_flow}</span>`;
-                    } else if (type === 'road') {
-                        hoverText = `<strong>${props.name || 'Road'}</strong>`;
-                        if (props.surface) hoverText += `<br><span style="color:#888;">Surface: ${props.surface}</span>`;
-                    } else if (type === 'place') {
-                        hoverText = `<strong>${props.name || 'Place'}</strong>`;
-                        if (props.place_type) hoverText += `<br><span style="color:#888;">${props.place_type}</span>`;
-                    }
-                    categoryHoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, maxWidth: '250px' })
-                        .setLngLat(e.lngLat)
-                        .setHTML(`<div style="font-size:11px;line-height:1.3;">${hoverText}</div>`)
-                        .addTo(map);
+                    categoryHoverPopup = createFeatureHoverPopup(props, e.lngLat, type, parkName);
                 }
             });
             map.on('mouseleave', layerId, () => {
@@ -9305,21 +9286,6 @@ ${starredItems.narratives.map(n => {
                 if (categoryHoverPopup) {
                     categoryHoverPopup.remove();
                     categoryHoverPopup = null;
-                }
-            });
-            
-            // Add click handler for feature details
-            map.on('click', layerId, (e) => {
-                e.preventDefault();
-                e.originalEvent?.stopPropagation();
-                
-                if (categoryHoverPopup) {
-                    categoryHoverPopup.remove();
-                    categoryHoverPopup = null;
-                }
-                if (e.features && e.features.length > 0) {
-                    const props = e.features[0].properties;
-                    showPinnedFeaturePopup(props, e.lngLat, type, parkName);
                 }
             });
             
@@ -9571,6 +9537,109 @@ ${starredItems.narratives.map(n => {
         
         // Update indicator to show new counts
         updatePinnedIndicator();
+    }
+    
+    function createFeatureHoverPopup(props, lngLat, type, parkName) {
+        // Normalize type names
+        if (type === 'fire_trajectory') type = 'fire';
+        
+        const typeLabels = { 
+            fire: 'Fire Group', settlement: 'Settlement', deforestation: 'Deforestation', 
+            road: 'Road', river: 'River', place: 'Place', water: 'Waterbody' 
+        };
+        
+        let html = `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-width: 180px; max-width: 280px; color: #1f2937;">
+                <div style="font-weight: 600; font-size: 12px; color: #6b7280; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    ${typeLabels[type] || type}
+                </div>
+        `;
+
+        if (type === 'fire') {
+            const groupType = props.group_type ? props.group_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '';
+            const position = props.position ? props.position.replace(/_/g, ' ') : '';
+            
+            html += `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
+            if (groupType) html += `<div style="margin-bottom: 5px; font-weight: 500;">${groupType}</div>`;
+            
+            const details = [];
+            if (props.fires_total) details.push(`${props.fires_total} detection${props.fires_total > 1 ? 's' : ''}`);
+            if (props.days) details.push(`${props.days} day${props.days > 1 ? 's' : ''}`);
+            if (details.length) html += `<div style="margin-bottom: 3px; color: #6b7280; font-size: 12px;">${details.join(' • ')}</div>`;
+            
+            const movement = [];
+            if (props.distance_km !== undefined && props.distance_km > 0) movement.push(`${props.distance_km.toFixed(1)} km`);
+            if (props.direction) movement.push(props.direction);
+            if (props.avg_speed_km_day !== undefined && props.avg_speed_km_day > 0) movement.push(`${props.avg_speed_km_day.toFixed(1)} km/day`);
+            if (movement.length) html += `<div style="margin-bottom: 3px; font-size: 12px;">Movement: ${movement.join(' ')}</div>`;
+            
+            if (props.total_frp) html += `<div style="margin-bottom: 3px; font-size: 12px;">Intensity: ${props.total_frp.toFixed(0)} MW</div>`;
+            if (position) html += `<div style="margin-bottom: 3px; color: #6b7280; font-size: 12px; text-transform: capitalize;">${position}</div>`;
+            if (props.pct_inside !== undefined) html += `<div style="color: #6b7280; font-size: 12px;">${props.pct_inside.toFixed(0)}% inside park</div>`;
+            html += `</div>`;
+            
+        } else if (type === 'settlement' || type === 'place') {
+            html += `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
+            if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${props.name}</div>`;
+            
+            const info = [];
+            if (props.place) info.push(props.place.charAt(0).toUpperCase() + props.place.slice(1));
+            if (props.population) info.push(`Pop: ${props.population.toLocaleString()}`);
+            if (info.length) html += `<div style="margin-bottom: 3px; color: #6b7280; font-size: 12px;">${info.join(' • ')}</div>`;
+            
+            if (props.distance_to_park_km !== undefined) {
+                const location = props.inside_park ? 'Inside park' : `${props.distance_to_park_km.toFixed(1)} km from park`;
+                html += `<div style="color: #6b7280; font-size: 12px;">${location}</div>`;
+            }
+            html += `</div>`;
+            
+        } else if (type === 'deforestation') {
+            html += `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
+            const info = [];
+            if (props.area_ha) info.push(`${props.area_ha.toFixed(1)} ha`);
+            if (props.year) info.push(`Year ${props.year}`);
+            if (info.length) html += `<div style="margin-bottom: 3px; font-size: 12px;">${info.join(' • ')}</div>`;
+            if (props.confidence) html += `<div style="color: #6b7280; font-size: 12px;">Confidence: ${props.confidence}</div>`;
+            html += `</div>`;
+            
+        } else if (type === 'road') {
+            html += `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
+            if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${props.name}</div>`;
+            
+            const roadType = [];
+            if (props.highway) roadType.push(props.highway.charAt(0).toUpperCase() + props.highway.slice(1));
+            if (props.surface) roadType.push(props.surface);
+            if (roadType.length) html += `<div style="margin-bottom: 3px; color: #6b7280; font-size: 12px;">${roadType.join(' • ')}</div>`;
+            
+            if (props.passability_desc) {
+                const condition = props.passability_desc.replace(/_/g, ' ').toLowerCase();
+                html += `<div style="margin-bottom: 3px; font-size: 12px;">Condition: ${condition}</div>`;
+            }
+            if (props.length_km) html += `<div style="color: #6b7280; font-size: 12px;">Length: ${props.length_km.toFixed(1)} km</div>`;
+            html += `</div>`;
+            
+        } else if (type === 'river' || type === 'water') {
+            html += `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
+            if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${props.name}</div>`;
+            
+            const info = [];
+            if (props.waterway) info.push(props.waterway.charAt(0).toUpperCase() + props.waterway.slice(1));
+            if (props.length_km) info.push(`${props.length_km.toFixed(1)} km`);
+            if (info.length) html += `<div style="margin-bottom: 3px; color: #6b7280; font-size: 12px;">${info.join(' • ')}</div>`;
+            
+            if (props.inside_park !== undefined) {
+                html += `<div style="color: #6b7280; font-size: 12px;">${props.inside_park ? 'Inside park' : 'Near park'}</div>`;
+            }
+            if (props.navigable) html += `<div style="color: #6b7280; font-size: 12px;">Navigable</div>`;
+            html += `</div>`;
+        }
+
+        html += `</div>`;
+
+        return new maplibregl.Popup({ closeButton: false, closeOnClick: false, maxWidth: '280px', offset: 10 })
+            .setLngLat(lngLat)
+            .setHTML(html)
+            .addTo(map);
     }
     
     function showPinnedFeaturePopup(props, lngLat, type, parkName) {
