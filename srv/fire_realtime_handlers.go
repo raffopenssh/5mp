@@ -178,15 +178,15 @@ func (s *Server) HandleAPIFireRealtime(w http.ResponseWriter, r *http.Request) {
 	endDate := time.Now()
 	startDate := endDate.AddDate(0, 0, -days)
 
-	// Check if we have raw fire detections or should use feature_geometries
+	// Always use feature_geometries (v5 trajectory data from pipeline)
+	// This ensures consistency between realtime and historical views
+	s.handleFireRealtimeFromFeatures(w, r, internalID, parkName, startDate, endDate, days)
+	return
+
+	// Legacy code below - kept for reference but not used
 	var fireCount int
 	s.DB.QueryRow(`SELECT COUNT(*) FROM fire_detections WHERE acq_date >= ?`, startDate.Format("2006-01-02")).Scan(&fireCount)
-	
-	if fireCount < 100 {
-		// Use feature_geometries instead (from pipeline)
-		s.handleFireRealtimeFromFeatures(w, r, internalID, parkName, startDate, endDate, days)
-		return
-	}
+	_ = fireCount // unused
 	
 	// Expand bbox by 300km buffer for trajectory detection
 	bufferDeg := 300.0 / 111.0
