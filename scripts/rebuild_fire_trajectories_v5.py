@@ -547,9 +547,17 @@ def analyze_group(cluster, park_id, park_geometry):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--park', help='Single park')
+    parser.add_argument('--incremental', action='store_true', help='Incremental mode: only process recent fires')
+    parser.add_argument('--days', type=int, default=14, help='Days window for incremental mode')
     args = parser.parse_args()
     
     log("Fire Trajectory Builder v5 (DBSCAN spatio-temporal)")
+    
+    if args.incremental:
+        global MIN_DATE
+        MIN_DATE = (datetime.now() - timedelta(days=args.days)).strftime('%Y-%m-%d')
+        log(f"INCREMENTAL MODE: processing fires since {MIN_DATE}")
+    
     log("Loading parks...")
     parks = load_parks()
     log(f"Loaded {len(parks)} parks")
@@ -578,8 +586,25 @@ def main():
             continue
         
         clusters = cluster_fires_dbscan(fires)
-        groups = [g for g in (analyze_group(c, park_id, parks[park_id]['geometry']) 
+        new_groups = [g for g in (analyze_group(c, park_id, parks[park_id]['geometry']) 
                               for c in clusters) if g]
+        
+        # In incremental mode, merge with existing groups
+        if args.incremental:
+            existing_file = OUTPUT_DIR / f"{park_id}.json"
+            if existing_file.exists():
+                with open(existing_file) as f:
+                    existing_groups = json.load(f)
+                # Keep old groups (before cutoff), replace recent ones
+                cutoff = MIN_DATE
+                old_groups = [g for g in existing_groups if g.get('end_date', '') < cutoff]
+                groups = old_groups + new_groups
+                log(f"  Incremental: kept {len(old_groups)} old, added {len(new_groups)} new")
+            else:
+                groups = new_groups
+        else:
+            groups = new_groups
+        
         groups.sort(key=lambda g: g['start_date'], reverse=True)
         
         # Stats
@@ -596,7 +621,7 @@ def main():
             monthly_counts[park_id][g['start_date'][:7]]['fires'] += g['fire_count']
         
         multi_day = len([g for g in groups if g['days'] >= 2])
-        avg_fires = sum(g['fire_count'] for g in groups) / len(groups) if groups else 0
+        avg_fires = sum(g['fire_count'] for g in new_groups) / len(new_groups) if new_groups else 0
         
         with open(OUTPUT_DIR / f"{park_id}.json", 'w') as f:
             json.dump(groups, f)
