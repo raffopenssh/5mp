@@ -11,7 +11,7 @@ Uses the same pipeline scripts with --incremental flags:
 
 Groups can continue to grow as fires keep burning - trajectories extend.
 
-Cron: 0 3 * * * cd /home/exedev/5mp && python3 scripts/daily_fire_update.py --days 7 >> logs/daily_fire_$(date +\%Y\%m\%d).log 2>&1
+Cron: 0 3 * * * cd /home/exedev/5mp && python3 scripts/daily_fire_update.py >> logs/daily_fire.log 2>&1
 """
 
 import os
@@ -34,7 +34,7 @@ LOG_DIR.mkdir(exist_ok=True)
 NASA_API_KEY = "REDACTED_FIRMS_KEY"
 FIRMS_NRT_URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 
-DEFAULT_DAYS = 7
+DEFAULT_DAYS = 5  # FIRMS NRT API only allows 1-5 days
 INCREMENTAL_DAYS = 14  # Days window for incremental rebuild
 
 def log(msg):
@@ -176,6 +176,81 @@ class DailyFireUpdater:
                     return park_id
         return None
     
+    def update_raw_json_files(self, fires):
+        """Update raw JSON fire files with NRT data so trajectory builder can use them."""
+        if not fires:
+            log("Step 2b: No fires to add to raw JSON files")
+            return
+        
+        RAW_DIR = DATA_DIR / "raw-fire-viirs-20200101-20260222"
+        if not RAW_DIR.exists():
+            log(f"  Warning: Raw fire directory not found: {RAW_DIR}")
+            return
+        
+        # Group fires by park
+        fires_by_park = defaultdict(list)
+        for fire in fires:
+            try:
+                lat = float(fire.get('latitude', 0))
+                lon = float(fire.get('longitude', 0))
+                if lon == 0.0 or lat == 0.0:
+                    continue
+                park_id = self._find_park(lon, lat)
+                if park_id:
+                    fires_by_park[park_id].append({
+                        'latitude': lat,
+                        'longitude': lon,
+                        'acq_date': fire.get('acq_date', ''),
+                        'acq_time': fire.get('acq_time', ''),
+                        'frp': float(fire.get('frp', 0)),
+                        'confidence': fire.get('confidence', 'n'),
+                        'satellite': fire.get('satellite', 'N20')
+                    })
+            except:
+                continue
+        
+        if not fires_by_park:
+            log("Step 2b: No fires matched any parks")
+            return
+        
+        log(f"Step 2b: Updating raw JSON files for {len(fires_by_park)} parks...")
+        
+        total_added = 0
+        parks_updated = set()
+        
+        for park_id, park_fires in fires_by_park.items():
+            raw_file = RAW_DIR / f"{park_id}.json"
+            if not raw_file.exists():
+                continue
+            
+            try:
+                with open(raw_file) as f:
+                    data = json.load(f)
+                
+                existing_fires = data.get('fires', [])
+                existing_keys = {(f['latitude'], f['longitude'], f['acq_date'], f.get('acq_time', '')) 
+                                for f in existing_fires}
+                
+                added = 0
+                for fire in park_fires:
+                    key = (fire['latitude'], fire['longitude'], fire['acq_date'], fire['acq_time'])
+                    if key not in existing_keys:
+                        existing_fires.append(fire)
+                        added += 1
+                
+                if added > 0:
+                    data['fires'] = existing_fires
+                    with open(raw_file, 'w') as f:
+                        json.dump(data, f)
+                    total_added += added
+                    parks_updated.add(park_id)
+            except Exception as e:
+                log(f"  Error updating {park_id}: {e}")
+        
+        # Add parks with new fires to affected_parks for trajectory rebuild
+        self.affected_parks.update(parks_updated)
+        log(f"  Added {total_added} fires to {len(parks_updated)} raw JSON files")
+    
     def rebuild_groups_incremental(self):
         """Run rebuild_fire_trajectories_v5.py --incremental for affected parks"""
         if not self.affected_parks:
@@ -285,6 +360,9 @@ class DailyFireUpdater:
         
         # Step 2: Insert into database
         self.insert_fires(fires)
+        
+        # Step 2b: Update raw JSON files for trajectory builder
+        self.update_raw_json_files(fires)
         
         # Step 3: Rebuild groups (incremental)
         self.rebuild_groups_incremental()
