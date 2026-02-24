@@ -1122,13 +1122,13 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 	
 	// Handle settlements with narrative from park_settlements
 	if featureType == "settlement" {
-		s.handleSettlementFeatures(w, internalID, limitStr)
+		s.handleSettlementFeatures(w, internalID, limitStr, featureID)
 		return
 	}
 	
 	// Handle deforestation with narrative from deforestation_events
 	if featureType == "deforestation" {
-		s.handleDeforestationFeatures(w, internalID, limitStr, startDate, endDate)
+		s.handleDeforestationFeatures(w, internalID, limitStr, startDate, endDate, featureID)
 		return
 	}
 
@@ -4097,7 +4097,7 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleSettlementFeatures returns GeoJSON features for settlements with narratives
-func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, limitStr string) {
+func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, limitStr string, featureID string) {
 	limit := 1000
 	if limitStr != "" {
 		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 10000 {
@@ -4106,7 +4106,7 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 	}
 
 	// Join feature_geometries with park_settlements to get narrative
-	rows, err := s.DB.Query(`
+	query := `
 		SELECT 
 			fg.feature_id,
 			fg.geojson,
@@ -4120,8 +4120,18 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 			AND ABS(fg.properties_json->>'lat' - ps.lat) < 0.0001
 			AND ABS(fg.properties_json->>'lon' - ps.lon) < 0.0001
 		WHERE fg.park_id = ? AND fg.feature_type = 'settlement'
-		LIMIT ?
-	`, parkID, limit)
+	`
+	args := []interface{}{parkID}
+	
+	if featureID != "" {
+		query += " AND fg.feature_id = ?"
+		args = append(args, featureID)
+	}
+	
+	query += " LIMIT ?"
+	args = append(args, limit)
+	
+	rows, err := s.DB.Query(query, args...)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
@@ -4188,7 +4198,7 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 }
 
 // handleDeforestationFeatures returns GeoJSON features for deforestation with narratives
-func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID string, limitStr string, startDate string, endDate string) {
+func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID string, limitStr string, startDate string, endDate string, featureID string) {
 	limit := 1000
 	if limitStr != "" {
 		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 10000 {
@@ -4215,6 +4225,10 @@ func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID strin
 	`
 	args := []interface{}{parkID}
 
+	if featureID != "" {
+		query += " AND fg.feature_id = ?"
+		args = append(args, featureID)
+	}
 	if startDate != "" {
 		query += " AND (fg.start_date IS NULL OR fg.start_date >= ?)"
 		args = append(args, startDate)
