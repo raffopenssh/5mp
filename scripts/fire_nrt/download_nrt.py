@@ -137,16 +137,26 @@ def get_park_bbox(park_id: str, buffer_km: float = 0) -> Optional[Tuple[float, f
 
 def download_fires_from_firms(bbox: Tuple[float, float, float, float], 
                               days: int, proxy: str,
-                              source: str = "VIIRS_SNPP_NRT") -> List[Dict]:
-    """Download fire data from FIRMS API."""
+                              source: str = None) -> List[Dict]:
+    """Download fire data from FIRMS API.
+    
+    For historical data beyond 10 days, automatically uses Standard Processing (SP) dataset.
+    NRT (Near Real-Time) only covers last 10 days.
+    """
     west, south, east, north = bbox
+    
+    # Auto-select source based on days
+    if source is None:
+        source = "VIIRS_SNPP_NRT" if days <= 10 else "VIIRS_SNPP_SP"
     
     # Use date range for more than 10 days, otherwise use days parameter
     if days <= 10:
         url = f"{BASE_URL}/area/csv/{MAP_KEY}/{source}/{west},{south},{east},{north}/{days}"
     else:
+        # For historical data, use date range with SP dataset
         end_date = datetime.now()
         start_date = end_date - timedelta(days=days)
+        # Format: /source/bbox/1/YYYY-MM-DD
         url = f"{BASE_URL}/area/csv/{MAP_KEY}/{source}/{west},{south},{east},{north}/1/{start_date.strftime('%Y-%m-%d')}"
     
     proxies_dict = {"http": f"http://{proxy}", "https": f"http://{proxy}"} if proxy else None
