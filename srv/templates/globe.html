@@ -2054,6 +2054,22 @@
                     }, 500);
                 }
             });
+            
+            // Clean up stray hover popups when map moves or is clicked
+            const cleanupStrayPopups = () => {
+                // Remove all tracked hover popups
+                activeHoverPopups.forEach(popup => {
+                    try {
+                        popup.remove();
+                    } catch (e) {
+                        // Popup may already be removed
+                    }
+                });
+                activeHoverPopups = [];
+            };
+            
+            map.on('movestart', cleanupStrayPopups);
+            map.on('click', cleanupStrayPopups);
 
             // Note: Legend is now in HTML, not dynamically created (removed duplicate)
         });
@@ -8348,6 +8364,7 @@ ${starredItems.narratives.map(n => {
     
     // ===== Pinned GeoJSON Layers =====
     let pinnedLayers = {}; // { 'parkId_type': { parkId, parkName, type, features, layerId } }
+    let activeHoverPopups = []; // Track all active hover popups for cleanup
     
     function getPinKey(parkId, type) {
         return `${parkId}_${type}`;
@@ -9273,21 +9290,40 @@ ${starredItems.narratives.map(n => {
             
             // Add hover effect with detailed popup
             let categoryHoverPopup = null;
+            let categoryHoverTimeout = null;
             
             // Helper function to add hover handlers to a layer
             const addHoverToLayer = (targetLayerId) => {
                 map.on('mouseenter', targetLayerId, (e) => {
                     map.getCanvas().style.cursor = 'pointer';
+                    // Clear any existing timeout
+                    if (categoryHoverTimeout) {
+                        clearTimeout(categoryHoverTimeout);
+                        categoryHoverTimeout = null;
+                    }
                     if (e.features && e.features.length > 0) {
                         const props = e.features[0].properties;
                         categoryHoverPopup = createFeatureHoverPopup(props, e.lngLat, type, parkName);
+                        // Track this popup globally
+                        if (categoryHoverPopup) {
+                            activeHoverPopups.push(categoryHoverPopup);
+                        }
                     }
                 });
                 map.on('mouseleave', targetLayerId, () => {
                     map.getCanvas().style.cursor = '';
+                    // Set timeout to remove popup after 300ms
                     if (categoryHoverPopup) {
-                        categoryHoverPopup.remove();
-                        categoryHoverPopup = null;
+                        categoryHoverTimeout = setTimeout(() => {
+                            if (categoryHoverPopup) {
+                                categoryHoverPopup.remove();
+                                // Remove from global list
+                                const idx = activeHoverPopups.indexOf(categoryHoverPopup);
+                                if (idx > -1) activeHoverPopups.splice(idx, 1);
+                                categoryHoverPopup = null;
+                            }
+                            categoryHoverTimeout = null;
+                        }, 300);
                     }
                 });
             };
