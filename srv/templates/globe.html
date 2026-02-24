@@ -8571,6 +8571,13 @@ ${starredItems.narratives.map(n => {
             const feature = features[0]; // For property access
             
             // Add to map with highlight style
+            // Remove existing layers and source if they exist (cleanup from previous pin)
+            if (map.getLayer(layerId + '-arrows')) map.removeLayer(layerId + '-arrows');
+            if (map.getLayer(layerId + '-glow')) map.removeLayer(layerId + '-glow');
+            if (map.getLayer(layerId + '-front-glow')) map.removeLayer(layerId + '-front-glow');
+            if (map.getLayer(layerId + '-front')) map.removeLayer(layerId + '-front');
+            if (map.getLayer(layerId)) map.removeLayer(layerId);
+            if (map.getSource(sourceId + '-front')) map.removeSource(sourceId + '-front');
             if (map.getSource(sourceId)) map.removeSource(sourceId);
             map.addSource(sourceId, { type: 'geojson', data: geojson });
             
