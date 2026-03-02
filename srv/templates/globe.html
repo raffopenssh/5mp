@@ -5118,9 +5118,15 @@
             if (fireParam) {
                 const [parkId, groupName] = fireParam.split(':');
                 if (parkId && groupName) {
-                    setTimeout(() => {
-                        handleFireNotificationClick(parkId, groupName);
-                    }, 1000);
+                    // Wait for parks data to load
+                    const waitForParks = setInterval(() => {
+                        if (window.parksData) {
+                            clearInterval(waitForParks);
+                            handleFireNotificationClick(parkId, groupName, {stopPropagation: () => {}});
+                        }
+                    }, 100);
+                    // Timeout after 10 seconds
+                    setTimeout(() => clearInterval(waitForParks), 10000);
                 }
                 return;
             }
