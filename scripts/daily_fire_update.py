@@ -26,6 +26,14 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from collections import defaultdict
 
+# Import Webshare proxy helper
+sys.path.insert(0, str(Path(__file__).parent))
+try:
+    from webshare_proxy import get_webshare_proxies, get_proxy_dict
+    WEBSHARE_AVAILABLE = True
+except:
+    WEBSHARE_AVAILABLE = False
+
 BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / "db.sqlite3"
 DATA_DIR = BASE_DIR / "data"
@@ -168,7 +176,43 @@ class DailyFireUpdater:
             url = f"{FIRMS_NRT_URL}/{NASA_API_KEY}/{source}/{area}/1/{start_date.strftime('%Y-%m-%d')}"
             log(f"  Using SP API (from {start_date.strftime('%Y-%m-%d')} to today)")
         
-        # Get proxy list
+        # Try Webshare proxies first (reliable, authenticated)
+        if WEBSHARE_AVAILABLE:
+            log("  Trying Webshare proxies (reliable)...")
+            webshare_proxies = get_webshare_proxies()
+            if webshare_proxies:
+                for ws_proxy in webshare_proxies:
+                    try:
+                        proxy_dict = get_proxy_dict(ws_proxy)
+                        proxy_str = f"{ws_proxy['host']}:{ws_proxy['port']}"
+                        log(f"  Trying Webshare proxy: {proxy_str} ({ws_proxy['city']}, {ws_proxy['country']})")
+                        
+                        response = requests.get(url, proxies=proxy_dict, timeout=120)
+                        response.raise_for_status()
+                        
+                        # Success!
+                        log(f"  ✓ Successfully downloaded via Webshare proxy: {proxy_str}")
+                        lines = response.text.strip().split('\n')
+                        if len(lines) < 2:
+                            log("  No fires found in NRT data")
+                            return []
+                        
+                        header = lines[0].split(',')
+                        fires = []
+                        for line in lines[1:]:
+                            values = line.split(',')
+                            if len(values) >= len(header):
+                                fire = dict(zip(header, values))
+                                fires.append(fire)
+                        
+                        log(f"  Downloaded {len(fires)} fire detections")
+                        return fires
+                    except Exception as e:
+                        log(f"    Webshare proxy failed: {str(e)[:60]}")
+                        continue
+        
+        # Fall back to free proxies
+        log("  Webshare proxies unavailable, trying free proxies...")
         log("  Fetching proxy lists from GitHub...")
         all_proxies = fetch_proxies()
         
