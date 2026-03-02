@@ -4273,7 +4273,7 @@
                     fetch(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
                     fetch('/api/notifications?type=new_publication&limit=10'),
                     fetch('/api/fire-alerts?limit=100'),  // Fire group alerts (for map display)
-                    fetch('/api/notifications?type=fire_alert&limit=50'),  // Fire notifications (for bell)
+                    fetch('/api/notifications?type=fire_alert&limit=500'),  // Fire notifications (for bell)
                     fetch('/api/notifications?type=fire_download_success&limit=5')  // Fire download notifications
                 ]);
                 
@@ -4631,7 +4631,7 @@
                     <div class="notification-item clickable notification-group" data-type="group" data-action="toggle_group" data-group-key="${notif._groupKey}">
                         <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">●</div>
                         <div class="notification-content">
-                            <div class="notification-location">${escapeHtml(parkName)} • ${count} fire alerts</div>
+                            <div class="notification-location">${escapeHtml(parkName)} • ${count} fire groups</div>
                             <div class="notification-subtitle">Click to expand</div>
                             <div class="notification-time">${time}</div>
                         </div>
@@ -4852,42 +4852,37 @@
             return date.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
         }
         
-        function handleFireNotificationClick(parkId, groupName, event) {
+        async function handleFireNotificationClick(parkId, groupName, event) {
             event.stopPropagation();
             
             // Close notification dropdown
             const dropdown = document.getElementById('notification-dropdown');
             if (dropdown) dropdown.style.display = 'none';
             
-            // Find the park to get coordinates
+            // Find the park to get name
             const park = parksData?.features?.find(f => f.properties.id === parkId);
             const parkName = park?.properties?.name || parkId;
             
-            if (park) {
-                // Get park center (simple bbox center)
-                const bbox = park.properties.bbox;
-                if (bbox && bbox.length === 4) {
-                    const lat = (bbox[1] + bbox[3]) / 2;
-                    const lon = (bbox[0] + bbox[2]) / 2;
-                    
-                    // Zoom to location
-                    zoomToActivityWithHighlight({
-                        lat: lat,
-                        lon: lon,
-                        type: 'fire',
-                        location: parkName
-                    });
-                }
-                
-                // Pin the fire trajectory if we have a group name
-                if (groupName) {
-                    setTimeout(() => {
-                        const narrative = `Fire group ${groupName} in ${parkName}`;
-                        if (!isSingleFeaturePinned(parkId, 'fire', groupName)) {
-                            addSinglePinnedFeature(parkId, parkName, 'fire', groupName, narrative);
-                            updatePinnedIndicator();
+            if (groupName) {
+                // Fetch the trajectory data and display it (same as clicking active group in tooltip)
+                try {
+                    const response = await fetch(`/api/parks/${parkId}/fire-realtime?pwd=${encodeURIComponent(getPwd())}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Find the specific group
+                        const group = data.groups?.find(g => g.name === groupName);
+                        if (group && group.trajectory && group.trajectory.length > 0) {
+                            // Display the trajectory (this also pins it)
+                            showRealtimeTrajectory(parkId, parkName, groupName, group.trajectory);
+                        } else {
+                            showToast(`Fire group ${groupName} not found`, 'error');
                         }
-                    }, 500);
+                    } else {
+                        showToast('Failed to load fire trajectory', 'error');
+                    }
+                } catch (err) {
+                    console.error('Error loading fire trajectory:', err);
+                    showToast('Error loading fire trajectory', 'error');
                 }
             }
         }
