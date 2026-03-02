@@ -477,8 +477,13 @@ func (s *Server) RunFAOLEXSync(ctx context.Context) {
 	// Ensure GADM regions are loaded
 	LoadParkRegions()
 
-	// Try to get a working proxy for FAOLEX
-	proxy := getWorkingProxy("https://www.fao.org/faolex/en/")
+	// Try to get a working proxy for FAOLEX (Webshare first, then free proxies)
+	proxy := GetWorkingWebshareProxy("https://www.fao.org/faolex/en/")
+	if proxy == "" {
+		slog.Info("Webshare proxies unavailable, trying free proxies")
+		proxy = getWorkingProxy("https://www.fao.org/faolex/en/")
+	}
+	
 	var scraper *FAOLEXScraper
 	if proxy != "" {
 		scraper = NewFAOLEXScraperWithProxy(proxy)
