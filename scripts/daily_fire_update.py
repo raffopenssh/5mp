@@ -35,8 +35,13 @@ LOG_DIR.mkdir(exist_ok=True)
 NASA_API_KEY = "REDACTED_FIRMS_KEY"
 FIRMS_NRT_URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 
-# GitHub proxy list sources
+# Proxy list sources (ordered by reliability)
 PROXY_SOURCES = [
+    # ProxyScrape API (reliable, updated frequently)
+    "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=10000&country=all&ssl=all&anonymity=all",
+    # GitHub sources (community maintained)
+    "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-http.txt",
+    "https://raw.githubusercontent.com/MuRongPIG/Proxy-Master/main/http.txt",
     "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt",
     "https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt",
     "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt",
