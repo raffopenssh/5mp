@@ -1,1 +1,0 @@
-{"park_id": "KEN_Sibiloi", "buffer_km": 50, "last_updated": "2026-02-21T04:47:12.984463", "fires": [{"lat": 4.6268, "lon": 36.00574, "date": "2026-02-15", "time": "1119", "frp": 4.91, "confidence": "n", "inside": false, "dist_to_boundary_km": 47.47}], "count_inside": 0, "count_buffer": 1, "total_fires": 1}

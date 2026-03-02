@@ -1,1 +1,0 @@
-{"park_id": "MOZ_Banhine", "buffer_km": 50, "last_updated": "2026-02-21T04:47:23.456994", "fires": [{"lat": -22.63919, "lon": 31.917, "date": "2026-02-19", "time": "1136", "frp": 2.98, "confidence": "n", "inside": false, "dist_to_boundary_km": 25.07}], "count_inside": 0, "count_buffer": 1, "total_fires": 1}

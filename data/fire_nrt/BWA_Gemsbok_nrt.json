@@ -1,1 +1,0 @@
-{"park_id": "BWA_Gemsbok", "buffer_km": 50, "last_updated": "2026-02-21T04:44:45.601217", "fires": [{"lat": -25.15689, "lon": 19.79933, "date": "2026-02-19", "time": "49", "frp": 0.17, "confidence": "n", "inside": false, "dist_to_boundary_km": 46.69}], "count_inside": 0, "count_buffer": 1, "total_fires": 1}

@@ -1,1 +1,0 @@
-{"park_id": "ZWE_Chizarira", "buffer_km": 50, "last_updated": "2026-02-21T04:50:32.482250", "fires": [{"lat": -17.34354, "lon": 27.20674, "date": "2026-02-17", "time": "2324", "frp": 0.61, "confidence": "n", "inside": false, "dist_to_boundary_km": 64.01}], "count_inside": 0, "count_buffer": 1, "total_fires": 1}
