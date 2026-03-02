@@ -4398,7 +4398,7 @@
                     _index: i, 
                     _source: 'fire_download',
                     _sortTime: new Date(notif.created_at).getTime(),
-                    _priority: 4  // Low priority - informational
+                    _priority: 1  // High priority - important system status
                 });
             });
             
@@ -4409,7 +4409,7 @@
                     _index: i, 
                     _source: 'publication',
                     _sortTime: new Date(pub.created_at).getTime(),
-                    _priority: 3
+                    _priority: 4  // Lower priority - interesting but not urgent
                 });
             });
             
@@ -4638,16 +4638,34 @@
             const dropdown = document.getElementById('notification-dropdown');
             if (dropdown) dropdown.style.display = 'none';
             
-            // Open park popup
-            if (parkId) {
-                openParkPopup(parkId);
+            // Find the park to get coordinates
+            const park = parksData?.features?.find(f => f.properties.id === parkId);
+            const parkName = park?.properties?.name || parkId;
+            
+            if (park) {
+                // Get park center (simple bbox center)
+                const bbox = park.properties.bbox;
+                if (bbox && bbox.length === 4) {
+                    const lat = (bbox[1] + bbox[3]) / 2;
+                    const lon = (bbox[0] + bbox[2]) / 2;
+                    
+                    // Zoom to location
+                    zoomToActivityWithHighlight({
+                        lat: lat,
+                        lon: lon,
+                        type: 'fire',
+                        location: parkName
+                    });
+                }
                 
-                // If we have a group name, try to pin that specific fire trajectory
+                // Pin the fire trajectory if we have a group name
                 if (groupName) {
                     setTimeout(() => {
-                        // Pin the fire trajectory layer for this group
-                        const featureId = `fire_trajectory_${groupName}`;
-                        pinLayer(parkId, 'fire_trajectory', featureId);
+                        const narrative = `Fire group ${groupName} in ${parkName}`;
+                        if (!isSingleFeaturePinned(parkId, 'fire', groupName)) {
+                            addSinglePinnedFeature(parkId, parkName, 'fire', groupName, narrative);
+                            updatePinnedIndicator();
+                        }
                     }, 500);
                 }
             }
