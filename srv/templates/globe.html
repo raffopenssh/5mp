@@ -1418,6 +1418,17 @@
             return Math.abs(num) >= 1000 ? num.toLocaleString() : String(num);
         }
         
+        // Helper: Check if fire was stopped inside park (v5 position-based)
+        function isFireStopped(narrative) {
+            // v5 uses 'position' field: ends_inside, contained, or started_inside = stopped
+            // v4 used 'outcome' field: STOPPED_INSIDE
+            if (narrative.position) {
+                return ['ends_inside', 'contained', 'started_inside'].includes(narrative.position);
+            }
+            // Fallback to old outcome field for backward compatibility
+            return narrative.outcome === 'STOPPED_INSIDE';
+        }
+        
         // Render weekly fire comparison chart (current year vs prior years avg)
         function renderFireWeeklyChart(trendData, paId) {
             if (!trendData.weeks || trendData.weeks.length < 10) return '';
@@ -3141,7 +3152,7 @@
                 // Calculate fire stats from filtered narratives
                 const fireGroups = fireNarratives.length;
                 const fireTotal = fireNarratives.reduce((sum, n) => sum + (n.fires_inside || n.fires_total || n.fires || 0), 0);
-                const stoppedCount = fireNarratives.filter(n => n.outcome === 'STOPPED_INSIDE').length;
+                const stoppedCount = fireNarratives.filter(n => isFireStopped(n)).length;
                 const responseRate = fireGroups > 0 ? Math.round((stoppedCount / fireGroups) * 100) : 0;
                 
                 const deforestKm2 = deforest.total_loss_km2 || deforest.loss_km2 || 0;
@@ -3216,7 +3227,7 @@
                     return dateB - dateA;
                 });
                 const parkFireTotal = parkFireNarratives.reduce((sum, n) => sum + (n.fires_inside || n.fires_total || n.fires || 0), 0);
-                const parkStoppedCount = parkFireNarratives.filter(n => n.outcome === 'STOPPED_INSIDE').length;
+                const parkStoppedCount = parkFireNarratives.filter(n => isFireStopped(n)).length;
                 const parkResponseRate = parkFireNarratives.length > 0 ? Math.round((parkStoppedCount / parkFireNarratives.length) * 100) : 0;
                 
                 // Fire section
@@ -5344,7 +5355,7 @@
                     
                     // Helper to render a single narrative as one concise sentence
                     const renderNarrative = (n, idx) => {
-                        const outcomeColor = n.outcome === 'STOPPED_INSIDE' ? '#22c55e' : '#f59e0b';
+                        const outcomeColor = isFireStopped(n) ? '#22c55e' : '#f59e0b';
                         // Use narrative if available, otherwise build a concise one-sentence summary
                         let text = n.narrative;
                         if (!text) {
@@ -5402,7 +5413,7 @@
                     // Generate summary based on filtered data
                     let filteredSummary = '';
                     if (filteredGroupCount > 0) {
-                        const stoppedCount = allNarratives.filter(n => n.outcome === 'STOPPED_INSIDE').length;
+                        const stoppedCount = allNarratives.filter(n => isFireStopped(n)).length;
                         const transitedCount = filteredGroupCount - stoppedCount;
                         const responseRate = Math.round((stoppedCount / filteredGroupCount) * 100);
                         filteredSummary = `In ${rangeLabel}, ${filteredFireCount.toLocaleString()} fire detections across ${filteredGroupCount} fire groups. ${stoppedCount} (${responseRate}%) stopped inside, ${transitedCount} transited.`;
@@ -7678,7 +7689,7 @@
         // Calculate stats from filtered narratives
         const fireGroups = fireNarratives.length;
         const fireTotalDetections = fireNarratives.reduce((sum, n) => sum + (n.fires_inside || n.fires_total || n.fires || 0), 0);
-        const stoppedCount = fireNarratives.filter(n => n.outcome === 'STOPPED_INSIDE').length;
+        const stoppedCount = fireNarratives.filter(n => isFireStopped(n)).length;
         const fireResponseRate = fireGroups > 0 ? (stoppedCount / fireGroups) * 100 : 0;
         
         // Sort by date descending to show most recent first
