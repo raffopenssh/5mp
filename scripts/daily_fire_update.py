@@ -31,7 +31,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 try:
     from webshare_proxy import get_webshare_proxies, get_proxy_dict
     WEBSHARE_AVAILABLE = True
-except:
+    # Verify we can actually get proxies
+    test_proxies = get_webshare_proxies()
+    if not test_proxies:
+        print("WARNING: Webshare module loaded but no proxies available")
+        WEBSHARE_AVAILABLE = False
+except Exception as e:
+    print(f"WARNING: Could not import Webshare proxies: {e}")
     WEBSHARE_AVAILABLE = False
 
 BASE_DIR = Path(__file__).parent.parent
