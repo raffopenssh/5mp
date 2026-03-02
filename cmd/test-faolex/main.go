@@ -17,22 +17,11 @@ func main() {
 	}))
 	slog.SetDefault(logger)
 
-	fmt.Println("Testing FAOLEX scraper...\n")
+	fmt.Println("Testing FAOLEX scraper with Chrome headless...\n")
 
-	// Get a Webshare proxy
-	proxy := srv.GetWorkingWebshareProxy("https://www.fao.org/faolex/en/")
-	if proxy == "" {
-		fmt.Println("WARNING: No Webshare proxy available, using direct connection")
-	} else {
-		fmt.Printf("Using proxy: %s\n\n", proxy)
-	}
-
-	var scraper *srv.FAOLEXScraper
-	if proxy != "" {
-		scraper = srv.NewFAOLEXScraperWithProxy(proxy)
-	} else {
-		scraper = srv.NewFAOLEXScraper()
-	}
+	// Use Chrome-based scraper
+	scraper := srv.NewFAOLEXScraperChrome()
+	defer scraper.Close()
 
 	ctx := context.Background()
 
