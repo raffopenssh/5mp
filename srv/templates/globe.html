@@ -4370,6 +4370,57 @@
         }
 
 
+        function groupNotifications(items) {
+            // Group similar notifications (same park + same type)
+            const groups = {};
+            const ungrouped = [];
+            
+            items.forEach(item => {
+                // Only group fire notifications from the same park
+                if (item._source === 'fire_notification') {
+                    const parkId = item.park_id;
+                    const key = `fire_${parkId}`;
+                    if (!groups[key]) {
+                        groups[key] = [];
+                    }
+                    groups[key].push(item);
+                } else if (item._source === 'fire') {
+                    // Also group old fire alerts by park
+                    const parkId = item.park_id;
+                    const key = `fire_old_${parkId}`;
+                    if (!groups[key]) {
+                        groups[key] = [];
+                    }
+                    groups[key].push(item);
+                } else {
+                    ungrouped.push(item);
+                }
+            });
+            
+            // Convert groups to grouped items
+            const result = [...ungrouped];
+            
+            Object.keys(groups).forEach(key => {
+                const groupItems = groups[key];
+                if (groupItems.length === 1) {
+                    // Single item, don't group
+                    result.push(groupItems[0]);
+                } else if (groupItems.length > 1) {
+                    // Multiple items, create a group
+                    const first = groupItems[0];
+                    result.push({
+                        ...first,
+                        _isGroup: true,
+                        _groupCount: groupItems.length,
+                        _groupItems: groupItems,
+                        _groupKey: key
+                    });
+                }
+            });
+            
+            return result;
+        }
+
         function updateNotificationList() {
             const listEl = document.getElementById('notification-list');
             
@@ -4443,18 +4494,21 @@
                 });
             });
             
+            // Group similar notifications
+            const grouped = groupNotifications(allItems);
+            
             // Sort by priority first, then by time (newest first)
-            allItems.sort((a, b) => {
+            grouped.sort((a, b) => {
                 if (a._priority !== b._priority) return a._priority - b._priority;
                 return b._sortTime - a._sortTime;
             });
             
-            if (allItems.length === 0) {
+            if (grouped.length === 0) {
                 listEl.innerHTML = '<div class="notification-empty">No recent activity</div>';
                 return;
             }
             
-            // Create summary header
+            // Create summary header (count ungrouped items)
             const fireCount = allItems.filter(i => i._source === 'fire_notification' || i._source === 'fire').length;
             const uploadCount = allItems.filter(i => i._source === 'activity').length;
             const pubCount = allItems.filter(i => i._source === 'publication').length;
@@ -4468,10 +4522,10 @@
             
             const summaryHeader = summaryParts.length > 0 ? 
                 `<div style="padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:10px;color:#888;">
-                    ${summaryParts.join(' • ')} • <span style="color:#666;">Showing ${Math.min(20, allItems.length)} of ${allItems.length}</span>
+                    ${summaryParts.join(' • ')} • <span style="color:#666;">Showing ${Math.min(20, grouped.length)} of ${allItems.length}</span>
                 </div>` : '';
             
-            listEl.innerHTML = summaryHeader + allItems.slice(0, 20).map((item, displayIndex) => {
+            listEl.innerHTML = summaryHeader + grouped.slice(0, 20).map((item, displayIndex) => {
                 if (item._source === 'mbtiles') {
                     return renderMBTilesNotification(item);
                 } else if (item._source === 'fire_notification') {
@@ -4538,6 +4592,35 @@
         
         function renderFireAlertNotification(notif) {
             // Fire alert from notifications table (fire_alert type)
+            const data = notif.reference_data || {};
+            const parkId = data.park_id || notif.park_id;
+            const parkName = data.park_name || parkId;
+            const fireCount = data.fire_count || 0;
+            const groupName = data.group_name || notif.reference_id || '';
+            
+            // Check if this is a grouped notification
+            if (notif._isGroup) {
+                const count = notif._groupCount;
+                return `
+                    <div class="notification-item notification-group" onclick="toggleNotificationGroup('${notif._groupKey}')" style="cursor:pointer;">
+                        <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">●</div>
+                        <div class="notification-content" style="flex:1;">
+                            <div class="notification-location">${escapeHtml(parkName)} • ${count} fire alerts</div>
+                            <div class="notification-subtitle">Click to expand</div>
+                            <div class="notification-time">${formatNotificationTime(notif.created_at)}</div>
+                        </div>
+                        <div style="color:#666;font-size:12px;margin-left:8px;">▼</div>
+                    </div>
+                    <div id="group-${notif._groupKey}" style="display:none;">
+                        ${notif._groupItems.map(item => renderFireAlertNotificationSingle(item)).join('')}
+                    </div>
+                `;
+            }
+            
+            return renderFireAlertNotificationSingle(notif);
+        }
+        
+        function renderFireAlertNotificationSingle(notif) {
             const data = notif.reference_data || {};
             const parkId = data.park_id || notif.park_id;
             const parkName = data.park_name || parkId;
@@ -6516,6 +6599,21 @@
             }
         }
         
+        function toggleNotificationGroup(groupKey) {
+            const groupEl = document.getElementById(`group-${groupKey}`);
+            if (groupEl) {
+                const isExpanded = groupEl.style.display !== 'none';
+                groupEl.style.display = isExpanded ? 'none' : 'block';
+                
+                // Rotate arrow
+                const parentItem = groupEl.previousElementSibling;
+                const arrow = parentItem?.querySelector('div:last-child');
+                if (arrow) {
+                    arrow.innerHTML = isExpanded ? '▼' : '▲';
+                }
+            }
+        }
+
         function loadMoreLegalDocs(paId, event) {
             event.stopPropagation();
             
