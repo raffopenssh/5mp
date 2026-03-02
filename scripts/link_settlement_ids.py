@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Link settlement IDs to feature geometries.
+"""Link settlement IDs to feature geometries (one-off fix).
+
+NOTE: This functionality is now integrated into import_events_from_json.py
+This script is kept for historical reference and one-off repairs.
 
 Updates properties_json in feature_geometries to include settlement_id
 based on the polygon_ids stored in park_settlements.
