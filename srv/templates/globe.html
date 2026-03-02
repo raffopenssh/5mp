@@ -4217,6 +4217,7 @@
         let latestActivities = [];
         let fireAlerts = [];
         let fireNotifications = [];
+        let expandedNotificationGroups = new Set(); // Track which groups are expanded
         let activityMarker = null;
         let notificationDropdownOpen = false;
         let hasNewNotifications = true;
@@ -4560,6 +4561,18 @@
                     return renderActivityNotification(item);
                 }
             }).join('');
+            
+            // Restore expanded groups
+            expandedNotificationGroups.forEach(groupKey => {
+                const groupEl = document.getElementById(`group-${groupKey}`);
+                if (groupEl) {
+                    groupEl.style.display = 'block';
+                    const parentItem = groupEl.previousElementSibling;
+                    if (parentItem) {
+                        parentItem.classList.add('expanded');
+                    }
+                }
+            });
         }
         
         function renderMBTilesNotification(job) {
@@ -4853,15 +4866,18 @@
         }
         
         async function handleFireNotificationClick(parkId, groupName, event) {
-            event.stopPropagation();
+            if (event) event.stopPropagation();
             
-            // Close notification dropdown
-            const dropdown = document.getElementById('notification-dropdown');
-            if (dropdown) dropdown.style.display = 'none';
+            // Close notification dropdown properly
+            closeNotificationDropdown();
             
             // Find the park to get name
-            const park = window.parksData?.features?.find(f => f.properties.id === parkId);
-            const parkName = park?.properties?.name || parkId;
+            let parkName = parkId;
+            if (map && map.queryRenderedFeatures) {
+                const features = map.queryRenderedFeatures({layers: ['areas-fill']});
+                const park = features.find(f => f.properties.id === parkId);
+                if (park) parkName = park.properties.name || parkId;
+            }
             
             if (groupName) {
                 // Fetch the trajectory data and display it (same as clicking active group in tooltip)
@@ -5113,10 +5129,10 @@
             if (fireParam) {
                 const [parkId, groupName] = fireParam.split(':');
                 if (parkId && groupName) {
-                    // Wait for parks data to load
-                    const waitForParks = setInterval(() => {
-                        if (window.parksData) {
-                            clearInterval(waitForParks);
+                    // Wait for map to be ready
+                    const waitForMap = setInterval(() => {
+                        if (map && map.loaded && map.loaded()) {
+                            clearInterval(waitForMap);
                             // Open notification dropdown
                             const notifBtn = document.getElementById('notification-toggle');
                             const notifDropdown = document.getElementById('notification-dropdown');
@@ -5127,12 +5143,15 @@
                             setTimeout(() => {
                                 const groupKey = `fire_${parkId}`;
                                 const groupEl = document.getElementById(`group-${groupKey}`);
-                                if (groupEl && groupEl.style.display === 'none') {
-                                    toggleNotificationGroup(groupKey);
-                                    // Scroll to show the group
-                                    setTimeout(() => {
-                                        groupEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                                    }, 100);
+                                if (groupEl) {
+                                    const isHidden = window.getComputedStyle(groupEl).display === 'none';
+                                    if (isHidden) {
+                                        toggleNotificationGroup(groupKey);
+                                        // Scroll to show the group
+                                        setTimeout(() => {
+                                            groupEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                        }, 100);
+                                    }
                                 }
                             }, 500);
                             // Handle the click
@@ -5140,7 +5159,7 @@
                         }
                     }, 100);
                     // Timeout after 10 seconds
-                    setTimeout(() => clearInterval(waitForParks), 10000);
+                    setTimeout(() => clearInterval(waitForMap), 10000);
                 }
                 return;
             }
@@ -6795,8 +6814,10 @@
                 if (parentItem) {
                     if (isExpanded) {
                         parentItem.classList.remove('expanded');
+                        expandedNotificationGroups.delete(groupKey);
                     } else {
                         parentItem.classList.add('expanded');
+                        expandedNotificationGroups.add(groupKey);
                     }
                 }
             }
