@@ -566,7 +566,7 @@ class DailyFireUpdater:
     def create_fire_notifications(self):
         """Create one notification per active fire group (for click-to-pin functionality).
         
-        Active groups are those in fire_group_alerts table with alert_type = 'active_inside' or 'entered'.
+        Active groups are those in fire_group_alerts table with alert_type = 'active'.
         The fire realtime API populates fire_group_alerts when called.
         """
         if not self.affected_parks:
@@ -579,70 +579,80 @@ class DailyFireUpdater:
         import requests
         
         notifications_created = 0
-        for park_id in self.affected_parks:
-            try:
-                # Call fire realtime API to update alerts (this populates fire_group_alerts table)
-                response = requests.get(
-                    f"http://localhost:8000/api/parks/{park_id}/fire-realtime",
-                    params={'pwd': 'test2026', 'days': 28},
-                    timeout=30
-                )
+        
+        # Get all active fire alerts from the fire-alerts endpoint
+        try:
+            response = requests.get(
+                "http://localhost:8000/api/fire-alerts",
+                params={'pwd': 'test2026', 'limit': 500},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                all_alerts = response.json()
                 
-                if response.status_code == 200:
-                    data = response.json()
-                    active_groups = data.get('active_groups', [])
+                # Filter to affected parks only
+                alerts_by_park = {}
+                for alert in all_alerts:
+                    if alert.get('alert_type') == 'active':
+                        park_id = alert.get('park_id')
+                        if park_id in self.affected_parks or not self.affected_parks:
+                            if park_id not in alerts_by_park:
+                                alerts_by_park[park_id] = []
+                            alerts_by_park[park_id].append(alert)
+                
+                # Create notifications for each alert
+                for park_id, alerts in alerts_by_park.items():
+                    park_name = self.parks.get(park_id, {}).get('name', park_id)
                     
-                    if active_groups:
-                        park_name = self.parks.get(park_id, {}).get('name', park_id)
-                        
-                        # Create one notification per active group
-                        for group in active_groups:
-                            group_name = group.get('group_name', 'Unknown')
-                            feature_id = group.get('feature_id', '')
-                            fire_count = group.get('fire_count', 0)
-                            days_active = group.get('days_active', 1)
-                            direction = group.get('movement_direction', 'stationary')
-                            
-                            # Check if notification already exists for this group
-                            cursor = self.conn.execute("""
-                                SELECT id FROM notifications 
-                                WHERE park_id = ? 
-                                AND notification_type = 'fire_alert'
-                                AND reference_id = ?
-                                AND created_at > datetime('now', '-7 days')
-                                LIMIT 1
-                            """, (park_id, feature_id))
-                            
-                            if cursor.fetchone():
-                                continue  # Skip if notification exists
-                            
-                            # Create notification
-                            title = f"🔥 {park_name}: {group_name}"
-                            message = f"{fire_count} fires, {days_active} days active, moving {direction}"
-                            
-                            # Store reference data for click-to-pin
-                            reference_data = json.dumps({
-                                'park_id': park_id,
-                                'park_name': park_name,
-                                'feature_id': feature_id,
-                                'type': 'fire_trajectory',
-                                'group_name': group_name
-                            })
-                            
-                            self.conn.execute("""
-                                INSERT INTO notifications 
-                                (park_id, notification_type, title, message, reference_id, reference_data, created_at)
-                                VALUES (?, 'fire_alert', ?, ?, ?, ?, datetime('now'))
-                            """, (park_id, title, message, feature_id, reference_data))
-                            
-                            notifications_created += 1
-                        
-                        log(f"  {park_id}: Created {len(active_groups)} notifications")
-                else:
-                    log(f"  Error calling API for {park_id}: {response.status_code}")
                     
-            except Exception as e:
-                log(f"  Error processing {park_id}: {e}")
+                    for alert in alerts:
+                        group_name = alert.get('group_name', 'Unknown')
+                        fire_count = alert.get('fire_count', 0)
+                        days_active = alert.get('days_active', 1)
+                        direction = alert.get('movement_direction', 'stationary')
+                            
+                        # Check if notification already exists for this group
+                        cursor = self.conn.execute("""
+                            SELECT id FROM notifications 
+                            WHERE park_id = ? 
+                            AND notification_type = 'fire_alert'
+                            AND reference_id = ?
+                            AND created_at > datetime('now', '-7 days')
+                            LIMIT 1
+                        """, (park_id, group_name))
+                        
+                        if cursor.fetchone():
+                            continue  # Skip if notification exists
+                        
+                        # Create notification
+                        title = f"🔥 Active Fire: {park_name}"
+                        message = f"{fire_count} fires, {days_active} days active, moving {direction}"
+                        
+                        # Store reference data for click-to-pin
+                        reference_data = json.dumps({
+                            'park_id': park_id,
+                            'park_name': park_name,
+                            'feature_id': group_name,
+                            'type': 'fire_trajectory',
+                            'group_name': group_name
+                        })
+                        
+                        self.conn.execute("""
+                            INSERT INTO notifications 
+                            (park_id, notification_type, title, message, reference_id, reference_data, created_at)
+                            VALUES (?, 'fire_alert', ?, ?, ?, ?, datetime('now'))
+                        """, (park_id, title, message, group_name, reference_data))
+                        
+                        notifications_created += 1
+                    
+                    if alerts:
+                        log(f"  {park_id}: Created {len(alerts)} notifications")
+            else:
+                log(f"  Error calling fire-alerts API: {response.status_code}")
+                
+        except Exception as e:
+            log(f"  Error fetching fire alerts: {e}")
         
         self.conn.commit()
         log(f"  Total: {notifications_created} fire group notifications")
