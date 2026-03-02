@@ -5368,7 +5368,8 @@
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('notification-dropdown');
             const btn = document.getElementById('notification-toggle');
-            if (notificationDropdownOpen && !btn.contains(event.target)) {
+            // Only close if clicking outside both the button AND the dropdown
+            if (notificationDropdownOpen && !btn.contains(event.target) && !dropdown.contains(event.target)) {
                 closeNotificationDropdown();
             }
         });
