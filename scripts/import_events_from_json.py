@@ -36,8 +36,8 @@ def import_deforestation(conn):
                     INSERT INTO deforestation_events 
                     (park_id, year, area_km2, lat, lon, pattern_type, classification,
                      classification_confidence, narrative, fires_same_year, fire_ratio,
-                     polygon_ids, pixel_count, event_type, nearest_settlement_km, classified_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     polygon_ids, nearest_settlement_km, classified_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     e.get('park_id'),
                     e.get('year'),
@@ -51,8 +51,6 @@ def import_deforestation(conn):
                     e.get('fires_same_year'),
                     e.get('fire_ratio'),
                     e.get('polygon_ids'),
-                    e.get('pixel_count'),
-                    e.get('event_type'),
                     e.get('nearest_settlement_km'),
                     e.get('classified_at')
                 ))
@@ -114,6 +112,76 @@ def import_settlements(conn):
     log(f"  Imported {count} settlement events")
     return count
 
+def link_event_ids_to_features(conn):
+    """Link settlement and deforestation IDs to feature_geometries properties"""
+    log("\nLinking event IDs to feature geometries...")
+    
+    # Link settlement IDs
+    log("  Linking settlement IDs...")
+    cursor = conn.execute("""
+        SELECT id, park_id, polygon_ids
+        FROM park_settlements
+        WHERE polygon_ids IS NOT NULL AND polygon_ids != ''
+    """)
+    
+    settlement_updated = 0
+    for row in cursor:
+        event_id, park_id, polygon_ids = row
+        feature_ids = [fid.strip() for fid in polygon_ids.split(',')]
+        
+        for feature_id in feature_ids:
+            # Get current properties
+            props_row = conn.execute("""
+                SELECT properties_json FROM feature_geometries
+                WHERE feature_id = ? AND park_id = ? AND feature_type = 'settlement'
+            """, (feature_id, park_id)).fetchone()
+            
+            if props_row:
+                props = json.loads(props_row[0]) if props_row[0] else {}
+                props['settlement_id'] = event_id
+                
+                conn.execute("""
+                    UPDATE feature_geometries
+                    SET properties_json = ?
+                    WHERE feature_id = ? AND park_id = ? AND feature_type = 'settlement'
+                """, (json.dumps(props), feature_id, park_id))
+                settlement_updated += 1
+    
+    # Link deforestation IDs
+    log("  Linking deforestation IDs...")
+    cursor = conn.execute("""
+        SELECT id, park_id, polygon_ids
+        FROM deforestation_events
+        WHERE polygon_ids IS NOT NULL AND polygon_ids != ''
+    """)
+    
+    deforest_updated = 0
+    for row in cursor:
+        event_id, park_id, polygon_ids = row
+        feature_ids = [fid.strip() for fid in polygon_ids.split(',')]
+        
+        for feature_id in feature_ids:
+            # Get current properties
+            props_row = conn.execute("""
+                SELECT properties_json FROM feature_geometries
+                WHERE feature_id = ? AND park_id = ? AND feature_type = 'deforestation'
+            """, (feature_id, park_id)).fetchone()
+            
+            if props_row:
+                props = json.loads(props_row[0]) if props_row[0] else {}
+                props['deforest_id'] = event_id
+                
+                conn.execute("""
+                    UPDATE feature_geometries
+                    SET properties_json = ?
+                    WHERE feature_id = ? AND park_id = ? AND feature_type = 'deforestation'
+                """, (json.dumps(props), feature_id, park_id))
+                deforest_updated += 1
+    
+    conn.commit()
+    log(f"  Linked {settlement_updated} settlement features, {deforest_updated} deforestation features")
+    return settlement_updated, deforest_updated
+
 def main():
     log("=" * 60)
     log("Import Events from JSON")
@@ -123,6 +191,9 @@ def main():
     
     deforest_count = import_deforestation(conn)
     settlement_count = import_settlements(conn)
+    
+    # Link event IDs to feature geometries
+    link_event_ids_to_features(conn)
     
     # Verify polygon_ids link to feature_geometries
     log("\nVerifying polygon links...")
