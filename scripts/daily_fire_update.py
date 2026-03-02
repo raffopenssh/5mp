@@ -42,8 +42,12 @@ PROXY_SOURCES = [
     "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt",
 ]
 
-DEFAULT_DAYS = 5  # FIRMS NRT API only allows 1-5 days
+DEFAULT_DAYS = 5  # Default: last 5 days
 INCREMENTAL_DAYS = 14  # Days window for incremental rebuild
+
+# FIRMS API has different modes:
+# - NRT (Near Real-Time): 1-10 days, use /days parameter
+# - SP (Standard Processing): historical data, use /1/YYYY-MM-DD parameter
 
 def log(msg):
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -142,9 +146,22 @@ class DailyFireUpdater:
         return (min(lons), min(lats), max(lons), max(lats))
     
     def download_nrt_fires(self):
-        log(f"Step 1: Downloading NRT fires for last {self.days} days...")
+        log(f"Step 1: Downloading fires for last {self.days} days...")
         area = "-20,-35,55,40"  # Africa bbox
-        url = f"{FIRMS_NRT_URL}/{NASA_API_KEY}/VIIRS_NOAA20_NRT/{area}/{self.days}"
+        
+        # Choose API mode based on days requested
+        if self.days <= 10:
+            # NRT mode: last 1-10 days
+            source = "VIIRS_NOAA20_NRT"
+            url = f"{FIRMS_NRT_URL}/{NASA_API_KEY}/{source}/{area}/{self.days}"
+            log(f"  Using NRT API (last {self.days} days)")
+        else:
+            # SP mode: historical data with date range
+            source = "VIIRS_NOAA20_SP"
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=self.days)
+            url = f"{FIRMS_NRT_URL}/{NASA_API_KEY}/{source}/{area}/1/{start_date.strftime('%Y-%m-%d')}"
+            log(f"  Using SP API (from {start_date.strftime('%Y-%m-%d')} to today)")
         
         # Get proxy list
         log("  Fetching proxy lists from GitHub...")
