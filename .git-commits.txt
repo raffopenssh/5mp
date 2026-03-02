@@ -1,20 +1,20 @@
-aae30ec 2026-02-14 08:52:50 Fix bbox filter title disappearing after clear and re-select
-8543e6d 2026-02-14 08:44:42 Add fire front marker and HeiGIT/HydroRIVERS to KML export
-dc828db 2026-02-14 08:28:39 Update infrastructure accordion with rivers, roads, and places data
-e9548cf 2026-02-14 08:26:03 Add infrastructure API with HeiGIT roads and HydroRIVERS
-512c04b 2026-02-14 08:23:47 Document learner data storage tables
-3c78397 2026-02-14 08:23:16 Fix admin panel learned features, consistent modal blur
-a5b8fb9 2026-02-14 08:20:47 UI improvements: toast notifications, export filenames, datetime in commits
-3f067d9 2026-02-14 08:17:54 UI fixes: remove globe button, disable rotation, improve narrative styling
-a3adb42 2026-02-14 08:04:10 Improve import_json_to_db.py with selective imports
-9fdf306 2026-02-14 07:03:39 Add narrative data checker scripts for production diagnosis
-a3e3097 2026-02-14 06:57:16 Add simple popup data test script for console use
-0223cd8 2026-02-14 06:55:45 Fix: classifiedEvents scope error in deforestation section
-7e0cf3e 2026-02-14 06:50:19 Add UI pinning test page and script
-a644baa 2026-02-14 06:34:37 Use actual disk space check via syscall.Statfs for MBTiles
-ea36950 2026-02-14 06:33:13 Add storage space check for MBTiles generation
-1554b27 2026-02-14 06:20:04 Improve MBTiles UI: cleaner design, merged progress button, zoom slider
-09cf0c2 2026-02-14 06:01:53 Fix: Use 'sqlite' driver instead of 'sqlite3' for MBTiles generation
-f865fe8 2026-02-14 05:59:40 Feature: MBTiles generation for offline satellite tiles
-4e219bd 2026-02-14 05:56:49 Enhance settlement/deforestation narratives with patterns, types, fires, and full detail from JSON
-919c852 2026-02-14 05:54:09 Enhance fire narratives with river crossings, roads, destinations, and settlement details
+64da34dd 2026-03-02 18:12:03 docs: Add notification share link parameters to AGENTS.md
+aaf55c99 2026-03-02 18:10:57 Refactor notification system: event delegation, whole-item clicks, 24h filter, share links
+ef867dea 2026-03-02 17:36:34 Implement notification grouping
+2343a304 2026-03-02 17:32:10 Add load more button for legal documents
+fa4fc013 2026-03-02 16:52:17 Enhance notification system with action buttons and improvements
+a34c0e35 2026-03-02 16:35:53 Fix notification priorities and click-to-pin functionality
+e32fd1d7 2026-03-02 16:29:36 Add support for fire_download_success notifications
+1e9dac8d 2026-03-02 16:15:29 Display FAOLEX legal documents in park popup
+062d6fa3 2026-03-02 16:14:05 Fix legal documents API - match database schema
+a455f086 2026-03-02 16:03:57 Fix fire alert notifications - use correct API and alert types
+de1b1991 2026-03-02 15:51:10 Add keyword/subject filtering to FAOLEX Chrome scraper
+e5f3ec5a 2026-03-02 15:41:40 Implement working FAOLEX scraper with chromedp
+b8ecab2a 2026-03-02 15:33:58 Add FAOLEX test tool - reveals JavaScript parsing issue
+b16bf579 2026-03-02 15:27:12 Fix: testProxy now handles URLs with authentication schemes
+ba2e75a3 2026-03-02 15:19:28 Add Webshare proxy support for FAOLEX and create sync tool
+a95af730 2026-03-02 15:12:29 Mark link_settlement_ids.py as one-off tool (now in import pipeline)
+db5dd3dc 2026-03-02 15:12:19 Integrate ID linking into import_events_from_json.py
+e4bd7e6e 2026-03-02 15:05:41 Fix: Individual settlement pinning now works
+4ca9ca11 2026-03-02 14:42:30 Document cron environment fix - Webshare proxies fully operational
+5dbecd94 2026-03-02 14:41:45 Fix cron environment - use absolute paths and set PYTHONPATH

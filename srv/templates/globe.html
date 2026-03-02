@@ -357,6 +357,10 @@
             .notification-dropdown { position: fixed; left: 10px; right: 10px; width: auto; max-width: none; bottom: 80px; top: auto; max-height: 60vh; overflow-y: auto; }
             .notification-item { padding: 10px 12px; }
             .notification-text { font-size: 13px; word-break: break-word; }
+            .notification-title { font-size: 11px; flex-wrap: wrap; }
+            #filter-24h-label { font-size: 9px; margin-left: 6px; }
+            #filter-24h-label span { display: inline; }
+            .notification-header { padding: 10px 12px; }
         }
 
         /* Time Slider - Google Timelapse Style */
@@ -998,15 +1002,15 @@
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
                         Recent Activity
+                        <label id="filter-24h-label" style="display:flex;align-items:center;gap:4px;margin-left:8px;cursor:pointer;font-size:10px;color:#888;font-weight:400;" title="Show only notifications from the last 24 hours">
+                            <input type="checkbox" id="filter-24h" style="cursor:pointer;margin:0;">
+                            <span>Last 24h</span>
+                        </label>
                     </div>
                     <button class="notification-close" id="close-notification">&times;</button>
                 </div>
-                <div id="notification-summary" style="padding:10px;border-bottom:1px solid rgba(255,255,255,0.1);font-size:11px;color:#999;display:flex;justify-content:space-between;align-items:center;">
+                <div id="notification-summary" style="padding:10px;border-bottom:1px solid rgba(255,255,255,0.1);font-size:11px;color:#999;">
                     <span id="summary-text"></span>
-                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:#3b82f6;" title="Show only notifications from the last 24 hours">
-                        <input type="checkbox" id="filter-24h" style="cursor:pointer;">
-                        Last 24h
-                    </label>
                 </div>
                 <div class="notification-list" id="notification-list">
                     <div class="notification-empty">Loading...</div>
