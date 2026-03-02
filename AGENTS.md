@@ -236,6 +236,11 @@ URL params encode full UI state for reproducible tests:
 | `sections` | `fire,deforestation` | Open accordions |
 | `pinned` | `CAF_Chinko:fire_trajectory` | Pin layers |
 | `starred_parks` | `CAF_Chinko,COD_Virunga` | Star parks |
+| `notif` | `1` | Open notification dropdown |
+| `notif_fire` | `BEN_Pendjari:grp_abc123` | Zoom to fire + pin |
+| `notif_upload` | `10.52,18.19` | Zoom to patrol location |
+| `notif_pub` | `CAF_Chinko` | Open popup with research |
+| `notif_download` | `123` | Download MBTiles file |
 
 ### Playwright (Full UI)
 
