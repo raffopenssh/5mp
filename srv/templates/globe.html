@@ -4538,7 +4538,7 @@
             
             const summaryHeader = summaryParts.length > 0 ? 
                 `<div style="padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:10px;color:#888;">
-                    ${summaryParts.join(' • ')} • <span style="color:#666;">(${Math.min(20, grouped.length)}/${filteredItems.length})</span>
+                    ${summaryParts.join(' • ')}
                 </div>` : '';
             
             listEl.innerHTML = summaryHeader + grouped.slice(0, 20).map((item, displayIndex) => {
