@@ -211,14 +211,13 @@
         .notification-close { background: none; border: none; color: #666; cursor: pointer; font-size: 18px; padding: 2px 6px; line-height: 1; }
         .notification-close:hover { color: #fff; }
         .notification-list { max-height: 280px; overflow-y: auto; }
-        .notification-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: all 0.2s; position: relative; }
-        .notification-item:hover { background: rgba(255,255,255,0.05); transform: translateX(2px); }
-        .notification-item:active { transform: translateX(1px); }
+        .notification-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: default; transition: all 0.2s; position: relative; }
+        .notification-item.clickable { cursor: pointer; }
+        .notification-item.clickable:hover { background: rgba(255,255,255,0.05); transform: translateX(2px); }
+        .notification-item.clickable:active { transform: translateX(1px); }
         .notification-item:last-child { border-bottom: none; }
-        .notification-item[style*="cursor:default"]:hover { transform: none; }
         .notification-icon { width: 30px; height: 30px; background: rgba(34,197,94,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; font-weight: 500; transition: transform 0.2s; }
-        .notification-item:hover .notification-icon { transform: scale(1.1); }
-        .notification-item[style*="cursor:default"]:hover .notification-icon { transform: none; }
+        .notification-item.clickable:hover .notification-icon { transform: scale(1.1); }
         .notification-icon.fire { background: var(--color-fire-bg); color: var(--color-fire-light); }
         .notification-icon.fire-active { background: rgba(239,68,68,0.3); animation: fire-pulse 1.5s ease-in-out infinite; }
         @keyframes fire-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 50% { box-shadow: 0 0 8px 4px rgba(239,68,68,0.2); } }
@@ -233,6 +232,11 @@
         .fire-group-status.inside { background: rgba(251,191,36,0.2); color: #fbbf24; }
         .notification-direction { font-size: 10px; color: #888; margin-left: 4px; }
         .notification-content { flex: 1; min-width: 0; }
+        .notif-action-btn { margin-top: 4px; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; border: 1px solid; transition: all 0.2s; background: rgba(59,130,246,0.15); color: #3b82f6; border-color: rgba(59,130,246,0.3); }
+        .notif-action-btn:hover { background: rgba(59,130,246,0.25); }
+        .group-arrow { color: #666; font-size: 12px; margin-left: 8px; transition: transform 0.2s; display: flex; align-items: center; }
+        .notification-item.notification-group.expanded .group-arrow { transform: rotate(180deg); }
+        .notification-group-items { padding-left: 20px; }
         .notification-location { font-size: 13px; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .notification-details { font-size: 11px; color: #888; margin-top: 2px; }
         .notification-subtitle { font-size: 11px; color: #999; margin-top: 2px; }
@@ -995,7 +999,14 @@
                         </svg>
                         Recent Activity
                     </div>
-                    <button class="notification-close" onclick="closeNotificationDropdown(event)">&times;</button>
+                    <button class="notification-close" id="close-notification">&times;</button>
+                </div>
+                <div id="notification-summary" style="padding:10px;border-bottom:1px solid rgba(255,255,255,0.1);font-size:11px;color:#999;display:flex;justify-content:space-between;align-items:center;">
+                    <span id="summary-text"></span>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:#3b82f6;" title="Show only notifications from the last 24 hours">
+                        <input type="checkbox" id="filter-24h" style="cursor:pointer;">
+                        Last 24h
+                    </label>
                 </div>
                 <div class="notification-list" id="notification-list">
                     <div class="notification-empty">Loading...</div>
@@ -4494,8 +4505,11 @@
                 });
             });
             
+            // Apply 24h filter if enabled
+            const filteredItems = applyNotificationFilter(allItems);
+            
             // Group similar notifications
-            const grouped = groupNotifications(allItems);
+            const grouped = groupNotifications(filteredItems);
             
             // Sort by priority first, then by time (newest first)
             grouped.sort((a, b) => {
@@ -4522,7 +4536,7 @@
             
             const summaryHeader = summaryParts.length > 0 ? 
                 `<div style="padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:10px;color:#888;">
-                    ${summaryParts.join(' • ')} • <span style="color:#666;">Showing ${Math.min(20, grouped.length)} of ${allItems.length}</span>
+                    ${summaryParts.join(' • ')} • <span style="color:#666;">Showing ${Math.min(20, grouped.length)} of ${filteredItems.length}</span>
                 </div>` : '';
             
             listEl.innerHTML = summaryHeader + grouped.slice(0, 20).map((item, displayIndex) => {
@@ -4548,46 +4562,55 @@
         
         function renderMBTilesNotification(job) {
             const isProcessing = job.status === 'processing';
+            const isComplete = job.status === 'completed';
             const isFailed = job.status === 'failed';
-            const progress = Math.round(job.progress || 0);
-            const iconBg = isProcessing ? 'rgba(59,130,246,0.15)' : isFailed ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)';
-            const iconColor = isProcessing ? '#3b82f6' : isFailed ? '#ef4444' : '#22c55e';
+            
+            const icon = isComplete ? '✓' : (isFailed ? '✕' : '⬇');
+            const iconBg = isComplete ? 'rgba(34,197,94,0.15)' : (isFailed ? 'rgba(239,68,68,0.15)' : 'rgba(59,130,246,0.15)');
+            const iconColor = isComplete ? '#22c55e' : (isFailed ? '#ef4444' : '#3b82f6');
             
             let subtitle = '';
-            let progressBar = '';
-            let actionButton = '';
-            
             if (isProcessing) {
-                subtitle = `${job.downloaded_tiles || 0}/${job.total_tiles || 0} tiles • ${progress}%`;
-                progressBar = `<div style="margin-top:4px;background:rgba(255,255,255,0.1);border-radius:3px;height:3px;overflow:hidden;">
-                    <div style="width:${progress}%;height:100%;background:${iconColor};transition:width 0.3s;"></div>
-                </div>`;
+                const pct = Math.round(job.progress || 0);
+                subtitle = `${job.tiles_generated || job.downloaded_tiles || 0}/${job.total_tiles || 0} tiles • ${pct}%`;
+            } else if (isComplete) {
+                const sizeMB = job.file_size ? (job.file_size / 1024 / 1024).toFixed(1) : (job.estimated_size_bytes ? Math.round(job.estimated_size_bytes / 1024 / 1024) : '?');
+                subtitle = `Ready to download • ${sizeMB} MB`;
             } else if (isFailed) {
-                subtitle = job.error || 'Generation failed';
-            } else {
-                const sizeMB = job.estimated_size_bytes ? Math.round(job.estimated_size_bytes / 1024 / 1024) : 0;
-                subtitle = `${sizeMB} MB`;
-                actionButton = `<button onclick="handleMBTilesClick(${job.id}, event)" 
-                    style="margin-top:4px;padding:4px 10px;background:${iconColor};color:#000;border:none;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;transition:opacity 0.2s;" 
-                    onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
-                    ⬇ Download
-                </button>`;
+                subtitle = job.error_message || job.error || 'Export failed';
             }
             
-            const cursor = (!isProcessing && !isFailed) ? 'default' : 'default';
+            const time = formatNotificationTime(job.created_at || job.updated_at);
             
-            return `
-                <div class="notification-item" style="cursor:${cursor};">
-                    <div class="notification-icon" style="background:${iconBg};color:${iconColor};">⬇</div>
-                    <div class="notification-content" style="flex:1;">
-                        <div class="notification-location">${escapeHtml(job.park_name || job.park_id)}</div>
-                        <div class="notification-subtitle">${subtitle}</div>
-                        ${progressBar}
-                        ${actionButton}
-                        <div class="notification-time">${formatNotificationTime(job.created_at)}</div>
+            // MBTiles complete: clickable for download
+            // MBTiles processing: not clickable
+            const hasAction = isComplete;
+            const itemClass = hasAction ? 'notification-item clickable' : 'notification-item';
+            const dataAttrs = hasAction ? `data-type="mbtiles" data-action="download" data-job-id="${job.id}"` : '';
+            
+            let html = `
+                <div class="${itemClass}" ${dataAttrs}>
+                    <div class="notification-icon" style="background: ${iconBg}; color: ${iconColor};">${icon}</div>
+                    <div class="notification-content">
+                        <div class="notification-location">${escapeHtml(job.park_name || job.park_id || 'MBTiles Export')}</div>
+                        <div class="notification-subtitle">${escapeHtml(subtitle)}</div>`;
+            
+            // Progress bar for processing jobs
+            if (isProcessing) {
+                const pct = Math.round(job.progress || 0);
+                html += `
+                        <div style="margin-top:6px;width:100%;height:3px;background:rgba(59,130,246,0.1);border-radius:2px;overflow:hidden;">
+                            <div style="width:${pct}%;height:100%;background:#3b82f6;transition:width 0.3s;"></div>
+                        </div>`;
+            }
+            
+            html += `
+                        <div class="notification-time">${time}</div>
                     </div>
                 </div>
             `;
+            
+            return html;
         }
         
         function renderFireAlertNotification(notif) {
@@ -4595,26 +4618,29 @@
             const data = notif.reference_data || {};
             const parkId = data.park_id || notif.park_id;
             const parkName = data.park_name || parkId;
-            const fireCount = data.fire_count || 0;
             const groupName = data.group_name || notif.reference_id || '';
             
             // Check if this is a grouped notification
             if (notif._isGroup) {
                 const count = notif._groupCount;
-                return `
-                    <div class="notification-item notification-group" onclick="toggleNotificationGroup('${notif._groupKey}')" style="cursor:pointer;">
+                const time = formatNotificationTime(notif.created_at);
+                
+                const groupHtml = `
+                    <div class="notification-item clickable notification-group" data-type="group" data-action="toggle_group" data-group-key="${notif._groupKey}">
                         <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">●</div>
-                        <div class="notification-content" style="flex:1;">
+                        <div class="notification-content">
                             <div class="notification-location">${escapeHtml(parkName)} • ${count} fire alerts</div>
                             <div class="notification-subtitle">Click to expand</div>
-                            <div class="notification-time">${formatNotificationTime(notif.created_at)}</div>
+                            <div class="notification-time">${time}</div>
                         </div>
-                        <div style="color:#666;font-size:12px;margin-left:8px;">▼</div>
+                        <div class="group-arrow">▼</div>
                     </div>
-                    <div id="group-${notif._groupKey}" style="display:none;">
+                    <div class="notification-group-items" id="group-${notif._groupKey}" style="display:none;">
                         ${notif._groupItems.map(item => renderFireAlertNotificationSingle(item)).join('')}
                     </div>
                 `;
+                
+                return groupHtml;
             }
             
             return renderFireAlertNotificationSingle(notif);
@@ -4624,23 +4650,17 @@
             const data = notif.reference_data || {};
             const parkId = data.park_id || notif.park_id;
             const parkName = data.park_name || parkId;
-            const fireCount = data.fire_count || 0;
             const groupName = data.group_name || notif.reference_id || '';
+            const time = formatNotificationTime(notif.created_at);
             
-            const actionButton = `<button onclick="handleFireNotificationClick('${parkId}', '${groupName}', event)" 
-                style="margin-top:4px;padding:4px 10px;background:rgba(239,68,68,0.2);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;transition:all 0.2s;" 
-                onmouseover="this.style.background='rgba(239,68,68,0.3)'" onmouseout="this.style.background='rgba(239,68,68,0.2)'">
-                View on map →
-            </button>`;
-            
+            // Single action: view on map (whole item clickable)
             return `
-                <div class="notification-item" data-park="${parkId}" style="cursor:default;">
+                <div class="notification-item clickable" data-type="fire_alert" data-action="view_fire" data-park-id="${parkId}" data-group-name="${groupName}">
                     <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">●</div>
-                    <div class="notification-content" style="flex:1;">
+                    <div class="notification-content">
                         <div class="notification-location">${escapeHtml(notif.title || parkName)}</div>
                         <div class="notification-subtitle">${escapeHtml(notif.message)}</div>
-                        ${actionButton}
-                        <div class="notification-time">${formatNotificationTime(notif.created_at)}</div>
+                        <div class="notification-time">${time}</div>
                     </div>
                 </div>
             `;
@@ -4684,31 +4704,16 @@
         }
         
         function renderPublicationNotification(pub) {
-            // Publication notification - click to open park tooltip and toggle research section
-            let citation = pub.message || 'New publication';
-            // Remove old format prefix if present
-            if (citation.startsWith('New publication (')) {
-                citation = citation.replace(/^New publication \(\d+\): /, '');
-            }
-            if (citation.length > 60) citation = citation.slice(0, 57) + '...';
-            
-            const parkName = pub.title ? pub.title.replace('New Research: ', '') : pub.park_id;
-            const parkId = pub.park_id;
-            
-            const actionButton = `<button onclick="handlePublicationClick('${parkId}', event)" 
-                style="margin-top:4px;padding:4px 10px;background:rgba(168,85,247,0.2);color:#a855f7;border:1px solid rgba(168,85,247,0.3);border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;transition:all 0.2s;" 
-                onmouseover="this.style.background='rgba(168,85,247,0.3)'" onmouseout="this.style.background='rgba(168,85,247,0.2)'">
-                View research →
-            </button>`;
+            // Publication notification - single action
+            const time = formatNotificationTime(pub.created_at);
             
             return `
-                <div class="notification-item" style="cursor:default;">
-                    <div class="notification-icon" style="background:rgba(168,85,247,0.15);color:#a855f7;">◆</div>
-                    <div class="notification-content" style="flex:1;">
-                        <div class="notification-location">${escapeHtml(parkName)}</div>
-                        <div class="notification-subtitle">${escapeHtml(citation)}</div>
-                        ${actionButton}
-                        <div class="notification-time">${formatNotificationTime(pub.created_at)}</div>
+                <div class="notification-item clickable" data-type="publication" data-action="view_publication" data-park-id="${pub.park_id}">
+                    <div class="notification-icon" style="background: rgba(168,85,247,0.15); color: #a855f7;">◆</div>
+                    <div class="notification-content">
+                        <div class="notification-location">${escapeHtml(pub.title || 'New Research')}</div>
+                        <div class="notification-subtitle">${escapeHtml(pub.message || 'View research')}</div>
+                        <div class="notification-time">${time}</div>
                     </div>
                 </div>
             `;
@@ -4763,30 +4768,22 @@
         }
 
         function renderActivityNotification(item) {
-            // Upload/patrol activity notification - click to zoom and show pixels
+            // Upload notification - single action
             const location = item.location || 'Unknown location';
-            const distance = item.distance ? item.distance.toFixed(1) + ' km' : '';
-            const pixelCount = (item.grid_cells || []).length;
-            
-            let subtitle = '';
-            if (distance && pixelCount > 0) subtitle = `${distance} • ${pixelCount} pixels`;
-            else if (distance) subtitle = distance;
-            else if (pixelCount > 0) subtitle = `${pixelCount} pixels`;
-            
-            const actionButton = `<button onclick="handleUploadNotificationClick(${item._index})" 
-                style="margin-top:4px;padding:4px 10px;background:rgba(34,197,94,0.2);color:#22c55e;border:1px solid rgba(34,197,94,0.3);border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;transition:all 0.2s;" 
-                onmouseover="this.style.background='rgba(34,197,94,0.3)'" onmouseout="this.style.background='rgba(34,197,94,0.2)'">
-                Fly to →
-            </button>`;
+            const pixels = item.grid_cells ? item.grid_cells.length : 0;
+            const lat = item.lat;
+            const lon = item.lon;
+            const gridCells = JSON.stringify(item.grid_cells || []);
+            const distance = item.distance ? item.distance.toFixed(1) : '0';
+            const time = formatNotificationTime(item.full_date || item.date);
             
             return `
-                <div class="notification-item" style="cursor:default;">
-                    <div class="notification-icon" style="background:rgba(34,197,94,0.15);color:#22c55e;">▲</div>
-                    <div class="notification-content" style="flex:1;">
+                <div class="notification-item clickable" data-type="upload" data-action="view_upload" data-lat="${lat}" data-lon="${lon}" data-grid-cells='${escapeHtml(gridCells)}'>
+                    <div class="notification-icon" style="background: rgba(34,197,94,0.15); color: #22c55e;">▲</div>
+                    <div class="notification-content">
                         <div class="notification-location">${escapeHtml(location)}</div>
-                        <div class="notification-subtitle">${subtitle}</div>
-                        ${actionButton}
-                        <div class="notification-time">${formatNotificationTime(item.full_date)}</div>
+                        <div class="notification-subtitle">${distance} km • ${pixels} pixels</div>
+                        <div class="notification-time">${time}</div>
                     </div>
                 </div>
             `;
@@ -5008,6 +5005,161 @@
         function closeNotificationDropdown() {
             const dropdown = document.getElementById('notification-dropdown');
             if (dropdown) dropdown.classList.remove('open');
+            notificationDropdownOpen = false;
+            const toggle = document.getElementById('notification-toggle');
+            if (toggle) toggle.classList.remove('active');
+        }
+        
+        // Setup notification event delegation (single listener for all clicks)
+        function setupNotificationEventListeners() {
+            const notifList = document.getElementById('notification-list');
+            if (!notifList) return;
+            
+            // Main notification item click handler
+            notifList.addEventListener('click', function(e) {
+                // Check if clicking on a clickable notification item
+                const item = e.target.closest('.notification-item.clickable');
+                if (!item) return;
+                
+                const type = item.dataset.type;
+                const action = item.dataset.action;
+                
+                // Handle group toggle
+                if (action === 'toggle_group') {
+                    const groupKey = item.dataset.groupKey;
+                    toggleNotificationGroup(groupKey);
+                    return; // Don't close dropdown for group toggle
+                }
+                
+                // Handle fire alert click
+                if (action === 'view_fire') {
+                    const parkId = item.dataset.parkId;
+                    const groupName = item.dataset.groupName;
+                    handleFireNotificationClick(parkId, groupName);
+                    closeNotificationDropdown();
+                    return;
+                }
+                
+                // Handle upload click
+                if (action === 'view_upload') {
+                    const lat = parseFloat(item.dataset.lat);
+                    const lon = parseFloat(item.dataset.lon);
+                    const gridCells = JSON.parse(item.dataset.gridCells || '[]');
+                    handleUploadNotificationClickData(lat, lon, gridCells);
+                    closeNotificationDropdown();
+                    return;
+                }
+                
+                // Handle publication click
+                if (action === 'view_publication') {
+                    const parkId = item.dataset.parkId;
+                    handlePublicationClick(parkId);
+                    closeNotificationDropdown();
+                    return;
+                }
+                
+                // Handle MBTiles download
+                if (action === 'download') {
+                    const jobId = item.dataset.jobId;
+                    handleMBTilesDownload(jobId);
+                    closeNotificationDropdown();
+                    return;
+                }
+            });
+            
+            // Close button handler  
+            const closeBtn = document.getElementById('close-notification');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeNotificationDropdown);
+            }
+            
+            // 24h filter checkbox handler
+            const filter24hCheckbox = document.getElementById('filter-24h');
+            if (filter24hCheckbox) {
+                filter24hCheckbox.addEventListener('change', function(e) {
+                    filter24h = e.target.checked;
+                    loadNotifications();
+                });
+            }
+        }
+        
+        // Notification filter state
+        let filter24h = false;
+        
+        // Apply 24h filter to notification items
+        function applyNotificationFilter(items) {
+            if (!filter24h) return items;
+            
+            const cutoff = Date.now() - (24 * 60 * 60 * 1000);
+            return items.filter(item => {
+                const created = new Date(item.created_at || item.date || item.updated_at).getTime();
+                return created >= cutoff;
+            });
+        }
+        
+        // Handle notification share link parameters
+        function handleNotificationShareLinks() {
+            const params = new URLSearchParams(window.location.search);
+            
+            // Fire alert: notif_fire=BEN_Pendjari:BEN_Pendjari_2026_grp_abc123
+            const fireParam = params.get('notif_fire');
+            if (fireParam) {
+                const [parkId, groupName] = fireParam.split(':');
+                if (parkId && groupName) {
+                    setTimeout(() => {
+                        handleFireNotificationClick(parkId, groupName);
+                    }, 1000);
+                }
+                return;
+            }
+            
+            // Upload: notif_upload=10.52,18.19
+            const uploadParam = params.get('notif_upload');
+            if (uploadParam) {
+                const [lat, lon] = uploadParam.split(',').map(Number);
+                if (!isNaN(lat) && !isNaN(lon)) {
+                    setTimeout(() => {
+                        map.flyTo({ center: [lon, lat], zoom: 13 });
+                    }, 1000);
+                }
+                return;
+            }
+            
+            // Publication: notif_pub=CAF_Chinko
+            const pubParam = params.get('notif_pub');
+            if (pubParam) {
+                setTimeout(() => {
+                    handlePublicationClick(pubParam);
+                }, 1000);
+                return;
+            }
+            
+            // MBTiles download: notif_download=123
+            const downloadParam = params.get('notif_download');
+            if (downloadParam) {
+                setTimeout(() => {
+                    handleMBTilesDownload(jobId);
+                }, 1000);
+                return;
+            }
+        }
+        
+        // Wrapper for upload notification click with data
+        function handleUploadNotificationClickData(lat, lon, gridCells) {
+            if (!lat || !lon) return;
+            
+            const activity = {
+                lat: lat,
+                lon: lon,
+                grid_cells: gridCells || []
+            };
+            
+            zoomToActivityWithHighlight(activity);
+        }
+        
+        // Wrapper for MBTiles download
+        function handleMBTilesDownload(jobId) {
+            window.open(`/api/mbtiles/${jobId}/download?pwd=${encodeURIComponent(getPwd())}`, '_blank');
         }
 
         function showNotificationBadge() {
@@ -6605,11 +6757,14 @@
                 const isExpanded = groupEl.style.display !== 'none';
                 groupEl.style.display = isExpanded ? 'none' : 'block';
                 
-                // Rotate arrow
+                // Toggle expanded class on parent for arrow rotation
                 const parentItem = groupEl.previousElementSibling;
-                const arrow = parentItem?.querySelector('div:last-child');
-                if (arrow) {
-                    arrow.innerHTML = isExpanded ? '▼' : '▲';
+                if (parentItem) {
+                    if (isExpanded) {
+                        parentItem.classList.remove('expanded');
+                    } else {
+                        parentItem.classList.add('expanded');
+                    }
                 }
             }
         }
@@ -11366,9 +11521,17 @@ ${starredItems.narratives.map(n => {
     
     // Initialize state restoration when map is ready
     if (typeof map !== 'undefined') {
-        map.on('load', restoreStateFromURL);
+        map.on('load', function() {
+            restoreStateFromURL();
+            setupNotificationEventListeners();
+            handleNotificationShareLinks();
+        });
     } else {
-        setTimeout(restoreStateFromURL, 2000);
+        setTimeout(function() {
+            restoreStateFromURL();
+            setupNotificationEventListeners();
+            handleNotificationShareLinks();
+        }, 2000);
     }
     </script>
 
