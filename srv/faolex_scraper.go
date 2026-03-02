@@ -165,7 +165,14 @@ func fetchProxies() []string {
 
 // testProxy checks if a proxy works
 func testProxy(proxyAddr string, testURL string) bool {
-	proxyURL, err := url.Parse("http://" + proxyAddr)
+	// If proxyAddr already has a scheme, use it as-is (e.g., Webshare URLs)
+	var proxyURL *url.URL
+	var err error
+	if strings.HasPrefix(proxyAddr, "http://") || strings.HasPrefix(proxyAddr, "https://") {
+		proxyURL, err = url.Parse(proxyAddr)
+	} else {
+		proxyURL, err = url.Parse("http://" + proxyAddr)
+	}
 	if err != nil {
 		return false
 	}
