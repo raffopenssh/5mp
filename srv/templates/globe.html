@@ -211,10 +211,14 @@
         .notification-close { background: none; border: none; color: #666; cursor: pointer; font-size: 18px; padding: 2px 6px; line-height: 1; }
         .notification-close:hover { color: #fff; }
         .notification-list { max-height: 280px; overflow-y: auto; }
-        .notification-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: background 0.2s; }
-        .notification-item:hover { background: rgba(255,255,255,0.05); }
+        .notification-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: all 0.2s; position: relative; }
+        .notification-item:hover { background: rgba(255,255,255,0.05); transform: translateX(2px); }
+        .notification-item:active { transform: translateX(1px); }
         .notification-item:last-child { border-bottom: none; }
-        .notification-icon { width: 28px; height: 28px; background: rgba(34,197,94,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; }
+        .notification-item[style*="cursor:default"]:hover { transform: none; }
+        .notification-icon { width: 30px; height: 30px; background: rgba(34,197,94,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; font-weight: 500; transition: transform 0.2s; }
+        .notification-item:hover .notification-icon { transform: scale(1.1); }
+        .notification-item[style*="cursor:default"]:hover .notification-icon { transform: none; }
         .notification-icon.fire { background: var(--color-fire-bg); color: var(--color-fire-light); }
         .notification-icon.fire-active { background: rgba(239,68,68,0.3); animation: fire-pulse 1.5s ease-in-out infinite; }
         @keyframes fire-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 50% { box-shadow: 0 0 8px 4px rgba(239,68,68,0.2); } }
@@ -2721,7 +2725,15 @@
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+                // Close notification dropdown if open
+                if (notificationDropdownOpen) {
+                    closeNotificationDropdown();
+                    notificationDropdownOpen = false;
+                    document.getElementById('notification-toggle')?.classList.remove('active');
+                }
+            }
         });
 
         
@@ -4340,9 +4352,16 @@
                 updateNotificationList();
                 showNotificationBadge();
                 
-                // If any MBTiles job is processing, poll more frequently
-                if (mbtilesJobs.some(j => j.status === 'processing')) {
-                    setTimeout(loadNotifications, 3000);  // Poll every 3s during active job
+                // Auto-refresh logic
+                const hasActiveJobs = mbtilesJobs.some(j => j.status === 'processing');
+                const dropdownOpen = document.getElementById('notification-dropdown')?.classList.contains('open');
+                
+                if (hasActiveJobs) {
+                    // Fast refresh when jobs are processing
+                    setTimeout(loadNotifications, 3000);
+                } else if (dropdownOpen) {
+                    // Moderate refresh when dropdown is open (to update timestamps)
+                    setTimeout(loadNotifications, 15000);
                 }
             } catch (err) {
                 console.error('Notifications load error:', err);
@@ -4435,7 +4454,24 @@
                 return;
             }
             
-            listEl.innerHTML = allItems.slice(0, 15).map((item, displayIndex) => {
+            // Create summary header
+            const fireCount = allItems.filter(i => i._source === 'fire_notification' || i._source === 'fire').length;
+            const uploadCount = allItems.filter(i => i._source === 'activity').length;
+            const pubCount = allItems.filter(i => i._source === 'publication').length;
+            const systemCount = allItems.filter(i => i._source === 'fire_download' || i._source === 'system' || i._source === 'mbtiles').length;
+            
+            let summaryParts = [];
+            if (fireCount > 0) summaryParts.push(`<span style="color:#ef4444;">${fireCount} fire</span>`);
+            if (uploadCount > 0) summaryParts.push(`<span style="color:#22c55e;">${uploadCount} patrol</span>`);
+            if (pubCount > 0) summaryParts.push(`<span style="color:#a855f7;">${pubCount} research</span>`);
+            if (systemCount > 0) summaryParts.push(`<span style="color:#888;">${systemCount} system</span>`);
+            
+            const summaryHeader = summaryParts.length > 0 ? 
+                `<div style="padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:10px;color:#888;">
+                    ${summaryParts.join(' • ')} • <span style="color:#666;">Showing ${Math.min(20, allItems.length)} of ${allItems.length}</span>
+                </div>` : '';
+            
+            listEl.innerHTML = summaryHeader + allItems.slice(0, 20).map((item, displayIndex) => {
                 if (item._source === 'mbtiles') {
                     return renderMBTilesNotification(item);
                 } else if (item._source === 'fire_notification') {
@@ -4444,6 +4480,10 @@
                     return renderFireNotification(item);
                 } else if (item._source === 'fire_download') {
                     return renderFireDownloadNotification(item);
+                } else if (item._source === 'system') {
+                    return renderSystemNotification(item);
+                } else if (item._source === 'report_ready') {
+                    return renderReportReadyNotification(item);
                 } else if (item._source === 'publication') {
                     return renderPublicationNotification(item);
                 } else {
@@ -4456,32 +4496,41 @@
             const isProcessing = job.status === 'processing';
             const isFailed = job.status === 'failed';
             const progress = Math.round(job.progress || 0);
-            const iconBg = isProcessing ? 'rgba(59,130,246,0.2)' : isFailed ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.2)';
+            const iconBg = isProcessing ? 'rgba(59,130,246,0.15)' : isFailed ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)';
             const iconColor = isProcessing ? '#3b82f6' : isFailed ? '#ef4444' : '#22c55e';
-            const icon = isProcessing ? '⟳' : isFailed ? '✕' : '↓';
             
-            let details = '';
+            let subtitle = '';
+            let progressBar = '';
+            let actionButton = '';
+            
             if (isProcessing) {
-                details = `<div style="margin-top:4px;background:rgba(255,255,255,0.1);border-radius:3px;height:4px;overflow:hidden;"><div style="width:${progress}%;height:100%;background:${iconColor};transition:width 0.3s;"></div></div>
-                           <div style="font-size:10px;color:#888;margin-top:2px;">${progress}% • ${job.downloaded_tiles || 0}/${job.total_tiles || 0} tiles</div>`;
+                subtitle = `${job.downloaded_tiles || 0}/${job.total_tiles || 0} tiles • ${progress}%`;
+                progressBar = `<div style="margin-top:4px;background:rgba(255,255,255,0.1);border-radius:3px;height:3px;overflow:hidden;">
+                    <div style="width:${progress}%;height:100%;background:${iconColor};transition:width 0.3s;"></div>
+                </div>`;
             } else if (isFailed) {
-                details = `<div style="color:#ef4444;font-size:11px;">${escapeHtml(job.error || 'Generation failed')}</div>`;
+                subtitle = job.error || 'Generation failed';
             } else {
                 const sizeMB = job.estimated_size_bytes ? Math.round(job.estimated_size_bytes / 1024 / 1024) : 0;
-                details = `<a href="/api/mbtiles/${job.id}/download?pwd=${encodeURIComponent(getPwd())}" 
-                              onclick="event.stopPropagation()" 
-                              style="display:inline-block;margin-top:4px;padding:3px 10px;background:#22c55e;color:#000;border-radius:4px;font-size:11px;font-weight:500;text-decoration:none;">
-                              Download ${sizeMB}MB
-                           </a>`;
+                subtitle = `${sizeMB} MB`;
+                actionButton = `<button onclick="handleMBTilesClick(${job.id}, event)" 
+                    style="margin-top:4px;padding:4px 10px;background:${iconColor};color:#000;border:none;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;transition:opacity 0.2s;" 
+                    onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                    ⬇ Download
+                </button>`;
             }
             
+            const cursor = (!isProcessing && !isFailed) ? 'default' : 'default';
+            
             return `
-                <div class="notification-item" style="cursor:default;">
-                    <div class="notification-icon" style="background:${iconBg};color:${iconColor};font-size:14px;">${icon}</div>
-                    <div class="notification-content">
-                        <div class="notification-location" style="color:${iconColor};">${escapeHtml(job.park_name || job.park_id)}</div>
-                        <div class="notification-details">Offline tiles (${job.source || 'esri'})</div>
-                        ${details}
+                <div class="notification-item" style="cursor:${cursor};">
+                    <div class="notification-icon" style="background:${iconBg};color:${iconColor};">⬇</div>
+                    <div class="notification-content" style="flex:1;">
+                        <div class="notification-location">${escapeHtml(job.park_name || job.park_id)}</div>
+                        <div class="notification-subtitle">${subtitle}</div>
+                        ${progressBar}
+                        ${actionButton}
+                        <div class="notification-time">${formatNotificationTime(job.created_at)}</div>
                     </div>
                 </div>
             `;
@@ -4495,15 +4544,19 @@
             const fireCount = data.fire_count || 0;
             const groupName = data.group_name || notif.reference_id || '';
             
+            const actionButton = `<button onclick="handleFireNotificationClick('${parkId}', '${groupName}', event)" 
+                style="margin-top:4px;padding:4px 10px;background:rgba(239,68,68,0.2);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;transition:all 0.2s;" 
+                onmouseover="this.style.background='rgba(239,68,68,0.3)'" onmouseout="this.style.background='rgba(239,68,68,0.2)'">
+                View on map →
+            </button>`;
+            
             return `
-                <div class="notification-item" data-park="${parkId}" 
-                     onclick="handleFireNotificationClick('${parkId}', '${groupName}', event)">
-                    <div class="notification-icon" style="background: #ef4444; color: white;">
-                        🔥
-                    </div>
-                    <div class="notification-content">
+                <div class="notification-item" data-park="${parkId}" style="cursor:default;">
+                    <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">●</div>
+                    <div class="notification-content" style="flex:1;">
                         <div class="notification-location">${escapeHtml(notif.title || parkName)}</div>
                         <div class="notification-subtitle">${escapeHtml(notif.message)}</div>
+                        ${actionButton}
                         <div class="notification-time">${formatNotificationTime(notif.created_at)}</div>
                     </div>
                 </div>
@@ -4511,8 +4564,7 @@
         }
 
         function renderFireDownloadNotification(notif) {
-            // Fire download success notification (fire_download_success type)
-            // e.g., "Downloaded and processed 18449 new fire detections from 60 parks"
+            // Fire download success notification (fire_download_success type) - non-clickable status
             const message = notif.message || '';
             const matches = message.match(/(\d+)\s+new fire detections from (\d+)\s+parks/);
             const fireCount = matches ? matches[1] : '';
@@ -4520,11 +4572,9 @@
             
             return `
                 <div class="notification-item" style="cursor:default;">
-                    <div class="notification-icon" style="background: rgba(34,197,94,0.2); color: #22c55e;">
-                        ✓
-                    </div>
+                    <div class="notification-icon" style="background: rgba(34,197,94,0.15); color: #22c55e;">✓</div>
                     <div class="notification-content">
-                        <div class="notification-location" style="color: #22c55e;">${escapeHtml(notif.title)}</div>
+                        <div class="notification-location">${escapeHtml(notif.title)}</div>
                         <div class="notification-subtitle">${fireCount ? `${fireCount} fires • ${parkCount} parks` : escapeHtml(message)}</div>
                         <div class="notification-time">${formatNotificationTime(notif.created_at)}</div>
                     </div>
@@ -4533,63 +4583,152 @@
         }
 
         function renderFireNotification(item) {
+            // Old fire_group_alerts format (for backward compatibility)
             const isActive = item.alert_type === 'active_inside' || item.alert_type === 'entered';
-            const iconClass = isActive ? 'notification-icon fire fire-active' : 'notification-icon fire';
-            const directionArrow = getDirectionArrow(item.movement_direction);
+            const iconBg = isActive ? 'rgba(239,68,68,0.15)' : 'rgba(251,146,60,0.15)';
+            const iconColor = isActive ? '#ef4444' : '#fb923c';
             
             return `
                 <div class="notification-item" onclick="handleFireAlertClick(${item._index})">
-                    <div class="${iconClass}"><span style="font-size: 16px;">●</span></div>
+                    <div class="notification-icon" style="background:${iconBg};color:${iconColor};">●</div>
                     <div class="notification-content">
-                        <div class="notification-location">${escapeHtml(item.park_name || item.park_id)} ${directionArrow}</div>
-                        <div class="notification-details">${escapeHtml(item.message || formatFireAlertMessage(item))}</div>
+                        <div class="notification-location">${escapeHtml(item.park_name || item.park_id)}</div>
+                        <div class="notification-subtitle">${escapeHtml(item.message || formatFireAlertMessage(item))}</div>
+                        <div class="notification-time">Now</div>
                     </div>
                 </div>
             `;
         }
         
         function renderPublicationNotification(pub) {
-            // Message format: "Author (Year) Title" or old format "New publication (Year): Title"
+            // Publication notification - click to open park tooltip and toggle research section
             let citation = pub.message || 'New publication';
             // Remove old format prefix if present
             if (citation.startsWith('New publication (')) {
                 citation = citation.replace(/^New publication \(\d+\): /, '');
             }
-            if (citation.length > 80) citation = citation.slice(0, 77) + '...';
+            if (citation.length > 60) citation = citation.slice(0, 57) + '...';
             
             const parkName = pub.title ? pub.title.replace('New Research: ', '') : pub.park_id;
-            const url = pub.reference_url;
+            const parkId = pub.park_id;
+            
+            const actionButton = `<button onclick="handlePublicationClick('${parkId}', event)" 
+                style="margin-top:4px;padding:4px 10px;background:rgba(168,85,247,0.2);color:#a855f7;border:1px solid rgba(168,85,247,0.3);border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;transition:all 0.2s;" 
+                onmouseover="this.style.background='rgba(168,85,247,0.3)'" onmouseout="this.style.background='rgba(168,85,247,0.2)'">
+                View research →
+            </button>`;
             
             return `
-                <div class="notification-item" onclick="${url ? `window.open('${url}', '_blank')` : ''}" style="${url ? '' : 'cursor:default;'}">
-                    <div class="notification-icon" style="background:rgba(168,85,247,0.15);color:#a855f7;">◉</div>
-                    <div class="notification-content">
-                        <div class="notification-location" style="color:#a855f7;">${escapeHtml(parkName)}</div>
-                        <div class="notification-details" style="font-size:11px;line-height:1.3;">${escapeHtml(citation)}</div>
+                <div class="notification-item" style="cursor:default;">
+                    <div class="notification-icon" style="background:rgba(168,85,247,0.15);color:#a855f7;">◆</div>
+                    <div class="notification-content" style="flex:1;">
+                        <div class="notification-location">${escapeHtml(parkName)}</div>
+                        <div class="notification-subtitle">${escapeHtml(citation)}</div>
+                        ${actionButton}
+                        <div class="notification-time">${formatNotificationTime(pub.created_at)}</div>
                     </div>
                 </div>
             `;
         }
         
-        function renderActivityNotification(item) {
-            const location = item.location || 'Unknown location';
-            const distance = item.distance ? item.distance.toFixed(1) + ' km' : '';
-            const date = item.date || '';
-            const typeIcon = {'foot': '○', 'vehicle': '□', 'aircraft': '△'}[item.type] || '◇';
+        function renderSystemNotification(notif) {
+            // System/background job notifications (fire sync, faolex, research, etc.)
+            const data = notif.reference_data || {};
+            const jobType = data.job_type || '';
+            const progress = data.progress || 0;
+            const isRunning = notif.notification_type === 'job_running';
+            const isComplete = notif.notification_type === 'job_complete';
+            const isFailed = notif.notification_type === 'job_failed';
             
-            let details = '';
-            if (distance && date) details = `${distance} • ${date}`;
-            else if (distance) details = distance;
-            else if (date) details = date;
+            let iconColor, iconBg, icon;
+            if (isRunning) {
+                iconColor = '#3b82f6';
+                iconBg = 'rgba(59,130,246,0.15)';
+                icon = '↻';  // Circular arrows
+            } else if (isComplete) {
+                iconColor = '#22c55e';
+                iconBg = 'rgba(34,197,94,0.15)';
+                icon = '✓';  // Checkmark
+            } else if (isFailed) {
+                iconColor = '#ef4444';
+                iconBg = 'rgba(239,68,68,0.15)';
+                icon = '✕';  // X mark
+            } else {
+                iconColor = '#888';
+                iconBg = 'rgba(136,136,136,0.15)';
+                icon = '●';  // Circle
+            }
             
-            const notifData = { index: item._index, location, type: item.type, date, lat: item.lat, lng: item.lon };
+            let progressBar = '';
+            if (isRunning && progress > 0) {
+                progressBar = `<div style="margin-top:4px;background:rgba(255,255,255,0.1);border-radius:3px;height:3px;overflow:hidden;">
+                    <div style="width:${Math.round(progress)}%;height:100%;background:${iconColor};transition:width 0.3s;"></div>
+                </div>`;
+            }
             
             return `
-                <div class="notification-item" onclick="handleNotificationClick(${item._index})">
-                    <div class="notification-icon">${typeIcon}</div>
+                <div class="notification-item" style="cursor:default;">
+                    <div class="notification-icon" style="background:${iconBg};color:${iconColor};">${icon}</div>
                     <div class="notification-content">
-                        <div class="notification-location">${escapeHtml(location)} ${createStarButton('notifications', notifData, 'small')}</div>
-                        <div class="notification-details">${details}</div>
+                        <div class="notification-location">${escapeHtml(notif.title)}</div>
+                        <div class="notification-subtitle">${escapeHtml(notif.message)}</div>
+                        ${progressBar}
+                        <div class="notification-time">${formatNotificationTime(notif.created_at)}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderActivityNotification(item) {
+            // Upload/patrol activity notification - click to zoom and show pixels
+            const location = item.location || 'Unknown location';
+            const distance = item.distance ? item.distance.toFixed(1) + ' km' : '';
+            const pixelCount = (item.grid_cells || []).length;
+            
+            let subtitle = '';
+            if (distance && pixelCount > 0) subtitle = `${distance} • ${pixelCount} pixels`;
+            else if (distance) subtitle = distance;
+            else if (pixelCount > 0) subtitle = `${pixelCount} pixels`;
+            
+            const actionButton = `<button onclick="handleUploadNotificationClick(${item._index})" 
+                style="margin-top:4px;padding:4px 10px;background:rgba(34,197,94,0.2);color:#22c55e;border:1px solid rgba(34,197,94,0.3);border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;transition:all 0.2s;" 
+                onmouseover="this.style.background='rgba(34,197,94,0.3)'" onmouseout="this.style.background='rgba(34,197,94,0.2)'">
+                Fly to →
+            </button>`;
+            
+            return `
+                <div class="notification-item" style="cursor:default;">
+                    <div class="notification-icon" style="background:rgba(34,197,94,0.15);color:#22c55e;">▲</div>
+                    <div class="notification-content" style="flex:1;">
+                        <div class="notification-location">${escapeHtml(location)}</div>
+                        <div class="notification-subtitle">${subtitle}</div>
+                        ${actionButton}
+                        <div class="notification-time">${formatNotificationTime(item.full_date)}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderReportReadyNotification(notif) {
+            // Report ready notification - click to open star modal with report
+            const data = notif.reference_data || {};
+            const reportType = data.report_type || 'Report';
+            const itemCount = data.item_count || 0;
+            
+            const actionButton = `<button onclick="handleReportReadyClick('${notif.id}', event)" 
+                style="margin-top:4px;padding:4px 10px;background:rgba(251,191,36,0.2);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;transition:all 0.2s;" 
+                onmouseover="this.style.background='rgba(251,191,36,0.3)'" onmouseout="this.style.background='rgba(251,191,36,0.2)'">
+                ★ View report
+            </button>`;
+            
+            return `
+                <div class="notification-item" style="cursor:default;">
+                    <div class="notification-icon" style="background:rgba(251,191,36,0.15);color:#fbbf24;">★</div>
+                    <div class="notification-content" style="flex:1;">
+                        <div class="notification-location">${escapeHtml(notif.title || 'Report Ready')}</div>
+                        <div class="notification-subtitle">${reportType}${itemCount > 0 ? ` • ${itemCount} items` : ''}</div>
+                        ${actionButton}
+                        <div class="notification-time">${formatNotificationTime(notif.created_at)}</div>
                     </div>
                 </div>
             `;
@@ -4701,6 +4840,91 @@
                     closeNotificationDropdown();
                 }
             }
+        }
+
+        function handleMBTilesClick(jobId, event) {
+            event.stopPropagation();
+            // Trigger download
+            window.location.href = `/api/mbtiles/${jobId}/download?pwd=${encodeURIComponent(getPwd())}`;
+            closeNotificationDropdown();
+        }
+        
+        function handlePublicationClick(parkId, event) {
+            event.stopPropagation();
+            closeNotificationDropdown();
+            
+            // Find the park
+            const park = parksData?.features?.find(f => f.properties.id === parkId);
+            if (!park) return;
+            
+            const parkName = park.properties.name || parkId;
+            const bbox = park.properties.bbox;
+            
+            if (bbox && bbox.length === 4) {
+                const lat = (bbox[1] + bbox[3]) / 2;
+                const lon = (bbox[0] + bbox[2]) / 2;
+                
+                // Zoom to park
+                map.flyTo({ center: [lon, lat], zoom: 9, duration: 2000 });
+                
+                // Wait for map to settle, then open tooltip with research section
+                setTimeout(() => {
+                    // Simulate click on park to open tooltip
+                    const features = map.queryRenderedFeatures(map.project([lon, lat]), {
+                        layers: ['areas-fill']
+                    });
+                    
+                    if (features.length > 0) {
+                        const feature = features[0];
+                        handlePAClick(feature.properties, [lon, lat]);
+                        
+                        // After tooltip opens, expand research section
+                        setTimeout(() => {
+                            const researchSection = document.getElementById(`research-section-${parkId}`);
+                            if (researchSection && !researchSection.classList.contains('open')) {
+                                researchSection.querySelector('.pa-popup-section-header')?.click();
+                            }
+                        }, 300);
+                    }
+                }, 2100);
+            }
+        }
+        
+        function handleUploadNotificationClick(index) {
+            if (index >= 0 && index < latestActivities.length) {
+                const activity = latestActivities[index];
+                if (activity.lat && activity.lon) {
+                    // Close dropdown
+                    closeNotificationDropdown();
+                    
+                    // Zoom to activity with pixel highlighting
+                    zoomToActivityWithHighlight(activity);
+                    
+                    // If it has grid cells, show them on the map
+                    if (activity.grid_cells && activity.grid_cells.length > 0) {
+                        console.log(`Highlighting ${activity.grid_cells.length} pixels for upload`);
+                    }
+                }
+            }
+        }
+        
+        function handleReportReadyClick(notifId, event) {
+            event.stopPropagation();
+            closeNotificationDropdown();
+            
+            // Open the star modal
+            const starModal = document.getElementById('star-modal');
+            if (starModal) {
+                starModal.classList.add('active');
+                
+                // TODO: Load the report content from the notification reference_data
+                // For now, just open the modal
+            }
+        }
+        
+        function closeNotificationDropdown() {
+            const dropdown = document.getElementById('notification-dropdown');
+            if (dropdown) dropdown.classList.remove('open');
         }
 
         function showNotificationBadge() {
