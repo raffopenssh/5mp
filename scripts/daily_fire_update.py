@@ -26,8 +26,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from collections import defaultdict
 
-# Import Webshare proxy helper
-sys.path.insert(0, str(Path(__file__).parent))
+# Import Webshare proxy helper - use absolute path for cron reliability
+BASE_DIR = Path(__file__).parent.parent
+SCRIPTS_DIR = BASE_DIR / "scripts"
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
 try:
     from webshare_proxy import get_webshare_proxies, get_proxy_dict
     WEBSHARE_AVAILABLE = True
@@ -38,9 +42,10 @@ try:
         WEBSHARE_AVAILABLE = False
 except Exception as e:
     print(f"WARNING: Could not import Webshare proxies: {e}")
+    print(f"  Scripts dir: {SCRIPTS_DIR}")
+    print(f"  sys.path: {sys.path[:3]}")
     WEBSHARE_AVAILABLE = False
 
-BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / "db.sqlite3"
 DATA_DIR = BASE_DIR / "data"
 LOG_DIR = BASE_DIR / "logs"
