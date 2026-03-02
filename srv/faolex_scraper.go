@@ -3,6 +3,7 @@ package srv
 import (
 	"context"
 	"crypto/tls"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -651,10 +652,10 @@ func (s *Server) HandleAPILegalDocuments(w http.ResponseWriter, r *http.Request)
 
 	// Query legal documents
 	rows, err := s.DB.Query(`
-		SELECT id, title, year, doc_type, abstract, url, subjects
+		SELECT id, faolex_id, title, date_of_text, type_of_text, abstract, link, subject, keyword
 		FROM legal_documents
 		WHERE country_iso = ?
-		ORDER BY year DESC
+		ORDER BY created_at DESC
 		LIMIT 50
 	`, countryCode)
 	if err != nil {
@@ -663,25 +664,41 @@ func (s *Server) HandleAPILegalDocuments(w http.ResponseWriter, r *http.Request)
 	}
 	defer rows.Close()
 
+	// Helper function for NullString
+	getString := func(ns sql.NullString) string {
+		if ns.Valid {
+			return ns.String
+		}
+		return ""
+	}
+
 	var docs []map[string]interface{}
 	for rows.Next() {
-		var id, title, docType, abstract, url, subjects string
-		var year int
-		if err := rows.Scan(&id, &title, &year, &docType, &abstract, &url, &subjects); err != nil {
+		var id int
+		var faolexID, title, dateOfText, typeOfText, abstract, link, subject, keyword sql.NullString
+		if err := rows.Scan(&id, &faolexID, &title, &dateOfText, &typeOfText, &abstract, &link, &subject, &keyword); err != nil {
 			continue
 		}
 
 		var subjectsList []string
-		json.Unmarshal([]byte(subjects), &subjectsList)
+		var keywordsList []string
+		if subject.Valid {
+			json.Unmarshal([]byte(subject.String), &subjectsList)
+		}
+		if keyword.Valid {
+			json.Unmarshal([]byte(keyword.String), &keywordsList)
+		}
 
 		docs = append(docs, map[string]interface{}{
-			"id":       id,
-			"title":    title,
-			"year":     year,
-			"type":     docType,
-			"abstract": abstract,
-			"url":      url,
-			"subjects": subjectsList,
+			"id":        id,
+			"faolex_id": getString(faolexID),
+			"title":     getString(title),
+			"year":      getString(dateOfText),
+			"type":      getString(typeOfText),
+			"abstract":  getString(abstract),
+			"url":       getString(link),
+			"subjects":  subjectsList,
+			"keywords":  keywordsList,
 		})
 	}
 
