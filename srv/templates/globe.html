@@ -8584,13 +8584,24 @@ ${starredItems.narratives.map(n => {
                 if (!response.ok) throw new Error('Failed to fetch features');
                 allFeatures = await response.json();
                 
+                // For settlements, match by settlement_id property (e.g., settlement_916)
+                if (type === 'settlement' && featureId.startsWith('settlement_')) {
+                    const settlementId = parseInt(featureId.replace('settlement_', ''));
+                    if (!isNaN(settlementId)) {
+                        // Find all features with this settlement_id
+                        features = allFeatures.features?.filter(f => f.properties?.settlement_id === settlementId) || [];
+                    }
+                }
+                
                 // For all types, try to find the exact feature by feature_id
-                const single = allFeatures.features?.find(f => 
-                    f.properties?.feature_id === featureId || 
-                    f.properties?.id == featureId ||
-                    (f.properties?.group_id && `${parkId}_${f.properties.year || ''}_grp_${f.properties.group_id}` === featureId)
-                );
-                if (single) features = [single];
+                if (features.length === 0) {
+                    const single = allFeatures.features?.find(f => 
+                        f.properties?.feature_id === featureId || 
+                        f.properties?.id == featureId ||
+                        (f.properties?.group_id && `${parkId}_${f.properties.year || ''}_grp_${f.properties.group_id}` === featureId)
+                    );
+                    if (single) features = [single];
+                }
             }
             
             if (features.length === 0) {
