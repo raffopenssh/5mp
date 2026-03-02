@@ -6074,10 +6074,33 @@
                     }
                 }
                 
-                // Country legislation
+                // FAOLEX documents (new data source)
+                try {
+                    const faolexResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/legal?pwd=${window.accessPwd || ''}`);
+                    if (faolexResp.ok) {
+                        const faolexData = await faolexResp.json();
+                        if (faolexData.documents && faolexData.documents.length > 0) {
+                            html += `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size: 9px; color: #666; margin-bottom: 4px;">CONSERVATION LAWS (${faolexData.count})</div>`;
+                            for (const doc of faolexData.documents.slice(0, 5)) {
+                                html += `<div style="font-size: 10px; margin-bottom: 3px;">
+                                    <a href="${escapeHtml(doc.url)}" target="_blank" rel="noopener" style="color: #a0a0a0; text-decoration: none;" onclick="event.stopPropagation();" title="${escapeHtml(doc.title)}">${escapeHtml(doc.title.length > 60 ? doc.title.substring(0, 57) + '...' : doc.title)} ${doc.year ? '(' + doc.year + ')' : ''} \u2197</a>
+                                </div>`;
+                            }
+                            if (faolexData.count > 5) {
+                                html += `<div style="font-size: 9px; color: #666; margin-top: 4px;">+${faolexData.count - 5} more documents</div>`;
+                            }
+                            html += '</div>';
+                        }
+                    }
+                } catch (e) {
+                    console.log('FAOLEX data not available:', e);
+                }
+                
+                // Country legislation (legacy data)
                 if (data.country && data.country.legislation && data.country.legislation.length > 0) {
                     html += `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
-                        <div style="font-size: 9px; color: #666; margin-bottom: 4px;">${escapeHtml(data.country.name)} LEGISLATION</div>`;
+                        <div style="font-size: 9px; color: #666; margin-bottom: 4px;">REFERENCE LEGISLATION</div>`;
                     for (const law of data.country.legislation.slice(0, 3)) {
                         html += `<div style="font-size: 10px; margin-bottom: 3px;">
                             ${law.url ? `<a href="${escapeHtml(law.url)}" target="_blank" rel="noopener" style="color: #a0a0a0; text-decoration: none;" onclick="event.stopPropagation();">${escapeHtml(law.name)} (${law.year}) \u2197</a>` : `${escapeHtml(law.name)} (${law.year})`}
