@@ -7944,7 +7944,11 @@
         // Include pinned layers
         const pinnedKeys = Object.keys(pinnedLayers);
         if (pinnedKeys.length > 0) {
-            params.set('pinned', pinnedKeys.join(','));
+            const pinned = pinnedKeys.map(key => {
+                const layer = pinnedLayers[key];
+                return `${layer.parkId}:${layer.type}`;
+            }).join(',');
+            params.set('pinned', pinned);
         }
         
         // Include map view
@@ -8991,7 +8995,7 @@ ${starredItems.narratives.map(n => {
             // Get date range from time slider for time-filtered features
             // Use global dateFrom/dateTo variables (set by time slider)
             let dateParams = '';
-            if (type === 'fire' || type === 'deforestation') {
+            if (type === 'fire' || type === 'fire_trajectory' || type === 'deforestation') {
                 if (window.dateFrom && window.dateTo) {
                     dateParams = `&start=${window.dateFrom}&end=${window.dateTo}`;
                 }
@@ -10644,6 +10648,42 @@ ${starredItems.narratives.map(n => {
                                     }
                                 });
                             }, 500);
+                            
+                            // Auto-pin layers from sections parameter
+                            setTimeout(async () => {
+                                const park = (window.keystoneAreas || []).find(p => p.id === popupPaId);
+                                const parkName = park ? park.name : popupPaId;
+                                
+                                for (const secType of sectionsToOpen) {
+                                    // Map section types to layer types
+                                    const layerTypeMap = {
+                                        'fire': 'fire_trajectory',
+                                        'settlement': 'settlement',
+                                        'deforestation': 'deforestation',
+                                        'roads': 'road',
+                                        'places': 'place',
+                                        'infrastructure': 'infrastructure'
+                                    };
+                                    
+                                    const layerType = layerTypeMap[secType] || secType;
+                                    const pinKey = getPinKey(popupPaId, layerType);
+                                    
+                                    // Only pin if not already pinned
+                                    if (!pinnedLayers[pinKey]) {
+                                        console.log(`Auto-pinning ${layerType} for ${popupPaId} from sections param`);
+                                        await addPinnedLayer(popupPaId, parkName, layerType);
+                                        
+                                        // Update the icon state
+                                        const icon = document.querySelector(`#${secType}-section-${popupPaId} .pa-popup-section-icon`);
+                                        if (icon) {
+                                            icon.classList.add('pinned');
+                                        }
+                                    }
+                                }
+                                
+                                updatePinnedIndicator();
+                                savePinnedToURL();
+                            }, 1000);
                         }
                     }
                 }
