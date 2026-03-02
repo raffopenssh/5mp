@@ -81,7 +81,7 @@ def test_proxy(proxy, test_url="https://firms.modaps.eosdis.nasa.gov", timeout=1
         return False
 
 
-def get_working_proxy(test_url="https://firms.modaps.eosdis.nasa.gov", max_test=30):
+def get_working_proxy(test_url="https://firms.modaps.eosdis.nasa.gov", max_test=50):
     """Get a working proxy for the target URL."""
     log("  Fetching proxy lists from GitHub...")
     proxies = fetch_proxies()
@@ -90,17 +90,17 @@ def get_working_proxy(test_url="https://firms.modaps.eosdis.nasa.gov", max_test=
         log("  No proxies fetched from sources")
         return None
     
-    log(f"  Testing {min(len(proxies), max_test)} proxies...")
+    log(f"  Testing up to {max_test} proxies for FIRMS API...")
     random.shuffle(proxies)
     
     for i, proxy in enumerate(proxies[:max_test]):
         if test_proxy(proxy, test_url, timeout=8):
             log(f"  Found working proxy: {proxy}")
             return proxy
-        if (i + 1) % 5 == 0:
-            log(f"    Tested {i + 1}/{max_test}...")
+        if (i + 1) % 10 == 0:
+            log(f"    Tested {i + 1}/{min(len(proxies), max_test)}...")
     
-    log("  No working proxy found")
+    log("  No working proxy found after testing {min(len(proxies), max_test)} proxies")
     return None
 
 
@@ -146,18 +146,58 @@ class DailyFireUpdater:
         area = "-20,-35,55,40"  # Africa bbox
         url = f"{FIRMS_NRT_URL}/{NASA_API_KEY}/VIIRS_NOAA20_NRT/{area}/{self.days}"
         
-        # Try with proxy first
-        proxy = get_working_proxy(test_url="https://firms.modaps.eosdis.nasa.gov")
+        # Get proxy list
+        log("  Fetching proxy lists from GitHub...")
+        all_proxies = fetch_proxies()
         
-        try:
-            if proxy:
-                proxy_dict = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
-                log(f"  Using proxy: {proxy}")
-                response = requests.get(url, proxies=proxy_dict, timeout=300)
-            else:
-                log("  No proxy found, trying direct connection...")
-                response = requests.get(url, timeout=300)
+        if all_proxies:
+            random.shuffle(all_proxies)
             
+            # Try up to 5 different proxies
+            max_attempts = 5
+            attempt = 0
+            
+            for proxy in all_proxies[:30]:  # Check first 30 proxies
+                # Quick test
+                if not test_proxy(proxy, "https://firms.modaps.eosdis.nasa.gov", timeout=5):
+                    continue
+                
+                attempt += 1
+                log(f"  Attempt {attempt}/{max_attempts}: Trying proxy {proxy}")
+                
+                try:
+                    proxy_dict = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
+                    response = requests.get(url, proxies=proxy_dict, timeout=120)
+                    response.raise_for_status()
+                    
+                    # Success!
+                    log(f"  ✓ Successfully downloaded via proxy: {proxy}")
+                    lines = response.text.strip().split('\n')
+                    if len(lines) < 2:
+                        log("  No fires found in NRT data")
+                        return []
+                    
+                    header = lines[0].split(',')
+                    fires = []
+                    for line in lines[1:]:
+                        values = line.split(',')
+                        if len(values) >= len(header):
+                            fire = dict(zip(header, values))
+                            fires.append(fire)
+                    
+                    log(f"  Downloaded {len(fires)} fire detections")
+                    return fires
+                    
+                except Exception as e:
+                    log(f"    ✗ Failed: {str(e)[:80]}")
+                    if attempt >= max_attempts:
+                        break
+                    continue
+        
+        # All proxies failed, try direct
+        log("  All proxies failed, trying direct connection...")
+        try:
+            response = requests.get(url, timeout=120)
             response.raise_for_status()
             
             lines = response.text.strip().split('\n')
@@ -173,7 +213,7 @@ class DailyFireUpdater:
                     fire = dict(zip(header, values))
                     fires.append(fire)
             
-            log(f"  Downloaded {len(fires)} fire detections")
+            log(f"  Downloaded {len(fires)} fire detections (direct)")
             return fires
             
         except Exception as e:
