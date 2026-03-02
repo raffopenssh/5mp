@@ -6477,7 +6477,15 @@
                                 </div>`;
                             }
                             if (faolexData.count > 5) {
-                                html += `<div style="font-size: 9px; color: #666; margin-top: 4px;">+${faolexData.count - 5} more documents</div>`;
+                                html += `<button onclick="loadMoreLegalDocs('${paId}', event)" id="load-more-legal-${paId}"
+                                    style="margin-top: 6px; padding: 4px 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; font-size: 10px; cursor: pointer; transition: all 0.2s; width: 100%;"
+                                    onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='#e0e0e0';"
+                                    onmouseout="this.style.background='rgba(255,255,255,0.06)'; this.style.color='#888';">
+                                    Load more (+${faolexData.count - 5})
+                                </button>`;
+                                // Store all documents for load more
+                                window.faolexCache = window.faolexCache || {};
+                                window.faolexCache[paId] = faolexData.documents;
                             }
                             html += '</div>';
                         }
@@ -6508,6 +6516,36 @@
             }
         }
         
+        function loadMoreLegalDocs(paId, event) {
+            event.stopPropagation();
+            
+            const btn = event.target;
+            const docs = window.faolexCache && window.faolexCache[paId];
+            if (!docs) return;
+            
+            // Find the parent container
+            const container = btn.parentElement;
+            const listDiv = container.querySelector(`#faolex-list-${paId}`) || container.querySelector('div');
+            
+            // Show all remaining documents
+            let html = '';
+            for (const doc of docs.slice(5)) {
+                html += `<div style="font-size: 10px; margin-bottom: 3px;">
+                    <a href="${escapeHtml(doc.url)}" target="_blank" rel="noopener" style="color: #a0a0a0; text-decoration: none;" onclick="event.stopPropagation();" title="${escapeHtml(doc.title)}">${escapeHtml(doc.title.length > 60 ? doc.title.substring(0, 57) + '...' : doc.title)} ${doc.year ? '(' + doc.year + ')' : ''} ↗</a>
+                </div>`;
+            }
+            
+            // Insert the new documents before the button
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            while (tempDiv.firstChild) {
+                btn.parentNode.insertBefore(tempDiv.firstChild, btn);
+            }
+            
+            // Remove the button
+            btn.remove();
+        }
+
         async function showParkStatsModal(paId, paName) {
             const container = document.getElementById('park-stats-content');
             
