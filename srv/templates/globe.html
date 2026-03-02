@@ -5117,6 +5117,25 @@
                     const waitForParks = setInterval(() => {
                         if (window.parksData) {
                             clearInterval(waitForParks);
+                            // Open notification dropdown
+                            const notifBtn = document.getElementById('notification-toggle');
+                            const notifDropdown = document.getElementById('notification-dropdown');
+                            if (notifBtn && notifDropdown && !notifDropdown.classList.contains('open')) {
+                                notifBtn.click();
+                            }
+                            // Expand the fire group for this park
+                            setTimeout(() => {
+                                const groupKey = `fire_${parkId}`;
+                                const groupEl = document.getElementById(`group-${groupKey}`);
+                                if (groupEl && groupEl.style.display === 'none') {
+                                    toggleNotificationGroup(groupKey);
+                                    // Scroll to show the group
+                                    setTimeout(() => {
+                                        groupEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                    }, 100);
+                                }
+                            }, 500);
+                            // Handle the click
                             handleFireNotificationClick(parkId, groupName, {stopPropagation: () => {}});
                         }
                     }, 100);
