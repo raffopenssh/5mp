@@ -4860,7 +4860,7 @@
             if (dropdown) dropdown.style.display = 'none';
             
             // Find the park to get name
-            const park = parksData?.features?.find(f => f.properties.id === parkId);
+            const park = window.parksData?.features?.find(f => f.properties.id === parkId);
             const parkName = park?.properties?.name || parkId;
             
             if (groupName) {
