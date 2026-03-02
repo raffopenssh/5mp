@@ -48,14 +48,12 @@ func (f *FAOLEXScraperChrome) Close() {
 
 // SearchFAOLEX searches FAOLEX using headless Chrome
 func (f *FAOLEXScraperChrome) SearchFAOLEX(ctx context.Context, params FAOLEXSearchParams) ([]FAOLEXDocument, error) {
-	// FAOLEX country profile pages have actual document lists
-	// Use country profile approach instead of search
+	// Strategy: Fetch country profile, then filter by keywords/subjects
 	var searchURL string
 	if params.Country != "" {
 		if _, ok := ISO3ToFAOLEXCountry[params.Country]; ok {
 			// Use country profile which lists all documents
 			searchURL = fmt.Sprintf("https://www.fao.org/faolex/country-profiles/general-profile/en/?iso3=%s", params.Country)
-			slog.Debug("Using FAOLEX country profile", "url", searchURL)
 		} else {
 			// Fallback to simple search
 			searchURL = fmt.Sprintf("https://www.fao.org/faolex/results/en/?query=%s", params.Country)
@@ -95,7 +93,15 @@ func (f *FAOLEXScraperChrome) SearchFAOLEX(ctx context.Context, params FAOLEXSea
 	}
 
 	// Parse results from the rendered HTML
-	return f.parseSearchResults(htmlContent, params.Country)
+	docs, err := f.parseSearchResults(htmlContent, params.Country)
+	if err != nil {
+		return nil, err
+	}
+
+	// Filter results by keywords/subjects if specified
+	docs = f.filterDocuments(docs, params)
+
+	return docs, nil
 }
 
 // parseSearchResults extracts documents from rendered HTML
@@ -189,7 +195,86 @@ func (f *FAOLEXScraperChrome) parseSearchResults(html string, countryISO string)
 		}
 	}
 
-	slog.Info("FAOLEX search complete", "found", len(docs))
-
 	return docs, nil
+}
+
+// filterDocuments filters documents by keywords and subjects
+func (f *FAOLEXScraperChrome) filterDocuments(docs []FAOLEXDocument, params FAOLEXSearchParams) []FAOLEXDocument {
+	// If no filters, return all
+	if len(params.Keywords) == 0 && len(params.Subjects) == 0 && params.YearFrom == 0 && params.YearTo == 0 {
+		return docs
+	}
+
+	filtered := []FAOLEXDocument{}
+	for _, doc := range docs {
+		match := true
+
+		// Year filter
+		if params.YearFrom > 0 && doc.Year > 0 && doc.Year < params.YearFrom {
+			match = false
+		}
+		if params.YearTo > 0 && doc.Year > 0 && doc.Year > params.YearTo {
+			match = false
+		}
+
+		// Keyword filter (must match at least one keyword)
+		if len(params.Keywords) > 0 {
+			keywordMatch := false
+			titleLower := strings.ToLower(doc.Title)
+			for _, keyword := range params.Keywords {
+				if strings.Contains(titleLower, strings.ToLower(keyword)) {
+					keywordMatch = true
+					break
+				}
+			}
+			if !keywordMatch {
+				match = false
+			}
+		}
+
+		// Subject filter (check if document relates to any subject)
+		if len(params.Subjects) > 0 {
+			subjectMatch := false
+			titleLower := strings.ToLower(doc.Title)
+			for _, subject := range params.Subjects {
+				subjectLower := strings.ToLower(subject)
+				// Check for related terms
+				if strings.Contains(subjectLower, "wildlife") {
+					if strings.Contains(titleLower, "wildlife") || strings.Contains(titleLower, "faune") ||
+						strings.Contains(titleLower, "animal") || strings.Contains(titleLower, "hunting") ||
+						strings.Contains(titleLower, "chasse") {
+						subjectMatch = true
+						break
+					}
+				} else if strings.Contains(subjectLower, "protected") || strings.Contains(subjectLower, "conservation") {
+					if strings.Contains(titleLower, "protected") || strings.Contains(titleLower, "conservation") ||
+						strings.Contains(titleLower, "protégé") || strings.Contains(titleLower, "park") ||
+						strings.Contains(titleLower, "parc") || strings.Contains(titleLower, "reserve") ||
+						strings.Contains(titleLower, "réserve") {
+						subjectMatch = true
+						break
+					}
+				} else if strings.Contains(subjectLower, "forest") {
+					if strings.Contains(titleLower, "forest") || strings.Contains(titleLower, "forêt") ||
+						strings.Contains(titleLower, "timber") || strings.Contains(titleLower, "bois") {
+						subjectMatch = true
+						break
+					}
+				} else if strings.Contains(titleLower, subjectLower) {
+					subjectMatch = true
+					break
+				}
+			}
+			if !subjectMatch {
+				match = false
+			}
+		}
+
+		if match {
+			filtered = append(filtered, doc)
+		}
+	}
+
+	slog.Info("FAOLEX search complete", "total", len(docs), "filtered", len(filtered))
+	return filtered
 }

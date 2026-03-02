@@ -484,20 +484,9 @@ func (s *Server) RunFAOLEXSync(ctx context.Context) {
 	// Ensure GADM regions are loaded
 	LoadParkRegions()
 
-	// Try to get a working proxy for FAOLEX (Webshare first, then free proxies)
-	proxy := GetWorkingWebshareProxy("https://www.fao.org/faolex/en/")
-	if proxy == "" {
-		slog.Info("Webshare proxies unavailable, trying free proxies")
-		proxy = getWorkingProxy("https://www.fao.org/faolex/en/")
-	}
-	
-	var scraper *FAOLEXScraper
-	if proxy != "" {
-		scraper = NewFAOLEXScraperWithProxy(proxy)
-	} else {
-		slog.Warn("No proxy found for FAOLEX, trying direct connection")
-		scraper = NewFAOLEXScraper()
-	}
+	// Use Chrome-based scraper (handles JavaScript rendering)
+	scraper := NewFAOLEXScraperChrome()
+	defer scraper.Close()
 
 	// Get unique countries and regions from parks
 	countries := make(map[string]bool)
@@ -569,9 +558,11 @@ func (s *Server) RunFAOLEXSync(ctx context.Context) {
 		}
 
 		// Store documents
+		slog.Info("Storing documents", "country", countryCode, "count", len(docs))
 		for _, doc := range docs {
 			s.storeLegalDocument(ctx, countryCode, doc)
 		}
+		slog.Info("Stored documents", "country", countryCode)
 
 		slog.Debug("FAOLEX sync completed for country", "country", countryCode, "found", len(docs))
 		time.Sleep(scraper.rateLimit)
@@ -582,40 +573,27 @@ func (s *Server) RunFAOLEXSync(ctx context.Context) {
 
 // storeLegalDocument stores a legal document in the database
 func (s *Server) storeLegalDocument(ctx context.Context, countryCode string, doc FAOLEXDocument) {
-	// Create table if not exists
-	s.DB.ExecContext(ctx, `
-		CREATE TABLE IF NOT EXISTS legal_documents (
-			id TEXT PRIMARY KEY,
-			country_iso TEXT NOT NULL,
-			title TEXT NOT NULL,
-			title_en TEXT,
-			year INTEGER,
-			doc_type TEXT,
-			subjects TEXT,
-			abstract TEXT,
-			url TEXT,
-			keywords TEXT,
-			scraped_at DATETIME,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		)
-	`)
-
-	// Check if document exists
+	// Check if document exists (using existing schema with faolex_id)
 	var exists int
-	err := s.DB.QueryRowContext(ctx, "SELECT 1 FROM legal_documents WHERE id = ?", doc.ID).Scan(&exists)
+	err := s.DB.QueryRowContext(ctx, "SELECT 1 FROM legal_documents WHERE faolex_id = ?", doc.ID).Scan(&exists)
 	if err == nil {
+		slog.Debug("Document already exists", "id", doc.ID)
 		return // Already exists
 	}
+	
+	slog.Debug("Storing legal document", "id", doc.ID, "title", doc.Title, "country", countryCode)
 
-	// Insert new document
+	// Insert new document using existing table schema
 	subjectsJSON, _ := json.Marshal(doc.Subject)
 	keywordsJSON, _ := json.Marshal(doc.Keywords)
 
 	_, err = s.DB.ExecContext(ctx, `
-		INSERT INTO legal_documents (id, country_iso, title, title_en, year, doc_type, subjects, abstract, url, keywords, scraped_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`, doc.ID, countryCode, doc.Title, doc.TitleEnglish, doc.Year, doc.Type,
-		string(subjectsJSON), doc.Abstract, doc.URL, string(keywordsJSON), doc.ScrapedAt)
+		INSERT INTO legal_documents (
+			faolex_id, country_iso, title, date_of_text, type_of_text, 
+			subject, keyword, abstract, link
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`, doc.ID, countryCode, doc.Title, fmt.Sprintf("%d", doc.Year), doc.Type,
+		string(subjectsJSON), string(keywordsJSON), doc.Abstract, doc.URL)
 
 	if err != nil {
 		slog.Error("Failed to store legal document", "id", doc.ID, "error", err)
