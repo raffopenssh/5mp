@@ -21,6 +21,7 @@ import sqlite3
 import requests
 import subprocess
 import math
+import random
 from datetime import datetime, timedelta
 from pathlib import Path
 from collections import defaultdict
@@ -34,12 +35,73 @@ LOG_DIR.mkdir(exist_ok=True)
 NASA_API_KEY = "REDACTED_FIRMS_KEY"
 FIRMS_NRT_URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 
+# GitHub proxy list sources
+PROXY_SOURCES = [
+    "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt",
+    "https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt",
+    "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt",
+]
+
 DEFAULT_DAYS = 5  # FIRMS NRT API only allows 1-5 days
 INCREMENTAL_DAYS = 14  # Days window for incremental rebuild
 
 def log(msg):
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"[{timestamp}] {msg}", flush=True)
+
+
+def fetch_proxies(max_per_source=50):
+    """Fetch proxies from GitHub sources."""
+    all_proxies = []
+    for source in PROXY_SOURCES:
+        try:
+            resp = requests.get(source, timeout=20)
+            resp.raise_for_status()
+            proxies = [p.strip() for p in resp.text.split('\n') 
+                      if p.strip() and ':' in p and not p.startswith('#')]
+            all_proxies.extend(proxies[:max_per_source])
+        except Exception as e:
+            log(f"  Failed to fetch from {source.split('/')[-2]}: {e}")
+    # Deduplicate
+    return list(set(all_proxies))
+
+
+def test_proxy(proxy, test_url="https://firms.modaps.eosdis.nasa.gov", timeout=10):
+    """Test if proxy works for given URL."""
+    try:
+        proxy_dict = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
+        resp = requests.get(
+            test_url, 
+            proxies=proxy_dict, 
+            timeout=timeout,
+            headers={'User-Agent': 'Mozilla/5.0'}
+        )
+        return resp.status_code < 400
+    except:
+        return False
+
+
+def get_working_proxy(test_url="https://firms.modaps.eosdis.nasa.gov", max_test=30):
+    """Get a working proxy for the target URL."""
+    log("  Fetching proxy lists from GitHub...")
+    proxies = fetch_proxies()
+    
+    if not proxies:
+        log("  No proxies fetched from sources")
+        return None
+    
+    log(f"  Testing {min(len(proxies), max_test)} proxies...")
+    random.shuffle(proxies)
+    
+    for i, proxy in enumerate(proxies[:max_test]):
+        if test_proxy(proxy, test_url, timeout=8):
+            log(f"  Found working proxy: {proxy}")
+            return proxy
+        if (i + 1) % 5 == 0:
+            log(f"    Tested {i + 1}/{max_test}...")
+    
+    log("  No working proxy found")
+    return None
 
 
 class DailyFireUpdater:
@@ -84,8 +146,18 @@ class DailyFireUpdater:
         area = "-20,-35,55,40"  # Africa bbox
         url = f"{FIRMS_NRT_URL}/{NASA_API_KEY}/VIIRS_NOAA20_NRT/{area}/{self.days}"
         
+        # Try with proxy first
+        proxy = get_working_proxy(test_url="https://firms.modaps.eosdis.nasa.gov")
+        
         try:
-            response = requests.get(url, timeout=300)
+            if proxy:
+                proxy_dict = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
+                log(f"  Using proxy: {proxy}")
+                response = requests.get(url, proxies=proxy_dict, timeout=300)
+            else:
+                log("  No proxy found, trying direct connection...")
+                response = requests.get(url, timeout=300)
+            
             response.raise_for_status()
             
             lines = response.text.strip().split('\n')

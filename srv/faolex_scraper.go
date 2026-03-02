@@ -2,10 +2,12 @@ package srv
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -121,11 +123,127 @@ type FAOLEXScraper struct {
 	rateLimit time.Duration
 }
 
+// GitHub proxy sources for fetching fresh proxies
+var proxyGitHubSources = []string{
+	"https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt",
+	"https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt",
+	"https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt",
+}
+
+// fetchProxies gets proxies from GitHub sources
+func fetchProxies() []string {
+	var all []string
+	client := &http.Client{Timeout: 20 * time.Second}
+	
+	for _, source := range proxyGitHubSources {
+		resp, err := client.Get(source)
+		if err != nil {
+			continue
+		}
+		body, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			continue
+		}
+		
+		lines := strings.Split(string(body), "\n")
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if line != "" && !strings.HasPrefix(line, "#") && strings.Contains(line, ":") {
+				all = append(all, line)
+			}
+		}
+	}
+	
+	return all
+}
+
+// testProxy checks if a proxy works
+func testProxy(proxyAddr string, testURL string) bool {
+	proxyURL, err := url.Parse("http://" + proxyAddr)
+	if err != nil {
+		return false
+	}
+	
+	client := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(proxyURL),
+		},
+		Timeout: 10 * time.Second,
+	}
+	
+	resp, err := client.Get(testURL)
+	if err != nil {
+		return false
+	}
+	resp.Body.Close()
+	
+	return resp.StatusCode < 400
+}
+
+// getWorkingProxy finds a working proxy from GitHub sources
+func getWorkingProxy(testURL string) string {
+	slog.Info("Fetching proxy lists from GitHub...")
+	proxies := fetchProxies()
+	
+	if len(proxies) == 0 {
+		slog.Warn("No proxies fetched from sources")
+		return ""
+	}
+	
+	// Shuffle proxies
+	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	rand.Shuffle(len(proxies), func(i, j int) { proxies[i], proxies[j] = proxies[j], proxies[i] })
+	
+	slog.Info("Testing proxies", "count", len(proxies), "max_test", 30)
+	
+	// Test up to 30 proxies
+	maxTest := 30
+	if len(proxies) < maxTest {
+		maxTest = len(proxies)
+	}
+	
+	for i := 0; i < maxTest; i++ {
+		if testProxy(proxies[i], testURL) {
+			slog.Info("Found working proxy", "proxy", proxies[i])
+			return proxies[i]
+		}
+		if (i+1)%5 == 0 {
+			slog.Debug("Testing proxies", "tested", i+1, "max", maxTest)
+		}
+	}
+	
+	slog.Warn("No working proxy found")
+	return ""
+}
+
 // NewFAOLEXScraper creates a new FAOLEX scraper
 func NewFAOLEXScraper() *FAOLEXScraper {
+	return NewFAOLEXScraperWithProxy("")
+}
+
+// NewFAOLEXScraperWithProxy creates a new FAOLEX scraper with optional proxy
+func NewFAOLEXScraperWithProxy(proxyAddr string) *FAOLEXScraper {
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: false},
+	}
+	
+	// If proxy provided, use it
+	if proxyAddr != "" {
+		if !strings.HasPrefix(proxyAddr, "http://") && !strings.HasPrefix(proxyAddr, "https://") {
+			proxyAddr = "http://" + proxyAddr
+		}
+		proxyURL, err := url.Parse(proxyAddr)
+		if err == nil {
+			transport.Proxy = http.ProxyURL(proxyURL)
+			slog.Info("Using proxy for FAOLEX", "proxy", proxyAddr)
+		}
+	}
+	
 	return &FAOLEXScraper{
 		client: &http.Client{
-			Timeout: 60 * time.Second,
+			Transport: transport,
+			Timeout:   60 * time.Second,
 		},
 		baseURL:   "https://www.fao.org/faolex",
 		rateLimit: 2 * time.Second, // Be respectful
@@ -354,7 +472,15 @@ func (s *Server) RunFAOLEXSync(ctx context.Context) {
 	// Ensure GADM regions are loaded
 	LoadParkRegions()
 
-	scraper := NewFAOLEXScraper()
+	// Try to get a working proxy for FAOLEX
+	proxy := getWorkingProxy("https://www.fao.org/faolex/en/")
+	var scraper *FAOLEXScraper
+	if proxy != "" {
+		scraper = NewFAOLEXScraperWithProxy(proxy)
+	} else {
+		slog.Warn("No proxy found for FAOLEX, trying direct connection")
+		scraper = NewFAOLEXScraper()
+	}
 
 	// Get unique countries and regions from parks
 	countries := make(map[string]bool)
