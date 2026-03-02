@@ -284,6 +284,19 @@ class DailyFireUpdater:
             
         except Exception as e:
             log(f"  Error downloading NRT fires: {e}")
+            # Create notification for critical failure
+            try:
+                import sqlite3
+                conn = sqlite3.connect(str(DB_PATH))
+                conn.execute("""
+                    INSERT INTO notifications (park_id, notification_type, title, message, created_at)
+                    VALUES ('SYSTEM', 'fire_download_failed', 'Fire Download Failed', ?, datetime('now'))
+                """, (f"Failed to download NRT fires: {str(e)[:200]}",))
+                conn.commit()
+                conn.close()
+                log("  Created notification for download failure")
+            except Exception as notif_err:
+                log(f"  Failed to create notification: {notif_err}")
             return []
     
     def insert_fires(self, fires):
@@ -343,6 +356,19 @@ class DailyFireUpdater:
         if skipped_invalid > 0:
             log(f"  Skipped {skipped_invalid} records with invalid coordinates")
         log(f"  Affected parks: {len(self.affected_parks)}")
+        
+        # Create success notification if we inserted significant data
+        if inserted > 1000:
+            try:
+                self.conn.execute("""
+                    INSERT INTO notifications (park_id, notification_type, title, message, created_at)
+                    VALUES ('SYSTEM', 'fire_download_success', 'Fire Download Success', ?, datetime('now'))
+                """, (f"Downloaded and processed {inserted} new fire detections from {len(self.affected_parks)} parks",))
+                self.conn.commit()
+                log("  Created notification for successful download")
+            except Exception as notif_err:
+                log(f"  Failed to create notification: {notif_err}")
+        
         return inserted
     
     def _find_park(self, lon, lat):
