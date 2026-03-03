@@ -11395,9 +11395,9 @@
         
         // Fetch narratives, stats, and metadata
         const [fire, deforestation, settlement, stats, species, climate, publications] = await Promise.all([
-            fetch(`/api/parks/${parkId}/fire-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`/api/parks/${parkId}/deforestation-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`/api/parks/${parkId}/settlement-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/fire-narrative${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/deforestation-narrative${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/settlement-narrative${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/stats${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/species${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/climate${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
