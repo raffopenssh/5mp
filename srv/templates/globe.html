@@ -354,7 +354,7 @@
         .starred-report-loading .spinner { width: 14px; height: 14px; border: 2px solid rgba(59,130,246,0.3); border-top-color: #60a5fa; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .starred-report-ready { color: #22c55e; font-size: 10px; display: flex; align-items: center; gap: 4px; }
-        .starred-report-content { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; margin-top: 8px; max-height: 500px; overflow-y: auto; }
+        .starred-report-content { background: transparent; border-radius: 8px; padding: 12px; margin-top: 8px; }
         .starred-report-section { margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 6px; border-left: 3px solid; }
         .starred-report-section.fire { border-color: #ef4444; }
         .starred-report-section.deforestation { border-color: #a855f7; }
@@ -365,7 +365,7 @@
         .starred-report-section-text { font-size: 11px; color: #888; line-height: 1.5; }
         .starred-report-group { margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; font-size: 10px; color: #666; }
         .starred-report-group-title { font-size: 10px; color: #888; margin-bottom: 4px; }
-        .starred-park-nested { margin: 8px 0; padding: 12px; background: rgba(34,197,94,0.05); border: 1px solid rgba(34,197,94,0.1); border-radius: 8px; }
+        .starred-park-nested { margin: 16px 0; padding: 12px; background: transparent; border: none; border-top: 2px solid rgba(34,197,94,0.2); border-radius: 0; }
         .starred-park-nested-header { font-size: 13px; font-weight: 600; color: #22c55e; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
         .starred-park-nested-header:hover { background: rgba(34,197,94,0.08); margin: -4px; padding: 4px; border-radius: 4px; }
         .starred-park-nested-header::before { content: '▼ '; font-size: 10px; margin-right: 6px; display: inline-block; transition: transform 0.2s; }
@@ -3314,6 +3314,14 @@
                     closeNotificationDropdown();
                     notificationDropdownOpen = false;
                     document.getElementById('notification-toggle')?.classList.remove('active');
+                }
+            }
+            // Ctrl+P triggers print report layout
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                const starModal = document.getElementById('star-modal');
+                if (starModal && starModal.classList.contains('active')) {
+                    e.preventDefault();
+                    printInlineReport();
                 }
             }
         });
@@ -9963,7 +9971,11 @@
                 html += `<div style="margin:4px 0;font-size:10px;color:#aaa;">• ${n.narrative || n.title || 'Fire group'}</div>`;
             });
             if (fireNarratives.length > samples.length) {
-                html += `<div style="color:#60a5fa;font-size:9px;margin-top:4px;">...and ${fireNarratives.length - samples.length} more fire groups</div>`;
+                const hiddenNarratives = fireNarratives.slice(samples.length).map(n => 
+                    `<div style="margin:4px 0;font-size:10px;color:#aaa;">• ${escapeHtml(n.narrative || n.title || 'Fire group')}</div>`
+                ).join('');
+                html += `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.classList.add('expanded')">+ Show ${fireNarratives.length - samples.length} more fire groups</div>`;
+                html += `<div class="section-detail">${hiddenNarratives}</div>`;
             }
             html += '</div>';
         }
@@ -11487,8 +11499,12 @@
         ${detailLevel !== 'summary' && fire.summary ? `<div class="narrative-text">${fire.summary}</div>` : ''}
         ${detailLevel !== 'summary' && fire.narratives && fire.narratives.length > 0 ? `
         <div class="fire-groups">
-            <div class="fire-groups-title">Fire Groups (${detailLevel === 'comprehensive' ? fire.narratives.length : Math.min(fire.narratives.length, 10)} ${detailLevel === 'comprehensive' ? 'total' : 'of ' + fire.narratives.length}):</div>
+            <div class="fire-groups-title">Fire Groups (${Math.min(fire.narratives.length, detailLevel === 'comprehensive' ? fire.narratives.length : 10)} of ${fire.narratives.length}):</div>
             ${fire.narratives.slice(0, detailLevel === 'comprehensive' ? fire.narratives.length : 10).map(n => `<div class="fire-group-item">${n.narrative}</div>`).join('')}
+            ${detailLevel !== 'comprehensive' && fire.narratives.length > 10 ? `
+                <div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${fire.narratives.length - 10} more fire groups</div>
+                <div style="display:none">${fire.narratives.slice(10).map(n => `<div class="fire-group-item">${n.narrative}</div>`).join('')}</div>
+            ` : ''}
         </div>` : ''}
     </div>` : ''}
     
@@ -11503,8 +11519,12 @@
         ${detailLevel !== 'summary' && deforest.summary ? `<div class="narrative-text">${deforest.summary}</div>` : ''}
         ${detailLevel !== 'summary' && deforest.hotspots && deforest.hotspots.length > 0 ? `
         <div class="hotspots">
-            <div class="hotspots-title">Deforestation Hotspots (${detailLevel === 'comprehensive' ? deforest.hotspots.length : Math.min(deforest.hotspots.length, 5)} ${detailLevel === 'comprehensive' ? 'total' : 'of ' + deforest.hotspots.length}):</div>
+            <div class="hotspots-title">Deforestation Hotspots (${Math.min(deforest.hotspots.length, detailLevel === 'comprehensive' ? deforest.hotspots.length : 5)} of ${deforest.hotspots.length}):</div>
             ${deforest.hotspots.slice(0, detailLevel === 'comprehensive' ? deforest.hotspots.length : 5).map(h => `<div class="hotspot-item">${h.name || h.description}: ${h.area_km2?.toFixed(2)} km²</div>`).join('')}
+            ${detailLevel !== 'comprehensive' && deforest.hotspots.length > 5 ? `
+                <div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${deforest.hotspots.length - 5} more hotspots</div>
+                <div style="display:none">${deforest.hotspots.slice(5).map(h => `<div class="hotspot-item">${h.name || h.description}: ${h.area_km2?.toFixed(2)} km²</div>`).join('')}</div>
+            ` : ''}
         </div>` : ''}
     </div>` : ''}
     
@@ -11519,8 +11539,12 @@
         ${detailLevel !== 'summary' && settle.summary ? `<div class="narrative-text">${settle.summary}</div>` : ''}
         ${detailLevel !== 'summary' && settle.largest_settlements && settle.largest_settlements.length > 0 ? `
         <div class="settlements-list">
-            <div class="settlements-title">Settlements (${detailLevel === 'comprehensive' ? settle.largest_settlements.length : Math.min(settle.largest_settlements.length, 10)} ${detailLevel === 'comprehensive' ? 'total' : 'of ' + settle.largest_settlements.length}):</div>
+            <div class="settlements-title">Settlements (${Math.min(settle.largest_settlements.length, detailLevel === 'comprehensive' ? settle.largest_settlements.length : 10)} of ${settle.largest_settlements.length}):</div>
             ${settle.largest_settlements.slice(0, detailLevel === 'comprehensive' ? settle.largest_settlements.length : 10).map(s => `<div class="settlement-item">${s.name || 'Unnamed'}: pop. ${formatNumber(s.population || 0)}</div>`).join('')}
+            ${detailLevel !== 'comprehensive' && settle.largest_settlements.length > 10 ? `
+                <div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${settle.largest_settlements.length - 10} more settlements</div>
+                <div style="display:none">${settle.largest_settlements.slice(10).map(s => `<div class="settlement-item">${s.name || 'Unnamed'}: pop. ${formatNumber(s.population || 0)}</div>`).join('')}</div>
+            ` : ''}
         </div>` : ''}
     </div>` : ''}
     
@@ -11547,7 +11571,12 @@
             ${species.species.filter(s => s.status === 'CR' || s.status === 'EN' || s.status === 'VU').slice(0, detailLevel === 'comprehensive' ? 30 : 10).map(s => 
                 `<div style="padding: 4px 0;">• <span style="color: ${s.status === 'CR' ? '#ef4444' : s.status === 'EN' ? '#f59e0b' : '#eab308'};">${s.status}</span> <em>${s.binomial || s.scientific_name}</em> (${s.common_name || 'no common name'})</div>`
             ).join('')}
-            ${species.species.length > (detailLevel === 'comprehensive' ? 30 : 10) ? `<div style="padding: 4px 0; color: #666;">... and ${species.species.length - (detailLevel === 'comprehensive' ? 30 : 10)} more species</div>` : ''}
+            ${detailLevel !== 'comprehensive' && species.species.filter(s => s.status === 'CR' || s.status === 'EN' || s.status === 'VU').length > 10 ? `
+                <div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${species.species.filter(s => s.status === 'CR' || s.status === 'EN' || s.status === 'VU').length - 10} more species</div>
+                <div style="display:none">${species.species.filter(s => s.status === 'CR' || s.status === 'EN' || s.status === 'VU').slice(10).map(s => 
+                    `<div style="padding: 4px 0;">• <span style="color: ${s.status === 'CR' ? '#ef4444' : s.status === 'EN' ? '#f59e0b' : '#eab308'};">${s.status}</span> <em>${s.binomial || s.scientific_name}</em> (${s.common_name || 'no common name'})</div>`
+                ).join('')}</div>
+            ` : ''}
         </div>` : ''}
     </div>` : ''}
     
@@ -11574,7 +11603,15 @@
                     <div style="color: #888; font-size: 11px; margin-top: 2px;">${pub.year || 'N/A'} • ${escapeHtml((pub.authors || []).slice(0, 3).join(', '))}${pub.authors && pub.authors.length > 3 ? ' et al.' : ''}</div>
                 </div>`
             ).join('')}
-            ${publications.length > (detailLevel === 'comprehensive' ? 15 : 5) ? `<div style="padding: 4px 0; color: #666; margin-top: 4px;">... and ${publications.length - (detailLevel === 'comprehensive' ? 15 : 5)} more publications</div>` : ''}
+            ${detailLevel !== 'comprehensive' && publications.length > 5 ? `
+                <div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${publications.length - 5} more publications</div>
+                <div style="display:none">${publications.slice(5).map(pub => 
+                    `<div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <div style="color: #e0e0e0; font-weight: 500;">${escapeHtml(pub.title || 'Untitled')}</div>
+                        <div style="color: #888; font-size: 11px; margin-top: 2px;">${pub.year || 'N/A'} • ${escapeHtml((pub.authors || []).slice(0, 3).join(', '))}${pub.authors && pub.authors.length > 3 ? ' et al.' : ''}</div>
+                    </div>`
+                ).join('')}</div>
+            ` : ''}
         </div>` : ''}
     </div>` : ''}
     

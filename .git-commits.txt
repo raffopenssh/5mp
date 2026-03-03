@@ -1,20 +1,20 @@
-f59a2a5d 2026-03-03 08:50:40 Add comprehensive documentation for fire enhancement feature
-c9d88f5f 2026-03-03 08:47:56 Fix fire group sorting to use priority instead of fire count
-3963d9db 2026-03-03 08:34:12 Update fire pipeline documentation with notification system details
-05223f35 2026-03-03 08:29:02 Fix spurious error message when clicking fire notifications
-da67ec79 2026-03-03 08:25:28 Fix fire-realtime API to use persistent names and feature_ids
-638609bd 2026-03-03 08:20:57 Fix fire notification click to use feature_id instead of friendly name
-e3628eeb 2026-03-03 08:17:38 Add complete fire notifications system documentation with examples
-e06490a9 2026-03-03 08:16:38 Add enhanced fire status notifications with movement and boundary analysis
-5f02c862 2026-03-03 07:51:15 Document stable hurricane-style fire group naming system
-69b666e5 2026-03-03 07:50:15 Implement stable hurricane-style naming for fire groups
-f4b2ea88 2026-03-03 07:44:50 Document comprehensive fire notifications fix with analysis
-934118e5 2026-03-03 07:42:24 Fix fire notifications: query feature_geometries directly with friendly names
-6d448f2d 2026-03-03 07:23:21 Add documentation for fire notifications fix
-d402f81a 2026-03-03 07:22:34 Fix fire notification discrepancy - sync fire_group_alerts with feature_geometries
-af6e39be 2026-03-03 06:56:48 Add incident report for fire groups double-filter bug
-6890c529 2026-03-03 06:56:06 Fix incremental fire group loading - double-filter bug
-b9da1d06 2026-03-02 21:15:46 Remove unused fire_nrt data and deprecated scripts
-25033851 2026-03-02 21:12:01 Add fire data flow documentation
-aed2ff7f 2026-03-02 21:05:27 Add documentation for backup and disk cleanup
-f7c78c30 2026-03-02 20:55:17 Fix fire notification click-to-pin functionality
+f6709ea0 2026-03-03 18:03:57 Implement collapsible parks and prepare for section expansion
+ba9aef45 2026-03-03 17:58:50 Remove printer emoji and add expansion infrastructure
+661ea455 2026-03-03 17:54:19 Critical fix: Parks never filtered entirely from reports
+ca8c0910 2026-03-03 17:49:14 Final UX polish: settings icon, remove clutter, clean inline reports
+82f40330 2026-03-03 17:28:05 Add comprehensive documentation of final report builder improvements
+1d3200f3 2026-03-03 17:26:28 Major UX improvements to report builder and starred reports
+d7c1e257 2026-03-03 16:58:50 Add implementation summary for intelligent report builder work
+69fb5ff3 2026-03-03 16:57:31 Add comprehensive documentation for intelligent report builder
+41900164 2026-03-03 16:56:21 Add comprehensive test suite for intelligent report builder
+9191d348 2026-03-03 16:54:27 Fix bbox loading from URL and enhance intelligent report builder wizard
+767e948d 2026-03-03 16:30:06 Fix PDF reports and simplify report builder
+afe1e38d 2026-03-03 16:15:59 Implement full interactive report builder with smart defaults
+a7164471 2026-03-03 16:00:29 Add intelligent grouping/summarization for repetitive report sections
+99fb2c97 2026-03-03 15:44:02 Star report UX improvements + 5 quick wins
+a22f2d40 2026-03-03 15:14:34 Add comprehensive documentation for star report improvements
+08686828 2026-03-03 15:13:19 Fix species data structure in print report
+22def3ee 2026-03-03 15:09:39 Comprehensive star report improvements for donors
+3b5edc7f 2026-03-03 14:57:54 Comprehensive star report builder improvements
+44a56c6c 2026-03-03 14:41:44 Make satellite hint compact and fix footer overlap
+5fff11ce 2026-03-03 14:34:14 Add satellite hint for high zoom levels (16+)
