@@ -728,7 +728,13 @@
         .pa-popup-section-star { margin-right: 0; }
         .pa-popup-section-title { font-size: 10px; color: #888; text-transform: uppercase; display: flex; align-items: center; gap: 6px; flex: 1; }
         .pa-popup-section-count { color: #22c55e; font-weight: 500; font-size: 11px; margin-left: auto; }
-        .pa-popup-section-icon { font-size: 13px; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; text-align: center; line-height: 1; flex-shrink: 0; }
+        .pa-popup-section-icon { font-size: 14px; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; text-align: center; line-height: 1; flex-shrink: 0; }
+        .pa-popup-section-icon::before { content: attr(data-icon); }
+        /* Scale individual icons for consistent visual size */
+        .pa-popup-section-icon[data-type="fire"] { font-size: 15px; }
+        .pa-popup-section-icon[data-type="settlement"] { font-size: 13px; }
+        .pa-popup-section-icon[data-type="deforestation"] { font-size: 15px; }
+        .pa-popup-section-icon[data-type="road"] { font-size: 11px; letter-spacing: -1px; }
         .pa-popup-section-toggle { font-size: 10px; color: #555; transition: transform 0.2s; }
         .pa-popup-section.open .pa-popup-section-toggle { transform: rotate(180deg); }
         .pa-popup-section-content { display: none; padding: 8px 10px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); }
@@ -5991,6 +5997,12 @@
                 currentPAPopupData = null;
             });
             
+            // Update icon pin states before fetching data
+            if (paId) {
+                // Small delay to ensure DOM is ready
+                setTimeout(() => updateIconPinStates(paId), 10);
+            }
+            
             // Fetch all section data
             if (paId) {
                 fetchPopupFireData(paId);
@@ -10245,6 +10257,12 @@ ${starredItems.narratives.map(n => {
         const layer = pinnedLayers[key];
         if (!layer) return;
         
+        // Extract parkId and type from key for icon update (format: CAF_Chinko_settlement)
+        // Need to find the last underscore to separate type
+        const lastUnderscoreIdx = key.lastIndexOf('_');
+        const parkId = lastUnderscoreIdx > 0 ? key.substring(0, lastUnderscoreIdx) : null;
+        const type = lastUnderscoreIdx > 0 ? key.substring(lastUnderscoreIdx + 1) : null;
+        
         // Remove arrow layer if exists (for fire trajectories)
         if (layer.arrowLayerId && map.getLayer(layer.arrowLayerId)) {
             map.removeLayer(layer.arrowLayerId);
@@ -10274,6 +10292,15 @@ ${starredItems.narratives.map(n => {
         if (map.getSource(layer.sourceId)) map.removeSource(layer.sourceId);
         
         delete pinnedLayers[key];
+        
+        // Update icon state if popup is open for this park
+        if (parkId && type) {
+            const iconEl = document.querySelector(`.pa-popup-section-icon[data-park-id="${parkId}"][data-type="${type}"]`);
+            if (iconEl) {
+                iconEl.classList.remove('pinned');
+                updateIconSymbol(iconEl, type, false);
+            }
+        }
         
         // Update badge and URL
         updatePinnedIndicator();
