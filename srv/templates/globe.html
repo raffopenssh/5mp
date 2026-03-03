@@ -1985,10 +1985,10 @@
         // Monitor zoom level for satellite hint
         map.on('zoom', function() {
             const zoom = map.getZoom();
-            if (zoom >= 16 && currentBasemap === 'dark' && !satelliteHintDismissed && !satelliteHintShown) {
+            if (zoom >= 13 && currentBasemap === 'dark' && !satelliteHintDismissed && !satelliteHintShown) {
                 // Delay showing hint by 1 second to avoid showing during quick zooms
                 setTimeout(() => {
-                    if (map.getZoom() >= 16 && currentBasemap === 'dark') {
+                    if (map.getZoom() >= 13 && currentBasemap === 'dark') {
                         showSatelliteHint();
                     }
                 }, 1000);
@@ -3638,10 +3638,67 @@
                 return;
             }
             
-            const rows = [['Source', 'Park', 'Country', 'Area_km2', 'Fire_Total', 'Fire_Response%', 'Deforest_km2', 'Deforest_Trend', 'Settlement_Count', 'Population'].join(',')];
+            // Comprehensive CSV with ALL feature counts
+            const rows = [[
+                'Source', 'Park', 'Country', 'Area_km2',
+                'Fire_Total', 'Fire_Groups', 'Fire_Response%', 'Fire_Peak_Month',
+                'Fire_Trajectories', 'Fire_Top_Locations',
+                'Deforest_km2', 'Deforest_Events', 'Deforest_Trend', 'Deforest_Top_Locations',
+                'Settlement_Count', 'Population', 'Built_Up_km2',
+                'Rivers_Count', 'Roads_Count', 'Places_Count', 'Infrastructure_Count',
+                'Roadless%', 'Species_Count'
+            ].join(',')];
             
             for (const {park, data, source} of allParks) {
-                rows.push([csvEscape(source), csvEscape(park.name || park.id), csvEscape(park.country || ''), park.area_km2 || '', data.fire?.total_fires || 0, data.fire?.response_rate || 0, data.deforestation?.total_loss_km2?.toFixed(2) || 0, data.deforestation?.trend_direction || '', data.settlement?.settlement_count || 0, data.settlement?.total_population || 0].join(','));
+                const fire = data.fire || {};
+                const deforest = data.deforestation || {};
+                const settlement = data.settlement || {};
+                const stats = data.stats || {};
+                const features = data.features || {};
+                
+                // Fire: count trajectories and top locations
+                const fireTrajectories = features.fire_trajectory?.features?.length || 0;
+                const fireTopLocations = fire.narratives?.slice(0, 3).map(n => n.location || 'Unknown').join('; ') || '';
+                
+                // Deforestation: count events and top locations
+                const deforestEvents = features.deforestation?.features?.length || 0;
+                const deforestTopLocations = deforest.top_areas?.slice(0, 3).map(a => a.location || 'Unknown').join('; ') || '';
+                
+                // Infrastructure: count each type
+                const riversCount = features.river?.features?.length || 0;
+                const roadsCount = features.road?.features?.length || 0;
+                const placesCount = features.place?.features?.length || 0;
+                const infraCount = features.infrastructure?.features?.length || 0;
+                
+                // Species and roadless from stats
+                const roadlessPct = stats.roadless?.roadless_percentage || 0;
+                const speciesCount = data.species?.length || 0;
+                
+                rows.push([
+                    csvEscape(source),
+                    csvEscape(park.name || park.id),
+                    csvEscape(park.country || ''),
+                    park.area_km2 || '',
+                    fire.total_fires || 0,
+                    fire.narratives?.length || 0,
+                    fire.response_rate || 0,
+                    fire.peak_month || '',
+                    fireTrajectories,
+                    csvEscape(fireTopLocations),
+                    deforest.total_loss_km2?.toFixed(2) || 0,
+                    deforestEvents,
+                    deforest.trend_direction || '',
+                    csvEscape(deforestTopLocations),
+                    settlement.settlement_count || 0,
+                    settlement.total_population || 0,
+                    settlement.built_up_km2?.toFixed(2) || 0,
+                    riversCount,
+                    roadsCount,
+                    placesCount,
+                    infraCount,
+                    roadlessPct?.toFixed(1) || 0,
+                    speciesCount
+                ].join(','));
             }
             
             const csv = rows.join('\n');
@@ -3906,8 +3963,219 @@
                 }
             }
             
+            // === NEW: Comprehensive Feature Sheets ===
+            
+            // Fires Sheet - All fire trajectories/groups
+            const firesData = [['Park', 'Date', 'Location', 'Description', 'Fires Count', 'Status', 'Response', 'Coordinates']];
+            for (const {park, data} of allParks) {
+                const fire = data.fire || {};
+                const narratives = fire.narratives || [];
+                const features = data.features || {};
+                
+                for (const n of narratives) {
+                    firesData.push([
+                        park.name || park.id,
+                        n.entry_date || n.start_date || '',
+                        n.location || '',
+                        (n.narrative || n.title || '').substring(0, 100),
+                        n.fires_inside || n.fires_total || n.fires || 0,
+                        n.outcome || n.status || '',
+                        isFireStopped(n) ? 'Yes' : 'No',
+                        n.center ? `${n.center[1]}, ${n.center[0]}` : ''
+                    ]);
+                }
+            }
+            if (firesData.length > 1) {
+                const firesSheet = XLSX.utils.aoa_to_sheet(firesData);
+                firesSheet['!cols'] = [{wch: 25}, {wch: 12}, {wch: 20}, {wch: 40}, {wch: 10}, {wch: 15}, {wch: 10}, {wch: 20}];
+                XLSX.utils.book_append_sheet(wb, firesSheet, 'All Fires');
+            }
+            
+            // Deforestation Sheet - All deforestation events
+            const deforestData = [['Park', 'Location', 'Area_km2', 'Year_Range', 'Classification', 'Description', 'Coordinates']];
+            for (const {park, data} of allParks) {
+                const deforest = data.deforestation || {};
+                const hotspots = deforest.hotspots || deforest.events || [];
+                const features = data.features || {};
+                
+                for (const h of hotspots) {
+                    deforestData.push([
+                        park.name || park.id,
+                        h.name || h.location || 'Hotspot',
+                        Math.round((h.area_km2 || h.loss_km2 || 0) * 100) / 100,
+                        h.year_range || (h.start_year ? h.start_year + '-' + h.end_year : ''),
+                        h.classification || h.type || '',
+                        (h.description || '').substring(0, 100),
+                        h.center ? `${h.center[1]}, ${h.center[0]}` : ''
+                    ]);
+                }
+                
+                // Also add GeoJSON features if available
+                if (features.deforestation?.features) {
+                    for (const f of features.deforestation.features.slice(0, 100)) {
+                        const props = f.properties || {};
+                        const center = getCenterOfGeometry(f.geometry);
+                        deforestData.push([
+                            park.name || park.id,
+                            props.name || props.location || 'Deforested Area',
+                            Math.round((props.area_km2 || 0) * 100) / 100,
+                            props.year || props.date || '',
+                            props.classification || '',
+                            (props.description || '').substring(0, 100),
+                            center ? `${center[1]}, ${center[0]}` : ''
+                        ]);
+                    }
+                }
+            }
+            if (deforestData.length > 1) {
+                const deforestSheet = XLSX.utils.aoa_to_sheet(deforestData);
+                deforestSheet['!cols'] = [{wch: 25}, {wch: 25}, {wch: 10}, {wch: 15}, {wch: 15}, {wch: 40}, {wch: 20}];
+                XLSX.utils.book_append_sheet(wb, deforestSheet, 'All Deforestation');
+            }
+            
+            // Settlements Sheet
+            const settlementsData = [['Park', 'Name', 'Population', 'Type', 'Coordinates']];
+            for (const {park, data} of allParks) {
+                const settlement = data.settlement || {};
+                const settlements = settlement.largest_settlements || settlement.settlements || [];
+                const features = data.features || {};
+                
+                for (const s of settlements) {
+                    settlementsData.push([
+                        park.name || park.id,
+                        s.name || 'Unnamed',
+                        s.population || 0,
+                        s.type || s.classification || '',
+                        s.coordinates ? `${s.coordinates[1]}, ${s.coordinates[0]}` : ''
+                    ]);
+                }
+                
+                // Also add GeoJSON features
+                if (features.settlement?.features) {
+                    for (const f of features.settlement.features.slice(0, 200)) {
+                        const props = f.properties || {};
+                        const coords = f.geometry?.coordinates || [];
+                        settlementsData.push([
+                            park.name || park.id,
+                            props.name || 'Settlement',
+                            props.population || 0,
+                            props.type || '',
+                            coords.length >= 2 ? `${coords[1]}, ${coords[0]}` : ''
+                        ]);
+                    }
+                }
+            }
+            if (settlementsData.length > 1) {
+                const settlementsSheet = XLSX.utils.aoa_to_sheet(settlementsData);
+                settlementsSheet['!cols'] = [{wch: 25}, {wch: 30}, {wch: 12}, {wch: 15}, {wch: 20}];
+                XLSX.utils.book_append_sheet(wb, settlementsSheet, 'All Settlements');
+            }
+            
+            // Infrastructure Sheet - Roads, Rivers, Places, Airstrips
+            const infraData = [['Park', 'Type', 'Name', 'Description', 'Length_km', 'Coordinates']];
+            for (const {park, data} of allParks) {
+                const features = data.features || {};
+                
+                // Roads
+                if (features.road?.features) {
+                    for (const f of features.road.features.slice(0, 100)) {
+                        const props = f.properties || {};
+                        const center = getCenterOfGeometry(f.geometry);
+                        infraData.push([
+                            park.name || park.id,
+                            'Road',
+                            props.name || props.highway || 'Road',
+                            (props.description || '').substring(0, 80),
+                            props.length_km ? Math.round(props.length_km * 10) / 10 : '',
+                            center ? `${center[1]}, ${center[0]}` : ''
+                        ]);
+                    }
+                }
+                
+                // Rivers
+                if (features.river?.features) {
+                    for (const f of features.river.features.slice(0, 100)) {
+                        const props = f.properties || {};
+                        const center = getCenterOfGeometry(f.geometry);
+                        infraData.push([
+                            park.name || park.id,
+                            'River',
+                            props.name || 'River',
+                            (props.description || '').substring(0, 80),
+                            props.length_km ? Math.round(props.length_km * 10) / 10 : '',
+                            center ? `${center[1]}, ${center[0]}` : ''
+                        ]);
+                    }
+                }
+                
+                // Places
+                if (features.place?.features) {
+                    for (const f of features.place.features.slice(0, 100)) {
+                        const props = f.properties || {};
+                        const coords = f.geometry?.coordinates || [];
+                        infraData.push([
+                            park.name || park.id,
+                            'Place',
+                            props.name || 'Location',
+                            props.type || props.place || '',
+                            '',
+                            coords.length >= 2 ? `${coords[1]}, ${coords[0]}` : ''
+                        ]);
+                    }
+                }
+                
+                // Learned Infrastructure (airstrips, etc.)
+                if (features.infrastructure?.features) {
+                    for (const f of features.infrastructure.features) {
+                        const props = f.properties || {};
+                        const center = getCenterOfGeometry(f.geometry);
+                        infraData.push([
+                            park.name || park.id,
+                            props.type || 'Infrastructure',
+                            props.name || props.label || 'Feature',
+                            (props.description || props.notes || '').substring(0, 80),
+                            '',
+                            center ? `${center[1]}, ${center[0]}` : ''
+                        ]);
+                    }
+                }
+            }
+            if (infraData.length > 1) {
+                const infraSheet = XLSX.utils.aoa_to_sheet(infraData);
+                infraSheet['!cols'] = [{wch: 25}, {wch: 15}, {wch: 30}, {wch: 40}, {wch: 12}, {wch: 20}];
+                XLSX.utils.book_append_sheet(wb, infraSheet, 'All Infrastructure');
+            }
+            
             XLSX.writeFile(wb, `5MP_Detailed_Report${filterStr}.xlsx`);
-            showToast(`Exported ${allParks.length} parks to XLSX`, 'success');
+            showToast(`Exported ${allParks.length} parks with ${wb.SheetNames.length} sheets to XLSX`, 'success');
+        }
+        
+        // Helper to get center coordinates from any geometry
+        function getCenterOfGeometry(geometry) {
+            if (!geometry || !geometry.coordinates) return null;
+            
+            if (geometry.type === 'Point') {
+                return geometry.coordinates;
+            } else if (geometry.type === 'LineString') {
+                const coords = geometry.coordinates;
+                if (coords.length === 0) return null;
+                const mid = Math.floor(coords.length / 2);
+                return coords[mid];
+            } else if (geometry.type === 'Polygon') {
+                const coords = geometry.coordinates[0];
+                if (coords.length === 0) return null;
+                // Simple centroid approximation
+                let sumLng = 0, sumLat = 0;
+                for (const c of coords) {
+                    sumLng += c[0];
+                    sumLat += c[1];
+                }
+                return [sumLng / coords.length, sumLat / coords.length];
+            } else if (geometry.type === 'MultiPolygon' || geometry.type === 'MultiLineString') {
+                // Get center of first feature
+                return getCenterOfGeometry({ type: geometry.type.replace('Multi', ''), coordinates: geometry.coordinates[0] });
+            }
+            return null;
         }
         
         // Export merged KML for all starred parks
@@ -4002,38 +4270,220 @@
         }
         
         async function exportFullReportKml() {
-            const parkIds = new Set();
+            const allParks = [];
             
-            // Collect all park IDs
+            // Collect all parks (direct stars + bbox)
             for (const park of starredItems.parks) {
-                if (park.id) parkIds.add(park.id);
+                const data = reportDataCache.parks.get(park.id) || {};
+                allParks.push({ park, data });
             }
+            
             for (const bbox of starredItems.bboxes) {
                 const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
                 if (bboxData?.parks) {
                     for (const p of bboxData.parks) {
-                        if (p.id) parkIds.add(p.id);
+                        allParks.push({ park: p, data: p.reportData || {} });
                     }
                 }
             }
             
-            if (parkIds.size === 0) {
+            if (allParks.length === 0) {
                 showToast('No parks to export', 'error');
                 return;
             }
             
-            showToast(`Exporting ${parkIds.size} parks to KML...`);
+            showToast(`Generating comprehensive KML for ${allParks.length} parks...`);
             
-            // Download merged KML with all parks as folders
-            const url = `/api/export/merged.kml?pwd=${getPwd()}&parks=${Array.from(parkIds).join(',')}`
-                + (dateFrom ? '&from=' + dateFrom : '')
-                + (dateTo ? '&to=' + dateTo : '');
+            // Build comprehensive KML with all feature layers
+            const kmlParts = [
+                '<?xml version="1.0" encoding="UTF-8"?>',
+                '<kml xmlns="http://www.opengis.net/kml/2.2">',
+                '<Document>',
+                '<name>5MP Conservation Report</name>',
+                `<description>Generated ${new Date().toISOString()}. Date range: ${dateFrom || 'start'} to ${dateTo || 'present'}</description>`,
+                '',
+                '<!-- Styles -->',
+                '<Style id="fire"><LineStyle><color>ff0000ff</color><width>3</width></LineStyle><PolyStyle><color>440000ff</color></PolyStyle></Style>',
+                '<Style id="deforestation"><LineStyle><color>ff00ffff</color><width>2</width></LineStyle><PolyStyle><color>4400ffff</color></PolyStyle></Style>',
+                '<Style id="settlement"><IconStyle><color>ffffaa00</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/homegardenbusiness.png</href></Icon></IconStyle></Style>',
+                '<Style id="river"><LineStyle><color>ffff5500</color><width>2</width></LineStyle></Style>',
+                '<Style id="road"><LineStyle><color>ff888888</color><width>2</width></LineStyle></Style>',
+                '<Style id="park"><LineStyle><color>ff00ff22</color><width>3</width></LineStyle><PolyStyle><color>2200ff22</color></PolyStyle></Style>',
+                ''
+            ];
+            
+            // Helper to convert GeoJSON coordinates to KML coordinates
+            function coordsToKML(coords, geomType) {
+                if (geomType === 'Point') {
+                    return `${coords[0]},${coords[1]},0`;
+                } else if (geomType === 'LineString') {
+                    return coords.map(c => `${c[0]},${c[1]},0`).join(' ');
+                } else if (geomType === 'Polygon') {
+                    return coords[0].map(c => `${c[0]},${c[1]},0`).join(' ');
+                } else if (geomType === 'MultiPolygon') {
+                    // Just use first polygon
+                    return coords[0][0].map(c => `${c[0]},${c[1]},0`).join(' ');
+                }
+                return '';
+            }
+            
+            function escapeXML(str) {
+                return (str || '').toString()
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&apos;');
+            }
+            
+            // Process each park
+            for (const {park, data} of allParks) {
+                const parkName = escapeXML(park.name || park.id);
+                kmlParts.push(`<Folder><name>${parkName}</name>`);
+                kmlParts.push(`<description>${escapeXML(park.country || '')}, Area: ${park.area_km2 || 0} km²</description>`);
+                
+                const features = data.features || {};
+                
+                // FIRE TRAJECTORIES
+                if (features.fire_trajectory?.features?.length > 0) {
+                    kmlParts.push('<Folder><name>Fire Trajectories</name>');
+                    for (const f of features.fire_trajectory.features.slice(0, 100)) {
+                        const props = f.properties || {};
+                        const name = escapeXML(props.group_name || props.name || 'Fire Group');
+                        const desc = escapeXML(props.narrative || props.description || '');
+                        const coords = coordsToKML(f.geometry.coordinates, f.geometry.type);
+                        if (coords) {
+                            kmlParts.push(`<Placemark><name>${name}</name><description>${desc}</description><styleUrl>#fire</styleUrl>`);
+                            if (f.geometry.type === 'LineString') {
+                                kmlParts.push(`<LineString><coordinates>${coords}</coordinates></LineString>`);
+                            } else if (f.geometry.type === 'Point') {
+                                kmlParts.push(`<Point><coordinates>${coords}</coordinates></Point>`);
+                            }
+                            kmlParts.push('</Placemark>');
+                        }
+                    }
+                    kmlParts.push('</Folder>');
+                }
+                
+                // DEFORESTATION EVENTS
+                if (features.deforestation?.features?.length > 0) {
+                    kmlParts.push('<Folder><name>Deforestation</name>');
+                    for (const f of features.deforestation.features.slice(0, 100)) {
+                        const props = f.properties || {};
+                        const name = escapeXML(props.name || props.location || 'Deforested Area');
+                        const desc = `Area: ${(props.area_km2 || 0).toFixed(2)} km², Year: ${props.year || 'Unknown'}`;
+                        const coords = coordsToKML(f.geometry.coordinates, f.geometry.type);
+                        if (coords) {
+                            kmlParts.push(`<Placemark><name>${name}</name><description>${escapeXML(desc)}</description><styleUrl>#deforestation</styleUrl>`);
+                            if (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon') {
+                                kmlParts.push(`<Polygon><outerBoundaryIs><LinearRing><coordinates>${coords}</coordinates></LinearRing></outerBoundaryIs></Polygon>`);
+                            } else if (f.geometry.type === 'Point') {
+                                kmlParts.push(`<Point><coordinates>${coords}</coordinates></Point>`);
+                            }
+                            kmlParts.push('</Placemark>');
+                        }
+                    }
+                    kmlParts.push('</Folder>');
+                }
+                
+                // SETTLEMENTS
+                if (features.settlement?.features?.length > 0) {
+                    kmlParts.push('<Folder><name>Settlements</name>');
+                    for (const f of features.settlement.features.slice(0, 200)) {
+                        const props = f.properties || {};
+                        const name = escapeXML(props.name || 'Settlement');
+                        const desc = `Population: ${props.population || 0}, Type: ${props.type || 'Unknown'}`;
+                        const coords = coordsToKML(f.geometry.coordinates, f.geometry.type);
+                        if (coords) {
+                            kmlParts.push(`<Placemark><name>${name}</name><description>${escapeXML(desc)}</description><styleUrl>#settlement</styleUrl>`);
+                            kmlParts.push(`<Point><coordinates>${coords}</coordinates></Point>`);
+                            kmlParts.push('</Placemark>');
+                        }
+                    }
+                    kmlParts.push('</Folder>');
+                }
+                
+                // RIVERS
+                if (features.river?.features?.length > 0) {
+                    kmlParts.push('<Folder><name>Rivers</name>');
+                    for (const f of features.river.features.slice(0, 50)) {
+                        const props = f.properties || {};
+                        const name = escapeXML(props.name || 'River');
+                        const coords = coordsToKML(f.geometry.coordinates, f.geometry.type);
+                        if (coords) {
+                            kmlParts.push(`<Placemark><name>${name}</name><styleUrl>#river</styleUrl>`);
+                            kmlParts.push(`<LineString><coordinates>${coords}</coordinates></LineString>`);
+                            kmlParts.push('</Placemark>');
+                        }
+                    }
+                    kmlParts.push('</Folder>');
+                }
+                
+                // ROADS
+                if (features.road?.features?.length > 0) {
+                    kmlParts.push('<Folder><name>Roads</name>');
+                    for (const f of features.road.features.slice(0, 50)) {
+                        const props = f.properties || {};
+                        const name = escapeXML(props.name || 'Road');
+                        const coords = coordsToKML(f.geometry.coordinates, f.geometry.type);
+                        if (coords) {
+                            kmlParts.push(`<Placemark><name>${name}</name><styleUrl>#road</styleUrl>`);
+                            kmlParts.push(`<LineString><coordinates>${coords}</coordinates></LineString>`);
+                            kmlParts.push('</Placemark>');
+                        }
+                    }
+                    kmlParts.push('</Folder>');
+                }
+                
+                // PLACES
+                if (features.place?.features?.length > 0) {
+                    kmlParts.push('<Folder><name>Places</name>');
+                    for (const f of features.place.features.slice(0, 100)) {
+                        const props = f.properties || {};
+                        const name = escapeXML(props.name || 'Place');
+                        const coords = coordsToKML(f.geometry.coordinates, f.geometry.type);
+                        if (coords) {
+                            kmlParts.push(`<Placemark><name>${name}</name>`);
+                            kmlParts.push(`<Point><coordinates>${coords}</coordinates></Point>`);
+                            kmlParts.push('</Placemark>');
+                        }
+                    }
+                    kmlParts.push('</Folder>');
+                }
+                
+                // INFRASTRUCTURE (Airstrips, etc.)
+                if (features.infrastructure?.features?.length > 0) {
+                    kmlParts.push('<Folder><name>Infrastructure</name>');
+                    for (const f of features.infrastructure.features) {
+                        const props = f.properties || {};
+                        const name = escapeXML(props.name || props.type || 'Infrastructure');
+                        const coords = coordsToKML(f.geometry.coordinates, f.geometry.type);
+                        if (coords) {
+                            kmlParts.push(`<Placemark><name>${name}</name>`);
+                            kmlParts.push(`<Point><coordinates>${coords}</coordinates></Point>`);
+                            kmlParts.push('</Placemark>');
+                        }
+                    }
+                    kmlParts.push('</Folder>');
+                }
+                
+                kmlParts.push('</Folder>'); // End park folder
+            }
+            
+            kmlParts.push('</Document>');
+            kmlParts.push('</kml>');
+            
+            // Download KML
+            const kml = kmlParts.join('\n');
+            const blob = new Blob([kml], {type: 'application/vnd.google-earth.kml+xml'});
             const link = document.createElement('a');
-            link.href = url;
-            link.download = `5mp_conservation_${parkIds.size}_parks.kml`;
+            link.href = URL.createObjectURL(blob);
+            const filterStr = buildFilterString();
+            link.download = `5MP_Comprehensive${filterStr}.kml`;
             link.click();
+            URL.revokeObjectURL(link.href);
             
-            showToast(`Exported ${parkIds.size} parks to single KML`, 'success');
+            showToast(`Exported ${allParks.length} parks with all features to KML`, 'success');
         }
 
         var mapLoaded = false;
@@ -9494,12 +9944,13 @@
         return str;
     }
     
-    // Fetch all nested data for a park
+    // Fetch all nested data for a park - COMPREHENSIVE VERSION
     async function fetchParkFullData(parkId) {
         const pwd = new URLSearchParams(window.location.search).get('pwd');
         const pwdParam = pwd ? `?pwd=${pwd}` : '';
         const dateParams = (dateFrom ? `&from=${dateFrom}` : '') + (dateTo ? `&to=${dateTo}` : '');
         
+        // Fetch narratives, stats, and metadata
         const [fire, deforestation, settlement, stats, species, climate, publications] = await Promise.all([
             fetch(`/api/parks/${parkId}/fire-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/deforestation-narrative${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
@@ -9510,7 +9961,38 @@
             fetch(`/api/parks/${parkId}/publications${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null)
         ]);
         
-        return { fire, deforestation, settlement, stats, species, climate, publications };
+        // Fetch ALL feature layer GeoJSON data
+        const featureTypes = ['fire_trajectory', 'deforestation', 'settlement', 'river', 'road', 'place'];
+        const features = {};
+        
+        await Promise.all(featureTypes.map(async type => {
+            try {
+                const response = await fetch(`/api/parks/${parkId}/features?type=${type}${pwdParam}${dateParams}`);
+                if (response.ok) {
+                    const geojson = await response.json();
+                    if (geojson && geojson.features && geojson.features.length > 0) {
+                        features[type] = geojson;
+                    }
+                }
+            } catch (e) {
+                // Silently skip missing feature types
+            }
+        }));
+        
+        // Fetch learned infrastructure (airstrips, etc.)
+        try {
+            const infraResponse = await fetch(`/api/admin/learned-features?park_id=${parkId}${pwdParam}`);
+            if (infraResponse.ok) {
+                const infraData = await infraResponse.json();
+                if (infraData && infraData.features && infraData.features.length > 0) {
+                    features.infrastructure = infraData;
+                }
+            }
+        } catch (e) {
+            // Silently skip if infrastructure endpoint unavailable
+        }
+        
+        return { fire, deforestation, settlement, stats, species, climate, publications, features };
     }
     
     // Generate full report with nested data
@@ -12309,12 +12791,22 @@ ${starredItems.narratives.map(n => {
         // Restore starred items from URL
         const starredParks = params.get('starred_parks');
         if (starredParks) {
+            const parkIds = [];
             starredParks.split(',').forEach(parkId => {
                 const park = (window.keystoneAreas || []).find(p => p.id === parkId);
                 if (park && !isStarred('parks', parkId)) {
                     toggleStar('parks', { id: park.id, name: park.name, country: park.country, bbox: park.bbox, center: park.center });
+                    parkIds.push(parkId);
                 }
             });
+            
+            // Auto-prefetch report data for starred parks from URL
+            if (parkIds.length > 0) {
+                console.log(`[Report] Auto-prefetching data for ${parkIds.length} parks from URL...`);
+                setTimeout(() => {
+                    parkIds.forEach(parkId => prefetchParkReportData(parkId));
+                }, 2000);
+            }
         }
         
         const starredCountries = params.get('starred_countries');
@@ -12328,15 +12820,25 @@ ${starredItems.narratives.map(n => {
         
         const starredBboxes = params.get('starred_bboxes');
         if (starredBboxes) {
+            const bboxes = [];
             starredBboxes.split(',').forEach(bboxStr => {
                 const bboxCoords = bboxStr.split(':').map(parseFloat);
                 if (bboxCoords.length === 4 && bboxCoords.every(c => !isNaN(c))) {
                     const bboxKey = bboxCoords.join(',');
                     if (!isStarred('bboxes', bboxKey)) {
                         toggleStar('bboxes', { bbox: bboxCoords, name: 'Saved Area' });
+                        bboxes.push({ bbox: bboxCoords, name: 'Saved Area' });
                     }
                 }
             });
+            
+            // Auto-prefetch report data for starred bboxes from URL
+            if (bboxes.length > 0) {
+                console.log(`[Report] Auto-prefetching data for ${bboxes.length} bboxes from URL...`);
+                setTimeout(() => {
+                    bboxes.forEach(bbox => prefetchBboxReportData(bbox.bbox, bbox.name));
+                }, 3000);
+            }
         }
         
         // Restore starred narratives
