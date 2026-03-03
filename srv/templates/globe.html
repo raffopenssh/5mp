@@ -4758,12 +4758,16 @@
             const featureId = data.feature_id || notif.reference_id || '';
             const time = formatNotificationTime(notif.created_at);
             
+            // Format location with park name for single notifications
+            const title = notif.title || groupName;
+            const location = title ? `${escapeHtml(parkName)} • ${escapeHtml(title)}` : escapeHtml(parkName);
+            
             // Single action: view on map (whole item clickable)
             return `
                 <div class="notification-item clickable" data-type="fire_alert" data-action="view_fire" data-park-id="${parkId}" data-feature-id="${featureId}" data-group-name="${groupName}">
                     <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">●</div>
                     <div class="notification-content">
-                        <div class="notification-location">${escapeHtml(notif.title || parkName)}</div>
+                        <div class="notification-location">${location}</div>
                         <div class="notification-subtitle">${escapeHtml(notif.message)}</div>
                         <div class="notification-time">${time}</div>
                     </div>
