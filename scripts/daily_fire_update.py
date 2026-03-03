@@ -600,13 +600,13 @@ class DailyFireUpdater:
         self.conn.commit()
         log(f"  Cleaned {deleted + deleted2} old alerts")
     
-    def create_fire_notifications(self):
-        """Create notifications for active fire groups from feature_geometries.
+    def assign_friendly_names_to_new_groups(self):
+        """Assign stable friendly names to new fire groups (like hurricane naming).
         
-        Queries feature_geometries directly for consistency with fire-realtime API.
-        Assigns friendly NATO phonetic names based on fires_total (descending).
+        Names are assigned chronologically (by start_date) and persist across days.
+        This ensures managers can track the same fire over time.
         """
-        log("Step 6b: Creating notifications for active fire groups...")
+        log("Step 6b1: Assigning friendly names to new fire groups...")
         
         # NATO phonetic alphabet for friendly names
         group_names = [
@@ -623,91 +623,146 @@ class DailyFireUpdater:
             base_idx = index % len(group_names)
             return f"{group_names[base_idx]}-{cycle}"
         
-        # Query active fire trajectories from feature_geometries for ALL parks
-        # (not just affected_parks, to ensure comprehensive notifications)
+        # Get all current fire trajectories
         cursor = self.conn.execute("""
-            SELECT park_id, feature_id, properties_json, start_date, end_date
+            SELECT park_id, feature_id, start_date, end_date
             FROM feature_geometries
             WHERE feature_type = 'fire_trajectory'
-              AND end_date >= date('now', '-3 days')  -- Active if last seen within 3 days
-            ORDER BY park_id, start_date DESC
+              AND feature_id LIKE '%_2026_grp_%'
+            ORDER BY park_id, start_date ASC
+        """)
+        
+        park_groups = {}
+        for row in cursor:
+            park_id, feature_id, start_date, end_date = row
+            if park_id not in park_groups:
+                park_groups[park_id] = []
+            park_groups[park_id].append({
+                'feature_id': feature_id,
+                'start_date': start_date,
+                'end_date': end_date
+            })
+        
+        new_names_assigned = 0
+        
+        for park_id, groups in park_groups.items():
+            # Sort by start_date (chronological)
+            groups.sort(key=lambda x: x['start_date'])
+            
+            for i, group in enumerate(groups):
+                feature_id = group['feature_id']
+                
+                # Check if name already exists
+                check = self.conn.execute(
+                    "SELECT friendly_name FROM fire_group_names WHERE park_id = ? AND feature_id = ?",
+                    (park_id, feature_id)
+                ).fetchone()
+                
+                if not check:
+                    # Assign new name based on chronological order
+                    friendly_name = get_friendly_name(i)
+                    
+                    self.conn.execute("""
+                        INSERT INTO fire_group_names
+                        (park_id, feature_id, friendly_name, first_seen_date, last_seen_date)
+                        VALUES (?, ?, ?, ?, ?)
+                    """, (park_id, feature_id, friendly_name, group['start_date'], group['end_date']))
+                    
+                    new_names_assigned += 1
+                else:
+                    # Update last_seen_date for existing groups
+                    self.conn.execute("""
+                        UPDATE fire_group_names
+                        SET last_seen_date = ?
+                        WHERE park_id = ? AND feature_id = ?
+                    """, (group['end_date'], park_id, feature_id))
+        
+        self.conn.commit()
+        log(f"  Assigned {new_names_assigned} new friendly names")
+    
+    def create_fire_notifications(self):
+        """Create notifications for active fire groups using stored friendly names.
+        
+        Friendly names are stable and persist across days (like hurricane tracking).
+        """
+        log("Step 6b2: Creating notifications for active fire groups...")
+        
+        # Query active fire trajectories with their friendly names
+        cursor = self.conn.execute("""
+            SELECT fg.park_id, fg.feature_id, fg.properties_json, fgn.friendly_name
+            FROM feature_geometries fg
+            JOIN fire_group_names fgn ON fg.park_id = fgn.park_id AND fg.feature_id = fgn.feature_id
+            WHERE fg.feature_type = 'fire_trajectory'
+              AND fg.end_date >= date('now', '-3 days')
+            ORDER BY fg.park_id, fgn.friendly_name
         """)
         
         notifications_created = 0
         parks_processed = set()
         
-        # Group by park and assign friendly names
-        park_groups = {}
         for row in cursor:
-            park_id, feature_id, props_json, start_date, end_date = row
-            if park_id not in park_groups:
-                park_groups[park_id] = []
+            park_id, feature_id, props_json, friendly_name = row
+            park_name = self.parks.get(park_id, {}).get('name', park_id)
             
+            # Check if notification already exists
+            check = self.conn.execute("""
+                SELECT id FROM notifications
+                WHERE park_id = ?
+                  AND notification_type = 'fire_alert'
+                  AND reference_id = ?
+                  AND created_at > datetime('now', '-7 days')
+                LIMIT 1
+            """, (park_id, feature_id))
+            
+            if check.fetchone():
+                continue  # Skip if exists
+            
+            # Parse properties
             props = json.loads(props_json)
             fires_total = props.get('fires_total', 0)
             days = props.get('days', 1)
-            direction = props.get('direction', 'stationary')
             
-            park_groups[park_id].append({
+            # Create notification with stable friendly name
+            title = f"🔥 {friendly_name}"
+            message = f"{fires_total} fires, {days} days active"
+            
+            reference_data = json.dumps({
+                'park_id': park_id,
+                'park_name': park_name,
                 'feature_id': feature_id,
-                'fires_total': fires_total,
-                'days': days,
-                'direction': direction,
-                'end_date': end_date
+                'type': 'fire_trajectory',
+                'group_name': friendly_name
             })
-        
-        # Create notifications for each park
-        for park_id, groups in park_groups.items():
-            park_name = self.parks.get(park_id, {}).get('name', park_id)
             
-            # Sort by fires_total descending for consistent naming
-            groups.sort(key=lambda x: x['fires_total'], reverse=True)
+            self.conn.execute("""
+                INSERT INTO notifications
+                (park_id, notification_type, title, message, reference_id, reference_data, created_at)
+                VALUES (?, 'fire_alert', ?, ?, ?, ?, datetime('now'))
+            """, (park_id, title, message, feature_id, reference_data))
             
-            for i, group in enumerate(groups):
-                feature_id = group['feature_id']
-                
-                # Check if notification already exists
-                check = self.conn.execute("""
-                    SELECT id FROM notifications
-                    WHERE park_id = ?
-                      AND notification_type = 'fire_alert'
-                      AND reference_id = ?
-                      AND created_at > datetime('now', '-7 days')
-                    LIMIT 1
-                """, (park_id, feature_id))
-                
-                if check.fetchone():
-                    continue  # Skip if exists
-                
-                # Assign friendly name
-                friendly_name = get_friendly_name(i)
-                
-                # Create notification
-                title = f"🔥 {friendly_name}"
-                message = f"{group['fires_total']} fires, {group['days']} days active"
-                
-                reference_data = json.dumps({
-                    'park_id': park_id,
-                    'park_name': park_name,
-                    'feature_id': feature_id,
-                    'type': 'fire_trajectory',
-                    'group_name': friendly_name
-                })
-                
-                self.conn.execute("""
-                    INSERT INTO notifications
-                    (park_id, notification_type, title, message, reference_id, reference_data, created_at)
-                    VALUES (?, 'fire_alert', ?, ?, ?, ?, datetime('now'))
-                """, (park_id, title, message, feature_id, reference_data))
-                
-                notifications_created += 1
-            
-            if groups:
-                parks_processed.add(park_id)
-                log(f"  {park_id}: Created {len(groups)} notifications")
+            notifications_created += 1
+            parks_processed.add(park_id)
         
         self.conn.commit()
+        
+        # Log per-park counts
+        if notifications_created > 0:
+            cursor = self.conn.execute("""
+                SELECT park_id, COUNT(*) as count
+                FROM notifications
+                WHERE notification_type = 'fire_alert'
+                  AND created_at > datetime('now', '-1 minute')
+                GROUP BY park_id
+                ORDER BY count DESC
+            """)
+            
+            for row in cursor:
+                park_id, count = row
+                log(f"  {park_id}: Created {count} notifications")
+        
         log(f"  Total: {notifications_created} notifications across {len(parks_processed)} parks")
+    
+
     
     def run(self):
         log("=" * 70)
@@ -739,7 +794,10 @@ class DailyFireUpdater:
         # Step 6a: Update fire_group_alerts table
         self.update_fire_group_alerts()
         
-        # Step 6b: Create notifications for significant fire activity
+        # Step 6b1: Assign friendly names to new groups
+        self.assign_friendly_names_to_new_groups()
+        
+        # Step 6b2: Create notifications with stable names
         self.create_fire_notifications()
         
         log("")
