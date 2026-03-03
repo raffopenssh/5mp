@@ -4640,12 +4640,26 @@
                 const count = notif._groupCount;
                 const time = formatNotificationTime(notif.created_at);
                 
+                // Calculate stats from group items
+                let totalFires = 0;
+                let totalDays = 0;
+                notif._groupItems.forEach(item => {
+                    const msg = item.message || '';
+                    const fireMatch = msg.match(/(\d+) fires/);
+                    const daysMatch = msg.match(/(\d+) days/);
+                    if (fireMatch) totalFires += parseInt(fireMatch[1]);
+                    if (daysMatch) totalDays += parseInt(daysMatch[1]);
+                });
+                const avgDays = Math.round(totalDays / count);
+                
+                const subtitle = `${totalFires.toLocaleString()} fires total • avg ${avgDays} days active`;
+                
                 const groupHtml = `
                     <div class="notification-item clickable notification-group" data-type="group" data-action="toggle_group" data-group-key="${notif._groupKey}">
                         <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">●</div>
                         <div class="notification-content">
                             <div class="notification-location">${escapeHtml(parkName)} • ${count} fire groups</div>
-                            <div class="notification-subtitle">Click to expand</div>
+                            <div class="notification-subtitle">${subtitle}</div>
                             <div class="notification-time">${time}</div>
                         </div>
                         <div class="group-arrow">▼</div>
@@ -4666,11 +4680,12 @@
             const parkId = data.park_id || notif.park_id;
             const parkName = data.park_name || parkId;
             const groupName = data.group_name || notif.reference_id || '';
+            const featureId = data.feature_id || notif.reference_id || '';
             const time = formatNotificationTime(notif.created_at);
             
             // Single action: view on map (whole item clickable)
             return `
-                <div class="notification-item clickable" data-type="fire_alert" data-action="view_fire" data-park-id="${parkId}" data-group-name="${groupName}">
+                <div class="notification-item clickable" data-type="fire_alert" data-action="view_fire" data-park-id="${parkId}" data-feature-id="${featureId}" data-group-name="${groupName}">
                     <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">●</div>
                     <div class="notification-content">
                         <div class="notification-location">${escapeHtml(notif.title || parkName)}</div>
@@ -4865,7 +4880,7 @@
             return date.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
         }
         
-        async function handleFireNotificationClick(parkId, groupName, event) {
+        async function handleFireNotificationClick(parkId, featureId, groupName, event) {
             if (event) event.stopPropagation();
             
             // Close notification dropdown properly
@@ -4879,17 +4894,29 @@
                 if (park) parkName = park.properties.name || parkId;
             }
             
-            if (groupName) {
-                // Fetch the trajectory data and display it (same as clicking active group in tooltip)
+            if (featureId) {
+                // Fetch the specific fire trajectory using feature_id
                 try {
-                    const response = await fetch(`/api/parks/${parkId}/fire-realtime?pwd=${encodeURIComponent(getPwd())}`);
+                    const response = await fetch(`/api/parks/${parkId}/features?type=fire_trajectory&pwd=${encodeURIComponent(getPwd())}`);
                     if (response.ok) {
-                        const data = await response.json();
-                        // Find the specific group
-                        const group = data.groups?.find(g => g.name === groupName);
-                        if (group && group.trajectory && group.trajectory.length > 0) {
+                        const geojson = await response.json();
+                        // Find the specific feature by feature_id
+                        const feature = geojson.features?.find(f => f.properties.feature_id === featureId);
+                        if (feature && feature.geometry && feature.geometry.coordinates) {
+                            const trajectory = feature.geometry.coordinates.map(coord => ({
+                                lat: coord[1],
+                                lon: coord[0],
+                                date: null  // Not needed for display
+                            }));
+                            
                             // Display the trajectory (this also pins it)
-                            showRealtimeTrajectory(parkId, parkName, groupName, group.trajectory);
+                            showRealtimeTrajectory(parkId, parkName, groupName || featureId, trajectory);
+                            
+                            // Auto-pin the layer
+                            const layerKey = `${parkId}:fire_trajectory`;
+                            if (!pinnedLayers.has(layerKey)) {
+                                addPinnedLayer(parkId, 'fire_trajectory', `Fire: ${groupName || featureId}`);
+                            }
                         } else {
                             showToast(`Fire group ${groupName} not found`, 'error');
                         }
@@ -5047,8 +5074,9 @@
                 // Handle fire alert click
                 if (action === 'view_fire') {
                     const parkId = item.dataset.parkId;
+                    const featureId = item.dataset.featureId;
                     const groupName = item.dataset.groupName;
-                    handleFireNotificationClick(parkId, groupName);
+                    handleFireNotificationClick(parkId, featureId, groupName);
                     closeNotificationDropdown();
                     return;
                 }
