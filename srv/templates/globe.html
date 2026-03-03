@@ -4606,6 +4606,34 @@
             return null;
         }
         
+        // Helper to format coordinates for display (handles GeoJSON or simple [lon, lat] arrays)
+        // Returns "lat, lon" format for human readability
+        function formatCoords(coords) {
+            if (!coords) return '';
+            
+            // If it's a simple [lon, lat] array
+            if (Array.isArray(coords) && coords.length >= 2 && typeof coords[0] === 'number' && typeof coords[1] === 'number') {
+                return `${coords[1].toFixed(4)}, ${coords[0].toFixed(4)}`;
+            }
+            
+            // If it's nested arrays (Polygon or LineString), extract first point
+            if (Array.isArray(coords) && Array.isArray(coords[0])) {
+                // For Polygon: [[[lon, lat], ...]] - get first point of outer ring
+                if (Array.isArray(coords[0][0])) {
+                    const point = coords[0][0];
+                    if (Array.isArray(point) && point.length >= 2 && typeof point[0] === 'number') {
+                        return `${point[1].toFixed(4)}, ${point[0].toFixed(4)}`;
+                    }
+                }
+                // For LineString: [[lon, lat], ...] - get first point
+                else if (coords[0].length >= 2 && typeof coords[0][0] === 'number') {
+                    return `${coords[0][1].toFixed(4)}, ${coords[0][0].toFixed(4)}`;
+                }
+            }
+            
+            return '';
+        }
+        
         // Export merged KML for all starred parks
         // Create patrol grid sheet for a park
         async function createPatrolGridSheet(park, fromDate, toDate) {
@@ -5023,7 +5051,7 @@
                         n.fires_inside || n.fires_total || n.fires || 0,
                         n.outcome || n.status || '',
                         isFireStopped(n) ? 'Yes' : 'No',
-                        n.center ? `${n.center[1].toFixed(4)}, ${n.center[0].toFixed(4)}` : ''
+                        formatCoords(n.center)
                     ]);
                 }
             }
@@ -5048,7 +5076,7 @@
                         e.areaKm2 ? Math.round(e.areaKm2 * 100) / 100 : '',
                         e.yearRange || e.year || '',
                         e.classification || '',
-                        e.coords && e.coords.length > 0 ? `${e.coords[1]?.toFixed(4) || ''}, ${e.coords[0]?.toFixed(4) || ''}` : ''
+                        formatCoords(e.coords)
                     ]);
                 }
             }
@@ -5073,7 +5101,7 @@
                         s.population || 0,
                         s.type || '',
                         s.insidePark ? 'Yes' : 'No',
-                        s.coords && s.coords.length >= 2 ? `${s.coords[1].toFixed(4)}, ${s.coords[0].toFixed(4)}` : ''
+                        formatCoords(s.coords)
                     ]);
                 }
             }
