@@ -2553,17 +2553,54 @@ type StarredItems struct {
 
 // fetchParkNarrativeSummary fetches a brief narrative summary for RSS feeds
 func (s *Server) fetchParkNarrativeSummary(parkID string) string {
+	parts := []string{}
+	
 	// Fetch fire narrative from cache
-	var narrative string
-	err := s.DB.QueryRow(`SELECT narrative FROM fire_narrative_cache WHERE park_id = ? LIMIT 1`, parkID).Scan(&narrative)
-	if err == nil && narrative != "" {
-		// Truncate to first 500 chars for RSS
-		if len(narrative) > 500 {
-			narrative = narrative[:500] + "..."
+	var fireNarrativeJSON string
+	err := s.DB.QueryRow(`SELECT narrative_json FROM fire_narrative_cache WHERE park_id = ? LIMIT 1`, parkID).Scan(&fireNarrativeJSON)
+	if err == nil && fireNarrativeJSON != "" {
+		// Parse JSON to get summary
+		var narrativeData map[string]interface{}
+		if json.Unmarshal([]byte(fireNarrativeJSON), &narrativeData) == nil {
+			if summary, ok := narrativeData["summary"].(string); ok && summary != "" {
+				// Truncate to first 300 chars
+				if len(summary) > 300 {
+					summary = summary[:300] + "..."
+				}
+				parts = append(parts, "FIRE: " + summary)
+			}
 		}
-		return "Fire Activity: " + narrative
 	}
-	return ""
+	
+	// Fetch deforestation stats
+	var deforestKm2 float64
+	var deforestCount int
+	err = s.DB.QueryRow(`
+		SELECT 
+			COUNT(*) as event_count,
+			COALESCE(SUM(area_km2), 0) as total_loss_km2
+		FROM feature_geometries
+		WHERE park_id = ? AND feature_type = 'deforestation'
+	`, parkID).Scan(&deforestCount, &deforestKm2)
+	if err == nil && deforestKm2 > 0 {
+		parts = append(parts, fmt.Sprintf("DEFORESTATION: %.2f km² lost across %d events", deforestKm2, deforestCount))
+	}
+	
+	// Fetch settlement stats
+	var settlementCount int
+	var totalPopulation int
+	err = s.DB.QueryRow(`
+		SELECT 
+			COUNT(*) as count,
+			COALESCE(SUM(population_est), 0) as population
+		FROM park_settlements
+		WHERE park_id = ?
+	`, parkID).Scan(&settlementCount, &totalPopulation)
+	if err == nil && settlementCount > 0 {
+		parts = append(parts, fmt.Sprintf("SETTLEMENTS: %d settlements, est. population %d", settlementCount, totalPopulation))
+	}
+	
+	return strings.Join(parts, " | ")
 }
 
 // HandleAPIFeed generates an RSS feed for starred items or notifications

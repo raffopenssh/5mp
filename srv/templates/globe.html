@@ -4305,7 +4305,7 @@
                 '<!-- Styles -->',
                 '<Style id="fire"><LineStyle><color>ff0000ff</color><width>3</width></LineStyle><PolyStyle><color>440000ff</color></PolyStyle></Style>',
                 '<Style id="deforestation"><LineStyle><color>ff00ffff</color><width>2</width></LineStyle><PolyStyle><color>4400ffff</color></PolyStyle></Style>',
-                '<Style id="settlement"><IconStyle><color>ffffaa00</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/homegardenbusiness.png</href></Icon></IconStyle></Style>',
+                '<Style id="settlement"><LineStyle><color>ffffaa00</color><width>2</width></LineStyle><PolyStyle><color>44ffaa00</color></PolyStyle></Style>',
                 '<Style id="river"><LineStyle><color>ffff5500</color><width>2</width></LineStyle></Style>',
                 '<Style id="road"><LineStyle><color>ff888888</color><width>2</width></LineStyle></Style>',
                 '<Style id="park"><LineStyle><color>ff00ff22</color><width>3</width></LineStyle><PolyStyle><color>2200ff22</color></PolyStyle></Style>',
@@ -4391,12 +4391,19 @@
                     kmlParts.push('<Folder><name>Settlements</name>');
                     for (const f of features.settlement.features.slice(0, 200)) {
                         const props = f.properties || {};
-                        const name = escapeXML(props.name || 'Settlement');
-                        const desc = `Population: ${props.population || 0}, Type: ${props.type || 'Unknown'}`;
+                        const classification = props.classification || props.type || 'Unknown';
+                        const population = props.population_est || props.population || 0;
+                        const name = escapeXML(props.name || props.nearest_place || `Settlement (${classification})`);
+                        const desc = `Classification: ${escapeXML(classification)}, Population: ${population}, Area: ${(props.area_m2 || 0).toLocaleString()} m²${props.narrative ? ', ' + escapeXML(props.narrative) : ''}`;
                         const coords = coordsToKML(f.geometry.coordinates, f.geometry.type);
                         if (coords) {
-                            kmlParts.push(`<Placemark><name>${name}</name><description>${escapeXML(desc)}</description><styleUrl>#settlement</styleUrl>`);
-                            kmlParts.push(`<Point><coordinates>${coords}</coordinates></Point>`);
+                            kmlParts.push(`<Placemark><name>${name}</name><description>${desc}</description><styleUrl>#settlement</styleUrl>`);
+                            if (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon') {
+                                kmlParts.push(`<Polygon><outerBoundaryIs><LinearRing><coordinates>${coords}</coordinates></LinearRing></outerBoundaryIs></Polygon>`);
+                            } else {
+                                // Fallback to point if somehow not a polygon
+                                kmlParts.push(`<Point><coordinates>${coords}</coordinates></Point>`);
+                            }
                             kmlParts.push('</Placemark>');
                         }
                     }
@@ -10051,6 +10058,10 @@
             const deforest = fullData?.deforestation;
             const settle = fullData?.settlement;
             const stats = fullData?.stats;
+            const species = fullData?.species;
+            const climate = fullData?.climate;
+            const publications = fullData?.publications;
+            const features = fullData?.features || {};
             
             return `
 <div class="park-item">
@@ -10114,6 +10125,59 @@
             <span>Active pixels: ${formatNumber(stats.active_pixels || 0)}</span>
             <span>Total distance: ${formatNumber(Math.round(stats.total_distance_km || 0))} km</span>
             <span>Patrols: ${formatNumber(stats.patrol_count || 0)}</span>
+            ${stats.roadless ? `<span>Roadless area: ${stats.roadless.roadless_percentage?.toFixed(1) || 0}%</span>` : ''}
+        </div>
+    </div>` : ''}
+    
+    ${species && species.length > 0 ? `
+    <div class="narrative-section" style="border-color: #10b981;">
+        <div class="narrative-title">🦁 Biodiversity</div>
+        <div class="narrative-stats">
+            <span>${species.length} mammal species recorded</span>
+        </div>
+        <div class="species-highlights" style="font-size: 13px; color: #aaa; margin-top: 8px;">
+            ${species.filter(s => s.category === 'CR' || s.category === 'EN' || s.category === 'VU').slice(0, 10).map(s => 
+                `<div style="padding: 4px 0;">• <span style="color: ${s.category === 'CR' ? '#ef4444' : s.category === 'EN' ? '#f59e0b' : '#eab308'};">${s.category}</span> <em>${s.scientific_name}</em> (${s.common_name || 'no common name'})</div>`
+            ).join('')}
+            ${species.length > 10 ? `<div style="padding: 4px 0; color: #666;">... and ${species.length - 10} more species</div>` : ''}
+        </div>
+    </div>` : ''}
+    
+    ${climate ? `
+    <div class="narrative-section" style="border-color: #3b82f6;">
+        <div class="narrative-title">☁️ Climate</div>
+        <div class="narrative-stats">
+            <span>Annual rainfall: ${climate.annual_precipitation_mm || 'N/A'} mm</span>
+            ${climate.dry_season ? `<span>Dry season: ${climate.dry_season}</span>` : ''}
+            ${climate.wet_season ? `<span>Wet season: ${climate.wet_season}</span>` : ''}
+        </div>
+    </div>` : ''}
+    
+    ${publications && publications.length > 0 ? `
+    <div class="narrative-section" style="border-color: #8b5cf6;">
+        <div class="narrative-title">📚 Research Publications</div>
+        <div class="narrative-stats">
+            <span>${publications.length} recent publications</span>
+        </div>
+        <div class="publications-list" style="font-size: 13px; color: #aaa; margin-top: 8px;">
+            ${publications.slice(0, 5).map(pub => 
+                `<div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: #e0e0e0; font-weight: 500;">${escapeHtml(pub.title || 'Untitled')}</div>
+                    <div style="color: #888; font-size: 11px; margin-top: 2px;">${pub.year || 'N/A'} • ${escapeHtml((pub.authors || []).slice(0, 3).join(', '))}${pub.authors && pub.authors.length > 3 ? ' et al.' : ''}</div>
+                </div>`
+            ).join('')}
+            ${publications.length > 5 ? `<div style="padding: 4px 0; color: #666; margin-top: 4px;">... and ${publications.length - 5} more publications</div>` : ''}
+        </div>
+    </div>` : ''}
+    
+    ${features && (features.river?.features?.length || features.road?.features?.length || features.infrastructure?.features?.length) ? `
+    <div class="narrative-section" style="border-color: #64748b;">
+        <div class="narrative-title">🗺️ Infrastructure & Features</div>
+        <div class="narrative-stats">
+            ${features.river?.features?.length ? `<span>Rivers: ${formatNumber(features.river.features.length)}</span>` : ''}
+            ${features.road?.features?.length ? `<span>Roads: ${formatNumber(features.road.features.length)}</span>` : ''}
+            ${features.place?.features?.length ? `<span>Named places: ${formatNumber(features.place.features.length)}</span>` : ''}
+            ${features.infrastructure?.features?.length ? `<span>Infrastructure: ${formatNumber(features.infrastructure.features.length)}</span>` : ''}
         </div>
     </div>` : ''}
 </div>`;
@@ -10125,12 +10189,12 @@
 <title>5MP Conservation Report - ${now.toLocaleDateString()}</title>
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 1000px; margin: 0 auto; padding: 40px 20px; background: #1a1a1a; color: #e0e0e0; }
-h1 { color: #22c55e; border-bottom: 2px solid #22c55e; padding-bottom: 10px; }
-h2 { color: #fbbf24; margin-top: 30px; font-size: 18px; }
-h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; }
-.meta { color: #888; font-size: 14px; margin-bottom: 30px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+h1 { color: #22c55e; border-bottom: 2px solid #22c55e; padding-bottom: 10px; page-break-after: avoid; }
+h2 { color: #fbbf24; margin-top: 30px; font-size: 18px; page-break-after: avoid; }
+h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid; }
+.meta { color: #888; font-size: 14px; margin-bottom: 30px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; page-break-inside: avoid; }
 .meta div { margin: 4px 0; }
-.park-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.park-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; page-break-inside: avoid; }
 .park-header { margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 .park-name { font-size: 18px; font-weight: 600; color: #22c55e; margin-bottom: 4px; }
 .park-meta { font-size: 13px; color: #888; }
@@ -10145,12 +10209,26 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; }
 .bbox-section { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
 .bbox-header { font-size: 16px; font-weight: 600; color: #60a5fa; margin-bottom: 16px; }
 .section { margin-bottom: 30px; }
-.footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; color: #666; }
-.toc { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 16px 20px; margin-bottom: 30px; }
+.footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; color: #666; page-break-inside: avoid; }
+.toc { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 16px 20px; margin-bottom: 30px; page-break-inside: avoid; }
 .toc-title { font-weight: 600; color: #fbbf24; margin-bottom: 12px; }
 .toc-item { color: #888; font-size: 13px; margin: 6px 0; }
 .toc-item a { color: #60a5fa; text-decoration: none; }
 .toc-item a:hover { text-decoration: underline; }
+.species-highlights, .publications-list { page-break-inside: avoid; }
+@media print {
+    body { background: white; color: black; padding: 20px; }
+    h1 { color: #166534; }
+    h2 { color: #92400e; }
+    h3 { color: #1e40af; }
+    .park-item { border-color: #d1d5db; page-break-inside: avoid; }
+    .narrative-section { page-break-inside: avoid; }
+    .meta { border: 1px solid #e5e7eb; }
+    .toc { border: 1px solid #e5e7eb; }
+    .park-name { color: #166534; }
+    .narrative-title { color: #000; }
+    a { color: #1e40af; }
+}
 </style>
 </head><body>
 <h1>★ 5MP Conservation Monitoring Report</h1>
