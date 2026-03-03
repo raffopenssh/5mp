@@ -10499,6 +10499,9 @@
     // ============================================
     
     // Default report configuration
+    // Track which report sections are expanded for each park
+    window.expandedSections = new Map(); // parkId:sectionType -> boolean
+    
     window.reportConfig = {
         sections: {
             fire: true,
@@ -10532,6 +10535,20 @@
     // Save config to localStorage
     function saveReportConfig() {
         localStorage.setItem('5mp-report-config', JSON.stringify(window.reportConfig));
+    }
+    
+    // Toggle section expansion
+    function toggleSectionExpand(parkId, sectionType) {
+        const key = `${parkId}:${sectionType}`;
+        const current = expandedSections.get(key) || false;
+        expandedSections.set(key, !current);
+        renderStarredItems(); // Re-render to show/hide content
+    }
+    
+    // Check if section is expanded
+    function isSectionExpanded(parkId, sectionType) {
+        const key = `${parkId}:${sectionType}`;
+        return expandedSections.get(key) || false;
     }
     
     // Determine smart default configuration based on current selection
@@ -14595,7 +14612,7 @@ ${starredItems.narratives.map(n => {
                     <button class="star-report-btn secondary" onclick="exportFullReportCsv()" title="Export all data as CSV">↓ CSV</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportXlsx()" title="Export detailed XLSX with summary + per-park tabs">↓ XLSX</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportKml()" title="Export all park KMLs">↓ KML</button>
-                    <button class="star-report-btn" onclick="printInlineReport()" title="Print report">🖨️ Print</button>
+                    <button class="star-report-btn" onclick="printInlineReport()" title="Print report">Print</button>
                 </div>
             </div>
         </div>
