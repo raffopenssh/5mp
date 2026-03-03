@@ -10032,8 +10032,8 @@
             if (classifiedEvents.length > samples.length) {
                 html += `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${classifiedEvents.length - samples.length} more events</div>`;
                 html += `<div style="display:none">${classifiedEvents.slice(samples.length).map(e => {
-                    const text = e.narrative || \`\${e.classification || 'Event'} (\${(e.area_km2 || 0).toFixed(2)} km²)\`;
-                    return \`<div style="margin:4px 0;font-size:10px;color:#aaa;">• \${text}</div>\`;
+                    const text = e.narrative || (e.classification || 'Event') + ' (' + ((e.area_km2 || 0).toFixed(2)) + ' km²)';
+                    return '<div style="margin:4px 0;font-size:10px;color:#aaa;">• ' + text + '</div>';
                 }).join('')}</div>`;
             }
             html += '</div>';
@@ -10103,8 +10103,8 @@
             if (classifiedSettlements.length > samples.length) {
                 html += `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${classifiedSettlements.length - samples.length} more settlements</div>`;
                 html += `<div style="display:none">${classifiedSettlements.slice(samples.length).map(s => {
-                    const text = s.narrative || \`\${s.classification || 'Settlement'} near \${s.nearest_place || 'unknown'} (~\${s.population_est || 0} people)\`;
-                    return \`<div style="margin:4px 0;font-size:10px;color:#aaa;">• \${text}</div>\`;
+                    const text = s.narrative || (s.classification || 'Settlement') + ' near ' + (s.nearest_place || 'unknown') + ' (~' + (s.population_est || 0) + ' people)';
+                    return '<div style="margin:4px 0;font-size:10px;color:#aaa;">• ' + text + '</div>';
                 }).join('')}</div>`;
             }
             html += '</div>';
