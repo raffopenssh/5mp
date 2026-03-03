@@ -219,14 +219,14 @@ func (q *MBTilesQueue) executeJob(job *MBTilesJob) {
 			fmt.Sprintf("Offline tiles for %s (%s, %d MB) ready for download", job.ParkName, job.Source, fileSizeMB),
 			fmt.Sprintf("/api/parks/%s/mbtiles/download/%s", job.ParkID, job.ID))
 		
-		// Schedule cleanup of completed job and file (keep for 8 hours)
+		// Schedule cleanup of completed job and file (keep for 2 hours max)
 		go func(jobID, filePath string) {
-			time.Sleep(8 * time.Hour)
+			time.Sleep(2 * time.Hour)
 			q.mu.Lock()
 			delete(q.jobs, jobID)
 			q.mu.Unlock()
 			os.Remove(filePath)
-			slog.Info("Auto-cleaned MBTiles file after 8 hours", "id", jobID, "path", filePath)
+			slog.Info("Auto-cleaned MBTiles file after 2 hours", "id", jobID, "path", filePath)
 		}(job.ID, outputPath)
 	}
 	q.mu.Unlock()
@@ -490,7 +490,15 @@ func getAvailableDiskSpace(path string) uint64 {
 func estimateMBTilesSize(bbox [4]float64, minZoom, maxZoom int) int64 {
 	tiles := calculateTiles(bbox, minZoom, maxZoom)
 	// Estimate ~15KB per tile average for satellite imagery
-	return int64(len(tiles)) * 15 * 1024
+	estimatedSize := int64(len(tiles)) * 15 * 1024
+	
+	// Enforce 3GB maximum (MBTiles built in memory)
+	const maxMBTilesSize = 3 * 1024 * 1024 * 1024
+	if estimatedSize > maxMBTilesSize {
+		return maxMBTilesSize + 1 // Return slightly over limit to trigger error
+	}
+	
+	return estimatedSize
 }
 
 // Helper functions
@@ -559,7 +567,14 @@ func (s *Server) HandleAPIMBTilesCreate(w http.ResponseWriter, r *http.Request) 
 	
 	estimatedSize := estimateMBTilesSize(bbox, minZoom, maxZoom)
 	
-	// Check available space
+	// Check 3GB size limit (MBTiles built in memory)
+	const maxMBTilesSize = 3 * 1024 * 1024 * 1024
+	if estimatedSize > maxMBTilesSize {
+		http.Error(w, fmt.Sprintf("MBTiles too large: estimated %.1f GB, maximum 3 GB. Try reducing zoom levels or area size.", float64(estimatedSize)/(1024*1024*1024)), http.StatusRequestEntityTooLarge)
+		return
+	}
+	
+	// Check available disk space
 	availableSpace := getAvailableDiskSpace(mbtilesQueue.outputDir)
 	// Require 1.2x estimated size as safety margin
 	if uint64(float64(estimatedSize)*1.2) > availableSpace {
@@ -642,8 +657,18 @@ func (s *Server) HandleAPIMBTilesDownload(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 	w.Header().Set("Content-Type", "application/x-sqlite3")
 	
-	http.ServeFile(w, r, job.FilePath)
-	// File cleanup handled by 8-hour auto-cleanup goroutine
+	filePath := job.FilePath
+	http.ServeFile(w, r, filePath)
+	
+	// Delete immediately after download (one-shot download)
+	go func() {
+		time.Sleep(5 * time.Second) // Brief delay to ensure download completes
+		mbtilesQueue.mu.Lock()
+		delete(mbtilesQueue.jobs, jobID)
+		mbtilesQueue.mu.Unlock()
+		os.Remove(filePath)
+		slog.Info("Deleted MBTiles file after download", "id", jobID, "path", filePath)
+	}()
 }
 
 // HandleAPIMBTilesList lists all jobs

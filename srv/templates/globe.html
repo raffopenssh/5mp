@@ -4462,7 +4462,7 @@
                     _index: i, 
                     _source: 'mbtiles',
                     _sortTime: new Date(job.created_at).getTime(),
-                    _priority: job.status === 'processing' ? 0 : (job.status === 'completed' ? 1 : 3)  // Processing first, then completed, then failed
+                    _priority: job.status === 'processing' ? -2 : (job.status === 'completed' ? -1 : 3)  // Active highest, completed very high, failed low
                 });
             });
             
