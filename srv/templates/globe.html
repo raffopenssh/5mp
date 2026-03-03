@@ -675,11 +675,11 @@
             right: 20px;
             background: linear-gradient(135deg, rgba(34,197,94,0.95) 0%, rgba(22,163,74,0.95) 100%);
             border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 12px;
-            padding: 16px;
-            max-width: 380px;
+            border-radius: 8px;
+            padding: 12px;
+            max-width: 320px;
             z-index: 200;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.4);
             opacity: 0;
             transform: translateY(20px);
             transition: opacity 0.5s, transform 0.5s;
@@ -698,33 +698,37 @@
         .satellite-hint-content {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             color: #fff;
-            font-size: 12px;
-            line-height: 1.4;
+            font-size: 11px;
+            line-height: 1.3;
         }
         .satellite-hint-icon {
             flex-shrink: 0;
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             background: rgba(255,255,255,0.2);
-            border-radius: 8px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #fff;
+        }
+        .satellite-hint-icon svg {
+            width: 16px;
+            height: 16px;
         }
         .satellite-hint-text {
             flex: 1;
         }
         .satellite-hint-btn {
             flex-shrink: 0;
-            padding: 8px 14px;
+            padding: 6px 10px;
             background: rgba(255,255,255,0.95);
             color: #16a34a;
             border: none;
-            border-radius: 6px;
-            font-size: 12px;
+            border-radius: 5px;
+            font-size: 11px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -738,15 +742,15 @@
         }
         .satellite-hint-close {
             position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 24px;
-            height: 24px;
+            top: 6px;
+            right: 6px;
+            width: 20px;
+            height: 20px;
             background: rgba(0,0,0,0.2);
             border: none;
             border-radius: 50%;
             color: #fff;
-            font-size: 18px;
+            font-size: 16px;
             line-height: 1;
             cursor: pointer;
             transition: background 0.2s;
@@ -1195,18 +1199,18 @@
     <div class="satellite-hint" id="satellite-hint">
         <div class="satellite-hint-content">
             <div class="satellite-hint-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="3" width="18" height="18" rx="2"/>
                     <path d="M3 9h18M9 21V9"/>
                 </svg>
             </div>
             <div class="satellite-hint-text">
-                <div style="font-weight:600;margin-bottom:2px;">High zoom detected</div>
-                <div style="font-size:11px;opacity:0.8;">Satellite imagery shows more detail at this zoom level</div>
+                <div style="font-weight:600;margin-bottom:1px;">High zoom</div>
+                <div style="font-size:10px;opacity:0.85;">Satellite shows more detail</div>
             </div>
             <button class="satellite-hint-btn" onclick="quickSwitchToSatellite()">
-                Switch to Satellite
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px;">
+                Switch
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:3px;">
                     <polyline points="9 18 15 12 9 6"/>
                 </svg>
             </button>
@@ -1319,24 +1323,10 @@
         <span class="footer-sep desktop-only">|</span>
         <a href="https://maplibre.org/" target="_blank" class="maplibre-link desktop-only">MapLibre</a>
         <span class="footer-sep desktop-only">|</span>
-        <button class="footer-btn share-btn" onclick="shareCurrentView()" title="Copy link">
+        <button class="footer-btn share-btn" onclick="shareCurrentView()" title="Copy share link">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-            </svg>
-        </button>
-        <button class="footer-btn" onclick="exportParksCSV()" title="Download parks data as CSV">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-        </button>
-        <button class="footer-btn rss-btn" id="rss-feed-btn" onclick="generateRssFeed()" title="Get RSS feed for starred items">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 11a9 9 0 0 1 9 9"></path>
-                <path d="M4 4a16 16 0 0 1 16 16"></path>
-                <circle cx="5" cy="19" r="1"></circle>
             </svg>
         </button>
         <button class="footer-btn info-btn" onclick="showModal('manifest')" title="About 5MP">
@@ -1853,7 +1843,8 @@
             zoom: 3,
             antialias: true,
             preserveDrawingBuffer: true,  // Helps with Safari
-            failIfMajorPerformanceCaveat: false  // Don't fail on software rendering
+            failIfMajorPerformanceCaveat: false,  // Don't fail on software rendering
+            attributionControl: false  // Disable default attribution (we have custom footer)
         });
         
         // Handle map errors
