@@ -734,7 +734,7 @@
         .pa-popup-section-icon[data-type="fire"] { font-size: 15px; }
         .pa-popup-section-icon[data-type="settlement"] { font-size: 13px; }
         .pa-popup-section-icon[data-type="deforestation"] { font-size: 15px; }
-        .pa-popup-section-icon[data-type="road"] { font-size: 11px; letter-spacing: -1px; }
+        .pa-popup-section-icon[data-type="road"] { font-size: 14px; }
         .pa-popup-section-toggle { font-size: 10px; color: #555; transition: transform 0.2s; }
         .pa-popup-section.open .pa-popup-section-toggle { transform: rotate(180deg); }
         .pa-popup-section-content { display: none; padding: 8px 10px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); }
@@ -5929,7 +5929,7 @@
                     <!-- Roadless Section -->
                     <div class="pa-popup-section" id="road-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="road" onclick="event.stopPropagation(); togglePinFromIcon(this)">═</span> Roads, Places & Infrastructure<span id="road-count-${paId}" class="pa-popup-section-count"></span></div>
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="road" onclick="event.stopPropagation(); togglePinFromIcon(this)">⊡</span> Roads, Rivers, Places & Infrastructure<span id="road-count-${paId}" class="pa-popup-section-count"></span></div>
                             
                             <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'road', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
@@ -10295,10 +10295,28 @@ ${starredItems.narratives.map(n => {
         
         // Update icon state if popup is open for this park
         if (parkId && type) {
+            // Update the specific type icon if it exists
             const iconEl = document.querySelector(`.pa-popup-section-icon[data-park-id="${parkId}"][data-type="${type}"]`);
             if (iconEl) {
                 iconEl.classList.remove('pinned');
                 updateIconSymbol(iconEl, type, false);
+            }
+            
+            // If this is an infrastructure type, also update the road icon
+            const infraTypes = ['road', 'river', 'place', 'infrastructure'];
+            if (infraTypes.includes(type)) {
+                const roadIconEl = document.querySelector(`.pa-popup-section-icon[data-park-id="${parkId}"][data-type="road"]`);
+                if (roadIconEl) {
+                    // Check if any infrastructure types are still pinned
+                    const anyPinned = infraTypes.some(t => isPinned(parkId, t));
+                    if (anyPinned) {
+                        roadIconEl.classList.add('pinned');
+                        updateIconSymbol(roadIconEl, 'road', true);
+                    } else {
+                        roadIconEl.classList.remove('pinned');
+                        updateIconSymbol(roadIconEl, 'road', false);
+                    }
+                }
             }
         }
         
@@ -10741,7 +10759,7 @@ ${starredItems.narratives.map(n => {
         fire: { unfilled: '◇', filled: '◆' },
         settlement: { unfilled: '◻', filled: '◼' },
         deforestation: { unfilled: '△', filled: '▲' },
-        road: { unfilled: '═', filled: '═' }
+        road: { unfilled: '⊡', filled: '⊡' }  // Squared dot - represents multiple geographic features
     };
     
     function updateIconSymbol(iconEl, type, pinned) {
@@ -10758,28 +10776,72 @@ ${starredItems.narratives.map(n => {
         
         if (!parkId || !type) return;
         
-        const key = getPinKey(parkId, type);
-        const isPinnedNow = isPinned(parkId, type);
-        
-        if (isPinnedNow) {
-            // Unpin
-            removePinnedLayer(key);
-            iconEl.classList.remove('pinned');
-            updateIconSymbol(iconEl, type, false);
-            updatePinnedIndicator();
-        } else {
-            // Pin - add loading state
-            iconEl.classList.add('loading');
-            try {
-                await addPinnedLayer(parkId, parkName, type);
-                iconEl.classList.add('pinned');
-                iconEl.classList.remove('loading');
-                updateIconSymbol(iconEl, type, true);
+        // Special case: 'road' type should toggle all infrastructure types
+        if (type === 'road') {
+            const infraTypes = ['road', 'river', 'place', 'infrastructure'];
+            
+            // Check if any are currently pinned
+            const anyPinned = infraTypes.some(t => isPinned(parkId, t));
+            
+            if (anyPinned) {
+                // Unpin all
+                infraTypes.forEach(t => {
+                    const key = getPinKey(parkId, t);
+                    if (isPinned(parkId, t)) {
+                        removePinnedLayer(key);
+                    }
+                });
+                iconEl.classList.remove('pinned');
+                updateIconSymbol(iconEl, type, false);
                 updatePinnedIndicator();
-            } catch (e) {
-                iconEl.classList.remove('loading');
-                console.error('Failed to pin layer:', e);
-                showToast('Failed to load data', 'error');
+            } else {
+                // Pin all (that have data)
+                iconEl.classList.add('loading');
+                try {
+                    // Pin each type individually - they'll skip if no data
+                    for (const t of infraTypes) {
+                        try {
+                            await addPinnedLayer(parkId, parkName, t);
+                        } catch (e) {
+                            // Skip types with no data
+                            console.log(`No ${t} data available`);
+                        }
+                    }
+                    iconEl.classList.add('pinned');
+                    iconEl.classList.remove('loading');
+                    updateIconSymbol(iconEl, type, true);
+                    updatePinnedIndicator();
+                } catch (e) {
+                    iconEl.classList.remove('loading');
+                    console.error('Failed to pin layers:', e);
+                    showToast('Failed to load data', 'error');
+                }
+            }
+        } else {
+            // Normal single-type toggle
+            const key = getPinKey(parkId, type);
+            const isPinnedNow = isPinned(parkId, type);
+            
+            if (isPinnedNow) {
+                // Unpin
+                removePinnedLayer(key);
+                iconEl.classList.remove('pinned');
+                updateIconSymbol(iconEl, type, false);
+                updatePinnedIndicator();
+            } else {
+                // Pin - add loading state
+                iconEl.classList.add('loading');
+                try {
+                    await addPinnedLayer(parkId, parkName, type);
+                    iconEl.classList.add('pinned');
+                    iconEl.classList.remove('loading');
+                    updateIconSymbol(iconEl, type, true);
+                    updatePinnedIndicator();
+                } catch (e) {
+                    iconEl.classList.remove('loading');
+                    console.error('Failed to pin layer:', e);
+                    showToast('Failed to load data', 'error');
+                }
             }
         }
     }
@@ -10789,7 +10851,16 @@ ${starredItems.narratives.map(n => {
         document.querySelectorAll('.pa-popup-section-icon.toggleable').forEach(icon => {
             if (icon.dataset.parkId === parkId) {
                 const type = icon.dataset.type;
-                const pinned = isPinned(parkId, type);
+                
+                // Special case: road icon shows pinned if ANY infrastructure type is pinned
+                let pinned;
+                if (type === 'road') {
+                    const infraTypes = ['road', 'river', 'place', 'infrastructure'];
+                    pinned = infraTypes.some(t => isPinned(parkId, t));
+                } else {
+                    pinned = isPinned(parkId, type);
+                }
+                
                 if (pinned) {
                     icon.classList.add('pinned');
                 } else {
