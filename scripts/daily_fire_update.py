@@ -513,7 +513,7 @@ class DailyFireUpdater:
             try:
                 result = subprocess.run(
                     ['python3', 'scripts/load_fire_groups_to_db.py', 
-                     '--park', park_id, '--incremental', '--days', str(INCREMENTAL_DAYS)],
+                     '--park', park_id, '--force'],
                     cwd=str(BASE_DIR),
                     capture_output=True,
                     text=True,
