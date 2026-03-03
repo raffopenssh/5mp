@@ -2547,6 +2547,21 @@ type StarredItems struct {
 	Activities  []map[string]interface{} `json:"activities"`
 }
 
+// fetchParkNarrativeSummary fetches a brief narrative summary for RSS feeds
+func (s *Server) fetchParkNarrativeSummary(parkID string) string {
+	// Fetch fire narrative from cache
+	var narrative string
+	err := s.DB.QueryRow(`SELECT narrative FROM fire_narrative_cache WHERE park_id = ? LIMIT 1`, parkID).Scan(&narrative)
+	if err == nil && narrative != "" {
+		// Truncate to first 500 chars for RSS
+		if len(narrative) > 500 {
+			narrative = narrative[:500] + "..."
+		}
+		return "Fire Activity: " + narrative
+	}
+	return ""
+}
+
 // HandleAPIFeed generates an RSS feed for starred items or notifications
 // GET /api/feed?stars=<base64-encoded-starred-items> - RSS for starred reports with updates
 // GET /api/feed - RSS for recent notifications (main globe page)
@@ -2618,10 +2633,16 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		description := fmt.Sprintf("Conservation monitoring for %s in %s", name, country)
-		if len(updates) > 0 {
-			description += "\n\nRecent updates:\n" + strings.Join(updates, "\n")
-		}
+		// Fetch full narrative data to include in RSS
+	narrative := s.fetchParkNarrativeSummary(id)
+	
+	description := fmt.Sprintf("Conservation monitoring for %s in %s", name, country)
+	if narrative != "" {
+		description += "\n\n" + narrative
+	}
+	if len(updates) > 0 {
+		description += "\n\nRecent updates:\n" + strings.Join(updates, "\n")
+	}
 
 		items = append(items, fmt.Sprintf(`
 	<item>

@@ -3013,8 +3013,21 @@
                 if (rd.fire) {
                     parkData.push(['FIRE ACTIVITY'], ['Total Detections', rd.fire.total_fires], ['Response Rate', (rd.fire.response_rate || 0) + '%'], ['Peak Month', rd.fire.peak_month || 'N/A'], []);
                     if (rd.fire.narratives?.length > 0) {
-                        parkData.push(['Fire Groups']);
-                        rd.fire.narratives.forEach(n => parkData.push([n.narrative || n.title || 'Fire group']));
+                        parkData.push(['Fire Group', 'Type', 'Status', 'Fires', 'Days', 'Distance (km)', 'Direction', 'Speed (km/day)', 'Narrative']);
+                        rd.fire.narratives.forEach(n => {
+                            const m = n.metrics || {};
+                            parkData.push([
+                                n.name || n.title || 'Fire group',
+                                n.type || '',
+                                n.status || '',
+                                m.fires || '',
+                                m.days || '',
+                                m.distance_km ? m.distance_km.toFixed(1) : '',
+                                m.direction || '',
+                                m.avg_speed ? m.avg_speed.toFixed(1) : '',
+                                n.narrative || m.narrative || ''
+                            ]);
+                        });
                         parkData.push([]);
                     }
                 }
@@ -3023,8 +3036,14 @@
                 if (rd.deforestation) {
                     parkData.push(['DEFORESTATION'], ['Total Loss (km²)', rd.deforestation.total_loss_km2?.toFixed(2) || 0], ['Trend', rd.deforestation.trend_direction || 'unknown'], ['Worst Year', rd.deforestation.worst_year || 'N/A'], []);
                     if (rd.deforestation.hotspots?.length > 0) {
-                        parkData.push(['Hotspots', 'Area (km²)']);
-                        rd.deforestation.hotspots.forEach(h => parkData.push([h.name || h.description || 'Hotspot', h.area_km2?.toFixed(2) || 0]));
+                        parkData.push(['Hotspot', 'Area (km²)', 'Year', 'Confidence', 'Description']);
+                        rd.deforestation.hotspots.forEach(h => parkData.push([
+                            h.name || 'Hotspot',
+                            h.area_km2?.toFixed(2) || h.area_ha ? (h.area_ha / 100).toFixed(2) : 0,
+                            h.year || '',
+                            h.confidence || '',
+                            h.description || ''
+                        ]));
                         parkData.push([]);
                     }
                 }
@@ -3033,8 +3052,13 @@
                 if (rd.settlement) {
                     parkData.push(['SETTLEMENTS'], ['Count', rd.settlement.settlement_count || 0], ['Population', rd.settlement.total_population || 0], ['Density (/km²)', rd.settlement.population_density_per_km2?.toFixed(1) || 0], []);
                     if (rd.settlement.largest_settlements?.length > 0) {
-                        parkData.push(['Settlement', 'Population']);
-                        rd.settlement.largest_settlements.forEach(s => parkData.push([s.name || 'Unnamed', s.population || 0]));
+                        parkData.push(['Settlement', 'Population', 'Distance from Park (km)', 'Type']);
+                        rd.settlement.largest_settlements.forEach(s => parkData.push([
+                            s.name || 'Unnamed',
+                            s.population || 0,
+                            s.distance_to_park_km ? s.distance_to_park_km.toFixed(1) : (s.inside_park ? 'Inside' : ''),
+                            s.place || ''
+                        ]));
                     }
                 }
                 
