@@ -1,3 +1,9 @@
+0b72b82a 2026-03-03 19:40:43 Fix ESC key to cancel bbox drawing
+3e9d5c37 2026-03-03 19:38:29 Fix template literal syntax error in + more buttons
+878b630e 2026-03-03 18:57:00 Add complete documentation for star report fixes
+8668679a 2026-03-03 18:56:04 Fix + more buttons in inline star report (renderParkReportInline)
+48b0eba5 2026-03-03 18:40:44 Add verification script for star report fixes
+42cd00c2 2026-03-03 18:38:15 Add + more buttons to star report and populate ghsl_data for built-up areas
 f6709ea0 2026-03-03 18:03:57 Implement collapsible parks and prepare for section expansion
 ba9aef45 2026-03-03 17:58:50 Remove printer emoji and add expansion infrastructure
 661ea455 2026-03-03 17:54:19 Critical fix: Parks never filtered entirely from reports
@@ -12,9 +18,3 @@ d7c1e257 2026-03-03 16:58:50 Add implementation summary for intelligent report b
 afe1e38d 2026-03-03 16:15:59 Implement full interactive report builder with smart defaults
 a7164471 2026-03-03 16:00:29 Add intelligent grouping/summarization for repetitive report sections
 99fb2c97 2026-03-03 15:44:02 Star report UX improvements + 5 quick wins
-a22f2d40 2026-03-03 15:14:34 Add comprehensive documentation for star report improvements
-08686828 2026-03-03 15:13:19 Fix species data structure in print report
-22def3ee 2026-03-03 15:09:39 Comprehensive star report improvements for donors
-3b5edc7f 2026-03-03 14:57:54 Comprehensive star report builder improvements
-44a56c6c 2026-03-03 14:41:44 Make satellite hint compact and fix footer overlap
-5fff11ce 2026-03-03 14:34:14 Add satellite hint for high zoom levels (16+)
