@@ -3679,10 +3679,12 @@
         // Export full starred report as CSV
         async function exportFullReportCsv() {
             const allParks = [];
+            let parksWithoutData = 0;
             
             // Collect all parks (direct stars + bbox)
             for (const park of starredItems.parks) {
                 const data = reportDataCache.parks.get(park.id) || {};
+                if (!data.fire && !data.deforestation && !data.settlement) parksWithoutData++;
                 allParks.push({ park, data, source: 'starred' });
             }
             
@@ -3690,7 +3692,9 @@
                 const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
                 if (bboxData?.parks) {
                     for (const p of bboxData.parks) {
-                        allParks.push({ park: p, data: p.reportData || {}, source: 'bbox:' + (bbox.name || 'area') });
+                        const data = p.reportData || {};
+                        if (!data.fire && !data.deforestation && !data.settlement) parksWithoutData++;
+                        allParks.push({ park: p, data, source: 'bbox:' + (bbox.name || 'area') });
                     }
                 }
             }
@@ -3698,6 +3702,11 @@
             if (allParks.length === 0) {
                 showToast('No park data to export', 'error');
                 return;
+            }
+            
+            // Warn if some parks are still loading
+            if (parksWithoutData > 0) {
+                showToast(`Warning: ${parksWithoutData} park(s) still loading. Data may be incomplete.`, 'warning');
             }
             
             // Comprehensive CSV with ALL feature counts
@@ -3788,11 +3797,13 @@
         // Export detailed XLSX with summary and per-park tabs
         async function exportFullReportXlsx() {
             const allParks = [];
+            let parksWithoutData = 0;
             
             // Collect all parks (direct stars + bbox)
             for (const park of starredItems.parks) {
                 const data = reportDataCache.parks.get(park.id) || {};
                 const stats = data.stats || {};
+                if (!data.fire && !data.deforestation && !data.settlement) parksWithoutData++;
                 allParks.push({ park, data, stats, source: 'starred' });
             }
             
@@ -3800,7 +3811,9 @@
                 const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
                 if (bboxData?.parks) {
                     for (const p of bboxData.parks) {
-                        allParks.push({ park: p, data: p.reportData || {}, stats: p.reportData?.stats || {}, source: 'bbox:' + (bbox.name || 'area') });
+                        const data = p.reportData || {};
+                        if (!data.fire && !data.deforestation && !data.settlement) parksWithoutData++;
+                        allParks.push({ park: p, data, stats: data.stats || {}, source: 'bbox:' + (bbox.name || 'area') });
                     }
                 }
             }
@@ -3808,6 +3821,11 @@
             if (allParks.length === 0) {
                 showToast('No park data to export', 'error');
                 return;
+            }
+            
+            // Warn if some parks are still loading
+            if (parksWithoutData > 0) {
+                showToast(`Warning: ${parksWithoutData} park(s) still loading. Data may be incomplete.`, 'warning');
             }
             
             showToast('Generating detailed XLSX...');
@@ -4349,10 +4367,12 @@
         
         async function exportFullReportKml() {
             const allParks = [];
+            let parksWithoutData = 0;
             
             // Collect all parks (direct stars + bbox)
             for (const park of starredItems.parks) {
                 const data = reportDataCache.parks.get(park.id) || {};
+                if (!data.fire && !data.deforestation && !data.settlement) parksWithoutData++;
                 allParks.push({ park, data });
             }
             
@@ -4360,7 +4380,9 @@
                 const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
                 if (bboxData?.parks) {
                     for (const p of bboxData.parks) {
-                        allParks.push({ park: p, data: p.reportData || {} });
+                        const data = p.reportData || {};
+                        if (!data.fire && !data.deforestation && !data.settlement) parksWithoutData++;
+                        allParks.push({ park: p, data });
                     }
                 }
             }
@@ -4368,6 +4390,13 @@
             if (allParks.length === 0) {
                 showToast('No parks to export', 'error');
                 return;
+            }
+            
+            // Warn if some parks are still loading
+            if (parksWithoutData > 0) {
+                if (!confirm(`Warning: ${parksWithoutData} park(s) are still loading data. Export may be incomplete. Continue anyway?`)) {
+                    return;
+                }
             }
             
             showToast(`Generating comprehensive KML for ${allParks.length} parks...`);
@@ -10350,13 +10379,22 @@
         for (const park of data.parks) {
             const rd = park.reportData || {};
             const parkId = park.id || park.name?.replace(/\s+/g, '_');
+            const isLoading = reportDataCache.loading.has(park.id);
+            const hasData = rd && (rd.fire || rd.deforestation || rd.settlement || rd.stats || rd.species || rd.climate || rd.publications);
+            
             html += `<div class="starred-park-nested" id="park-${escapeHtml(parkId)}" onclick="event.target.closest('.starred-park-nested-header') && this.classList.toggle('collapsed')">
                 <div class="starred-park-nested-header">
                     <span>${escapeHtml(park.name || park.id)}</span>
                     <span class="starred-park-nested-meta">${escapeHtml(park.country || '')}${park.area_km2 ? ' • ' + Math.round(park.area_km2).toLocaleString() + ' km²' : ''}</span>
-                </div>
-                ${renderParkReportInline(park, rd, true, parkId)}
-            </div>`;
+                </div>`;
+            
+            if (isLoading || !hasData) {
+                html += '<div class="starred-report-content"><div class="starred-report-loading" style="padding:20px;text-align:center;"><div class="spinner"></div><div style="margin-top:8px;font-size:11px;">Loading park data...</div></div></div>';
+            } else {
+                html += renderParkReportInline(park, rd, true, parkId);
+            }
+            
+            html += '</div>';
         }
         
         html += '</div>';
@@ -11686,6 +11724,8 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
     /* Hide everything except starred items panel */
     body > *:not(#star-modal) { display: none !important; }
     #star-modal { display: block !important; position: static !important; background: white !important; }
+    .star-modal-content { max-height: none !important; overflow: visible !important; width: 100% !important; max-width: none !important; }
+    .star-modal-body { overflow: visible !important; height: auto !important; max-height: none !important; }
     .star-modal-header, .star-modal-footer, .starred-item-expand, .starred-item-remove { display: none !important; }
     .starred-modal-backdrop { display: none !important; }
     
