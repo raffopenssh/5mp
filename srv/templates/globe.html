@@ -3672,7 +3672,7 @@
                 
                 // Species and roadless from stats
                 const roadlessPct = stats.roadless?.roadless_percentage || 0;
-                const speciesCount = data.species?.length || 0;
+                const speciesCount = data.species?.total_count || data.species?.species?.length || 0;
                 
                 rows.push([
                     csvEscape(source),
@@ -10129,17 +10129,19 @@
         </div>
     </div>` : ''}
     
-    ${species && species.length > 0 ? `
+    ${species && species.species && species.species.length > 0 ? `
     <div class="narrative-section" style="border-color: #10b981;">
         <div class="narrative-title">🦁 Biodiversity</div>
         <div class="narrative-stats">
-            <span>${species.length} mammal species recorded</span>
+            <span>${species.total_count || species.species.length} mammal species</span>
+            ${species.threatened > 0 ? `<span>${species.threatened} threatened</span>` : ''}
+            ${species.critical > 0 ? `<span>${species.critical} critically endangered</span>` : ''}
         </div>
         <div class="species-highlights" style="font-size: 13px; color: #aaa; margin-top: 8px;">
-            ${species.filter(s => s.category === 'CR' || s.category === 'EN' || s.category === 'VU').slice(0, 10).map(s => 
-                `<div style="padding: 4px 0;">• <span style="color: ${s.category === 'CR' ? '#ef4444' : s.category === 'EN' ? '#f59e0b' : '#eab308'};">${s.category}</span> <em>${s.scientific_name}</em> (${s.common_name || 'no common name'})</div>`
+            ${species.species.filter(s => s.status === 'CR' || s.status === 'EN' || s.status === 'VU').slice(0, 10).map(s => 
+                `<div style="padding: 4px 0;">• <span style="color: ${s.status === 'CR' ? '#ef4444' : s.status === 'EN' ? '#f59e0b' : '#eab308'};">${s.status}</span> <em>${s.binomial || s.scientific_name}</em> (${s.common_name || 'no common name'})</div>`
             ).join('')}
-            ${species.length > 10 ? `<div style="padding: 4px 0; color: #666;">... and ${species.length - 10} more species</div>` : ''}
+            ${species.species.length > 10 ? `<div style="padding: 4px 0; color: #666;">... and ${species.species.length - 10} more species</div>` : ''}
         </div>
     </div>` : ''}
     
