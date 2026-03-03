@@ -715,21 +715,24 @@ func (s *Server) HandleAPIMBTilesEstimate(w http.ResponseWriter, r *http.Request
 	estimatedSeconds := len(tiles) / 100
 	
 	availableSpace := getAvailableDiskSpace(mbtilesQueue.outputDir)
-	// Require 1.2x estimated size as safety margin (was 2x)
-	sufficient := uint64(float64(estimatedSize)*1.2) <= availableSpace
+	// Require 1.2x estimated size + 2GB minimum free space
+	const minFreeSpace = 2 * 1024 * 1024 * 1024 // 2GB
+	requiredSpace := uint64(float64(estimatedSize)*1.2) + minFreeSpace
+	sufficient := requiredSpace <= availableSpace
 	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"park_id":           parkID,
-		"total_tiles":       len(tiles),
-		"estimated_size_mb": estimatedSize / (1024 * 1024),
-		"estimated_seconds": estimatedSeconds,
-		"bbox":              bbox,
-		"min_zoom":          minZoom,
-		"max_zoom":          maxZoom,
+		"park_id":            parkID,
+		"total_tiles":        len(tiles),
+		"estimated_size_mb":  estimatedSize / (1024 * 1024),
+		"estimated_seconds":  estimatedSeconds,
+		"bbox":               bbox,
+		"min_zoom":           minZoom,
+		"max_zoom":           maxZoom,
 		"available_space_mb": availableSpace / (1024 * 1024),
-		"sufficient_space":  sufficient,
-		"sources":           []string{"esri", "bing", "google"},
+		"required_space_mb":  requiredSpace / (1024 * 1024),
+		"sufficient_space":   sufficient,
+		"sources":            []string{"esri", "bing", "google"},
 	})
 }
 

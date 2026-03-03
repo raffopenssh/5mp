@@ -2311,10 +2311,12 @@
                 // Check for sufficient storage space
                 if (!data.sufficient_space) {
                     const availMB = data.available_space_mb || 0;
+                    const requiredMB = data.required_space_mb || 0;
                     const availStr = availMB >= 1024 ? `${(availMB / 1024).toFixed(1)} GB` : `${availMB} MB`;
-                    estimateEl.innerHTML = `<span style="color: #ef4444;">Insufficient storage</span><br><span style="font-size: 11px; color: #666;">Need ${sizeStr}, have ${availStr}</span>`;
+                    const reqStr = requiredMB >= 1024 ? `${(requiredMB / 1024).toFixed(1)} GB` : `${requiredMB} MB`;
+                    estimateEl.innerHTML = `<span style="color: #ef4444;">Insufficient disk space</span><br><span style="font-size: 10px; color: #888;">Need ${reqStr} free (incl. 2GB buffer), have ${availStr}</span>`;
                     actionBtn.disabled = true;
-                    actionBtn.title = 'Insufficient storage space for this tile set';
+                    actionBtn.title = 'Insufficient storage space - reduce zoom level or free up disk space';
                 } else {
                     actionBtn.disabled = mbtilesState === 'generating';
                     actionBtn.title = '';
@@ -12037,7 +12039,7 @@ ${starredItems.narratives.map(n => {
             </button>
             
             <!-- Info about expiration -->
-            <div style="font-size: 10px; color: #666; margin-top: 10px; text-align: center;">⏱ Files available for 8 hours after generation</div>
+            <div style="font-size: 10px; color: #666; margin-top: 10px; text-align: center;">⏱ One-time download. Files deleted after download or 2 hours (whichever comes first)</div>
             
             <!-- Hidden status for polling -->
             <div id="mbtiles-status" style="display: none;"></div>
