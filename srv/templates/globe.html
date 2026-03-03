@@ -282,6 +282,8 @@
         .report-builder-header h3 { margin: 0; color: #22c55e; font-size: 18px; display: flex; align-items: center; gap: 8px; }
         .report-builder-close { background: none; border: none; color: #888; font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
         .report-builder-close:hover { background: rgba(255,255,255,0.1); color: #e0e0e0; }
+        .smart-default-badge { margin: 0 24px; margin-top: 16px; padding: 16px; background: linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 100%); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; color: #e0e0e0; }
+        .smart-default-badge button:hover { background: #16a34a; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34,197,94,0.3); }
         .report-builder-body { padding: 24px; }
         .report-builder-section { margin-bottom: 24px; }
         .report-builder-section-title { font-size: 13px; font-weight: 600; color: #fbbf24; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
@@ -10405,7 +10407,8 @@
             climate: true,
             publications: true,
             infrastructure: true,
-            patrol: true
+            patrol: true,
+            threat: true
         },
         filters: {
             skipZeros: true,
@@ -10414,7 +10417,8 @@
             minSettlements: 0,
             minDeforestation: 0
         },
-        detailLevel: 'standard'
+        detailLevel: 'standard',
+        preset: 'auto' // 'auto', 'quick', 'donor', 'scientific', 'custom'
     };
     
     // Load config from localStorage
@@ -10434,9 +10438,186 @@
         localStorage.setItem('5mp-report-config', JSON.stringify(window.reportConfig));
     }
     
+    // Determine smart default configuration based on current selection
+    function determineSmartDefault() {
+        // Count parks
+        let parkCount = starredItems.parks.length;
+        for (const bbox of starredItems.bboxes) {
+            const bboxKey = bbox.bbox.join(',');
+            const bboxData = reportDataCache.bboxes.get(bboxKey);
+            if (bboxData?.parks) {
+                parkCount += bboxData.parks.length;
+            }
+        }
+        
+        // Count total data points from cache
+        let totalFires = 0, totalSettlements = 0, totalDeforest = 0;
+        
+        // From starred parks
+        for (const park of starredItems.parks) {
+            const data = reportDataCache.parks.get(park.id);
+            if (data) {
+                totalFires += data.fire?.total_fires || 0;
+                totalSettlements += data.settlement?.settlement_count || 0;
+                totalDeforest += data.deforestation?.total_loss_km2 || 0;
+            }
+        }
+        
+        // From bboxes
+        for (const bbox of starredItems.bboxes) {
+            const bboxKey = bbox.bbox.join(',');
+            const bboxData = reportDataCache.bboxes.get(bboxKey);
+            if (bboxData?.parks) {
+                for (const bboxPark of bboxData.parks) {
+                    totalFires += bboxPark.fire?.total_fires || 0;
+                    totalSettlements += bboxPark.settlement?.settlement_count || 0;
+                    totalDeforest += bboxPark.deforestation?.total_loss_km2 || 0;
+                }
+            }
+        }
+        
+        // Decision logic
+        if (parkCount === 0) {
+            return {
+                profile: 'donor',
+                reason: 'no parks selected - using balanced default',
+                stats: { parks: 0, fires: 0, settlements: 0, deforestation: 0 },
+                sections: {
+                    fire: true,
+                    deforestation: true,
+                    settlement: true,
+                    biodiversity: true,
+                    climate: true,
+                    publications: true,
+                    infrastructure: false,
+                    patrol: true,
+                    threat: true
+                },
+                filters: { skipZeros: true, threatsOnly: false, minFires: 0, minSettlements: 0, minDeforestation: 0 },
+                detailLevel: 'standard'
+            };
+        } else if (parkCount === 1) {
+            // Single park: show everything
+            return {
+                profile: 'scientific',
+                reason: 'single park - comprehensive view recommended',
+                stats: { parks: parkCount, fires: totalFires, settlements: totalSettlements, deforestation: totalDeforest.toFixed(2) },
+                sections: {
+                    fire: true,
+                    deforestation: true,
+                    settlement: true,
+                    biodiversity: true,
+                    climate: true,
+                    publications: true,
+                    infrastructure: true,
+                    patrol: true,
+                    threat: true
+                },
+                filters: { skipZeros: false, threatsOnly: false, minFires: 0, minSettlements: 0, minDeforestation: 0 },
+                detailLevel: 'comprehensive'
+            };
+        } else if (parkCount >= 20) {
+            // Many parks: high-level summary
+            return {
+                profile: 'quick',
+                reason: `${parkCount} parks - concise summary recommended`,
+                stats: { parks: parkCount, fires: totalFires, settlements: totalSettlements, deforestation: totalDeforest.toFixed(2) },
+                sections: {
+                    fire: true,
+                    deforestation: true,
+                    settlement: true,
+                    biodiversity: false,
+                    climate: false,
+                    publications: false,
+                    infrastructure: false,
+                    patrol: true,
+                    threat: true
+                },
+                filters: { skipZeros: true, threatsOnly: false, minFires: 100, minSettlements: 5, minDeforestation: 1 },
+                detailLevel: 'summary'
+            };
+        } else if (totalFires > 50000 || totalSettlements > 100) {
+            // Lots of data: grouped view
+            return {
+                profile: 'donor',
+                reason: 'high data volume - grouped summaries recommended',
+                stats: { parks: parkCount, fires: totalFires, settlements: totalSettlements, deforestation: totalDeforest.toFixed(2) },
+                sections: {
+                    fire: true,
+                    deforestation: true,
+                    settlement: true,
+                    biodiversity: true,
+                    climate: true,
+                    publications: true,
+                    infrastructure: false,
+                    patrol: true,
+                    threat: true
+                },
+                filters: { skipZeros: true, threatsOnly: false, minFires: 50, minSettlements: 3, minDeforestation: 0.5 },
+                detailLevel: 'standard'
+            };
+        } else {
+            // Standard case: donor report
+            return {
+                profile: 'donor',
+                reason: `${parkCount} parks - balanced detail recommended`,
+                stats: { parks: parkCount, fires: totalFires, settlements: totalSettlements, deforestation: totalDeforest.toFixed(2) },
+                sections: {
+                    fire: true,
+                    deforestation: true,
+                    settlement: true,
+                    biodiversity: true,
+                    climate: true,
+                    publications: true,
+                    infrastructure: false,
+                    patrol: true,
+                    threat: true
+                },
+                filters: { skipZeros: true, threatsOnly: false, minFires: 0, minSettlements: 0, minDeforestation: 0 },
+                detailLevel: 'standard'
+            };
+        }
+    }
+    
     // Open report builder modal
     function openReportBuilder() {
         loadReportConfig();
+        
+        // Determine smart default
+        const smartDefault = determineSmartDefault();
+        
+        // Show recommendation badge
+        const badge = document.getElementById('smart-default-badge');
+        if (smartDefault.stats.parks > 0) {
+            badge.innerHTML = `
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="font-size:20px;">💡</div>
+                    <div style="flex:1;">
+                        <div style="font-weight:bold;margin-bottom:2px;">Recommended: ${smartDefault.profile.toUpperCase()}</div>
+                        <div style="font-size:12px;opacity:0.8;">${smartDefault.reason}</div>
+                        <div style="font-size:11px;opacity:0.7;margin-top:2px;">
+                            ${smartDefault.stats.parks} parks • ${smartDefault.stats.fires.toLocaleString()} fires • 
+                            ${smartDefault.stats.settlements.toLocaleString()} settlements • 
+                            ${smartDefault.stats.deforestation} km² deforestation
+                        </div>
+                    </div>
+                    <button onclick="applySmartDefault()" style="background:#22c55e;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;white-space:nowrap;">Apply Recommendation</button>
+                </div>
+            `;
+            badge.style.display = 'block';
+            
+            // Store smart default for later use
+            window.currentSmartDefault = smartDefault;
+        } else {
+            badge.style.display = 'none';
+        }
+        
+        // If user hasn't customized (preset is 'auto'), apply smart default
+        if (reportConfig.preset === 'auto') {
+            Object.assign(reportConfig.sections, smartDefault.sections);
+            Object.assign(reportConfig.filters, smartDefault.filters);
+            reportConfig.detailLevel = smartDefault.detailLevel;
+        }
         
         // Update UI to reflect current config
         document.getElementById('section-fire').checked = reportConfig.sections.fire;
@@ -10447,6 +10628,7 @@
         document.getElementById('section-publications').checked = reportConfig.sections.publications;
         document.getElementById('section-infrastructure').checked = reportConfig.sections.infrastructure;
         document.getElementById('section-patrol').checked = reportConfig.sections.patrol;
+        document.getElementById('section-threat').checked = reportConfig.sections.threat || true;
         
         document.getElementById('filter-skip-zeros').checked = reportConfig.filters.skipZeros;
         document.getElementById('filter-threats-only').checked = reportConfig.filters.threatsOnly;
@@ -10466,6 +10648,42 @@
     // Close report builder modal
     function closeReportBuilder() {
         document.getElementById('report-builder-modal').classList.remove('active');
+    }
+    
+    // Apply smart default recommendation
+    function applySmartDefault() {
+        if (!window.currentSmartDefault) return;
+        
+        const smartDefault = window.currentSmartDefault;
+        
+        // Apply the smart default configuration
+        Object.assign(reportConfig.sections, smartDefault.sections);
+        Object.assign(reportConfig.filters, smartDefault.filters);
+        reportConfig.detailLevel = smartDefault.detailLevel;
+        reportConfig.preset = smartDefault.profile;
+        
+        // Update UI
+        document.getElementById('section-fire').checked = reportConfig.sections.fire;
+        document.getElementById('section-deforestation').checked = reportConfig.sections.deforestation;
+        document.getElementById('section-settlement').checked = reportConfig.sections.settlement;
+        document.getElementById('section-biodiversity').checked = reportConfig.sections.biodiversity;
+        document.getElementById('section-climate').checked = reportConfig.sections.climate;
+        document.getElementById('section-publications').checked = reportConfig.sections.publications;
+        document.getElementById('section-infrastructure').checked = reportConfig.sections.infrastructure;
+        document.getElementById('section-patrol').checked = reportConfig.sections.patrol;
+        document.getElementById('section-threat').checked = reportConfig.sections.threat;
+        
+        document.getElementById('filter-skip-zeros').checked = reportConfig.filters.skipZeros;
+        document.getElementById('filter-threats-only').checked = reportConfig.filters.threatsOnly;
+        document.getElementById('filter-min-fires').value = reportConfig.filters.minFires;
+        document.getElementById('filter-min-settlements').value = reportConfig.filters.minSettlements;
+        document.getElementById('filter-min-deforestation').value = reportConfig.filters.minDeforestation;
+        
+        document.getElementById('detail-level').value = reportConfig.detailLevel;
+        
+        updateCheckboxStates();
+        
+        showToast(`✅ Applied ${smartDefault.profile.toUpperCase()} preset`, 'success');
     }
     
     // Toggle checkbox and its visual state
@@ -10505,6 +10723,7 @@
         reportConfig.sections.publications = document.getElementById('section-publications').checked;
         reportConfig.sections.infrastructure = document.getElementById('section-infrastructure').checked;
         reportConfig.sections.patrol = document.getElementById('section-patrol').checked;
+        reportConfig.sections.threat = document.getElementById('section-threat').checked;
         
         reportConfig.filters.skipZeros = document.getElementById('filter-skip-zeros').checked;
         reportConfig.filters.threatsOnly = document.getElementById('filter-threats-only').checked;
@@ -10513,6 +10732,9 @@
         reportConfig.filters.minDeforestation = parseFloat(document.getElementById('filter-min-deforestation').value) || 0;
         
         reportConfig.detailLevel = document.getElementById('detail-level').value;
+        
+        // Mark as custom when user changes settings
+        reportConfig.preset = 'custom';
         
         updateCheckboxStates();
     }
@@ -10542,7 +10764,8 @@
                     climate: false,
                     publications: false,
                     infrastructure: false,
-                    patrol: true
+                    patrol: true,
+                    threat: true
                 };
                 reportConfig.filters = {
                     skipZeros: true,
@@ -10552,6 +10775,7 @@
                     minDeforestation: 0
                 };
                 reportConfig.detailLevel = 'summary';
+                reportConfig.preset = 'quick';
                 break;
                 
             case 'donor':
@@ -10564,7 +10788,8 @@
                     climate: true,
                     publications: true,
                     infrastructure: false,
-                    patrol: true
+                    patrol: true,
+                    threat: true
                 };
                 reportConfig.filters = {
                     skipZeros: true,
@@ -10574,6 +10799,7 @@
                     minDeforestation: 0
                 };
                 reportConfig.detailLevel = 'standard';
+                reportConfig.preset = 'donor';
                 break;
                 
             case 'scientific':
@@ -10586,7 +10812,8 @@
                     climate: true,
                     publications: true,
                     infrastructure: true,
-                    patrol: true
+                    patrol: true,
+                    threat: true
                 };
                 reportConfig.filters = {
                     skipZeros: false,
@@ -10596,10 +10823,12 @@
                     minDeforestation: 0
                 };
                 reportConfig.detailLevel = 'comprehensive';
+                reportConfig.preset = 'scientific';
                 break;
                 
             case 'custom':
                 // Keep current config
+                reportConfig.preset = 'custom';
                 break;
         }
         
@@ -10612,6 +10841,7 @@
         document.getElementById('section-publications').checked = reportConfig.sections.publications;
         document.getElementById('section-infrastructure').checked = reportConfig.sections.infrastructure;
         document.getElementById('section-patrol').checked = reportConfig.sections.patrol;
+        document.getElementById('section-threat').checked = reportConfig.sections.threat;
         
         document.getElementById('filter-skip-zeros').checked = reportConfig.filters.skipZeros;
         document.getElementById('filter-threats-only').checked = reportConfig.filters.threatsOnly;
@@ -10622,6 +10852,8 @@
         document.getElementById('detail-level').value = reportConfig.detailLevel;
         
         updateCheckboxStates();
+        
+        showToast(`✅ Applied ${preset.toUpperCase()} preset`);
     }
     
     // Helper function to check if a section should be included
@@ -14173,6 +14405,10 @@ ${starredItems.narratives.map(n => {
                 <h3>⚙ Configure Report</h3>
                 <button class="report-builder-close" onclick="closeReportBuilder()">&times;</button>
             </div>
+            
+            <!-- Smart Default Badge -->
+            <div id="smart-default-badge" class="smart-default-badge" style="display:none;"></div>
+            
             <div class="report-builder-body">
                 <!-- Presets Section -->
                 <div class="report-builder-section">
@@ -14232,6 +14468,10 @@ ${starredItems.narratives.map(n => {
                         <div class="report-builder-checkbox" onclick="toggleCheckbox(this, 'patrol')">
                             <input type="checkbox" id="section-patrol" checked onchange="event.stopPropagation()">
                             <label for="section-patrol">○ Patrol Activity</label>
+                        </div>
+                        <div class="report-builder-checkbox" onclick="toggleCheckbox(this, 'threat')">
+                            <input type="checkbox" id="section-threat" checked onchange="event.stopPropagation()">
+                            <label for="section-threat">⚠ Threat Assessment</label>
                         </div>
                     </div>
                 </div>
