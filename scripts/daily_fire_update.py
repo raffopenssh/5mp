@@ -680,6 +680,84 @@ class DailyFireUpdater:
         self.conn.commit()
         log(f"  Assigned {new_names_assigned} new friendly names")
     
+    def analyze_fire_status(self, props, end_date):
+        """Analyze fire status based on trajectory data.
+        
+        Returns: (status_emoji, status_text, detail_message)
+        """
+        from datetime import datetime
+        
+        position = props.get('position', 'unknown')
+        direction = props.get('direction', '?')
+        speed_km_day = props.get('avg_speed_km_day', 0)
+        pct_inside = props.get('pct_inside', 0)
+        cross_border = props.get('cross_border', False)
+        days = props.get('days', 1)
+        
+        # Calculate days since last detection
+        try:
+            last_seen = datetime.strptime(end_date, '%Y-%m-%d')
+            days_since = (datetime.now() - last_seen).days
+        except:
+            days_since = 0
+        
+        # Gone dark detection
+        if days_since >= 3:
+            return "🌙", "Gone dark", "No detections for 3+ days"
+        elif days_since >= 2:
+            return "❄️", "Cooling", "No new fires in 2 days"
+        
+        # Position-based status
+        if position == 'contained':
+            status_emoji = "📍"
+            status_text = "Contained"
+            detail = "Fully inside park"
+        elif position == 'entirely_outside':
+            if pct_inside == 0 and speed_km_day > 0:
+                status_emoji = "⚠️"
+                status_text = "Approaching"
+                detail = f"Outside, moving {direction}"
+            else:
+                status_emoji = "🔥"
+                status_text = "Outside"
+                detail = "Outside park boundary"
+        elif position == 'starts_inside':
+            status_emoji = "🚨"
+            status_text = "Leaving"
+            detail = f"Started inside, moving {direction} toward boundary"
+        elif position == 'ends_inside':
+            status_emoji = "⚡"
+            status_text = "Entering"
+            detail = f"Crossing into park from {direction}"
+        elif position == 'transits':
+            if cross_border:
+                status_emoji = "🌊"
+                status_text = "Transiting"
+                detail = f"Crossing park boundary, moving {direction}"
+            else:
+                status_emoji = "🔥"
+                status_text = "Spreading"
+                detail = f"Active inside, {pct_inside:.0f}% in park"
+        else:
+            status_emoji = "🔥"
+            status_text = "Active"
+            detail = f"Moving {direction}"
+        
+        # Add velocity info
+        if speed_km_day > 2:
+            detail += f" at {speed_km_day:.1f}km/day (fast)"
+        elif speed_km_day > 0.5:
+            detail += f" at {speed_km_day:.1f}km/day"
+        elif speed_km_day > 0:
+            detail += " (slow spread)"
+        elif days == 1:
+            detail += " (new detection)"
+        else:
+            detail += " (stationary)"
+        
+        return status_emoji, status_text, detail
+    
+
     def create_fire_notifications(self):
         """Create notifications for active fire groups using stored friendly names.
         
@@ -689,7 +767,7 @@ class DailyFireUpdater:
         
         # Query active fire trajectories with their friendly names
         cursor = self.conn.execute("""
-            SELECT fg.park_id, fg.feature_id, fg.properties_json, fgn.friendly_name
+            SELECT fg.park_id, fg.feature_id, fg.properties_json, fg.end_date, fgn.friendly_name
             FROM feature_geometries fg
             JOIN fire_group_names fgn ON fg.park_id = fgn.park_id AND fg.feature_id = fgn.feature_id
             WHERE fg.feature_type = 'fire_trajectory'
@@ -701,7 +779,7 @@ class DailyFireUpdater:
         parks_processed = set()
         
         for row in cursor:
-            park_id, feature_id, props_json, friendly_name = row
+            park_id, feature_id, props_json, end_date, friendly_name = row
             park_name = self.parks.get(park_id, {}).get('name', park_id)
             
             # Check if notification already exists
@@ -723,15 +801,21 @@ class DailyFireUpdater:
             days = props.get('days', 1)
             
             # Create notification with stable friendly name
-            title = f"🔥 {friendly_name}"
-            message = f"{fires_total} fires, {days} days active"
+            # Get enhanced status
+            status_emoji, status_text, status_detail = self.analyze_fire_status(props, end_date)
+            
+            # Create notification with enhanced info
+            title = f"{status_emoji} {friendly_name} ({status_text})"
+            message = f"{fires_total} fires, {days} days • {status_detail}"
             
             reference_data = json.dumps({
                 'park_id': park_id,
                 'park_name': park_name,
                 'feature_id': feature_id,
                 'type': 'fire_trajectory',
-                'group_name': friendly_name
+                'group_name': friendly_name,
+                'status': status_text,
+                'status_detail': status_detail
             })
             
             self.conn.execute("""
