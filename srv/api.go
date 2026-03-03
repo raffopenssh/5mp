@@ -873,7 +873,12 @@ func (s *Server) HandleAPIPublications(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
+	// Try looking up by WDPA ID first, then fall back to park ID
 	pubs, err := q.GetPublicationsByPA(ctx, paID)
+	if err == nil && len(pubs) == 0 && paID != parkID {
+		// No results with WDPA ID, try park ID
+		pubs, err = q.GetPublicationsByPA(ctx, parkID)
+	}
 	if err != nil {
 		slog.Error("failed to get publications", "pa_id", paID, "error", err)
 		w.Header().Set("Content-Type", "application/json")
