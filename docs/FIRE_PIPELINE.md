@@ -7,12 +7,12 @@ The fire analysis pipeline processes NASA VIIRS satellite fire detections into a
 ## Pipeline Stages
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐    ┌──────────────────┐
-│  1. DOWNLOAD    │───>│  2. CLUSTERING   │───>│  3. LOAD TO DB  │───>│  4. NARRATIVES   │
-│  (NRT fires)    │    │  (v5 groups)     │    │  (enrichment)   │    │  (cache)         │
-└─────────────────┘    └──────────────────┘    └─────────────────┘    └──────────────────┘
-     7 days              DBSCAN 5km            Context + Class       JSON → DB cache
-     Africa bbox         Track across days      Position compute      UI consumption
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐    ┌──────────────────┐    ┌────────────────────┐
+│  1. DOWNLOAD    │───>│  2. CLUSTERING   │───>│  3. LOAD TO DB  │───>│  4. NARRATIVES   │───>│  5. NOTIFICATIONS  │
+│  (NRT fires)    │    │  (v5 groups)     │    │  (enrichment)   │    │  (cache)         │    │  (alerts)          │
+└─────────────────┘    └──────────────────┘    └─────────────────┘    └──────────────────┘    └────────────────────┘
+     7 days              DBSCAN 5km            Context + Class       JSON → DB cache        Hurricane names
+     Africa bbox         Track across days      Position compute      UI consumption        Status analysis
 ```
 
 ## Data Flow
@@ -35,6 +35,9 @@ The fire analysis pipeline processes NASA VIIRS satellite fire detections into a
 | `fire_narrative_cache` | Pre-computed narratives per park |
 | `park_group_infractions` | Yearly stats per park |
 | `park_fire_weekly` | Weekly fire counts |
+| `fire_group_names` | Persistent hurricane-style names (1,424+ mappings) |
+| `fire_group_alerts` | Real-time alert status (synced daily) |
+| `notifications` | User-facing alerts (fire_alert type, 433+ active) |
 
 ---
 
@@ -238,6 +241,196 @@ Where `hash` is derived from the group's start date and centroid.
 
 ---
 
+## Stage 5: Notifications (Fire Alerts)
+
+**Script:** `scripts/daily_fire_update.py` (Steps 6a-6b2)
+
+**Purpose:** Create actionable fire notifications for park managers with stable tracking names and enhanced status information.
+
+### Step 6a: Sync fire_group_alerts
+
+**API Call:** `POST /api/update-fire-alerts?pwd=XXX`
+
+**Process:**
+1. Query feature_geometries for all fire trajectories with `end_date >= now - 14 days`
+2. For each trajectory, determine status:
+   - **active**: last seen within 3 days
+   - **cooling**: last seen 3-7 days ago
+3. Update `fire_group_alerts` table with current status
+4. Clean up old alerts (left > 7 days, entered > 14 days)
+
+**Result:** fire_group_alerts table synchronized with feature_geometries (source of truth)
+
+### Step 6b1: Assign Stable Hurricane-Style Names
+
+**Table:** `fire_group_names`
+
+**Process:**
+1. Query all fire trajectories for current year (e.g., `%_2026_grp_%`)
+2. Sort by `start_date` (chronological order)
+3. For each new fire group:
+   - Assign NATO phonetic name: Alpha, Bravo, Charlie, ..., Zulu
+   - Cycle with suffixes: Alpha-2, Bravo-2, ... (27th fire onwards)
+   - Store mapping: `park_id` + `feature_id` → `friendly_name`
+   - Record `first_seen_date` and `last_seen_date`
+4. For existing groups:
+   - Update `last_seen_date` only
+   - **Name never changes** (like hurricane tracking)
+
+**Example Mapping:**
+```
+park_id: CAF_Chinko
+feature_id: CAF_Chinko_2026_grp_2caaa51b
+friendly_name: Alpha-2  (STABLE FOREVER)
+first_seen_date: 2026-02-26
+last_seen_date: 2026-03-03
+```
+
+**Result:** Each fire has a persistent, memorable name for tracking over time.
+
+### Step 6b2: Create Enhanced Notifications
+
+**Table:** `notifications` (type = 'fire_alert')
+
+**Process:**
+1. Query active fire trajectories with their persistent names:
+   ```sql
+   SELECT fg.park_id, fg.feature_id, fg.properties_json, fg.end_date, fgn.friendly_name
+   FROM feature_geometries fg
+   JOIN fire_group_names fgn ON fg.park_id = fgn.park_id AND fg.feature_id = fgn.feature_id
+   WHERE fg.feature_type = 'fire_trajectory'
+     AND fg.end_date >= date('now', '-3 days')
+   ```
+
+2. For each fire, analyze status:
+   - **⚠️ Approaching** (137): Fire outside park, moving toward boundary
+   - **🌙 Gone Dark** (137): No detections for 3+ days (investigate)
+   - **❄️ Cooling** (89): No new fires in 2 days (declining)
+   - **📍 Contained** (28): Fully inside park boundaries
+   - **⚡ Entering** (3): Crossing INTO park (CRITICAL)
+   - **🚨 Leaving**: Started inside, moving toward boundary
+   - **🌊 Transiting**: Crossing park boundary
+   - **🔥 Outside** (37): Outside park, not approaching
+
+3. Compute movement details:
+   - Direction (N, S, E, W, NE, NW, SE, SW)
+   - Speed classification:
+     - **Fast**: > 2 km/day (urgent attention)
+     - **Normal**: 0.5-2 km/day
+     - **Slow**: < 0.5 km/day
+     - **Stationary**: 0 km/day
+
+4. Create notification with:
+   - **Title**: `{emoji} {friendly_name} ({status})`
+     - Example: "⚠️ Alpha-2 (Approaching)"
+   - **Message**: `{fires} fires, {days} days • {status_detail}`
+     - Example: "142 fires, 6 days • Outside, moving N at 5.3km/day (fast)"
+   - **reference_data**: JSON with park_id, feature_id, friendly_name, status, status_detail
+
+5. Skip if notification already exists (within 7 days, same feature_id)
+
+**Example Notifications:**
+
+```
+⚠️ Alpha-2 (Approaching)
+142 fires, 6 days • Outside, moving N at 5.3km/day (fast)
+
+🌙 Echo-2 (Gone dark)
+27 fires, 3 days • No detections for 3+ days
+
+📍 Foxtrot-3 (Contained)
+666 fires, 6 days • Fully inside park at 2.3km/day (fast)
+
+❄️ Charlie-2 (Cooling)
+41 fires, 4 days • No new fires in 2 days
+
+⚡ Lima-5 (Entering)
+18 fires, 1 days • Crossing into park from N at 1.2km/day
+```
+
+**Result:** 433 fire notifications across 24 parks with actionable status information.
+
+### Notification Data Schema
+
+```json
+{
+  "id": 1714,
+  "park_id": "CAF_Chinko",
+  "notification_type": "fire_alert",
+  "title": "⚠️ Alpha-2 (Approaching)",
+  "message": "142 fires, 6 days • Outside, moving N at 5.3km/day (fast)",
+  "reference_id": "CAF_Chinko_2026_grp_2caaa51b",
+  "reference_data": {
+    "park_id": "CAF_Chinko",
+    "park_name": "Chinko",
+    "feature_id": "CAF_Chinko_2026_grp_2caaa51b",
+    "type": "fire_trajectory",
+    "group_name": "Alpha-2",
+    "status": "Approaching",
+    "status_detail": "Outside, moving N at 5.3km/day (fast)"
+  },
+  "created_at": "2026-03-03 03:00:15"
+}
+```
+
+### Manager Benefits
+
+**Before Enhancement:**
+```
+Notification: "🔥 Fire 07419ea4 | 142 fires, 6 days"
+
+Questions:
+❓ Which fire is this? (hash ID meaningless)
+❓ Is it moving? In what direction?
+❓ Is it approaching the park?
+❓ Is it still burning or gone dark?
+❓ How fast is it spreading?
+```
+
+**After Enhancement:**
+```
+Notification: "⚠️ Alpha-2 (Approaching) | 142 fires, 6 days • Outside, moving N at 5.3km/day (fast)"
+
+Answers:
+✅ Fire Alpha-2 (memorable, trackable)
+✅ Moving north (direction clear)
+✅ Approaching park from outside (boundary threat)
+✅ Active (detected today)
+✅ Fast-moving (5.3km/day = urgent)
+```
+
+### UI Integration
+
+**Bell Icon Notification Dropdown:**
+1. Shows all fire_alert notifications grouped by park
+2. Clicking notification:
+   - Closes dropdown
+   - Fetches fire trajectory by feature_id (from features API)
+   - Displays trajectory on map
+   - Zooms to fire location
+   - Auto-pins fire_trajectory layer
+   - Shows stable friendly name in UI
+
+**Tooltip (Fire-Realtime API):**
+- Now includes `feature_id` and persistent `name` from fire_group_names
+- Consistent with notification names
+- Example: Both show "Alpha-2" for same fire
+
+### Data Consistency
+
+All systems now use persistent names and feature_ids:
+
+| Source | Name | Feature ID | Status |
+|--------|------|------------|--------|
+| fire_group_names | Alpha-2 | CAF_Chinko_2026_grp_2caaa51b | ✅ Persistent |
+| feature_geometries | (computed) | CAF_Chinko_2026_grp_2caaa51b | ✅ Source of truth |
+| fire-realtime API | Alpha-2 | CAF_Chinko_2026_grp_2caaa51b | ✅ Joins names |
+| notifications | Alpha-2 | CAF_Chinko_2026_grp_2caaa51b | ✅ Stable |
+| UI tooltip | Alpha-2 | CAF_Chinko_2026_grp_2caaa51b | ✅ Consistent |
+| UI notification | Alpha-2 | CAF_Chinko_2026_grp_2caaa51b | ✅ Click works |
+
+---
+
 ## Daily Cron Job
 
 **Script:** `scripts/daily_fire_update.py`
@@ -253,9 +446,12 @@ Where `hash` is derived from the group's start date and centroid.
 1. Download NRT fires from FIRMS API (last 7 days, Africa bbox)
 2. Insert new fires to `fire_detections` (upsert, no deletions)
 3. Identify affected parks
-4. Rebuild fire groups for affected parks only
+4. Rebuild fire groups for affected parks only (v5 algorithm)
 5. Update `feature_geometries` for new groups
 6. Update `fire_narrative_cache` for affected parks
+7. **Step 6a**: Sync fire_group_alerts table
+8. **Step 6b1**: Assign persistent names to new fire groups
+9. **Step 6b2**: Create/update fire alert notifications
 
 **Logs:** `/home/exedev/5mp/logs/daily_fire.log`
 
@@ -311,11 +507,47 @@ GET /api/parks/{park_id}/fire-realtime?pwd=XXX&days=28
 ```
 Computes fire groups dynamically for recent data.
 
+**Response includes (v5+):**
+- `feature_id`: Stable identifier for each fire group
+- `name`: Persistent friendly name from fire_group_names table
+- `status`: active, cooling, dormant
+- `trajectory`: Array of [{lat, lon, date}]
+
 ### Fire Features (Map)
 ```
 GET /api/parks/{park_id}/features?type=fire_trajectory&pwd=XXX
 ```
 Returns GeoJSON FeatureCollection for map rendering.
+
+**Used for:** Notification click handler (no date filters)
+
+### Fire Alerts
+```
+GET /api/fire-alerts?pwd=XXX&limit=1000
+```
+Returns recent fire group alerts from `fire_group_alerts` table.
+
+**Ordering:** entered > active_inside > active > cooling > left
+
+### Fire Notifications
+```
+GET /api/notifications?type=fire_alert&limit=500&pwd=XXX
+```
+Returns user-facing fire notifications with enhanced status.
+
+**Includes:**
+- Persistent friendly names (Alpha-2, Bravo, etc.)
+- Status emoji and classification
+- Movement direction and velocity
+- Boundary threat assessment
+
+### Update Fire Alerts (Cron)
+```
+POST /api/update-fire-alerts?pwd=XXX
+```
+Syncs fire_group_alerts table with feature_geometries.
+
+**Called by:** Daily cron (Step 6a)
 
 ---
 
@@ -327,6 +559,9 @@ Returns GeoJSON FeatureCollection for map rendering.
 | `feature_geometries` (fire_trajectory) | 173K+ | Trajectory LineStrings |
 | `fire_narrative_cache` | 162 | Pre-computed narratives |
 | `park_group_infractions` | ~1,200 | Yearly stats (162 parks × ~7 years) |
+| `fire_group_names` | 1,424+ | Persistent hurricane-style name mappings |
+| `fire_group_alerts` | ~600 | Current alert status (cleaned daily) |
+| `notifications` (fire_alert) | 433+ | Active user-facing notifications |
 
 ---
 

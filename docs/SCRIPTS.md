@@ -85,11 +85,59 @@ python3 scripts/daily_fire_update.py --days 2  # Test with 2 days
 3. Rebuild fire groups for affected parks only
 4. Update `feature_geometries` for new groups
 5. Update `fire_narrative_cache` for affected parks
+6. **Step 6a**: Sync `fire_group_alerts` with feature_geometries
+7. **Step 6b1**: Assign persistent hurricane-style names to new fires
+8. **Step 6b2**: Create enhanced fire alert notifications
 
 **Cron Setup:**
 ```bash
 0 3 * * * cd /home/exedev/5mp && python3 scripts/daily_fire_update.py --days 7 >> logs/daily_fire.log 2>&1
 ```
+
+**Fire Notification System (Steps 6a-6b2):**
+
+These steps create actionable fire alerts for managers:
+
+- **Step 6a - Sync Alerts**: Updates `fire_group_alerts` table
+  - Calls `/api/update-fire-alerts` endpoint
+  - Marks fires as: active (< 3 days), cooling (3-7 days)
+  - Cleans old alerts (left > 7 days)
+
+- **Step 6b1 - Assign Names**: Persistent hurricane-style naming
+  - Queries `fire_group_names` table
+  - Assigns NATO phonetic names chronologically: Alpha, Bravo, Charlie, ...
+  - Names cycle with suffixes: Alpha-2, Bravo-2, ... (27th+ fire)
+  - **Names persist forever** - like hurricane tracking
+  - Example: "Alpha-2" stays "Alpha-2" regardless of intensity changes
+
+- **Step 6b2 - Create Notifications**: Enhanced status analysis
+  - Creates `notifications` table entries (type = 'fire_alert')
+  - Analyzes fire status:
+    - ⚠️ **Approaching**: Outside park, moving toward boundary
+    - 🌙 **Gone Dark**: No detections 3+ days
+    - ❄️ **Cooling**: No new fires in 2 days
+    - 📍 **Contained**: Fully inside park
+    - ⚡ **Entering**: Crossing into park (CRITICAL)
+    - 🚨 **Leaving**: Moving toward boundary
+    - 🌊 **Transiting**: Crossing park boundary
+    - 🔥 **Outside**: Outside park, not approaching
+  - Includes movement details:
+    - Direction (N, S, E, W, etc.)
+    - Speed (fast > 2km/day, normal 0.5-2km/day, slow < 0.5km/day)
+    - Boundary threat assessment
+  - Example notification: "⚠️ Alpha-2 (Approaching) | 142 fires, 6 days • Outside, moving N at 5.3km/day (fast)"
+
+**Output:**
+- `fire_group_names`: 1,424+ persistent name mappings
+- `fire_group_alerts`: ~600 current alert statuses
+- `notifications`: 433+ fire_alert notifications
+
+**Benefits for Managers:**
+- Stable fire names for tracking ("Check on Alpha-2 status")
+- Quick visual status (emoji + classification)
+- Movement direction and speed for resource planning
+- Boundary threat assessment (approaching vs leaving)
+- "Gone dark" detection for follow-up investigation
 
 ---
 
@@ -138,7 +186,11 @@ python3 scripts/load_fire_groups_to_db.py --force
 # 4. Generate v5 narratives
 python3 scripts/precompute_narratives_v5.py
 
-# 5. Restart server
+# 5. Assign persistent names and create notifications
+# (Happens automatically in daily_fire_update.py, but can manually trigger:)
+python3 -c "import requests; requests.post('http://localhost:8000/api/update-fire-alerts?pwd=test2026')"
+
+# 6. Restart server
 make build && sudo systemctl restart srv
 ```
 
