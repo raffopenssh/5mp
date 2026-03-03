@@ -1,3 +1,6 @@
+3552edaa 2026-03-03 20:00:59 Add date params to narrative endpoints in fetchParkFullData
+066689dd 2026-03-03 19:58:35 Update git commits for version tracking
+bf3956ee 2026-03-03 19:55:43 Fix CSV and XLSX exports - remove Unknown values and fix data fields
 0b72b82a 2026-03-03 19:40:43 Fix ESC key to cancel bbox drawing
 3e9d5c37 2026-03-03 19:38:29 Fix template literal syntax error in + more buttons
 878b630e 2026-03-03 18:57:00 Add complete documentation for star report fixes
@@ -15,6 +18,3 @@ d7c1e257 2026-03-03 16:58:50 Add implementation summary for intelligent report b
 41900164 2026-03-03 16:56:21 Add comprehensive test suite for intelligent report builder
 9191d348 2026-03-03 16:54:27 Fix bbox loading from URL and enhance intelligent report builder wizard
 767e948d 2026-03-03 16:30:06 Fix PDF reports and simplify report builder
-afe1e38d 2026-03-03 16:15:59 Implement full interactive report builder with smart defaults
-a7164471 2026-03-03 16:00:29 Add intelligent grouping/summarization for repetitive report sections
-99fb2c97 2026-03-03 15:44:02 Star report UX improvements + 5 quick wins
