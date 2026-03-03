@@ -844,36 +844,9 @@ func (s *Server) HandleAPIFireAlerts(w http.ResponseWriter, r *http.Request) {
 
 // UpdateFireGroupAlerts analyzes parks with recent fire activity and updates alerts.
 func (s *Server) UpdateFireGroupAlerts() error {
-	// Check if we have fire_detections data
-	var fireCount int
-	s.DB.QueryRow(`SELECT COUNT(*) FROM fire_detections WHERE acq_date >= date('now', '-28 days')`).Scan(&fireCount)
-	if fireCount < 100 {
-		// Use feature_geometries instead (fire_detections table is empty)
-		return s.updateFireGroupAlertsFromFeatures()
-	}
-	
-	parksQuery := `SELECT DISTINCT protected_area_id FROM fire_detections 
-		WHERE acq_date >= date('now', '-28 days') AND protected_area_id IS NOT NULL`
-	rows, err := s.DB.Query(parksQuery)
-	if err != nil {
-		return fmt.Errorf("failed to get parks: %w", err)
-	}
-
-	var parks []string
-	for rows.Next() {
-		var parkID string
-		if rows.Scan(&parkID) == nil {
-			parks = append(parks, parkID)
-		}
-	}
-	rows.Close()
-
-	for _, parkID := range parks {
-		s.updateParkFireAlerts(parkID)
-	}
-
-	s.DB.Exec(`DELETE FROM fire_group_alerts WHERE left_at IS NOT NULL AND left_at < datetime('now', '-1 day')`)
-	return nil
+	// Always use feature_geometries (v5 pipeline output) for consistency
+	// This ensures alert group_names match the trajectory feature_ids
+	return s.updateFireGroupAlertsFromFeatures()
 }
 
 // updateFireGroupAlertsFromFeatures creates alerts from feature_geometries

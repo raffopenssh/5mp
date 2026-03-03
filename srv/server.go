@@ -197,6 +197,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/parks/{id}/fire-realtime", s.HandleAPIFireRealtime)
 	mux.HandleFunc("GET /api/fire-alerts", s.HandleAPIFireAlerts)
 	mux.HandleFunc("POST /api/admin/update-fire-alerts", s.HandleAPIUpdateFireAlerts)
+	mux.HandleFunc("POST /api/update-fire-alerts", s.HandleAPIUpdateFireAlerts) // Non-admin for cron
 	mux.HandleFunc("GET /api/parks/{id}/deforestation-narrative", s.HandleAPIDeforestationNarrative)
 	mux.HandleFunc("GET /api/parks/{id}/settlement-narrative", s.HandleAPISettlementNarrative)
 	mux.HandleFunc("GET /api/parks/{id}/classified-settlements", s.HandleAPIClassifiedSettlements)

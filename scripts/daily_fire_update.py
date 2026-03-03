@@ -563,6 +563,28 @@ class DailyFireUpdater:
         except Exception as e:
             log(f"    Error: {e}")
     
+    def update_fire_group_alerts(self):
+        """Update fire_group_alerts table from feature_geometries.
+        
+        This syncs the alerts table with the latest pipeline output,
+        ensuring group names and statuses match current data.
+        """
+        log("Step 6a: Updating fire_group_alerts from feature_geometries...")
+        
+        import requests
+        try:
+            response = requests.post(
+                "http://localhost:8000/api/update-fire-alerts",
+                params={'pwd': 'test2026'},
+                timeout=60
+            )
+            if response.status_code == 200:
+                log("  Successfully updated fire_group_alerts")
+            else:
+                log(f"  Error: {response.status_code} - {response.text}")
+        except Exception as e:
+            log(f"  Error calling update-fire-alerts API: {e}")
+    
     def create_fire_notifications(self):
         """Create one notification per active fire group (for click-to-pin functionality).
         
@@ -570,12 +592,11 @@ class DailyFireUpdater:
         The fire realtime API populates fire_group_alerts when called.
         """
         if not self.affected_parks:
-            log("Step 6: No parks affected, skipping notifications")
+            log("Step 6b: No parks affected, skipping notifications")
             return
         
-        log(f"Step 6: Creating notifications for active fire groups...")
+        log(f"Step 6b: Creating notifications for active fire groups...")
         
-        # Trigger the fire realtime endpoint to update fire_group_alerts
         import requests
         
         notifications_created = 0
@@ -626,7 +647,7 @@ class DailyFireUpdater:
                             continue  # Skip if notification exists
                         
                         # Create notification
-                        title = f"🔥 Active Fire: {park_name}"
+                        title = f"🔥 {group_name}"
                         message = f"{fire_count} fires, {days_active} days active, moving {direction}"
                         
                         # Store reference data for click-to-pin
@@ -684,7 +705,10 @@ class DailyFireUpdater:
         # Step 5: Update narratives
         self.update_narratives()
         
-        # Step 6: Create notifications for significant fire activity
+        # Step 6a: Update fire_group_alerts table
+        self.update_fire_group_alerts()
+        
+        # Step 6b: Create notifications for significant fire activity
         self.create_fire_notifications()
         
         log("")
