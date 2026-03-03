@@ -3723,13 +3723,20 @@
                 const stats = data.stats || {};
                 const features = data.features || {};
                 
-                // Fire: count trajectories and top locations
+                // Fire: count trajectories and extract top locations from narratives
                 const fireTrajectories = features.fire_trajectory?.features?.length || 0;
-                const fireTopLocations = fire.narratives?.slice(0, 3).map(n => n.location || 'Unknown').join('; ') || '';
+                const fireTopLocations = fire.narratives?.slice(0, 3).map(n => {
+                    // Extract location from narrative text (e.g., "near XYZ (10km)")
+                    const match = n.narrative?.match(/near ([^(]+)/);
+                    return match ? match[1].trim() : n.nearby_places || 'Unknown';
+                }).filter(Boolean).join('; ') || 'No specific locations';
                 
-                // Deforestation: count events and top locations
+                // Deforestation: count events and extract locations
                 const deforestEvents = features.deforestation?.features?.length || 0;
-                const deforestTopLocations = deforest.top_areas?.slice(0, 3).map(a => a.location || 'Unknown').join('; ') || '';
+                const deforestHotspots = deforest.hotspots || deforest.classified_events || [];
+                const deforestTopLocations = deforestHotspots.slice(0, 3).map(e => {
+                    return e.name || e.location || (e.narrative ? e.narrative.substring(0, 30) : null);
+                }).filter(Boolean).join('; ') || (deforestEvents > 0 ? 'Multiple locations' : 'None');
                 
                 // Infrastructure: count each type
                 const riversCount = features.river?.features?.length || 0;
@@ -3756,9 +3763,9 @@
                     deforestEvents,
                     deforest.trend_direction || '',
                     csvEscape(deforestTopLocations),
-                    settlement.settlement_count || 0,
+                    settlement.settlement_count || stats.settlement?.settlement_count || 0,
                     settlement.total_population || 0,
-                    settlement.built_up_km2?.toFixed(2) || 0,
+                    (stats.settlement?.built_up_km2 || settlement.built_up_km2 || 0).toFixed(2),
                     riversCount,
                     roadsCount,
                     placesCount,
@@ -3874,9 +3881,9 @@
                     responseRate,
                     Math.round(deforestKm2 * 100) / 100,
                     deforest.trend_direction || deforest.trend || '',
-                    settlement.settlement_count || settlement.count || 0,
+                    settlement.settlement_count || settlement.count || stats.settlement?.settlement_count || 0,
                     pop,
-                    Math.round((settlement.built_up_km2 || 0) * 100) / 100,
+                    Math.round((stats.settlement?.built_up_km2 || settlement.built_up_km2 || 0) * 100) / 100,
                     Math.round((roadless.roadless_percentage || 0) * 10) / 10
                 ]);
             }
@@ -3950,8 +3957,8 @@
                             n.outcome || n.status || ''
                         ]);
                     }
-                    if (narratives.length > 50) {
-                        parkData.push(['... and ' + (narratives.length - 50) + ' more groups']);
+                    if (parkFireNarratives.length > 50) {
+                        parkData.push(['... and ' + (parkFireNarratives.length - 50) + ' more groups']);
                     }
                     parkData.push([]);
                 }
@@ -3985,7 +3992,7 @@
                 parkData.push(['Settlement Count', settlement.settlement_count || settlement.count || 0]);
                 parkData.push(['Total Population', settlement.total_population || settlement.population || 0]);
                 parkData.push(['Population Density (/km²)', Math.round((settlement.population_density_per_km2 || 0) * 10) / 10]);
-                parkData.push(['Built-up Area (km²)', Math.round((settlement.built_up_km2 || 0) * 100) / 100]);
+                parkData.push(['Built-up Area (km²)', Math.round((stats.settlement?.built_up_km2 || settlement.built_up_km2 || 0) * 100) / 100]);
                 parkData.push([]);
                 
                 // Largest settlements
