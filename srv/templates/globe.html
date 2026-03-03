@@ -5185,13 +5185,9 @@
                             }
                             
                             // Display the trajectory
+                            // Note: showRealtimeTrajectory adds the individual fire to realtimeFireLayers
+                            // We don't auto-pin the bulk fire_trajectory layer to avoid confusion
                             showRealtimeTrajectory(parkId, parkName, displayName, trajectory);
-                            
-                            // Auto-pin the fire_trajectory layer
-                            const layerKey = `${parkId}:fire_trajectory`;
-                            if (!pinnedLayers[layerKey]) {
-                                await addPinnedLayer(parkId, parkName, 'fire_trajectory');
-                            }
                         } else {
                             console.warn('Fire feature not found:', featureId);
                             showToast(`Fire group not found`, 'error');
