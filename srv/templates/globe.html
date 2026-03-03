@@ -1848,9 +1848,41 @@
                         }
                     }
                     return this.done();
+                },
+                
+                // Notification-specific helpers
+                getGroupedNotifications() {
+                    return Array.from(document.querySelectorAll('.notification-group'));
+                },
+                
+                getSingleNotifications() {
+                    // Get all notification items that are NOT inside a group-items container
+                    const allItems = Array.from(document.querySelectorAll('.notification-item'));
+                    return allItems.filter(item => {
+                        // Exclude if inside .notification-group-items (nested in expanded group)
+                        const parent = item.closest('.notification-group-items');
+                        // Exclude if IS a group itself
+                        const isGroup = item.classList.contains('notification-group');
+                        return !parent && !isGroup;
+                    });
+                },
+                
+                findSingleNotification(searchText) {
+                    // Find a truly single (ungrouped) notification by text
+                    const singles = this.getSingleNotifications();
+                    return singles.find(item => item.textContent.includes(searchText));
+                },
+                
+                getNotificationStats() {
+                    return {
+                        grouped: this.getGroupedNotifications().length,
+                        single: this.getSingleNotifications().length,
+                        total: document.querySelectorAll('.notification-item').length
+                    };
                 }
             };
             console.log('TEST mode enabled. Use window.TEST for assertions.');
+            console.log('Notification helpers: TEST.getSingleNotifications(), TEST.findSingleNotification("text"), TEST.getNotificationStats()');
             console.log('TIP: For full UI testing, resize browser to 1280x1400+ to see all popup sections.');
         }
         
@@ -4989,7 +5021,7 @@
                         // Find the specific feature by feature_id
                         const feature = geojson.features?.find(f => f.properties?.feature_id === featureId);
                         
-                        if (feature && feature.geometry && feature.geometry.coordinates && feature.geometry.coordinates.length > 0) {
+                        if (feature && feature.geometry && feature.geometry.coordinates) {
                             // If groupName not provided, look it up from fire-realtime API
                             let displayName = groupName;
                             if (!displayName) {
@@ -5013,11 +5045,35 @@
                             }
                             
                             // Convert GeoJSON coordinates to trajectory format
-                            const trajectory = feature.geometry.coordinates.map(coord => ({
-                                lat: coord[1],
-                                lon: coord[0],
-                                date: null
-                            }));
+                            // Handle both Point (single detection) and LineString (trajectory)
+                            let trajectory;
+                            if (feature.geometry.type === 'Point') {
+                                // Single point fire - create a 100m radius circle for visibility
+                                const lon = feature.geometry.coordinates[0];
+                                const lat = feature.geometry.coordinates[1];
+                                const radius = 0.0009; // ~100m in degrees
+                                const points = 16; // 16 points for smooth circle
+                                
+                                trajectory = [];
+                                for (let i = 0; i <= points; i++) {
+                                    const angle = (i / points) * 2 * Math.PI;
+                                    trajectory.push({
+                                        lat: lat + radius * Math.sin(angle),
+                                        lon: lon + radius * Math.cos(angle),
+                                        date: null
+                                    });
+                                }
+                            } else if (feature.geometry.type === 'LineString') {
+                                // Multi-point trajectory
+                                trajectory = feature.geometry.coordinates.map(coord => ({
+                                    lat: coord[1],
+                                    lon: coord[0],
+                                    date: null
+                                }));
+                            } else {
+                                console.warn('Unsupported geometry type:', feature.geometry.type);
+                                throw new Error(`Unsupported geometry type: ${feature.geometry.type}`);
+                            }
                             
                             // Display the trajectory
                             showRealtimeTrajectory(parkId, parkName, displayName, trajectory);
