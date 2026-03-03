@@ -1634,7 +1634,7 @@
         
         // Handle map errors
         map.on('error', function(e) {
-            console.error('MapLibre error:', e.error);
+            console.error('MapLibre error:', e.error || e.message || e);
         });
         
         // Navigation control removed - users control with mouse/touch
@@ -5190,7 +5190,7 @@
                             // Auto-pin the fire_trajectory layer
                             const layerKey = `${parkId}:fire_trajectory`;
                             if (!pinnedLayers[layerKey]) {
-                                addPinnedLayer(parkId, parkName, 'fire_trajectory');
+                                await addPinnedLayer(parkId, parkName, 'fire_trajectory');
                             }
                         } else {
                             console.warn('Fire feature not found:', featureId);
@@ -10476,8 +10476,8 @@ ${starredItems.narratives.map(n => {
             showToast(`Pinned ${geojson.features.length} ${type} features from ${parkName}`, 'success');
             
         } catch (error) {
-            console.error('Error adding pinned layer:', error);
-            showToast(`Failed to load ${type} features`, 'error');
+            console.error('Error adding pinned layer:', error.message || error);
+            showToast(`Failed to load ${type} features: ${error.message || error}`, 'error');
         }
     }
     
