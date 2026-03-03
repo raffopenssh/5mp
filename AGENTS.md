@@ -213,6 +213,10 @@ See `docs/` directory:
 
 Add `?test=1` to URL to enable `window.TEST` helper:
 
+**Browser Setup:**
+- Resize browser to **1280x1400** (or taller) to see full popup content
+- This allows testing of all accordion sections without scrolling
+
 ```javascript
 // Navigate to: http://localhost:8000/?pwd=test2026&test=1
 // In browser console:
