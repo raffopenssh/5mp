@@ -274,6 +274,42 @@
         .star-report-btn.secondary { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #888; }
         .star-report-btn.secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #e0e0e0; }
 
+        /* Report Builder Modal */
+        .report-builder-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; z-index: 10000; align-items: center; justify-content: center; }
+        .report-builder-modal.active { display: flex; }
+        .report-builder-content { background: #1e1e1e; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .report-builder-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; }
+        .report-builder-header h3 { margin: 0; color: #22c55e; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+        .report-builder-close { background: none; border: none; color: #888; font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+        .report-builder-close:hover { background: rgba(255,255,255,0.1); color: #e0e0e0; }
+        .report-builder-body { padding: 24px; }
+        .report-builder-section { margin-bottom: 24px; }
+        .report-builder-section-title { font-size: 13px; font-weight: 600; color: #fbbf24; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .report-builder-checkbox-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+        .report-builder-checkbox { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .report-builder-checkbox:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+        .report-builder-checkbox.checked { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); }
+        .report-builder-checkbox input[type="checkbox"] { cursor: pointer; }
+        .report-builder-checkbox label { cursor: pointer; font-size: 12px; color: #ccc; flex: 1; }
+        .report-builder-checkbox.checked label { color: #22c55e; }
+        .report-builder-filter-group { display: flex; flex-direction: column; gap: 10px; }
+        .report-builder-filter-item { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; }
+        .report-builder-filter-item label { font-size: 12px; color: #ccc; flex: 1; }
+        .report-builder-filter-item input[type="number"] { width: 80px; padding: 4px 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #e0e0e0; font-size: 12px; }
+        .report-builder-select { width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #e0e0e0; font-size: 12px; cursor: pointer; }
+        .report-builder-select:focus { outline: none; border-color: #22c55e; }
+        .report-builder-presets { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .report-builder-preset-btn { padding: 12px 16px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; color: #60a5fa; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; text-align: left; }
+        .report-builder-preset-btn:hover { background: rgba(59,130,246,0.2); border-color: rgba(59,130,246,0.5); }
+        .report-builder-preset-btn .preset-name { font-weight: 600; margin-bottom: 4px; }
+        .report-builder-preset-btn .preset-desc { font-size: 10px; color: #888; }
+        .report-builder-footer { padding: 20px 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 12px; justify-content: flex-end; }
+        .report-builder-footer button { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .report-builder-footer .btn-cancel { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #888; }
+        .report-builder-footer .btn-cancel:hover { background: rgba(255,255,255,0.1); color: #e0e0e0; }
+        .report-builder-footer .btn-apply { background: #22c55e; border: 1px solid #22c55e; color: #000; font-weight: 600; }
+        .report-builder-footer .btn-apply:hover { background: #16a34a; }
+
         /* Starred items list */
         .starred-section { margin-bottom: 20px; }
         .starred-section:last-child { margin-bottom: 0; }
@@ -3650,6 +3686,11 @@
             ].join(',')];
             
             for (const {park, data, source} of allParks) {
+                // Check if park should be included based on report config
+                if (!shouldIncludePark(data)) {
+                    continue;
+                }
+                
                 const fire = data.fire || {};
                 const deforest = data.deforestation || {};
                 const settlement = data.settlement || {};
@@ -3759,6 +3800,11 @@
             let totalFires = 0, totalDeforest = 0, totalPop = 0, totalArea = 0;
             
             for (const {park, data, stats} of allParks) {
+                // Check if park should be included based on report config
+                if (!shouldIncludePark(data)) {
+                    continue;
+                }
+                
                 const fire = data.fire || {};
                 const deforest = data.deforestation || stats.deforestation || {};
                 const settlement = data.settlement || stats.settlement || {};
@@ -9756,9 +9802,195 @@
         return { level, color, bgcolor, score, factors };
     }
     
+    // Helper to group and summarize repetitive fire narratives
+    function renderFireGroupsSummary(fireNarratives, limit) {
+        if (!fireNarratives || fireNarratives.length === 0) return '';
+        
+        // Group by location/pattern
+        const grouped = {};
+        const patterns = {
+            'stopped_inside': [],
+            'crossed_boundary': [],
+            'approaching': [],
+            'cooling': [],
+            'other': []
+        };
+        
+        fireNarratives.forEach(n => {
+            const text = (n.narrative || n.title || '').toLowerCase();
+            if (text.includes('stopped inside') || text.includes('suppressed')) patterns.stopped_inside.push(n);
+            else if (text.includes('crossed') || text.includes('entered')) patterns.crossed_boundary.push(n);
+            else if (text.includes('approaching') || text.includes('advancing')) patterns.approaching.push(n);
+            else if (text.includes('cooling') || text.includes('contained')) patterns.cooling.push(n);
+            else patterns.other.push(n);
+        });
+        
+        let html = '<div class="starred-report-group">';
+        html += `<div class="starred-report-group-title">Fire Groups Summary (${fireNarratives.length} total):</div>`;
+        
+        // Show grouped summary
+        if (patterns.stopped_inside.length > 0) {
+            html += `<div style="margin:6px 0;font-size:10px;color:#22c55e;font-weight:600;">✓ ${patterns.stopped_inside.length} stopped inside park (successful response)</div>`;
+        }
+        if (patterns.crossed_boundary.length > 0) {
+            html += `<div style="margin:6px 0;font-size:10px;color:#ef4444;font-weight:600;">⚠ ${patterns.crossed_boundary.length} crossed boundary into park</div>`;
+        }
+        if (patterns.approaching.length > 0) {
+            html += `<div style="margin:6px 0;font-size:10px;color:#f59e0b;font-weight:600;">➜ ${patterns.approaching.length} currently approaching</div>`;
+        }
+        if (patterns.cooling.length > 0) {
+            html += `<div style="margin:6px 0;font-size:10px;color:#60a5fa;">❄ ${patterns.cooling.length} cooling/contained</div>`;
+        }
+        
+        // Show sample narratives
+        const samples = fireNarratives.slice(0, Math.min(limit, 5));
+        if (samples.length > 0) {
+            html += '<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">';
+            html += '<div style="font-size:9px;color:#666;margin-bottom:4px;">Recent examples:</div>';
+            samples.forEach(n => {
+                html += `<div style="margin:4px 0;font-size:10px;color:#aaa;">• ${n.narrative || n.title || 'Fire group'}</div>`;
+            });
+            if (fireNarratives.length > samples.length) {
+                html += `<div style="color:#60a5fa;font-size:9px;margin-top:4px;">...and ${fireNarratives.length - samples.length} more fire groups</div>`;
+            }
+            html += '</div>';
+        }
+        
+        html += '</div>';
+        return html;
+    }
+    
+    // Helper to group and summarize deforestation events
+    function renderDeforestationSummary(classifiedEvents, limit) {
+        if (!classifiedEvents || classifiedEvents.length === 0) return '';
+        
+        // Group by classification
+        const byClass = {};
+        let totalArea = 0;
+        classifiedEvents.forEach(e => {
+            const cls = e.classification || 'unclassified';
+            if (!byClass[cls]) byClass[cls] = [];
+            byClass[cls].push(e);
+            totalArea += e.area_km2 || 0;
+        });
+        
+        const classLabels = {
+            'agricultural': 'Agricultural expansion',
+            'mining': 'Mining activity',
+            'road': 'Road construction',
+            'settlement': 'Settlement expansion',
+            'logging': 'Logging activity',
+            'natural': 'Natural causes'
+        };
+        
+        let html = '<div class="starred-report-group">';
+        html += `<div class="starred-report-group-title">Deforestation Events (${classifiedEvents.length} events, ${totalArea.toFixed(1)} km²):</div>`;
+        
+        // Show by classification
+        Object.keys(byClass).sort((a, b) => byClass[b].length - byClass[a].length).forEach(cls => {
+            const events = byClass[cls];
+            const area = events.reduce((sum, e) => sum + (e.area_km2 || 0), 0);
+            const label = classLabels[cls] || cls;
+            html += `<div style="margin:6px 0;font-size:10px;">`;
+            html += `<span style="font-weight:600;color:#a855f7;">${events.length}x</span> ${label} <span style="color:#666;">(${area.toFixed(2)} km²)</span>`;
+            html += '</div>';
+        });
+        
+        // Show sample events with narratives
+        const samples = classifiedEvents.slice(0, Math.min(limit, 3));
+        if (samples.length > 0) {
+            html += '<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">';
+            html += '<div style="font-size:9px;color:#666;margin-bottom:4px;">Recent events:</div>';
+            samples.forEach(e => {
+                const text = e.narrative || `${e.classification || 'Event'} (${(e.area_km2 || 0).toFixed(2)} km²)`;
+                html += `<div style="margin:4px 0;font-size:10px;color:#aaa;">• ${text}</div>`;
+            });
+            if (classifiedEvents.length > samples.length) {
+                html += `<div style="color:#60a5fa;font-size:9px;margin-top:4px;">...and ${classifiedEvents.length - samples.length} more events</div>`;
+            }
+            html += '</div>';
+        }
+        
+        html += '</div>';
+        return html;
+    }
+    
+    // Helper to group and summarize settlements
+    function renderSettlementsSummary(classifiedSettlements, limit) {
+        if (!classifiedSettlements || classifiedSettlements.length === 0) return '';
+        
+        // Group by classification
+        const byClass = {};
+        let totalPop = 0;
+        let totalArea = 0;
+        classifiedSettlements.forEach(s => {
+            const cls = s.classification || 'unclassified';
+            if (!byClass[cls]) byClass[cls] = [];
+            byClass[cls].push(s);
+            totalPop += s.population_est || 0;
+            totalArea += s.area_m2 || 0;
+        });
+        
+        const classLabels = {
+            'village': 'Permanent villages',
+            'temporary_camp': 'Temporary camps',
+            'agricultural': 'Agricultural settlements',
+            'pastoral': 'Pastoral camps',
+            'fishing': 'Fishing camps',
+            'mining': 'Mining camps'
+        };
+        
+        const classIcons = {
+            'village': '🏘',
+            'temporary_camp': '⛺',
+            'agricultural': '🌾',
+            'pastoral': '🐄',
+            'fishing': '🎣',
+            'mining': '⛏'
+        };
+        
+        let html = '<div class="starred-report-group">';
+        html += `<div class="starred-report-group-title">Settlement Details (${classifiedSettlements.length} sites, ~${totalPop} people):</div>`;
+        
+        // Show by classification
+        Object.keys(byClass).sort((a, b) => byClass[b].length - byClass[a].length).forEach(cls => {
+            const settlements = byClass[cls];
+            const pop = settlements.reduce((sum, s) => sum + (s.population_est || 0), 0);
+            const label = classLabels[cls] || cls;
+            const icon = classIcons[cls] || '◻';
+            html += `<div style="margin:6px 0;font-size:10px;">`;
+            html += `${icon} <span style="font-weight:600;color:#fbbf24;">${settlements.length}</span> ${label} <span style="color:#666;">(~${pop} people)</span>`;
+            html += '</div>';
+        });
+        
+        // Show sample settlements with narratives
+        const samples = classifiedSettlements.slice(0, Math.min(limit, 3));
+        if (samples.length > 0) {
+            html += '<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">';
+            html += '<div style="font-size:9px;color:#666;margin-bottom:4px;">Examples:</div>';
+            samples.forEach(s => {
+                const text = s.narrative || `${s.classification || 'Settlement'} near ${s.nearest_place || 'unknown'} (~${s.population_est || 0} people)`;
+                html += `<div style="margin:4px 0;font-size:10px;color:#aaa;">• ${text}</div>`;
+            });
+            if (classifiedSettlements.length > samples.length) {
+                html += `<div style="color:#60a5fa;font-size:9px;margin-top:4px;">...and ${classifiedSettlements.length - samples.length} more settlements</div>`;
+            }
+            html += '</div>';
+        }
+        
+        html += '</div>';
+        return html;
+    }
+    
     function renderParkReportInline(park, data, expanded = true) {
         const fmt = n => n ? n.toLocaleString() : '0';
         const stats = data.stats || {};
+        
+        // Check if park should be included based on report config
+        if (!shouldIncludePark(data)) {
+            return '<div class="starred-report-content"><div style="padding:12px;color:#888;font-size:11px;text-align:center;">Park excluded by report filters</div></div>';
+        }
+        
         let html = '<div class="starred-report-content">';
         
         // ==== QUICK WIN #4: Summary Statistics at Top ====
@@ -9813,18 +10045,27 @@
         });
         
         // Patrol Activity Summary (at top)
-        html += `<div class="starred-report-section patrol" style="margin-bottom:12px;">
-            <div class="starred-report-section-title">○ Patrol & Activity Summary</div>
-            <div class="starred-report-section-stats" style="flex-wrap:wrap;">
-                <span title="Fire response rate">Response: ${Math.round(fireResponseRate)}%</span>
-                <span title="Roadless wilderness">Roadless: ${(stats.roadless?.roadless_percentage || 0).toFixed(1)}%</span>
-                <span title="Settlement built-up area">Built-up: ${(stats.settlement?.built_up_km2 || 0).toFixed(2)} km²</span>
-            </div>
-            ${stats.insights && stats.insights.length > 0 ? `<div class="starred-report-group" style="margin-top:8px;"><div class="starred-report-group-title">Key Insights:</div>${stats.insights.slice(0, expanded ? 100 : 3).map(i => `<div style="margin:4px 0;font-size:10px;color:#aaa;">${i}</div>`).join('')}${!expanded && stats.insights.length > 3 ? `<div style="color:#60a5fa;font-size:10px;cursor:pointer;" onclick="this.parentElement.innerHTML=this.parentElement.innerHTML.replace('...show more', '')+reportDataCache.parks.get('${park.id}')?.stats?.insights?.slice(3).map(i=>'<div style=margin:4px\\ 0;font-size:10px;color:#aaa;>'+i+'</div>').join('')">...show ${stats.insights.length - 3} more</div>` : ''}</div>` : ''}
-        </div>`;
+        if (shouldIncludeSection('patrol', data)) {
+            const detailLevel = getDetailLevel();
+            const showInsights = detailLevel !== 'summary' && stats.insights && stats.insights.length > 0;
+            const insightLimit = detailLevel === 'comprehensive' ? 100 : (expanded ? 10 : 3);
+            
+            html += `<div class="starred-report-section patrol" style="margin-bottom:12px;">
+                <div class="starred-report-section-title">○ Patrol & Activity Summary</div>
+                <div class="starred-report-section-stats" style="flex-wrap:wrap;">
+                    <span title="Fire response rate">Response: ${Math.round(fireResponseRate)}%</span>
+                    <span title="Roadless wilderness">Roadless: ${(stats.roadless?.roadless_percentage || 0).toFixed(1)}%</span>
+                    <span title="Settlement built-up area">Built-up: ${(stats.settlement?.built_up_km2 || 0).toFixed(2)} km²</span>
+                </div>
+                ${showInsights ? `<div class="starred-report-group" style="margin-top:8px;"><div class="starred-report-group-title">Key Insights:</div>${stats.insights.slice(0, insightLimit).map(i => `<div style="margin:4px 0;font-size:10px;color:#aaa;">${i}</div>`).join('')}${!expanded && stats.insights.length > insightLimit ? `<div style="color:#60a5fa;font-size:10px;cursor:pointer;" onclick="this.parentElement.innerHTML=this.parentElement.innerHTML.replace('...show more', '')+reportDataCache.parks.get('${park.id}')?.stats?.insights?.slice(${insightLimit}).map(i=>'<div style=margin:4px\\ 0;font-size:10px;color:#aaa;>'+i+'</div>').join('')">...show ${stats.insights.length - insightLimit} more</div>` : ''}</div>` : ''}
+            </div>`;
+        }
         
         // Fire section - using pre-calculated filtered data
-        if (fireTotalDetections > 0 || fireGroups > 0) {
+        if (shouldIncludeSection('fire', data) && (fireTotalDetections > 0 || fireGroups > 0)) {
+            const detailLevel = getDetailLevel();
+            const narrativeLimit = detailLevel === 'comprehensive' ? 50 : (detailLevel === 'standard' ? 10 : 5);
+            const showNarratives = detailLevel !== 'summary' && fireNarratives.length > 0;
             const rangeLabel = dateFrom && dateTo ? `${dateFrom} to ${dateTo}` : 'all time';
             
             // ==== QUICK WIN #1 & #2: Trend arrows and YoY comparison ====
@@ -9851,14 +10092,17 @@
                     <span>Response: ${Math.round(fireResponseRate)}%</span>
                 </div>
                 <div class="starred-report-section-text" style="font-size:10px;color:#888;">Period: ${rangeLabel}</div>
-                ${fireNarratives.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Recent Groups (${Math.min(5, fireNarratives.length)} of ${fireNarratives.length}):</div>${fireNarratives.slice(0, expanded ? 10 : 5).map(n => `<div style="margin:4px 0;font-size:10px;">${n.narrative || n.title || 'Fire group'}</div>`).join('')}${fireNarratives.length > (expanded ? 10 : 5) ? `<div style="color:#60a5fa;font-size:10px;">...${fireNarratives.length - (expanded ? 10 : 5)} more</div>` : ''}</div>` : ''}
+                ${showNarratives && fireNarratives.length > 0 ? renderFireGroupsSummary(fireNarratives, narrativeLimit) : ''}
             </div>`;
         }
         
         // Deforestation section
         const deforest = data.deforestation || {};
         const deforestStats = stats.deforestation || {};
-        if ((deforest.total_loss_km2 || deforestStats.total_loss_km2 || 0) > 0) {
+        if (shouldIncludeSection('deforestation', data) && (deforest.total_loss_km2 || deforestStats.total_loss_km2 || 0) > 0) {
+            const detailLevel = getDetailLevel();
+            const showHotspots = detailLevel !== 'summary' && deforest.hotspots && deforest.hotspots.length > 0;
+            const showYearlyData = detailLevel === 'comprehensive' && deforestStats.yearly_data && deforestStats.yearly_data.length > 0;
             const totalLoss = deforest.total_loss_km2 || deforestStats.total_loss_km2 || 0;
             html += `<div class="starred-report-section deforestation">
                 <div class="starred-report-section-title">▲ Deforestation</div>
@@ -9867,9 +10111,10 @@
                     <span>Trend: ${deforest.trend_direction || deforestStats.trend || '?'} (${deforest.trend_percent_change > 0 ? '+' : ''}${(deforest.trend_percent_change || 0).toFixed(1)}%)</span>
                     <span>Worst: ${deforest.worst_year || deforestStats.worst_year || 'N/A'} (${(deforest.worst_year_km2 || deforestStats.worst_year_km2 || 0).toFixed(2)} km²)</span>
                 </div>
-                ${deforest.summary ? `<div class="starred-report-section-text">${deforest.summary}</div>` : ''}
-                ${deforest.hotspots && deforest.hotspots.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Hotspots (${deforest.hotspots.length}):</div>${deforest.hotspots.map(h => `<div style="margin:4px 0;font-size:10px;">${h.name || h.description || 'Hotspot'}: ${(h.area_km2 || 0).toFixed(2)} km²</div>`).join('')}</div>` : ''}
-                ${deforestStats.yearly_data && deforestStats.yearly_data.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Yearly Loss:</div><div style="font-size:9px;color:#666;display:flex;flex-wrap:wrap;gap:8px;">${deforestStats.yearly_data.slice(-10).map(y => `${y.year}: ${y.loss_km2.toFixed(1)}`).join(' | ')}</div></div>` : ''}
+                ${detailLevel !== 'summary' && deforest.summary ? `<div class="starred-report-section-text">${deforest.summary}</div>` : ''}
+                ${detailLevel !== 'summary' && deforest.classified_events && deforest.classified_events.length > 0 ? renderDeforestationSummary(deforest.classified_events, detailLevel === 'comprehensive' ? 10 : 3) : ''}
+                ${showHotspots && !deforest.classified_events ? `<div class="starred-report-group"><div class="starred-report-group-title">Hotspots (${deforest.hotspots.length}):</div>${deforest.hotspots.slice(0, 5).map(h => `<div style="margin:4px 0;font-size:10px;">${h.name || h.description || 'Hotspot'}: ${(h.area_km2 || 0).toFixed(2)} km²</div>`).join('')}${deforest.hotspots.length > 5 ? `<div style="color:#60a5fa;font-size:9px;">...and ${deforest.hotspots.length - 5} more</div>` : ''}</div>` : ''}
+                ${showYearlyData ? `<div class="starred-report-group"><div class="starred-report-group-title">Yearly Loss:</div><div style="font-size:9px;color:#666;display:flex;flex-wrap:wrap;gap:8px;">${deforestStats.yearly_data.slice(-10).map(y => `${y.year}: ${y.loss_km2.toFixed(1)}`).join(' | ')}</div></div>` : ''}
             </div>`;
         }
         
@@ -9877,7 +10122,9 @@
         const settle = data.settlement || {};
         const settleStats = stats.settlement || {};
         const settleCount = settle.settlement_count || settleStats.settlement_count || 0;
-        if (settleCount > 0) {
+        if (shouldIncludeSection('settlement', data) && settleCount > 0) {
+            const detailLevel = getDetailLevel();
+            const showSettlements = detailLevel !== 'summary' && settle.largest_settlements && settle.largest_settlements.length > 0;
             html += `<div class="starred-report-section settlement">
                 <div class="starred-report-section-title">■ Settlements</div>
                 <div class="starred-report-section-stats">
@@ -9885,14 +10132,18 @@
                     <span>Built-up: ${(settleStats.built_up_km2 || 0).toFixed(2)} km²</span>
                     <span>Pop: ${fmt(settle.total_population || 0)}</span>
                 </div>
-                ${settle.summary ? `<div class="starred-report-section-text">${settle.summary}</div>` : ''}
-                ${settle.largest_settlements && settle.largest_settlements.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Settlements (${settle.largest_settlements.length}):</div>${settle.largest_settlements.map(s => `<div style="margin:4px 0;font-size:10px;">${s.name || 'Settlement'}: pop. ${fmt(s.population || 0)}${s.classification ? ' (' + s.classification + ')' : ''}</div>`).join('')}</div>` : ''}
+                ${detailLevel !== 'summary' && settle.summary ? `<div class="starred-report-section-text">${settle.summary}</div>` : ''}
+                ${detailLevel !== 'summary' && settle.classified_settlements && settle.classified_settlements.length > 0 ? renderSettlementsSummary(settle.classified_settlements, detailLevel === 'comprehensive' ? 10 : 3) : ''}
+                ${showSettlements && !settle.classified_settlements ? `<div class="starred-report-group"><div class="starred-report-group-title">Settlements (${settle.largest_settlements.length}):</div>${settle.largest_settlements.slice(0, 5).map(s => `<div style="margin:4px 0;font-size:10px;">${s.name || 'Settlement'}: pop. ${fmt(s.population || 0)}${s.classification ? ' (' + s.classification + ')' : ''}</div>`).join('')}${settle.largest_settlements.length > 5 ? `<div style="color:#60a5fa;font-size:9px;">...and ${settle.largest_settlements.length - 5} more</div>` : ''}</div>` : ''}
             </div>`;
         }
         
         // Species section
         const species = data.species || {};
-        if (species.total_species > 0 || (species.species && species.species.length > 0)) {
+        if (shouldIncludeSection('biodiversity', data) && (species.total_species > 0 || (species.species && species.species.length > 0))) {
+            const detailLevel = getDetailLevel();
+            const showSpeciesList = detailLevel !== 'summary' && species.species && species.species.length > 0;
+            const speciesLimit = detailLevel === 'comprehensive' ? 30 : 10;
             const endangered = species.species?.filter(s => s.category === 'CR' || s.category === 'EN').length || 0;
             html += `<div class="starred-report-section" style="border-color:#10b981;">
                 <div class="starred-report-section-title">❦ Species</div>
@@ -9900,13 +10151,13 @@
                     <span>Total: ${species.total_species || species.species?.length || 0}</span>
                     <span>Endangered: ${endangered}</span>
                 </div>
-                ${species.species && species.species.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Notable Species:</div>${species.species.filter(s => s.category === 'CR' || s.category === 'EN' || s.category === 'VU').slice(0, 10).map(s => `<div style="margin:2px 0;font-size:10px;">${s.common_name || s.scientific_name} (${s.category})</div>`).join('')}</div>` : ''}
+                ${showSpeciesList ? `<div class="starred-report-group"><div class="starred-report-group-title">Notable Species:</div>${species.species.filter(s => s.category === 'CR' || s.category === 'EN' || s.category === 'VU').slice(0, speciesLimit).map(s => `<div style="margin:2px 0;font-size:10px;">${s.common_name || s.scientific_name} (${s.category})</div>`).join('')}</div>` : ''}
             </div>`;
         }
         
         // Climate section
         const climate = data.climate || {};
-        if (climate.annual_rainfall_mm || climate.seasons) {
+        if (shouldIncludeSection('climate', data) && (climate.annual_rainfall_mm || climate.seasons)) {
             html += `<div class="starred-report-section" style="border-color:#f59e0b;">
                 <div class="starred-report-section-title">☼ Climate</div>
                 <div class="starred-report-section-stats">
@@ -9919,13 +10170,15 @@
         
         // Publications section
         const pubs = data.publications || [];
-        if (pubs.length > 0) {
+        if (shouldIncludeSection('publications', data) && pubs.length > 0) {
+            const detailLevel = getDetailLevel();
+            const pubLimit = detailLevel === 'comprehensive' ? 15 : (detailLevel === 'standard' ? 5 : 3);
             html += `<div class="starred-report-section" style="border-color:#a855f7;">
                 <div class="starred-report-section-title">◎ Publications</div>
                 <div class="starred-report-section-stats">
                     <span>${pubs.length} publication${pubs.length !== 1 ? 's' : ''}</span>
                 </div>
-                <div class="starred-report-group"><div class="starred-report-group-title">Recent:</div>${pubs.slice(0, 5).map(p => { const author = (p.authors && p.authors[0]) ? p.authors[0].split(',')[0].trim().split(' ').pop() : 'Unknown'; return `<div style="margin:4px 0;font-size:10px;"><a href="${p.doi || p.url || '#'}" target="_blank" style="color:#a78bfa;text-decoration:none;">${author} (${p.year || '?'}): ${(p.title || 'Untitled').substring(0, 60)}${(p.title || '').length > 60 ? '...' : ''}</a></div>`; }).join('')}${pubs.length > 5 ? `<div style="color:#888;font-size:10px;margin-top:4px;">+ ${pubs.length - 5} more</div>` : ''}</div>
+                <div class="starred-report-group"><div class="starred-report-group-title">Recent:</div>${pubs.slice(0, pubLimit).map(p => { const author = (p.authors && p.authors[0]) ? p.authors[0].split(',')[0].trim().split(' ').pop() : 'Unknown'; return `<div style="margin:4px 0;font-size:10px;"><a href="${p.doi || p.url || '#'}" target="_blank" style="color:#a78bfa;text-decoration:none;">${author} (${p.year || '?'}): ${(p.title || 'Untitled').substring(0, 60)}${(p.title || '').length > 60 ? '...' : ''}</a></div>`; }).join('')}${pubs.length > pubLimit ? `<div style="color:#888;font-size:10px;margin-top:4px;">+ ${pubs.length - pubLimit} more</div>` : ''}</div>
             </div>`;
         }
         
@@ -10138,6 +10391,323 @@
         });
     }
     
+    // ============================================
+    // Report Builder Configuration
+    // ============================================
+    
+    // Default report configuration
+    window.reportConfig = {
+        sections: {
+            fire: true,
+            deforestation: true,
+            settlement: true,
+            biodiversity: true,
+            climate: true,
+            publications: true,
+            infrastructure: true,
+            patrol: true
+        },
+        filters: {
+            skipZeros: true,
+            threatsOnly: false,
+            minFires: 0,
+            minSettlements: 0,
+            minDeforestation: 0
+        },
+        detailLevel: 'standard'
+    };
+    
+    // Load config from localStorage
+    function loadReportConfig() {
+        const saved = localStorage.getItem('5mp-report-config');
+        if (saved) {
+            try {
+                window.reportConfig = JSON.parse(saved);
+            } catch (e) {
+                console.error('Failed to load report config:', e);
+            }
+        }
+    }
+    
+    // Save config to localStorage
+    function saveReportConfig() {
+        localStorage.setItem('5mp-report-config', JSON.stringify(window.reportConfig));
+    }
+    
+    // Open report builder modal
+    function openReportBuilder() {
+        loadReportConfig();
+        
+        // Update UI to reflect current config
+        document.getElementById('section-fire').checked = reportConfig.sections.fire;
+        document.getElementById('section-deforestation').checked = reportConfig.sections.deforestation;
+        document.getElementById('section-settlement').checked = reportConfig.sections.settlement;
+        document.getElementById('section-biodiversity').checked = reportConfig.sections.biodiversity;
+        document.getElementById('section-climate').checked = reportConfig.sections.climate;
+        document.getElementById('section-publications').checked = reportConfig.sections.publications;
+        document.getElementById('section-infrastructure').checked = reportConfig.sections.infrastructure;
+        document.getElementById('section-patrol').checked = reportConfig.sections.patrol;
+        
+        document.getElementById('filter-skip-zeros').checked = reportConfig.filters.skipZeros;
+        document.getElementById('filter-threats-only').checked = reportConfig.filters.threatsOnly;
+        document.getElementById('filter-min-fires').value = reportConfig.filters.minFires;
+        document.getElementById('filter-min-settlements').value = reportConfig.filters.minSettlements;
+        document.getElementById('filter-min-deforestation').value = reportConfig.filters.minDeforestation;
+        
+        document.getElementById('detail-level').value = reportConfig.detailLevel;
+        
+        // Update checkbox visual states
+        updateCheckboxStates();
+        
+        // Show modal
+        document.getElementById('report-builder-modal').classList.add('active');
+    }
+    
+    // Close report builder modal
+    function closeReportBuilder() {
+        document.getElementById('report-builder-modal').classList.remove('active');
+    }
+    
+    // Toggle checkbox and its visual state
+    function toggleCheckbox(element, section) {
+        const checkbox = element.querySelector('input[type="checkbox"]');
+        checkbox.checked = !checkbox.checked;
+        
+        if (checkbox.checked) {
+            element.classList.add('checked');
+        } else {
+            element.classList.remove('checked');
+        }
+        
+        updateReportConfig();
+    }
+    
+    // Update checkbox visual states
+    function updateCheckboxStates() {
+        const checkboxes = document.querySelectorAll('.report-builder-checkbox');
+        checkboxes.forEach(cb => {
+            const input = cb.querySelector('input[type="checkbox"]');
+            if (input && input.checked) {
+                cb.classList.add('checked');
+            } else {
+                cb.classList.remove('checked');
+            }
+        });
+    }
+    
+    // Update report config from UI
+    function updateReportConfig() {
+        reportConfig.sections.fire = document.getElementById('section-fire').checked;
+        reportConfig.sections.deforestation = document.getElementById('section-deforestation').checked;
+        reportConfig.sections.settlement = document.getElementById('section-settlement').checked;
+        reportConfig.sections.biodiversity = document.getElementById('section-biodiversity').checked;
+        reportConfig.sections.climate = document.getElementById('section-climate').checked;
+        reportConfig.sections.publications = document.getElementById('section-publications').checked;
+        reportConfig.sections.infrastructure = document.getElementById('section-infrastructure').checked;
+        reportConfig.sections.patrol = document.getElementById('section-patrol').checked;
+        
+        reportConfig.filters.skipZeros = document.getElementById('filter-skip-zeros').checked;
+        reportConfig.filters.threatsOnly = document.getElementById('filter-threats-only').checked;
+        reportConfig.filters.minFires = parseInt(document.getElementById('filter-min-fires').value) || 0;
+        reportConfig.filters.minSettlements = parseInt(document.getElementById('filter-min-settlements').value) || 0;
+        reportConfig.filters.minDeforestation = parseFloat(document.getElementById('filter-min-deforestation').value) || 0;
+        
+        reportConfig.detailLevel = document.getElementById('detail-level').value;
+        
+        updateCheckboxStates();
+    }
+    
+    // Apply report config and close modal
+    function applyReportConfig() {
+        updateReportConfig();
+        saveReportConfig();
+        closeReportBuilder();
+        
+        // Refresh starred items to apply new config
+        renderStarredItems();
+        
+        showToast('⚙ Report configuration applied');
+    }
+    
+    // Apply preset configuration
+    function applyPreset(preset) {
+        switch (preset) {
+            case 'quick':
+                // Quick Summary: just stats, no zeros
+                reportConfig.sections = {
+                    fire: true,
+                    deforestation: true,
+                    settlement: true,
+                    biodiversity: false,
+                    climate: false,
+                    publications: false,
+                    infrastructure: false,
+                    patrol: true
+                };
+                reportConfig.filters = {
+                    skipZeros: true,
+                    threatsOnly: false,
+                    minFires: 0,
+                    minSettlements: 0,
+                    minDeforestation: 0
+                };
+                reportConfig.detailLevel = 'summary';
+                break;
+                
+            case 'donor':
+                // Donor Report: all sections, skip zeros, standard detail
+                reportConfig.sections = {
+                    fire: true,
+                    deforestation: true,
+                    settlement: true,
+                    biodiversity: true,
+                    climate: true,
+                    publications: true,
+                    infrastructure: false,
+                    patrol: true
+                };
+                reportConfig.filters = {
+                    skipZeros: true,
+                    threatsOnly: false,
+                    minFires: 0,
+                    minSettlements: 0,
+                    minDeforestation: 0
+                };
+                reportConfig.detailLevel = 'standard';
+                break;
+                
+            case 'scientific':
+                // Scientific Report: everything, comprehensive detail
+                reportConfig.sections = {
+                    fire: true,
+                    deforestation: true,
+                    settlement: true,
+                    biodiversity: true,
+                    climate: true,
+                    publications: true,
+                    infrastructure: true,
+                    patrol: true
+                };
+                reportConfig.filters = {
+                    skipZeros: false,
+                    threatsOnly: false,
+                    minFires: 0,
+                    minSettlements: 0,
+                    minDeforestation: 0
+                };
+                reportConfig.detailLevel = 'comprehensive';
+                break;
+                
+            case 'custom':
+                // Keep current config
+                break;
+        }
+        
+        // Update UI to reflect preset
+        document.getElementById('section-fire').checked = reportConfig.sections.fire;
+        document.getElementById('section-deforestation').checked = reportConfig.sections.deforestation;
+        document.getElementById('section-settlement').checked = reportConfig.sections.settlement;
+        document.getElementById('section-biodiversity').checked = reportConfig.sections.biodiversity;
+        document.getElementById('section-climate').checked = reportConfig.sections.climate;
+        document.getElementById('section-publications').checked = reportConfig.sections.publications;
+        document.getElementById('section-infrastructure').checked = reportConfig.sections.infrastructure;
+        document.getElementById('section-patrol').checked = reportConfig.sections.patrol;
+        
+        document.getElementById('filter-skip-zeros').checked = reportConfig.filters.skipZeros;
+        document.getElementById('filter-threats-only').checked = reportConfig.filters.threatsOnly;
+        document.getElementById('filter-min-fires').value = reportConfig.filters.minFires;
+        document.getElementById('filter-min-settlements').value = reportConfig.filters.minSettlements;
+        document.getElementById('filter-min-deforestation').value = reportConfig.filters.minDeforestation;
+        
+        document.getElementById('detail-level').value = reportConfig.detailLevel;
+        
+        updateCheckboxStates();
+    }
+    
+    // Helper function to check if a section should be included
+    function shouldIncludeSection(sectionName, data) {
+        // Check if section is enabled
+        if (!reportConfig.sections[sectionName]) return false;
+        
+        // Apply thresholds
+        if (sectionName === 'fire') {
+            const fireCount = data?.fire?.total_fires || 0;
+            if (fireCount < reportConfig.filters.minFires) return false;
+            if (reportConfig.filters.skipZeros && fireCount === 0) return false;
+        }
+        
+        if (sectionName === 'deforestation') {
+            const deforestKm2 = data?.deforestation?.total_loss_km2 || data?.stats?.deforestation?.total_loss_km2 || 0;
+            if (deforestKm2 < reportConfig.filters.minDeforestation) return false;
+            if (reportConfig.filters.skipZeros && deforestKm2 === 0) return false;
+        }
+        
+        if (sectionName === 'settlement') {
+            const settleCount = data?.settlement?.settlement_count || data?.stats?.settlement?.settlement_count || 0;
+            if (settleCount < reportConfig.filters.minSettlements) return false;
+            if (reportConfig.filters.skipZeros && settleCount === 0) return false;
+        }
+        
+        // For other sections, just check if data exists when skipZeros is enabled
+        if (reportConfig.filters.skipZeros) {
+            if (sectionName === 'biodiversity' && !(data?.species?.total_species > 0 || data?.species?.species?.length > 0)) return false;
+            if (sectionName === 'climate' && !(data?.climate?.annual_rainfall_mm || data?.climate?.seasons)) return false;
+            if (sectionName === 'publications' && !(data?.publications?.length > 0)) return false;
+            if (sectionName === 'infrastructure' && !(data?.features?.river?.features?.length || data?.features?.road?.features?.length || data?.features?.infrastructure?.features?.length)) return false;
+            if (sectionName === 'patrol' && !(data?.stats?.active_pixels > 0 || data?.stats?.patrol_count > 0)) return false;
+        }
+        
+        return true;
+    }
+    
+    // Helper function to check if park should be included at all
+    function shouldIncludePark(data) {
+        // Check threat level filter
+        if (reportConfig.filters.threatsOnly) {
+            const threat = calculateThreatLevel(data);
+            if (threat.level !== 'HIGH' && threat.level !== 'MODERATE') {
+                return false;
+            }
+        }
+        
+        // Check if any enabled section has data
+        if (reportConfig.filters.skipZeros) {
+            let hasData = false;
+            
+            if (reportConfig.sections.fire) {
+                const fireCount = data?.fire?.total_fires || 0;
+                if (fireCount >= reportConfig.filters.minFires) hasData = true;
+            }
+            
+            if (reportConfig.sections.deforestation) {
+                const deforestKm2 = data?.deforestation?.total_loss_km2 || data?.stats?.deforestation?.total_loss_km2 || 0;
+                if (deforestKm2 >= reportConfig.filters.minDeforestation) hasData = true;
+            }
+            
+            if (reportConfig.sections.settlement) {
+                const settleCount = data?.settlement?.settlement_count || data?.stats?.settlement?.settlement_count || 0;
+                if (settleCount >= reportConfig.filters.minSettlements) hasData = true;
+            }
+            
+            if (reportConfig.sections.biodiversity && (data?.species?.total_species > 0 || data?.species?.species?.length > 0)) hasData = true;
+            if (reportConfig.sections.climate && (data?.climate?.annual_rainfall_mm || data?.climate?.seasons)) hasData = true;
+            if (reportConfig.sections.publications && data?.publications?.length > 0) hasData = true;
+            if (reportConfig.sections.patrol && (data?.stats?.active_pixels > 0 || data?.stats?.patrol_count > 0)) hasData = true;
+            
+            if (!hasData) return false;
+        }
+        
+        return true;
+    }
+    
+    // Get detail level for rendering
+    function getDetailLevel() {
+        return reportConfig.detailLevel || 'standard';
+    }
+    
+    // Load config on page load
+    loadReportConfig();
+    
     // Export starred report with full nested data as PDF
     async function printStarredReport() {
         const btn = document.querySelector('button[onclick="printStarredReport()"]');
@@ -10349,6 +10919,11 @@
         
         // Generate park section with full nested data
         function renderParkFull(park, fullData) {
+            // Check if park should be included based on report config
+            if (!shouldIncludePark(fullData)) {
+                return '';
+            }
+            
             const fire = fullData?.fire;
             const deforest = fullData?.deforestation;
             const settle = fullData?.settlement;
@@ -10357,6 +10932,7 @@
             const climate = fullData?.climate;
             const publications = fullData?.publications;
             const features = fullData?.features || {};
+            const detailLevel = getDetailLevel();
             
             return `
 <div class="park-item">
@@ -10365,7 +10941,7 @@
         <div class="park-meta">${escapeHtml(park.country || '')}${park.area_km2 ? ' • ' + formatNumber(Math.round(park.area_km2)) + ' km²' : ''}</div>
     </div>
     
-    ${fire && fire.total_fires > 0 ? `
+    ${shouldIncludeSection('fire', fullData) && fire && fire.total_fires > 0 ? `
     <div class="narrative-section fire">
         <div class="narrative-title">◆ Fire Activity</div>
         <div class="narrative-stats">
@@ -10373,15 +10949,15 @@
             <span>Response rate: ${Math.round(fire.response_rate || 0)}%</span>
             <span>Peak month: ${fire.peak_month || 'N/A'}</span>
         </div>
-        ${fire.summary ? `<div class="narrative-text">${fire.summary}</div>` : ''}
-        ${fire.narratives && fire.narratives.length > 0 ? `
+        ${detailLevel !== 'summary' && fire.summary ? `<div class="narrative-text">${fire.summary}</div>` : ''}
+        ${detailLevel !== 'summary' && fire.narratives && fire.narratives.length > 0 ? `
         <div class="fire-groups">
-            <div class="fire-groups-title">Fire Groups (${fire.narratives.length} total):</div>
-            ${fire.narratives.map(n => `<div class="fire-group-item">${n.narrative}</div>`).join('')}
+            <div class="fire-groups-title">Fire Groups (${detailLevel === 'comprehensive' ? fire.narratives.length : Math.min(fire.narratives.length, 10)} ${detailLevel === 'comprehensive' ? 'total' : 'of ' + fire.narratives.length}):</div>
+            ${fire.narratives.slice(0, detailLevel === 'comprehensive' ? fire.narratives.length : 10).map(n => `<div class="fire-group-item">${n.narrative}</div>`).join('')}
         </div>` : ''}
     </div>` : ''}
     
-    ${deforest && deforest.total_loss_km2 > 0 ? `
+    ${shouldIncludeSection('deforestation', fullData) && deforest && deforest.total_loss_km2 > 0 ? `
     <div class="narrative-section deforestation">
         <div class="narrative-title">▲ Deforestation</div>
         <div class="narrative-stats">
@@ -10389,15 +10965,15 @@
             <span>Trend: ${deforest.trend_direction || 'unknown'} (${deforest.trend_percent_change > 0 ? '+' : ''}${deforest.trend_percent_change?.toFixed(1) || 0}%)</span>
             <span>Worst year: ${deforest.worst_year || 'N/A'}</span>
         </div>
-        ${deforest.summary ? `<div class="narrative-text">${deforest.summary}</div>` : ''}
-        ${deforest.hotspots && deforest.hotspots.length > 0 ? `
+        ${detailLevel !== 'summary' && deforest.summary ? `<div class="narrative-text">${deforest.summary}</div>` : ''}
+        ${detailLevel !== 'summary' && deforest.hotspots && deforest.hotspots.length > 0 ? `
         <div class="hotspots">
-            <div class="hotspots-title">Deforestation Hotspots (${deforest.hotspots.length} total):</div>
-            ${deforest.hotspots.map(h => `<div class="hotspot-item">${h.name || h.description}: ${h.area_km2?.toFixed(2)} km²</div>`).join('')}
+            <div class="hotspots-title">Deforestation Hotspots (${detailLevel === 'comprehensive' ? deforest.hotspots.length : Math.min(deforest.hotspots.length, 5)} ${detailLevel === 'comprehensive' ? 'total' : 'of ' + deforest.hotspots.length}):</div>
+            ${deforest.hotspots.slice(0, detailLevel === 'comprehensive' ? deforest.hotspots.length : 5).map(h => `<div class="hotspot-item">${h.name || h.description}: ${h.area_km2?.toFixed(2)} km²</div>`).join('')}
         </div>` : ''}
     </div>` : ''}
     
-    ${settle && settle.settlement_count > 0 ? `
+    ${shouldIncludeSection('settlement', fullData) && settle && settle.settlement_count > 0 ? `
     <div class="narrative-section settlements">
         <div class="narrative-title">■ Settlements</div>
         <div class="narrative-stats">
@@ -10405,15 +10981,15 @@
             <span>Population: ${formatNumber(settle.total_population || 0)}</span>
             <span>Density: ${settle.population_density_per_km2?.toFixed(1) || 0}/km²</span>
         </div>
-        ${settle.summary ? `<div class="narrative-text">${settle.summary}</div>` : ''}
-        ${settle.largest_settlements && settle.largest_settlements.length > 0 ? `
+        ${detailLevel !== 'summary' && settle.summary ? `<div class="narrative-text">${settle.summary}</div>` : ''}
+        ${detailLevel !== 'summary' && settle.largest_settlements && settle.largest_settlements.length > 0 ? `
         <div class="settlements-list">
-            <div class="settlements-title">Settlements (${settle.largest_settlements.length} total):</div>
-            ${settle.largest_settlements.map(s => `<div class="settlement-item">${s.name || 'Unnamed'}: pop. ${formatNumber(s.population || 0)}</div>`).join('')}
+            <div class="settlements-title">Settlements (${detailLevel === 'comprehensive' ? settle.largest_settlements.length : Math.min(settle.largest_settlements.length, 10)} ${detailLevel === 'comprehensive' ? 'total' : 'of ' + settle.largest_settlements.length}):</div>
+            ${settle.largest_settlements.slice(0, detailLevel === 'comprehensive' ? settle.largest_settlements.length : 10).map(s => `<div class="settlement-item">${s.name || 'Unnamed'}: pop. ${formatNumber(s.population || 0)}</div>`).join('')}
         </div>` : ''}
     </div>` : ''}
     
-    ${stats ? `
+    ${shouldIncludeSection('patrol', fullData) && stats ? `
     <div class="narrative-section patrol">
         <div class="narrative-title">○ Patrol Activity</div>
         <div class="narrative-stats">
@@ -10424,7 +11000,7 @@
         </div>
     </div>` : ''}
     
-    ${species && species.species && species.species.length > 0 ? `
+    ${shouldIncludeSection('biodiversity', fullData) && species && species.species && species.species.length > 0 ? `
     <div class="narrative-section" style="border-color: #10b981;">
         <div class="narrative-title">🦁 Biodiversity</div>
         <div class="narrative-stats">
@@ -10432,15 +11008,15 @@
             ${species.threatened > 0 ? `<span>${species.threatened} threatened</span>` : ''}
             ${species.critical > 0 ? `<span>${species.critical} critically endangered</span>` : ''}
         </div>
-        <div class="species-highlights" style="font-size: 13px; color: #aaa; margin-top: 8px;">
-            ${species.species.filter(s => s.status === 'CR' || s.status === 'EN' || s.status === 'VU').slice(0, 10).map(s => 
+        ${detailLevel !== 'summary' ? `<div class="species-highlights" style="font-size: 13px; color: #aaa; margin-top: 8px;">
+            ${species.species.filter(s => s.status === 'CR' || s.status === 'EN' || s.status === 'VU').slice(0, detailLevel === 'comprehensive' ? 30 : 10).map(s => 
                 `<div style="padding: 4px 0;">• <span style="color: ${s.status === 'CR' ? '#ef4444' : s.status === 'EN' ? '#f59e0b' : '#eab308'};">${s.status}</span> <em>${s.binomial || s.scientific_name}</em> (${s.common_name || 'no common name'})</div>`
             ).join('')}
-            ${species.species.length > 10 ? `<div style="padding: 4px 0; color: #666;">... and ${species.species.length - 10} more species</div>` : ''}
-        </div>
+            ${species.species.length > (detailLevel === 'comprehensive' ? 30 : 10) ? `<div style="padding: 4px 0; color: #666;">... and ${species.species.length - (detailLevel === 'comprehensive' ? 30 : 10)} more species</div>` : ''}
+        </div>` : ''}
     </div>` : ''}
     
-    ${climate ? `
+    ${shouldIncludeSection('climate', fullData) && climate ? `
     <div class="narrative-section" style="border-color: #3b82f6;">
         <div class="narrative-title">☁️ Climate</div>
         <div class="narrative-stats">
@@ -10450,24 +11026,24 @@
         </div>
     </div>` : ''}
     
-    ${publications && publications.length > 0 ? `
+    ${shouldIncludeSection('publications', fullData) && publications && publications.length > 0 ? `
     <div class="narrative-section" style="border-color: #8b5cf6;">
         <div class="narrative-title">📚 Research Publications</div>
         <div class="narrative-stats">
             <span>${publications.length} recent publications</span>
         </div>
-        <div class="publications-list" style="font-size: 13px; color: #aaa; margin-top: 8px;">
-            ${publications.slice(0, 5).map(pub => 
+        ${detailLevel !== 'summary' ? `<div class="publications-list" style="font-size: 13px; color: #aaa; margin-top: 8px;">
+            ${publications.slice(0, detailLevel === 'comprehensive' ? 15 : 5).map(pub => 
                 `<div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
                     <div style="color: #e0e0e0; font-weight: 500;">${escapeHtml(pub.title || 'Untitled')}</div>
                     <div style="color: #888; font-size: 11px; margin-top: 2px;">${pub.year || 'N/A'} • ${escapeHtml((pub.authors || []).slice(0, 3).join(', '))}${pub.authors && pub.authors.length > 3 ? ' et al.' : ''}</div>
                 </div>`
             ).join('')}
-            ${publications.length > 5 ? `<div style="padding: 4px 0; color: #666; margin-top: 4px;">... and ${publications.length - 5} more publications</div>` : ''}
-        </div>
+            ${publications.length > (detailLevel === 'comprehensive' ? 15 : 5) ? `<div style="padding: 4px 0; color: #666; margin-top: 4px;">... and ${publications.length - (detailLevel === 'comprehensive' ? 15 : 5)} more publications</div>` : ''}
+        </div>` : ''}
     </div>` : ''}
     
-    ${features && (features.river?.features?.length || features.road?.features?.length || features.infrastructure?.features?.length) ? `
+    ${shouldIncludeSection('infrastructure', fullData) && features && (features.river?.features?.length || features.road?.features?.length || features.infrastructure?.features?.length) ? `
     <div class="narrative-section" style="border-color: #64748b;">
         <div class="narrative-title">🗺️ Infrastructure & Features</div>
         <div class="narrative-stats">
@@ -13535,6 +14111,7 @@ ${starredItems.narratives.map(n => {
                     <!-- Report metadata -->
                 </div>
                 <div class="star-report-actions">
+                    <button class="star-report-btn secondary" onclick="openReportBuilder()">⚙ Configure Report</button>
                     <button class="star-report-btn secondary" onclick="clearAllStars()">Clear All</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportCsv()" title="Export all data as CSV">↓ CSV</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportXlsx()" title="Export detailed XLSX with summary + per-park tabs">↓ XLSX</button>
@@ -13586,6 +14163,120 @@ ${starredItems.narratives.map(n => {
             
             <!-- Hidden status for polling -->
             <div id="mbtiles-status" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Report Builder Modal -->
+    <div id="report-builder-modal" class="report-builder-modal" onclick="if(event.target===this)closeReportBuilder()">
+        <div class="report-builder-content">
+            <div class="report-builder-header">
+                <h3>⚙ Configure Report</h3>
+                <button class="report-builder-close" onclick="closeReportBuilder()">&times;</button>
+            </div>
+            <div class="report-builder-body">
+                <!-- Presets Section -->
+                <div class="report-builder-section">
+                    <div class="report-builder-section-title">📦 Quick Presets</div>
+                    <div class="report-builder-presets">
+                        <button class="report-builder-preset-btn" onclick="applyPreset('quick')">
+                            <div class="preset-name">Quick Summary</div>
+                            <div class="preset-desc">Just stats, no zeros, summary level</div>
+                        </button>
+                        <button class="report-builder-preset-btn" onclick="applyPreset('donor')">
+                            <div class="preset-name">Donor Report</div>
+                            <div class="preset-desc">All sections, skip zeros, standard detail</div>
+                        </button>
+                        <button class="report-builder-preset-btn" onclick="applyPreset('scientific')">
+                            <div class="preset-name">Scientific Report</div>
+                            <div class="preset-desc">Everything, comprehensive detail</div>
+                        </button>
+                        <button class="report-builder-preset-btn" onclick="applyPreset('custom')">
+                            <div class="preset-name">Custom</div>
+                            <div class="preset-desc">Your current configuration</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sections to Include -->
+                <div class="report-builder-section">
+                    <div class="report-builder-section-title">📋 Sections to Include</div>
+                    <div class="report-builder-checkbox-group">
+                        <div class="report-builder-checkbox" onclick="toggleCheckbox(this, 'fire')">
+                            <input type="checkbox" id="section-fire" checked onchange="event.stopPropagation()">
+                            <label for="section-fire">◆ Fire Activity</label>
+                        </div>
+                        <div class="report-builder-checkbox" onclick="toggleCheckbox(this, 'deforestation')">
+                            <input type="checkbox" id="section-deforestation" checked onchange="event.stopPropagation()">
+                            <label for="section-deforestation">▲ Deforestation</label>
+                        </div>
+                        <div class="report-builder-checkbox" onclick="toggleCheckbox(this, 'settlement')">
+                            <input type="checkbox" id="section-settlement" checked onchange="event.stopPropagation()">
+                            <label for="section-settlement">■ Settlements</label>
+                        </div>
+                        <div class="report-builder-checkbox" onclick="toggleCheckbox(this, 'biodiversity')">
+                            <input type="checkbox" id="section-biodiversity" checked onchange="event.stopPropagation()">
+                            <label for="section-biodiversity">❦ Biodiversity</label>
+                        </div>
+                        <div class="report-builder-checkbox" onclick="toggleCheckbox(this, 'climate')">
+                            <input type="checkbox" id="section-climate" checked onchange="event.stopPropagation()">
+                            <label for="section-climate">☼ Climate & Seasons</label>
+                        </div>
+                        <div class="report-builder-checkbox" onclick="toggleCheckbox(this, 'publications')">
+                            <input type="checkbox" id="section-publications" checked onchange="event.stopPropagation()">
+                            <label for="section-publications">📖 Publications</label>
+                        </div>
+                        <div class="report-builder-checkbox" onclick="toggleCheckbox(this, 'infrastructure')">
+                            <input type="checkbox" id="section-infrastructure" checked onchange="event.stopPropagation()">
+                            <label for="section-infrastructure">🗺 Infrastructure</label>
+                        </div>
+                        <div class="report-builder-checkbox" onclick="toggleCheckbox(this, 'patrol')">
+                            <input type="checkbox" id="section-patrol" checked onchange="event.stopPropagation()">
+                            <label for="section-patrol">○ Patrol Activity</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="report-builder-section">
+                    <div class="report-builder-section-title">🔍 Filters & Thresholds</div>
+                    <div class="report-builder-filter-group">
+                        <div class="report-builder-filter-item">
+                            <input type="checkbox" id="filter-skip-zeros" checked onchange="updateReportConfig()">
+                            <label for="filter-skip-zeros">Skip parks with no data</label>
+                        </div>
+                        <div class="report-builder-filter-item">
+                            <input type="checkbox" id="filter-threats-only" onchange="updateReportConfig()">
+                            <label for="filter-threats-only">Show only high/moderate threat parks</label>
+                        </div>
+                        <div class="report-builder-filter-item">
+                            <label for="filter-min-fires">Minimum fires:</label>
+                            <input type="number" id="filter-min-fires" value="0" min="0" onchange="updateReportConfig()">
+                        </div>
+                        <div class="report-builder-filter-item">
+                            <label for="filter-min-settlements">Minimum settlements:</label>
+                            <input type="number" id="filter-min-settlements" value="0" min="0" onchange="updateReportConfig()">
+                        </div>
+                        <div class="report-builder-filter-item">
+                            <label for="filter-min-deforestation">Minimum deforestation (km²):</label>
+                            <input type="number" id="filter-min-deforestation" value="0" min="0" step="0.1" onchange="updateReportConfig()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail Level -->
+                <div class="report-builder-section">
+                    <div class="report-builder-section-title">🔎 Detail Level</div>
+                    <select id="detail-level" class="report-builder-select" onchange="updateReportConfig()">
+                        <option value="summary">Summary - Stats + brief text only</option>
+                        <option value="standard" selected>Standard - Stats + main narratives</option>
+                        <option value="comprehensive">Comprehensive - Everything including individual events</option>
+                    </select>
+                </div>
+            </div>
+            <div class="report-builder-footer">
+                <button class="btn-cancel" onclick="closeReportBuilder()">Cancel</button>
+                <button class="btn-apply" onclick="applyReportConfig()">Apply Configuration</button>
+            </div>
         </div>
     </div>
 
