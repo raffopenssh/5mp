@@ -10291,11 +10291,6 @@
             </div>`;
         }
         
-        // Export buttons
-        html += `<div class="starred-export-btns">
-            <a href="/api/parks/${park.id}/export.kml?pwd=${getPwd()}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" class="starred-export-btn" download>↓ KML</a>
-        </div>`;
-        
         html += '</div>';
         return html;
     }
@@ -10315,12 +10310,6 @@
                 ${renderParkReportInline(park, rd)}
             </div>`;
         }
-        
-        // Export buttons for bbox
-        html += `<div class="starred-export-btns" style="margin-top:12px;">
-            <button onclick="exportBboxXlsx('${bbox.bbox.join(',')}','${escapeHtml(bbox.name || 'Area')}')" class="starred-export-btn">↓ XLSX Report</button>
-            <button onclick="exportBboxCsv('${bbox.bbox.join(',')}','${escapeHtml(bbox.name || 'Area')}')" class="starred-export-btn">↓ CSV</button>
-        </div>`;
         
         html += '</div>';
         return html;
@@ -14597,8 +14586,7 @@ ${starredItems.narratives.map(n => {
                     <!-- Report metadata -->
                 </div>
                 <div class="star-report-actions">
-                    <button class="star-report-btn secondary" onclick="openReportBuilder()" title="Configure Report" style="min-width:auto;padding:8px 12px;">🧙</button>
-                    <button class="star-report-btn secondary" onclick="clearAllStars()">Clear All</button>
+                    <button class="star-report-btn secondary" onclick="openReportBuilder()" title="Configure Report" style="min-width:auto;padding:8px 12px;">⚙️</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportCsv()" title="Export all data as CSV">↓ CSV</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportXlsx()" title="Export detailed XLSX with summary + per-park tabs">↓ XLSX</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportKml()" title="Export all park KMLs">↓ KML</button>
