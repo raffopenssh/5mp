@@ -32,7 +32,11 @@ echo
 echo "✓ Check 4: Template code includes '+ more' buttons"
 MORE_COUNT=$(grep -c "section-more-btn.*Show.*more" srv/templates/globe.html)
 echo "  Found $MORE_COUNT '+ more' button implementations"
-echo "  Expected: 5 (fire, deforestation, settlements, species, publications)"
+echo "  Expected: 11+ buttons across both renderParkFull and renderParkReportInline"
+echo "  - renderParkFull (PDF): fire, deforestation, settlements, species, publications"
+echo "  - renderParkReportInline (inline): deforest hotspots, settlements, species, publications"
+echo "  - renderDeforestationSummary: events"
+echo "  - renderSettlementsSummary: settlements"
 echo
 
 echo "----------------------------------------"
