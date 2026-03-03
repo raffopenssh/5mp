@@ -731,10 +731,11 @@
         .pa-popup-section-icon { font-size: 14px; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; text-align: center; line-height: 1; flex-shrink: 0; }
         .pa-popup-section-icon::before { content: attr(data-icon); }
         /* Scale individual icons for consistent visual size */
-        .pa-popup-section-icon[data-type="fire"] { font-size: 15px; }
-        .pa-popup-section-icon[data-type="settlement"] { font-size: 13px; }
-        .pa-popup-section-icon[data-type="deforestation"] { font-size: 15px; }
-        .pa-popup-section-icon[data-type="road"] { font-size: 14px; }
+        /* Normalize icon sizes across browsers - target 16px visual size */
+        .pa-popup-section-icon[data-type="fire"] { font-size: 19px; transform: scale(0.9); }  /* ◆ */
+        .pa-popup-section-icon[data-type="settlement"] { font-size: 16px; transform: scale(0.9); }  /* ◻ */
+        .pa-popup-section-icon[data-type="deforestation"] { font-size: 22px; transform: scale(0.74); }  /* △ */
+        .pa-popup-section-icon[data-type="road"] { font-size: 18px; transform: scale(0.88); }  /* ⊡ */
         .pa-popup-section-toggle { font-size: 10px; color: #555; transition: transform 0.2s; }
         .pa-popup-section.open .pa-popup-section-toggle { transform: rotate(180deg); }
         .pa-popup-section-content { display: none; padding: 8px 10px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); }
