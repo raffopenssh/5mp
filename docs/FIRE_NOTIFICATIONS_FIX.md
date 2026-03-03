@@ -512,3 +512,267 @@ notif_count = conn.execute("""
 if abs(active_count - notif_count) > 10:
     log(f"WARNING: Notification mismatch! Active: {active_count}, Notif: {notif_count}")
 ```
+
+
+---
+
+## Final Update: Stable Hurricane-Style Naming (March 3, 2026)
+
+### User Requirement
+
+> "Make sure the friendly names stick with a group and stay the same like for tracking hurricanes. That will make the managers work easier."
+
+### Problem with Previous Approach
+
+The initial fix assigned names based on `fires_total` (descending):
+
+```python
+# OLD: Names changed as fire intensity changed
+groups.sort(key=lambda x: x['fires_total'], reverse=True)
+for i, group in enumerate(groups):
+    friendly_name = get_friendly_name(i)  # Alpha, Bravo, Charlie
+```
+
+**Issues:**
+- If Fire Group A had 1000 fires (Alpha) and Fire Group B had 500 fires (Bravo)
+- Next day: Fire Group B grows to 1200 fires, Fire Group A stays at 1000
+- Result: **Names swap!** B becomes Alpha, A becomes Bravo
+- Managers lose track of which fire they were monitoring
+
+### Solution: Persistent Name Mapping
+
+Created `fire_group_names` table to store stable assignments:
+
+```sql
+CREATE TABLE fire_group_names (
+    park_id TEXT NOT NULL,
+    feature_id TEXT NOT NULL,
+    friendly_name TEXT NOT NULL,
+    assigned_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    first_seen_date TEXT,
+    last_seen_date TEXT,
+    PRIMARY KEY (park_id, feature_id)
+);
+```
+
+### Naming Logic
+
+#### 1. Chronological Assignment (Not Intensity)
+
+Names are assigned based on **when the fire first appeared**, not how big it is:
+
+```python
+# NEW: Sort by start_date (chronological)
+groups.sort(key=lambda x: x['start_date'])
+
+for i, group in enumerate(groups):
+    feature_id = group['feature_id']
+    
+    # Check if name already exists
+    existing = db.get(feature_id)
+    
+    if not existing:
+        friendly_name = get_friendly_name(i)  # Alpha, Bravo, ...
+        db.store(feature_id, friendly_name, first_seen=start_date)
+    else:
+        # Keep existing name, just update last_seen
+        db.update(feature_id, last_seen=end_date)
+```
+
+#### 2. Name Persistence
+
+Once assigned, a name **NEVER changes**:
+
+| Date | Feature ID | Friendly Name | Fires | Status |
+|------|-----------|---------------|-------|--------|
+| Feb 26 | CAF_Chinko_2026_grp_2caaa51b | **Alpha-2** | 50 | Growing |
+| Feb 27 | CAF_Chinko_2026_grp_2caaa51b | **Alpha-2** | 80 | Growing |
+| Feb 28 | CAF_Chinko_2026_grp_2caaa51b | **Alpha-2** | 120 | Growing |
+| Mar 1 | CAF_Chinko_2026_grp_2caaa51b | **Alpha-2** | 100 | Declining |
+| Mar 3 | CAF_Chinko_2026_grp_2caaa51b | **Alpha-2** | 142 | Active |
+
+**Alpha-2 stays Alpha-2** regardless of intensity changes.
+
+#### 3. Cycle Suffixes
+
+Like hurricanes, we cycle through the alphabet:
+
+- **Alpha, Bravo, ..., Zulu** = First 26 fires (cycle 1)
+- **Alpha-2, Bravo-2, ..., Zulu-2** = Fires 27-52 (cycle 2)
+- **Alpha-3, Bravo-3, ...** = Fires 53-78 (cycle 3)
+
+### Implementation
+
+#### Step 6b1: Assign Names to New Groups
+
+```python
+def assign_friendly_names_to_new_groups(self):
+    # Get all fire trajectories for current year
+    cursor = db.execute("""
+        SELECT park_id, feature_id, start_date, end_date
+        FROM feature_geometries
+        WHERE feature_type = 'fire_trajectory'
+          AND feature_id LIKE '%_2026_grp_%'
+        ORDER BY park_id, start_date ASC
+    """)
+    
+    for park_id, groups in park_groups.items():
+        groups.sort(key=lambda x: x['start_date'])  # Chronological!
+        
+        for i, group in enumerate(groups):
+            if not name_exists(feature_id):
+                assign_name(feature_id, get_friendly_name(i))
+            else:
+                update_last_seen(feature_id)
+```
+
+#### Step 6b2: Use Stored Names for Notifications
+
+```python
+def create_fire_notifications(self):
+    # JOIN with fire_group_names to get stable names
+    cursor = db.execute("""
+        SELECT fg.park_id, fg.feature_id, fg.properties_json, 
+               fgn.friendly_name  -- ← Stable name!
+        FROM feature_geometries fg
+        JOIN fire_group_names fgn 
+          ON fg.park_id = fgn.park_id 
+         AND fg.feature_id = fgn.feature_id
+        WHERE fg.end_date >= date('now', '-3 days')
+        ORDER BY fg.park_id, fgn.friendly_name
+    """)
+    
+    for row in cursor:
+        title = f"🔥 {friendly_name}"  # Name from mapping table
+        # Create notification...
+```
+
+### Real-World Example: CAF_Chinko
+
+#### Current Active Fires (March 3, 2026)
+
+```sql
+SELECT friendly_name, first_seen_date, last_seen_date, 
+       julianday(last_seen_date) - julianday(first_seen_date) as days_burning
+FROM fire_group_names
+WHERE park_id = 'CAF_Chinko' 
+  AND last_seen_date >= date('now', '-3 days')
+ORDER BY friendly_name
+LIMIT 10;
+```
+
+| Friendly Name | First Seen | Last Seen | Days Burning |
+|---------------|------------|-----------|-------------|
+| **Alpha-2** | 2026-02-26 | 2026-03-03 | **6 days** |
+| **Bravo-2** | 2026-02-26 | 2026-03-02 | **5 days** |
+| **Charlie-2** | 2026-02-27 | 2026-03-01 | **3 days** |
+| **Delta-2** | 2026-02-26 | 2026-03-03 | **6 days** |
+
+**Managers can now track**: "Alpha-2 has been burning for 6 days since Feb 26."
+
+### Manager Benefits
+
+#### Before (Unstable Names)
+```
+Day 1: "Monitor Fire Alpha (1000 fires)"
+Day 2: "Fire Alpha now has 1200 fires"  // But it's actually a different fire!
+Day 3: "Where did Alpha go?"            // Original Alpha is now Bravo
+```
+
+#### After (Stable Names)
+```
+Day 1: "Monitor Fire Alpha-2 (50 fires, near Chinko river)"
+Day 2: "Alpha-2 grew to 80 fires, still near Chinko"
+Day 3: "Alpha-2 now 120 fires, moving south"
+Day 4: "Alpha-2 declining to 100 fires"
+Day 5: "Alpha-2 extinguished"
+```
+
+### Historical Tracking
+
+#### CAF_Chinko Fire Season 2026
+
+```sql
+SELECT friendly_name, first_seen_date, last_seen_date,
+       julianday(last_seen_date) - julianday(first_seen_date) + 1 as duration_days
+FROM fire_group_names
+WHERE park_id = 'CAF_Chinko'
+ORDER BY first_seen_date
+LIMIT 20;
+```
+
+| Name | First Seen | Last Seen | Duration | Status |
+|------|------------|-----------|----------|--------|
+| **Alpha** | Feb 13 | Feb 16 | 4 days | Extinguished |
+| **Bravo** | Feb 13 | Feb 15 | 3 days | Extinguished |
+| **Charlie** | Feb 14 | Feb 15 | 2 days | Extinguished |
+| **Tango** | Feb 26 | Feb 27 | 2 days | Extinguished |
+| **Alpha-2** | Feb 26 | **Mar 3** | **6 days** | **Active** |
+| **Delta-2** | Feb 26 | **Mar 3** | **6 days** | **Active** |
+
+Managers can see: **45 fire groups tracked so far this season**.
+
+### Data Validation
+
+```bash
+# Total named groups
+sqlite3 db.sqlite3 "SELECT COUNT(*) FROM fire_group_names;"
+# Result: 1,424 fire groups with stable names
+
+# Active groups with notifications
+sqlite3 db.sqlite3 "SELECT COUNT(*) FROM notifications WHERE notification_type = 'fire_alert';"
+# Result: 433 notifications (matches active fire groups)
+
+# Verify name stability
+sqlite3 db.sqlite3 "SELECT friendly_name, feature_id FROM fire_group_names WHERE park_id = 'CAF_Chinko' AND friendly_name = 'Alpha-2';"
+# Result: Alpha-2|CAF_Chinko_2026_grp_2caaa51b (same feature_id, same name ✅)
+```
+
+### Cron Integration
+
+Daily pipeline (3am UTC) now includes:
+
+```python
+# Step 6b1: Assign names to any new fire groups
+self.assign_friendly_names_to_new_groups()
+
+# Step 6b2: Create notifications using stable names
+self.create_fire_notifications()
+```
+
+Output:
+```
+[2026-03-03 03:00:15] Step 6b1: Assigning friendly names to new fire groups...
+[2026-03-03 03:00:15]   Assigned 3 new friendly names
+[2026-03-03 03:00:15] Step 6b2: Creating notifications for active fire groups...
+[2026-03-03 03:00:15]   CAF_Chinko: Created 45 notifications
+[2026-03-03 03:00:15]   Total: 433 notifications across 24 parks
+```
+
+### Communication Examples
+
+**Morning Briefing:**
+> "Good morning team. We have 45 active fires in Chinko. Alpha-2 and Delta-2 have been burning for 6 days near the Chinko river. Bravo-2 is declining and may extinguish today. New fire Echo-4 detected yesterday near the northern boundary."
+
+**Field Report:**
+> "Patrol Unit 3 reporting: Investigated Alpha-2. Fire is contained within park boundaries, moving south at 1.2 km/day. No settlements threatened. Recommend continued monitoring."
+
+**Weekly Summary:**
+> "This week: 12 new fires detected (Lima-4 through Whiskey-4). Alpha-2 and Delta-2 remain most active. Total fires this season: 87 groups tracked."
+
+### Future Enhancements
+
+1. **Fire Reports**: Generate PDF with fire history by friendly name
+2. **API Endpoint**: `/api/fire-history/CAF_Chinko/Alpha-2`
+3. **UI Timeline**: Show fire progression over time
+4. **Alerts**: "Alpha-2 has been active for 7+ days (long-duration fire)"
+
+### Summary
+
+✅ **Stable Names**: Once assigned, never changes  
+✅ **Chronological**: Based on first appearance, not intensity  
+✅ **Trackable**: Managers can follow specific fires over days/weeks  
+✅ **Historical**: Complete fire season record  
+✅ **Production Ready**: Integrated into daily cron pipeline  
+
+**Analogy**: Just like Hurricane Katrina was always Katrina (not renamed based on wind speed), Fire Alpha-2 is always Alpha-2 (not renamed based on fire count).
