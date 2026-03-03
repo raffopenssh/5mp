@@ -9520,17 +9520,35 @@ ${starredItems.narratives.map(n => {
             return;
         }
         
+        // Check if already loaded
+        const key = `${parkId}_rt_${groupName}`;
+        if (realtimeFireLayers[key]) {
+            console.log('Fire trajectory already loaded:', groupName);
+            // Just zoom to it
+            const coords = trajectory.map(p => [p.lon || p.lng || p[0], p.lat || p[1]]);
+            const bounds = coords.reduce((b, c) => {
+                return [[Math.min(b[0][0], c[0]), Math.min(b[0][1], c[1])],
+                        [Math.max(b[1][0], c[0]), Math.max(b[1][1], c[1])]];
+            }, [[180, 90], [-180, -90]]);
+            map.fitBounds(bounds, { padding: 50, duration: 1500 });
+            return;
+        }
+        
         // Create a unique source/layer name
         const sourceId = `rt-traj-${parkId}-${groupName}`.replace(/[^a-z0-9-]/gi, '-');
         const layerId = sourceId + '-line';
         const arrowLayerId = sourceId + '-arrows';
-        const pointLayerId = sourceId + '-points';
+        const frontSourceId = sourceId + '-front';
+        const frontLayerId = sourceId + '-front-marker';
+        const frontGlowId = sourceId + '-front-glow';
         
-        // Remove existing if present
-        [layerId, arrowLayerId, pointLayerId].forEach(id => {
+        // Remove existing if present (shouldn't happen with check above)
+        [layerId, arrowLayerId, frontLayerId, frontGlowId].forEach(id => {
             if (map.getLayer(id)) map.removeLayer(id);
         });
-        if (map.getSource(sourceId)) map.removeSource(sourceId);
+        [sourceId, frontSourceId].forEach(id => {
+            if (map.getSource(id)) map.removeSource(id);
+        });
         
         // Build LineString from trajectory points
         const coords = trajectory.map(p => [p.lon || p.lng || p[0], p.lat || p[1]]);
@@ -9543,15 +9561,14 @@ ${starredItems.narratives.map(n => {
         
         map.addSource(sourceId, { type: 'geojson', data: geojson });
         
-        // Add line layer with glow
+        // Add line layer (match bulk pin style)
         map.addLayer({
             id: layerId,
             type: 'line',
             source: sourceId,
             paint: {
                 'line-color': '#ef4444',
-                'line-width': 5,
-                'line-opacity': 0.9
+                'line-width': 4
             }
         });
         
@@ -9576,21 +9593,41 @@ ${starredItems.narratives.map(n => {
             }
         });
         
-        // Add highlight point at the last location
+        // Add pulsing fire front marker at last point (match bulk pin style)
         const lastPoint = coords[coords.length - 1];
+        
+        map.addSource(frontSourceId, {
+            type: 'geojson',
+            data: {
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: lastPoint },
+                properties: { name: 'Fire Front' }
+            }
+        });
+        
+        // Outer pulsing glow
         map.addLayer({
-            id: pointLayerId,
+            id: frontGlowId,
             type: 'circle',
-            source: {
-                type: 'geojson',
-                data: { type: 'Feature', geometry: { type: 'Point', coordinates: lastPoint }, properties: {} }
-            },
+            source: frontSourceId,
+            paint: {
+                'circle-radius': 4,
+                'circle-color': '#ff4444',
+                'circle-opacity': 0.3,
+                'circle-blur': 0.5
+            }
+        });
+        
+        // Inner fire front marker
+        map.addLayer({
+            id: frontLayerId,
+            type: 'circle',
+            source: frontSourceId,
             paint: {
                 'circle-radius': 2,
-                'circle-color': '#ef4444',
+                'circle-color': '#ff4444',
                 'circle-stroke-width': 2,
-                'circle-stroke-color': '#fff',
-                'circle-opacity': 0.6
+                'circle-stroke-color': '#ffffff'
             }
         });
         
@@ -9603,10 +9640,9 @@ ${starredItems.narratives.map(n => {
         map.fitBounds(bounds, { padding: 50, duration: 1500 });
         
         // Track this realtime layer for clearing
-        const key = `${parkId}_rt_${groupName}`;
         realtimeFireLayers[key] = {
-            sourceId, layerId, arrowLayerId, pointLayerId, parkId, parkName, groupName,
-            coords: lastPoint
+            sourceId, layerId, arrowLayerId, frontSourceId, frontLayerId, frontGlowId,
+            parkId, parkName, groupName, coords: lastPoint
         };
         updatePinnedIndicator();
         
@@ -10031,10 +10067,17 @@ ${starredItems.narratives.map(n => {
     function removeRealtimeFireLayer(key) {
         const layer = realtimeFireLayers[key];
         if (!layer) return;
-        [layer.layerId, layer.arrowLayerId, layer.pointLayerId].forEach(id => {
-            if (map.getLayer(id)) map.removeLayer(id);
+        
+        // Remove all layers (old: pointLayerId, new: frontLayerId + frontGlowId)
+        [layer.layerId, layer.arrowLayerId, layer.pointLayerId, layer.frontLayerId, layer.frontGlowId].forEach(id => {
+            if (id && map.getLayer(id)) map.removeLayer(id);
         });
-        if (map.getSource(layer.sourceId)) map.removeSource(layer.sourceId);
+        
+        // Remove all sources
+        [layer.sourceId, layer.frontSourceId].forEach(id => {
+            if (id && map.getSource(id)) map.removeSource(id);
+        });
+        
         delete realtimeFireLayers[key];
         updatePinnedIndicator();
     }
