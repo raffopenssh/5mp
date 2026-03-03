@@ -1879,10 +1879,124 @@
                         single: this.getSingleNotifications().length,
                         total: document.querySelectorAll('.notification-item').length
                     };
+                },
+
+                // Fire notification testing helpers
+                findFireNotification(search) {
+                    const allNotifs = document.querySelectorAll('.notification-item[data-type="fire_alert"]');
+                    for (let item of allNotifs) {
+                        const loc = item.querySelector('.notification-location');
+                        const text = loc ? loc.textContent : '';
+                        if (text.toLowerCase().includes(search.toLowerCase())) {
+                            return item;
+                        }
+                    }
+                    return null;
+                },
+
+                clickFire(search) {
+                    const fire = this.findFireNotification(search);
+                    if (fire) {
+                        const loc = fire.querySelector('.notification-location');
+                        console.log('Clicking fire:', loc ? loc.textContent : 'unknown');
+                        fire.click();
+                        return true;
+                    }
+                    console.log('Fire not found:', search);
+                    return false;
+                },
+
+                getFireDetails(search) {
+                    const fire = this.findFireNotification(search);
+                    if (!fire) return null;
+                    
+                    const loc = fire.querySelector('.notification-location');
+                    return {
+                        text: loc ? loc.textContent.trim() : '',
+                        parkId: fire.dataset.parkId,
+                        featureId: fire.dataset.featureId,
+                        groupName: fire.dataset.groupName
+                    };
+                },
+
+                async waitForPin(timeout = 3000) {
+                    return new Promise((resolve) => {
+                        let resolved = false;
+                        const checkPins = () => {
+                            if (resolved) return;
+                            const pins = document.querySelectorAll('.pinned-layer-item');
+                            if (pins.length > 0) {
+                                resolved = true;
+                                const lastPin = pins[pins.length - 1];
+                                const text = lastPin.textContent.trim();
+                                resolve({success: true, text, count: pins.length});
+                            }
+                        };
+                        
+                        setTimeout(() => {
+                            if (!resolved) {
+                                resolved = true;
+                                const pins = document.querySelectorAll('.pinned-layer-item');
+                                resolve({success: pins.length > 0, timeout: true, count: pins.length});
+                            }
+                        }, timeout);
+                        
+                        checkPins();
+                        const interval = setInterval(checkPins, 200);
+                        setTimeout(() => clearInterval(interval), timeout);
+                    });
+                },
+
+                async testFireClick(search, expectedParkName) {
+                    console.log(`\n=== Testing Fire: ${search} ===`);
+                    
+                    const details = this.getFireDetails(search);
+                    if (!details) {
+                        console.error('❌ Fire not found:', search);
+                        return {success: false, error: 'not_found'};
+                    }
+                    
+                    console.log('Fire:', details.text);
+                    console.log('  parkId:', details.parkId);
+                    console.log('  featureId:', details.featureId);
+                    console.log('  groupName:', details.groupName);
+                    
+                    this.clickFire(search);
+                    
+                    const pinResult = await this.waitForPin(3000);
+                    console.log('Pin result:', pinResult);
+                    
+                    await new Promise(r => setTimeout(r, 1000));
+                    
+                    const toasts = document.querySelectorAll('.toast');
+                    const errors = Array.from(toasts).filter(t => 
+                        t.textContent.includes('Error') || 
+                        t.textContent.includes('not found') ||
+                        t.textContent.includes('No Fire')
+                    );
+                    
+                    if (errors.length > 0) {
+                        console.error('❌ Error toasts:', errors.map(e => e.textContent.trim()));
+                        return {success: false, details, pinResult, errors: errors.map(e => e.textContent.trim())};
+                    }
+                    
+                    if (expectedParkName && pinResult.success) {
+                        const correctPark = pinResult.text.toLowerCase().includes(expectedParkName.toLowerCase());
+                        if (!correctPark) {
+                            console.error(`❌ Wrong park name. Expected: ${expectedParkName}, Got: ${pinResult.text}`);
+                            return {success: false, details, pinResult, error: 'wrong_park_name'};
+                        } else {
+                            console.log(`✅ Correct park name: ${expectedParkName}`);
+                        }
+                    }
+                    
+                    console.log('✅ Test passed');
+                    return {success: true, details, pinResult};
                 }
             };
             console.log('TEST mode enabled. Use window.TEST for assertions.');
-            console.log('Notification helpers: TEST.getSingleNotifications(), TEST.findSingleNotification("text"), TEST.getNotificationStats()');
+            console.log('Fire helpers: TEST.findFireNotification("Alpha-5"), TEST.clickFire("Hotel"), TEST.testFireClick("Alpha-5", "Aouk")');
+            console.log('Notification helpers: TEST.getSingleNotifications(), TEST.getNotificationStats()');
             console.log('TIP: For full UI testing, resize browser to 1280x1400+ to see all popup sections.');
         }
         
@@ -4796,7 +4910,7 @@
             
             // Single action: view on map (whole item clickable)
             return `
-                <div class="notification-item clickable" data-type="fire_alert" data-action="view_fire" data-park-id="${parkId}" data-feature-id="${featureId}" data-group-name="${groupName}">
+                <div class="notification-item clickable" data-type="fire_alert" data-action="view_fire" data-park-id="${parkId}" data-park-name="${escapeHtml(parkName)}" data-feature-id="${featureId}" data-group-name="${groupName}">
                     <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">●</div>
                     <div class="notification-content">
                         <div class="notification-location">${location}</div>
@@ -4998,19 +5112,14 @@
             return date.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
         }
         
-        async function handleFireNotificationClick(parkId, featureId, groupName, event) {
+        async function handleFireNotificationClick(parkId, featureId, groupName, parkName, event) {
             if (event) event.stopPropagation();
             
             // Close notification dropdown properly
             closeNotificationDropdown();
             
-            // Find the park to get name
-            let parkName = parkId;
-            if (map && map.queryRenderedFeatures) {
-                const features = map.queryRenderedFeatures({layers: ['areas-fill']});
-                const park = features.find(f => f.properties.id === parkId);
-                if (park) parkName = park.properties.name || parkId;
-            }
+            // Use provided park name or fallback to parkId
+            if (!parkName) parkName = parkId;
             
             if (featureId) {
                 // Fetch the specific fire directly from features API (no date filters)
@@ -5081,7 +5190,7 @@
                             // Auto-pin the fire_trajectory layer
                             const layerKey = `${parkId}:fire_trajectory`;
                             if (!pinnedLayers[layerKey]) {
-                                addPinnedLayer(parkId, 'fire_trajectory', `Fire: ${displayName}`);
+                                addPinnedLayer(parkId, parkName, 'fire_trajectory');
                             }
                         } else {
                             console.warn('Fire feature not found:', featureId);
@@ -5245,9 +5354,10 @@
                 // Handle fire alert click
                 if (action === 'view_fire') {
                     const parkId = item.dataset.parkId;
+                    const parkName = item.dataset.parkName;
                     const featureId = item.dataset.featureId;
                     const groupName = item.dataset.groupName;
-                    handleFireNotificationClick(parkId, featureId, groupName);
+                    handleFireNotificationClick(parkId, featureId, groupName, parkName);
                     closeNotificationDropdown();
                     return;
                 }
