@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Report Builder Tests</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }
+        .test-group { margin: 20px 0; padding: 15px; border: 1px solid #333; border-radius: 8px; }
+        .test-result { margin: 5px 0; padding: 5px; }
+        .pass { color: #22c55e; }
+        .fail { color: #ef4444; }
+        .summary { margin-top: 20px; padding: 15px; background: #2a2a2a; border-radius: 8px; }
+        button { padding: 10px 20px; margin: 5px; background: #22c55e; color: #000; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #16a34a; }
+    </style>
+</head>
+<body>
+    <h1>⚙️ Report Builder Test Suite</h1>
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="runShareLinkTests()">Test Share Links</button>
+    <button onclick="runIntelligenceTests()">Test Intelligence</button>
+    
+    <div id="results"></div>
+    <div id="summary" class="summary"></div>
+
+    <script>
+        const testResults = [];
+        const baseUrl = window.location.origin;
+
+        function log(msg, isPass = true) {
+            const cls = isPass ? 'pass' : 'fail';
+            const icon = isPass ? '✅' : '❌';
+            testResults.push({ msg, pass: isPass });
+            const div = document.createElement('div');
+            div.className = `test-result ${cls}`;
+            div.textContent = `${icon} ${msg}`;
+            document.getElementById('results').appendChild(div);
+        }
+
+        async function testSinglePark() {
+            log('Test: Single park → Scientific profile');
+            const url = `${baseUrl}/?pwd=test2026&test=1&starred_parks=TZA_Serengeti`;
+            await openInNewTab(url, async (win) => {
+                await wait(5000);
+                const result = await win.eval(`
+                    (function() {
+                        openReportBuilder();
+                        return {
+                            profile: window.currentSmartDefault?.profile,
+                            parkCount: window.currentSmartDefault?.stats?.parks,
+                            allSections: Object.values(reportConfig.sections).filter(v => v).length
+                        };
+                    })()
+                `);
+                log(`Profile: ${result.profile}, Parks: ${result.parkCount}, Sections: ${result.allSections}`, 
+                    result.profile === 'scientific' && result.parkCount === 1 && result.allSections === 9);
+            });
+        }
+
+        async function testSmallSelection() {
+            log('Test: 5 parks → Donor profile');
+            const url = `${baseUrl}/?pwd=test2026&starred_parks=TZA_Serengeti,COD_Virunga,CAF_Chinko,CMR_Nki,TZA_Tarangire`;
+            await openInNewTab(url, async (win) => {
+                await wait(5000);
+                const result = await win.eval(`
+                    (function() {
+                        openReportBuilder();
+                        return {
+                            profile: window.currentSmartDefault?.profile,
+                            parkCount: window.currentSmartDefault?.stats?.parks
+                        };
+                    })()
+                `);
+                log(`Profile: ${result.profile}, Parks: ${result.parkCount}`,
+                    result.profile === 'donor' && result.parkCount === 5);
+            });
+        }
+
+        async function testLargeSelection() {
+            log('Test: 36 parks (bbox) → Quick profile');
+            const url = `${baseUrl}/?pwd=test2026&starred_bboxes=12:-4:29:10`;
+            await openInNewTab(url, async (win) => {
+                await wait(12000); // Bbox loading takes longer
+                const result = await win.eval(`
+                    (function() {
+                        openReportBuilder();
+                        return {
+                            profile: window.currentSmartDefault?.profile,
+                            parkCount: window.currentSmartDefault?.stats?.parks,
+                            biodiversityEnabled: reportConfig.sections.biodiversity
+                        };
+                    })()
+                `);
+                log(`Profile: ${result.profile}, Parks: ${result.parkCount}, Bio: ${result.biodiversityEnabled}`,
+                    result.profile === 'quick' && result.parkCount >= 30 && result.biodiversityEnabled === false);
+            });
+        }
+
+        async function testApplyRecommendation() {
+            log('Test: Apply smart recommendation');
+            const url = `${baseUrl}/?pwd=test2026&starred_parks=TZA_Serengeti`;
+            await openInNewTab(url, async (win) => {
+                await wait(5000);
+                const result = await win.eval(`
+                    (function() {
+                        openReportBuilder();
+                        applySmartDefault();
+                        return {
+                            detailLevel: reportConfig.detailLevel,
+                            skipZeros: reportConfig.filters.skipZeros,
+                            preset: reportConfig.preset
+                        };
+                    })()
+                `);
+                log(`Detail: ${result.detailLevel}, SkipZeros: ${result.skipZeros}, Preset: ${result.preset}`,
+                    result.detailLevel === 'comprehensive' && result.skipZeros === false && result.preset === 'scientific');
+            });
+        }
+
+        async function testBboxRestoration() {
+            log('Test: Bbox restoration from URL');
+            const url = `${baseUrl}/?pwd=test2026&starred_bboxes=12:-4:29:10`;
+            await openInNewTab(url, async (win) => {
+                await wait(12000);
+                const result = await win.eval(`
+                    (function() {
+                        const bboxKey = starredItems.bboxes[0]?.bbox.join(',');
+                        const bboxData = bboxKey ? reportDataCache.bboxes.get(bboxKey) : null;
+                        return {
+                            starredBboxes: starredItems.bboxes.length,
+                            bboxParksCount: bboxData?.parks?.length || 0,
+                            cacheSize: reportDataCache.bboxes.size
+                        };
+                    })()
+                `);
+                log(`Starred: ${result.starredBboxes}, Parks: ${result.bboxParksCount}, Cache: ${result.cacheSize}`,
+                    result.starredBboxes === 1 && result.bboxParksCount >= 30 && result.cacheSize === 1);
+            });
+        }
+
+        async function testShareLinkClearing() {
+            log('Test: Share link clears old starred items');
+            // First, star some parks
+            const url1 = `${baseUrl}/?pwd=test2026&starred_parks=TZA_Serengeti,COD_Virunga,CAF_Chinko`;
+            await openInNewTab(url1, async (win) => {
+                await wait(5000);
+                // Now navigate to a different share link in the same tab (simulated)
+                const url2 = `${baseUrl}/?pwd=test2026&starred_parks=TZA_Tarangire`;
+                win.location.href = url2;
+                await wait(5000);
+                const result = await win.eval(`
+                    (function() {
+                        return {
+                            parkCount: starredItems.parks.length,
+                            parkNames: starredItems.parks.map(p => p.name)
+                        };
+                    })()
+                `);
+                log(`Parks: ${result.parkCount} (${result.parkNames.join(', ')})`,
+                    result.parkCount === 1 && result.parkNames[0] === 'Tarangire');
+            });
+        }
+
+        async function runShareLinkTests() {
+            document.getElementById('results').innerHTML = '<h2>🔗 Share Link Tests</h2>';
+            testResults.length = 0;
+            await testBboxRestoration();
+            await testShareLinkClearing();
+            showSummary();
+        }
+
+        async function runIntelligenceTests() {
+            document.getElementById('results').innerHTML = '<h2>🧠 Intelligence Tests</h2>';
+            testResults.length = 0;
+            await testSinglePark();
+            await testSmallSelection();
+            await testLargeSelection();
+            await testApplyRecommendation();
+            showSummary();
+        }
+
+        async function runAllTests() {
+            document.getElementById('results').innerHTML = '<h2>🚀 Running All Tests</h2>';
+            testResults.length = 0;
+            
+            await testSinglePark();
+            await testSmallSelection();
+            await testLargeSelection();
+            await testBboxRestoration();
+            await testApplyRecommendation();
+            await testShareLinkClearing();
+            
+            showSummary();
+        }
+
+        function showSummary() {
+            const passed = testResults.filter(r => r.pass).length;
+            const failed = testResults.filter(r => !r.pass).length;
+            const total = testResults.length;
+            const pct = Math.round((passed / total) * 100);
+            
+            document.getElementById('summary').innerHTML = `
+                <h2>📊 Test Summary</h2>
+                <div style="font-size: 18px;">
+                    ✅ Passed: ${passed} | ❌ Failed: ${failed} | Total: ${total}
+                </div>
+                <div style="font-size: 24px; margin-top: 10px; color: ${pct === 100 ? '#22c55e' : pct >= 80 ? '#fbbf24' : '#ef4444'};">
+                    Success Rate: ${pct}%
+                </div>
+            `;
+        }
+
+        // Helper functions
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function openInNewTab(url, callback) {
+            const win = window.open(url, '_blank');
+            if (!win) {
+                log('Failed to open window (popup blocked?)', false);
+                return;
+            }
+            
+            await wait(2000); // Let window load
+            
+            try {
+                await callback({
+                    location: win.location,
+                    eval: (code) => {
+                        return new Promise((resolve, reject) => {
+                            try {
+                                const result = win.eval(code);
+                                if (result instanceof Promise) {
+                                    result.then(resolve).catch(reject);
+                                } else {
+                                    resolve(result);
+                                }
+                            } catch (e) {
+                                reject(e);
+                            }
+                        });
+                    }
+                });
+            } finally {
+                win.close();
+            }
+        }
+    </script>
+</body>
+</html>
