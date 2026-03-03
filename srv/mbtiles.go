@@ -576,9 +576,14 @@ func (s *Server) HandleAPIMBTilesCreate(w http.ResponseWriter, r *http.Request) 
 	
 	// Check available disk space
 	availableSpace := getAvailableDiskSpace(mbtilesQueue.outputDir)
-	// Require 1.2x estimated size as safety margin
-	if uint64(float64(estimatedSize)*1.2) > availableSpace {
-		http.Error(w, "Insufficient disk space", http.StatusInsufficientStorage)
+	// Require 1.2x estimated size + 2GB free space minimum
+	const minFreeSpace = 2 * 1024 * 1024 * 1024 // 2GB
+	requiredSpace := uint64(float64(estimatedSize)*1.2) + minFreeSpace
+	if requiredSpace > availableSpace {
+		http.Error(w, fmt.Sprintf("Insufficient disk space: need %.1f GB free, only %.1f GB available. Ensure 2 GB remains after generation.", 
+			float64(requiredSpace)/(1024*1024*1024), 
+			float64(availableSpace)/(1024*1024*1024)), 
+			http.StatusInsufficientStorage)
 		return
 	}
 	
