@@ -726,8 +726,8 @@
         .pa-popup-section-header { display: flex; align-items: center; padding: 8px 10px; background: rgba(255,255,255,0.03); cursor: pointer; transition: background 0.2s; gap: 8px; }
         .pa-popup-section-header:hover { background: rgba(255,255,255,0.06); }
         .pa-popup-section-star { margin-right: 0; }
-        .pa-popup-section-title { font-size: 10px; color: #888; text-transform: uppercase; display: flex; align-items: center; gap: 6px; flex: 1; }
-        .pa-popup-section-count { color: #22c55e; font-weight: 500; font-size: 11px; margin-left: auto; }
+        .pa-popup-section-title { font-size: 10px; color: #888; text-transform: uppercase; display: flex; align-items: center; gap: 6px; flex: 1; line-height: 1.4; }
+        .pa-popup-section-count { color: #22c55e; font-weight: 500; font-size: 11px; margin-left: auto; line-height: 1.4; }
         .pa-popup-section-icon { font-size: 14px; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; text-align: center; line-height: 1; flex-shrink: 0; }
         .pa-popup-section-icon::before { content: attr(data-icon); }
         /* Scale individual icons for consistent visual size */
@@ -6172,7 +6172,7 @@
                     const countEl = document.getElementById(`fire-count-${paId}`);
                     if (countEl) {
                         // Show groups count instead of total fire detections for clarity
-                        countEl.textContent = filteredGroupCount > 0 ? ` • ${filteredGroupCount} GROUPS` : '';
+                        countEl.textContent = filteredGroupCount > 0 ? `${filteredGroupCount} GROUPS` : '';
                     }
                     
                     // Generate summary based on filtered data
@@ -6271,7 +6271,7 @@
                 // Update count in header
                 const countEl = document.getElementById(`settlement-count-${paId}`);
                 if (countEl && data.settlement_count > 0) {
-                    countEl.textContent = ` • ${formatNumber(data.settlement_count)}`;
+                    countEl.textContent = `${formatNumber(data.settlement_count)}`;
                 }
                 
                 if (data.status === 'complete' && data.settlement_count > 0) {
@@ -6421,7 +6421,7 @@
                 // Update count in header
                 const countEl = document.getElementById(`deforest-count-${paId}`);
                 if (countEl && totalLoss > 0) {
-                    countEl.textContent = ` • ${totalLoss.toFixed(1)} km²`;
+                    countEl.textContent = `${totalLoss.toFixed(1)} km²`;
                 }
                 
                 // Get date range label
@@ -6599,7 +6599,7 @@
                 const countEl = document.getElementById(`road-count-${paId}`);
                 const totalItems = (s.total_rivers || 0) + (s.total_roads || 0) + (s.total_places || 0);
                 if (countEl && totalItems > 0) {
-                    countEl.textContent = ` • ${totalItems}`;
+                    countEl.textContent = `${totalItems}`;
                 }
                 
                 let html = '';
