@@ -1,3 +1,8 @@
+f59a2a5d 2026-03-03 08:50:40 Add comprehensive documentation for fire enhancement feature
+c9d88f5f 2026-03-03 08:47:56 Fix fire group sorting to use priority instead of fire count
+3963d9db 2026-03-03 08:34:12 Update fire pipeline documentation with notification system details
+05223f35 2026-03-03 08:29:02 Fix spurious error message when clicking fire notifications
+da67ec79 2026-03-03 08:25:28 Fix fire-realtime API to use persistent names and feature_ids
 638609bd 2026-03-03 08:20:57 Fix fire notification click to use feature_id instead of friendly name
 e3628eeb 2026-03-03 08:17:38 Add complete fire notifications system documentation with examples
 e06490a9 2026-03-03 08:16:38 Add enhanced fire status notifications with movement and boundary analysis
@@ -13,8 +18,3 @@ b9da1d06 2026-03-02 21:15:46 Remove unused fire_nrt data and deprecated scripts
 25033851 2026-03-02 21:12:01 Add fire data flow documentation
 aed2ff7f 2026-03-02 21:05:27 Add documentation for backup and disk cleanup
 f7c78c30 2026-03-02 20:55:17 Fix fire notification click-to-pin functionality
-e3ca9525 2026-03-02 20:21:15 Fix notification labels and parksData reference
-4da8859f 2026-03-02 20:09:16 Add share link support: auto-expand notification group and open dropdown
-9d3fdccb 2026-03-02 20:00:27 Fix fire notification clicks: fetch trajectory and pin like tooltip clicks
-21a50656 2026-03-02 19:52:18 Fix notification share links: wait for parks data to load before processing
-a1e37f58 2026-03-02 19:45:43 Remove confusing (X/Y) count display and increase fire-alerts API limit

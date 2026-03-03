@@ -765,6 +765,21 @@ class DailyFireUpdater:
         """
         log("Step 6b2: Creating notifications for active fire groups...")
         
+        # Priority mapping for sorting
+        def get_priority(status):
+            priority_map = {
+                "Entering": 5,
+                "Approaching": 10,
+                "Transiting": 15,
+                "Active": 40,
+                "Contained": 50,
+                "Leaving": 55,
+                "Gone dark": 60,
+                "Cooling": 70,
+                "Outside": 80
+            }
+            return priority_map.get(status, 100)
+        
         # Query active fire trajectories with their friendly names
         cursor = self.conn.execute("""
             SELECT fg.park_id, fg.feature_id, fg.properties_json, fg.end_date, fgn.friendly_name
@@ -772,14 +787,53 @@ class DailyFireUpdater:
             JOIN fire_group_names fgn ON fg.park_id = fgn.park_id AND fg.feature_id = fgn.feature_id
             WHERE fg.feature_type = 'fire_trajectory'
               AND fg.end_date >= date('now', '-3 days')
-            ORDER BY fg.park_id, fgn.friendly_name
+            ORDER BY fg.end_date DESC
         """)
+        
+        # Collect all groups with their computed priorities
+        all_groups = []
+        
+        for row in cursor:
+            all_groups.append(row)
+        
+        # Sort by priority (lowest number first), then by park_id
+        all_groups_with_priority = []
+        for row in all_groups:
+            park_id, feature_id, props_json, end_date, friendly_name = row
+            props = json.loads(props_json)
+            
+            # Get enhanced status
+            status_emoji, status_text, status_detail = self.analyze_fire_status(props, end_date)
+            priority = get_priority(status_text)
+            
+            all_groups_with_priority.append({
+                'park_id': park_id,
+                'feature_id': feature_id,
+                'friendly_name': friendly_name,
+                'props': props,
+                'end_date': end_date,
+                'status_emoji': status_emoji,
+                'status_text': status_text,
+                'status_detail': status_detail,
+                'priority': priority
+            })
+        
+        # Sort by priority (highest priority first), then by park
+        all_groups_with_priority.sort(key=lambda x: (x['priority'], x['park_id']))
         
         notifications_created = 0
         parks_processed = set()
         
-        for row in cursor:
-            park_id, feature_id, props_json, end_date, friendly_name = row
+        # Create notifications in priority order
+        for group in all_groups_with_priority:
+            park_id = group['park_id']
+            feature_id = group['feature_id']
+            friendly_name = group['friendly_name']
+            props = group['props']
+            status_emoji = group['status_emoji']
+            status_text = group['status_text']
+            status_detail = group['status_detail']
+            
             park_name = self.parks.get(park_id, {}).get('name', park_id)
             
             # Check if notification already exists

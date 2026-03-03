@@ -29,6 +29,86 @@ func getGroupName(index int) string {
 	return fmt.Sprintf("%s-%d", groupNames[baseIdx], cycle)
 }
 
+// analyzeFireStatus determines status, emoji, detail, and priority for a fire group
+func analyzeFireStatus(position string, direction string, speedKmDay, pctInside float64, daysSince, days int) (status, emoji, detail string, priority int) {
+	// Gone dark detection
+	if daysSince >= 3 {
+		return "Gone dark", "🌙", "No detections for 3+ days", 60 // Low priority - investigate
+	}
+	if daysSince >= 2 {
+		return "Cooling", "❄️", "No new fires in 2 days", 70 // Low priority
+	}
+	
+	// Position-based status
+	if position == "contained" {
+		emoji = "📍"
+		status = "Contained"
+		detail = "Fully inside park"
+		priority = 50 // Medium priority
+	} else if position == "entirely_outside" {
+		if pctInside == 0 && speedKmDay > 0 {
+			emoji = "⚠️"
+			status = "Approaching"
+			detail = fmt.Sprintf("Outside, moving %s", direction)
+			if speedKmDay > 2 {
+				priority = 10 // HIGHEST - fast approaching
+				detail += fmt.Sprintf(" at %.1fkm/day (fast)", speedKmDay)
+			} else if speedKmDay > 0.5 {
+				priority = 20 // High - approaching
+				detail += fmt.Sprintf(" at %.1fkm/day", speedKmDay)
+			} else {
+				priority = 30
+				detail += " (slow spread)"
+			}
+		} else {
+			emoji = "🔥"
+			status = "Outside"
+			detail = "Outside park boundary"
+			priority = 80 // Low priority
+		}
+	} else if position == "starts_inside" {
+		emoji = "🚨"
+		status = "Leaving"
+		detail = fmt.Sprintf("Started inside, moving %s toward boundary", direction)
+		priority = 55 // Medium-low
+	} else if position == "ends_inside" {
+		emoji = "⚡"
+		status = "Entering"
+		detail = fmt.Sprintf("Crossing into park from %s", direction)
+		priority = 5 // CRITICAL - just entered
+	} else if position == "transits" {
+		emoji = "🌊"
+		status = "Transiting"
+		detail = fmt.Sprintf("Crossing park boundary, moving %s", direction)
+		priority = 15 // High priority
+	} else {
+		emoji = "🔥"
+		status = "Active"
+		detail = fmt.Sprintf("Moving %s", direction)
+		if pctInside > 50 {
+			priority = 40 // Inside and spreading
+		} else {
+			priority = 60
+		}
+	}
+	
+	// Add velocity info if not already included
+	if speedKmDay > 2 && status != "Approaching" {
+		detail += fmt.Sprintf(" at %.1fkm/day (fast)", speedKmDay)
+		priority -= 10 // Boost priority for fast-moving fires
+	} else if speedKmDay > 0.5 && status != "Approaching" {
+		detail += fmt.Sprintf(" at %.1fkm/day", speedKmDay)
+	} else if speedKmDay > 0 && status != "Approaching" {
+		detail += " (slow spread)"
+	} else if days == 1 && speedKmDay == 0 {
+		detail += " (new detection)"
+	} else if speedKmDay == 0 && days > 1 {
+		detail += " (stationary)"
+	}
+	
+	return status, emoji, detail, priority
+}
+
 // firePoint represents a single fire detection
 type firePoint struct {
 	lat, lon, frp float64
@@ -51,18 +131,21 @@ type FireCluster struct {
 
 // FireGroup represents a tracked fire group
 type FireGroup struct {
-	Name         string                   `json:"name"`
-	FeatureID    string                   `json:"feature_id"`
-	Type         string                   `json:"type"`
-	IsActive     bool                     `json:"is_active"`
-	IsInside     bool                     `json:"is_inside"`
-	Status       string                   `json:"status"`
-	LastSeen     string                   `json:"last_seen"`
-	DaysSince    int                      `json:"days_since_last"`
-	DaysInside   int                      `json:"days_inside"`
-	Metrics      map[string]interface{}   `json:"metrics"`
-	Trajectory   []FireCluster            `json:"trajectory"`
-	PointsInside []map[string]interface{} `json:"points_inside,omitempty"`
+	Name          string                   `json:"name"`
+	FeatureID     string                   `json:"feature_id"`
+	Type          string                   `json:"type"`
+	IsActive      bool                     `json:"is_active"`
+	IsInside      bool                     `json:"is_inside"`
+	Status        string                   `json:"status"`
+	StatusEmoji   string                   `json:"status_emoji"`
+	StatusDetail  string                   `json:"status_detail"`
+	Priority      int                      `json:"priority"`
+	LastSeen      string                   `json:"last_seen"`
+	DaysSince     int                      `json:"days_since_last"`
+	DaysInside    int                      `json:"days_inside"`
+	Metrics       map[string]interface{}   `json:"metrics"`
+	Trajectory    []FireCluster            `json:"trajectory"`
+	PointsInside  []map[string]interface{} `json:"points_inside,omitempty"`
 }
 
 // FireRealtimeResponse is the API response for real-time fire analysis
@@ -1184,25 +1267,31 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
             }
         }
         
-        status := "active"
-        if !isActive {
-            if daysSince > 7 {
-                status = "dormant"
-            } else {
-                status = "cooling"
-            }
+        // Analyze fire status using enhanced logic
+        position := ""
+        if p, ok := props["position"].(string); ok {
+            position = p
+        }
+        pctInside := 0.0
+        if p, ok := props["pct_inside"].(float64); ok {
+            pctInside = p
         }
         
+        status, emoji, detail, priority := analyzeFireStatus(position, direction, avgSpeed, pctInside, daysSince, daysActive)
+        
         group := FireGroup{
-            Name:       displayName,  // Use persistent friendly name from fire_group_names
-            FeatureID:  featureID,    // Include feature_id for stable identification
-            Type:       groupType,
-            IsActive:   isActive,
-            IsInside:   true, // From feature_geometries, assume inside
-            Status:     status,
-            LastSeen:   lastSeen,
-            DaysSince:  daysSince,
-            DaysInside: daysActive,
+            Name:         displayName,  // Use persistent friendly name from fire_group_names
+            FeatureID:    featureID,    // Include feature_id for stable identification
+            Type:         groupType,
+            IsActive:     isActive,
+            IsInside:     true, // From feature_geometries, assume inside
+            Status:       status,
+            StatusEmoji:  emoji,
+            StatusDetail: detail,
+            Priority:     priority,
+            LastSeen:     lastSeen,
+            DaysSince:    daysSince,
+            DaysInside:   daysActive,
             Metrics: map[string]interface{}{
                 "fires":        fires,
                 "days":         daysActive,
@@ -1219,8 +1308,11 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         groupIndex++
     }
     
-    // Sort by last seen date (most recent first)
+    // Sort by priority (lowest number = highest priority), then by last seen
     sort.Slice(groups, func(i, j int) bool {
+        if groups[i].Priority != groups[j].Priority {
+            return groups[i].Priority < groups[j].Priority
+        }
         return groups[i].LastSeen > groups[j].LastSeen
     })
     
