@@ -4895,23 +4895,32 @@
             }
             
             if (featureId) {
-                // Use fire-realtime API which now includes feature_ids and persistent names
+                // Fetch the specific fire directly from features API (no date filters)
                 try {
-                    const response = await fetch(`/api/parks/${parkId}/fire-realtime?pwd=${encodeURIComponent(getPwd())}`);
+                    const response = await fetch(`/api/parks/${parkId}/features?type=fire_trajectory&pwd=${encodeURIComponent(getPwd())}`);
                     if (response.ok) {
-                        const data = await response.json();
-                        // Find the specific group by feature_id
-                        const group = data.groups?.find(g => g.feature_id === featureId);
-                        if (group && group.trajectory && group.trajectory.length > 0) {
-                            // Display the trajectory (this also pins it)
-                            showRealtimeTrajectory(parkId, parkName, groupName || group.name, group.trajectory);
+                        const geojson = await response.json();
+                        // Find the specific feature by feature_id
+                        const feature = geojson.features?.find(f => f.properties?.feature_id === featureId);
+                        
+                        if (feature && feature.geometry && feature.geometry.coordinates && feature.geometry.coordinates.length > 0) {
+                            // Convert GeoJSON coordinates to trajectory format
+                            const trajectory = feature.geometry.coordinates.map(coord => ({
+                                lat: coord[1],
+                                lon: coord[0],
+                                date: null
+                            }));
                             
-                            // Auto-pin the layer
+                            // Display the trajectory
+                            showRealtimeTrajectory(parkId, parkName, groupName, trajectory);
+                            
+                            // Auto-pin the fire_trajectory layer
                             const layerKey = `${parkId}:fire_trajectory`;
                             if (!pinnedLayers.has(layerKey)) {
-                                addPinnedLayer(parkId, 'fire_trajectory', `Fire: ${groupName || group.name}`);
+                                addPinnedLayer(parkId, 'fire_trajectory', `Fire: ${groupName}`);
                             }
                         } else {
+                            console.warn('Fire feature not found:', featureId);
                             showToast(`Fire group ${groupName} not found`, 'error');
                         }
                     } else {
