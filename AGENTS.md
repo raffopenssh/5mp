@@ -237,10 +237,34 @@ URL params encode full UI state for reproducible tests:
 | `pinned` | `CAF_Chinko:fire_trajectory` | Pin layers |
 | `starred_parks` | `CAF_Chinko,COD_Virunga` | Star parks |
 | `notif` | `1` | Open notification dropdown |
-| `notif_fire` | `BEN_Pendjari:grp_abc123` | Zoom to fire + pin |
+| `notif_fire` | `CAF_Chinko:2026_grp_2caaa51b` | Zoom to fire + pin (see below) |
 | `notif_upload` | `10.52,18.19` | Zoom to patrol location |
 | `notif_pub` | `CAF_Chinko` | Open popup with research |
 | `notif_download` | `123` | Download MBTiles file |
+
+#### Fire Notification Share Links
+
+Format: `?notif_fire=PARK_ID:YEAR_grp_HASH`
+
+Example: `?notif_fire=CAF_Chinko:2026_grp_2caaa51b`
+
+This will:
+1. Open the notification dropdown
+2. Expand the fire notification group for that park
+3. Load the fire trajectory from features API
+4. Look up friendly name from fire-realtime API (e.g., "Alpha-2")
+5. Display trajectory on map and zoom to it
+6. Pin the fire layer with friendly name
+
+**To get the correct format:**
+```bash
+# Query notifications table
+sqlite3 db.sqlite3 "SELECT park_id, reference_id FROM notifications WHERE notification_type = 'fire_alert' LIMIT 5"
+# Returns: CAF_Chinko|CAF_Chinko_2026_grp_2caaa51b
+
+# Format for share link: parkId:year_grp_hash
+# Remove park prefix: CAF_Chinko:2026_grp_2caaa51b
+```
 
 ### Playwright (Full UI)
 

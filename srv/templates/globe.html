@@ -4904,6 +4904,28 @@
                         const feature = geojson.features?.find(f => f.properties?.feature_id === featureId);
                         
                         if (feature && feature.geometry && feature.geometry.coordinates && feature.geometry.coordinates.length > 0) {
+                            // If groupName not provided, look it up from fire-realtime API
+                            let displayName = groupName;
+                            if (!displayName) {
+                                try {
+                                    const realtimeResponse = await fetch(`/api/parks/${parkId}/fire-realtime?pwd=${encodeURIComponent(getPwd())}&days=28`);
+                                    if (realtimeResponse.ok) {
+                                        const realtimeData = await realtimeResponse.json();
+                                        const fireGroup = realtimeData.groups?.find(g => g.feature_id === featureId);
+                                        if (fireGroup) {
+                                            displayName = fireGroup.name;
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.warn('Could not fetch friendly name:', e);
+                                }
+                            }
+                            
+                            // Fallback to feature_id if no friendly name found
+                            if (!displayName) {
+                                displayName = featureId.split('_').pop(); // Use short ID
+                            }
+                            
                             // Convert GeoJSON coordinates to trajectory format
                             const trajectory = feature.geometry.coordinates.map(coord => ({
                                 lat: coord[1],
@@ -4912,16 +4934,16 @@
                             }));
                             
                             // Display the trajectory
-                            showRealtimeTrajectory(parkId, parkName, groupName, trajectory);
+                            showRealtimeTrajectory(parkId, parkName, displayName, trajectory);
                             
                             // Auto-pin the fire_trajectory layer
                             const layerKey = `${parkId}:fire_trajectory`;
                             if (!pinnedLayers.has(layerKey)) {
-                                addPinnedLayer(parkId, 'fire_trajectory', `Fire: ${groupName}`);
+                                addPinnedLayer(parkId, 'fire_trajectory', `Fire: ${displayName}`);
                             }
                         } else {
                             console.warn('Fire feature not found:', featureId);
-                            showToast(`Fire group ${groupName} not found`, 'error');
+                            showToast(`Fire group not found`, 'error');
                         }
                     } else {
                         showToast('Failed to load fire trajectory', 'error');
@@ -5158,8 +5180,21 @@
             // Fire alert: notif_fire=BEN_Pendjari:BEN_Pendjari_2026_grp_abc123
             const fireParam = params.get('notif_fire');
             if (fireParam) {
-                const [parkId, groupName] = fireParam.split(':');
-                if (parkId && groupName) {
+                const [parkId, shortGroupId] = fireParam.split(':');
+                if (parkId && shortGroupId) {
+                    // Construct full feature_id: parkId_year_shortGroupId
+                    // Extract year from shortGroupId (e.g., grp_abc123 or if full feature_id passed)
+                    let featureId = shortGroupId;
+                    if (!shortGroupId.includes('_')) {
+                        // If shortGroupId doesn't contain underscore, it's malformed
+                        console.error('Invalid fire group ID format:', shortGroupId);
+                        return;
+                    }
+                    // Check if it's already a full feature_id (contains parkId prefix)
+                    if (!shortGroupId.startsWith(parkId)) {
+                        // It's a short ID like "2026_grp_abc123", construct full ID
+                        featureId = `${parkId}_${shortGroupId}`;
+                    }
                     // Wait for map to be ready
                     const waitForMap = setInterval(() => {
                         if (map && map.loaded && map.loaded()) {
@@ -5185,8 +5220,8 @@
                                     }
                                 }
                             }, 500);
-                            // Handle the click
-                            handleFireNotificationClick(parkId, groupName, {stopPropagation: () => {}});
+                            // Handle the click with correct parameters: (parkId, featureId, groupName, event)
+                            handleFireNotificationClick(parkId, featureId, null, null);
                         }
                     }, 100);
                     // Timeout after 10 seconds
