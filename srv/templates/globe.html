@@ -11151,10 +11151,7 @@
         
         // Generate park section with full nested data
         function renderParkFull(park, fullData) {
-            // Check if park should be included based on report config
-            if (!shouldIncludePark(fullData)) {
-                return '';
-            }
+            // ALWAYS render park header - never filter entire parks, only skip empty sections
             
             const fire = fullData?.fire;
             const deforest = fullData?.deforestation;
@@ -11291,7 +11288,7 @@
         return `<!DOCTYPE html>
 <html><head>
 <meta charset="UTF-8">
-<title>5MP Conservation Report - ${now.toLocaleDateString()}</title>
+<title>5MP Conservation Report [${reportConfig.preset.toUpperCase()}] - ${now.toLocaleDateString()}</title>
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 1000px; margin: 0 auto; padding: 40px 20px; background: #1a1a1a; color: #e0e0e0; }
 h1 { color: #22c55e; border-bottom: 2px solid #22c55e; padding-bottom: 10px; page-break-after: avoid; }
@@ -11336,7 +11333,7 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
 }
 </style>
 </head><body>
-<h1>★ 5MP Conservation Monitoring Report</h1>
+<h1>★ 5MP Conservation Monitoring Report <span style="font-size:16px;color:#888;font-weight:400;">[${reportConfig.preset.toUpperCase()} Profile]</span></h1>
 <!-- ==== QUICK WIN #3: Prominent Date Range ==== -->
 <div style="background:rgba(34,197,94,0.15);border:2px solid #22c55e;border-radius:8px;padding:16px 24px;margin-bottom:20px;text-align:center;">
     <div style="font-size:20px;font-weight:700;color:#22c55e;margin-bottom:4px;">
@@ -14476,29 +14473,16 @@ ${starredItems.narratives.map(n => {
                     </div>
                 </div>
 
-                <!-- Filters -->
+                <!-- Options -->
                 <div class="report-builder-section">
-                    <div class="report-builder-section-title">🔍 Filters & Thresholds</div>
+                    <div class="report-builder-section-title">⚙️ Report Options</div>
                     <div class="report-builder-filter-group">
-                        <div class="report-builder-filter-item">
+                        <div class="report-builder-filter-item" style="margin-bottom:16px;">
                             <input type="checkbox" id="filter-skip-zeros" checked onchange="updateReportConfig()">
-                            <label for="filter-skip-zeros">Skip parks with no data</label>
+                            <label for="filter-skip-zeros" style="font-weight:500;">Hide empty sections (parks always shown, only sections without data hidden)</label>
                         </div>
-                        <div class="report-builder-filter-item">
-                            <input type="checkbox" id="filter-threats-only" onchange="updateReportConfig()">
-                            <label for="filter-threats-only">Show only high/moderate threat parks</label>
-                        </div>
-                        <div class="report-builder-filter-item">
-                            <label for="filter-min-fires">Minimum fires:</label>
-                            <input type="number" id="filter-min-fires" value="0" min="0" onchange="updateReportConfig()">
-                        </div>
-                        <div class="report-builder-filter-item">
-                            <label for="filter-min-settlements">Minimum settlements:</label>
-                            <input type="number" id="filter-min-settlements" value="0" min="0" onchange="updateReportConfig()">
-                        </div>
-                        <div class="report-builder-filter-item">
-                            <label for="filter-min-deforestation">Minimum deforestation (km²):</label>
-                            <input type="number" id="filter-min-deforestation" value="0" min="0" step="0.1" onchange="updateReportConfig()">
+                        <div style="color:#888;font-size:12px;padding:8px;background:rgba(255,255,255,0.03);border-radius:6px;">
+                            ℹ️ Note: Parks are never filtered out entirely - only individual sections with no data can be hidden.
                         </div>
                     </div>
                 </div>
