@@ -4995,7 +4995,7 @@
                             
                             // Auto-pin the fire_trajectory layer
                             const layerKey = `${parkId}:fire_trajectory`;
-                            if (!pinnedLayers.has(layerKey)) {
+                            if (!pinnedLayers[layerKey]) {
                                 addPinnedLayer(parkId, 'fire_trajectory', `Fire: ${displayName}`);
                             }
                         } else {
