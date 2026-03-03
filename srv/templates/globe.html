@@ -2620,10 +2620,12 @@
                 if (typeof paClickHandlerInitialized !== 'undefined') paClickHandlerInitialized = true;
             }
 
-            // Initialize country search when areas data loads
+            // Initialize country search and restore URL params when areas data loads
             map.on('sourcedata', function(e) {
-                if (e.sourceId === 'areas' && e.isSourceLoaded) {
+                if (e.sourceId === 'areas' && e.isSourceLoaded && !window._areasLoaded) {
+                    window._areasLoaded = true;
                     initCountrySearch();
+                    restoreStarredItemsFromURL();
                 }
             });
             map.on('mouseenter', 'grid-cells', function() { map.getCanvas().style.cursor = 'pointer'; });
@@ -4837,6 +4839,123 @@
         // Country search functions
         var countryList = [];
         var countryBboxCache = {};
+        
+        // Restore starred items from URL parameters (called after areas data loads)
+        async function restoreStarredItemsFromURL() {
+            if (!window._urlRestoreParams) {
+                console.log('[URL Restore] No params to restore');
+                return;
+            }
+            
+            console.log('[URL Restore] Starting starred items restoration...');
+            const params = window._urlRestoreParams;
+            
+            // Fetch areas data for lookups
+            if (!window._cachedAreasGeoJSON) {
+                try {
+                    const resp = await fetch(`/api/areas?pwd=${encodeURIComponent(getPwd())}`);
+                    if (resp.ok) {
+                        window._cachedAreasGeoJSON = await resp.json();
+                        console.log(`[URL Restore] Loaded ${window._cachedAreasGeoJSON.features?.length || 0} areas`);
+                    }
+                } catch (e) {
+                    console.error('[URL Restore] Failed to fetch areas:', e);
+                    return;
+                }
+            }
+            
+            const features = window._cachedAreasGeoJSON?.features || [];
+            const parksToLoad = [];
+            
+            // Restore starred parks
+            if (params.parks) {
+                const parkIds = params.parks.split(',');
+                console.log(`[URL Restore] Restoring ${parkIds.length} parks`);
+                
+                parkIds.forEach(parkId => {
+                    const feature = features.find(f => f.properties?.id === parkId);
+                    if (feature && !isStarred('parks', parkId)) {
+                        const props = feature.properties;
+                        const center = props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null;
+                        toggleStar('parks', { 
+                            id: props.id, 
+                            name: props.name, 
+                            country: props.country,
+                            bbox: props.bbox,
+                            center: center
+                        });
+                        parksToLoad.push(parkId);
+                        console.log(`[URL Restore] ✓ Starred park: ${props.name}`);
+                    } else if (!feature) {
+                        console.warn(`[URL Restore] Park not found: ${parkId}`);
+                    }
+                });
+            }
+            
+            // Restore starred countries
+            if (params.countries) {
+                const countryNames = params.countries.split(',');
+                console.log(`[URL Restore] Restoring ${countryNames.length} countries`);
+                countryNames.forEach(countryName => {
+                    if (!isStarred('countries', countryName)) {
+                        toggleStar('countries', { name: countryName });
+                        console.log(`[URL Restore] ✓ Starred country: ${countryName}`);
+                    }
+                });
+            }
+            
+            // Restore starred bboxes
+            if (params.bboxes) {
+                const bboxStrs = params.bboxes.split(',');
+                console.log(`[URL Restore] Restoring ${bboxStrs.length} bboxes`);
+                bboxStrs.forEach(bboxStr => {
+                    const bboxCoords = bboxStr.split(':').map(parseFloat);
+                    if (bboxCoords.length === 4 && bboxCoords.every(c => !isNaN(c))) {
+                        const bboxKey = bboxCoords.join(',');
+                        if (!isStarred('bboxes', bboxKey)) {
+                            toggleStar('bboxes', { bbox: bboxCoords, name: 'Saved Area' });
+                            if (!window._pendingBboxLoads) window._pendingBboxLoads = [];
+                            window._pendingBboxLoads.push({ bbox: bboxCoords, name: 'Saved Area' });
+                            console.log(`[URL Restore] ✓ Starred bbox: ${bboxKey}`);
+                        }
+                    }
+                });
+            }
+            
+            // Restore starred narratives
+            if (params.narratives) {
+                const narratives = params.narratives.split(',');
+                console.log(`[URL Restore] Restoring ${narratives.length} narratives`);
+                narratives.forEach(narr => {
+                    const [parkId, narrType] = narr.split(':');
+                    if (parkId && narrType) {
+                        const feature = features.find(f => f.properties?.id === parkId);
+                        const parkName = feature?.properties?.name || parkId;
+                        if (!starredItems.narratives.some(n => n.park_id === parkId && n.type === narrType)) {
+                            starredItems.narratives.push({ park_id: parkId, park_name: parkName, type: narrType });
+                            console.log(`[URL Restore] ✓ Starred narrative: ${parkName} - ${narrType}`);
+                        }
+                    }
+                });
+            }
+            
+            // Update UI
+            updateStarBadge();
+            renderStarredItems();
+            
+            // Auto-load report data for restored parks
+            if (parksToLoad.length > 0 || window._pendingBboxLoads?.length > 0) {
+                console.log(`[URL Restore] Starting auto-load for ${parksToLoad.length} parks and ${window._pendingBboxLoads?.length || 0} bboxes...`);
+                setTimeout(() => {
+                    parksToLoad.forEach(parkId => prefetchParkReportData(parkId));
+                    if (window._pendingBboxLoads) {
+                        window._pendingBboxLoads.forEach(bbox => prefetchBboxReportData(bbox.bbox, bbox.name));
+                    }
+                }, 500);
+            }
+            
+            console.log('[URL Restore] ✓ Complete');
+        }
         
         function initCountrySearch() {
             if (!map || !map.getSource('areas')) return;
@@ -9238,7 +9357,20 @@
             }
         }
         
-        // Load bbox reports
+        // Process pending bbox loads from URL (critical for share links)
+        if (window._pendingBboxLoads && window._pendingBboxLoads.length > 0) {
+            console.log(`[Report] Processing ${window._pendingBboxLoads.length} pending bbox loads...`);
+            for (const bbox of window._pendingBboxLoads) {
+                const bboxKey = bbox.bbox.join(',');
+                if (!reportDataCache.bboxes.has(bboxKey) && !reportDataCache.loading.has('bbox:' + bboxKey)) {
+                    prefetchBboxReportData(bbox.bbox, bbox.name || 'Area');
+                    loadingCount++;
+                }
+            }
+            window._pendingBboxLoads = []; // Clear after processing
+        }
+        
+        // Load bbox reports from starred items
         for (const bbox of starredItems.bboxes) {
             const bboxKey = bbox.bbox.join(',');
             if (!reportDataCache.bboxes.has(bboxKey) && !reportDataCache.loading.has('bbox:' + bboxKey)) {
@@ -10411,11 +10543,7 @@
             threat: true
         },
         filters: {
-            skipZeros: true,
-            threatsOnly: false,
-            minFires: 0,
-            minSettlements: 0,
-            minDeforestation: 0
+            skipZeros: true
         },
         detailLevel: 'standard',
         preset: 'auto' // 'auto', 'quick', 'donor', 'scientific', 'custom'
@@ -10440,26 +10568,45 @@
     
     // Determine smart default configuration based on current selection
     function determineSmartDefault() {
-        // Count parks
+        // Count parks and gather comprehensive data
         let parkCount = starredItems.parks.length;
+        const allParks = [...starredItems.parks];
+        
+        // Include parks from bboxes
         for (const bbox of starredItems.bboxes) {
             const bboxKey = bbox.bbox.join(',');
             const bboxData = reportDataCache.bboxes.get(bboxKey);
             if (bboxData?.parks) {
                 parkCount += bboxData.parks.length;
+                allParks.push(...bboxData.parks);
             }
         }
         
-        // Count total data points from cache
-        let totalFires = 0, totalSettlements = 0, totalDeforest = 0;
+        // Count total data points from cache with more detail
+        let totalFires = 0, totalSettlements = 0, totalDeforest = 0, totalSpecies = 0, totalPatrols = 0;
+        let parksWithData = 0, parksWithThreats = 0, parksWithBio = 0;
+        let maxFiresInPark = 0, maxSettlementsInPark = 0;
         
         // From starred parks
         for (const park of starredItems.parks) {
             const data = reportDataCache.parks.get(park.id);
             if (data) {
-                totalFires += data.fire?.total_fires || 0;
-                totalSettlements += data.settlement?.settlement_count || 0;
-                totalDeforest += data.deforestation?.total_loss_km2 || 0;
+                parksWithData++;
+                const fires = data.fire?.total_fires || 0;
+                const settlements = data.settlement?.settlement_count || 0;
+                const deforest = data.deforestation?.total_loss_km2 || 0;
+                
+                totalFires += fires;
+                totalSettlements += settlements;
+                totalDeforest += deforest;
+                totalSpecies += data.species?.total_count || 0;
+                totalPatrols += data.patrol?.total_patrols || 0;
+                
+                maxFiresInPark = Math.max(maxFiresInPark, fires);
+                maxSettlementsInPark = Math.max(maxSettlementsInPark, settlements);
+                
+                if (fires > 0 || settlements > 0 || deforest > 0) parksWithThreats++;
+                if (data.species?.total_count > 0) parksWithBio++;
             }
         }
         
@@ -10469,19 +10616,47 @@
             const bboxData = reportDataCache.bboxes.get(bboxKey);
             if (bboxData?.parks) {
                 for (const bboxPark of bboxData.parks) {
-                    totalFires += bboxPark.fire?.total_fires || 0;
-                    totalSettlements += bboxPark.settlement?.settlement_count || 0;
-                    totalDeforest += bboxPark.deforestation?.total_loss_km2 || 0;
+                    const data = bboxPark.reportData || bboxPark;
+                    parksWithData++;
+                    const fires = data.fire?.total_fires || 0;
+                    const settlements = data.settlement?.settlement_count || 0;
+                    const deforest = data.deforestation?.total_loss_km2 || 0;
+                    
+                    totalFires += fires;
+                    totalSettlements += settlements;
+                    totalDeforest += deforest;
+                    totalSpecies += data.species?.total_count || 0;
+                    totalPatrols += data.patrol?.total_patrols || 0;
+                    
+                    maxFiresInPark = Math.max(maxFiresInPark, fires);
+                    maxSettlementsInPark = Math.max(maxSettlementsInPark, settlements);
+                    
+                    if (fires > 0 || settlements > 0 || deforest > 0) parksWithThreats++;
+                    if (data.species?.total_count > 0) parksWithBio++;
                 }
             }
         }
         
-        // Decision logic
+        // Advanced decision logic - truly intelligent wizard
+        const stats = {
+            parks: parkCount,
+            parksWithData: parksWithData,
+            fires: totalFires,
+            settlements: totalSettlements,
+            deforestation: totalDeforest.toFixed(2),
+            species: totalSpecies,
+            patrols: totalPatrols,
+            maxFiresInPark: maxFiresInPark,
+            maxSettlementsInPark: maxSettlementsInPark,
+            parksWithThreats: parksWithThreats,
+            parksWithBio: parksWithBio
+        };
+        
         if (parkCount === 0) {
             return {
                 profile: 'donor',
-                reason: 'no parks selected - using balanced default',
-                stats: { parks: 0, fires: 0, settlements: 0, deforestation: 0 },
+                reason: 'No parks selected - using balanced default',
+                stats: stats,
                 sections: {
                     fire: true,
                     deforestation: true,
@@ -10493,15 +10668,17 @@
                     patrol: true,
                     threat: true
                 },
-                filters: { skipZeros: true, threatsOnly: false, minFires: 0, minSettlements: 0, minDeforestation: 0 },
+                filters: { skipZeros: true },
                 detailLevel: 'standard'
             };
-        } else if (parkCount === 1) {
-            // Single park: show everything
+        }
+        
+        // Single park: comprehensive scientific profile
+        if (parkCount === 1) {
             return {
                 profile: 'scientific',
-                reason: 'single park - comprehensive view recommended',
-                stats: { parks: parkCount, fires: totalFires, settlements: totalSettlements, deforestation: totalDeforest.toFixed(2) },
+                reason: 'Single park - comprehensive scientific view with all data',
+                stats: stats,
                 sections: {
                     fire: true,
                     deforestation: true,
@@ -10513,15 +10690,71 @@
                     patrol: true,
                     threat: true
                 },
-                filters: { skipZeros: false, threatsOnly: false, minFires: 0, minSettlements: 0, minDeforestation: 0 },
+                filters: { skipZeros: false },  // Show everything
                 detailLevel: 'comprehensive'
             };
-        } else if (parkCount >= 20) {
-            // Many parks: high-level summary
+        }
+        
+        // 2-5 parks: detailed donor report
+        if (parkCount <= 5) {
+            // Check if this is a biodiversity-focused selection
+            const bioFocused = parksWithBio >= parkCount * 0.5 && totalSpecies > 100;
+            const threatFocused = parksWithThreats >= parkCount * 0.7;
+            
+            return {
+                profile: 'donor',
+                reason: `${parkCount} parks - ${bioFocused ? 'biodiversity-rich' : threatFocused ? 'threat-focused' : 'balanced'} detailed report`,
+                stats: stats,
+                sections: {
+                    fire: true,
+                    deforestation: true,
+                    settlement: true,
+                    biodiversity: bioFocused || totalSpecies > 50,
+                    climate: bioFocused,
+                    publications: bioFocused || parkCount <= 3,
+                    infrastructure: threatFocused,
+                    patrol: true,
+                    threat: true
+                },
+                filters: { skipZeros: threatFocused },  // Hide empty only if threat-focused
+                detailLevel: 'standard'
+            };
+        }
+        
+        // 6-15 parks: standard donor report with grouping
+        if (parkCount <= 15) {
+            const avgFiresPerPark = totalFires / parkCount;
+            const highActivity = avgFiresPerPark > 1000 || maxSettlementsInPark > 20;
+            
+            return {
+                profile: 'donor',
+                reason: `${parkCount} parks - ${highActivity ? 'high-activity' : 'standard'} donor report with grouped summaries`,
+                stats: stats,
+                sections: {
+                    fire: true,
+                    deforestation: true,
+                    settlement: true,
+                    biodiversity: parksWithBio >= 5,
+                    climate: false,  // Skip for medium-sized reports
+                    publications: false,
+                    infrastructure: highActivity,
+                    patrol: true,
+                    threat: true
+                },
+                filters: { skipZeros: true },
+                detailLevel: highActivity ? 'summary' : 'standard'
+            };
+        }
+        
+        // 16-30 parks: streamlined summary
+        if (parkCount <= 30) {
+            const avgFiresPerPark = totalFires / parkCount;
+            const veryHighActivity = avgFiresPerPark > 2000 || totalSettlements > 150;
+            
             return {
                 profile: 'quick',
-                reason: `${parkCount} parks - concise summary recommended`,
-                stats: { parks: parkCount, fires: totalFires, settlements: totalSettlements, deforestation: totalDeforest.toFixed(2) },
+                reason: `${parkCount} parks - ${veryHighActivity ? 'crisis-level activity' : 'regional overview'} with concise summaries`,
+                stats: stats,
                 sections: {
                     fire: true,
                     deforestation: true,
@@ -10529,54 +10762,34 @@
                     biodiversity: false,
                     climate: false,
                     publications: false,
-                    infrastructure: false,
-                    patrol: true,
+                    infrastructure: veryHighActivity,
+                    patrol: totalPatrols > 50,
                     threat: true
                 },
-                filters: { skipZeros: true, threatsOnly: false, minFires: 100, minSettlements: 5, minDeforestation: 1 },
+                filters: { skipZeros: true },
                 detailLevel: 'summary'
             };
-        } else if (totalFires > 50000 || totalSettlements > 100) {
-            // Lots of data: grouped view
-            return {
-                profile: 'donor',
-                reason: 'high data volume - grouped summaries recommended',
-                stats: { parks: parkCount, fires: totalFires, settlements: totalSettlements, deforestation: totalDeforest.toFixed(2) },
-                sections: {
-                    fire: true,
-                    deforestation: true,
-                    settlement: true,
-                    biodiversity: true,
-                    climate: true,
-                    publications: true,
-                    infrastructure: false,
-                    patrol: true,
-                    threat: true
-                },
-                filters: { skipZeros: true, threatsOnly: false, minFires: 50, minSettlements: 3, minDeforestation: 0.5 },
-                detailLevel: 'standard'
-            };
-        } else {
-            // Standard case: donor report
-            return {
-                profile: 'donor',
-                reason: `${parkCount} parks - balanced detail recommended`,
-                stats: { parks: parkCount, fires: totalFires, settlements: totalSettlements, deforestation: totalDeforest.toFixed(2) },
-                sections: {
-                    fire: true,
-                    deforestation: true,
-                    settlement: true,
-                    biodiversity: true,
-                    climate: true,
-                    publications: true,
-                    infrastructure: false,
-                    patrol: true,
-                    threat: true
-                },
-                filters: { skipZeros: true, threatsOnly: false, minFires: 0, minSettlements: 0, minDeforestation: 0 },
-                detailLevel: 'standard'
-            };
         }
+        
+        // 31+ parks: executive summary only
+        return {
+            profile: 'quick',
+            reason: `${parkCount} parks - executive summary optimized for large-scale monitoring`,
+            stats: stats,
+            sections: {
+                fire: true,
+                deforestation: true,
+                settlement: true,
+                biodiversity: false,
+                climate: false,
+                publications: false,
+                infrastructure: false,
+                patrol: false,
+                threat: true
+            },
+            filters: { skipZeros: true },
+            detailLevel: 'summary'
+        };
     }
     
     // Open report builder modal
@@ -10631,10 +10844,6 @@
         document.getElementById('section-threat').checked = reportConfig.sections.threat || true;
         
         document.getElementById('filter-skip-zeros').checked = reportConfig.filters.skipZeros;
-        document.getElementById('filter-threats-only').checked = reportConfig.filters.threatsOnly;
-        document.getElementById('filter-min-fires').value = reportConfig.filters.minFires;
-        document.getElementById('filter-min-settlements').value = reportConfig.filters.minSettlements;
-        document.getElementById('filter-min-deforestation').value = reportConfig.filters.minDeforestation;
         
         document.getElementById('detail-level').value = reportConfig.detailLevel;
         
@@ -10674,10 +10883,6 @@
         document.getElementById('section-threat').checked = reportConfig.sections.threat;
         
         document.getElementById('filter-skip-zeros').checked = reportConfig.filters.skipZeros;
-        document.getElementById('filter-threats-only').checked = reportConfig.filters.threatsOnly;
-        document.getElementById('filter-min-fires').value = reportConfig.filters.minFires;
-        document.getElementById('filter-min-settlements').value = reportConfig.filters.minSettlements;
-        document.getElementById('filter-min-deforestation').value = reportConfig.filters.minDeforestation;
         
         document.getElementById('detail-level').value = reportConfig.detailLevel;
         
@@ -10726,10 +10931,6 @@
         reportConfig.sections.threat = document.getElementById('section-threat').checked;
         
         reportConfig.filters.skipZeros = document.getElementById('filter-skip-zeros').checked;
-        reportConfig.filters.threatsOnly = document.getElementById('filter-threats-only').checked;
-        reportConfig.filters.minFires = parseInt(document.getElementById('filter-min-fires').value) || 0;
-        reportConfig.filters.minSettlements = parseInt(document.getElementById('filter-min-settlements').value) || 0;
-        reportConfig.filters.minDeforestation = parseFloat(document.getElementById('filter-min-deforestation').value) || 0;
         
         reportConfig.detailLevel = document.getElementById('detail-level').value;
         
@@ -10751,6 +10952,37 @@
         showToast('⚙ Report configuration applied');
     }
     
+    // Apply the smart default recommendation
+    function applySmartDefault() {
+        if (!window.currentSmartDefault) return;
+        
+        const sd = window.currentSmartDefault;
+        
+        // Apply smart configuration
+        Object.assign(reportConfig.sections, sd.sections);
+        Object.assign(reportConfig.filters, sd.filters);
+        reportConfig.detailLevel = sd.detailLevel;
+        reportConfig.preset = sd.profile;
+        
+        // Update UI
+        document.getElementById('section-fire').checked = reportConfig.sections.fire;
+        document.getElementById('section-deforestation').checked = reportConfig.sections.deforestation;
+        document.getElementById('section-settlement').checked = reportConfig.sections.settlement;
+        document.getElementById('section-biodiversity').checked = reportConfig.sections.biodiversity;
+        document.getElementById('section-climate').checked = reportConfig.sections.climate;
+        document.getElementById('section-publications').checked = reportConfig.sections.publications;
+        document.getElementById('section-infrastructure').checked = reportConfig.sections.infrastructure;
+        document.getElementById('section-patrol').checked = reportConfig.sections.patrol;
+        document.getElementById('section-threat').checked = reportConfig.sections.threat || true;
+        
+        document.getElementById('filter-skip-zeros').checked = reportConfig.filters.skipZeros;
+        document.getElementById('detail-level').value = reportConfig.detailLevel;
+        
+        updateCheckboxStates();
+        
+        showToast(`✨ Applied ${sd.profile.toUpperCase()} profile: ${sd.reason}`);
+    }
+    
     // Apply preset configuration
     function applyPreset(preset) {
         switch (preset) {
@@ -10768,11 +11000,7 @@
                     threat: true
                 };
                 reportConfig.filters = {
-                    skipZeros: true,
-                    threatsOnly: false,
-                    minFires: 0,
-                    minSettlements: 0,
-                    minDeforestation: 0
+                    skipZeros: true
                 };
                 reportConfig.detailLevel = 'summary';
                 reportConfig.preset = 'quick';
@@ -10792,11 +11020,7 @@
                     threat: true
                 };
                 reportConfig.filters = {
-                    skipZeros: true,
-                    threatsOnly: false,
-                    minFires: 0,
-                    minSettlements: 0,
-                    minDeforestation: 0
+                    skipZeros: true
                 };
                 reportConfig.detailLevel = 'standard';
                 reportConfig.preset = 'donor';
@@ -10816,11 +11040,7 @@
                     threat: true
                 };
                 reportConfig.filters = {
-                    skipZeros: false,
-                    threatsOnly: false,
-                    minFires: 0,
-                    minSettlements: 0,
-                    minDeforestation: 0
+                    skipZeros: false
                 };
                 reportConfig.detailLevel = 'comprehensive';
                 reportConfig.preset = 'scientific';
@@ -10844,10 +11064,6 @@
         document.getElementById('section-threat').checked = reportConfig.sections.threat;
         
         document.getElementById('filter-skip-zeros').checked = reportConfig.filters.skipZeros;
-        document.getElementById('filter-threats-only').checked = reportConfig.filters.threatsOnly;
-        document.getElementById('filter-min-fires').value = reportConfig.filters.minFires;
-        document.getElementById('filter-min-settlements').value = reportConfig.filters.minSettlements;
-        document.getElementById('filter-min-deforestation').value = reportConfig.filters.minDeforestation;
         
         document.getElementById('detail-level').value = reportConfig.detailLevel;
         
@@ -10861,22 +11077,19 @@
         // Check if section is enabled
         if (!reportConfig.sections[sectionName]) return false;
         
-        // Apply thresholds
+        // Apply skipZeros filter
         if (sectionName === 'fire') {
             const fireCount = data?.fire?.total_fires || 0;
-            if (fireCount < reportConfig.filters.minFires) return false;
             if (reportConfig.filters.skipZeros && fireCount === 0) return false;
         }
         
         if (sectionName === 'deforestation') {
             const deforestKm2 = data?.deforestation?.total_loss_km2 || data?.stats?.deforestation?.total_loss_km2 || 0;
-            if (deforestKm2 < reportConfig.filters.minDeforestation) return false;
             if (reportConfig.filters.skipZeros && deforestKm2 === 0) return false;
         }
         
         if (sectionName === 'settlement') {
             const settleCount = data?.settlement?.settlement_count || data?.stats?.settlement?.settlement_count || 0;
-            if (settleCount < reportConfig.filters.minSettlements) return false;
             if (reportConfig.filters.skipZeros && settleCount === 0) return false;
         }
         
@@ -10894,31 +11107,23 @@
     
     // Helper function to check if park should be included at all
     function shouldIncludePark(data) {
-        // Check threat level filter
-        if (reportConfig.filters.threatsOnly) {
-            const threat = calculateThreatLevel(data);
-            if (threat.level !== 'HIGH' && threat.level !== 'MODERATE') {
-                return false;
-            }
-        }
-        
         // Check if any enabled section has data
         if (reportConfig.filters.skipZeros) {
             let hasData = false;
             
             if (reportConfig.sections.fire) {
                 const fireCount = data?.fire?.total_fires || 0;
-                if (fireCount >= reportConfig.filters.minFires) hasData = true;
+                if (fireCount > 0) hasData = true;
             }
             
             if (reportConfig.sections.deforestation) {
                 const deforestKm2 = data?.deforestation?.total_loss_km2 || data?.stats?.deforestation?.total_loss_km2 || 0;
-                if (deforestKm2 >= reportConfig.filters.minDeforestation) hasData = true;
+                if (deforestKm2 > 0) hasData = true;
             }
             
             if (reportConfig.sections.settlement) {
                 const settleCount = data?.settlement?.settlement_count || data?.stats?.settlement?.settlement_count || 0;
-                if (settleCount >= reportConfig.filters.minSettlements) hasData = true;
+                if (settleCount > 0) hasData = true;
             }
             
             if (reportConfig.sections.biodiversity && (data?.species?.total_species > 0 || data?.species?.species?.length > 0)) hasData = true;
@@ -13974,60 +14179,36 @@ ${starredItems.narratives.map(n => {
             }, 2000);
         }
         
-        // Restore starred items from URL
-        const starredParks = params.get('starred_parks');
-        if (starredParks) {
-            const parkIds = [];
-            starredParks.split(',').forEach(parkId => {
-                const park = (window.keystoneAreas || []).find(p => p.id === parkId);
-                if (park && !isStarred('parks', parkId)) {
-                    toggleStar('parks', { id: park.id, name: park.name, country: park.country, bbox: park.bbox, center: park.center });
-                    parkIds.push(parkId);
-                }
-            });
-            
-            // Auto-prefetch report data for starred parks from URL
-            if (parkIds.length > 0) {
-                console.log(`[Report] Auto-prefetching data for ${parkIds.length} parks from URL...`);
-                setTimeout(() => {
-                    parkIds.forEach(parkId => prefetchParkReportData(parkId));
-                }, 2000);
-            }
+        // Store URL params for later restoration (after map loads)
+        const urlParks = params.get('starred_parks');
+        const urlBboxes = params.get('starred_bboxes');
+        const urlCountries = params.get('starred_countries');
+        const urlNarratives = params.get('starred_narratives');
+        
+        // If any starred params exist in URL, clear existing starred items
+        // This ensures share links work correctly
+        if (urlParks || urlBboxes || urlCountries || urlNarratives) {
+            console.log('[URL Restore] Clearing existing starred items (share link detected)');
+            starredItems.parks = [];
+            starredItems.bboxes = [];
+            starredItems.countries = [];
+            starredItems.narratives = [];
+            reportDataCache.parks.clear();
+            reportDataCache.bboxes.clear();
+            sessionStorage.removeItem('starredItems');
         }
         
-        const starredCountries = params.get('starred_countries');
-        if (starredCountries) {
-            starredCountries.split(',').forEach(countryName => {
-                if (!isStarred('countries', countryName)) {
-                    toggleStar('countries', { name: countryName });
-                }
-            });
-        }
+        window._urlRestoreParams = {
+            parks: urlParks,
+            bboxes: urlBboxes,
+            countries: urlCountries,
+            narratives: urlNarratives
+        };
         
-        const starredBboxes = params.get('starred_bboxes');
-        if (starredBboxes) {
-            const bboxes = [];
-            starredBboxes.split(',').forEach(bboxStr => {
-                const bboxCoords = bboxStr.split(':').map(parseFloat);
-                if (bboxCoords.length === 4 && bboxCoords.every(c => !isNaN(c))) {
-                    const bboxKey = bboxCoords.join(',');
-                    if (!isStarred('bboxes', bboxKey)) {
-                        toggleStar('bboxes', { bbox: bboxCoords, name: 'Saved Area' });
-                        bboxes.push({ bbox: bboxCoords, name: 'Saved Area' });
-                    }
-                }
-            });
-            
-            // Auto-prefetch report data for starred bboxes from URL
-            if (bboxes.length > 0) {
-                console.log(`[Report] Auto-prefetching data for ${bboxes.length} bboxes from URL...`);
-                setTimeout(() => {
-                    bboxes.forEach(bbox => prefetchBboxReportData(bbox.bbox, bbox.name));
-                }, 500); // Start loading quickly
-            }
-        }
+        // These will be processed after map loads
+        console.log('[URL Restore] Deferred starred items restoration - will process after map loads');
         
-        // Restore starred narratives
+        // Process pinned layers and narratives that don't need park data
         const starredNarratives = params.get('starred_narratives');
         if (starredNarratives) {
             starredNarratives.split(',').forEach(narr => {
