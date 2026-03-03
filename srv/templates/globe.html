@@ -6086,8 +6086,11 @@
                         if (!realtimeData || realtimeData.groups_inside_count === 0) return "";
                         const activeInside = realtimeData.groups.filter(g => g.is_inside && g.is_active);
                         if (activeInside.length === 0) return "";
-                        // Show top 5 by fire count, with load more
-                        const sortedActive = activeInside.sort((a, b) => (b.metrics?.fires || b.fires_inside || 0) - (a.metrics?.fires || a.fires_inside || 0));
+                        // Sort by priority (ascending), then by last_seen (descending)
+                        const sortedActive = activeInside.sort((a, b) => {
+                            if (a.priority !== b.priority) return a.priority - b.priority;
+                            return new Date(b.last_seen) - new Date(a.last_seen);
+                        });
                         const topFive = sortedActive.slice(0, 5);
                         const remaining = sortedActive.slice(5);
                         
@@ -6095,11 +6098,18 @@
                             <div class="fire-alert-title"><span style="color: #ef4444;">●</span> Currently Active (${activeInside.length})</div>
                             <div id="active-groups-${paId}">
                             ${topFive.map(g => {
-                                const indicator = g.is_inside ? '●' : '○';
-                                const indicatorColor = g.is_inside && g.is_active ? '#ef4444' : g.is_inside ? '#f59e0b' : '#888';
+                                const emoji = g.status_emoji || '🔥';
+                                const statusLabel = g.status || 'Active';
+                                const statusDetail = g.status_detail || '';
+                                const fires = g.metrics?.fires || g.fires_inside || '?';
+                                const days = g.metrics?.days || g.days_inside || '?';
                                 return `<div class="fire-alert-group" style="cursor: pointer;" onclick="event.stopPropagation(); showRealtimeTrajectory('${paId}', '${escapeHtml(data.park_name || paId)}', '${g.name}', ${JSON.stringify(g.trajectory || []).replace(/"/g, '&quot;')})">
-                                    <span><span style="color: ${indicatorColor};">${indicator}</span> ${g.name}</span>
-                                    <span class="fire-group-status">${g.metrics?.days || g.days_inside || '?'}d / ${g.metrics?.fires || g.fires_inside || '?'} fires</span>
+                                    <div style="display: flex; justify-content: space-between; align-items: start; width: 100%;">
+                                        <span style="flex: 1;">
+                                            <span style="font-size: 12px;">${emoji}</span> <strong>${g.name}</strong> (${statusLabel})<br>
+                                            <span style="font-size: 9px; color: #999;">${fires} fires, ${days}d • ${statusDetail}</span>
+                                        </span>
+                                    </div>
                                 </div>`;
                             }).join('')}
                             </div>
