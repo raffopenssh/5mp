@@ -4365,6 +4365,428 @@
             return ws;
         }
         
+        // V2 Export with comprehensive data using new fetch functions
+        async function exportFullReportXlsxV2() {
+            const allParks = [];
+            const pwd = getPwd();
+            const from = dateFrom;
+            const to = dateTo;
+            
+            // Load SheetJS if not already loaded
+            if (!window.XLSX) {
+                showToast('Loading export library...');
+                await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+            }
+            
+            showToast('Collecting park data...');
+            
+            // Collect all starred parks
+            for (const park of starredItems.parks) {
+                allParks.push({id: park.id, name: park.name, country: park.country, area_km2: park.area_km2 || park.rep_area});
+            }
+            
+            // Collect parks from bboxes
+            for (const bbox of starredItems.bboxes) {
+                const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
+                if (bboxData?.parks) {
+                    for (const p of bboxData.parks) {
+                        allParks.push({id: p.id, name: p.name, country: p.country, area_km2: p.area_km2 || p.rep_area});
+                    }
+                }
+            }
+            
+            if (allParks.length === 0) {
+                showToast('No parks to export', 'error');
+                return;
+            }
+            
+            showToast(`Fetching detailed data for ${allParks.length} parks...`);
+            
+            // Fetch full report data for all parks
+            const parkReports = [];
+            for (let i = 0; i < allParks.length; i++) {
+                const park = allParks[i];
+                try {
+                    const data = await fetchParkReportData(park.id, {from, to});
+                    parkReports.push({park, data});
+                    if ((i + 1) % 5 === 0) {
+                        showToast(`Fetched ${i + 1}/${allParks.length} parks...`);
+                    }
+                } catch (err) {
+                    console.error(`Error fetching data for ${park.id}:`, err);
+                    parkReports.push({park, data: {error: err.message}});
+                }
+            }
+            
+            showToast('Generating XLSX workbook...');
+            
+            const wb = XLSX.utils.book_new();
+            
+            // === SUMMARY SHEET ===
+            const summaryData = [
+                ['5MP Star Report - Comprehensive Export'],
+                ['Generated: ' + new Date().toISOString()],
+                ['Date Range: ' + (from || '2018-01-01') + ' to ' + (to || 'present')],
+                ['Total Parks: ' + parkReports.length],
+                [],
+                ['Park', 'Country', 'Area_km2', 'Fire_Detections', 'Fire_Groups', 'Response_%', 'Peak_Season', 'Deforest_km2', 'Settlements', 'Population', 'Active_Pixels', 'Distance_km']
+            ];
+            
+            let totalFires = 0, totalDeforest = 0, totalPop = 0, totalArea = 0, totalPixels = 0, totalDist = 0;
+            
+            for (const {park, data} of parkReports) {
+                if (data.error) continue;
+                
+                const fire = data.fire || {};
+                const ghsl = data.ghsl || {};
+                const deforest = data.deforest || {};
+                const grid = data.grid || {};
+                
+                const fireDetections = fire.totalFires || 0;
+                const fireGroups = fire.fireGroups || 0;
+                const responseRate = fire.responseRate || 0;
+                const peakSeason = fire.peakMonth || '';
+                const deforestKm2 = deforest.totalLossKm2 || 0;
+                const settlements = ghsl.count || 0;
+                const population = ghsl.totalPopulation || 0;
+                const activePixels = grid.activePixels || 0;
+                const distanceKm = grid.totalDistanceKm || 0;
+                
+                totalFires += fireDetections;
+                totalDeforest += deforestKm2;
+                totalPop += population;
+                totalArea += park.area_km2 || 0;
+                totalPixels += activePixels;
+                totalDist += distanceKm;
+                
+                summaryData.push([
+                    park.name || park.id,
+                    park.country || '',
+                    park.area_km2 ? Math.round(park.area_km2) : '',
+                    fireDetections || '',
+                    fireGroups || '',
+                    responseRate || '',
+                    peakSeason,
+                    deforestKm2 ? Math.round(deforestKm2 * 100) / 100 : '',
+                    settlements || '',
+                    population || '',
+                    activePixels || '',
+                    distanceKm ? Math.round(distanceKm * 10) / 10 : ''
+                ]);
+            }
+            
+            // Add totals row
+            summaryData.push([]);
+            summaryData.push([
+                'TOTALS',
+                '',
+                Math.round(totalArea),
+                totalFires,
+                '',
+                '',
+                '',
+                Math.round(totalDeforest * 100) / 100,
+                '',
+                totalPop.toLocaleString(),
+                totalPixels,
+                Math.round(totalDist * 10) / 10
+            ]);
+            
+            const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+            summarySheet['!cols'] = [{wch: 30}, {wch: 15}, {wch: 12}, {wch: 15}, {wch: 12}, {wch: 12}, {wch: 15}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}];
+            XLSX.utils.book_append_sheet(wb, summarySheet, 'Summary');
+            
+            // === PER-PARK SHEETS ===
+            for (const {park, data} of parkReports) {
+                if (data.error) continue;
+                
+                const sheetName = (park.name || park.id).substring(0, 31).replace(/[\[\]\*\?\/\\:]/g, '');
+                const parkData = [];
+                
+                // Park header
+                parkData.push(['=== PARK INFO ===']);
+                parkData.push(['Name', park.name || park.id]);
+                parkData.push(['ID', park.id]);
+                parkData.push(['Country', park.country || '']);
+                parkData.push(['Area (km²)', park.area_km2 ? Math.round(park.area_km2) : '']);
+                parkData.push([]);
+                
+                // Fire Activity
+                const fire = data.fire || {};
+                parkData.push(['=== FIRE ACTIVITY ===']);
+                parkData.push(['Date Range', (from || 'all time') + ' to ' + (to || 'present')]);
+                parkData.push(['Fire Detections', fire.totalFires || 0]);
+                parkData.push(['Fire Groups', fire.fireGroups || 0]);
+                parkData.push(['Response Rate', (fire.responseRate || 0) + '%']);
+                parkData.push(['Peak Season', fire.peakMonth || '']);
+                parkData.push(['Density (fires/km²)', fire.density ? fire.density.toFixed(2) : '']);
+                parkData.push([]);
+                
+                // Fire narratives table
+                if (fire.narratives && fire.narratives.length > 0) {
+                    parkData.push(['Fire Groups Detail (most recent first):']);
+                    parkData.push(['Date', 'Description', 'Fires_Count', 'Status', 'Response']);
+                    
+                    const narratives = [...fire.narratives].sort((a, b) => {
+                        const dateA = new Date(a.entry_date || a.start_date || '1900-01-01');
+                        const dateB = new Date(b.entry_date || b.start_date || '1900-01-01');
+                        return dateB - dateA;
+                    });
+                    
+                    for (const n of narratives.slice(0, 50)) {
+                        parkData.push([
+                            n.entry_date || n.start_date || '',
+                            (n.narrative || n.title || 'Fire event').substring(0, 100),
+                            n.fires_inside || n.fires_total || n.fires || 0,
+                            n.outcome || n.status || '',
+                            isFireStopped(n) ? 'Yes' : 'No'
+                        ]);
+                    }
+                    if (narratives.length > 50) {
+                        parkData.push([`... and ${narratives.length - 50} more fire groups`]);
+                    }
+                    parkData.push([]);
+                }
+                
+                // Settlements
+                const ghsl = data.ghsl || {};
+                parkData.push(['=== SETTLEMENTS ===']);
+                parkData.push(['Settlement Count', ghsl.count || 0]);
+                parkData.push(['Total Population', ghsl.totalPopulation ? ghsl.totalPopulation.toLocaleString() : 0]);
+                parkData.push(['Built-up Area (km²)', ghsl.builtUpKm2 ? Math.round(ghsl.builtUpKm2 * 100) / 100 : '']);
+                parkData.push([]);
+                
+                if (ghsl.settlements && ghsl.settlements.length > 0) {
+                    parkData.push(['Settlement Details:']);
+                    parkData.push(['Name', 'Population', 'Type', 'Inside_Park']);
+                    for (const s of ghsl.settlements.slice(0, 30)) {
+                        parkData.push([
+                            s.name || 'Unnamed',
+                            s.population || 0,
+                            s.type || '',
+                            s.insidePark ? 'Yes' : 'No'
+                        ]);
+                    }
+                    parkData.push([]);
+                }
+                
+                // Deforestation
+                const deforest = data.deforest || {};
+                parkData.push(['=== DEFORESTATION ===']);
+                parkData.push(['Total Loss (km²)', deforest.totalLossKm2 ? Math.round(deforest.totalLossKm2 * 100) / 100 : 0]);
+                parkData.push([]);
+                
+                if (deforest.events && deforest.events.length > 0) {
+                    parkData.push(['Deforestation Events:']);
+                    parkData.push(['Year', 'Year_Range', 'Area_km2', 'Classification', 'Description']);
+                    for (const e of deforest.events.slice(0, 30)) {
+                        parkData.push([
+                            e.year || '',
+                            e.yearRange || '',
+                            e.areaKm2 ? Math.round(e.areaKm2 * 100) / 100 : '',
+                            e.classification || '',
+                            (e.description || '').substring(0, 80)
+                        ]);
+                    }
+                    parkData.push([]);
+                }
+                
+                // Infrastructure
+                const road = data.road || {};
+                parkData.push(['=== INFRASTRUCTURE ===']);
+                parkData.push(['Roads Count', road.roadsCount || 0]);
+                parkData.push(['Rivers Count', road.riversCount || 0]);
+                parkData.push(['Places Count', road.placesCount || 0]);
+                parkData.push([]);
+                
+                // Patrol Activity (NEW!)
+                const grid = data.grid || {};
+                parkData.push(['=== PATROL ACTIVITY ===']);
+                parkData.push(['Active Pixels', grid.activePixels || 0]);
+                parkData.push(['Total Distance (km)', grid.totalDistanceKm ? Math.round(grid.totalDistanceKm * 10) / 10 : 0]);
+                if (grid.byType) {
+                    parkData.push(['  - Foot (km)', grid.byType.foot ? Math.round(grid.byType.foot * 10) / 10 : 0]);
+                    parkData.push(['  - Vehicle (km)', grid.byType.vehicle ? Math.round(grid.byType.vehicle * 10) / 10 : 0]);
+                    parkData.push(['  - Boat (km)', grid.byType.boat ? Math.round(grid.byType.boat * 10) / 10 : 0]);
+                    parkData.push(['  - Air (km)', grid.byType.air ? Math.round(grid.byType.air * 10) / 10 : 0]);
+                }
+                parkData.push([]);
+                
+                // Species
+                const species = data.species || {};
+                parkData.push(['=== SPECIES ===']);
+                parkData.push(['Species Count', species.count || 0]);
+                if (species.species && species.species.length > 0) {
+                    parkData.push(['Top Species:']);
+                    parkData.push(['Common_Name', 'Scientific_Name', 'Status']);
+                    for (const s of species.species.slice(0, 20)) {
+                        parkData.push([
+                            s.commonName || '',
+                            s.name || '',
+                            s.status || ''
+                        ]);
+                    }
+                }
+                parkData.push([]);
+                
+                // Climate
+                const climate = data.climate || {};
+                parkData.push(['=== CLIMATE ===']);
+                parkData.push(['Wet Months', climate.wetMonths ? climate.wetMonths.join(', ') : '']);
+                parkData.push(['Dry Months', climate.dryMonths ? climate.dryMonths.join(', ') : '']);
+                parkData.push(['Seasons', climate.seasons || '']);
+                parkData.push([]);
+                
+                // Research
+                const research = data.research || {};
+                parkData.push(['=== RESEARCH ===']);
+                parkData.push(['Publication Count', research.count || 0]);
+                if (research.publications && research.publications.length > 0) {
+                    parkData.push(['Recent Publications:']);
+                    parkData.push(['Year', 'Title', 'Authors']);
+                    for (const pub of research.publications.slice(0, 10)) {
+                        parkData.push([
+                            pub.year || '',
+                            (pub.title || '').substring(0, 80),
+                            (pub.authors || '').substring(0, 50)
+                        ]);
+                    }
+                }
+                parkData.push([]);
+                
+                // Legal
+                const legal = data.legal || {};
+                parkData.push(['=== LEGAL ===']);
+                parkData.push(['Document Count', legal.count || 0]);
+                if (legal.documents && legal.documents.length > 0) {
+                    parkData.push(['Recent Documents:']);
+                    parkData.push(['Year', 'Title', 'Type']);
+                    for (const doc of legal.documents.slice(0, 10)) {
+                        parkData.push([
+                            doc.year || '',
+                            (doc.title || '').substring(0, 100),
+                            doc.type || ''
+                        ]);
+                    }
+                }
+                parkData.push([]);
+                
+                const parkSheet = XLSX.utils.aoa_to_sheet(parkData);
+                parkSheet['!cols'] = [{wch: 30}, {wch: 25}, {wch: 15}, {wch: 20}, {wch: 15}];
+                XLSX.utils.book_append_sheet(wb, parkSheet, sheetName);
+            }
+            
+            // === ALL FIRES SHEET ===
+            const allFiresData = [['Park', 'Date', 'Description', 'Fires_Count', 'Status', 'Response', 'Coords']];
+            for (const {park, data} of parkReports) {
+                if (data.error) continue;
+                const fire = data.fire || {};
+                const narratives = fire.narratives || [];
+                
+                for (const n of narratives) {
+                    allFiresData.push([
+                        park.name || park.id,
+                        n.entry_date || n.start_date || '',
+                        (n.narrative || n.title || 'Fire event').substring(0, 120),
+                        n.fires_inside || n.fires_total || n.fires || 0,
+                        n.outcome || n.status || '',
+                        isFireStopped(n) ? 'Yes' : 'No',
+                        n.center ? `${n.center[1].toFixed(4)}, ${n.center[0].toFixed(4)}` : ''
+                    ]);
+                }
+            }
+            
+            if (allFiresData.length > 1) {
+                const firesSheet = XLSX.utils.aoa_to_sheet(allFiresData);
+                firesSheet['!cols'] = [{wch: 25}, {wch: 12}, {wch: 50}, {wch: 12}, {wch: 15}, {wch: 10}, {wch: 20}];
+                XLSX.utils.book_append_sheet(wb, firesSheet, 'All_Fires');
+            }
+            
+            // === ALL DEFORESTATION SHEET ===
+            const allDeforestData = [['Park', 'Location', 'Area_km2', 'Year_Range', 'Classification', 'Coords']];
+            for (const {park, data} of parkReports) {
+                if (data.error) continue;
+                const deforest = data.deforest || {};
+                const events = deforest.events || [];
+                
+                for (const e of events) {
+                    allDeforestData.push([
+                        park.name || park.id,
+                        e.description ? e.description.substring(0, 50) : 'Deforested area',
+                        e.areaKm2 ? Math.round(e.areaKm2 * 100) / 100 : '',
+                        e.yearRange || e.year || '',
+                        e.classification || '',
+                        e.coords && e.coords.length > 0 ? `${e.coords[1]?.toFixed(4) || ''}, ${e.coords[0]?.toFixed(4) || ''}` : ''
+                    ]);
+                }
+            }
+            
+            if (allDeforestData.length > 1) {
+                const deforestSheet = XLSX.utils.aoa_to_sheet(allDeforestData);
+                deforestSheet['!cols'] = [{wch: 25}, {wch: 30}, {wch: 12}, {wch: 15}, {wch: 20}, {wch: 20}];
+                XLSX.utils.book_append_sheet(wb, deforestSheet, 'All_Deforestation');
+            }
+            
+            // === ALL SETTLEMENTS SHEET ===
+            const allSettlementsData = [['Park', 'Name', 'Population', 'Type', 'Inside_Park', 'Coords']];
+            for (const {park, data} of parkReports) {
+                if (data.error) continue;
+                const ghsl = data.ghsl || {};
+                const settlements = ghsl.settlements || [];
+                
+                for (const s of settlements) {
+                    allSettlementsData.push([
+                        park.name || park.id,
+                        s.name || 'Unnamed',
+                        s.population || 0,
+                        s.type || '',
+                        s.insidePark ? 'Yes' : 'No',
+                        s.coords && s.coords.length >= 2 ? `${s.coords[1].toFixed(4)}, ${s.coords[0].toFixed(4)}` : ''
+                    ]);
+                }
+            }
+            
+            if (allSettlementsData.length > 1) {
+                const settlementsSheet = XLSX.utils.aoa_to_sheet(allSettlementsData);
+                settlementsSheet['!cols'] = [{wch: 25}, {wch: 30}, {wch: 12}, {wch: 15}, {wch: 12}, {wch: 20}];
+                XLSX.utils.book_append_sheet(wb, settlementsSheet, 'All_Settlements');
+            }
+            
+            // === PATROL SUMMARY SHEET (NEW!) ===
+            const patrolSummaryData = [['Park', 'Active_Pixels', 'Total_Distance_km', 'Foot_km', 'Vehicle_km', 'Boat_km', 'Air_km']];
+            for (const {park, data} of parkReports) {
+                if (data.error) continue;
+                const grid = data.grid || {};
+                
+                if (grid.activePixels || grid.totalDistanceKm) {
+                    patrolSummaryData.push([
+                        park.name || park.id,
+                        grid.activePixels || 0,
+                        grid.totalDistanceKm ? Math.round(grid.totalDistanceKm * 10) / 10 : 0,
+                        grid.byType?.foot ? Math.round(grid.byType.foot * 10) / 10 : 0,
+                        grid.byType?.vehicle ? Math.round(grid.byType.vehicle * 10) / 10 : 0,
+                        grid.byType?.boat ? Math.round(grid.byType.boat * 10) / 10 : 0,
+                        grid.byType?.air ? Math.round(grid.byType.air * 10) / 10 : 0
+                    ]);
+                }
+            }
+            
+            if (patrolSummaryData.length > 1) {
+                const patrolSheet = XLSX.utils.aoa_to_sheet(patrolSummaryData);
+                patrolSheet['!cols'] = [{wch: 30}, {wch: 15}, {wch: 18}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}];
+                XLSX.utils.book_append_sheet(wb, patrolSheet, 'Patrol_Summary');
+            }
+            
+            // Generate filename
+            const dateStr = from && to ? `_${from}_to_${to}` : from ? `_from_${from}` : to ? `_to_${to}` : '';
+            const filename = `5MP_Report_${parkReports.length}_parks${dateStr}.xlsx`.replace(/[\s\/\\:]/g, '_');
+            
+            // Write file
+            XLSX.writeFile(wb, filename);
+            
+            showToast(`✓ Exported ${parkReports.length} parks with ${wb.SheetNames.length} sheets`, 'success');
+        }
+        
         async function exportFullReportKml() {
             const allParks = [];
             let parksWithoutData = 0;
@@ -15078,7 +15500,7 @@ ${starredItems.narratives.map(n => {
                 <div class="star-report-actions">
                     <button class="star-report-btn secondary" onclick="openReportBuilder()" title="Configure Report" style="min-width:auto;padding:8px 12px;">⚙️</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportCsv()" title="Export all data as CSV">↓ CSV</button>
-                    <button class="star-report-btn secondary" onclick="exportFullReportXlsx()" title="Export detailed XLSX with summary + per-park tabs">↓ XLSX</button>
+                    <button class="star-report-btn secondary" onclick="exportFullReportXlsxV2()" title="Export comprehensive XLSX with all data including patrol activity">↓ XLSX V2</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportKml()" title="Export all park KMLs">↓ KML</button>
                     <button class="star-report-btn" onclick="printInlineReport()" title="Print report">Print</button>
                 </div>
