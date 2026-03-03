@@ -10030,7 +10030,11 @@
                 html += `<div style="margin:4px 0;font-size:10px;color:#aaa;">• ${text}</div>`;
             });
             if (classifiedEvents.length > samples.length) {
-                html += `<div style="color:#60a5fa;font-size:9px;margin-top:4px;">...and ${classifiedEvents.length - samples.length} more events</div>`;
+                html += `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${classifiedEvents.length - samples.length} more events</div>`;
+                html += `<div style="display:none">${classifiedEvents.slice(samples.length).map(e => {
+                    const text = e.narrative || \`\${e.classification || 'Event'} (\${(e.area_km2 || 0).toFixed(2)} km²)\`;
+                    return \`<div style="margin:4px 0;font-size:10px;color:#aaa;">• \${text}</div>\`;
+                }).join('')}</div>`;
             }
             html += '</div>';
         }
@@ -10097,7 +10101,11 @@
                 html += `<div style="margin:4px 0;font-size:10px;color:#aaa;">• ${text}</div>`;
             });
             if (classifiedSettlements.length > samples.length) {
-                html += `<div style="color:#60a5fa;font-size:9px;margin-top:4px;">...and ${classifiedSettlements.length - samples.length} more settlements</div>`;
+                html += `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${classifiedSettlements.length - samples.length} more settlements</div>`;
+                html += `<div style="display:none">${classifiedSettlements.slice(samples.length).map(s => {
+                    const text = s.narrative || \`\${s.classification || 'Settlement'} near \${s.nearest_place || 'unknown'} (~\${s.population_est || 0} people)\`;
+                    return \`<div style="margin:4px 0;font-size:10px;color:#aaa;">• \${text}</div>\`;
+                }).join('')}</div>`;
             }
             html += '</div>';
         }
@@ -10240,7 +10248,7 @@
                 </div>
                 ${detailLevel !== 'summary' && deforest.summary ? `<div class="starred-report-section-text">${deforest.summary}</div>` : ''}
                 ${detailLevel !== 'summary' && deforest.classified_events && deforest.classified_events.length > 0 ? renderDeforestationSummary(deforest.classified_events, detailLevel === 'comprehensive' ? 10 : 3) : ''}
-                ${showHotspots && !deforest.classified_events ? `<div class="starred-report-group"><div class="starred-report-group-title">Hotspots (${deforest.hotspots.length}):</div>${deforest.hotspots.slice(0, 5).map(h => `<div style="margin:4px 0;font-size:10px;">${h.name || h.description || 'Hotspot'}: ${(h.area_km2 || 0).toFixed(2)} km²</div>`).join('')}${deforest.hotspots.length > 5 ? `<div style="color:#60a5fa;font-size:9px;">...and ${deforest.hotspots.length - 5} more</div>` : ''}</div>` : ''}
+                ${showHotspots && !deforest.classified_events ? `<div class="starred-report-group"><div class="starred-report-group-title">Hotspots (${deforest.hotspots.length}):</div>${deforest.hotspots.slice(0, 5).map(h => `<div style="margin:4px 0;font-size:10px;">${h.name || h.description || 'Hotspot'}: ${(h.area_km2 || 0).toFixed(2)} km²</div>`).join('')}${deforest.hotspots.length > 5 ? `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${deforest.hotspots.length - 5} more hotspots</div><div style="display:none">${deforest.hotspots.slice(5).map(h => `<div style="margin:4px 0;font-size:10px;">${h.name || h.description || 'Hotspot'}: ${(h.area_km2 || 0).toFixed(2)} km²</div>`).join('')}</div>` : ''}</div>` : ''}
                 ${showYearlyData ? `<div class="starred-report-group"><div class="starred-report-group-title">Yearly Loss:</div><div style="font-size:9px;color:#666;display:flex;flex-wrap:wrap;gap:8px;">${deforestStats.yearly_data.slice(-10).map(y => `${y.year}: ${y.loss_km2.toFixed(1)}`).join(' | ')}</div></div>` : ''}
             </div>`;
         }
@@ -10261,7 +10269,7 @@
                 </div>
                 ${detailLevel !== 'summary' && settle.summary ? `<div class="starred-report-section-text">${settle.summary}</div>` : ''}
                 ${detailLevel !== 'summary' && settle.classified_settlements && settle.classified_settlements.length > 0 ? renderSettlementsSummary(settle.classified_settlements, detailLevel === 'comprehensive' ? 10 : 3) : ''}
-                ${showSettlements && !settle.classified_settlements ? `<div class="starred-report-group"><div class="starred-report-group-title">Settlements (${settle.largest_settlements.length}):</div>${settle.largest_settlements.slice(0, 5).map(s => `<div style="margin:4px 0;font-size:10px;">${s.name || 'Settlement'}: pop. ${fmt(s.population || 0)}${s.classification ? ' (' + s.classification + ')' : ''}</div>`).join('')}${settle.largest_settlements.length > 5 ? `<div style="color:#60a5fa;font-size:9px;">...and ${settle.largest_settlements.length - 5} more</div>` : ''}</div>` : ''}
+                ${showSettlements && !settle.classified_settlements ? `<div class="starred-report-group"><div class="starred-report-group-title">Settlements (${settle.largest_settlements.length}):</div>${settle.largest_settlements.slice(0, 5).map(s => `<div style="margin:4px 0;font-size:10px;">${s.name || 'Settlement'}: pop. ${fmt(s.population || 0)}${s.classification ? ' (' + s.classification + ')' : ''}</div>`).join('')}${settle.largest_settlements.length > 5 ? `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${settle.largest_settlements.length - 5} more settlements</div><div style="display:none">${settle.largest_settlements.slice(5).map(s => `<div style="margin:4px 0;font-size:10px;">${s.name || 'Settlement'}: pop. ${fmt(s.population || 0)}${s.classification ? ' (' + s.classification + ')' : ''}</div>`).join('')}</div>` : ''}</div>` : ''}
             </div>`;
         }
         
@@ -10280,7 +10288,7 @@
                     <span>Total: ${species.total_count || species.species?.length || 0} species</span>
                     <span>Threatened: ${endangered} (CR/EN/VU)</span>
                 </div>
-                ${showSpeciesList && endangeredSpecies.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Notable Threatened Species:</div>${endangeredSpecies.slice(0, speciesLimit).map(s => `<div style="margin:3px 0;font-size:10px;line-height:1.4;"><strong style="color:#10b981;">${s.common_name || s.binomial || 'Unknown'}</strong> <em style="color:#888;">${s.binomial || ''}</em> <span style="padding:1px 4px;background:${ s.status === 'CR' ? '#dc2626' : s.status === 'EN' ? '#f59e0b' : '#84cc16' };color:white;border-radius:2px;font-size:8px;font-weight:600;">${s.status}</span></div>`).join('')}${endangeredSpecies.length > speciesLimit ? `<div style="color:#888;font-size:10px;margin-top:4px;">+ ${endangeredSpecies.length - speciesLimit} more threatened species</div>` : ''}</div>` : ''}
+                ${showSpeciesList && endangeredSpecies.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Notable Threatened Species:</div>${endangeredSpecies.slice(0, speciesLimit).map(s => `<div style="margin:3px 0;font-size:10px;line-height:1.4;"><strong style="color:#10b981;">${s.common_name || s.binomial || 'Unknown'}</strong> <em style="color:#888;">${s.binomial || ''}</em> <span style="padding:1px 4px;background:${ s.status === 'CR' ? '#dc2626' : s.status === 'EN' ? '#f59e0b' : '#84cc16' };color:white;border-radius:2px;font-size:8px;font-weight:600;">${s.status}</span></div>`).join('')}${endangeredSpecies.length > speciesLimit ? `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${endangeredSpecies.length - speciesLimit} more species</div><div style="display:none">${endangeredSpecies.slice(speciesLimit).map(s => `<div style="margin:3px 0;font-size:10px;line-height:1.4;"><strong style="color:#10b981;">${s.common_name || s.binomial || 'Unknown'}</strong> <em style="color:#888;">${s.binomial || ''}</em> <span style="padding:1px 4px;background:${ s.status === 'CR' ? '#dc2626' : s.status === 'EN' ? '#f59e0b' : '#84cc16' };color:white;border-radius:2px;font-size:8px;font-weight:600;">${s.status}</span></div>`).join('')}</div>` : ''}</div>` : ''}
             </div>`;
         }
         
@@ -10307,7 +10315,7 @@
                 <div class="starred-report-section-stats">
                     <span>${pubs.length} publication${pubs.length !== 1 ? 's' : ''}</span>
                 </div>
-                <div class="starred-report-group"><div class="starred-report-group-title">Recent:</div>${pubs.slice(0, pubLimit).map(p => { const author = (p.authors && p.authors[0]) ? p.authors[0].split(',')[0].trim().split(' ').pop() : 'Unknown'; return `<div style="margin:4px 0;font-size:10px;"><a href="${p.doi || p.url || '#'}" target="_blank" style="color:#a78bfa;text-decoration:none;">${author} (${p.year || '?'}): ${(p.title || 'Untitled').substring(0, 60)}${(p.title || '').length > 60 ? '...' : ''}</a></div>`; }).join('')}${pubs.length > pubLimit ? `<div style="color:#888;font-size:10px;margin-top:4px;">+ ${pubs.length - pubLimit} more</div>` : ''}</div>
+                <div class="starred-report-group"><div class="starred-report-group-title">Recent:</div>${pubs.slice(0, pubLimit).map(p => { const author = (p.authors && p.authors[0]) ? p.authors[0].split(',')[0].trim().split(' ').pop() : 'Unknown'; return `<div style="margin:4px 0;font-size:10px;"><a href="${p.doi || p.url || '#'}" target="_blank" style="color:#a78bfa;text-decoration:none;">${author} (${p.year || '?'}): ${(p.title || 'Untitled').substring(0, 60)}${(p.title || '').length > 60 ? '...' : ''}</a></div>`; }).join('')}${pubs.length > pubLimit ? `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${pubs.length - pubLimit} more publications</div><div style="display:none">${pubs.slice(pubLimit).map(p => { const author = (p.authors && p.authors[0]) ? p.authors[0].split(',')[0].trim().split(' ').pop() : 'Unknown'; return `<div style="margin:4px 0;font-size:10px;"><a href="${p.doi || p.url || '#'}" target="_blank" style="color:#a78bfa;text-decoration:none;">${author} (${p.year || '?'}): ${(p.title || 'Untitled').substring(0, 60)}${(p.title || '').length > 60 ? '...' : ''}</a></div>`; }).join('')}</div>` : ''}</div>
             </div>`;
         }
         
