@@ -11476,6 +11476,353 @@
         return { fire, deforestation, settlement, stats, species, climate, publications, features };
     }
     
+    // ============= STAR REPORT V2 - PROPER DATA LOADING =============
+    
+    /**
+     * Fetch complete park data for star reports
+     * Uses the EXACT same APIs as popup sections
+     */
+    async function fetchParkReportData(parkId, options = {}) {
+        const {from, to} = options;
+        const pwd = getPwd();
+        
+        const result = {
+            parkId,
+            fetchedAt: new Date().toISOString(),
+            dateRange: {from, to}
+        };
+        
+        try {
+            // Fetch all data in parallel (same as popups do)
+            const [fire, ghsl, deforest, road, species, climate, research, legal, grid] = await Promise.all([
+                fetchFireDataDirect(parkId, {from, to, pwd}),
+                fetchGHSLDataDirect(parkId, {pwd}),
+                fetchDeforestDataDirect(parkId, {pwd}),
+                fetchRoadDataDirect(parkId, {pwd}),
+                fetchSpeciesDataDirect(parkId, {pwd}),
+                fetchClimateDataDirect(parkId, {pwd}),
+                fetchResearchDataDirect(parkId, {pwd}),
+                fetchLegalDataDirect(parkId, {pwd}),
+                fetchGridDataDirect(parkId, {from, to, pwd})
+            ]);
+            
+            return {
+                ...result,
+                fire,
+                ghsl,
+                deforest,
+                road,
+                species,
+                climate,
+                research,
+                legal,
+                grid
+            };
+        } catch (error) {
+            console.error(`Error fetching data for ${parkId}:`, error);
+            return {
+                ...result,
+                error: error.message
+            };
+        }
+    }
+    
+    // Fire data - Uses fire-narrative API (same as popup)
+    async function fetchFireDataDirect(parkId, {from, to, pwd}) {
+        try {
+            let url = `/api/parks/${encodeURIComponent(parkId)}/fire-narrative`;
+            const params = [`pwd=${encodeURIComponent(pwd)}`];
+            if (from) params.push(`from=${from}`);
+            if (to) params.push(`to=${to}`);
+            url += '?' + params.join('&');
+            
+            const resp = await fetch(url);
+            if (!resp.ok) return {error: 'API error', totalFires: 0};
+            
+            const data = await resp.json();
+            
+            // Also fetch realtime data for current status
+            let realtimeData = null;
+            try {
+                const rtResp = await fetch(`/api/parks/${encodeURIComponent(parkId)}/fire-realtime?days=28&pwd=${encodeURIComponent(pwd)}`);
+                if (rtResp.ok) realtimeData = await rtResp.json();
+            } catch (e) {
+                // Realtime not critical
+            }
+            
+            // Filter narratives by date range (client-side filter like popup does)
+            let narratives = data.narratives || [];
+            if (from || to) {
+                const fromDate = from ? new Date(from) : new Date('1900-01-01');
+                const toDate = to ? new Date(to) : new Date('2100-01-01');
+                narratives = narratives.filter(n => {
+                    const startStr = n.entry_date || n.start_date;
+                    const startDate = startStr ? new Date(startStr) : null;
+                    if (!startDate) return true;
+                    return startDate >= fromDate && startDate <= toDate;
+                });
+            }
+            
+            // Calculate stats from filtered narratives
+            const totalFires = narratives.reduce((sum, n) => sum + (n.fires_inside || n.fires_total || n.fires || 0), 0);
+            const stoppedCount = narratives.filter(n => isFireStopped(n)).length;
+            const responseRate = narratives.length > 0 ? Math.round((stoppedCount / narratives.length) * 100) : 0;
+            
+            return {
+                totalFires,
+                fireGroups: narratives.length,
+                responseRate,
+                peakMonth: data.peak_month || data.peak_season || '',
+                density: data.density || 0,
+                narratives,
+                realtimeGroups: realtimeData?.groups || [],
+                trend: data.trend || {}
+            };
+        } catch (error) {
+            console.error(`Fire data error for ${parkId}:`, error);
+            return {error: error.message, totalFires: 0};
+        }
+    }
+    
+    // GHSL/Settlement data
+    async function fetchGHSLDataDirect(parkId, {pwd}) {
+        try {
+            const url = `/api/parks/${encodeURIComponent(parkId)}/features?type=settlement&pwd=${encodeURIComponent(pwd)}`;
+            const resp = await fetch(url);
+            if (!resp.ok) return {error: 'API error', count: 0};
+            
+            const geojson = await resp.json();
+            const features = geojson.features || [];
+            
+            // Aggregate settlement data
+            let totalPop = 0;
+            let builtUpKm2 = 0;
+            const settlements = features.map(f => {
+                const props = f.properties || {};
+                totalPop += props.population || 0;
+                builtUpKm2 += props.built_up_km2 || 0;
+                return {
+                    name: props.name || 'Unnamed',
+                    population: props.population || 0,
+                    type: props.classification || props.type || '',
+                    insidePark: props.inside_park || false,
+                    coords: f.geometry?.coordinates || []
+                };
+            });
+            
+            return {
+                count: features.length,
+                totalPopulation: totalPop,
+                builtUpKm2,
+                settlements
+            };
+        } catch (error) {
+            console.error(`GHSL data error for ${parkId}:`, error);
+            return {error: error.message, count: 0};
+        }
+    }
+    
+    // Deforestation data
+    async function fetchDeforestDataDirect(parkId, {pwd}) {
+        try {
+            const url = `/api/parks/${encodeURIComponent(parkId)}/features?type=deforestation&pwd=${encodeURIComponent(pwd)}`;
+            const resp = await fetch(url);
+            if (!resp.ok) return {error: 'API error', totalLossKm2: 0};
+            
+            const geojson = await resp.json();
+            const features = geojson.features || [];
+            
+            // Aggregate deforestation data
+            let totalLossKm2 = 0;
+            const events = features.map(f => {
+                const props = f.properties || {};
+                const lossKm2 = props.area_km2 || (props.area_ha ? props.area_ha / 100 : 0);
+                totalLossKm2 += lossKm2;
+                return {
+                    year: props.year || props.start_year || '',
+                    yearRange: props.year_range || (props.start_year ? `${props.start_year}-${props.end_year || ''}` : ''),
+                    areaKm2: lossKm2,
+                    classification: props.classification || props.type || '',
+                    description: props.description || props.narrative || '',
+                    coords: f.geometry?.coordinates || []
+                };
+            });
+            
+            return {
+                totalLossKm2,
+                eventCount: features.length,
+                events
+            };
+        } catch (error) {
+            console.error(`Deforest data error for ${parkId}:`, error);
+            return {error: error.message, totalLossKm2: 0};
+        }
+    }
+    
+    // Road/infrastructure data
+    async function fetchRoadDataDirect(parkId, {pwd}) {
+        try {
+            const [roads, rivers, places] = await Promise.all([
+                fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=road&pwd=${encodeURIComponent(pwd)}`).then(r => r.ok ? r.json() : {features: []}),
+                fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=river&pwd=${encodeURIComponent(pwd)}`).then(r => r.ok ? r.json() : {features: []}),
+                fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=place&pwd=${encodeURIComponent(pwd)}`).then(r => r.ok ? r.json() : {features: []})
+            ]);
+            
+            return {
+                roadCount: roads.features?.length || 0,
+                riverCount: rivers.features?.length || 0,
+                placeCount: places.features?.length || 0,
+                roads: (roads.features || []).map(f => ({
+                    name: f.properties?.name || '',
+                    surface: f.properties?.surface || '',
+                    lengthKm: f.properties?.length_km || 0
+                })),
+                rivers: (rivers.features || []).map(f => ({
+                    name: f.properties?.name || '',
+                    lengthKm: f.properties?.length_km || 0
+                })),
+                places: (places.features || []).map(f => ({
+                    name: f.properties?.name || '',
+                    type: f.properties?.place || f.properties?.type || ''
+                }))
+            };
+        } catch (error) {
+            console.error(`Road data error for ${parkId}:`, error);
+            return {error: error.message, roadCount: 0};
+        }
+    }
+    
+    // Species data
+    async function fetchSpeciesDataDirect(parkId, {pwd}) {
+        try {
+            const url = `/api/parks/${encodeURIComponent(parkId)}/species?pwd=${encodeURIComponent(pwd)}`;
+            const resp = await fetch(url);
+            if (!resp.ok) return {error: 'API error', count: 0};
+            
+            const data = await resp.json();
+            const species = data.species || [];
+            
+            return {
+                count: species.length,
+                species: species.map(s => ({
+                    name: s.scientific_name || s.name || '',
+                    commonName: s.common_name || '',
+                    status: s.red_list_category || s.status || ''
+                }))
+            };
+        } catch (error) {
+            console.error(`Species data error for ${parkId}:`, error);
+            return {error: error.message, count: 0};
+        }
+    }
+    
+    // Climate data
+    async function fetchClimateDataDirect(parkId, {pwd}) {
+        try {
+            const url = `/api/parks/${encodeURIComponent(parkId)}/climate?pwd=${encodeURIComponent(pwd)}`;
+            const resp = await fetch(url);
+            if (!resp.ok) return {error: 'API error'};
+            
+            const data = await resp.json();
+            
+            return {
+                dryMonths: data.dry_months || [],
+                wetMonths: data.wet_months || [],
+                precipitation: data.precipitation || [],
+                seasons: data.seasons || ''
+            };
+        } catch (error) {
+            console.error(`Climate data error for ${parkId}:`, error);
+            return {error: error.message};
+        }
+    }
+    
+    // Research/publications data
+    async function fetchResearchDataDirect(parkId, {pwd}) {
+        try {
+            const url = `/api/parks/${encodeURIComponent(parkId)}/publications?pwd=${encodeURIComponent(pwd)}`;
+            const resp = await fetch(url);
+            if (!resp.ok) return {error: 'API error', count: 0};
+            
+            const data = await resp.json();
+            const pubs = data.publications || [];
+            
+            return {
+                count: pubs.length,
+                publications: pubs.map(p => ({
+                    title: p.title || '',
+                    year: p.year || '',
+                    authors: p.authors || '',
+                    doi: p.doi || ''
+                }))
+            };
+        } catch (error) {
+            console.error(`Research data error for ${parkId}:`, error);
+            return {error: error.message, count: 0};
+        }
+    }
+    
+    // Legal documents data
+    async function fetchLegalDataDirect(parkId, {pwd}) {
+        try {
+            const url = `/api/parks/${encodeURIComponent(parkId)}/legal?pwd=${encodeURIComponent(pwd)}`;
+            const resp = await fetch(url);
+            if (!resp.ok) return {error: 'API error', count: 0};
+            
+            const data = await resp.json();
+            const docs = data.documents || [];
+            
+            return {
+                count: docs.length,
+                documents: docs.map(d => ({
+                    title: d.title || '',
+                    year: d.year || '',
+                    type: d.type || ''
+                }))
+            };
+        } catch (error) {
+            console.error(`Legal data error for ${parkId}:`, error);
+            return {error: error.message, count: 0};
+        }
+    }
+    
+    // Grid/patrol data (NEW!)
+    async function fetchGridDataDirect(parkId, {from, to, pwd}) {
+        try {
+            let url = `/api/grid?park_id=${encodeURIComponent(parkId)}&pwd=${encodeURIComponent(pwd)}`;
+            if (from) url += `&from=${from}`;
+            if (to) url += `&to=${to}`;
+            
+            const resp = await fetch(url);
+            if (!resp.ok) return {error: 'API error', activePixels: 0};
+            
+            const data = await resp.json();
+            const features = data.features || [];
+            
+            // Aggregate patrol/grid data
+            const result = {
+                activePixels: features.length,
+                totalDistanceKm: 0,
+                byType: {foot: 0, vehicle: 0, boat: 0, air: 0}
+            };
+            
+            for (const feature of features) {
+                const props = feature.properties || {};
+                result.totalDistanceKm += props.distance_km || 0;
+                
+                const type = props.transport_type || props.type || 'foot';
+                if (result.byType[type] !== undefined) {
+                    result.byType[type] += props.distance_km || 0;
+                }
+            }
+            
+            return result;
+        } catch (error) {
+            console.error(`Grid data error for ${parkId}:`, error);
+            return {error: error.message, activePixels: 0};
+        }
+    }
+    
     // Generate full report with nested data
     async function generateStarredReportAsync() {
         const now = new Date();
