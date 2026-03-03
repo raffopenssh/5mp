@@ -230,3 +230,285 @@ WHERE last_updated_at < date('now', '-14 days');
 2. **Add tests**: Automated validation of data source consistency
 3. **Optimize**: Cache feature_geometries query results to speed up API calls
 4. **UI enhancement**: Show all 45 active groups in notification dropdown (currently groups by park)
+
+
+---
+
+## Update: Comprehensive Fix (March 3, 2026)
+
+### Additional Issues Discovered
+
+After initial fix, testing revealed:
+
+1. **Only 5 notifications** created for CAF_Chinko instead of 45
+2. **Hash IDs displayed** (`CAF_Chinko_2026_grp_xxxxx`) instead of friendly names ("Tango", "Bravo")
+3. **fire-alerts API priority bug**: `ORDER BY` prioritized "entered" (0) > "active" (2)
+   - With limit=500, returned 188 entered + 312 active = missing 184 active alerts
+4. **18,667 stale "left" alerts** polluting fire_group_alerts table
+5. **Friendly names not stored**: Only generated ephemerally in fire-realtime API
+
+### Root Cause Analysis
+
+#### Problem 1: API Query Order
+
+```sql
+-- fire-alerts API query
+SELECT * FROM fire_group_alerts
+WHERE is_dismissed = 0 AND (left_at IS NULL OR left_at > datetime('now', '-1 day'))
+ORDER BY CASE alert_type 
+  WHEN 'entered' THEN 0    -- Highest priority
+  WHEN 'active_inside' THEN 1
+  WHEN 'active' THEN 2     -- Low priority!
+  ELSE 3 
+END
+LIMIT 500;
+```
+
+Result breakdown:
+- 188 "entered" alerts (priority 0)
+- 496 "active" alerts (priority 2)
+- 958 "cooling" alerts (priority 3)
+- 18,667 "left" alerts (priority 3)
+
+With limit=500, we get all 188 entered + 312 active, **missing 184 active alerts**.
+
+#### Problem 2: No Stored Friendly Names
+
+Friendly names ("Alpha", "Bravo", etc.) were only in fire-realtime API:
+
+```go
+// fire-realtime handler (ephemeral naming)
+for i, featureID := range featureIDs {
+    group := FireGroup{
+        Name: getGroupName(i),  // "Alpha", "Bravo", etc.
+        // ...
+    }
+}
+```
+
+But these names were:
+- **Not stored** in feature_geometries or fire_group_alerts
+- **Order-dependent**: Based on query result position
+- **Not stable**: Changed with different query filters
+
+#### Problem 3: notification Creation Dependency
+
+```python
+# OLD CODE (BROKEN)
+response = requests.get(
+    "http://localhost:8000/api/fire-alerts",
+    params={'pwd': 'test2026', 'limit': 500},  # Limited by API issues
+    timeout=30
+)
+
+for alert in response.json():
+    if alert['alert_type'] == 'active':  # Filtered AFTER limit
+        group_name = alert['group_name']  # Hash ID, not friendly name
+        # Create notification...
+```
+
+Result: Notifications had hash IDs and missed most active groups.
+
+### Comprehensive Solution
+
+#### 1. Query feature_geometries Directly
+
+```python
+# NEW CODE (CORRECT)
+cursor = conn.execute("""
+    SELECT park_id, feature_id, properties_json
+    FROM feature_geometries
+    WHERE feature_type = 'fire_trajectory'
+      AND end_date >= date('now', '-3 days')  -- Active definition
+    ORDER BY park_id, start_date DESC
+""")
+```
+
+Benefits:
+- **Direct access** to source of truth (no API intermediary)
+- **No limit issues**: Query returns all active trajectories
+- **Fast**: SQLite query vs HTTP round-trip
+- **Reliable**: No server dependency for cron job
+
+#### 2. Stable Friendly Name Assignment
+
+```python
+# Sort by fires_total descending for consistent naming
+groups.sort(key=lambda x: x['fires_total'], reverse=True)
+
+for i, group in enumerate(groups):
+    friendly_name = get_friendly_name(i)  # NATO phonetic
+    # Alpha = most fires, Bravo = 2nd, etc.
+```
+
+Logic:
+- **Alpha** = Group with most fires
+- **Bravo** = 2nd most fires
+- **Tango** = 20th most fires
+- **Alpha-2** = 27th most fires (cycle)
+
+Result: Names reflect fire intensity, stable across runs.
+
+#### 3. Process ALL Parks
+
+```python
+# OLD: Only affected_parks from daily update
+if park_id in self.affected_parks:
+    # Create notifications
+
+# NEW: All parks with active fires
+for park_id, groups in park_groups.items():
+    # Create notifications for any park with end_date >= now-3days
+```
+
+Benefits:
+- **Comprehensive coverage**: Existing fires still burning
+- **No missed notifications**: Even if no new fires detected today
+
+#### 4. Clean Up Stale Alerts
+
+```python
+# Clean up old fire_group_alerts
+conn.execute("""
+    DELETE FROM fire_group_alerts
+    WHERE alert_type = 'left' AND left_at < datetime('now', '-7 days')
+""")
+
+conn.execute("""
+    DELETE FROM fire_group_alerts
+    WHERE alert_type = 'entered' AND last_updated_at < datetime('now', '-14 days')
+""")
+```
+
+Result: Reduced fire_group_alerts from 19,105 → ~600 records.
+
+### Final Results
+
+#### Before Complete Fix
+
+```sql
+SELECT COUNT(*) FROM notifications WHERE notification_type = 'fire_alert' AND park_id = 'CAF_Chinko';
+-- Result: 5
+
+SELECT title FROM notifications WHERE notification_type = 'fire_alert' LIMIT 3;
+-- Result: 🔥 CAF_Chinko_2026_grp_07419ea4, 🔥 CAF_Chinko_2026_grp_07c08138, ...
+```
+
+#### After Complete Fix
+
+```sql
+SELECT COUNT(*) FROM notifications WHERE notification_type = 'fire_alert' AND park_id = 'CAF_Chinko';
+-- Result: 45 ✅
+
+SELECT title FROM notifications WHERE notification_type = 'fire_alert' AND park_id = 'CAF_Chinko' LIMIT 5;
+-- Result:
+--   🔥 Alpha    (1140 fires, 6 days)
+--   🔥 Bravo    (807 fires, 6 days)
+--   🔥 Charlie  (666 fires, 6 days)
+--   🔥 Delta    (235 fires, 6 days)
+--   🔥 Echo     (142 fires, 6 days)
+```
+
+#### System-Wide
+
+```bash
+# Total notifications created
+sqlite3 db.sqlite3 "SELECT COUNT(*) FROM notifications WHERE notification_type = 'fire_alert';"
+# Result: 433 notifications across 24 parks ✅
+
+# Top parks
+sqlite3 db.sqlite3 "SELECT park_id, COUNT(*) FROM notifications WHERE notification_type = 'fire_alert' GROUP BY park_id ORDER BY COUNT(*) DESC LIMIT 5;"
+# Result:
+#   CAF_Chinko: 45
+#   NGA_Gashaka-Gumti: 44
+#   COD_Bili-Uere: 43
+#   CAF_Bamingui-Bangoran: 42
+#   CAF_Manovo_Gounda_St_Floris: 40
+```
+
+### Data Consistency Validation
+
+#### All Sources Now Agree
+
+```bash
+# 1. feature_geometries (source of truth)
+sqlite3 db.sqlite3 "SELECT COUNT(*) FROM feature_geometries WHERE park_id = 'CAF_Chinko' AND feature_type = 'fire_trajectory' AND end_date >= date('now', '-3 days');"
+# Result: 45 ✅
+
+# 2. fire_group_alerts (synced daily)
+sqlite3 db.sqlite3 "SELECT COUNT(*) FROM fire_group_alerts WHERE park_id = 'CAF_Chinko' AND alert_type = 'active';"
+# Result: 45 ✅
+
+# 3. fire-realtime API
+curl -s "http://localhost:8000/api/parks/CAF_Chinko/fire-realtime?pwd=test2026" | jq '[.groups[] | select(.status == "active")] | length'
+# Result: 45 ✅
+
+# 4. notifications table
+sqlite3 db.sqlite3 "SELECT COUNT(*) FROM notifications WHERE park_id = 'CAF_Chinko' AND notification_type = 'fire_alert';"
+# Result: 45 ✅
+```
+
+### Cron Job Verification
+
+```bash
+# Test daily pipeline
+cd /home/exedev/5mp
+python3 scripts/daily_fire_update.py --days 1
+
+# Expected output (Step 6b):
+#   Step 6b: Creating notifications for active fire groups...
+#   CAF_Chinko: Created 45 notifications
+#   NGA_Gashaka-Gumti: Created 44 notifications
+#   ...
+#   Total: 433 notifications across 24 parks
+```
+
+**Cron Schedule:**
+```cron
+0 3 * * * cd /home/exedev/5mp && python3 scripts/daily_fire_update.py --days 7 >> logs/daily_fire.log 2>&1
+```
+
+### Architecture Improvements
+
+**Before:**
+```
+feature_geometries → fire_group_alerts → fire-alerts API → notifications
+                     (18,667 records)    (limited, buggy)   (incomplete)
+```
+
+**After:**
+```
+feature_geometries → notifications
+(496 active)         (433 notifications, all parks)
+     ↓
+fire_group_alerts (optional, for other use cases)
+(cleaned daily)
+```
+
+### Key Takeaways
+
+1. **Single Source of Truth**: feature_geometries is authoritative
+2. **Direct Database Queries**: Avoid HTTP API for cron reliability
+3. **Stable Naming**: Sort by intensity for consistent friendly names
+4. **Comprehensive Coverage**: Process all parks, not just today's affected
+5. **Regular Cleanup**: Prevent table pollution with old alerts
+
+### Future Monitoring
+
+Add to daily pipeline:
+
+```python
+# Validate notification counts match active trajectories
+active_count = conn.execute("""
+    SELECT COUNT(*) FROM feature_geometries
+    WHERE feature_type = 'fire_trajectory' AND end_date >= date('now', '-3 days')
+""").fetchone()[0]
+
+notif_count = conn.execute("""
+    SELECT COUNT(*) FROM notifications
+    WHERE notification_type = 'fire_alert' AND created_at > date('now', '-1 day')
+""").fetchone()[0]
+
+if abs(active_count - notif_count) > 10:
+    log(f"WARNING: Notification mismatch! Active: {active_count}, Notif: {notif_count}")
+```
