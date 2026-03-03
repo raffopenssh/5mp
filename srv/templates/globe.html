@@ -366,8 +366,16 @@
         .starred-report-group { margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; font-size: 10px; color: #666; }
         .starred-report-group-title { font-size: 10px; color: #888; margin-bottom: 4px; }
         .starred-park-nested { margin: 8px 0; padding: 12px; background: rgba(34,197,94,0.05); border: 1px solid rgba(34,197,94,0.1); border-radius: 8px; }
-        .starred-park-nested-header { font-size: 13px; font-weight: 600; color: #22c55e; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .starred-park-nested-header { font-size: 13px; font-weight: 600; color: #22c55e; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .starred-park-nested-header:hover { background: rgba(34,197,94,0.08); margin: -4px; padding: 4px; border-radius: 4px; }
+        .starred-park-nested-header::before { content: '▼ '; font-size: 10px; margin-right: 6px; display: inline-block; transition: transform 0.2s; }
+        .starred-park-nested.collapsed .starred-park-nested-header::before { transform: rotate(-90deg); }
         .starred-park-nested-meta { font-size: 11px; color: #666; }
+        .starred-park-nested.collapsed .starred-report-content { display: none; }
+        .section-more-btn { color: #60a5fa; font-size: 10px; cursor: pointer; margin-top: 4px; user-select: none; }
+        .section-more-btn:hover { text-decoration: underline; }
+        .section-detail { display: none; }
+        .section-detail.expanded { display: block; }
         .starred-bbox-parks-count { font-size: 11px; color: #a855f7; margin-top: 4px; }
         .starred-export-btns { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
         .starred-export-btn { font-size: 10px; padding: 4px 8px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 4px; color: #60a5fa; cursor: pointer; display: flex; align-items: center; gap: 4px; }
@@ -10086,7 +10094,8 @@
         return html;
     }
     
-    function renderParkReportInline(park, data, expanded = true) {
+    function renderParkReportInline(park, data, expanded = true, parkId = null) {
+        if (!parkId) parkId = park.id || park.name?.replace(/\s+/g, '_') || 'unknown';
         const fmt = n => n ? n.toLocaleString() : '0';
         const stats = data.stats || {};
         
@@ -10307,12 +10316,13 @@
         
         for (const park of data.parks) {
             const rd = park.reportData || {};
-            html += `<div class="starred-park-nested">
+            const parkId = park.id || park.name?.replace(/\s+/g, '_');
+            html += `<div class="starred-park-nested" id="park-${escapeHtml(parkId)}" onclick="event.target.closest('.starred-park-nested-header') && this.classList.toggle('collapsed')">
                 <div class="starred-park-nested-header">
                     <span>${escapeHtml(park.name || park.id)}</span>
                     <span class="starred-park-nested-meta">${escapeHtml(park.country || '')}${park.area_km2 ? ' • ' + Math.round(park.area_km2).toLocaleString() + ' km²' : ''}</span>
                 </div>
-                ${renderParkReportInline(park, rd)}
+                ${renderParkReportInline(park, rd, true, parkId)}
             </div>`;
         }
         
@@ -11119,7 +11129,11 @@
     // Export starred report with full nested data as PDF
     // Print inline report with proper print styles
     function printInlineReport() {
-        // Get the current starred items panel content
+        // Simply trigger browser print - respects current collapse/expand state
+        window.print();
+        return;
+        
+        // OLD CODE BELOW (keeping for reference but not used)
         const panelBody = document.getElementById('star-modal-body');
         if (!panelBody) {
             showToast('No report to print', 'error');
@@ -11611,17 +11625,26 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
 .toc-item a:hover { text-decoration: underline; }
 .species-highlights, .publications-list { page-break-inside: avoid; }
 @media print {
+    /* Hide everything except starred items panel */
+    body > *:not(#star-modal) { display: none !important; }
+    #star-modal { display: block !important; position: static !important; background: white !important; }
+    .star-modal-header, .star-modal-footer, .starred-item-expand, .starred-item-remove { display: none !important; }
+    .starred-modal-backdrop { display: none !important; }
+    
+    /* Respect collapse/expand state */
+    .starred-park-nested.collapsed { display: none !important; }
+    .starred-park-nested.collapsed .starred-report-content { display: none !important; }
+    .section-detail:not(.expanded) { display: none !important; }
+    
+    /* Hide interactive elements */
+    .section-more-btn, button, .starred-export-btns { display: none !important; }
+    
+    /* Print styling */
     body { background: white; color: black; padding: 20px; }
     h1 { color: #166534; }
-    h2 { color: #92400e; }
-    h3 { color: #1e40af; }
-    .park-item { border-color: #d1d5db; page-break-inside: avoid; }
-    .narrative-section { page-break-inside: avoid; }
-    .meta { border: 1px solid #e5e7eb; }
-    .toc { border: 1px solid #e5e7eb; }
-    .park-name { color: #166534; }
-    .narrative-title { color: #000; }
-    a { color: #1e40af; }
+    .starred-park-nested { page-break-inside: avoid; border: 1px solid #ddd !important; margin-bottom: 20px; }
+    .starred-report-section { page-break-inside: avoid; }
+    a { color: #1e40af; text-decoration: underline; }
 }
 </style>
 </head><body>
