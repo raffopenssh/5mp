@@ -5295,6 +5295,477 @@
             showToast(`Exported ${allParks.length} parks with all features to KML`, 'success');
         }
 
+        // Comprehensive KML Export V2 - with park boundaries and all spatial data
+        async function exportFullReportKmlV2() {
+            const allParks = [];
+            let parksWithoutData = 0;
+            
+            // Collect all parks (direct stars + bbox)
+            for (const park of starredItems.parks) {
+                const data = reportDataCache.parks.get(park.id);
+                if (!data || (!data.fire && !data.deforestation && !data.settlement && !data.grid)) {
+                    parksWithoutData++;
+                }
+                allParks.push({ park, data });
+            }
+            
+            for (const bbox of starredItems.bboxes) {
+                const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
+                if (bboxData?.parks) {
+                    for (const p of bboxData.parks) {
+                        const data = p.reportData || {};
+                        if (!data.fire && !data.deforestation && !data.settlement && !data.grid) {
+                            parksWithoutData++;
+                        }
+                        allParks.push({ park: p, data });
+                    }
+                }
+            }
+            
+            if (allParks.length === 0) {
+                showToast('No parks to export', 'error');
+                return;
+            }
+            
+            // Warn if some parks are still loading
+            if (parksWithoutData > 0) {
+                if (!confirm(`Warning: ${parksWithoutData} park(s) are still loading data. Export may be incomplete. Continue anyway?`)) {
+                    return;
+                }
+            }
+            
+            showToast(`Generating comprehensive KML for ${allParks.length} parks...`);
+            
+            const dateRangeStr = `${dateFrom || 'start'} to ${dateTo || 'present'}`;
+            
+            // Build comprehensive KML with all feature layers
+            const kmlParts = [
+                '<?xml version="1.0" encoding="UTF-8"?>',
+                '<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">',
+                '<Document>',
+                '<name>5MP Conservation Report - Comprehensive Export</name>',
+                `<description>Generated ${new Date().toISOString().split('T')[0]} | Date range: ${dateRangeStr} | ${allParks.length} protected areas</description>`,
+                '',
+                '<!-- Styles -->',
+                '<Style id="park-style">',
+                '  <LineStyle><color>ff00ff00</color><width>3</width></LineStyle>',
+                '  <PolyStyle><color>3300ff00</color></PolyStyle>',
+                '</Style>',
+                '<Style id="fire-style">',
+                '  <IconStyle><color>ff0000ff</color><scale>0.8</scale></IconStyle>',
+                '  <LineStyle><color>ff0000ff</color><width>3</width></LineStyle>',
+                '  <PolyStyle><color>440000ff</color></PolyStyle>',
+                '</Style>',
+                '<Style id="settlement-style">',
+                '  <IconStyle><color>ff00aaff</color><scale>0.7</scale></IconStyle>',
+                '  <LineStyle><color>ff00aaff</color><width>2</width></LineStyle>',
+                '  <PolyStyle><color>4400aaff</color></PolyStyle>',
+                '</Style>',
+                '<Style id="deforest-style">',
+                '  <LineStyle><color>ffff00ff</color><width>2</width></LineStyle>',
+                '  <PolyStyle><color>44ff00ff</color></PolyStyle>',
+                '</Style>',
+                '<Style id="patrol-style">',
+                '  <IconStyle><color>ff22ff22</color><scale>0.6</scale></IconStyle>',
+                '</Style>',
+                '<Style id="road-style">',
+                '  <LineStyle><color>ff888888</color><width>2</width></LineStyle>',
+                '</Style>',
+                '<Style id="river-style">',
+                '  <LineStyle><color>ffff5500</color><width>2</width></LineStyle>',
+                '</Style>',
+                ''
+            ];
+            
+            // Helper to escape XML special characters
+            function escapeXml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&apos;');
+            }
+            
+            // Helper to convert GeoJSON coordinates to KML format (lon,lat,alt)
+            function coordsToKml(coords, geomType) {
+                if (!coords || coords.length === 0) return '';
+                
+                try {
+                    if (geomType === 'Point') {
+                        return `${coords[0]},${coords[1]},0`;
+                    } else if (geomType === 'LineString') {
+                        return coords.map(c => `${c[0]},${c[1]},0`).join(' ');
+                    } else if (geomType === 'Polygon') {
+                        // First ring is outer boundary
+                        return coords[0].map(c => `${c[0]},${c[1]},0`).join(' ');
+                    } else if (geomType === 'MultiPolygon') {
+                        // Use first polygon's outer ring
+                        if (coords[0] && coords[0][0]) {
+                            return coords[0][0].map(c => `${c[0]},${c[1]},0`).join(' ');
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error converting coords:', e, coords, geomType);
+                }
+                return '';
+            }
+            
+            // Helper to build KML Polygon
+            function buildKmlPolygon(coords, geomType) {
+                const kmlCoords = coordsToKml(coords, geomType);
+                if (!kmlCoords) return '';
+                return `<Polygon><outerBoundaryIs><LinearRing><coordinates>${kmlCoords}</coordinates></LinearRing></outerBoundaryIs></Polygon>`;
+            }
+            
+            // Helper to build KML LineString
+            function buildKmlLineString(coords) {
+                const kmlCoords = coordsToKml(coords, 'LineString');
+                if (!kmlCoords) return '';
+                return `<LineString><coordinates>${kmlCoords}</coordinates></LineString>`;
+            }
+            
+            // Helper to build KML Point
+            function buildKmlPoint(coords) {
+                const kmlCoords = coordsToKml(coords, 'Point');
+                if (!kmlCoords) return '';
+                return `<Point><coordinates>${kmlCoords}</coordinates></Point>`;
+            }
+            
+            // Process each park
+            for (const {park, data} of allParks) {
+                const parkName = escapeXml(park.name || park.pa_name || park.id);
+                const parkId = park.id || park.wdpa_id;
+                
+                kmlParts.push(`<Folder><name>${parkName}</name>`);
+                
+                // Park metadata description
+                const parkDesc = [
+                    `Country: ${escapeXml(park.country || 'Unknown')}`,
+                    `Area: ${park.area_km2 ? park.area_km2.toFixed(2) : 0} km²`,
+                ];
+                
+                if (data) {
+                    if (data.fire) {
+                        parkDesc.push(`Fire Groups: ${data.fire.fireGroups || 0}`);
+                        parkDesc.push(`Total Fires: ${data.fire.totalFires || 0}`);
+                    }
+                    if (data.ghsl) {
+                        parkDesc.push(`Settlements: ${data.ghsl.count || 0}`);
+                    }
+                    if (data.deforest) {
+                        parkDesc.push(`Deforestation Events: ${data.deforest.eventCount || 0}`);
+                    }
+                    if (data.grid) {
+                        parkDesc.push(`Patrol Points: ${data.grid.activePixels || 0}`);
+                    }
+                }
+                
+                kmlParts.push(`<description>${parkDesc.join(' | ')}</description>`);
+                
+                // PARK BOUNDARY - Fetch from areas source
+                try {
+                    const pwd = getPwd();
+                    const boundaryResp = await fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=boundary&pwd=${encodeURIComponent(pwd)}`);
+                    if (boundaryResp.ok) {
+                        const boundaryData = await boundaryResp.json();
+                        if (boundaryData.features && boundaryData.features.length > 0) {
+                            kmlParts.push('<Folder><name>Protected Area Boundary</name>');
+                            for (const feature of boundaryData.features.slice(0, 1)) { // Just first boundary
+                                const polygon = buildKmlPolygon(feature.geometry.coordinates, feature.geometry.type);
+                                if (polygon) {
+                                    kmlParts.push(`<Placemark>`);
+                                    kmlParts.push(`<name>${parkName} - Boundary</name>`);
+                                    kmlParts.push(`<description>Protected area boundary</description>`);
+                                    kmlParts.push('<styleUrl>#park-style</styleUrl>');
+                                    kmlParts.push(polygon);
+                                    kmlParts.push('</Placemark>');
+                                }
+                            }
+                            kmlParts.push('</Folder>');
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Failed to fetch boundary for ${parkId}:`, e);
+                }
+                
+                // FIRE ACTIVITY
+                if (data?.fire?.narratives && data.fire.narratives.length > 0) {
+                    kmlParts.push('<Folder><name>Fire Activity</name>');
+                    
+                    // Fetch fire trajectory features
+                    try {
+                        const pwd = getPwd();
+                        let fireUrl = `/api/parks/${encodeURIComponent(parkId)}/features?type=fire_trajectory&pwd=${encodeURIComponent(pwd)}`;
+                        if (dateFrom) fireUrl += `&from=${dateFrom}`;
+                        if (dateTo) fireUrl += `&to=${dateTo}`;
+                        
+                        const fireResp = await fetch(fireUrl);
+                        if (fireResp.ok) {
+                            const fireData = await fireResp.json();
+                            const fireFeatures = fireData.features || [];
+                            
+                            for (const feature of fireFeatures.slice(0, 200)) { // Limit to 200 fire trajectories
+                                const props = feature.properties || {};
+                                const fireName = escapeXml(props.group_name || props.name || 'Fire Group');
+                                const narrative = escapeXml(props.narrative || '');
+                                const fires = props.fires_inside || props.fires || 0;
+                                const status = props.status || 'Unknown';
+                                
+                                const desc = [
+                                    `Status: ${status}`,
+                                    `Fires: ${fires}`,
+                                    narrative ? `Narrative: ${narrative}` : ''
+                                ].filter(x => x).join(' | ');
+                                
+                                if (feature.geometry.type === 'LineString') {
+                                    const lineString = buildKmlLineString(feature.geometry.coordinates);
+                                    if (lineString) {
+                                        kmlParts.push('<Placemark>');
+                                        kmlParts.push(`<name>${fireName}</name>`);
+                                        kmlParts.push(`<description>${desc}</description>`);
+                                        kmlParts.push('<styleUrl>#fire-style</styleUrl>');
+                                        kmlParts.push(lineString);
+                                        kmlParts.push('</Placemark>');
+                                    }
+                                } else if (feature.geometry.type === 'Point') {
+                                    const point = buildKmlPoint(feature.geometry.coordinates);
+                                    if (point) {
+                                        kmlParts.push('<Placemark>');
+                                        kmlParts.push(`<name>${fireName}</name>`);
+                                        kmlParts.push(`<description>${desc}</description>`);
+                                        kmlParts.push('<styleUrl>#fire-style</styleUrl>');
+                                        kmlParts.push(point);
+                                        kmlParts.push('</Placemark>');
+                                    }
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`Failed to fetch fire trajectories for ${parkId}:`, e);
+                    }
+                    
+                    kmlParts.push('</Folder>');
+                }
+                
+                // SETTLEMENTS
+                if (data?.ghsl?.settlements && data.ghsl.settlements.length > 0) {
+                    kmlParts.push('<Folder><name>Settlements</name>');
+                    
+                    // Fetch settlement features with geometry
+                    try {
+                        const pwd = getPwd();
+                        const settlementUrl = `/api/parks/${encodeURIComponent(parkId)}/features?type=settlement&pwd=${encodeURIComponent(pwd)}`;
+                        const settlementResp = await fetch(settlementUrl);
+                        
+                        if (settlementResp.ok) {
+                            const settlementData = await settlementResp.json();
+                            const features = settlementData.features || [];
+                            
+                            for (const feature of features.slice(0, 300)) { // Limit to 300 settlements
+                                const props = feature.properties || {};
+                                const settlementName = escapeXml(props.name || props.nearest_place || 'Settlement');
+                                const classification = escapeXml(props.classification || props.type || 'Unknown');
+                                const population = props.population || props.population_est || 0;
+                                const area = props.area_m2 || 0;
+                                
+                                const desc = [
+                                    `Type: ${classification}`,
+                                    `Population: ${population.toLocaleString()}`,
+                                    `Area: ${area.toLocaleString()} m²`,
+                                    props.inside_park ? 'Inside protected area' : 'Near protected area'
+                                ].join(' | ');
+                                
+                                const polygon = buildKmlPolygon(feature.geometry.coordinates, feature.geometry.type);
+                                if (polygon) {
+                                    kmlParts.push('<Placemark>');
+                                    kmlParts.push(`<name>${settlementName}</name>`);
+                                    kmlParts.push(`<description>${desc}</description>`);
+                                    kmlParts.push('<styleUrl>#settlement-style</styleUrl>');
+                                    kmlParts.push(polygon);
+                                    kmlParts.push('</Placemark>');
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`Failed to fetch settlement features for ${parkId}:`, e);
+                    }
+                    
+                    kmlParts.push('</Folder>');
+                }
+                
+                // DEFORESTATION
+                if (data?.deforest?.events && data.deforest.events.length > 0) {
+                    kmlParts.push('<Folder><name>Deforestation</name>');
+                    
+                    // Fetch deforestation features with geometry
+                    try {
+                        const pwd = getPwd();
+                        const deforestUrl = `/api/parks/${encodeURIComponent(parkId)}/features?type=deforestation&pwd=${encodeURIComponent(pwd)}`;
+                        const deforestResp = await fetch(deforestUrl);
+                        
+                        if (deforestResp.ok) {
+                            const deforestData = await deforestResp.json();
+                            const features = deforestData.features || [];
+                            
+                            for (const feature of features.slice(0, 200)) { // Limit to 200 deforestation events
+                                const props = feature.properties || {};
+                                const location = escapeXml(props.location || props.name || 'Deforested Area');
+                                const areaKm2 = props.area_km2 || (props.area_ha ? props.area_ha / 100 : 0);
+                                const year = props.year || props.start_year || 'Unknown';
+                                const classification = escapeXml(props.classification || props.type || '');
+                                
+                                const desc = [
+                                    `Loss: ${areaKm2.toFixed(3)} km²`,
+                                    `Year: ${year}`,
+                                    classification ? `Type: ${classification}` : ''
+                                ].filter(x => x).join(' | ');
+                                
+                                const polygon = buildKmlPolygon(feature.geometry.coordinates, feature.geometry.type);
+                                if (polygon) {
+                                    kmlParts.push('<Placemark>');
+                                    kmlParts.push(`<name>${location}</name>`);
+                                    kmlParts.push(`<description>${desc}</description>`);
+                                    kmlParts.push('<styleUrl>#deforest-style</styleUrl>');
+                                    kmlParts.push(polygon);
+                                    kmlParts.push('</Placemark>');
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`Failed to fetch deforestation features for ${parkId}:`, e);
+                    }
+                    
+                    kmlParts.push('</Folder>');
+                }
+                
+                // PATROL ACTIVITY (Grid points)
+                if (data?.grid && data.grid.activePixels > 0) {
+                    kmlParts.push('<Folder><name>Patrol Activity</name>');
+                    
+                    // Fetch grid features
+                    try {
+                        const pwd = getPwd();
+                        let gridUrl = `/api/grid?park_id=${encodeURIComponent(parkId)}&pwd=${encodeURIComponent(pwd)}`;
+                        if (dateFrom) gridUrl += `&from=${dateFrom}`;
+                        if (dateTo) gridUrl += `&to=${dateTo}`;
+                        
+                        const gridResp = await fetch(gridUrl);
+                        if (gridResp.ok) {
+                            const gridData = await gridResp.json();
+                            const features = gridData.features || [];
+                            
+                            for (const feature of features.slice(0, 500)) { // Limit to 500 patrol points
+                                const props = feature.properties || {};
+                                const date = props.date || props.entry_date || 'Unknown date';
+                                const distanceKm = props.distance_km || 0;
+                                const type = props.transport_type || props.type || 'foot';
+                                
+                                const desc = [
+                                    `Date: ${date}`,
+                                    `Distance: ${distanceKm.toFixed(2)} km`,
+                                    `Type: ${type}`
+                                ].join(' | ');
+                                
+                                const point = buildKmlPoint(feature.geometry.coordinates);
+                                if (point) {
+                                    kmlParts.push('<Placemark>');
+                                    kmlParts.push(`<name>Patrol - ${date}</name>`);
+                                    kmlParts.push(`<description>${desc}</description>`);
+                                    kmlParts.push('<styleUrl>#patrol-style</styleUrl>');
+                                    kmlParts.push(point);
+                                    kmlParts.push('</Placemark>');
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`Failed to fetch grid data for ${parkId}:`, e);
+                    }
+                    
+                    kmlParts.push('</Folder>');
+                }
+                
+                // ROADS (optional context layer)
+                try {
+                    const pwd = getPwd();
+                    const roadResp = await fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=road&pwd=${encodeURIComponent(pwd)}`);
+                    if (roadResp.ok) {
+                        const roadData = await roadResp.json();
+                        const features = roadData.features || [];
+                        
+                        if (features.length > 0) {
+                            kmlParts.push('<Folder><name>Roads</name>');
+                            for (const feature of features.slice(0, 100)) { // Limit to 100 roads
+                                const props = feature.properties || {};
+                                const roadName = escapeXml(props.name || 'Road');
+                                const roadType = escapeXml(props.type || props.fclass || '');
+                                
+                                const lineString = buildKmlLineString(feature.geometry.coordinates);
+                                if (lineString) {
+                                    kmlParts.push('<Placemark>');
+                                    kmlParts.push(`<name>${roadName}</name>`);
+                                    if (roadType) kmlParts.push(`<description>Type: ${roadType}</description>`);
+                                    kmlParts.push('<styleUrl>#road-style</styleUrl>');
+                                    kmlParts.push(lineString);
+                                    kmlParts.push('</Placemark>');
+                                }
+                            }
+                            kmlParts.push('</Folder>');
+                        }
+                    }
+                } catch (e) {
+                    // Roads are optional, ignore errors
+                }
+                
+                // RIVERS (optional context layer)
+                try {
+                    const pwd = getPwd();
+                    const riverResp = await fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=river&pwd=${encodeURIComponent(pwd)}`);
+                    if (riverResp.ok) {
+                        const riverData = await riverResp.json();
+                        const features = riverData.features || [];
+                        
+                        if (features.length > 0) {
+                            kmlParts.push('<Folder><name>Rivers</name>');
+                            for (const feature of features.slice(0, 50)) { // Limit to 50 rivers
+                                const props = feature.properties || {};
+                                const riverName = escapeXml(props.name || 'River');
+                                
+                                const lineString = buildKmlLineString(feature.geometry.coordinates);
+                                if (lineString) {
+                                    kmlParts.push('<Placemark>');
+                                    kmlParts.push(`<name>${riverName}</name>`);
+                                    kmlParts.push('<styleUrl>#river-style</styleUrl>');
+                                    kmlParts.push(lineString);
+                                    kmlParts.push('</Placemark>');
+                                }
+                            }
+                            kmlParts.push('</Folder>');
+                        }
+                    }
+                } catch (e) {
+                    // Rivers are optional, ignore errors
+                }
+                
+                kmlParts.push('</Folder>'); // End park folder
+            }
+            
+            kmlParts.push('</Document>');
+            kmlParts.push('</kml>');
+            
+            // Download KML
+            const kml = kmlParts.join('\n');
+            const blob = new Blob([kml], {type: 'application/vnd.google-earth.kml+xml'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = buildReportFilename('5MP_Report_Comprehensive', 'kml');
+            link.click();
+            URL.revokeObjectURL(link.href);
+            
+            showToast(`Exported comprehensive KML for ${allParks.length} parks with all spatial layers`, 'success');
+        }
+
         var mapLoaded = false;
         var pendingGridReload = false;
         
@@ -15775,7 +16246,8 @@ ${starredItems.narratives.map(n => {
                     <button class="star-report-btn secondary" onclick="openReportBuilder()" title="Configure Report" style="min-width:auto;padding:8px 12px;">⚙️</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportCsvV2()" title="Export comprehensive CSV with all data including patrol activity">↓ CSV V2</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportXlsxV2()" title="Export comprehensive XLSX with all data including patrol activity">↓ XLSX V2</button>
-                    <button class="star-report-btn secondary" onclick="exportFullReportKml()" title="Export all park KMLs">↓ KML</button>
+                    <button class="star-report-btn secondary" onclick="exportFullReportKml()" title="Export all park KMLs (basic)">↓ KML</button>
+                    <button class="star-report-btn secondary" onclick="exportFullReportKmlV2()" title="Export comprehensive KML with park boundaries, fire trajectories, settlements, deforestation, patrol points, roads and rivers">↓ KML V2</button>
                     <button class="star-report-btn" onclick="printInlineReport()" title="Print report">Print</button>
                 </div>
             </div>
