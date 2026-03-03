@@ -2396,9 +2396,67 @@
                     
                     console.log('✅ Test passed');
                     return {success: true, details, pinResult};
+                },
+                
+                // Star report testing helpers
+                STAR: {
+                    // Get report data for a bbox or park
+                    getReportData: async (identifier) => {
+                        if (identifier.includes(',')) {
+                            // It's a bbox
+                            const bboxKey = identifier;
+                            return reportDataCache.bboxes.get(bboxKey);
+                        } else {
+                            // It's a park ID
+                            return reportDataCache.parks.get(identifier);
+                        }
+                    },
+                    
+                    // Check if section has data
+                    hasSectionData: (parkId, section) => {
+                        const data = reportDataCache.parks.get(parkId);
+                        if (!data) return false;
+                        const sectionData = data[section];
+                        if (!sectionData) return false;
+                        
+                        // Check if section has meaningful data
+                        if (section === 'fire') return (sectionData.totalFires || 0) > 0;
+                        if (section === 'ghsl') return (sectionData.count || 0) > 0;
+                        if (section === 'deforest') return (sectionData.totalLossKm2 || 0) > 0;
+                        if (section === 'grid') return (sectionData.activePixels || 0) > 0;
+                        return true;
+                    },
+                    
+                    // Trigger exports programmatically
+                    exportXLSX: () => exportFullReportXlsxV2(),
+                    exportCSV: () => exportFullReportCsvV2(),
+                    exportKML: () => exportFullReportKmlV2(),
+                    
+                    // Open star modal
+                    openModal: () => toggleStarModal(),
+                    
+                    // Get export stats
+                    getStats: () => {
+                        let totalFires = 0, totalDeforest = 0, totalPop = 0, totalPixels = 0;
+                        for (const [parkId, data] of reportDataCache.parks.entries()) {
+                            totalFires += data.fire?.totalFires || 0;
+                            totalDeforest += data.deforestation?.totalLossKm2 || 0;
+                            totalPop += data.settlement?.total_population || 0;
+                            totalPixels += data.grid?.activePixels || 0;
+                        }
+                        return {
+                            parksCount: reportDataCache.parks.size,
+                            bboxesCount: reportDataCache.bboxes.size,
+                            totalFires,
+                            totalDeforest,
+                            totalPopulation: totalPop,
+                            totalPatrolPixels: totalPixels
+                        };
+                    }
                 }
             };
             console.log('TEST mode enabled. Use window.TEST for assertions.');
+            console.log('Star report helpers: TEST.STAR.getStats(), TEST.STAR.getReportData(id), TEST.STAR.exportXLSX()');
             console.log('Fire helpers: TEST.findFireNotification("Alpha-5"), TEST.clickFire("Hotel"), TEST.testFireClick("Alpha-5", "Aouk")');
             console.log('Notification helpers: TEST.getSingleNotifications(), TEST.getNotificationStats()');
             console.log('TIP: For full UI testing, resize browser to 1280x1400+ to see all popup sections.');
@@ -10903,6 +10961,14 @@
             html += renderStarredSection('Parks', 'park', starredItems.parks, item => {
                 const cached = reportDataCache.parks.get(item.id);
                 const isLoading = reportDataCache.loading.has(item.id);
+                
+                // Generate summary preview
+                let summaryPreview = '';
+                if (cached) {
+                    const summary = generateParkSummaryStats(cached);
+                    summaryPreview = `<div class="starred-item-preview" style="margin-top:6px;padding:6px 8px;background:rgba(34,197,94,0.05);border-left:2px solid #22c55e;border-radius:4px;font-size:10px;color:#aaa;">${summary}</div>`;
+                }
+                
                 return {
                     id: item.id,
                     parkId: item.id,
@@ -10910,7 +10976,7 @@
                     meta: item.country || '',
                     icon: '▣',
                     hint: 'Includes: fire, deforestation, settlements, patrol activity',
-                    status: cached ? '<div class="starred-report-ready">✓ Report ready</div>' : '<div class="starred-report-loading" style="padding:2px 0;"><div class="spinner" style="width:10px;height:10px;"></div><span style="font-size:10px;">Loading...</span></div>',
+                    status: cached ? '<div class="starred-report-ready">✓ Report ready</div>' + summaryPreview : '<div class="starred-report-loading" style="padding:2px 0;"><div class="spinner" style="width:10px;height:10px;"></div><span style="font-size:10px;">Loading data...</span></div>',
                     reportHtml: cached ? renderParkReportInline(item, cached) : '<div class="starred-report-loading"><div class="spinner"></div>Loading report data...</div>'
                 };
             }, 'Full park subscription — all narratives & stats');
@@ -10935,13 +11001,34 @@
                 const cached = reportDataCache.bboxes.get(bboxKey);
                 const isLoading = reportDataCache.loading.has('bbox:' + bboxKey);
                 const parkCount = cached ? cached.parks.length : '?';
+                
+                // Generate summary preview for bbox
+                let summaryPreview = '';
+                if (cached && cached.parks.length > 0) {
+                    let totalFires = 0, totalDeforest = 0, totalSettlements = 0, totalPatrol = 0;
+                    cached.parks.forEach(p => {
+                        const data = p.reportData || {};
+                        totalFires += data.fire?.total_fires || 0;
+                        totalDeforest += data.deforestation?.total_loss_km2 || 0;
+                        totalSettlements += data.settlement?.settlement_count || 0;
+                        totalPatrol += data.grid?.activePixels || 0;
+                    });
+                    const summaryParts = [];
+                    if (totalFires > 0) summaryParts.push(`🔥 ${totalFires.toLocaleString()} fires`);
+                    if (totalDeforest > 0) summaryParts.push(`🌳 ${totalDeforest.toFixed(1)} km²`);
+                    if (totalSettlements > 0) summaryParts.push(`🏘️ ${totalSettlements} settlements`);
+                    if (totalPatrol > 0) summaryParts.push(`📍 ${totalPatrol.toLocaleString()} patrol`);
+                    const summary = summaryParts.length > 0 ? summaryParts.join(' • ') : 'No significant activity';
+                    summaryPreview = `<div class="starred-item-preview" style="margin-top:6px;padding:6px 8px;background:rgba(34,197,94,0.05);border-left:2px solid #22c55e;border-radius:4px;font-size:10px;color:#aaa;">${summary}</div>`;
+                }
+                
                 return {
                     id: bboxKey,
                     name: item.name || 'Custom Area',
                     meta: `${item.bbox[0].toFixed(2)}°, ${item.bbox[1].toFixed(2)}° to ${item.bbox[2].toFixed(2)}°, ${item.bbox[3].toFixed(2)}°`,
                     icon: '□',
                     hint: cached ? `Contains ${parkCount} parks with full data` : 'Includes: all parks in area with full data',
-                    status: cached ? '<div class="starred-report-ready">✓ ' + parkCount + ' parks ready</div>' : '<div class="starred-report-loading" style="padding:2px 0;"><div class="spinner" style="width:10px;height:10px;"></div><span style="font-size:10px;">Loading...</span></div>',
+                    status: cached ? '<div class="starred-report-ready">✓ ' + parkCount + ' parks ready</div>' + summaryPreview : '<div class="starred-report-loading" style="padding:2px 0;"><div class="spinner" style="width:10px;height:10px;"></div><span style="font-size:10px;">Loading...</span></div>',
                     reportHtml: cached ? renderBboxReportInline(item, cached) : '<div class="starred-report-loading"><div class="spinner"></div>Loading parks in area...</div>'
                 };
             }, 'Regional subscription — all parks & their data');
@@ -10964,13 +11051,32 @@
             html += renderStarredSection('Specific Narratives', 'narrative', starredItems.narratives, item => {
                 const cached = reportDataCache.parks.get(item.parkId);
                 const isLoading = reportDataCache.loading.has(item.parkId);
+                
+                // Generate preview for specific narrative type
+                let summaryPreview = '';
+                if (cached) {
+                    const type = item.type.toLowerCase();
+                    if (type === 'fire' && cached.fire) {
+                        const fires = cached.fire.total_fires || 0;
+                        const groups = cached.fire.narratives?.length || 0;
+                        summaryPreview = `<div class="starred-item-preview" style="margin-top:6px;padding:6px 8px;background:rgba(239,68,68,0.05);border-left:2px solid #ef4444;border-radius:4px;font-size:10px;color:#aaa;">🔥 ${fires.toLocaleString()} detections in ${groups} groups</div>`;
+                    } else if (type === 'deforestation' && cached.deforestation) {
+                        const km2 = cached.deforestation.total_loss_km2 || 0;
+                        summaryPreview = `<div class="starred-item-preview" style="margin-top:6px;padding:6px 8px;background:rgba(34,197,94,0.05);border-left:2px solid #22c55e;border-radius:4px;font-size:10px;color:#aaa;">🌳 ${km2.toFixed(1)} km² forest loss</div>`;
+                    } else if (type === 'settlement' && cached.settlement) {
+                        const count = cached.settlement.settlement_count || 0;
+                        const pop = cached.settlement.total_population || 0;
+                        summaryPreview = `<div class="starred-item-preview" style="margin-top:6px;padding:6px 8px;background:rgba(59,130,246,0.05);border-left:2px solid #3b82f6;border-radius:4px;font-size:10px;color:#aaa;">🏘️ ${count} settlements (${pop.toLocaleString()} pop.)</div>`;
+                    }
+                }
+                
                 return {
                     id: item.parkId + '_' + item.type,
                     parkId: item.parkId,
                     name: item.title || item.type,
                     meta: item.parkName || '',
                     icon: {'fire': '◆', 'deforestation': '▲', 'settlement': '■', 'road': '═'}[item.type] || '●',
-                    status: cached ? '<div class="starred-report-ready">✓ Ready</div>' : '<div class="starred-report-loading" style="padding:2px 0;"><div class="spinner" style="width:10px;height:10px;"></div><span style="font-size:10px;">Loading...</span></div>',
+                    status: cached ? '<div class="starred-report-ready">✓ Ready</div>' + summaryPreview : '<div class="starred-report-loading" style="padding:2px 0;"><div class="spinner" style="width:10px;height:10px;"></div><span style="font-size:10px;">Loading...</span></div>',
                     reportHtml: cached ? renderNarrativeReportInline(item, cached) : '<div class="starred-report-loading"><div class="spinner"></div>Loading...</div>'
                 };
             }, 'Single narrative type for specific park');
@@ -11321,6 +11427,41 @@
         
         html += '</div>';
         return html;
+    }
+    
+    // Helper to generate quick summary stats for park data
+    function generateParkSummaryStats(data) {
+        if (!data) return 'No data available';
+        
+        const stats = [];
+        
+        // Fire stats
+        const fireCount = data.fire?.total_fires || 0;
+        if (fireCount > 0) {
+            const fireGroups = data.fire?.narratives?.length || 0;
+            stats.push(`🔥 ${fireCount.toLocaleString()} fires (${fireGroups} groups)`);
+        }
+        
+        // Deforestation stats
+        const deforestKm2 = data.deforestation?.total_loss_km2 || data.stats?.deforestation?.total_loss_km2 || 0;
+        if (deforestKm2 > 0) {
+            stats.push(`🌳 ${deforestKm2.toFixed(1)} km² deforested`);
+        }
+        
+        // Settlement stats
+        const settlements = data.settlement?.settlement_count || data.stats?.settlement?.settlement_count || 0;
+        if (settlements > 0) {
+            const pop = data.settlement?.total_population || 0;
+            stats.push(`🏘️ ${settlements} settlements${pop > 0 ? ' (' + pop.toLocaleString() + ' pop.)' : ''}`);
+        }
+        
+        // Patrol stats
+        const patrolPixels = data.grid?.activePixels || 0;
+        if (patrolPixels > 0) {
+            stats.push(`📍 ${patrolPixels.toLocaleString()} patrol pixels`);
+        }
+        
+        return stats.length > 0 ? stats.join(' • ') : 'No significant activity detected';
     }
     
     function renderParkReportInline(park, data, expanded = true, parkId = null) {
@@ -12483,6 +12624,11 @@
                 printWindow.print();
             }, 250);
         };
+    }
+    
+    // Wrapper for print function (called from button)
+    function printStarReport() {
+        printStarredReport();
     }
     
     async function printStarredReport() {
@@ -16242,13 +16388,14 @@ ${starredItems.narratives.map(n => {
                 <div class="star-report-meta" id="star-report-meta">
                     <!-- Report metadata -->
                 </div>
-                <div class="star-report-actions">
-                    <button class="star-report-btn secondary" onclick="openReportBuilder()" title="Configure Report" style="min-width:auto;padding:8px 12px;">⚙️</button>
-                    <button class="star-report-btn secondary" onclick="exportFullReportCsvV2()" title="Export comprehensive CSV with all data including patrol activity">↓ CSV V2</button>
-                    <button class="star-report-btn secondary" onclick="exportFullReportXlsxV2()" title="Export comprehensive XLSX with all data including patrol activity">↓ XLSX V2</button>
-                    <button class="star-report-btn secondary" onclick="exportFullReportKml()" title="Export all park KMLs (basic)">↓ KML</button>
-                    <button class="star-report-btn secondary" onclick="exportFullReportKmlV2()" title="Export comprehensive KML with park boundaries, fire trajectories, settlements, deforestation, patrol points, roads and rivers">↓ KML V2</button>
-                    <button class="star-report-btn" onclick="printInlineReport()" title="Print report">Print</button>
+                <div class="star-report-actions" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+                    <button class="star-report-btn secondary" onclick="openReportBuilder()" title="Configure report sections, detail level, and filters" style="min-width:auto;padding:8px 12px;">⚙️ Config</button>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                        <button class="star-report-btn secondary" onclick="exportFullReportCsvV2()" title="Export comprehensive CSV spreadsheet with all sections: fires, deforestation, settlements, species, patrol activity. Includes metadata, stats, and individual records." style="font-size:12px;">📄 CSV V2</button>
+                        <button class="star-report-btn secondary" onclick="exportFullReportXlsxV2()" title="Export comprehensive Excel workbook with multiple sheets: summary, fires, deforestation, settlements, species, patrol. Best for detailed analysis." style="font-size:12px;">📊 XLSX V2</button>
+                        <button class="star-report-btn secondary" onclick="exportFullReportKmlV2()" title="Export comprehensive KML with park boundaries, fire trajectories, settlements, deforestation hotspots, patrol points, roads and rivers. Open in Google Earth." style="font-size:12px;">🌍 KML V2</button>
+                    </div>
+                    <button class="star-report-btn" onclick="printStarReport()" title="Generate printable HTML report with all sections expanded. Opens in new window for printing or saving as PDF." style="font-size:12px;">🖨️ Print</button>
                 </div>
             </div>
         </div>
