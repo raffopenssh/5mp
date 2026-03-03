@@ -9338,6 +9338,17 @@
             modal.classList.remove('active');
         } else {
             modal.classList.add('active');
+            // Auto-apply smart defaults if config is on 'auto' preset
+            if (reportConfig.preset === 'auto') {
+                const smartDefault = determineSmartDefault();
+                if (smartDefault && smartDefault.profile) {
+                    Object.assign(reportConfig.sections, smartDefault.sections);
+                    Object.assign(reportConfig.filters, smartDefault.filters);
+                    reportConfig.detailLevel = smartDefault.detailLevel;
+                    reportConfig.preset = smartDefault.profile;
+                    saveReportConfig();
+                }
+            }
             renderStarredItems();
             updateStarReportMeta();
             // Auto-load all report data when panel opens
@@ -9641,6 +9652,9 @@
     }
     
     function renderStarredItems() {
+        // Reset flag to show config banner on first park
+        window._showReportConfig = true;
+        
         const body = document.getElementById('star-modal-body');
         const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0);
         
@@ -9891,51 +9905,7 @@
     }
     
     // ==== QUICK WIN #5: Color-coded Threat Levels ====
-    function calculateThreatLevel(data) {
-        let score = 0;
-        let factors = [];
-        
-        // Fire threat (0-40 points)
-        const fireResponse = data.fire?.response_rate || 0;
-        if (fireResponse < 10) { score += 40; factors.push('Low fire response'); }
-        else if (fireResponse < 30) { score += 20; factors.push('Moderate fire response'); }
-        else if (fireResponse < 50) { score += 10; }
-        
-        // Deforestation threat (0-30 points)
-        const deforestTrend = data.deforestation?.trend_percent_change || 0;
-        if (deforestTrend > 20) { score += 30; factors.push('Accelerating deforestation'); }
-        else if (deforestTrend > 10) { score += 20; factors.push('Rising deforestation'); }
-        else if (deforestTrend > 0) { score += 10; }
-        
-        // Settlement threat (0-20 points)
-        const settlementDensity = data.settlement?.population_density_per_km2 || 0;
-        if (settlementDensity > 5) { score += 20; factors.push('High settlement density'); }
-        else if (settlementDensity > 2) { score += 10; factors.push('Moderate settlements'); }
-        
-        // Roadless area protection (0-10 points, inverted)
-        const roadless = data.stats?.roadless?.roadless_percentage || 100;
-        if (roadless < 70) { score += 10; factors.push('Road fragmentation'); }
-        else if (roadless < 85) { score += 5; }
-        
-        // Determine level
-        let level, color, bgcolor;
-        if (score >= 50) {
-            level = 'HIGH THREAT';
-            color = '#ef4444';
-            bgcolor = 'rgba(239,68,68,0.15)';
-        } else if (score >= 25) {
-            level = 'MODERATE';
-            color = '#f59e0b';
-            bgcolor = 'rgba(245,158,11,0.15)';
-        } else {
-            level = 'LOW THREAT';
-            color = '#22c55e';
-            bgcolor = 'rgba(34,197,94,0.15)';
-        }
-        
-        return { level, color, bgcolor, score, factors };
-    }
-    
+
     // Helper to group and summarize repetitive fire narratives
     function renderFireGroupsSummary(fireNarratives, limit) {
         if (!fireNarratives || fireNarratives.length === 0) return '';
@@ -10127,6 +10097,17 @@
         
         let html = '<div class="starred-report-content">';
         
+        // Show report configuration at top (first park only in list, or always for print)
+        if (window._showReportConfig !== false) {
+            const enabledSections = Object.keys(reportConfig.sections).filter(k => reportConfig.sections[k]);
+            const profileName = reportConfig.preset === 'auto' ? 'Auto' : reportConfig.preset.charAt(0).toUpperCase() + reportConfig.preset.slice(1);
+            html += `<div style="padding:8px;background:rgba(34,197,94,0.05);border-left:3px solid #22c55e;margin-bottom:12px;font-size:10px;color:#888;">
+                <div style="font-weight:600;margin-bottom:4px;color:#22c55e;">🧙 Report Configuration: ${profileName} Profile</div>
+                <div>Detail: ${reportConfig.detailLevel} • Sections: ${enabledSections.length}/8 • ${reportConfig.filters.skipZeros ? 'Hide empty sections' : 'Show all'}</div>
+            </div>`;
+            window._showReportConfig = false; // Only show once at the top
+        }
+        
         // ==== QUICK WIN #4: Summary Statistics at Top ====
         const quickStats = [];
         if (data.fire?.total_fires) quickStats.push(`${fmt(data.fire.total_fires)} fires`);
@@ -10140,14 +10121,6 @@
             </div>`;
         }
         
-        // ==== QUICK WIN #5: Color-coded Threat Level ====
-        const threat = calculateThreatLevel(data);
-        html += `<div style="padding:8px;background:${threat.bgcolor};border-left:3px solid ${threat.color};border-radius:4px;margin-bottom:12px;">
-            <div style="font-size:11px;font-weight:700;color:${threat.color};margin-bottom:4px;">
-                ⚠️ Threat Level: ${threat.level}
-            </div>
-            ${threat.factors.length > 0 ? `<div style="font-size:9px;color:#888;">${threat.factors.join(' • ')}</div>` : ''}
-        </div>`;
         
         // Pre-calculate filtered fire stats (used in both Patrol summary and Fire section)
         const fire = data.fire || {};
@@ -10274,18 +10247,20 @@
         
         // Species section
         const species = data.species || {};
-        if (shouldIncludeSection('biodiversity', data) && (species.total_species > 0 || (species.species && species.species.length > 0))) {
+        if (shouldIncludeSection('biodiversity', data) && (species.total_count > 0 || (species.species && species.species.length > 0))) {
             const detailLevel = getDetailLevel();
             const showSpeciesList = detailLevel !== 'summary' && species.species && species.species.length > 0;
             const speciesLimit = detailLevel === 'comprehensive' ? 30 : 10;
-            const endangered = species.species?.filter(s => s.category === 'CR' || s.category === 'EN').length || 0;
+            // Use status field, not category
+            const endangeredSpecies = species.species?.filter(s => s.status === 'CR' || s.status === 'EN' || s.status === 'VU') || [];
+            const endangered = endangeredSpecies.length;
             html += `<div class="starred-report-section" style="border-color:#10b981;">
-                <div class="starred-report-section-title">❦ Species</div>
+                <div class="starred-report-section-title">❦ Biodiversity</div>
                 <div class="starred-report-section-stats">
-                    <span>Total: ${species.total_species || species.species?.length || 0}</span>
-                    <span>Endangered: ${endangered}</span>
+                    <span>Total: ${species.total_count || species.species?.length || 0} species</span>
+                    <span>Threatened: ${endangered} (CR/EN/VU)</span>
                 </div>
-                ${showSpeciesList ? `<div class="starred-report-group"><div class="starred-report-group-title">Notable Species:</div>${species.species.filter(s => s.category === 'CR' || s.category === 'EN' || s.category === 'VU').slice(0, speciesLimit).map(s => `<div style="margin:2px 0;font-size:10px;">${s.common_name || s.scientific_name} (${s.category})</div>`).join('')}</div>` : ''}
+                ${showSpeciesList && endangeredSpecies.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Notable Threatened Species:</div>${endangeredSpecies.slice(0, speciesLimit).map(s => `<div style="margin:3px 0;font-size:10px;line-height:1.4;"><strong style="color:#10b981;">${s.common_name || s.binomial || 'Unknown'}</strong> <em style="color:#888;">${s.binomial || ''}</em> <span style="padding:1px 4px;background:${ s.status === 'CR' ? '#dc2626' : s.status === 'EN' ? '#f59e0b' : '#84cc16' };color:white;border-radius:2px;font-size:8px;font-weight:600;">${s.status}</span></div>`).join('')}${endangeredSpecies.length > speciesLimit ? `<div style="color:#888;font-size:10px;margin-top:4px;">+ ${endangeredSpecies.length - speciesLimit} more threatened species</div>` : ''}</div>` : ''}
             </div>`;
         }
         
@@ -10539,8 +10514,7 @@
             climate: true,
             publications: true,
             infrastructure: true,
-            patrol: true,
-            threat: true
+            patrol: true
         },
         filters: {
             skipZeros: true
@@ -10665,8 +10639,7 @@
                     climate: true,
                     publications: true,
                     infrastructure: false,
-                    patrol: true,
-                    threat: true
+                    patrol: true
                 },
                 filters: { skipZeros: true },
                 detailLevel: 'standard'
@@ -10687,8 +10660,7 @@
                     climate: true,
                     publications: true,
                     infrastructure: true,
-                    patrol: true,
-                    threat: true
+                    patrol: true
                 },
                 filters: { skipZeros: false },  // Show everything
                 detailLevel: 'comprehensive'
@@ -10713,8 +10685,7 @@
                     climate: bioFocused,
                     publications: bioFocused || parkCount <= 3,
                     infrastructure: threatFocused,
-                    patrol: true,
-                    threat: true
+                    patrol: true
                 },
                 filters: { skipZeros: threatFocused },  // Hide empty only if threat-focused
                 detailLevel: 'standard'
@@ -10738,8 +10709,7 @@
                     climate: false,  // Skip for medium-sized reports
                     publications: false,
                     infrastructure: highActivity,
-                    patrol: true,
-                    threat: true
+                    patrol: true
                 },
                 filters: { skipZeros: true },
                 detailLevel: highActivity ? 'summary' : 'standard'
@@ -10763,8 +10733,7 @@
                     climate: false,
                     publications: false,
                     infrastructure: veryHighActivity,
-                    patrol: totalPatrols > 50,
-                    threat: true
+                    patrol: totalPatrols > 50
                 },
                 filters: { skipZeros: true },
                 detailLevel: 'summary'
@@ -10784,8 +10753,7 @@
                 climate: false,
                 publications: false,
                 infrastructure: false,
-                patrol: false,
-                threat: true
+                patrol: false
             },
             filters: { skipZeros: true },
             detailLevel: 'summary'
@@ -10841,7 +10809,6 @@
         document.getElementById('section-publications').checked = reportConfig.sections.publications;
         document.getElementById('section-infrastructure').checked = reportConfig.sections.infrastructure;
         document.getElementById('section-patrol').checked = reportConfig.sections.patrol;
-        document.getElementById('section-threat').checked = reportConfig.sections.threat || true;
         
         document.getElementById('filter-skip-zeros').checked = reportConfig.filters.skipZeros;
         
@@ -10880,7 +10847,6 @@
         document.getElementById('section-publications').checked = reportConfig.sections.publications;
         document.getElementById('section-infrastructure').checked = reportConfig.sections.infrastructure;
         document.getElementById('section-patrol').checked = reportConfig.sections.patrol;
-        document.getElementById('section-threat').checked = reportConfig.sections.threat;
         
         document.getElementById('filter-skip-zeros').checked = reportConfig.filters.skipZeros;
         
@@ -10928,7 +10894,6 @@
         reportConfig.sections.publications = document.getElementById('section-publications').checked;
         reportConfig.sections.infrastructure = document.getElementById('section-infrastructure').checked;
         reportConfig.sections.patrol = document.getElementById('section-patrol').checked;
-        reportConfig.sections.threat = document.getElementById('section-threat').checked;
         
         reportConfig.filters.skipZeros = document.getElementById('filter-skip-zeros').checked;
         
@@ -10973,7 +10938,6 @@
         document.getElementById('section-publications').checked = reportConfig.sections.publications;
         document.getElementById('section-infrastructure').checked = reportConfig.sections.infrastructure;
         document.getElementById('section-patrol').checked = reportConfig.sections.patrol;
-        document.getElementById('section-threat').checked = reportConfig.sections.threat || true;
         
         document.getElementById('filter-skip-zeros').checked = reportConfig.filters.skipZeros;
         document.getElementById('detail-level').value = reportConfig.detailLevel;
@@ -10996,8 +10960,7 @@
                     climate: false,
                     publications: false,
                     infrastructure: false,
-                    patrol: true,
-                    threat: true
+                    patrol: true
                 };
                 reportConfig.filters = {
                     skipZeros: true
@@ -11016,8 +10979,7 @@
                     climate: true,
                     publications: true,
                     infrastructure: false,
-                    patrol: true,
-                    threat: true
+                    patrol: true
                 };
                 reportConfig.filters = {
                     skipZeros: true
@@ -11036,8 +10998,7 @@
                     climate: true,
                     publications: true,
                     infrastructure: true,
-                    patrol: true,
-                    threat: true
+                    patrol: true
                 };
                 reportConfig.filters = {
                     skipZeros: false
@@ -11061,7 +11022,6 @@
         document.getElementById('section-publications').checked = reportConfig.sections.publications;
         document.getElementById('section-infrastructure').checked = reportConfig.sections.infrastructure;
         document.getElementById('section-patrol').checked = reportConfig.sections.patrol;
-        document.getElementById('section-threat').checked = reportConfig.sections.threat;
         
         document.getElementById('filter-skip-zeros').checked = reportConfig.filters.skipZeros;
         
@@ -11146,6 +11106,122 @@
     loadReportConfig();
     
     // Export starred report with full nested data as PDF
+    // Print inline report with proper print styles
+    function printInlineReport() {
+        // Get the current starred items panel content
+        const panelBody = document.getElementById('star-modal-body');
+        if (!panelBody) {
+            showToast('No report to print', 'error');
+            return;
+        }
+        
+        // Clone the content
+        const content = panelBody.cloneNode(true);
+        
+        // Expand all collapsibles
+        content.querySelectorAll('details').forEach(d => d.open = true);
+        
+        // Get report metadata
+        const allParks = [...starredItems.parks];
+        for (const bbox of starredItems.bboxes) {
+            const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
+            if (bboxData?.parks) {
+                allParks.push(...bboxData.parks);
+            }
+        }
+        
+        // Build title
+        const parkNames = allParks.length === 1 ? allParks[0].name : 
+                          allParks.length <= 3 ? allParks.map(p => p.name).join(', ') :
+                          `${allParks.length} Protected Areas`;
+        const dateRange = dateFrom && dateTo ? ` (${dateFrom} to ${dateTo})` : '';
+        const title = `5MP Conservation Report: ${parkNames}${dateRange}`;
+        
+        // Create print window
+        const printWindow = window.open('', '_blank', 'width=900,height=700');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>${escapeHtml(title)}</title>
+                <meta charset="UTF-8">
+                <style>
+                    * { box-sizing: border-box; }
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        font-size: 12px;
+                        line-height: 1.6;
+                        color: #1a1a1a;
+                        background: white;
+                        padding: 20mm;
+                        margin: 0;
+                    }
+                    h1 {
+                        font-size: 24px;
+                        margin: 0 0 8px 0;
+                        color: #22c55e;
+                        border-bottom: 2px solid #22c55e;
+                        padding-bottom: 8px;
+                    }
+                    h2 {
+                        font-size: 18px;
+                        margin: 20px 0 10px 0;
+                        color: #333;
+                        page-break-after: avoid;
+                    }
+                    h3 {
+                        font-size: 14px;
+                        margin: 16px 0 8px 0;
+                        color: #555;
+                        page-break-after: avoid;
+                    }
+                    
+                    /* Report sections */
+                    .starred-section { margin-bottom: 24px; page-break-inside: avoid; }
+                    .starred-item { margin-bottom: 20px; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; page-break-inside: avoid; }
+                    .starred-item-header { background: #f3f4f6; padding: 10px 12px; font-weight: 600; border-bottom: 1px solid #ddd; }
+                    .starred-report-content { padding: 12px; }
+                    .starred-report-section { margin: 12px 0; padding: 8px; border-left: 3px solid #22c55e; background: #f9fafb; }
+                    .starred-report-section-title { font-weight: 600; margin-bottom: 4px; }
+                    .starred-report-section-stats { font-size: 11px; color: #666; margin: 4px 0; }
+                    .starred-report-section-stats span { margin-right: 12px; }
+                    .starred-report-group { margin: 8px 0; font-size: 11px; }
+                    .starred-report-group-title { font-weight: 600; margin-bottom: 4px; color: #333; }
+                    
+                    /* Hide UI elements */
+                    .starred-item-remove, .starred-item-expand, .starred-export-btns,
+                    .spinner, button { display: none !important; }
+                    
+                    /* Print styles */
+                    @media print {
+                        body { padding: 15mm; }
+                        h1 { page-break-before: avoid; }
+                        .starred-item { page-break-inside: avoid; }
+                        a { color: #000; text-decoration: underline; }
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>${escapeHtml(title)}</h1>
+                <div style="font-size:11px;color:#666;margin-bottom:20px;">
+                    Generated: ${new Date().toLocaleDateString()} • 
+                    Profile: ${reportConfig.preset.toUpperCase()} • 
+                    Detail: ${reportConfig.detailLevel}
+                </div>
+                ${content.innerHTML}
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        
+        // Wait for content to load, then print
+        printWindow.onload = function() {
+            setTimeout(() => {
+                printWindow.print();
+            }, 250);
+        };
+    }
+    
     async function printStarredReport() {
         const btn = document.querySelector('button[onclick="printStarredReport()"]');
         const originalText = btn ? btn.innerHTML : '';
@@ -14521,12 +14597,12 @@ ${starredItems.narratives.map(n => {
                     <!-- Report metadata -->
                 </div>
                 <div class="star-report-actions">
-                    <button class="star-report-btn secondary" onclick="openReportBuilder()">⚙ Configure Report</button>
+                    <button class="star-report-btn secondary" onclick="openReportBuilder()" title="Configure Report" style="min-width:auto;padding:8px 12px;">🧙</button>
                     <button class="star-report-btn secondary" onclick="clearAllStars()">Clear All</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportCsv()" title="Export all data as CSV">↓ CSV</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportXlsx()" title="Export detailed XLSX with summary + per-park tabs">↓ XLSX</button>
                     <button class="star-report-btn secondary" onclick="exportFullReportKml()" title="Export all park KMLs">↓ KML</button>
-                    <button class="star-report-btn" onclick="printStarredReport()">📄 PDF Report</button>
+                    <button class="star-report-btn" onclick="printInlineReport()" title="Print report">🖨️ Print</button>
                 </div>
             </div>
         </div>
@@ -14646,10 +14722,6 @@ ${starredItems.narratives.map(n => {
                         <div class="report-builder-checkbox" onclick="toggleCheckbox(this, 'patrol')">
                             <input type="checkbox" id="section-patrol" checked onchange="event.stopPropagation()">
                             <label for="section-patrol">○ Patrol Activity</label>
-                        </div>
-                        <div class="report-builder-checkbox" onclick="toggleCheckbox(this, 'threat')">
-                            <input type="checkbox" id="section-threat" checked onchange="event.stopPropagation()">
-                            <label for="section-threat">⚠ Threat Assessment</label>
                         </div>
                     </div>
                 </div>
