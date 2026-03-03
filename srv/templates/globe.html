@@ -10096,11 +10096,13 @@ ${starredItems.narratives.map(n => {
                 
                 // Add directional arrows for fire trajectories
                 if (normalizedType === 'fire') {
+                    // Arrows along the trajectory line
                     const arrowLayerId = `${layerId}-arrows`;
                     map.addLayer({
                         id: arrowLayerId,
                         type: 'symbol',
                         source: sourceId,
+                        filter: ['==', ['geometry-type'], 'LineString'],
                         layout: {
                             'symbol-placement': 'line',
                             'symbol-spacing': 80,
@@ -10117,6 +10119,29 @@ ${starredItems.narratives.map(n => {
                         }
                     });
                     pinnedLayers[key].arrowLayerId = arrowLayerId;
+                    
+                    // Additional arrow at line end (current/most recent location)
+                    const arrowEndLayerId = `${layerId}-arrow-end`;
+                    map.addLayer({
+                        id: arrowEndLayerId,
+                        type: 'symbol',
+                        source: sourceId,
+                        filter: ['==', ['geometry-type'], 'LineString'],
+                        layout: {
+                            'symbol-placement': 'line-end',
+                            'icon-image': 'arrow-right',
+                            'icon-size': 0.8,  // Slightly larger at endpoint
+                            'icon-rotate': 90,
+                            'icon-rotation-alignment': 'map',
+                            'icon-allow-overlap': true,
+                            'icon-ignore-placement': true
+                        },
+                        paint: {
+                            'icon-color': color,
+                            'icon-opacity': 1.0  // Full opacity for endpoint
+                        }
+                    });
+                    pinnedLayers[key].arrowEndLayerId = arrowEndLayerId;
                 }
             } else {
                 // Add fill layer
@@ -10250,6 +10275,11 @@ ${starredItems.narratives.map(n => {
         // Remove arrow layer if exists (for fire trajectories)
         if (layer.arrowLayerId && map.getLayer(layer.arrowLayerId)) {
             map.removeLayer(layer.arrowLayerId);
+        }
+        
+        // Remove arrow end layer if exists (for fire trajectory endpoints)
+        if (layer.arrowEndLayerId && map.getLayer(layer.arrowEndLayerId)) {
+            map.removeLayer(layer.arrowEndLayerId);
         }
         
         // Remove outline layer if exists (for polygons)
