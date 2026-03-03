@@ -493,6 +493,53 @@
             .admin-table th, .admin-table td { padding: 10px 12px; }
             .feature-info-grid { grid-template-columns: 1fr; }
         }
+        /* Basemap selector styles */
+        .basemap-option { 
+            position: relative;
+            padding: 12px; 
+            border: 2px solid rgba(255,255,255,0.1); 
+            border-radius: 8px; 
+            background: rgba(255,255,255,0.02); 
+            color: #ccc; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            text-align: center;
+        }
+        .basemap-option:hover { 
+            background: rgba(255,255,255,0.05); 
+            border-color: rgba(255,255,255,0.2); 
+        }
+        .basemap-option.selected { 
+            background: rgba(59,130,246,0.15); 
+            border-color: rgba(59,130,246,0.5); 
+            color: #60a5fa; 
+        }
+        .basemap-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .basemap-preview {
+            width: 100%;
+            height: 80px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+        }
+        
         /* ===== End GPX Admin Panel Styles ===== */
         
         /* ===== Pinned GeoJSON Layers ===== */
@@ -1042,7 +1089,7 @@
         
         <!-- Admin Panel Button -->
         <div class="toolbar-separator"></div>
-        <button class="toolbar-btn" id="toolbar-admin" onclick="toggleAdminPanel()" title="GPX Admin Panel">
+        <button class="toolbar-btn" id="toolbar-admin" onclick="toggleAdminPanel()" title="GPX/Map Admin Panel">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 20h9"></path>
                 <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
@@ -1621,6 +1668,70 @@
                 source: 'osm'
             }]
         };
+        
+        const satelliteStyles = {
+            'satellite-esri': {
+                version: 8,
+                name: 'Satellite (ESRI)',
+                glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+                sources: {
+                    'satellite': {
+                        type: 'raster',
+                        tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+                        tileSize: 256,
+                        attribution: '© Esri, Maxar, Earthstar Geographics',
+                        maxzoom: 19
+                    }
+                },
+                layers: [{
+                    id: 'satellite',
+                    type: 'raster',
+                    source: 'satellite'
+                }]
+            },
+            'satellite-bing': {
+                version: 8,
+                name: 'Satellite (Bing)',
+                glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+                sources: {
+                    'satellite': {
+                        type: 'raster',
+                        tiles: [
+                            'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+                        ],
+                        tileSize: 256,
+                        attribution: '© Esri (Bing alternate)',
+                        maxzoom: 19
+                    }
+                },
+                layers: [{
+                    id: 'satellite',
+                    type: 'raster',
+                    source: 'satellite'
+                }]
+            },
+            'satellite-google': {
+                version: 8,
+                name: 'Satellite (Google)',
+                glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+                sources: {
+                    'satellite': {
+                        type: 'raster',
+                        tiles: ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
+                        tileSize: 256,
+                        attribution: '© Google',
+                        maxzoom: 20
+                    }
+                },
+                layers: [{
+                    id: 'satellite',
+                    type: 'raster',
+                    source: 'satellite'
+                }]
+            }
+        };
+        
+        let currentBasemap = 'dark';  // Track current basemap
 
         const map = new maplibregl.Map({
             container: 'map',
@@ -1636,6 +1747,89 @@
         map.on('error', function(e) {
             console.error('MapLibre error:', e.error || e.message || e);
         });
+        
+        // Basemap switching function
+        function switchBasemap(basemapId) {
+            if (currentBasemap === basemapId) return;
+            
+            console.log('Switching basemap to:', basemapId);
+            currentBasemap = basemapId;
+            
+            // Update UI selection
+            document.querySelectorAll('.basemap-option').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.basemap === basemapId);
+            });
+            
+            // Get style for the basemap
+            const newStyle = basemapId === 'dark' ? darkStyle : satelliteStyles[basemapId];
+            if (!newStyle) {
+                console.error('Unknown basemap:', basemapId);
+                return;
+            }
+            
+            // Store current view
+            const center = map.getCenter();
+            const zoom = map.getZoom();
+            const bearing = map.getBearing();
+            const pitch = map.getPitch();
+            
+            // Store custom layers/sources that we want to preserve
+            const customSources = [];
+            const customLayers = [];
+            const style = map.getStyle();
+            
+            // Identify custom sources (not the base 'osm' or 'satellite')
+            if (style && style.sources) {
+                Object.keys(style.sources).forEach(sourceId => {
+                    if (sourceId !== 'osm' && sourceId !== 'satellite') {
+                        customSources.push({
+                            id: sourceId,
+                            spec: style.sources[sourceId]
+                        });
+                    }
+                });
+            }
+            
+            // Identify custom layers (not the base layer)
+            if (style && style.layers) {
+                style.layers.forEach(layer => {
+                    if (layer.id !== 'osm' && layer.id !== 'satellite') {
+                        customLayers.push(layer);
+                    }
+                });
+            }
+            
+            // Set new style
+            map.setStyle(newStyle);
+            
+            // Restore view and custom layers once style is loaded
+            map.once('styledata', function() {
+                // Restore view
+                map.setCenter(center);
+                map.setZoom(zoom);
+                map.setBearing(bearing);
+                map.setPitch(pitch);
+                
+                // Re-add custom sources and layers
+                customSources.forEach(source => {
+                    if (!map.getSource(source.id)) {
+                        map.addSource(source.id, source.spec);
+                    }
+                });
+                
+                customLayers.forEach(layer => {
+                    if (!map.getLayer(layer.id)) {
+                        try {
+                            map.addLayer(layer);
+                        } catch (e) {
+                            console.warn('Failed to restore layer:', layer.id, e);
+                        }
+                    }
+                });
+                
+                showToast('Basemap changed', `Switched to ${newStyle.name}`, null, null, 'success');
+            });
+        }
         
         // Navigation control removed - users control with mouse/touch
         // Disable rotation
@@ -12099,7 +12293,7 @@ ${starredItems.narratives.map(n => {
                         <path d="M12 20h9"></path>
                         <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                     </svg>
-                    GPX Learning Admin
+                    GPX/Map Admin
                 </div>
                 <button class="admin-panel-close" onclick="toggleAdminPanel()">&times;</button>
             </div>
@@ -12120,6 +12314,10 @@ ${starredItems.narratives.map(n => {
                 <button class="admin-tab" data-tab="features" onclick="switchAdminTab('features')">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
                     Learned Features
+                </button>
+                <button class="admin-tab" data-tab="map-settings" onclick="switchAdminTab('map-settings')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m-5-7H1m6 0h6m6 0h6M7 7l-2-2m12 0l2-2M7 17l-2 2m12 0l2 2"/></svg>
+                    Map Settings
                 </button>
             </div>
             <div class="admin-panel-body">
@@ -12182,6 +12380,58 @@ ${starredItems.narratives.map(n => {
                     </div>
                     <div id="features-content">
                         <div style="color:#666;text-align:center;padding:40px;">Select a park to view learned features</div>
+                    </div>
+                </div>
+                
+                <!-- Map Settings Tab -->
+                <div class="admin-tab-content" id="tab-map-settings">
+                    <div style="max-width:600px;">
+                        <div style="margin-bottom:24px;">
+                            <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;">Background Map</h3>
+                            <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.5;">Choose the basemap style for the globe view. Satellite imagery provides high-resolution aerial photos, useful for detailed analysis.</p>
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+                                <button class="basemap-option selected" data-basemap="dark" onclick="switchBasemap('dark')">
+                                    <div class="basemap-preview" style="background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%);">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#666;">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                        </svg>
+                                    </div>
+                                    <div style="font-size:13px;font-weight:500;margin-top:8px;">Dark</div>
+                                    <div style="font-size:11px;color:#666;margin-top:2px;">Default</div>
+                                </button>
+                                <button class="basemap-option" data-basemap="satellite-esri" onclick="switchBasemap('satellite-esri')">
+                                    <div class="basemap-preview" style="background:linear-gradient(135deg,#2a4a3a 0%,#4a6a5a 100%);">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#8ab894;">
+                                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                            <path d="M3 9h18M9 21V9"/>
+                                        </svg>
+                                    </div>
+                                    <div style="font-size:13px;font-weight:500;margin-top:8px;">Satellite (ESRI)</div>
+                                    <div style="font-size:11px;color:#666;margin-top:2px;">High-res imagery</div>
+                                </button>
+                                <button class="basemap-option" data-basemap="satellite-bing" onclick="switchBasemap('satellite-bing')">
+                                    <div class="basemap-preview" style="background:linear-gradient(135deg,#2a4a4a 0%,#4a6a6a 100%);">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#8ab8b8;">
+                                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                            <path d="M3 9h18M9 21V9"/>
+                                        </svg>
+                                    </div>
+                                    <div style="font-size:13px;font-weight:500;margin-top:8px;">Satellite (Bing)</div>
+                                    <div style="font-size:11px;color:#666;margin-top:2px;">High-res imagery</div>
+                                </button>
+                                <button class="basemap-option" data-basemap="satellite-google" onclick="switchBasemap('satellite-google')">
+                                    <div class="basemap-preview" style="background:linear-gradient(135deg,#3a4a2a 0%,#5a6a4a 100%);">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#a8b894;">
+                                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                            <path d="M3 9h18M9 21V9"/>
+                                        </svg>
+                                    </div>
+                                    <div style="font-size:13px;font-weight:500;margin-top:8px;">Satellite (Google)</div>
+                                    <div style="font-size:11px;color:#666;margin-top:2px;">High-res imagery</div>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
