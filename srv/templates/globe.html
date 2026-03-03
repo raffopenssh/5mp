@@ -5137,6 +5137,10 @@
             const notifList = document.getElementById('notification-list');
             if (!notifList) return;
             
+            // Prevent adding duplicate listeners
+            if (notifList.dataset.listenersAttached === 'true') return;
+            notifList.dataset.listenersAttached = 'true';
+            
             // Main notification item click handler
             notifList.addEventListener('click', function(e) {
                 // Check if clicking on a clickable notification item
