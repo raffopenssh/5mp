@@ -894,9 +894,13 @@ func (s *Server) HandleAPIPublications(w http.ResponseWriter, r *http.Request) {
 			"id":       p.ID,
 			"title":    p.Title,
 		}
-		if p.Authors != nil {
+		if p.Authors != nil && *p.Authors != "" {
 			var authors []string
-			json.Unmarshal([]byte(*p.Authors), &authors)
+			// Try to parse as JSON first
+			if err := json.Unmarshal([]byte(*p.Authors), &authors); err != nil {
+				// If not JSON, treat as plain text and create array
+				authors = []string{*p.Authors}
+			}
 			item["authors"] = authors
 		}
 		if p.Year != nil {
