@@ -1,10 +1,10 @@
 {
-  "total_groups": 2,
-  "total_fires": 436,
+  "total_groups": 2614,
+  "total_fires": 2731,
   "total_parks": 1,
   "date_range": {
-    "start": "2026-02-16",
-    "end": "2026-03-02"
+    "start": "2026-02-17",
+    "end": "2026-03-03"
   },
   "params": {
     "spatial_eps_km": 5.0,
@@ -15,8 +15,8 @@
     "max_zigzag_ratio": 0.3
   },
   "trajectory_types": {
-    "clean": 2,
-    "cleaned": 0,
+    "clean": 1666,
+    "cleaned": 948,
     "cluster": 0
   }
 }

@@ -1,20 +1,20 @@
-64da34dd 2026-03-02 18:12:03 docs: Add notification share link parameters to AGENTS.md
-aaf55c99 2026-03-02 18:10:57 Refactor notification system: event delegation, whole-item clicks, 24h filter, share links
-ef867dea 2026-03-02 17:36:34 Implement notification grouping
-2343a304 2026-03-02 17:32:10 Add load more button for legal documents
-fa4fc013 2026-03-02 16:52:17 Enhance notification system with action buttons and improvements
-a34c0e35 2026-03-02 16:35:53 Fix notification priorities and click-to-pin functionality
-e32fd1d7 2026-03-02 16:29:36 Add support for fire_download_success notifications
-1e9dac8d 2026-03-02 16:15:29 Display FAOLEX legal documents in park popup
-062d6fa3 2026-03-02 16:14:05 Fix legal documents API - match database schema
-a455f086 2026-03-02 16:03:57 Fix fire alert notifications - use correct API and alert types
-de1b1991 2026-03-02 15:51:10 Add keyword/subject filtering to FAOLEX Chrome scraper
-e5f3ec5a 2026-03-02 15:41:40 Implement working FAOLEX scraper with chromedp
-b8ecab2a 2026-03-02 15:33:58 Add FAOLEX test tool - reveals JavaScript parsing issue
-b16bf579 2026-03-02 15:27:12 Fix: testProxy now handles URLs with authentication schemes
-ba2e75a3 2026-03-02 15:19:28 Add Webshare proxy support for FAOLEX and create sync tool
-a95af730 2026-03-02 15:12:29 Mark link_settlement_ids.py as one-off tool (now in import pipeline)
-db5dd3dc 2026-03-02 15:12:19 Integrate ID linking into import_events_from_json.py
-e4bd7e6e 2026-03-02 15:05:41 Fix: Individual settlement pinning now works
-4ca9ca11 2026-03-02 14:42:30 Document cron environment fix - Webshare proxies fully operational
-5dbecd94 2026-03-02 14:41:45 Fix cron environment - use absolute paths and set PYTHONPATH
+638609bd 2026-03-03 08:20:57 Fix fire notification click to use feature_id instead of friendly name
+e3628eeb 2026-03-03 08:17:38 Add complete fire notifications system documentation with examples
+e06490a9 2026-03-03 08:16:38 Add enhanced fire status notifications with movement and boundary analysis
+5f02c862 2026-03-03 07:51:15 Document stable hurricane-style fire group naming system
+69b666e5 2026-03-03 07:50:15 Implement stable hurricane-style naming for fire groups
+f4b2ea88 2026-03-03 07:44:50 Document comprehensive fire notifications fix with analysis
+934118e5 2026-03-03 07:42:24 Fix fire notifications: query feature_geometries directly with friendly names
+6d448f2d 2026-03-03 07:23:21 Add documentation for fire notifications fix
+d402f81a 2026-03-03 07:22:34 Fix fire notification discrepancy - sync fire_group_alerts with feature_geometries
+af6e39be 2026-03-03 06:56:48 Add incident report for fire groups double-filter bug
+6890c529 2026-03-03 06:56:06 Fix incremental fire group loading - double-filter bug
+b9da1d06 2026-03-02 21:15:46 Remove unused fire_nrt data and deprecated scripts
+25033851 2026-03-02 21:12:01 Add fire data flow documentation
+aed2ff7f 2026-03-02 21:05:27 Add documentation for backup and disk cleanup
+f7c78c30 2026-03-02 20:55:17 Fix fire notification click-to-pin functionality
+e3ca9525 2026-03-02 20:21:15 Fix notification labels and parksData reference
+4da8859f 2026-03-02 20:09:16 Add share link support: auto-expand notification group and open dropdown
+9d3fdccb 2026-03-02 20:00:27 Fix fire notification clicks: fetch trajectory and pin like tooltip clicks
+21a50656 2026-03-02 19:52:18 Fix notification share links: wait for parks data to load before processing
+a1e37f58 2026-03-02 19:45:43 Remove confusing (X/Y) count display and increase fire-alerts API limit

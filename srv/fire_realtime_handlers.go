@@ -52,6 +52,7 @@ type FireCluster struct {
 // FireGroup represents a tracked fire group
 type FireGroup struct {
 	Name         string                   `json:"name"`
+	FeatureID    string                   `json:"feature_id"`
 	Type         string                   `json:"type"`
 	IsActive     bool                     `json:"is_active"`
 	IsInside     bool                     `json:"is_inside"`
@@ -1090,13 +1091,15 @@ func (s *Server) HandleAPIUpdateFireAlerts(w http.ResponseWriter, r *http.Reques
 func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.Request, 
     parkID, parkName string, startDate, endDate time.Time, days int) {
     
-    // Query recent fire trajectories from feature_geometries
+    // Query recent fire trajectories from feature_geometries with persistent names
     rows, err := s.DB.Query(`
-        SELECT feature_id, geojson, properties_json, start_date, end_date
-        FROM feature_geometries
-        WHERE park_id = ? AND feature_type = 'fire_trajectory'
-          AND start_date >= ? 
-        ORDER BY start_date DESC
+        SELECT fg.feature_id, fg.geojson, fg.properties_json, fg.start_date, fg.end_date,
+               COALESCE(fgn.friendly_name, fg.feature_id) as display_name
+        FROM feature_geometries fg
+        LEFT JOIN fire_group_names fgn ON fg.park_id = fgn.park_id AND fg.feature_id = fgn.feature_id
+        WHERE fg.park_id = ? AND fg.feature_type = 'fire_trajectory'
+          AND fg.start_date >= ? 
+        ORDER BY fg.start_date DESC
     `, parkID, startDate.Format("2006-01-02"))
     
     if err != nil {
@@ -1112,10 +1115,10 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
     
     groupIndex := 0
     for rows.Next() {
-        var featureID, geojson, propsJSON string
+        var featureID, geojson, propsJSON, displayName string
         var startDateStr, endDateStr sql.NullString
         
-        if err := rows.Scan(&featureID, &geojson, &propsJSON, &startDateStr, &endDateStr); err != nil {
+        if err := rows.Scan(&featureID, &geojson, &propsJSON, &startDateStr, &endDateStr, &displayName); err != nil {
             continue
         }
         
@@ -1191,7 +1194,8 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         }
         
         group := FireGroup{
-            Name:       getGroupName(groupIndex),
+            Name:       displayName,  // Use persistent friendly name from fire_group_names
+            FeatureID:  featureID,    // Include feature_id for stable identification
             Type:       groupType,
             IsActive:   isActive,
             IsInside:   true, // From feature_geometries, assume inside
