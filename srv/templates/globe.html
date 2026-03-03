@@ -667,6 +667,96 @@
         .bbox-draw-rect { position: absolute; border: 2px dashed #60a5fa; background: rgba(59,130,246,0.1); pointer-events: none; }
         .bbox-draw-hint { position: fixed; top: 70px; left: 50%; -webkit-transform: translateX(-50%); transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; padding: 10px 16px; font-size: 13px; color: #60a5fa; z-index: 210; display: none; }
         .bbox-draw-hint.active { display: block; }
+        
+        /* Satellite Switch Hint */
+        .satellite-hint {
+            position: fixed;
+            bottom: 110px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(34,197,94,0.95) 0%, rgba(22,163,74,0.95) 100%);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 380px;
+            z-index: 200;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s, transform 0.5s;
+            pointer-events: none;
+        }
+        .satellite-hint.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .satellite-hint.fade-out {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s, transform 1s;
+        }
+        .satellite-hint-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .satellite-hint-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        .satellite-hint-text {
+            flex: 1;
+        }
+        .satellite-hint-btn {
+            flex-shrink: 0;
+            padding: 8px 14px;
+            background: rgba(255,255,255,0.95);
+            color: #16a34a;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+        .satellite-hint-btn:hover {
+            background: #fff;
+            transform: translateX(2px);
+        }
+        .satellite-hint-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: rgba(0,0,0,0.2);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .satellite-hint-close:hover {
+            background: rgba(0,0,0,0.4);
+        }
 
          /* Search Panel */
         /* Search bar - appears next to search button on toggle */
@@ -1100,6 +1190,29 @@
     
     <div class="bbox-draw-overlay" id="bbox-draw-overlay"></div>
     <div class="bbox-draw-hint" id="bbox-draw-hint">Click and drag to select area. Press ESC to cancel.</div>
+    
+    <!-- Satellite Switch Hint (appears at high zoom) -->
+    <div class="satellite-hint" id="satellite-hint">
+        <div class="satellite-hint-content">
+            <div class="satellite-hint-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <path d="M3 9h18M9 21V9"/>
+                </svg>
+            </div>
+            <div class="satellite-hint-text">
+                <div style="font-weight:600;margin-bottom:2px;">High zoom detected</div>
+                <div style="font-size:11px;opacity:0.8;">Satellite imagery shows more detail at this zoom level</div>
+            </div>
+            <button class="satellite-hint-btn" onclick="quickSwitchToSatellite()">
+                Switch to Satellite
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px;">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </button>
+        </div>
+        <button class="satellite-hint-close" onclick="dismissSatelliteHint()" title="Dismiss">&times;</button>
+    </div>
 
     
     <div class="filter-panel" id="filter-panel">
@@ -1830,6 +1943,66 @@
                 showToast('Basemap changed', `Switched to ${newStyle.name}`, null, null, 'success');
             });
         }
+        
+        // Satellite hint for high zoom levels
+        let satelliteHintShown = false;
+        let satelliteHintDismissed = false;
+        let satelliteHintTimeout = null;
+        
+        function showSatelliteHint() {
+            // Don't show if already on satellite, already dismissed, or already showing
+            if (currentBasemap !== 'dark' || satelliteHintDismissed || satelliteHintShown) return;
+            
+            const hint = document.getElementById('satellite-hint');
+            if (!hint) return;
+            
+            satelliteHintShown = true;
+            hint.classList.add('visible');
+            
+            // Auto-fade after 8 seconds
+            satelliteHintTimeout = setTimeout(() => {
+                hint.classList.add('fade-out');
+                setTimeout(() => {
+                    hint.classList.remove('visible', 'fade-out');
+                    satelliteHintShown = false;
+                }, 1000);
+            }, 8000);
+        }
+        
+        function dismissSatelliteHint() {
+            const hint = document.getElementById('satellite-hint');
+            if (!hint) return;
+            
+            if (satelliteHintTimeout) {
+                clearTimeout(satelliteHintTimeout);
+                satelliteHintTimeout = null;
+            }
+            
+            satelliteHintDismissed = true;
+            hint.classList.add('fade-out');
+            setTimeout(() => {
+                hint.classList.remove('visible', 'fade-out');
+                satelliteHintShown = false;
+            }, 1000);
+        }
+        
+        function quickSwitchToSatellite() {
+            dismissSatelliteHint();
+            switchBasemap('satellite-esri');
+        }
+        
+        // Monitor zoom level for satellite hint
+        map.on('zoom', function() {
+            const zoom = map.getZoom();
+            if (zoom >= 16 && currentBasemap === 'dark' && !satelliteHintDismissed && !satelliteHintShown) {
+                // Delay showing hint by 1 second to avoid showing during quick zooms
+                setTimeout(() => {
+                    if (map.getZoom() >= 16 && currentBasemap === 'dark') {
+                        showSatelliteHint();
+                    }
+                }, 1000);
+            }
+        });
         
         // Navigation control removed - users control with mouse/touch
         // Disable rotation
