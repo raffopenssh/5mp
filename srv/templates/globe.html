@@ -10090,10 +10090,9 @@
         const fmt = n => n ? n.toLocaleString() : '0';
         const stats = data.stats || {};
         
-        // Check if park should be included based on report config
-        if (!shouldIncludePark(data)) {
-            return '<div class="starred-report-content"><div style="padding:12px;color:#888;font-size:11px;text-align:center;">Park excluded by report filters</div></div>';
-        }
+        // CRITICAL: Parks are NEVER filtered out entirely
+        // Only individual sections with no data are hidden (based on shouldIncludeSection)
+        // This ensures all parks in a bbox or starred list are always visible
         
         let html = '<div class="starred-report-content">';
         
@@ -10289,6 +10288,12 @@
                 </div>
                 <div class="starred-report-group"><div class="starred-report-group-title">Recent:</div>${pubs.slice(0, pubLimit).map(p => { const author = (p.authors && p.authors[0]) ? p.authors[0].split(',')[0].trim().split(' ').pop() : 'Unknown'; return `<div style="margin:4px 0;font-size:10px;"><a href="${p.doi || p.url || '#'}" target="_blank" style="color:#a78bfa;text-decoration:none;">${author} (${p.year || '?'}): ${(p.title || 'Untitled').substring(0, 60)}${(p.title || '').length > 60 ? '...' : ''}</a></div>`; }).join('')}${pubs.length > pubLimit ? `<div style="color:#888;font-size:10px;margin-top:4px;">+ ${pubs.length - pubLimit} more</div>` : ''}</div>
             </div>`;
+        }
+        
+        // Check if any sections were actually rendered (not including config banner and quick stats)
+        const hasAnySections = html.includes('starred-report-section');
+        if (!hasAnySections && reportConfig.filters.skipZeros) {
+            html += `<div style="padding:12px;color:#888;font-size:11px;text-align:center;background:rgba(255,255,255,0.02);border-radius:6px;">No data for selected date range or enabled sections</div>`;
         }
         
         html += '</div>';
