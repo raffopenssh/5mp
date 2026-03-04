@@ -3993,18 +3993,18 @@
                     }
                 }
                 
-                // Build row data
+                // Build row data - use snake_case field names from fetchParkReportData
                 const areaKm2 = park.area_km2 || 0;
-                const fireTotal = fire.totalFires || 0;
-                const fireGroups = fire.fireGroups || 0;
-                const responseRate = fire.responseRate || 0;
-                const peakSeason = fire.peakMonth || '';
+                const fireTotal = fire.total_fires || 0;
+                const fireGroups = fire.fire_groups || 0;
+                const responseRate = fire.response_rate || 0;
+                const peakSeason = fire.peak_month || '';
                 const fireDensity = fire.density || 0;
-                const deforestTotalKm2 = deforestation.totalLossKm2 || 0;
-                const deforestEvents = deforestation.eventCount || 0;
-                const settlementCount = settlement.count || settlement.settlement_count || 0;
-                const population = settlement.totalPopulation || settlement.total_population || 0;
-                const builtUpKm2 = settlement.builtUpKm2 || settlement.built_up_km2 || 0;
+                const deforestTotalKm2 = deforestation.total_loss_km2 || 0;
+                const deforestEvents = (deforestation.classified_events || []).length;
+                const settlementCount = settlement.settlement_count || 0;
+                const population = settlement.total_population || 0;
+                const builtUpKm2 = settlement.built_up_km2 || 0;
                 const roadCount = road.roadCount || 0;
                 const riverCount = road.riverCount || 0;
                 const placeCount = road.placeCount || 0;
@@ -4014,7 +4014,7 @@
                 const vehicleKm = grid.byType?.vehicle || 0;
                 const boatKm = grid.byType?.boat || 0;
                 const airKm = grid.byType?.air || 0;
-                const speciesCount = species.count || 0;
+                const speciesCount = species.total_count || 0;
                 const publicationsCount = research.count || 0;
                 const legalDocsCount = legal.count || 0;
                 
