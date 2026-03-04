@@ -1,8 +1,30 @@
-# Go Shelley Template
+# 5MP Conservation Monitoring Dashboard
 
-This is a starter template for building Go web applications on exe.dev. It demonstrates end-to-end usage including HTTP handlers, authentication, database integration, and deployment.
+Interactive 3D globe for monitoring 162 African protected areas. Tracks fire detection, deforestation, settlements, and patrol activity using satellite data.
 
-Use this as a foundation to build your own service.
+**Live URL**: https://five-megapixel-conservation.exe.xyz:8000/?pwd=test2026
+
+---
+
+## For LLM Agents
+
+🚨 **START HERE**: Read `QUICK_START_AGENTS.md` first (2-minute orientation)
+
+Then navigate to:
+- **Data Flow Maps**: `docs/DATA_FLOW.md` - How data moves through the system
+- **Quick Tasks**: `docs/QUICK_TASKS.md` - Copy-paste solutions for common modifications
+- **Mental Models**: `docs/MENTAL_MODEL.md` - Understanding the 17K-line single-page app
+- **Architecture**: `docs/ARCHITECTURE_DECISIONS.md` - Why things are built this way
+- **Reference**: `AGENTS.md` - Comprehensive tables, APIs, credentials
+
+---
+
+## For Humans
+
+- **Overview**: `docs/README.md` - Project introduction
+- **Setup**: `docs/INSTALL.md` - Installation guide
+- **API**: `docs/API.md` - API reference
+- **Database**: `docs/DATABASE.md` - Schema documentation
 
 ## Building and Running
 
