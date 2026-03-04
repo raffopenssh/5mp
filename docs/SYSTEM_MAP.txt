@@ -1,0 +1,314 @@
+5MP CONSERVATION MONITORING SYSTEM MAP
+=======================================
+
+QUICK VISUAL REFERENCE FOR AGENTS
+
+
+1. THE LAYERS (What users see on globe)
+───────────────────────────────────────────
+
+                    🌍 3D GLOBE
+                         │
+        ┌────────────┼───────────┐
+        │                │              │
+    Park Polygons   Toggleable      Pinned
+    (162 parks)      Layers        Layers
+        │                │              │
+        ├── Boundaries    ├── Fire      Persistent
+        ├── Labels        ├── Defor     across
+        └── Hover FX      ├── Settlement popup
+                          ├── Roads     close
+                          └── Waterbodies
+
+
+2. THE POPUP (What users see when clicking park)
+───────────────────────────────────────────────
+
+    ┌───────────────────────────────────────┐
+    │  CAF_Chinko Nature Reserve       │
+    │  17,600 km²                        │
+    ├───────────────────────────────────────┤
+    │  ▶ Fire Analysis                │  ← Lazy load on click
+    ├───────────────────────────────────────┤     API: /fire-narrative
+    │  ▶ Deforestation                │          /fire-realtime
+    ├───────────────────────────────────────┤
+    │  ▶ Settlements                  │     API: /features?type=X
+    ├───────────────────────────────────────┤
+    │  ▶ Species                      │     API: /species
+    ├───────────────────────────────────────┤
+    │  ▶ Climate                      │     API: /climate
+    ├───────────────────────────────────────┤
+    │  ▶ Research                     │     API: /research
+    ├───────────────────────────────────────┤
+    │  ▶ Legal                        │     API: /legal
+    └───────────────────────────────────────┘
+
+
+3. THE SIDEBARS (Persistent UI)
+───────────────────────────────────────────
+
+    LEFT                         RIGHT
+    ──────────────────       ──────────────────
+    Control Buttons:           Panels:
+
+    🔎 Filter               ┌───────────────┐
+    ⭐ Starred               │ Filter Panel  │
+    📌 Pinned (badge)        │  - Date range │
+    🔔 Notifications (badge)  │  - Feature types
+    🚿 Upload                │  - Park search│
+    🔧 Admin                 └───────────────┘
+
+    Click button → Panel slides in from right
+
+
+4. THE DATA PIPELINE (Backend)
+───────────────────────────────────────────
+
+    NASA VIIRS Satellite
+           │
+           v
+    daily_fire_update.py (3am UTC cron)
+           │
+           v
+    fire_detections table (6M+ rows)
+           │
+           v
+    rebuild_fire_trajectories_v5.py
+           │
+           v
+    data/fire_groups_v5/*.json (162 files)
+           │
+           v
+    load_fire_groups_to_db.py
+           │
+           v
+    feature_geometries table (458K rows)
+           │
+           v
+    precompute_narratives_v5.py
+           │
+           v
+    fire_narrative_cache table (162 rows)
+           │
+           v
+    API: /api/parks/{id}/fire-narrative
+           │
+           v
+    Frontend: Render in popup
+
+
+5. THE FILE STRUCTURE (Where code lives)
+────────────────────────────────────────────
+
+    5mp/
+    ├── cmd/srv/main.go              Entry point
+    ├── srv/
+    │   ├── server.go                 HTTP routing
+    │   ├── api.go                    Core APIs
+    │   ├── fire_realtime_handlers.go Fire APIs
+    │   ├── narrative_handlers.go     Narratives
+    │   ├── enhanced_narratives.go    Context engine
+    │   ├── upload.go                 GPX uploads
+    │   └── templates/globe.html      Frontend (17K lines)
+    ├── scripts/
+    │   ├── daily_fire_update.py      Cron job
+    │   ├── rebuild_fire_trajectories_v5.py
+    │   ├── load_fire_groups_to_db.py
+    │   └── precompute_narratives_v5.py
+    ├── data/
+    │   ├── fire_groups_v5/           162 JSON files
+    │   ├── export/fire_narratives/   162 JSON files
+    │   ├── settlement_events/        156 JSON files
+    │   └── deforestation_events/     79 JSON files
+    ├── db.sqlite3                   1.8 GB database
+    └── docs/
+        ├── DATA_FLOW.md              ← START HERE
+        ├── QUICK_TASKS.md            Copy-paste solutions
+        ├── MENTAL_MODEL.md           Understanding guide
+        └── ARCHITECTURE_DECISIONS.md Why decisions
+
+
+6. THE REQUEST FLOW (Typical interaction)
+─────────────────────────────────────────────
+
+    User clicks park
+          │
+          v
+    showParkPopup('CAF_Chinko')
+          │
+          v
+    fetch('/api/parks/CAF_Chinko/stats?pwd=test2026')
+          │
+          v
+    handleParkStats() in srv/api.go
+          │
+          v
+    SELECT * FROM parks WHERE id = 'CAF_Chinko'
+          │
+          v
+    Return JSON: {area, fires, settlements}
+          │
+          v
+    renderParkStats(data)
+          │
+          v
+    Update DOM (popup appears)
+
+    ────────────────────────────────────────
+
+    User clicks "Fire" accordion
+          │
+          v
+    openAccordionSection('fire')
+          │
+          v
+    Check: if (!section.dataset.loaded)
+          │
+          v
+    fetch('/api/parks/CAF_Chinko/fire-narrative?pwd=test2026')
+          │
+          v
+    handleFireNarrative() in srv/narrative_handlers.go
+          │
+          v
+    SELECT narrative FROM fire_narrative_cache
+          │
+          v
+    Return JSON: {narrative, stats}
+          │
+          v
+    renderNarrative(data)
+          │
+          v
+    Insert into accordion content
+          │
+          v
+    Set: section.dataset.loaded = 'true'
+
+
+7. THE STATE MACHINE (Frontend state)
+─────────────────────────────────────────────
+
+    Global Variables (window.*)
+    ────────────────────────────
+
+    openPanels         Set<string>
+    currentPopup       string | null
+    openAccordions     Set<string>
+    loadedLayers       Set<string>
+    pinnedLayers       Map<string, object>
+    fireGroups         Object<parkId, Array>
+    narrativeCache     Object<parkId, Object>
+    starredParks       Set<string>
+
+    │
+    │ Syncs to URL params
+    v
+
+    ?panel=filter,admin
+    &popup=CAF_Chinko
+    &sections=fire,deforestation
+    &pinned=CAF_Chinko:fire_trajectory
+    &starred_parks=CAF_Chinko,COD_Virunga
+
+    │
+    │ On page load
+    v
+
+    loadStateFromURL()
+    │
+    ├─── Open panels
+    ├─── Open popup
+    ├─── Expand accordions
+    ├─── Load pinned layers
+    └─── Restore starred parks
+
+
+8. THE CONTEXT ENGINE (Narrative enrichment)
+───────────────────────────────────────────────
+
+    Fire at (10.5, 18.2)
+           │
+           v
+    buildFireContext()
+           │
+           ├─── Query park_rivers (HydroRIVERS)
+           │    → "3km north of Chinko River"
+           │
+           ├─── Query data/roads_heigit/*.json
+           │    → "along dirt road"
+           │
+           ├─── Query park_settlements
+           │    → "near Koundi village"
+           │
+           ├─── Query osm_places
+           │    → "10km from ranger camp"
+           │
+           ├─── Query park_climate
+           │    → "dry season fire pattern"
+           │
+           └─── Query fire_detections (historical)
+                → "recurring fire site"
+           │
+           v
+    Generate narrative with context
+           │
+           v
+    "Fire detected 3km north of Chinko River,
+     near Koundi village, along dirt road to
+     ranger camp. Dry season fire pattern.
+     This is a recurring fire site (5 times
+     in past 2 years)."
+
+
+9. THE TESTING PYRAMID
+───────────────────────────────────────────
+
+    Manual Testing (Browser)
+    ───────────────────────
+    - Resize to 1280x1400
+    - Add ?test=1 to URL
+    - Use TEST.* helpers
+    - Generate share links for bugs
+
+    Automated Tests (./tests/run_all.sh)
+    ────────────────────────────────────
+    - Database tests (37 tests)
+    - API tests (31 tests)
+    - UI URL tests (20 tests)
+
+    Unit Tests (not implemented yet)
+    ───────────────────────────────
+    - Go: go test ./...
+    - Python: pytest scripts/
+
+
+10. THE DOCUMENTATION TREE
+───────────────────────────────────────────
+
+    START → QUICK_START_AGENTS.md (this file)
+              │
+              v
+         AGENTS.md (comprehensive reference)
+              │
+              ├─── For understanding:
+              │   ├─── docs/MENTAL_MODEL.md
+              │   ├─── docs/ARCHITECTURE_DECISIONS.md
+              │   └─── docs/DATA_FLOW.md
+              │
+              ├─── For coding:
+              │   ├─── docs/QUICK_TASKS.md
+              │   ├─── docs/API.md
+              │   └─── docs/DATABASE.md
+              │
+              └─── For specific features:
+                  ├─── docs/FIRE_PIPELINE.md
+                  ├─── docs/FIRE_DATA_FLOW.md
+                  ├─── docs/SCRIPTS.md
+                  ├─── docs/SHELLEY_PROMPT_UI.md
+                  └─── docs/SHELLEY_PROMPT_ADMIN_UI.md
+
+
+==================================================================
+USAGE: Print this file and keep it next to your screen while coding.
+==================================================================
