@@ -7,6 +7,22 @@ Interactive 3D globe with fire detection, deforestation, settlements, patrol tra
 
 **Live URL:** https://five-megapixel-conservation.exe.xyz:8000/?pwd=test2026
 
+## 🔍 Quick Navigation for Agents
+
+**First time? Start here:**
+1. `docs/DATA_FLOW.md` - How data moves through the system
+2. `docs/QUICK_TASKS.md` - Copy-paste solutions for common tasks
+3. `docs/ARCHITECTURE_DECISIONS.md` - Why things are built this way
+
+**Working on specific features?**
+- Fire system: `docs/FIRE_PIPELINE.md` + `docs/FIRE_DATA_FLOW.md`
+- API changes: `docs/API.md` + `docs/QUICK_TASKS.md` section 1
+- Frontend UI: `docs/SHELLEY_PROMPT_UI.md` + `docs/DATA_FLOW.md` section 4
+- Database: `docs/DATABASE.md` + `docs/QUICK_TASKS.md` section 9
+
+**Key Insight**: This is a 17K-line single-page app. Don't try to understand everything at once.
+Use the data flow maps to find the specific files you need to modify.
+
 ---
 
 ## ⚠️ DATABASE PROTECTION
