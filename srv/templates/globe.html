@@ -10472,6 +10472,63 @@
             }
             return inside;
         }
+        
+        // Check if a point is within bufferDeg degrees of a polygon (for any geometry type)
+        function isPointNearPolygon(lng, lat, geom, bufferDeg) {
+            let rings = [];
+            
+            // Extract all rings from geometry
+            if (geom.type === 'Polygon') {
+                rings = [geom.coordinates[0]]; // Just exterior ring for distance calc
+            } else if (geom.type === 'MultiPolygon') {
+                rings = geom.coordinates.map(poly => poly[0]);
+            } else {
+                return false; // Unknown geometry type
+            }
+            
+            // First, quick check: is point inside any polygon?
+            for (const ring of rings) {
+                if (pointInPolygon(lng, lat, ring)) {
+                    return true; // Point is inside, definitely within buffer
+                }
+            }
+            
+            // Point is outside all polygons - check distance to nearest edge
+            // For each ring, find minimum distance to any edge
+            let minDistSq = Infinity;
+            
+            for (const ring of rings) {
+                for (let i = 0; i < ring.length - 1; i++) {
+                    const [x1, y1] = ring[i];
+                    const [x2, y2] = ring[i + 1];
+                    
+                    // Distance from point to line segment
+                    const dx = x2 - x1;
+                    const dy = y2 - y1;
+                    const lenSq = dx * dx + dy * dy;
+                    
+                    if (lenSq === 0) {
+                        // Degenerate segment
+                        const distSq = (lng - x1) * (lng - x1) + (lat - y1) * (lat - y1);
+                        minDistSq = Math.min(minDistSq, distSq);
+                        continue;
+                    }
+                    
+                    // Project point onto line segment
+                    let t = ((lng - x1) * dx + (lat - y1) * dy) / lenSq;
+                    t = Math.max(0, Math.min(1, t)); // Clamp to segment
+                    
+                    const projX = x1 + t * dx;
+                    const projY = y1 + t * dy;
+                    
+                    const distSq = (lng - projX) * (lng - projX) + (lat - projY) * (lat - projY);
+                    minDistSq = Math.min(minDistSq, distSq);
+                }
+            }
+            
+            const minDist = Math.sqrt(minDistSq);
+            return minDist <= bufferDeg;
+        }
 
         // Check if point is inside feature geometry (Polygon or MultiPolygon)
         function pointInFeature(lng, lat, feature) {
@@ -13857,7 +13914,16 @@
             if (!resp.ok) return {error: 'API error', activePixels: 0, totalDistanceKm: 0};
             
             const data = await resp.json();
-            return aggregateGridData(data.features || []);
+            
+            // IMPORTANT: Filter grid cells to only include those actually within 30km of the park geometry
+            // (not just within the buffered bounding box)
+            const filteredFeatures = data.features.filter(feature => {
+                const cellLon = feature.geometry.coordinates[0];
+                const cellLat = feature.geometry.coordinates[1];
+                return isPointNearPolygon(cellLon, cellLat, geom, bufferDeg);
+            });
+            
+            return aggregateGridData(filteredFeatures);
         } catch (error) {
             console.error(`Grid data error for ${parkId}:`, error);
             return {error: error.message, activePixels: 0};
