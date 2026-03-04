@@ -1,0 +1,266 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    CONSERVATION MONITORING REPORT                         ║
+║                           CHINKO RESERVE                                  ║
+║                    Central African Republic                               ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+Report Period: January 2023 - March 2026 (Current: Dry Season)
+Location: 7.5°N, 24.0°E  |  Area: 19,769.68 km²  |  Habitat: Tropical Savanna
+
+┌─────────────────────── KEY METRICS SUMMARY ───────────────────────────────┐
+│  Fire Groups (Current):  48 active  │  Patrol Distance:   372.6 km        │
+│  Settlement Clusters:    27 detected │  Patrol Coverage:   38 pixels       │
+│  Forest Loss (3yr):      0.49 km²    │  Species (IUCN):    8 threatened    │
+│  Historical Fires:       103,702     │  Long-term Trend:   ▼ Decreasing   │
+└───────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+🔥 FIRE ACTIVITY SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+RECENT FIRE GROUPS (Last 7 Days - 5 Major Groups):
+
+┌──────────┬──────────────┬─────────┬──────────┬─────────────────────────┐
+│  Group   │   Location   │  Fires  │  Speed   │      Movement           │
+├──────────┼──────────────┼─────────┼──────────┼─────────────────────────┤
+│ Golf-2   │ Entering SW  │ 1,857   │ 7.1 km/d │ ◄─ 49.4km from SW       │
+│ Lima-4   │ Outside S    │   10    │ 2.5 km/d │ ↑ Moving toward park    │
+│ Alpha-2  │ Outside      │  177    │ 5.6 km/d │ ↖ Moving NW             │
+│ Delta-2  │ Outside W    │  275    │ 2.3 km/d │ ◄─ Moving toward park   │
+│ India-3  │ Outside      │   99    │ 2.3 km/d │ ↖ Moving NW             │
+└──────────┴──────────────┴─────────┴──────────┴─────────────────────────┘
+
+HISTORICAL CONTEXT (Jan 2023 - Mar 2026):
+  • Total Fire Detections: 103,702 across monitoring period
+  • Fire Groups Tracked: 1,112 total groups identified
+  • Transit Patterns: 908 groups (82%) moved through park boundaries
+                      204 groups (18%) stopped within park
+  • Response Rate: 16% of fire groups showed intervention signatures
+  • Fire Density: 16.0 groups per 1,000 km²/year
+  • Peak Season: December-February (corresponds to dry season)
+
+Broader Regional Context: 5.18 million detections recorded ▼ DECREASING
+
+───────────────────────────────────────────────────────────────────────────────
+📍 SPATIAL DISTRIBUTION - FIRE GROUP POSITIONS
+───────────────────────────────────────────────────────────────────────────────
+
+              N
+              ↑
+         NW   │   NE
+            ╔═╪═╗
+      W ◄───╫ │ ╫───► E          KEY:
+            ╚═╪═╝                ★ = Park Center (Safari Ht Chinko)
+         SW   │   SE             ▲ = Active fire group approaching
+              ↓                  ● = Fire group at boundary
+              S                  ○ = Fire group moving away
+
+Current Distribution Pattern:
+
+     Alpha-2 ●↖                         Delta-2 ●◄─┐
+              (NW)                                   │
+                                                     ├─── Approaching
+                   ╔════════════╗                    │    from West
+                   ║            ║                    │
+                   ║     ★      ║            Golf-2 ▲◄─┘
+                   ║   CHINKO   ║                (ENTERING)
+                   ║            ║
+                   ╚════════════╝
+                         │
+                    Lima-4 ▲         India-3 ●↖
+                       (S)
+
+Geographic Notes: Multiple convergence vectors from SW, W, and S quadrants.
+Golf-2 group shows highest activity (1,857 fires) and fastest movement rate.
+
+═══════════════════════════════════════════════════════════════════════════════
+👣 PATROL COVERAGE ANALYSIS
+═══════════════════════════════════════════════════════════════════════════════
+
+Monitoring Region: 17.3°E-22.7°E, 6.9°N-12.2°N
+
+Coverage Pattern (Relative to Park Boundaries):
+
+    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░     ░ = Low patrol density
+    ░░░▓▓░░░░░░░░░▓▓░░░░░░░░░░░░░░░░░░░░     ▓ = Moderate density
+    ░░░▓▓▓▓░░░░░▓▓▓▓░░░░░░░░░░░░░░░░░░░░     █ = High density
+    ░░░░▓▓▓░░░░░▓▓▓░░░░░░░░░░░░░░░░░░░░░
+    ░░░░░░░░░┌──────────────┐░░░░░░░░░░░     Active pixels: 38
+    ░░░░░░░░░│   CHINKO     │░░░░░░░░░░░     Distance tracked: 372.6 km
+    ░░░░░░░░░│   RESERVE    │░░░░░░░░░░░     Pattern: Northern CAR/
+    ░░░░░░░░░└──────────────┘░░░░░░░░░░░              Southern Chad border
+
+Coverage Observations:
+  • Scattered patrol points visible in northern and northwestern sectors
+  • Active monitoring in southern Chad / northern CAR border region
+  • Distribution pattern: Non-uniform with concentration north of park
+
+═══════════════════════════════════════════════════════════════════════════════
+🌳 DEFORESTATION TRENDS
+═══════════════════════════════════════════════════════════════════════════════
+
+ANNUAL FOREST LOSS (km²) - Recent Period:
+
+Year  │ Loss    Bar Chart
+──────┼─────────────────────────────────────────────────
+2023  │ 0.13 km² ████████████████░░░░░░░░░░░░░░░░░ (Peak)
+2024  │ 0.11 km² ██████████████░░░░░░░░░░░░░░░░░░░░
+2025  │ 0.09 km² ███████████░░░░░░░░░░░░░░░░░░░░░░░
+2026* │ 0.16 km² ████████████████████░░░░░░░░░░░░░░░ (*Partial year data)
+                                                        
+TOTAL (2023-2026): 0.49 km²  |  Trend: ▼ 74% decrease vs historical baseline
+
+CLEARING PATTERN ANALYSIS:
+
+Spatial Characteristics:
+  ◆ Patch Size Distribution: Small-scale (0.04-0.13 km² per event)
+  ◆ Clearing Method: Fire-associated (slash-and-burn signatures)
+  ◆ Distribution: Widely dispersed, not concentrated
+  ◆ Scale Indicators: Subsistence-sized patches
+  ◆ Directional Shift: Activity moved south-southwestward
+  ◆ Distance Range: 51-98 km from park boundaries
+
+Peak Activity Year (2023):
+  • Primary clearing: 0.13 km² across 5 patches (67.8km from center)
+  • Secondary clearings: Multiple patches 0.04-0.06 km²
+  • Strong correlation with fire activity
+
+Cumulative Context: 378.5 km² total forest loss over 22-year record period
+
+═══════════════════════════════════════════════════════════════════════════════
+🏘️ SETTLEMENT OBSERVATIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+Total Clusters Detected: 27  |  Built Area: 61.0 hectares (0.61 km²)
+Regional Context: 9,933 settlements in broader monitoring region
+
+SETTLEMENT CLASSIFICATION (By Observed Characteristics):
+
+┌────────────────────┬────────┬─────────────────────────────────────────────┐
+│   Type Observed    │ Count  │  Characteristics                            │
+├────────────────────┼────────┼─────────────────────────────────────────────┤
+│ Possible Mining    │   3    │ • Near Chinko River (alluvial deposits)     │
+│ Sites              │        │ • Forest loss: 0.27-0.49 km²                │
+│                    │        │ • Low fire activity, scattered pattern      │
+│                    │        │ • Coordinates: 6.30-6.39°N, 23.86-24.04°E   │
+├────────────────────┼────────┼─────────────────────────────────────────────┤
+│ Temporary Camps    │   6+   │ • Size range: 10,000-80,000 m²              │
+│                    │        │ • Remote locations                          │
+│                    │        │ • Scattered distribution pattern            │
+├────────────────────┼────────┼─────────────────────────────────────────────┤
+│ Agricultural       │  ~10   │ • Distance: 43km from Safari Ht Chinko      │
+│ Settlements        │        │ • Fire activity: 61 detections within 5km   │
+│                    │        │ • Dry season concentrated burning           │
+│                    │        │ • Associated deforestation: 0.55 km²        │
+│                    │        │ • Slash-and-burn clearing signatures        │
+├────────────────────┼────────┼─────────────────────────────────────────────┤
+│ Pastoral           │  ~5    │ • Seasonal fire patterns observed           │
+│ Settlements        │        │ • Grassland/savanna clearing (0.11 km²)     │
+│                    │        │ • Example: 6.452°N, 24.524°E                │
+└────────────────────┴────────┴─────────────────────────────────────────────┘
+
+Spatial Distribution: Settlements extend 54km north-northwest from primary
+reference point, showing widely dispersed occupancy pattern.
+
+═══════════════════════════════════════════════════════════════════════════════
+🦁 BIODIVERSITY - PROTECTED SPECIES
+═══════════════════════════════════════════════════════════════════════════════
+
+IUCN THREATENED SPECIES PRESENT (8 Total):
+
+┌─────────────────────┐
+│  ENDANGERED (2)     │  🔴 Critical Conservation Priority
+├─────────────────────┤
+│ • Chimpanzee        │  Pan troglodytes
+│ • African Elephant  │  Loxodonta africana
+└─────────────────────┘
+
+┌─────────────────────┐
+│  VULNERABLE (6)     │  🟡 High Conservation Priority
+├─────────────────────┤
+│ • Cheetah           │  Acinonyx jubatus
+│ • African Golden    │  Caracal aurata
+│   Cat               │
+│ • Giraffe           │  Giraffa camelopardalis
+│ • Hippopotamus      │  Hippopotamus amphibius
+│ • Lion              │  Panthera leo
+│ • Leopard           │  Panthera pardus
+└─────────────────────┘
+
+Habitat Classification: Tropical savanna ecosystem supporting diverse
+megafauna assemblage characteristic of Central African wilderness areas.
+
+═══════════════════════════════════════════════════════════════════════════════
+☀️ ENVIRONMENTAL CONTEXT
+═══════════════════════════════════════════════════════════════════════════════
+
+CLIMATE PROFILE:
+  Climate Zone: Tropical Savanna
+  Annual Temperature: 24.3°C (Range: 14.4°C min - 33.8°C max)
+  Annual Precipitation: 1,498 mm
+
+SEASONAL PATTERNS:
+
+  Rainfall Distribution:
+    │                 ███
+    │                 ███
+    │           ███   ███   ███
+    │     ███   ███   ███   ███
+    │     ███   ███   ███   ███   ███
+    └─────┴─────┴─────┴─────┴─────┴─────
+         DRY    WET   PEAK   WET   DRY
+         Dec-   May-  Jul-   Sep-  Nov-
+         Jan    Jun   Aug    Oct   Dec
+
+  Rainy Season: Jun-Sep (Peak: 255mm/month)
+  Dry Season: Dec-Feb (Minimum: 6mm/month)
+
+FIRE-CLIMATE CORRELATION:
+  Peak fire activity (Dec-Feb) corresponds directly with driest months,
+  showing strong seasonal fire regime characteristic of savanna ecosystems.
+  
+Current Period Status: Dry season timing (elevated fire activity expected)
+
+═══════════════════════════════════════════════════════════════════════════════
+📊 DATA SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+MONITORING PERIOD: January 2023 - March 4, 2026 (39 months)
+DATA SOURCES: Multi-sensor integration (patrol tracking, satellite imagery,
+              fire detection systems, settlement mapping, deforestation
+              monitoring, climate stations)
+
+KEY OBSERVATIONS RECAP:
+
+  Fire Activity:        48 active groups | 103,702 historical detections
+                        Golf-2 group: Highest activity (1,857 fires, entering)
+                        
+  Patrol Coverage:      372.6 km tracked across 38 active monitoring pixels
+                        Focus: Northern CAR / Southern Chad border region
+                        
+  Forest Change:        0.49 km² recent loss | 74% decrease vs baseline
+                        Pattern: Small-scale, fire-associated clearing
+                        
+  Settlement Pattern:   27 clusters totaling 0.61 km² built area
+                        Types: Mining (3), camps (6+), agricultural (~10),
+                        pastoral (~5)
+                        
+  Biodiversity:         8 IUCN threatened species documented
+                        Includes 2 Endangered megafauna species
+                        
+  Regional Context:     Long-term trend shows decreasing fire detections
+                        (5.18M regional baseline)
+
+DATA COMPLETENESS: 22-year historical forest loss record | 3-year intensive
+monitoring period | 3,800 mapped infrastructure features | Continuous
+satellite fire monitoring | Active ground patrol integration
+
+GEOGRAPHIC REFERENCE FEATURES: Safari Ht Chinko, Mbari River, Chinko River,
+Kotto, Ouara River, multiple regional waypoints
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Report Generated: March 2026  |  Chinko Reserve Monitoring System
+Data presented objectively for stakeholder analysis and decision-making
+
+═══════════════════════════════════════════════════════════════════════════════
