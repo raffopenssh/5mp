@@ -5291,7 +5291,107 @@
         }
 
         // Comprehensive KML Export V2 - with park boundaries and all spatial data
+        // Export combined KML by fetching server-generated KML for each park
         async function exportFullReportKmlV2() {
+            const pwd = getPwd();
+            const dateParams = (dateFrom ? '&from=' + dateFrom : '') + (dateTo ? '&to=' + dateTo : '');
+            
+            // Collect all unique park IDs
+            const parkIDs = new Set();
+            for (const park of starredItems.parks) {
+                if (park.id) parkIDs.add(park.id);
+            }
+            for (const bbox of starredItems.bboxes) {
+                const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
+                if (bboxData?.parks) {
+                    for (const p of bboxData.parks) {
+                        if (p.id) parkIDs.add(p.id);
+                    }
+                }
+            }
+            
+            if (parkIDs.size === 0) {
+                showToast('No parks to export', 'error');
+                return;
+            }
+            
+            showToast(`Generating combined KML for ${parkIDs.size} parks...`);
+            
+            // Fetch KML for each park from server
+            const kmlDocs = [];
+            let successCount = 0;
+            for (const parkID of parkIDs) {
+                try {
+                    const resp = await fetch(`/api/parks/${encodeURIComponent(parkID)}/export.kml?pwd=${encodeURIComponent(pwd)}${dateParams}`);
+                    if (resp.ok) {
+                        const kmlText = await resp.text();
+                        kmlDocs.push({parkID, kml: kmlText});
+                        successCount++;
+                    }
+                } catch (err) {
+                    console.error(`Failed to fetch KML for ${parkID}:`, err);
+                }
+            }
+            
+            if (kmlDocs.length === 0) {
+                showToast('Failed to generate KML', 'error');
+                return;
+            }
+            
+            // Merge all KML documents
+            const dateStr = dateFrom && dateTo ? `_${dateFrom}_to_${dateTo}` : dateFrom ? `_from_${dateFrom}` : dateTo ? `_to_${dateTo}` : '';
+            const mergedKML = mergeKMLDocuments(kmlDocs, `5MP Report - ${parkIDs.size} Parks`, dateStr);
+            
+            // Download
+            const blob = new Blob([mergedKML], {type: 'application/vnd.google-earth.kml+xml'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `5MP_Report_${parkIDs.size}_parks${dateStr}.kml`.replace(/[\s\/\\:]/g, '_');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            
+            showToast(`✓ Exported KML with ${successCount} parks`, 'success');
+        }
+        
+        // Helper function to merge multiple KML documents into one
+        function mergeKMLDocuments(kmlDocs, title, dateStr) {
+            const kmlParts = [
+                '<?xml version="1.0" encoding="UTF-8"?>',
+                '<kml xmlns="http://www.opengis.net/kml/2.2">',
+                '<Document>',
+                `<name>${escapeXml(title)}</name>`,
+                `<description>Generated ${new Date().toISOString().split('T')[0]} | Date range: ${dateStr || 'all time'} | ${kmlDocs.length} protected areas</description>`,
+                ''
+            ];
+            
+            // Extract and merge folders from each KML doc
+            for (const {parkID, kml} of kmlDocs) {
+                // Parse out the Document content (everything between <Document> and </Document>)
+                const docMatch = kml.match(/<Document[^>]*>([\s\S]*?)<\/Document>/);
+                if (docMatch && docMatch[1]) {
+                    let content = docMatch[1];
+                    // Extract name if present
+                    const nameMatch = content.match(/<name>([^<]+)<\/name>/);
+                    const parkName = nameMatch ? nameMatch[1] : parkID;
+                    // Wrap all content in a folder
+                    kmlParts.push(`<Folder><name>${escapeXml(parkName)}</name>`);
+                    // Remove the document-level name/description to avoid duplication
+                    content = content.replace(/<name>[^<]+<\/name>/, '');
+                    content = content.replace(/<description>[^<]+<\/description>/, '');
+                    kmlParts.push(content);
+                    kmlParts.push('</Folder>');
+                }
+            }
+            
+            kmlParts.push('</Document>');
+            kmlParts.push('</kml>');
+            
+            return kmlParts.join('\n');
+        }
+        
+        async function exportFullReportKmlV2_old() {
             const allParks = [];
             let parksWithoutData = 0;
             const pwd = getPwd();
