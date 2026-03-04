@@ -11574,12 +11574,33 @@
             const showInsights = detailLevel !== 'summary' && stats.insights && stats.insights.length > 0;
             const insightLimit = detailLevel === 'comprehensive' ? 100 : (expanded ? 10 : 3);
             
+            // Get patrol metrics from grid data
+            const grid = data.grid || {};
+            const activePixels = grid.activePixels || grid.active_pixels || 0;
+            const distanceKm = grid.totalDistanceKm || grid.total_distance_km || 0;
+            
+            // Get settlement data from settlement endpoint
+            const settle = data.settlement || {};
+            // Calculate built-up area from classified settlements if API doesn't provide it
+            let builtUpKm2 = settle.built_up_km2 || 0;
+            if (builtUpKm2 === 0 && settle.classified_settlements && settle.classified_settlements.length > 0) {
+                const totalAreaM2 = settle.classified_settlements.reduce((sum, s) => sum + (s.area_m2 || 0), 0);
+                builtUpKm2 = totalAreaM2 / 1000000;
+            }
+            const settlementVisits = settle.visit_count || 0;
+            
+            // Get roadless data from stats
+            const roadlessPercent = stats.roadless?.roadless_percentage || 0;
+            
             html += `<div class="starred-report-section patrol" style="margin-bottom:12px;">
                 <div class="starred-report-section-title">○ Patrol & Activity Summary</div>
                 <div class="starred-report-section-stats" style="flex-wrap:wrap;">
                     <span title="Fire response rate">Response: ${Math.round(fireResponseRate)}%</span>
-                    <span title="Roadless wilderness">Roadless: ${(stats.roadless?.roadless_percentage || 0).toFixed(1)}%</span>
-                    <span title="Settlement built-up area">Built-up: ${(stats.settlement?.built_up_km2 || 0).toFixed(2)} km²</span>
+                    ${activePixels > 0 ? `<span title="Active patrol pixels">Patrol: ${fmt(activePixels)} pixels</span>` : ''}
+                    ${distanceKm > 0 ? `<span title="Distance traveled">Distance: ${distanceKm.toFixed(1)} km</span>` : ''}
+                    ${settlementVisits > 0 ? `<span title="Settlement visits">Visits: ${fmt(settlementVisits)}</span>` : ''}
+                    <span title="Roadless wilderness">Roadless: ${roadlessPercent.toFixed(1)}%</span>
+                    <span title="Settlement built-up area">Built-up: ${builtUpKm2.toFixed(2)} km²</span>
                 </div>
                 ${showInsights ? `<div class="starred-report-group" style="margin-top:8px;"><div class="starred-report-group-title">Key Insights:</div>${stats.insights.slice(0, insightLimit).map(i => `<div style="margin:4px 0;font-size:10px;color:#aaa;">${i}</div>`).join('')}${!expanded && stats.insights.length > insightLimit ? `<div style="color:#60a5fa;font-size:10px;cursor:pointer;" onclick="this.parentElement.innerHTML=this.parentElement.innerHTML.replace('...show more', '')+reportDataCache.parks.get('${park.id}')?.stats?.insights?.slice(${insightLimit}).map(i=>'<div style=margin:4px\\ 0;font-size:10px;color:#aaa;>'+i+'</div>').join('')">...show ${stats.insights.length - insightLimit} more</div>` : ''}</div>` : ''}
             </div>`;
@@ -11649,12 +11670,16 @@
         if (shouldIncludeSection('settlement', data) && settleCount > 0) {
             const detailLevel = getDetailLevel();
             const showSettlements = detailLevel !== 'summary' && settle.largest_settlements && settle.largest_settlements.length > 0;
+            // Use built_up_km2 from settlement data, not stats
+            const builtUpKm2 = settle.built_up_km2 || settleStats.built_up_km2 || 0;
+            const visitCount = settle.visit_count || 0;
             html += `<div class="starred-report-section settlement">
                 <div class="starred-report-section-title">■ Settlements</div>
                 <div class="starred-report-section-stats">
                     <span>Count: ${fmt(settleCount)}</span>
-                    <span>Built-up: ${(settleStats.built_up_km2 || 0).toFixed(2)} km²</span>
+                    <span>Built-up: ${builtUpKm2.toFixed(2)} km²</span>
                     <span>Pop: ${fmt(settle.total_population || 0)}</span>
+                    ${visitCount > 0 ? `<span>Visits: ${fmt(visitCount)}</span>` : ''}
                 </div>
                 ${detailLevel !== 'summary' && settle.summary ? `<div class="starred-report-section-text">${settle.summary}</div>` : ''}
                 ${detailLevel !== 'summary' && settle.classified_settlements && settle.classified_settlements.length > 0 ? renderSettlementsSummary(settle.classified_settlements, detailLevel === 'comprehensive' ? 10 : 3) : ''}
@@ -11668,8 +11693,13 @@
             const detailLevel = getDetailLevel();
             const showSpeciesList = detailLevel !== 'summary' && species.species && species.species.length > 0;
             const speciesLimit = detailLevel === 'comprehensive' ? 30 : 10;
-            // Use status field, not category
-            const endangeredSpecies = species.species?.filter(s => s.status === 'CR' || s.status === 'EN' || s.status === 'VU') || [];
+            // Use status field, not category - AND filter out unknown species
+            const endangeredSpecies = species.species?.filter(s => {
+                // Must have status CR/EN/VU AND must have a valid name
+                const hasValidStatus = s.status === 'CR' || s.status === 'EN' || s.status === 'VU';
+                const hasValidName = (s.common_name && s.common_name.trim() !== '') || (s.binomial && s.binomial.trim() !== '');
+                return hasValidStatus && hasValidName;
+            }) || [];
             const endangered = endangeredSpecies.length;
             html += `<div class="starred-report-section" style="border-color:#10b981;">
                 <div class="starred-report-section-title">❦ Biodiversity</div>
@@ -11677,7 +11707,7 @@
                     <span>Total: ${species.total_count || species.species?.length || 0} species</span>
                     <span>Threatened: ${endangered} (CR/EN/VU)</span>
                 </div>
-                ${showSpeciesList && endangeredSpecies.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Notable Threatened Species:</div>${endangeredSpecies.slice(0, speciesLimit).map(s => `<div style="margin:3px 0;font-size:10px;line-height:1.4;"><strong style="color:#10b981;">${s.common_name || s.binomial || 'Unknown'}</strong> <em style="color:#888;">${s.binomial || ''}</em> <span style="padding:1px 4px;background:${ s.status === 'CR' ? '#dc2626' : s.status === 'EN' ? '#f59e0b' : '#84cc16' };color:white;border-radius:2px;font-size:8px;font-weight:600;">${s.status}</span></div>`).join('')}${endangeredSpecies.length > speciesLimit ? `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${endangeredSpecies.length - speciesLimit} more species</div><div style="display:none">${endangeredSpecies.slice(speciesLimit).map(s => `<div style="margin:3px 0;font-size:10px;line-height:1.4;"><strong style="color:#10b981;">${s.common_name || s.binomial || 'Unknown'}</strong> <em style="color:#888;">${s.binomial || ''}</em> <span style="padding:1px 4px;background:${ s.status === 'CR' ? '#dc2626' : s.status === 'EN' ? '#f59e0b' : '#84cc16' };color:white;border-radius:2px;font-size:8px;font-weight:600;">${s.status}</span></div>`).join('')}</div>` : ''}</div>` : ''}
+                ${showSpeciesList && endangeredSpecies.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">Notable Threatened Species:</div>${endangeredSpecies.slice(0, speciesLimit).map(s => `<div style="margin:3px 0;font-size:10px;line-height:1.4;"><strong style="color:#10b981;">${s.common_name || s.binomial}</strong> <em style="color:#888;">${s.binomial || ''}</em> <span style="padding:1px 4px;background:${ s.status === 'CR' ? '#dc2626' : s.status === 'EN' ? '#f59e0b' : '#84cc16' };color:white;border-radius:2px;font-size:8px;font-weight:600;">${s.status}</span></div>`).join('')}${endangeredSpecies.length > speciesLimit ? `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${endangeredSpecies.length - speciesLimit} more species</div><div style="display:none">${endangeredSpecies.slice(speciesLimit).map(s => `<div style="margin:3px 0;font-size:10px;line-height:1.4;"><strong style="color:#10b981;">${s.common_name || s.binomial}</strong> <em style="color:#888;">${s.binomial || ''}</em> <span style="padding:1px 4px;background:${ s.status === 'CR' ? '#dc2626' : s.status === 'EN' ? '#f59e0b' : '#84cc16' };color:white;border-radius:2px;font-size:8px;font-weight:600;">${s.status}</span></div>`).join('')}</div>` : ''}</div>` : ''}
             </div>`;
         }
         
@@ -12846,29 +12876,33 @@
         
         try {
             // Fetch all data in parallel (same as popups do)
-            const [fire, ghsl, deforest, road, species, climate, research, legal, grid] = await Promise.all([
+            const [fire, ghsl, deforest, settlement, road, species, climate, research, legal, grid, stats] = await Promise.all([
                 fetchFireDataDirect(parkId, {from, to, pwd}),
                 fetchGHSLDataDirect(parkId, {pwd}),
                 fetchDeforestDataDirect(parkId, {pwd}),
+                fetchSettlementNarrativeDirect(parkId, {pwd}),
                 fetchRoadDataDirect(parkId, {pwd}),
                 fetchSpeciesDataDirect(parkId, {pwd}),
                 fetchClimateDataDirect(parkId, {pwd}),
                 fetchResearchDataDirect(parkId, {pwd}),
                 fetchLegalDataDirect(parkId, {pwd}),
-                fetchGridDataDirect(parkId, {from, to, pwd})
+                fetchGridDataDirect(parkId, {from, to, pwd}),
+                fetchStatsDirect(parkId, {pwd})
             ]);
             
             return {
                 ...result,
                 fire,
                 ghsl,
-                deforest,
+                deforestation: deforest,  // Map to expected key
+                settlement,
                 road,
                 species,
                 climate,
                 research,
                 legal,
-                grid
+                grid,
+                stats
             };
         } catch (error) {
             console.error(`Error fetching data for ${parkId}:`, error);
@@ -12921,14 +12955,15 @@
             const responseRate = narratives.length > 0 ? Math.round((stoppedCount / narratives.length) * 100) : 0;
             
             return {
-                totalFires,
-                fireGroups: narratives.length,
-                responseRate,
-                peakMonth: data.peak_month || data.peak_season || '',
+                total_fires: totalFires,
+                fire_groups: narratives.length,
+                response_rate: responseRate,
+                peak_month: data.peak_month || data.peak_season || '',
                 density: data.density || 0,
                 narratives,
                 realtimeGroups: realtimeData?.groups || [],
-                trend: data.trend || {}
+                trend: data.trend || {},
+                by_year: data.by_year || {}
             };
         } catch (error) {
             console.error(`Fire data error for ${parkId}:`, error);
@@ -12974,40 +13009,61 @@
         }
     }
     
-    // Deforestation data
+    // Settlement narrative data (rich data with classified settlements)
+    async function fetchSettlementNarrativeDirect(parkId, {pwd}) {
+        try {
+            const url = `/api/parks/${encodeURIComponent(parkId)}/settlement-narrative?pwd=${encodeURIComponent(pwd)}`;
+            const resp = await fetch(url);
+            if (!resp.ok) return {error: 'API error', settlement_count: 0};
+            
+            const data = await resp.json();
+            return {
+                settlement_count: data.settlement_count || 0,
+                total_population: data.total_population || 0,
+                built_up_km2: data.built_up_km2 || 0,
+                conflict_risk: data.conflict_risk || '',
+                summary: data.summary || '',
+                classified_settlements: data.classified_settlements || [],
+                largest_settlements: data.largest_settlements || [],
+                visit_count: data.visit_count || 0
+            };
+        } catch (error) {
+            console.error(`Settlement narrative error for ${parkId}:`, error);
+            return {error: error.message, settlement_count: 0};
+        }
+    }
+
+    // Deforestation data (with narrative for classified events)
     async function fetchDeforestDataDirect(parkId, {pwd}) {
         try {
-            const url = `/api/parks/${encodeURIComponent(parkId)}/features?type=deforestation&pwd=${encodeURIComponent(pwd)}`;
-            const resp = await fetch(url);
-            if (!resp.ok) return {error: 'API error', totalLossKm2: 0};
+            // Fetch both narrative and features
+            const [narrative, features] = await Promise.all([
+                fetch(`/api/parks/${encodeURIComponent(parkId)}/deforestation-narrative?pwd=${encodeURIComponent(pwd)}`)
+                    .then(r => r.ok ? r.json() : {}).catch(() => ({})),
+                fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=deforestation&pwd=${encodeURIComponent(pwd)}`)
+                    .then(r => r.ok ? r.json() : {features: []}).catch(() => ({features: []}))
+            ]);
             
-            const geojson = await resp.json();
-            const features = geojson.features || [];
+            const featureList = features.features || [];
             
-            // Aggregate deforestation data
-            let totalLossKm2 = 0;
-            const events = features.map(f => {
-                const props = f.properties || {};
-                const lossKm2 = props.area_km2 || (props.area_ha ? props.area_ha / 100 : 0);
-                totalLossKm2 += lossKm2;
-                return {
-                    year: props.year || props.start_year || '',
-                    yearRange: props.year_range || (props.start_year ? `${props.start_year}-${props.end_year || ''}` : ''),
-                    areaKm2: lossKm2,
-                    classification: props.classification || props.type || '',
-                    description: props.description || props.narrative || '',
-                    coords: f.geometry?.coordinates || []
-                };
-            });
-            
+            // Use narrative data if available (richer), otherwise aggregate from features
             return {
-                totalLossKm2,
-                eventCount: features.length,
-                events
+                total_loss_km2: narrative.total_loss_km2 || featureList.reduce((sum, f) => {
+                    const props = f.properties || {};
+                    return sum + (props.area_km2 || (props.area_ha ? props.area_ha / 100 : 0));
+                }, 0),
+                trend_direction: narrative.trend_direction || '',
+                trend_percent_change: narrative.trend_percent_change || 0,
+                worst_year: narrative.worst_year || '',
+                worst_year_km2: narrative.worst_year_km2 || 0,
+                summary: narrative.summary || '',
+                classified_events: narrative.classified_events || [],
+                hotspots: narrative.hotspots || [],
+                by_year: narrative.by_year || {}
             };
         } catch (error) {
             console.error(`Deforest data error for ${parkId}:`, error);
-            return {error: error.message, totalLossKm2: 0};
+            return {error: error.message, total_loss_km2: 0};
         }
     }
     
@@ -13055,11 +13111,14 @@
             const species = data.species || [];
             
             return {
-                count: species.length,
+                total_count: data.total_count || species.length,
                 species: species.map(s => ({
-                    name: s.scientific_name || s.name || '',
-                    commonName: s.common_name || '',
-                    status: s.red_list_category || s.status || ''
+                    binomial: s.binomial || s.scientific_name || '',
+                    common_name: s.common_name || '',
+                    status: s.status || s.red_list_category || '',
+                    status_name: s.status_name || '',
+                    order: s.order || '',
+                    family: s.family || ''
                 }))
             };
         } catch (error) {
@@ -13172,6 +13231,21 @@
         } catch (error) {
             console.error(`Grid data error for ${parkId}:`, error);
             return {error: error.message, activePixels: 0};
+        }
+    }
+
+    // Stats data
+    async function fetchStatsDirect(parkId, {pwd}) {
+        try {
+            const url = `/api/parks/${encodeURIComponent(parkId)}/stats?pwd=${encodeURIComponent(pwd)}`;
+            const resp = await fetch(url);
+            if (!resp.ok) return {error: 'API error'};
+            
+            const data = await resp.json();
+            return data || {};
+        } catch (error) {
+            console.error(`Stats error for ${parkId}:`, error);
+            return {error: error.message};
         }
     }
     
