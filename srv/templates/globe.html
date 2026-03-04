@@ -333,6 +333,8 @@
         .starred-item-name { font-size: 13px; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .starred-item-meta { font-size: 11px; color: #888; margin-top: 2px; }
         .starred-item-actions { display: flex; align-items: center; gap: 8px; }
+        .starred-item-map { background: none; border: none; color: #666; cursor: pointer; padding: 4px; font-size: 14px; transition: color 0.2s; }
+        .starred-item-map:hover { color: #60a5fa; }
         .starred-item-expand { background: none; border: none; color: #666; cursor: pointer; padding: 4px; font-size: 12px; transition: transform 0.2s; }
         .starred-item-expand.expanded { transform: rotate(180deg); }
         .starred-item-remove { background: none; border: none; color: #666; cursor: pointer; padding: 4px; font-size: 14px; }
@@ -3970,8 +3972,8 @@
                 
                 // Extract all data fields
                 const fire = data.fire || {};
-                const ghsl = data.ghsl || {};
-                const deforest = data.deforest || {};
+                const settlement = data.settlement || data.ghsl || {};  // settlement is primary, ghsl is fallback
+                const deforestation = data.deforestation || data.deforest || {};  // deforestation is primary, deforest is fallback
                 const road = data.road || {};
                 const species = data.species || {};
                 const research = data.research || {};
@@ -3998,11 +4000,11 @@
                 const responseRate = fire.responseRate || 0;
                 const peakSeason = fire.peakMonth || '';
                 const fireDensity = fire.density || 0;
-                const deforestTotalKm2 = deforest.totalLossKm2 || 0;
-                const deforestEvents = deforest.eventCount || 0;
-                const settlementCount = ghsl.count || 0;
-                const population = ghsl.totalPopulation || 0;
-                const builtUpKm2 = ghsl.builtUpKm2 || 0;
+                const deforestTotalKm2 = deforestation.totalLossKm2 || 0;
+                const deforestEvents = deforestation.eventCount || 0;
+                const settlementCount = settlement.count || settlement.settlement_count || 0;
+                const population = settlement.totalPopulation || settlement.total_population || 0;
+                const builtUpKm2 = settlement.builtUpKm2 || settlement.built_up_km2 || 0;
                 const roadCount = road.roadCount || 0;
                 const riverCount = road.riverCount || 0;
                 const placeCount = road.placeCount || 0;
@@ -4798,17 +4800,17 @@
                 if (data.error) continue;
                 
                 const fire = data.fire || {};
-                const ghsl = data.ghsl || {};
-                const deforest = data.deforest || {};
+                const settlement = data.settlement || data.ghsl || {};  // settlement is primary
+                const deforestation = data.deforestation || data.deforest || {};  // deforestation is primary
                 const grid = data.grid || {};
                 
                 const fireDetections = fire.totalFires || 0;
                 const fireGroups = fire.fireGroups || 0;
                 const responseRate = fire.responseRate || 0;
                 const peakSeason = fire.peakMonth || '';
-                const deforestKm2 = deforest.totalLossKm2 || 0;
-                const settlements = ghsl.count || 0;
-                const population = ghsl.totalPopulation || 0;
+                const deforestKm2 = deforestation.totalLossKm2 || deforestation.total_loss_km2 || 0;
+                const settlements = settlement.count || settlement.settlement_count || 0;
+                const population = settlement.totalPopulation || settlement.total_population || 0;
                 const activePixels = grid.activePixels || 0;
                 const distanceKm = grid.totalDistanceKm || 0;
                 
@@ -4909,17 +4911,17 @@
                 }
                 
                 // Settlements
-                const ghsl = data.ghsl || {};
+                const settlement = data.settlement || data.ghsl || {};
                 parkData.push(['=== SETTLEMENTS ===']);
-                parkData.push(['Settlement Count', ghsl.count || 0]);
-                parkData.push(['Total Population', ghsl.totalPopulation ? ghsl.totalPopulation.toLocaleString() : 0]);
-                parkData.push(['Built-up Area (km²)', ghsl.builtUpKm2 ? Math.round(ghsl.builtUpKm2 * 100) / 100 : '']);
+                parkData.push(['Settlement Count', settlement.count || settlement.settlement_count || 0]);
+                parkData.push(['Total Population', (settlement.totalPopulation || settlement.total_population || 0).toLocaleString()]);
+                parkData.push(['Built-up Area (km²)', Math.round((settlement.builtUpKm2 || settlement.built_up_km2 || 0) * 100) / 100]);
                 parkData.push([]);
                 
-                if (ghsl.settlements && ghsl.settlements.length > 0) {
+                if (settlement.settlements && settlement.settlements.length > 0) {
                     parkData.push(['Settlement Details:']);
                     parkData.push(['Name', 'Population', 'Type', 'Inside_Park']);
-                    for (const s of ghsl.settlements.slice(0, 30)) {
+                    for (const s of settlement.settlements.slice(0, 30)) {
                         parkData.push([
                             s.name || 'Unnamed',
                             s.population || 0,
@@ -4931,15 +4933,15 @@
                 }
                 
                 // Deforestation
-                const deforest = data.deforest || {};
+                const deforestation = data.deforestation || data.deforest || {};
                 parkData.push(['=== DEFORESTATION ===']);
-                parkData.push(['Total Loss (km²)', deforest.totalLossKm2 ? Math.round(deforest.totalLossKm2 * 100) / 100 : 0]);
+                parkData.push(['Total Loss (km²)', Math.round((deforestation.totalLossKm2 || deforestation.total_loss_km2 || 0) * 100) / 100]);
                 parkData.push([]);
                 
-                if (deforest.events && deforest.events.length > 0) {
+                if (deforestation.events && deforestation.events.length > 0) {
                     parkData.push(['Deforestation Events:']);
                     parkData.push(['Year', 'Year_Range', 'Area_km2', 'Classification', 'Description']);
-                    for (const e of deforest.events.slice(0, 30)) {
+                    for (const e of deforestation.events.slice(0, 30)) {
                         parkData.push([
                             e.year || '',
                             e.yearRange || '',
@@ -5066,8 +5068,8 @@
             const allDeforestData = [['Park', 'Location', 'Area_km2', 'Year_Range', 'Classification', 'Coords']];
             for (const {park, data} of parkReports) {
                 if (data.error) continue;
-                const deforest = data.deforest || {};
-                const events = deforest.events || [];
+                const deforestation = data.deforestation || data.deforest || {};
+                const events = deforestation.events || [];
                 
                 for (const e of events) {
                     allDeforestData.push([
@@ -5091,8 +5093,8 @@
             const allSettlementsData = [['Park', 'Name', 'Population', 'Type', 'Inside_Park', 'Coords']];
             for (const {park, data} of parkReports) {
                 if (data.error) continue;
-                const ghsl = data.ghsl || {};
-                const settlements = ghsl.settlements || [];
+                const settlement = data.settlement || data.ghsl || {};
+                const settlements = settlement.settlements || [];
                 
                 for (const s of settlements) {
                     allSettlementsData.push([
@@ -5135,6 +5137,50 @@
                 const patrolSheet = XLSX.utils.aoa_to_sheet(patrolSummaryData);
                 patrolSheet['!cols'] = [{wch: 30}, {wch: 15}, {wch: 18}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}];
                 XLSX.utils.book_append_sheet(wb, patrolSheet, 'Patrol_Summary');
+            }
+            
+            // === SPECIES SHEET (NEW!) ===
+            const allSpeciesData = [['Park', 'Common_Name', 'Scientific_Name', 'Status', 'Order', 'Family']];
+            const threatenedSpeciesData = [['Park', 'Common_Name', 'Scientific_Name', 'Status', 'Order', 'Family']];
+            
+            for (const {park, data} of parkReports) {
+                if (data.error) continue;
+                const species = data.species || {};
+                const speciesList = species.species || [];
+                
+                for (const s of speciesList) {
+                    const row = [
+                        park.name || park.id,
+                        s.commonName || s.common_name || '',
+                        s.name || s.scientific_name || '',
+                        s.status || '',
+                        s.order || '',
+                        s.family || ''
+                    ];
+                    
+                    allSpeciesData.push(row);
+                    
+                    // Add to threatened list if CR/EN/VU
+                    const status = (s.status || '').toUpperCase();
+                    if (status === 'CR' || status === 'EN' || status === 'VU' || 
+                        status.includes('CRITICALLY ENDANGERED') || 
+                        status.includes('ENDANGERED') || 
+                        status.includes('VULNERABLE')) {
+                        threatenedSpeciesData.push(row);
+                    }
+                }
+            }
+            
+            if (allSpeciesData.length > 1) {
+                const speciesSheet = XLSX.utils.aoa_to_sheet(allSpeciesData);
+                speciesSheet['!cols'] = [{wch: 25}, {wch: 25}, {wch: 30}, {wch: 12}, {wch: 20}, {wch: 20}];
+                XLSX.utils.book_append_sheet(wb, speciesSheet, 'Species');
+            }
+            
+            if (threatenedSpeciesData.length > 1) {
+                const threatenedSheet = XLSX.utils.aoa_to_sheet(threatenedSpeciesData);
+                threatenedSheet['!cols'] = [{wch: 25}, {wch: 25}, {wch: 30}, {wch: 12}, {wch: 20}, {wch: 20}];
+                XLSX.utils.book_append_sheet(wb, threatenedSheet, 'Threatened_Species');
             }
             
             // Generate filename
@@ -5537,11 +5583,13 @@
                         parkDesc.push(`Fire Groups: ${data.fire.fireGroups || 0}`);
                         parkDesc.push(`Total Fires: ${data.fire.totalFires || 0}`);
                     }
-                    if (data.ghsl) {
-                        parkDesc.push(`Settlements: ${data.ghsl.count || 0}`);
+                    if (data.settlement || data.ghsl) {
+                        const settlement = data.settlement || data.ghsl;
+                        parkDesc.push(`Settlements: ${settlement.count || settlement.settlement_count || 0}`);
                     }
-                    if (data.deforest) {
-                        parkDesc.push(`Deforestation Events: ${data.deforest.eventCount || 0}`);
+                    if (data.deforestation || data.deforest) {
+                        const deforestation = data.deforestation || data.deforest;
+                        parkDesc.push(`Deforestation Events: ${deforestation.eventCount || deforestation.event_count || 0}`);
                     }
                     if (data.grid) {
                         parkDesc.push(`Patrol Points: ${data.grid.activePixels || 0}`);
@@ -5636,7 +5684,8 @@
                 }
                 
                 // SETTLEMENTS
-                if (data?.ghsl?.settlements && data.ghsl.settlements.length > 0) {
+                const settlement = data?.settlement || data?.ghsl;
+                if (settlement?.settlements && settlement.settlements.length > 0) {
                     kmlParts.push('<Folder><name>Settlements</name>');
                     
                     // Fetch settlement features with geometry
@@ -5682,7 +5731,8 @@
                 }
                 
                 // DEFORESTATION
-                if (data?.deforest?.events && data.deforest.events.length > 0) {
+                const deforestation = data?.deforestation || data?.deforest;
+                if (deforestation?.events && deforestation.events.length > 0) {
                     kmlParts.push('<Folder><name>Deforestation</name>');
                     
                     // Fetch deforestation features with geometry
@@ -11145,6 +11195,7 @@
                                 </div>
                             </div>
                             <div class="starred-item-actions">
+                                ${iconClass === 'park' ? `<button class="starred-item-map" title="Show on map" onclick="event.stopPropagation(); flyToPark(starredItems.parks[${idx}]); toggleStarModal();">🗺️</button>` : ''}
                                 <button class="starred-item-expand" title="View report">▼</button>
                                 <button class="starred-item-remove" title="Remove">×</button>
                             </div>
@@ -11501,6 +11552,69 @@
         }
         
         return stats.length > 0 ? stats.join(' • ') : 'No significant activity detected';
+    }
+    
+    // Generate ASCII art representation of patrol grid intensity
+    function generatePatrolGridText(grid) {
+        if (!grid || !grid.features || grid.features.length === 0) {
+            return 'No patrol data available';
+        }
+        
+        // Characters from lightest to darkest intensity
+        const chars = [' ', '.', ':', ',', ';', '+', '*', '#', '@', '█'];
+        
+        const features = grid.features || [];
+        const cellData = {};
+        let maxIntensity = 0;
+        
+        // Extract cell positions and intensities
+        features.forEach(f => {
+            const lat = f.geometry?.coordinates?.[1] || f.properties?.lat_center;
+            const lon = f.geometry?.coordinates?.[0] || f.properties?.lon_center;
+            const intensity = f.properties?.intensity || f.properties?.total_points || f.properties?.score || 0;
+            
+            if (lat && lon && intensity > 0) {
+                // Round to create ~10x10 grid
+                const latRound = Math.round(lat * 2) / 2; // 0.5 degree cells
+                const lonRound = Math.round(lon * 2) / 2;
+                const key = `${latRound}_${lonRound}`;
+                
+                cellData[key] = (cellData[key] || 0) + intensity;
+                maxIntensity = Math.max(maxIntensity, cellData[key]);
+            }
+        });
+        
+        if (maxIntensity === 0) return 'No intensity data';
+        
+        // Get unique lats and lons
+        const lats = [...new Set(Object.keys(cellData).map(k => parseFloat(k.split('_')[0])))];
+        const lons = [...new Set(Object.keys(cellData).map(k => parseFloat(k.split('_')[1])))];
+        
+        if (lats.length === 0 || lons.length === 0) return 'Insufficient grid data';
+        
+        // Sort: lats descending (north to south), lons ascending (west to east)
+        lats.sort((a, b) => b - a);
+        lons.sort((a, b) => a - b);
+        
+        // Limit to ~10x10 for display
+        const displayLats = lats.slice(0, 10);
+        const displayLons = lons.slice(0, 10);
+        
+        // Build ASCII grid
+        let result = '';
+        for (const lat of displayLats) {
+            let row = '';
+            for (const lon of displayLons) {
+                const key = `${lat}_${lon}`;
+                const intensity = cellData[key] || 0;
+                const normalized = intensity / maxIntensity;
+                const charIndex = Math.floor(normalized * (chars.length - 1));
+                row += chars[charIndex];
+            }
+            result += row + '\n';
+        }
+        
+        return result;
     }
     
     function renderParkReportInline(park, data, expanded = true, parkId = null) {
@@ -12528,7 +12642,7 @@
             if (sectionName === 'climate' && !(data?.climate?.annual_rainfall_mm || data?.climate?.seasons)) return false;
             if (sectionName === 'publications' && !(data?.publications?.length > 0)) return false;
             if (sectionName === 'infrastructure' && !(data?.features?.river?.features?.length || data?.features?.road?.features?.length || data?.features?.infrastructure?.features?.length)) return false;
-            if (sectionName === 'patrol' && !(data?.stats?.active_pixels > 0 || data?.stats?.patrol_count > 0)) return false;
+            if (sectionName === 'patrol' && !(data?.grid?.activePixels > 0 || data?.stats?.active_pixels > 0 || data?.stats?.patrol_count > 0)) return false;
         }
         
         return true;
@@ -12558,7 +12672,7 @@
             if (reportConfig.sections.biodiversity && (data?.species?.total_species > 0 || data?.species?.species?.length > 0)) hasData = true;
             if (reportConfig.sections.climate && (data?.climate?.annual_rainfall_mm || data?.climate?.seasons)) hasData = true;
             if (reportConfig.sections.publications && data?.publications?.length > 0) hasData = true;
-            if (reportConfig.sections.patrol && (data?.stats?.active_pixels > 0 || data?.stats?.patrol_count > 0)) hasData = true;
+            if (reportConfig.sections.patrol && (data?.grid?.activePixels > 0 || data?.stats?.active_pixels > 0 || data?.stats?.patrol_count > 0)) hasData = true;
             
             if (!hasData) return false;
         }
@@ -13219,11 +13333,15 @@
             
             for (const feature of features) {
                 const props = feature.properties || {};
-                result.totalDistanceKm += props.distance_km || 0;
+                const distKm = props.total_distance_km || props.distance_km || 0;
+                result.totalDistanceKm += distKm;
                 
-                const type = props.transport_type || props.type || 'foot';
-                if (result.byType[type] !== undefined) {
-                    result.byType[type] += props.distance_km || 0;
+                const type = props.transport_type || props.movement_type || props.type || 'all';
+                if (type === 'all') {
+                    // If movement type is 'all', add to foot as default
+                    result.byType.foot += distKm;
+                } else if (result.byType[type] !== undefined) {
+                    result.byType[type] += distKm;
                 }
             }
             
