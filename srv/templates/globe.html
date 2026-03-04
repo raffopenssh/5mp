@@ -14120,6 +14120,9 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
 @media print {
     /* Hide everything except starred items panel */
     body > *:not(#star-modal) { display: none !important; }
+    
+    /* Star modal container */
+    .star-modal,
     #star-modal { 
         display: block !important; 
         position: static !important; 
@@ -14127,7 +14130,11 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
         height: auto !important;
         width: 100% !important;
         box-shadow: none !important;
+        backdrop-filter: none !important;
+        inset: auto !important;
     }
+    
+    /* Modal content */
     .star-modal-content { 
         max-height: none !important; 
         overflow: visible !important; 
@@ -14138,6 +14145,8 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
         position: static !important;
         box-shadow: none !important;
         border-radius: 0 !important;
+        background: white !important;
+        border: none !important;
     }
     .star-modal-body { 
         overflow: visible !important; 
@@ -14162,10 +14171,36 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
     .section-more-btn, button, .starred-export-btns { display: none !important; }
     
     /* Print styling */
-    body { background: white !important; color: black !important; padding: 10mm !important; font-size: 10pt !important; }
+    body { 
+        background: white !important; 
+        color: black !important; 
+        padding: 10mm !important; 
+        font-size: 10pt !important; 
+    }
+    
+    /* Force all backgrounds to white */
+    .star-modal-body,
+    .starred-section,
+    .starred-item,
+    .starred-item-header,
+    .starred-item-info,
+    .starred-park-nested {
+        background: white !important;
+        color: black !important;
+    }
     h1 { color: #166534 !important; font-size: 18pt !important; page-break-after: avoid; }
     h2 { color: #333 !important; font-size: 14pt !important; page-break-after: avoid; margin-top: 12pt; }
     h3 { color: #555 !important; font-size: 12pt !important; page-break-after: avoid; margin-top: 10pt; }
+    
+    /* All text should be dark */
+    .starred-item-name,
+    .starred-item-meta,
+    .starred-section-title,
+    .starred-section-desc,
+    .starred-report-section-title,
+    div, span, p { 
+        color: #222 !important; 
+    }
     
     /* Park items */
     .starred-park-nested { 
