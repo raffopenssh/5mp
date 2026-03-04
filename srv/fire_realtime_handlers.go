@@ -1234,14 +1234,17 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         }
         
         // Determine if active (last seen within 3 days)
+        // Use fractional days to match notification API logic
         lastSeen := endDateStr.String
         daysSince := 0
+        daysSinceFractional := 0.0
         if lastSeen != "" {
             if t, err := time.Parse("2006-01-02", lastSeen); err == nil {
-                daysSince = int(time.Since(t).Hours() / 24)
+                daysSinceFractional = time.Since(t).Hours() / 24.0
+                daysSince = int(daysSinceFractional)
             }
         }
-        isActive := daysSince <= 3
+        isActive := daysSinceFractional <= 3.0
         if isActive {
             activeCount++
         }
