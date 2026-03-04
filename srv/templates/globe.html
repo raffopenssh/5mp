@@ -10809,7 +10809,11 @@
         console.log(`[Report] Pre-fetching data for ${parkId}...`);
         
         try {
-            const data = await fetchParkFullData(parkId);
+            // Use NEW V2 data loader instead of old fetchParkFullData
+            const data = await fetchParkReportData(parkId, {
+                from: dateFrom,
+                to: dateTo
+            });
             reportDataCache.parks.set(parkId, {
                 ...data,
                 fetchedAt: new Date().toISOString()
@@ -10840,11 +10844,14 @@
             // Find all parks in this bbox
             const parksInBbox = await findParksInBbox(bbox);
             
-            // Fetch data for each park
+            // Fetch data for each park using NEW V2 data loader
             const parksWithData = [];
             for (const park of parksInBbox) {
                 if (!reportDataCache.parks.has(park.id)) {
-                    const data = await fetchParkFullData(park.id);
+                    const data = await fetchParkReportData(park.id, {
+                        from: dateFrom,
+                        to: dateTo
+                    });
                     reportDataCache.parks.set(park.id, {
                         ...data,
                         fetchedAt: new Date().toISOString()
