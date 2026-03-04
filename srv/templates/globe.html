@@ -1110,6 +1110,37 @@
         .toast-close { color: #666; cursor: pointer; font-size: 18px; line-height: 1; margin-left: auto; }
         .toast-close:hover { color: #fff; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        /* ========== PRINT STYLES FOR STAR REPORT ========== */
+        @media print {
+            body > *:not(#star-modal) { display: none !important; }
+            .star-modal, #star-modal { 
+                display: block !important; 
+                position: static !important; 
+                background: white !important;
+                width: 100% !important;
+                backdrop-filter: none !important;
+            }
+            .star-modal-content { 
+                max-height: none !important; 
+                width: 100% !important; 
+                background: white !important;
+                border: none !important;
+                position: static !important;
+            }
+            .star-modal-body { 
+                overflow: visible !important; 
+                padding: 10mm !important;
+                background: white !important;
+            }
+            .star-modal-header, .star-modal-footer, button { display: none !important; }
+            .starred-park-nested, .starred-report-content { display: block !important; }
+            body, html, .star-modal, .star-modal-content, .starred-section { 
+                background: white !important; 
+                color: black !important; 
+            }
+            h1, h2, h3, p, div, span { color: #222 !important; }
+        }
     </style>
 </head>
 <body>
@@ -14121,21 +14152,26 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
     /* Hide everything except starred items panel */
     body > *:not(#star-modal) { display: none !important; }
     
-    /* Star modal container */
+    /* Star modal container - FORCE white background */
     .star-modal,
-    #star-modal { 
+    #star-modal,
+    div.star-modal,
+    div#star-modal { 
         display: block !important; 
         position: static !important; 
         background: white !important;
+        background-color: white !important;
         height: auto !important;
         width: 100% !important;
         box-shadow: none !important;
         backdrop-filter: none !important;
         inset: auto !important;
+        z-index: auto !important;
     }
     
-    /* Modal content */
-    .star-modal-content { 
+    /* Modal content - FORCE white background */
+    .star-modal-content,
+    div.star-modal-content { 
         max-height: none !important; 
         overflow: visible !important; 
         width: 100% !important; 
@@ -14146,6 +14182,7 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
         box-shadow: none !important;
         border-radius: 0 !important;
         background: white !important;
+        background-color: rgb(255, 255, 255) !important;
         border: none !important;
     }
     .star-modal-body { 
@@ -14170,9 +14207,11 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
     /* Hide interactive elements */
     .section-more-btn, button, .starred-export-btns { display: none !important; }
     
-    /* Print styling */
-    body { 
+    /* Print styling - FORCE white background on body */
+    body,
+    html { 
         background: white !important; 
+        background-color: rgb(255, 255, 255) !important;
         color: black !important; 
         padding: 10mm !important; 
         font-size: 10pt !important; 
