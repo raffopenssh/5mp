@@ -159,6 +159,41 @@ curl -X POST "http://localhost:8000/api/upload/async?pwd=test2026" -F "gpx=@file
 
 ---
 
+## Remote Database Backup
+
+**Location:** exe-dev-monitor-peer01.exe.xyz  
+**File:** 5mp_db_backup_20260302.sqlite3 (1.87 GB)  
+**Uploaded:** 2026-03-04 09:18:53 UTC
+
+**Access Credentials:**
+```
+File ID:  c8de734b-ad0e-4c25-b5bb-6e4ddef3f847
+Token:    REDACTED_TOKEN
+```
+
+**Verification Status:**
+- ✅ PRAGMA integrity_check: ok
+- ✅ MD5: c4f7fff51e59277566d3d03e9eaf31a1
+- ✅ 490,467 pages (4KB each), WAL mode
+- ✅ Verified: 2026-03-04 09:43:56 UTC
+
+**Download:**
+```bash
+curl -H "Authorization: Bearer REDACTED_TOKEN" \
+  https://exe-dev-monitor-peer01.exe.xyz:8000/api/download/c8de734b-ad0e-4c25-b5bb-6e4ddef3f847 \
+  -o db_backup_20260302.sqlite3
+```
+
+**Verify Integrity:**
+```bash
+curl -X POST -H "Authorization: Bearer REDACTED_TOKEN" \
+  https://exe-dev-monitor-peer01.exe.xyz:8000/api/verify/c8de734b-ad0e-4c25-b5bb-6e4ddef3f847
+```
+
+See `backup_info.txt` for full details.
+
+---
+
 ## Data Processing Scripts (v5)
 
 See `docs/SCRIPTS.md` and `docs/FIRE_PIPELINE.md` for full details.
