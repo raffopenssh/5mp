@@ -5401,7 +5401,15 @@
             // Collect all parks (direct stars + bbox)
             const parksToFetch = [];
             
-            for (const park of starredItems.parks) {
+            for (const starredPark of starredItems.parks) {
+                // Get full park data from cached GeoJSON or keystoneAreas
+                let park = starredPark;
+                if (window._cachedAreasGeoJSON?.features) {
+                    const feature = window._cachedAreasGeoJSON.features.find(f => f.properties.id === starredPark.id);
+                    if (feature) park = feature.properties;
+                } else if (window.keystoneAreas) {
+                    park = window.keystoneAreas.find(p => p.id === starredPark.id) || starredPark;
+                }
                 parksToFetch.push({ park, source: 'starred' });
             }
             
@@ -5562,9 +5570,13 @@
                 lines.push('╔' + repeat('═', w - 2) + '╗');
                 lines.push('║ ' + pad(parkName, w - 4) + ' ║');
                 lines.push('╠' + repeat('═', w - 2) + '╣');
-                lines.push('║ ' + pad(`Area: ${(park.area_km2 || 0).toFixed(1)} km²`, 37) + pad(`Source: ${source}`, w - 41) + ' ║');
-                if (park.lat && park.lon) {
-                    lines.push('║ ' + pad(`Location: ${park.lat.toFixed(2)}°N, ${park.lon.toFixed(2)}°E`, w - 4) + ' ║');
+                const areaKm2 = park.area_km2 || park.rep_area || 0;
+                lines.push('║ ' + pad(`Area: ${areaKm2.toFixed(1)} km²`, 37) + pad(`Source: ${source}`, w - 41) + ' ║');
+                // Get lat/lon from coordinates object or direct properties
+                const lat = park.lat || (park.coordinates && park.coordinates.lat) || null;
+                const lon = park.lon || (park.coordinates && park.coordinates.lon) || null;
+                if (lat && lon) {
+                    lines.push('║ ' + pad(`Location: ${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E`, w - 4) + ' ║');
                 }
                 lines.push('╚' + repeat('═', w - 2) + '╝');
                 lines.push('');
@@ -5575,7 +5587,17 @@
                 const fireGroups = fire.fire_groups || 0;
                 const responseRate = fire.response_rate || 0;
                 const peakMonth = fire.peak_month || 'N/A';
-                const trend = String(fire.trend || 'unknown');
+                // Handle trend - could be string, number, or object
+                let trendStr = 'UNKNOWN';
+                if (fire.trend) {
+                    if (typeof fire.trend === 'string') {
+                        trendStr = fire.trend.toUpperCase();
+                    } else if (typeof fire.trend === 'number') {
+                        trendStr = fire.trend > 0 ? 'INCREASING' : fire.trend < 0 ? 'DECREASING' : 'STABLE';
+                    } else if (fire.trend.direction) {
+                        trendStr = String(fire.trend.direction).toUpperCase();
+                    }
+                }
                 
                 if (fires > 0 || fireGroups > 0) {
                     lines.push('🔥 FIRE ACTIVITY');
@@ -5583,7 +5605,7 @@
                     lines.push('  • Fire Groups: ' + fireGroups.toLocaleString());
                     lines.push('  • Response Rate: ' + responseRate.toFixed(1) + '%');
                     lines.push('  • Peak Month: ' + peakMonth);
-                    lines.push('  • Trend: ' + trend.toUpperCase());
+                    lines.push('  • Trend: ' + trendStr);
                     
                     // Active fire groups
                     const activeGroups = fire.active_groups || [];
@@ -5610,13 +5632,23 @@
                 const deforest = data.deforestation || {};
                 const deforestKm2 = deforest.total_loss_km2 || 0;
                 const deforestEvents = (deforest.classified_events || []).length;
-                const deforestTrend = String(deforest.trend || 'unknown');
+                // Handle deforestation trend
+                let deforestTrendStr = 'UNKNOWN';
+                if (deforest.trend) {
+                    if (typeof deforest.trend === 'string') {
+                        deforestTrendStr = deforest.trend.toUpperCase();
+                    } else if (typeof deforest.trend === 'number') {
+                        deforestTrendStr = deforest.trend > 0 ? 'INCREASING' : deforest.trend < 0 ? 'DECREASING' : 'STABLE';
+                    } else if (deforest.trend.direction) {
+                        deforestTrendStr = String(deforest.trend.direction).toUpperCase();
+                    }
+                }
                 
                 if (deforestKm2 > 0 || deforestEvents > 0) {
                     lines.push('🌳 DEFORESTATION');
                     lines.push('  • Total Loss: ' + deforestKm2.toFixed(2) + ' km²');
                     lines.push('  • Classified Events: ' + deforestEvents);
-                    lines.push('  • Trend: ' + deforestTrend.toUpperCase());
+                    lines.push('  • Trend: ' + deforestTrendStr);
                     
                     // Top events
                     const events = deforest.classified_events || [];
@@ -13668,15 +13700,39 @@
         }
     }
     
-    // Grid/patrol data (NEW!)
+    // Grid/patrol data - Use park bbox + 30km buffer
     async function fetchGridDataDirect(parkId, {from, to, pwd}) {
         try {
-            let url = `/api/grid?park_id=${encodeURIComponent(parkId)}&pwd=${encodeURIComponent(pwd)}`;
+            // Find park to get coordinates
+            let park = null;
+            if (window._cachedAreasGeoJSON?.features) {
+                const feature = window._cachedAreasGeoJSON.features.find(f => f.properties.id === parkId);
+                if (feature) park = feature.properties;
+            } else if (window.keystoneAreas) {
+                park = window.keystoneAreas.find(p => p.id === parkId);
+            }
+            
+            if (!park || !park.coordinates) {
+                return {error: 'Park not found', activePixels: 0, totalDistanceKm: 0};
+            }
+            
+            // Calculate bbox with 30km buffer (~0.27 degrees)
+            const bufferDeg = 30.0 / 111.0; // 30km in degrees
+            const lat = park.coordinates.lat;
+            const lon = park.coordinates.lon;
+            const bbox = [
+                lon - bufferDeg,
+                lat - bufferDeg,
+                lon + bufferDeg,
+                lat + bufferDeg
+            ];
+            
+            let url = `/api/grid?bbox=${bbox.join(',')}&pwd=${encodeURIComponent(pwd)}`;
             if (from) url += `&from=${from}`;
             if (to) url += `&to=${to}`;
             
             const resp = await fetch(url);
-            if (!resp.ok) return {error: 'API error', activePixels: 0};
+            if (!resp.ok) return {error: 'API error', activePixels: 0, totalDistanceKm: 0};
             
             const data = await resp.json();
             const features = data.features || [];
@@ -13971,9 +14027,28 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
 @media print {
     /* Hide everything except starred items panel */
     body > *:not(#star-modal) { display: none !important; }
-    #star-modal { display: block !important; position: static !important; background: white !important; }
-    .star-modal-content { max-height: none !important; overflow: visible !important; width: 100% !important; max-width: none !important; }
-    .star-modal-body { overflow: visible !important; height: auto !important; max-height: none !important; }
+    #star-modal { 
+        display: block !important; 
+        position: static !important; 
+        background: white !important;
+        height: auto !important;
+        width: 100% !important;
+    }
+    .star-modal-content { 
+        max-height: none !important; 
+        overflow: visible !important; 
+        width: 100% !important; 
+        max-width: none !important;
+        height: auto !important;
+        transform: none !important;
+        position: static !important;
+    }
+    .star-modal-body { 
+        overflow: visible !important; 
+        height: auto !important; 
+        max-height: none !important;
+        padding: 0 !important;
+    }
     .star-modal-header, .star-modal-footer, .starred-item-expand, .starred-item-remove { display: none !important; }
     .starred-modal-backdrop { display: none !important; }
     
@@ -13986,10 +14061,20 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
     .section-more-btn, button, .starred-export-btns { display: none !important; }
     
     /* Print styling */
-    body { background: white; color: black; padding: 20px; }
+    body { background: white !important; color: black !important; padding: 10mm !important; }
     h1 { color: #166534; }
-    .starred-park-nested { page-break-inside: avoid; border: 1px solid #ddd !important; margin-bottom: 20px; }
-    .starred-report-section { page-break-inside: avoid; }
+    .starred-park-nested { 
+        page-break-inside: avoid; 
+        border: 1px solid #ddd !important; 
+        margin-bottom: 15px !important;
+        padding: 10px !important;
+    }
+    .starred-report-section { 
+        page-break-inside: avoid;
+        margin-bottom: 10px !important;
+    }
+    /* Allow page breaks between parks */
+    .starred-park-nested:not(:first-child) { page-break-before: auto; }
     a { color: #1e40af; text-decoration: underline; }
 }
 </style>
