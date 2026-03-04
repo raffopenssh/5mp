@@ -35,3 +35,26 @@ Verification:
 ✓ File integrity verified (MD5 checksum matches)
 ✓ SQLite database format confirmed
 ✓ Remote access tested and working
+
+PRAGMA Integrity Check (2026-03-04 09:43:56 UTC):
+--------------------------------------------------
+✓ Overall Status: valid
+✓ MD5 Check: c4f7fff51e59277566d3d03e9eaf31a1 (match)
+✓ Size Check: 2,008,952,832 bytes (match)
+✓ SQLite PRAGMA integrity_check: ok
+✓ Database is valid: true
+✓ Page count: 490,467
+✓ Page size: 4,096 bytes
+✓ Journal mode: WAL
+✓ Database size: 1.87 GB
+
+API Verification:
+----------------
+curl -X POST -H "Authorization: Bearer REDACTED_TOKEN" \
+  https://exe-dev-monitor-peer01.exe.xyz:8000/api/verify/c8de734b-ad0e-4c25-b5bb-6e4ddef3f847
+
+Partial Download (header/range requests supported):
+--------------------------------------------------
+curl -H "Authorization: Bearer REDACTED_TOKEN" \
+  -H "Range: bytes=0-1023" \
+  https://exe-dev-monitor-peer01.exe.xyz:8000/api/download/c8de734b-ad0e-4c25-b5bb-6e4ddef3f847
