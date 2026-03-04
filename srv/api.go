@@ -3292,7 +3292,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	kml.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
 	kml.WriteString("<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n")
 	kml.WriteString("<Document>\n")
-	kml.WriteString(fmt.Sprintf("<name>%s - 5MP Conservation Data</name>\n", parkName))
+	kml.WriteString(fmt.Sprintf("<name>%s - 5MP Conservation Data</name>\n", xmlEscape(parkName)))
 	kml.WriteString("<description>Fire, settlement, and deforestation data from 5MP Conservation Monitoring</description>\n")
 
 	// Define styles
@@ -3728,7 +3728,7 @@ func writeGeoJSONToKMLWithDesc(kml *strings.Builder, geojsonStr, styleID, name, 
 	geomType, _ := geom["type"].(string)
 	coords := geom["coordinates"]
 
-	kml.WriteString(fmt.Sprintf("<Placemark><name>%s</name><styleUrl>#%s</styleUrl>", name, styleID))
+	kml.WriteString(fmt.Sprintf("<Placemark><name>%s</name><styleUrl>#%s</styleUrl>", xmlEscape(name), styleID))
 	
 	// Add description if provided
 	if description != "" {
@@ -3804,7 +3804,7 @@ func writeGeoJSONToKML(kml *strings.Builder, geojsonStr, styleID, name string) {
 	geomType, _ := geom["type"].(string)
 	coords := geom["coordinates"]
 
-	kml.WriteString(fmt.Sprintf("<Placemark><name>%s</name><styleUrl>#%s</styleUrl>", name, styleID))
+	kml.WriteString(fmt.Sprintf("<Placemark><name>%s</name><styleUrl>#%s</styleUrl>", xmlEscape(name), styleID))
 
 	switch geomType {
 	case "Point":
@@ -4267,7 +4267,7 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 		}
 		
 		// Start park folder
-		kml.WriteString(fmt.Sprintf("<Folder><name>%s</name>\n", parkName))
+		kml.WriteString(fmt.Sprintf("<Folder><name>%s</name>\n", xmlEscape(parkName)))
 		
 		// Boundary
 		if boundary != "" {
@@ -4567,4 +4567,14 @@ func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID strin
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(fc)
+}
+
+// xmlEscape escapes special XML characters in strings for safe inclusion in XML/KML
+func xmlEscape(s string) string {
+	s = strings.ReplaceAll(s, "&", "&amp;")
+	s = strings.ReplaceAll(s, "<", "&lt;")
+	s = strings.ReplaceAll(s, ">", "&gt;")
+	s = strings.ReplaceAll(s, "\"", "&quot;")
+	s = strings.ReplaceAll(s, "'", "&apos;")
+	return s
 }
