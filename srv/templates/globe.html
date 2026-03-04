@@ -5391,6 +5391,381 @@
             return kmlParts.join('\n');
         }
         
+        // Export comprehensive TEXT report with ASCII graphics
+        async function exportFullReportTxt() {
+            const allParks = [];
+            const errors = [];
+            
+            showToast('🔄 Generating comprehensive text report...', 'info');
+            
+            // Collect all parks (direct stars + bbox)
+            const parksToFetch = [];
+            
+            for (const park of starredItems.parks) {
+                parksToFetch.push({ park, source: 'starred' });
+            }
+            
+            for (const bbox of starredItems.bboxes) {
+                const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
+                if (bboxData?.parks) {
+                    for (const p of bboxData.parks) {
+                        // Avoid duplicates
+                        if (!parksToFetch.find(item => item.park.id === p.id)) {
+                            parksToFetch.push({ park: p, source: 'bbox:' + (bbox.name || 'area') });
+                        }
+                    }
+                }
+            }
+            
+            if (parksToFetch.length === 0) {
+                showToast('No parks to export', 'error');
+                return;
+            }
+            
+            // Fetch comprehensive data for each park
+            const fetchPromises = parksToFetch.map(async ({park, source}) => {
+                try {
+                    const data = await fetchParkReportData(park.id, {
+                        from: dateFrom,
+                        to: dateTo
+                    });
+                    return { park, data, source };
+                } catch (error) {
+                    console.error(`Error fetching data for ${park.name}:`, error);
+                    errors.push(`${park.name}: ${error.message}`);
+                    return { park, data: {}, source, error: error.message };
+                }
+            });
+            
+            const results = await Promise.all(fetchPromises);
+            allParks.push(...results);
+            
+            if (errors.length > 0) {
+                showToast(`⚠️ ${errors.length} park(s) had errors`, 'warning');
+            }
+            
+            // Generate the text report
+            const txt = generateTextReport(allParks, dateFrom, dateTo);
+            
+            // Download as .txt file
+            const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const timestamp = new Date().toISOString().slice(0,10);
+            a.download = `conservation_report_${timestamp}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast(`✓ Exported ${allParks.length} park(s) to TXT`, 'success');
+        }
+        
+        // Generate formatted text report with ASCII graphics
+        function generateTextReport(allParks, dateFrom, dateTo) {
+            const lines = [];
+            const w = 79; // max width
+            
+            // Helper functions
+            const repeat = (str, n) => str.repeat(n);
+            const center = (str, width) => {
+                const pad = Math.max(0, width - str.length);
+                const left = Math.floor(pad / 2);
+                const right = pad - left;
+                return repeat(' ', left) + str + repeat(' ', right);
+            };
+            const pad = (str, width, char = ' ') => {
+                return str + repeat(char, Math.max(0, width - str.length));
+            };
+            const box = (content, width = w) => {
+                lines.push('╔' + repeat('═', width - 2) + '╗');
+                content.forEach(line => {
+                    lines.push('║ ' + pad(line, width - 4) + ' ║');
+                });
+                lines.push('╚' + repeat('═', width - 2) + '╝');
+            };
+            const divider = (char = '═') => lines.push(repeat(char, w));
+            const section = (title) => {
+                lines.push('');
+                divider();
+                lines.push(center(title, w));
+                divider();
+                lines.push('');
+            };
+            
+            // Header
+            box([
+                center('CONSERVATION MONITORING REPORT', w - 4),
+                center('5MP Globe - African Protected Areas', w - 4),
+                '',
+                center(`Report Period: ${dateFrom || 'All Time'} to ${dateTo || 'Present'}`, w - 4),
+                center(`Generated: ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC`, w - 4),
+                center(`Parks Analyzed: ${allParks.length}`, w - 4)
+            ]);
+            
+            lines.push('');
+            lines.push('');
+            
+            // Summary Statistics
+            section('📊 SUMMARY STATISTICS');
+            
+            let totalArea = 0, totalFires = 0, totalDeforest = 0, totalSettlements = 0;
+            let totalPatrolKm = 0, totalSpecies = 0;
+            let fireParks = 0, deforestParks = 0, settlementParks = 0, patrolParks = 0;
+            
+            allParks.forEach(({park, data}) => {
+                totalArea += park.area_km2 || 0;
+                const fire = data.fire || {};
+                const deforest = data.deforestation || {};
+                const settlement = data.settlement || {};
+                const grid = data.grid || {};
+                const species = data.species || {};
+                
+                const fires = fire.total_fires || 0;
+                const deforestKm2 = deforest.total_loss_km2 || 0;
+                const settlements = settlement.settlement_count || 0;
+                const patrolKm = grid.totalDistanceKm || 0;
+                const speciesCount = species.total_count || 0;
+                
+                totalFires += fires;
+                totalDeforest += deforestKm2;
+                totalSettlements += settlements;
+                totalPatrolKm += patrolKm;
+                totalSpecies += speciesCount;
+                
+                if (fires > 0) fireParks++;
+                if (deforestKm2 > 0) deforestParks++;
+                if (settlements > 0) settlementParks++;
+                if (patrolKm > 0) patrolParks++;
+            });
+            
+            lines.push('┌' + repeat('─', w - 2) + '┐');
+            lines.push('│ ' + pad('Total Protected Area:', 40) + pad(totalArea.toFixed(0) + ' km²', w - 43) + '│');
+            lines.push('│ ' + pad('Fire Detections:', 40) + pad(totalFires.toLocaleString() + ' (' + fireParks + ' parks)', w - 43) + '│');
+            lines.push('│ ' + pad('Forest Loss:', 40) + pad(totalDeforest.toFixed(2) + ' km² (' + deforestParks + ' parks)', w - 43) + '│');
+            lines.push('│ ' + pad('Settlement Clusters:', 40) + pad(totalSettlements.toLocaleString() + ' (' + settlementParks + ' parks)', w - 43) + '│');
+            lines.push('│ ' + pad('Patrol Coverage:', 40) + pad(totalPatrolKm.toFixed(1) + ' km (' + patrolParks + ' parks)', w - 43) + '│');
+            lines.push('│ ' + pad('Threatened Species:', 40) + pad(totalSpecies.toLocaleString() + ' records', w - 43) + '│');
+            lines.push('└' + repeat('─', w - 2) + '┘');
+            
+            // Individual park reports
+            section('🏞️  PARK DETAILS');
+            
+            allParks.forEach(({park, data, source}, idx) => {
+                if (idx > 0) {
+                    lines.push('');
+                    lines.push(repeat('─', w));
+                    lines.push('');
+                }
+                
+                // Park header
+                const parkName = `${park.name || park.id} (${park.country || 'Unknown'})`;
+                lines.push('╔' + repeat('═', w - 2) + '╗');
+                lines.push('║ ' + pad(parkName, w - 4) + ' ║');
+                lines.push('╠' + repeat('═', w - 2) + '╣');
+                lines.push('║ ' + pad(`Area: ${(park.area_km2 || 0).toFixed(1)} km²`, 37) + pad(`Source: ${source}`, w - 41) + ' ║');
+                if (park.lat && park.lon) {
+                    lines.push('║ ' + pad(`Location: ${park.lat.toFixed(2)}°N, ${park.lon.toFixed(2)}°E`, w - 4) + ' ║');
+                }
+                lines.push('╚' + repeat('═', w - 2) + '╝');
+                lines.push('');
+                
+                // Fire Activity
+                const fire = data.fire || {};
+                const fires = fire.total_fires || 0;
+                const fireGroups = fire.fire_groups || 0;
+                const responseRate = fire.response_rate || 0;
+                const peakMonth = fire.peak_month || 'N/A';
+                const trend = String(fire.trend || 'unknown');
+                
+                if (fires > 0 || fireGroups > 0) {
+                    lines.push('🔥 FIRE ACTIVITY');
+                    lines.push('  • Total Detections: ' + fires.toLocaleString());
+                    lines.push('  • Fire Groups: ' + fireGroups.toLocaleString());
+                    lines.push('  • Response Rate: ' + responseRate.toFixed(1) + '%');
+                    lines.push('  • Peak Month: ' + peakMonth);
+                    lines.push('  • Trend: ' + trend.toUpperCase());
+                    
+                    // Active fire groups
+                    const activeGroups = fire.active_groups || [];
+                    if (activeGroups.length > 0) {
+                        lines.push('');
+                        lines.push('  Active Fire Groups (last 28 days):');
+                        activeGroups.slice(0, 5).forEach(g => {
+                            const status = g.status || 'unknown';
+                            const speed = g.speed_km_per_day || 0;
+                            const fireCount = g.fire_count || 0;
+                            lines.push(`    • ${g.name || g.id}: ${status} (${speed.toFixed(1)} km/day, ${fireCount} fires)`);
+                        });
+                        if (activeGroups.length > 5) {
+                            lines.push(`    ... and ${activeGroups.length - 5} more`);
+                        }
+                    }
+                    lines.push('');
+                } else {
+                    lines.push('🔥 FIRE ACTIVITY: No fire activity detected');
+                    lines.push('');
+                }
+                
+                // Deforestation
+                const deforest = data.deforestation || {};
+                const deforestKm2 = deforest.total_loss_km2 || 0;
+                const deforestEvents = (deforest.classified_events || []).length;
+                const deforestTrend = String(deforest.trend || 'unknown');
+                
+                if (deforestKm2 > 0 || deforestEvents > 0) {
+                    lines.push('🌳 DEFORESTATION');
+                    lines.push('  • Total Loss: ' + deforestKm2.toFixed(2) + ' km²');
+                    lines.push('  • Classified Events: ' + deforestEvents);
+                    lines.push('  • Trend: ' + deforestTrend.toUpperCase());
+                    
+                    // Top events
+                    const events = deforest.classified_events || [];
+                    if (events.length > 0) {
+                        lines.push('');
+                        lines.push('  Recent Events:');
+                        events.slice(0, 3).forEach(e => {
+                            const year = e.year || 'Unknown';
+                            const area = e.area_km2 || 0;
+                            const type = e.classification || 'unclassified';
+                            lines.push(`    • ${year}: ${area.toFixed(3)} km² (${type})`);
+                        });
+                        if (events.length > 3) {
+                            lines.push(`    ... and ${events.length - 3} more`);
+                        }
+                    }
+                    lines.push('');
+                } else {
+                    lines.push('🌳 DEFORESTATION: No deforestation detected');
+                    lines.push('');
+                }
+                
+                // Settlements
+                const settlement = data.settlement || {};
+                const settlements = settlement.settlement_count || 0;
+                const population = settlement.total_population || 0;
+                const builtUpKm2 = settlement.built_up_km2 || 0;
+                
+                if (settlements > 0) {
+                    lines.push('🏘️  SETTLEMENTS');
+                    lines.push('  • Clusters: ' + settlements.toLocaleString());
+                    lines.push('  • Estimated Population: ' + population.toLocaleString());
+                    lines.push('  • Built-up Area: ' + builtUpKm2.toFixed(2) + ' km²');
+                    
+                    // Classification summary
+                    const classified = settlement.classified_events || [];
+                    if (classified.length > 0) {
+                        const types = {};
+                        classified.forEach(e => {
+                            const type = e.classification || 'unclassified';
+                            types[type] = (types[type] || 0) + 1;
+                        });
+                        lines.push('');
+                        lines.push('  Classification:');
+                        Object.entries(types).forEach(([type, count]) => {
+                            lines.push(`    • ${type}: ${count}`);
+                        });
+                    }
+                    lines.push('');
+                } else {
+                    lines.push('🏘️  SETTLEMENTS: No settlements detected');
+                    lines.push('');
+                }
+                
+                // Patrol Coverage
+                const grid = data.grid || {};
+                const patrolKm = grid.totalDistanceKm || 0;
+                const activePixels = grid.activePixels || 0;
+                const byType = grid.byType || {};
+                
+                if (patrolKm > 0 || activePixels > 0) {
+                    lines.push('👣 PATROL COVERAGE');
+                    lines.push('  • Total Distance: ' + patrolKm.toFixed(1) + ' km');
+                    lines.push('  • Active Pixels: ' + activePixels);
+                    if (Object.keys(byType).length > 0) {
+                        lines.push('  • By Type:');
+                        if (byType.foot) lines.push(`    - Foot: ${byType.foot.toFixed(1)} km`);
+                        if (byType.vehicle) lines.push(`    - Vehicle: ${byType.vehicle.toFixed(1)} km`);
+                        if (byType.boat) lines.push(`    - Boat: ${byType.boat.toFixed(1)} km`);
+                        if (byType.air) lines.push(`    - Air: ${byType.air.toFixed(1)} km`);
+                    }
+                    lines.push('');
+                } else {
+                    lines.push('👣 PATROL COVERAGE: No patrol data available');
+                    lines.push('');
+                }
+                
+                // Species
+                const species = data.species || {};
+                const speciesCount = species.total_count || 0;
+                const byStatus = species.by_status || {};
+                
+                if (speciesCount > 0) {
+                    lines.push('🦁 THREATENED SPECIES');
+                    lines.push('  • Total Records: ' + speciesCount);
+                    if (Object.keys(byStatus).length > 0) {
+                        lines.push('  • By IUCN Status:');
+                        if (byStatus.CR) lines.push(`    - Critically Endangered: ${byStatus.CR}`);
+                        if (byStatus.EN) lines.push(`    - Endangered: ${byStatus.EN}`);
+                        if (byStatus.VU) lines.push(`    - Vulnerable: ${byStatus.VU}`);
+                    }
+                    
+                    // List species
+                    const speciesList = species.species || [];
+                    if (speciesList.length > 0) {
+                        lines.push('');
+                        lines.push('  Species Present:');
+                        speciesList.slice(0, 8).forEach(s => {
+                            const name = s.sci_name || s.name || 'Unknown';
+                            const status = s.category || '';
+                            lines.push(`    • ${name} (${status})`);
+                        });
+                        if (speciesList.length > 8) {
+                            lines.push(`    ... and ${speciesList.length - 8} more`);
+                        }
+                    }
+                    lines.push('');
+                } else {
+                    lines.push('🦁 THREATENED SPECIES: No data available');
+                    lines.push('');
+                }
+                
+                // Climate Context
+                const climate = data.climate || {};
+                if (climate.annual_temp_c || climate.annual_precip_mm) {
+                    lines.push('☀️  CLIMATE');
+                    if (climate.climate_zone) lines.push('  • Climate Zone: ' + climate.climate_zone);
+                    if (climate.annual_temp_c) lines.push('  • Annual Temperature: ' + climate.annual_temp_c.toFixed(1) + '°C');
+                    if (climate.annual_precip_mm) lines.push('  • Annual Precipitation: ' + climate.annual_precip_mm.toFixed(0) + ' mm');
+                    if (climate.dry_season) lines.push('  • Dry Season: ' + climate.dry_season);
+                    if (climate.rainy_season) lines.push('  • Rainy Season: ' + climate.rainy_season);
+                    lines.push('');
+                }
+                
+                // Research & Legal
+                const research = data.research || {};
+                const legal = data.legal || {};
+                const researchCount = research.count || 0;
+                const legalCount = legal.count || 0;
+                
+                if (researchCount > 0 || legalCount > 0) {
+                    lines.push('📚 RESEARCH & LEGAL');
+                    if (researchCount > 0) lines.push('  • Research Publications: ' + researchCount);
+                    if (legalCount > 0) lines.push('  • Legal Documents: ' + legalCount);
+                    lines.push('');
+                }
+            });
+            
+            // Footer
+            lines.push('');
+            divider('═');
+            lines.push(center('Report generated by 5MP Globe', w));
+            lines.push(center('https://five-megapixel-conservation.exe.xyz/', w));
+            lines.push(center('Conservation Monitoring for African Protected Areas', w));
+            divider('═');
+            
+            return lines.join('\n');
+        }
+        
         async function exportFullReportKmlV2_old() {
             const allParks = [];
             let parksWithoutData = 0;
@@ -16598,6 +16973,7 @@ ${starredItems.narratives.map(n => {
                 <div class="star-report-actions" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
                     <button class="star-report-btn secondary" onclick="openReportBuilder()" title="Configure report sections, detail level, and filters" style="min-width:auto;padding:8px 12px;">Config</button>
                     <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                        <button class="star-report-btn secondary" onclick="exportFullReportTxt()" title="Export comprehensive text-based report with ASCII graphics and data visualizations. Easy to read in email, terminal, or text editor." style="font-size:12px;">TXT</button>
                         <button class="star-report-btn secondary" onclick="exportFullReportCsvV2()" title="Export comprehensive CSV spreadsheet with all sections: fires, deforestation, settlements, species, patrol activity. Includes metadata, stats, and individual records." style="font-size:12px;">CSV</button>
                         <button class="star-report-btn secondary" onclick="exportFullReportXlsxV2()" title="Export comprehensive Excel workbook with multiple sheets: summary, fires, deforestation, settlements, species, patrol. Best for detailed analysis." style="font-size:12px;">XLSX</button>
                         <button class="star-report-btn secondary" onclick="exportFullReportKmlV2()" title="Export comprehensive KML with park boundaries, fire trajectories, settlements, deforestation hotspots, patrol points, roads and rivers. Open in Google Earth." style="font-size:12px;">KML</button>
