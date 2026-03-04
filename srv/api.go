@@ -3544,8 +3544,8 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	}
 	kml.WriteString("</Folder>\n")
 
-	// Roads folder (from feature_geometries)
-	kml.WriteString("<Folder><name>Roads (Patrol Data)</name>\n")
+	// Roads folder (from feature_geometries) - only create if data exists
+	var roadPlacemarks []string
 	roadRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'road' LIMIT 500`, parkID)
 	if roadRows != nil {
 		defer roadRows.Close()
@@ -3558,13 +3558,21 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			if n, ok := propMap["name"].(string); ok && n != "" {
 				name = n
 			}
-			writeGeoJSONToKML(&kml, geojson, "road", name)
+			var pmb strings.Builder
+			writeGeoJSONToKML(&pmb, geojson, "road", xmlEscape(name))
+			roadPlacemarks = append(roadPlacemarks, pmb.String())
 		}
 	}
-	kml.WriteString("</Folder>\n")
+	if len(roadPlacemarks) > 0 {
+		kml.WriteString("<Folder><name>Roads (Patrol Data)</name>\n")
+		for _, pm := range roadPlacemarks {
+			kml.WriteString(pm)
+		}
+		kml.WriteString("</Folder>\n")
+	}
 
-	// HeiGIT Roads folder (from roads_heigit - official road network)
-	kml.WriteString("<Folder><name>Roads (HeiGIT)</name>\n")
+	// HeiGIT Roads folder (from roads_heigit - official road network) - only create if data exists
+	var heigitPlacemarks []string
 	heigitRows, _ := s.DB.Query(`SELECT osm_id, highway_type, surface, length_km, geojson FROM roads_heigit WHERE park_id = ? AND geojson IS NOT NULL LIMIT 1000`, parkID)
 	if heigitRows != nil {
 		defer heigitRows.Close()
@@ -3582,13 +3590,21 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			if lengthKm.Valid && lengthKm.Float64 > 0 {
 				name = fmt.Sprintf("%s - %.1f km", name, lengthKm.Float64)
 			}
-			writeGeoJSONToKML(&kml, geojson, "road", name)
+			var pmb strings.Builder
+			writeGeoJSONToKML(&pmb, geojson, "road", xmlEscape(name))
+			heigitPlacemarks = append(heigitPlacemarks, pmb.String())
 		}
 	}
-	kml.WriteString("</Folder>\n")
+	if len(heigitPlacemarks) > 0 {
+		kml.WriteString("<Folder><name>Roads (HeiGIT)</name>\n")
+		for _, pm := range heigitPlacemarks {
+			kml.WriteString(pm)
+		}
+		kml.WriteString("</Folder>\n")
+	}
 
-	// HydroRIVERS folder (from park_rivers_hydro - includes geometry)
-	kml.WriteString("<Folder><name>Rivers (HydroRIVERS)</name>\n")
+	// HydroRIVERS folder (from park_rivers_hydro - includes geometry) - only create if data exists
+	var riverPlacemarks []string
 	riverDataRows, _ := s.DB.Query(`SELECT hyriv_id, name, length_km, stream_order, lat, lon, geojson FROM park_rivers_hydro WHERE park_id = ? ORDER BY stream_order DESC, length_km DESC LIMIT 200`, parkID)
 	if riverDataRows != nil {
 		defer riverDataRows.Close()
@@ -3613,19 +3629,27 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 				name = fmt.Sprintf("%s [order %d]", name, streamOrder.Int64)
 			}
 			
+			var pmb strings.Builder
 			// Use actual geometry if available, else point
 			if geojson.Valid && geojson.String != "" {
-				writeGeoJSONToKML(&kml, geojson.String, "water", name)
+				writeGeoJSONToKML(&pmb, geojson.String, "water", xmlEscape(name))
 			} else {
 				pointGeoJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat)
-				writeGeoJSONToKML(&kml, pointGeoJSON, "water", name)
+				writeGeoJSONToKML(&pmb, pointGeoJSON, "water", xmlEscape(name))
 			}
+			riverPlacemarks = append(riverPlacemarks, pmb.String())
 		}
 	}
-	kml.WriteString("</Folder>\n")
+	if len(riverPlacemarks) > 0 {
+		kml.WriteString("<Folder><name>Rivers (HydroRIVERS)</name>\n")
+		for _, pm := range riverPlacemarks {
+			kml.WriteString(pm)
+		}
+		kml.WriteString("</Folder>\n")
+	}
 
-	// Lakes folder (from park_lakes_hydro)
-	kml.WriteString("<Folder><name>Lakes (HydroLAKES)</name>\n")
+	// Lakes folder (from park_lakes_hydro) - only create if data exists
+	var lakePlacemarks []string
 	lakeRows, _ := s.DB.Query(`SELECT hylak_id, name, area_km2, depth_avg, lat, lon, geojson FROM park_lakes_hydro WHERE park_id = ? ORDER BY area_km2 DESC LIMIT 50`, parkID)
 	if lakeRows != nil {
 		defer lakeRows.Close()
@@ -3649,19 +3673,27 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 				name = fmt.Sprintf("%s [depth %.0fm]", name, depthAvg.Float64)
 			}
 			
+			var pmb strings.Builder
 			// Use actual geometry if available, else point
 			if geojson.Valid && geojson.String != "" {
-				writeGeoJSONToKML(&kml, geojson.String, "water", name)
+				writeGeoJSONToKML(&pmb, geojson.String, "water", xmlEscape(name))
 			} else {
 				pointGeoJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat)
-				writeGeoJSONToKML(&kml, pointGeoJSON, "water", name)
+				writeGeoJSONToKML(&pmb, pointGeoJSON, "water", xmlEscape(name))
 			}
+			lakePlacemarks = append(lakePlacemarks, pmb.String())
 		}
 	}
-	kml.WriteString("</Folder>\n")
+	if len(lakePlacemarks) > 0 {
+		kml.WriteString("<Folder><name>Lakes (HydroLAKES)</name>\n")
+		for _, pm := range lakePlacemarks {
+			kml.WriteString(pm)
+		}
+		kml.WriteString("</Folder>\n")
+	}
 
-	// Places folder
-	kml.WriteString("<Folder><name>Places</name>\n")
+	// Places folder - only create if data exists
+	var placePlacemarks []string
 	placeRows, _ := s.DB.Query(`SELECT name, lat, lon, place_type FROM osm_places WHERE park_id = ? LIMIT 500`, parkID)
 	if placeRows != nil {
 		defer placeRows.Close()
@@ -3671,13 +3703,21 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			var placeType string
 			placeRows.Scan(&name, &lat, &lon, &placeType)
 			pointGeoJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat)
-			writeGeoJSONToKML(&kml, pointGeoJSON, "place", fmt.Sprintf("%s (%s)", name, placeType))
+			var pmb strings.Builder
+			writeGeoJSONToKML(&pmb, pointGeoJSON, "place", xmlEscape(fmt.Sprintf("%s (%s)", name, placeType)))
+			placePlacemarks = append(placePlacemarks, pmb.String())
 		}
 	}
-	kml.WriteString("</Folder>\n")
+	if len(placePlacemarks) > 0 {
+		kml.WriteString("<Folder><name>Places</name>\n")
+		for _, pm := range placePlacemarks {
+			kml.WriteString(pm)
+		}
+		kml.WriteString("</Folder>\n")
+	}
 
-	// Waterbodies folder
-	kml.WriteString("<Folder><name>Waterbodies</name>\n")
+	// Waterbodies folder - only create if data exists
+	var wbPlacemarks []string
 	wbRows, _ := s.DB.Query(`SELECT waterbody_id, name, waterbody_type, lat, lon, geojson FROM park_waterbodies WHERE park_id = ? LIMIT 500`, parkID)
 	if wbRows != nil {
 		defer wbRows.Close()
@@ -3689,31 +3729,20 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			if displayName == "" {
 				displayName = fmt.Sprintf("%s at %.3f, %.3f", wbType, lat, lon)
 			}
-			writeGeoJSONToKML(&kml, geojson, "water", displayName)
+			var pmb strings.Builder
+			writeGeoJSONToKML(&pmb, geojson, "water", xmlEscape(displayName))
+			wbPlacemarks = append(wbPlacemarks, pmb.String())
 		}
 	}
-	kml.WriteString("</Folder>\n")
+	if len(wbPlacemarks) > 0 {
+		kml.WriteString("<Folder><name>Waterbodies</name>\n")
+		for _, pm := range wbPlacemarks {
+			kml.WriteString(pm)
+		}
+		kml.WriteString("</Folder>\n")
+	}
 
-	// Rivers folder (from osm_places)
-	kml.WriteString("<Folder><name>Rivers</name>\n")
-	riverRows, _ := s.DB.Query(`SELECT name, lat, lon, place_type, geojson FROM osm_places WHERE park_id = ? AND place_type IN ('river', 'stream', 'lake') LIMIT 500`, parkID)
-	if riverRows != nil {
-		defer riverRows.Close()
-		for riverRows.Next() {
-			var name string
-			var lat, lon float64
-			var placeType, geojson sql.NullString
-			riverRows.Scan(&name, &lat, &lon, &placeType, &geojson)
-			if geojson.Valid && geojson.String != "" {
-				writeGeoJSONToKML(&kml, geojson.String, "water", name)
-			} else {
-				// Point for rivers without geometry
-				pointGeoJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat)
-				writeGeoJSONToKML(&kml, pointGeoJSON, "water", fmt.Sprintf("%s (%s)", name, placeType.String))
-			}
-		}
-	}
-	kml.WriteString("</Folder>\n")
+	// Note: Removed duplicate "Rivers" folder from osm_places since we already have HydroRIVERS above
 
 	kml.WriteString("</Document>\n</kml>")
 
