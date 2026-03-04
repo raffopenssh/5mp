@@ -3314,30 +3314,29 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	// Settlements folder with narratives
 	kml.WriteString("<Folder><name>Settlements</name>\n")
 	
-	// Get settlement narratives
-	settlementNarratives := make(map[int]string)
-	snRows, _ := s.DB.Query(`SELECT id, narrative FROM park_settlements WHERE park_id = ? AND narrative IS NOT NULL AND narrative != ''`, parkID)
-	if snRows != nil {
-		defer snRows.Close()
-		for snRows.Next() {
-			var id int
-			var narrative string
-			snRows.Scan(&id, &narrative)
-			settlementNarratives[id] = narrative
-		}
-	}
-	
-	settlementRows, _ := s.DB.Query(`SELECT fg.geojson, fg.properties_json, ps.id, ps.classification 
+	// Join feature_geometries with park_settlements using polygon_ids (same as tooltip logic)
+	settlementQuery := `
+		SELECT 
+			fg.feature_id,
+			fg.geojson,
+			fg.properties_json,
+			ps.narrative,
+			ps.classification,
+			ps.nearest_place
 		FROM feature_geometries fg
-		LEFT JOIN park_settlements ps ON ps.park_id = fg.park_id AND ABS(ps.lat - fg.centroid_lat) < 0.001 AND ABS(ps.lon - fg.centroid_lon) < 0.001
-		WHERE fg.park_id = ? AND fg.feature_type = 'settlement' LIMIT 1000`, parkID)
+		LEFT JOIN park_settlements ps ON fg.park_id = ps.park_id 
+			AND (',' || ps.polygon_ids || ',') LIKE ('%,' || fg.feature_id || ',%')
+		WHERE fg.park_id = ? AND fg.feature_type = 'settlement'
+		LIMIT 1000
+	`
+	settlementRows, _ := s.DB.Query(settlementQuery, parkID)
 	if settlementRows != nil {
 		defer settlementRows.Close()
 		for settlementRows.Next() {
-			var geojson, props string
-			var settlementID sql.NullInt64
-			var classification sql.NullString
-			settlementRows.Scan(&geojson, &props, &settlementID, &classification)
+			var featureID, geojson, props string
+			var narrative, classification, nearestPlace sql.NullString
+			settlementRows.Scan(&featureID, &geojson, &props, &narrative, &classification, &nearestPlace)
+			
 			var propMap map[string]interface{}
 			json.Unmarshal([]byte(props), &propMap)
 			
@@ -3346,29 +3345,33 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			if classification.Valid && classification.String != "" {
 				name = strings.Title(classification.String) + " Settlement"
 			}
-			if pop, ok := propMap["population_est"].(float64); ok {
+			if pop, ok := propMap["population_est"].(float64); ok && pop > 0 {
 				name = fmt.Sprintf("%s (pop: %.0f)", name, pop)
 			}
-			
-			// Get narrative
-			var description string
-			if settlementID.Valid {
-				if narr, exists := settlementNarratives[int(settlementID.Int64)]; exists {
-					description = narr
-				}
+			if nearestPlace.Valid && nearestPlace.String != "" {
+				name = fmt.Sprintf("%s near %s", name, nearestPlace.String)
 			}
-			if description == "" {
+			
+			// Use narrative from park_settlements if available
+			var description string
+			if narrative.Valid && narrative.String != "" {
+				description = narrative.String
+			} else {
 				// Build from properties
 				var descParts []string
-				if place, ok := propMap["nearest_place"].(string); ok && place != "" {
-					descParts = append(descParts, "Near: "+place)
+				if nearestPlace.Valid && nearestPlace.String != "" {
+					descParts = append(descParts, "Near: "+nearestPlace.String)
 				}
 				if area, ok := propMap["area_m2"].(float64); ok {
 					descParts = append(descParts, fmt.Sprintf("Area: %.0f m²", area))
 				}
-				description = strings.Join(descParts, "<br>")
+				if pop, ok := propMap["population_est"].(float64); ok {
+					descParts = append(descParts, fmt.Sprintf("Population: %.0f", pop))
+				}
+				description = strings.Join(descParts, " | ")
 			}
-			writeGeoJSONToKMLWithDesc(&kml, geojson, "settlement", name, description, "", "")
+			
+			writeGeoJSONToKMLWithDesc(&kml, geojson, "settlement", xmlEscape(name), description, "", "")
 		}
 	}
 	kml.WriteString("</Folder>\n")
@@ -3376,26 +3379,27 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	// Deforestation folder with narratives
 	kml.WriteString("<Folder><name>Deforestation</name>\n")
 	
-	// Get deforestation narratives
-	defoNarratives := make(map[int]string)
-	dnRows, _ := s.DB.Query(`SELECT id, narrative FROM deforestation_events WHERE park_id = ? AND narrative IS NOT NULL AND narrative != ''`, parkID)
-	if dnRows != nil {
-		defer dnRows.Close()
-		for dnRows.Next() {
-			var id int
-			var narrative string
-			dnRows.Scan(&id, &narrative)
-			defoNarratives[id] = narrative
-		}
-	}
-	
-	defoQuery := `SELECT fg.geojson, fg.properties_json, de.id, de.year, de.classification, de.area_km2 
+	// Join feature_geometries with deforestation_events using polygon_ids (same as tooltip logic)
+	defoQuery := `
+		SELECT 
+			fg.feature_id,
+			fg.geojson,
+			fg.properties_json,
+			fg.start_date,
+			de.narrative,
+			de.classification,
+			de.pattern_type,
+			de.area_km2,
+			de.year
 		FROM feature_geometries fg
-		LEFT JOIN deforestation_events de ON de.park_id = fg.park_id AND de.year = CAST(json_extract(fg.properties_json, '$.year') AS INTEGER)
-		WHERE fg.park_id = ? AND fg.feature_type = 'deforestation'`
+		LEFT JOIN deforestation_events de ON fg.park_id = de.park_id 
+			AND CAST(fg.properties_json->>'year' AS INTEGER) = de.year
+			AND (',' || de.polygon_ids || ',') LIKE ('%,' || fg.feature_id || ',%')
+		WHERE fg.park_id = ? AND fg.feature_type = 'deforestation'
+	`
 	defoArgs := []interface{}{parkID}
 	if fromDate != "" {
-		defoQuery += " AND (fg.end_date IS NULL OR fg.end_date >= ?)"
+		defoQuery += " AND (fg.start_date IS NULL OR fg.start_date >= ?)"
 		defoArgs = append(defoArgs, fromDate)
 	}
 	if toDate != "" {
@@ -3407,12 +3411,12 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	if defoRows != nil {
 		defer defoRows.Close()
 		for defoRows.Next() {
-			var geojson, props string
-			var defoID sql.NullInt64
-			var defoYear sql.NullInt64
-			var classification sql.NullString
+			var featureID, geojson, props string
+			var startDateStr sql.NullString
+			var narrative, classification, patternType sql.NullString
 			var areaKm2 sql.NullFloat64
-			defoRows.Scan(&geojson, &props, &defoID, &defoYear, &classification, &areaKm2)
+			var year sql.NullInt64
+			defoRows.Scan(&featureID, &geojson, &props, &startDateStr, &narrative, &classification, &patternType, &areaKm2, &year)
 			
 			var propMap map[string]interface{}
 			json.Unmarshal([]byte(props), &propMap)
@@ -3422,63 +3426,50 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			if classification.Valid && classification.String != "" {
 				name = strings.Title(classification.String)
 			}
-			if defoYear.Valid {
-				name = fmt.Sprintf("%s (%d)", name, defoYear.Int64)
-			} else if year, ok := propMap["year"].(float64); ok {
-				name = fmt.Sprintf("%s (%d)", name, int(year))
+			if year.Valid {
+				name = fmt.Sprintf("%s (%d)", name, year.Int64)
+			} else if y, ok := propMap["year"].(float64); ok {
+				name = fmt.Sprintf("%s (%d)", name, int(y))
 			}
 			if areaKm2.Valid && areaKm2.Float64 > 0 {
 				name = fmt.Sprintf("%s - %.2f km²", name, areaKm2.Float64)
+			} else if area, ok := propMap["area_km2"].(float64); ok {
+				name = fmt.Sprintf("%s - %.2f km²", name, area)
 			}
 			
-			// Get narrative
+			// Use narrative from deforestation_events if available
 			var description string
-			if defoID.Valid {
-				if narr, exists := defoNarratives[int(defoID.Int64)]; exists {
-					description = narr
-				}
-			}
-			if description == "" {
+			if narrative.Valid && narrative.String != "" {
+				description = narrative.String
+			} else {
 				// Build from properties
 				var descParts []string
+				if patternType.Valid && patternType.String != "" {
+					descParts = append(descParts, "Pattern: "+patternType.String)
+				}
 				if place, ok := propMap["nearest_place"].(string); ok && place != "" {
 					descParts = append(descParts, "Near: "+place)
 				}
-				if pattern, ok := propMap["pattern_type"].(string); ok && pattern != "" {
-					descParts = append(descParts, "Pattern: "+pattern)
+				if areaKm2.Valid {
+					descParts = append(descParts, fmt.Sprintf("Area: %.2f km²", areaKm2.Float64))
 				}
-				description = strings.Join(descParts, "<br>")
+				description = strings.Join(descParts, " | ")
 			}
 			
 			// Add timespan for year
 			var startDate, endDate string
-			if defoYear.Valid {
-				startDate = fmt.Sprintf("%d-01-01", defoYear.Int64)
-				endDate = fmt.Sprintf("%d-12-31", defoYear.Int64)
+			if year.Valid {
+				startDate = fmt.Sprintf("%d-01-01", year.Int64)
+				endDate = fmt.Sprintf("%d-12-31", year.Int64)
 			}
-			writeGeoJSONToKMLWithDesc(&kml, geojson, "deforestation", name, description, startDate, endDate)
+			
+			writeGeoJSONToKMLWithDesc(&kml, geojson, "deforestation", xmlEscape(name), description, startDate, endDate)
 		}
 	}
 	kml.WriteString("</Folder>\n")
 
 	// Fire trajectories folder with narratives
 	kml.WriteString("<Folder><name>Fire Trajectories</name>\n")
-	
-	// Get fire narratives for this park
-	fireNarratives := make(map[int]string)
-	narrativeRows, _ := s.DB.Query(`
-		SELECT fg.group_id, fg.narrative 
-		FROM fire_groups fg 
-		WHERE fg.park_id = ? AND fg.narrative IS NOT NULL AND fg.narrative != ''`, parkID)
-	if narrativeRows != nil {
-		defer narrativeRows.Close()
-		for narrativeRows.Next() {
-			var groupID int
-			var narrative string
-			narrativeRows.Scan(&groupID, &narrative)
-			fireNarratives[groupID] = narrative
-		}
-	}
 	
 	fireQuery := `SELECT geojson, properties_json, start_date, end_date FROM feature_geometries WHERE park_id = ? AND feature_type = 'fire_trajectory'`
 	fireArgs := []interface{}{parkID}
@@ -3504,38 +3495,51 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			}
 			var propMap map[string]interface{}
 			json.Unmarshal([]byte(props), &propMap)
-			name := "Fire Trajectory"
-			var description string
-			groupID := 0
-			if gid, ok := propMap["group_id"].(float64); ok {
-				groupID = int(gid)
-				name = fmt.Sprintf("Fire Group %d", groupID)
-				// Get narrative if available
-				if narrative, exists := fireNarratives[groupID]; exists {
-					description = narrative
+			
+			// Build descriptive name from properties
+			name := "Fire Event"
+			if featureID, ok := propMap["feature_id"].(string); ok && featureID != "" {
+				// Extract friendly name like "Alpha-5" from feature_id
+				parts := strings.Split(featureID, "_grp_")
+				if len(parts) == 2 {
+					name = "Fire " + parts[1][:8] // Use first 8 chars of hash
 				}
 			}
-			// Build description from properties if no narrative
-			if description == "" {
+			if groupName, ok := propMap["group_name"].(string); ok && groupName != "" {
+				name = groupName
+			}
+			
+			// Get narrative directly from properties_json
+			description := ""
+			if narrative, ok := propMap["narrative"].(string); ok && narrative != "" {
+				description = narrative
+			} else {
+				// Build description from available properties
 				var descParts []string
-				if sd, ok := propMap["start_date"].(string); ok {
-					descParts = append(descParts, "Start: "+sd)
+				if groupType, ok := propMap["group_type"].(string); ok {
+					descParts = append(descParts, "Type: "+groupType)
 				}
-				if ed, ok := propMap["end_date"].(string); ok {
-					descParts = append(descParts, "End: "+ed)
+				if fires, ok := propMap["fires_total"].(float64); ok {
+					descParts = append(descParts, fmt.Sprintf("Fire detections: %.0f", fires))
 				}
-				if fi, ok := propMap["fires_inside"].(float64); ok {
-					descParts = append(descParts, fmt.Sprintf("Detections: %.0f", fi))
+				if days, ok := propMap["days"].(float64); ok {
+					descParts = append(descParts, fmt.Sprintf("Duration: %.0f days", days))
 				}
-				if di, ok := propMap["days_inside"].(float64); ok {
-					descParts = append(descParts, fmt.Sprintf("Days inside: %.0f", di))
+				if dist, ok := propMap["distance_km"].(float64); ok {
+					descParts = append(descParts, fmt.Sprintf("Distance: %.1f km", dist))
 				}
-				if oc, ok := propMap["outcome"].(string); ok {
-					descParts = append(descParts, "Outcome: "+oc)
+				if direction, ok := propMap["direction"].(string); ok {
+					descParts = append(descParts, "Direction: "+direction)
 				}
-				description = strings.Join(descParts, "<br>")
+				if nearestPlace, ok := propMap["nearest_place"].(string); ok && nearestPlace != "" {
+					if dist, ok := propMap["nearest_place_dist"].(float64); ok {
+						descParts = append(descParts, fmt.Sprintf("Near %s (%.1fkm)", nearestPlace, dist))
+					}
+				}
+				description = strings.Join(descParts, " | ")
 			}
-			writeGeoJSONToKMLWithDesc(&kml, geojson, "fire", name, description, startDate.String, endDate.String)
+			
+			writeGeoJSONToKMLWithDesc(&kml, geojson, "fire", xmlEscape(name), description, startDate.String, endDate.String)
 		}
 	}
 	kml.WriteString("</Folder>\n")
