@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"math"
 	"net/http"
 	"os"
 	"strconv"
@@ -3303,6 +3304,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	kml.WriteString("<Style id=\"road\"><LineStyle><color>ff60a5fa</color><width>2</width></LineStyle></Style>\n")
 	kml.WriteString("<Style id=\"place\"><IconStyle><color>ffffffff</color><scale>0.8</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>\n")
 	kml.WriteString("<Style id=\"water\"><IconStyle><color>ffff9933</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/water.png</href></Icon></IconStyle><LineStyle><color>ffff9933</color><width>2</width></LineStyle><PolyStyle><color>50ff9933</color></PolyStyle></Style>\n")
+	kml.WriteString("<Style id=\"patrol\"><IconStyle><scale>0</scale></IconStyle><PolyStyle><color>5022c55e</color></PolyStyle><LineStyle><color>8022c55e</color><width>1</width></LineStyle></Style>\n") // Semi-transparent green circles for patrol effort
 
 	// Boundary folder
 	if boundary != "" {
@@ -3711,6 +3713,138 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	if len(placePlacemarks) > 0 {
 		kml.WriteString("<Folder><name>Places</name>\n")
 		for _, pm := range placePlacemarks {
+			kml.WriteString(pm)
+		}
+		kml.WriteString("</Folder>\n")
+	}
+
+	// Patrol Effort folder - grid cells with 30km buffer, semi-transparent circles with timestamps
+	var patrolPlacemarks []string
+	
+	// Calculate 30km buffer bbox around park
+	var patrolBBox [4]float64 // minLon, minLat, maxLon, maxLat
+	if boundary != "" {
+		var geom map[string]interface{}
+		if err := json.Unmarshal([]byte(boundary), &geom); err == nil {
+			var coords [][]float64
+			if geomType, ok := geom["type"].(string); ok {
+				if geomType == "Polygon" {
+					if coordsArr, ok := geom["coordinates"].([]interface{}); ok && len(coordsArr) > 0 {
+						if ring, ok := coordsArr[0].([]interface{}); ok {
+							for _, pt := range ring {
+								if p, ok := pt.([]interface{}); ok && len(p) >= 2 {
+									if lon, ok := p[0].(float64); ok {
+										if lat, ok := p[1].(float64); ok {
+											coords = append(coords, []float64{lon, lat})
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			if len(coords) > 0 {
+				// Find bounding box
+				minLon, maxLon := coords[0][0], coords[0][0]
+				minLat, maxLat := coords[0][1], coords[0][1]
+				for _, c := range coords {
+					if c[0] < minLon {
+						minLon = c[0]
+					}
+					if c[0] > maxLon {
+						maxLon = c[0]
+					}
+					if c[1] < minLat {
+						minLat = c[1]
+					}
+					if c[1] > maxLat {
+						maxLat = c[1]
+					}
+				}
+				
+				// Add 30km buffer (~0.27 degrees)
+				bufferDeg := 30.0 / 111.0
+				patrolBBox = [4]float64{minLon - bufferDeg, minLat - bufferDeg, maxLon + bufferDeg, maxLat + bufferDeg}
+			}
+		}
+	}
+	
+	if patrolBBox[0] != 0 || patrolBBox[1] != 0 { // Valid bbox
+		// Query effort data within bbox with date filters
+		patrolQuery := `
+			SELECT 
+				e.grid_cell_id, 
+				e.year, 
+				e.month, 
+				e.movement_type,
+				e.total_distance_km,
+				e.total_points,
+				g.lat_center,
+				g.lon_center
+			FROM effort_data e
+			JOIN grid_cells g ON e.grid_cell_id = g.id
+			WHERE e.day IS NULL 
+				AND e.movement_type = 'all'
+				AND g.lat_center BETWEEN ? AND ?
+				AND g.lon_center BETWEEN ? AND ?
+		`
+		patrolArgs := []interface{}{patrolBBox[1], patrolBBox[3], patrolBBox[0], patrolBBox[2]}
+		
+		if fromDate != "" {
+			patrolQuery += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
+			if t, err := time.Parse("2006-01-02", fromDate); err == nil {
+				patrolArgs = append(patrolArgs, t.Year(), t.Year(), int(t.Month()))
+			}
+		}
+		if toDate != "" {
+			patrolQuery += " AND (e.year < ? OR (e.year = ? AND e.month <= ?))"
+			if t, err := time.Parse("2006-01-02", toDate); err == nil {
+				patrolArgs = append(patrolArgs, t.Year(), t.Year(), int(t.Month()))
+			}
+		}
+		
+		patrolQuery += " ORDER BY e.year DESC, e.month DESC LIMIT 1000"
+		
+		patrolRows, _ := s.DB.Query(patrolQuery, patrolArgs...)
+		if patrolRows != nil {
+			defer patrolRows.Close()
+			for patrolRows.Next() {
+				var gridCellID, movementType string
+				var year, month int
+				var distanceKm float64
+				var points int
+				var latCenter, lonCenter float64
+				patrolRows.Scan(&gridCellID, &year, &month, &movementType, &distanceKm, &points, &latCenter, &lonCenter)
+				
+				// Create circle polygon for grid cell (approximate 0.1 degree circle)
+				circlePoly := makeCircleKML(lonCenter, latCenter, 0.05) // ~5.5km radius for 0.1 degree grid
+				
+				// Build name and description
+				name := fmt.Sprintf("Patrol %s - %04d-%02d", movementType, year, month)
+				description := fmt.Sprintf("Type: %s<br>Distance: %.1f km<br>Points: %d<br>Grid: %s", 
+					movementType, distanceKm, points, gridCellID)
+				
+				// TimeSpan for the month
+				startDate := fmt.Sprintf("%04d-%02d-01", year, month)
+				endDate := fmt.Sprintf("%04d-%02d-28", year, month) // Simplified
+				
+				var pmb strings.Builder
+				pmb.WriteString(fmt.Sprintf("<Placemark><name>%s</name><styleUrl>#patrol</styleUrl>", xmlEscape(name)))
+				pmb.WriteString("<description><![CDATA[" + description + "]]></description>")
+				pmb.WriteString(fmt.Sprintf("<TimeSpan><begin>%s</begin><end>%s</end></TimeSpan>", startDate, endDate))
+				pmb.WriteString(circlePoly)
+				pmb.WriteString("</Placemark>\n")
+				
+				patrolPlacemarks = append(patrolPlacemarks, pmb.String())
+			}
+		}
+	}
+	
+	if len(patrolPlacemarks) > 0 {
+		kml.WriteString("<Folder><name>Patrol Effort (30km buffer)</name>\n")
+		for _, pm := range patrolPlacemarks {
 			kml.WriteString(pm)
 		}
 		kml.WriteString("</Folder>\n")
@@ -4610,4 +4744,17 @@ func xmlEscape(s string) string {
 	s = strings.ReplaceAll(s, "\"", "&quot;")
 	s = strings.ReplaceAll(s, "'", "&apos;")
 	return s
+}
+
+// makeCircleKML creates a KML Polygon representing a circle
+func makeCircleKML(centerLon, centerLat, radiusDeg float64) string {
+	var coords []string
+	numPoints := 32 // Number of points in circle
+	for i := 0; i <= numPoints; i++ {
+		angle := float64(i) * 2.0 * 3.14159265359 / float64(numPoints)
+		lat := centerLat + radiusDeg*math.Sin(angle)
+		lon := centerLon + radiusDeg*math.Cos(angle)
+		coords = append(coords, fmt.Sprintf("%f,%f,0", lon, lat))
+	}
+	return fmt.Sprintf("<Polygon><outerBoundaryIs><LinearRing><coordinates>%s</coordinates></LinearRing></outerBoundaryIs></Polygon>", strings.Join(coords, " "))
 }
