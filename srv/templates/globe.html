@@ -11377,8 +11377,8 @@
                 html += `<div style="margin:4px 0;font-size:10px;color:#aaa;">• ${text}</div>`;
             });
             if (classifiedEvents.length > samples.length) {
-                html += `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${classifiedEvents.length - samples.length} more events</div>`;
-                html += `<div style="display:none">${classifiedEvents.slice(samples.length).map(e => {
+                html += `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.classList.add('expanded')">+ Show ${classifiedEvents.length - samples.length} more events</div>`;
+                html += `<div class="section-detail">${classifiedEvents.slice(samples.length).map(e => {
                     const text = e.narrative || (e.classification || 'Event') + ' (' + ((e.area_km2 || 0).toFixed(2)) + ' km²)';
                     return '<div style="margin:4px 0;font-size:10px;color:#aaa;">• ' + text + '</div>';
                 }).join('')}</div>`;
@@ -11448,8 +11448,8 @@
                 html += `<div style="margin:4px 0;font-size:10px;color:#aaa;">• ${text}</div>`;
             });
             if (classifiedSettlements.length > samples.length) {
-                html += `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${classifiedSettlements.length - samples.length} more settlements</div>`;
-                html += `<div style="display:none">${classifiedSettlements.slice(samples.length).map(s => {
+                html += `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.classList.add('expanded')">+ Show ${classifiedSettlements.length - samples.length} more settlements</div>`;
+                html += `<div class="section-detail">${classifiedSettlements.slice(samples.length).map(s => {
                     const text = s.narrative || (s.classification || 'Settlement') + ' near ' + (s.nearest_place || 'unknown') + ' (~' + (s.population_est || 0) + ' people)';
                     return '<div style="margin:4px 0;font-size:10px;color:#aaa;">• ' + text + '</div>';
                 }).join('')}</div>`;
@@ -11630,7 +11630,7 @@
                 </div>
                 ${detailLevel !== 'summary' && deforest.summary ? `<div class="starred-report-section-text">${deforest.summary}</div>` : ''}
                 ${detailLevel !== 'summary' && deforest.classified_events && deforest.classified_events.length > 0 ? renderDeforestationSummary(deforest.classified_events, detailLevel === 'comprehensive' ? 10 : 3) : ''}
-                ${showHotspots && !deforest.classified_events ? `<div class="starred-report-group"><div class="starred-report-group-title">Hotspots (${deforest.hotspots.length}):</div>${deforest.hotspots.slice(0, 5).map(h => `<div style="margin:4px 0;font-size:10px;">${h.name || h.description || 'Hotspot'}: ${(h.area_km2 || 0).toFixed(2)} km²</div>`).join('')}${deforest.hotspots.length > 5 ? `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${deforest.hotspots.length - 5} more hotspots</div><div style="display:none">${deforest.hotspots.slice(5).map(h => `<div style="margin:4px 0;font-size:10px;">${h.name || h.description || 'Hotspot'}: ${(h.area_km2 || 0).toFixed(2)} km²</div>`).join('')}</div>` : ''}</div>` : ''}
+                ${showHotspots && !deforest.classified_events ? `<div class="starred-report-group"><div class="starred-report-group-title">Hotspots (${deforest.hotspots.length}):</div>${deforest.hotspots.slice(0, 5).map(h => `<div style="margin:4px 0;font-size:10px;">${h.name || h.description || 'Hotspot'}: ${(h.area_km2 || 0).toFixed(2)} km²</div>`).join('')}${deforest.hotspots.length > 5 ? `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.classList.add('expanded')">+ Show ${deforest.hotspots.length - 5} more hotspots</div><div class="section-detail">${deforest.hotspots.slice(5).map(h => `<div style="margin:4px 0;font-size:10px;">${h.name || h.description || 'Hotspot'}: ${(h.area_km2 || 0).toFixed(2)} km²</div>`).join('')}</div>` : ''}</div>` : ''}
                 ${showYearlyData ? `<div class="starred-report-group"><div class="starred-report-group-title">Yearly Loss:</div><div style="font-size:9px;color:#666;display:flex;flex-wrap:wrap;gap:8px;">${deforestStats.yearly_data.slice(-10).map(y => `${y.year}: ${y.loss_km2.toFixed(1)}`).join(' | ')}</div></div>` : ''}
             </div>`;
         }
@@ -11651,7 +11651,7 @@
                 </div>
                 ${detailLevel !== 'summary' && settle.summary ? `<div class="starred-report-section-text">${settle.summary}</div>` : ''}
                 ${detailLevel !== 'summary' && settle.classified_settlements && settle.classified_settlements.length > 0 ? renderSettlementsSummary(settle.classified_settlements, detailLevel === 'comprehensive' ? 10 : 3) : ''}
-                ${showSettlements && !settle.classified_settlements ? `<div class="starred-report-group"><div class="starred-report-group-title">Settlements (${settle.largest_settlements.length}):</div>${settle.largest_settlements.slice(0, 5).map(s => `<div style="margin:4px 0;font-size:10px;">${s.name || 'Settlement'}: pop. ${fmt(s.population || 0)}${s.classification ? ' (' + s.classification + ')' : ''}</div>`).join('')}${settle.largest_settlements.length > 5 ? `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.style.display='block'">+ Show ${settle.largest_settlements.length - 5} more settlements</div><div style="display:none">${settle.largest_settlements.slice(5).map(s => `<div style="margin:4px 0;font-size:10px;">${s.name || 'Settlement'}: pop. ${fmt(s.population || 0)}${s.classification ? ' (' + s.classification + ')' : ''}</div>`).join('')}</div>` : ''}</div>` : ''}
+                ${showSettlements && !settle.classified_settlements ? `<div class="starred-report-group"><div class="starred-report-group-title">Settlements (${settle.largest_settlements.length}):</div>${settle.largest_settlements.slice(0, 5).map(s => `<div style="margin:4px 0;font-size:10px;">${s.name || 'Settlement'}: pop. ${fmt(s.population || 0)}${s.classification ? ' (' + s.classification + ')' : ''}</div>`).join('')}${settle.largest_settlements.length > 5 ? `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.classList.add('expanded')">+ Show ${settle.largest_settlements.length - 5} more settlements</div><div class="section-detail">${settle.largest_settlements.slice(5).map(s => `<div style="margin:4px 0;font-size:10px;">${s.name || 'Settlement'}: pop. ${fmt(s.population || 0)}${s.classification ? ' (' + s.classification + ')' : ''}</div>`).join('')}</div>` : ''}</div>` : ''}
             </div>`;
         }
         
