@@ -68,6 +68,32 @@ make build && ./server
 
 Access: http://localhost:8000/?pwd=test2026
 
+### ⚠️ IMPORTANT: Keeping Version Up-to-Date
+
+**ALWAYS rebuild after making changes to show the correct version:**
+
+```bash
+# After any code changes or git commits:
+make build && pkill -f "./server" && ./server > /tmp/server.log 2>&1 &
+```
+
+**Why this matters:**
+- Version shown in UI footer = git commit hash from build time
+- Users can click version to see recent changes
+- Old binary = stale version = confusion about what code is running
+
+**Quick version check:**
+```bash
+# Check current running version:
+curl -s "http://localhost:8000/api/version?pwd=test2026" | jq -r '.version'
+
+# Check latest git commit:
+git rev-parse --short HEAD
+
+# If they don't match, rebuild:
+make build && pkill -f "./server" && ./server > /tmp/server.log 2>&1 &
+```
+
 ---
 
 ## Data Files
