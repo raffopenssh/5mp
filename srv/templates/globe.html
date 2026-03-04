@@ -11175,11 +11175,14 @@
             });
             
             // Expand/collapse details
-            item.querySelector('.starred-item-expand').addEventListener('click', (e) => {
-                e.stopPropagation();
-                const details = item.querySelector('.starred-item-details');
-                const btn = item.querySelector('.starred-item-expand');
-                const isExpanding = !details.classList.contains('open');
+            const expandBtn = item.querySelector('.starred-item-expand');
+            if (expandBtn) {
+                expandBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const details = item.querySelector('.starred-item-details');
+                    const btn = item.querySelector('.starred-item-expand');
+                    const isExpanding = !details.classList.contains('open');
                 
                 details.classList.toggle('open');
                 btn.classList.toggle('expanded');
@@ -11215,7 +11218,8 @@
                     btn.textContent = '▼';
                     btn.title = 'View report';
                 }
-            });
+                });
+            }
             
             // Helper function to update expand button with stats
             function updateExpandButtonWithStats(btn, data, type) {
