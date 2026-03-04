@@ -13703,28 +13703,105 @@
     // Grid/patrol data - Use park bbox + 30km buffer
     async function fetchGridDataDirect(parkId, {from, to, pwd}) {
         try {
-            // Find park to get coordinates
-            let park = null;
+            // Find park feature to get geometry
+            let feature = null;
             if (window._cachedAreasGeoJSON?.features) {
-                const feature = window._cachedAreasGeoJSON.features.find(f => f.properties.id === parkId);
-                if (feature) park = feature.properties;
-            } else if (window.keystoneAreas) {
-                park = window.keystoneAreas.find(p => p.id === parkId);
+                feature = window._cachedAreasGeoJSON.features.find(f => f.properties.id === parkId);
             }
             
-            if (!park || !park.coordinates) {
-                return {error: 'Park not found', activePixels: 0, totalDistanceKm: 0};
+            if (!feature || !feature.geometry) {
+                // Fallback to center point if no geometry available
+                let park = null;
+                if (window._cachedAreasGeoJSON?.features) {
+                    const f = window._cachedAreasGeoJSON.features.find(f => f.properties.id === parkId);
+                    if (f) park = f.properties;
+                } else if (window.keystoneAreas) {
+                    park = window.keystoneAreas.find(p => p.id === parkId);
+                }
+                
+                if (!park || !park.coordinates) {
+                    return {error: 'Park not found', activePixels: 0, totalDistanceKm: 0};
+                }
+                
+                // Use center point + buffer as fallback
+                const bufferDeg = 30.0 / 111.0;
+                const lat = park.coordinates.lat;
+                const lon = park.coordinates.lon;
+                const bbox = [
+                    lon - bufferDeg,
+                    lat - bufferDeg,
+                    lon + bufferDeg,
+                    lat + bufferDeg
+                ];
+                
+                let url = `/api/grid?bbox=${bbox.join(',')}&pwd=${encodeURIComponent(pwd)}`;
+                if (from) url += `&from=${from}`;
+                if (to) url += `&to=${to}`;
+                
+                const resp = await fetch(url);
+                if (!resp.ok) return {error: 'API error', activePixels: 0, totalDistanceKm: 0};
+                
+                const data = await resp.json();
+                return aggregateGridData(data.features || []);
             }
             
-            // Calculate bbox with 30km buffer (~0.27 degrees)
-            const bufferDeg = 30.0 / 111.0; // 30km in degrees
-            const lat = park.coordinates.lat;
-            const lon = park.coordinates.lon;
+            // Calculate bbox from actual park geometry with 30km buffer
+            const geom = feature.geometry;
+            let coords = [];
+            
+            // Extract all coordinates from the geometry
+            if (geom.type === 'Polygon') {
+                coords = geom.coordinates[0]; // outer ring
+            } else if (geom.type === 'MultiPolygon') {
+                for (const poly of geom.coordinates) {
+                    coords.push(...poly[0]); // outer ring of each polygon
+                }
+            } else {
+                // Fallback to center
+                const park = feature.properties;
+                if (!park.coordinates) {
+                    return {error: 'Invalid geometry', activePixels: 0, totalDistanceKm: 0};
+                }
+                const bufferDeg = 30.0 / 111.0;
+                const lat = park.coordinates.lat;
+                const lon = park.coordinates.lon;
+                const bbox = [
+                    lon - bufferDeg,
+                    lat - bufferDeg,
+                    lon + bufferDeg,
+                    lat + bufferDeg
+                ];
+                
+                let url = `/api/grid?bbox=${bbox.join(',')}&pwd=${encodeURIComponent(pwd)}`;
+                if (from) url += `&from=${from}`;
+                if (to) url += `&to=${to}`;
+                
+                const resp = await fetch(url);
+                if (!resp.ok) return {error: 'API error', activePixels: 0, totalDistanceKm: 0};
+                
+                const data = await resp.json();
+                return aggregateGridData(data.features || []);
+            }
+            
+            // Calculate bounding box from coordinates
+            let minLon = Infinity, maxLon = -Infinity;
+            let minLat = Infinity, maxLat = -Infinity;
+            
+            for (const coord of coords) {
+                const [lon, lat] = coord;
+                if (lon < minLon) minLon = lon;
+                if (lon > maxLon) maxLon = lon;
+                if (lat < minLat) minLat = lat;
+                if (lat > maxLat) maxLat = lat;
+            }
+            
+            // Add 30km buffer (~0.27 degrees)
+            const bufferDeg = 30.0 / 111.0;
             const bbox = [
-                lon - bufferDeg,
-                lat - bufferDeg,
-                lon + bufferDeg,
-                lat + bufferDeg
+                minLon - bufferDeg,
+                minLat - bufferDeg,
+                maxLon + bufferDeg,
+                maxLat + bufferDeg
             ];
             
             let url = `/api/grid?bbox=${bbox.join(',')}&pwd=${encodeURIComponent(pwd)}`;
@@ -13735,34 +13812,36 @@
             if (!resp.ok) return {error: 'API error', activePixels: 0, totalDistanceKm: 0};
             
             const data = await resp.json();
-            const features = data.features || [];
-            
-            // Aggregate patrol/grid data
-            const result = {
-                activePixels: features.length,
-                totalDistanceKm: 0,
-                byType: {foot: 0, vehicle: 0, boat: 0, air: 0}
-            };
-            
-            for (const feature of features) {
-                const props = feature.properties || {};
-                const distKm = props.total_distance_km || props.distance_km || 0;
-                result.totalDistanceKm += distKm;
-                
-                const type = props.transport_type || props.movement_type || props.type || 'all';
-                if (type === 'all') {
-                    // If movement type is 'all', add to foot as default
-                    result.byType.foot += distKm;
-                } else if (result.byType[type] !== undefined) {
-                    result.byType[type] += distKm;
-                }
-            }
-            
-            return result;
+            return aggregateGridData(data.features || []);
         } catch (error) {
             console.error(`Grid data error for ${parkId}:`, error);
             return {error: error.message, activePixels: 0};
         }
+    }
+
+    // Helper function to aggregate grid/patrol data
+    function aggregateGridData(features) {
+        const result = {
+            activePixels: features.length,
+            totalDistanceKm: 0,
+            byType: {foot: 0, vehicle: 0, boat: 0, air: 0}
+        };
+        
+        for (const feature of features) {
+            const props = feature.properties || {};
+            const distKm = props.total_distance_km || props.distance_km || 0;
+            result.totalDistanceKm += distKm;
+            
+            const type = props.transport_type || props.movement_type || props.type || 'all';
+            if (type === 'all') {
+                // If movement type is 'all', add to foot as default
+                result.byType.foot += distKm;
+            } else if (result.byType[type] !== undefined) {
+                result.byType[type] += distKm;
+            }
+        }
+        
+        return result;
     }
 
     // Stats data
@@ -14033,6 +14112,7 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
         background: white !important;
         height: auto !important;
         width: 100% !important;
+        box-shadow: none !important;
     }
     .star-modal-content { 
         max-height: none !important; 
@@ -14042,6 +14122,8 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
         height: auto !important;
         transform: none !important;
         position: static !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
     }
     .star-modal-body { 
         overflow: visible !important; 
@@ -14049,33 +14131,60 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
         max-height: none !important;
         padding: 0 !important;
     }
-    .star-modal-header, .star-modal-footer, .starred-item-expand, .starred-item-remove { display: none !important; }
+    .star-modal-header, .star-modal-footer, .starred-item-expand, .starred-item-remove, .star-report-actions { display: none !important; }
     .starred-modal-backdrop { display: none !important; }
     
-    /* Respect collapse/expand state */
-    .starred-park-nested.collapsed { display: none !important; }
-    .starred-park-nested.collapsed .starred-report-content { display: none !important; }
-    .section-detail:not(.expanded) { display: none !important; }
+    /* Show all content - don't respect collapse state in print */
+    .starred-park-nested { display: block !important; }
+    .starred-report-content { display: block !important; }
+    .section-detail { display: block !important; }
+    
+    /* Expand all details/accordion elements */
+    details { display: block !important; }
+    details > summary { display: none !important; }
+    details > * { display: block !important; }
     
     /* Hide interactive elements */
     .section-more-btn, button, .starred-export-btns { display: none !important; }
     
     /* Print styling */
-    body { background: white !important; color: black !important; padding: 10mm !important; }
-    h1 { color: #166534; }
+    body { background: white !important; color: black !important; padding: 10mm !important; font-size: 10pt !important; }
+    h1 { color: #166534 !important; font-size: 18pt !important; page-break-after: avoid; }
+    h2 { color: #333 !important; font-size: 14pt !important; page-break-after: avoid; margin-top: 12pt; }
+    h3 { color: #555 !important; font-size: 12pt !important; page-break-after: avoid; margin-top: 10pt; }
+    
+    /* Park items */
     .starred-park-nested { 
-        page-break-inside: avoid; 
+        page-break-inside: auto; 
         border: 1px solid #ddd !important; 
-        margin-bottom: 15px !important;
-        padding: 10px !important;
+        margin-bottom: 12pt !important;
+        padding: 8pt !important;
+        background: white !important;
     }
+    
+    /* Sections */
     .starred-report-section { 
-        page-break-inside: avoid;
-        margin-bottom: 10px !important;
+        page-break-inside: auto;
+        margin-bottom: 8pt !important;
+        padding: 6pt !important;
     }
-    /* Allow page breaks between parks */
+    
+    /* Allow page breaks between parks and sections */
     .starred-park-nested:not(:first-child) { page-break-before: auto; }
-    a { color: #1e40af; text-decoration: underline; }
+    .starred-report-section { page-break-before: auto; }
+    
+    /* Text sizing */
+    .starred-report-content { font-size: 10pt !important; }
+    .narrative-text { font-size: 9pt !important; line-height: 1.4 !important; }
+    .narrative-stats { font-size: 8pt !important; }
+    
+    /* Colors for print */
+    a { color: #1e40af !important; text-decoration: underline; }
+    
+    /* Remove dark mode styles */
+    * { background: white !important; }
+    .starred-report-section { background: #f9f9f9 !important; }
+    .narrative-section { background: #f5f5f5 !important; }
 }
 </style>
 </head><body>
@@ -17056,9 +17165,7 @@ ${starredItems.narratives.map(n => {
                     <!-- Report metadata -->
                 </div>
                 <div class="star-report-actions" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
-                    <button class="star-report-btn secondary" onclick="openReportBuilder()" title="Configure report sections, detail level, and filters" style="min-width:auto;padding:8px 12px;">Config</button>
                     <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                        <button class="star-report-btn secondary" onclick="exportFullReportTxt()" title="Export comprehensive text-based report with ASCII graphics and data visualizations. Easy to read in email, terminal, or text editor." style="font-size:12px;">TXT</button>
                         <button class="star-report-btn secondary" onclick="exportFullReportCsvV2()" title="Export comprehensive CSV spreadsheet with all sections: fires, deforestation, settlements, species, patrol activity. Includes metadata, stats, and individual records." style="font-size:12px;">CSV</button>
                         <button class="star-report-btn secondary" onclick="exportFullReportXlsxV2()" title="Export comprehensive Excel workbook with multiple sheets: summary, fires, deforestation, settlements, species, patrol. Best for detailed analysis." style="font-size:12px;">XLSX</button>
                         <button class="star-report-btn secondary" onclick="exportFullReportKmlV2()" title="Export comprehensive KML with park boundaries, fire trajectories, settlements, deforestation hotspots, patrol points, roads and rivers. Open in Google Earth." style="font-size:12px;">KML</button>
