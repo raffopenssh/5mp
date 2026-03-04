@@ -35,11 +35,22 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 	parkID := r.URL.Query().Get("park_id")
 	notifType := r.URL.Query().Get("type")
 	unreadOnly := r.URL.Query().Get("unread") == "true" || r.URL.Query().Get("unread") == "1"
+	activeOnly := r.URL.Query().Get("active") == "true" || r.URL.Query().Get("active") == "1"
 
 	var query string
 	var args []interface{}
 
-	if parkID != "" {
+	// For fire_alert notifications with active=true, filter by recent end_date in feature_geometries
+	if notifType == "fire_alert" && activeOnly {
+		query = `SELECT DISTINCT n.id, n.park_id, n.notification_type, n.title, n.message, n.reference_id, n.reference_url, n.reference_data, n.is_read, n.created_at
+		         FROM notifications n
+		         JOIN feature_geometries fg ON n.park_id = fg.park_id AND n.reference_id = fg.feature_id
+		         WHERE n.notification_type = 'fire_alert'
+		           AND fg.feature_type = 'fire_trajectory'
+		           AND julianday('now') - julianday(fg.end_date) <= 3
+		         ORDER BY n.created_at DESC LIMIT ?`
+		args = []interface{}{limit}
+	} else if parkID != "" {
 		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
 		         FROM notifications WHERE park_id = ? ORDER BY created_at DESC LIMIT ?`
 		args = []interface{}{parkID, limit}

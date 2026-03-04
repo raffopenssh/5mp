@@ -1209,7 +1209,6 @@
                                 <path d="M4 4a16 16 0 0 1 16 16"></path>
                                 <circle cx="5" cy="19" r="1"></circle>
                             </svg>
-                            RSS
                         </button>
                     </div>
                     <button class="notification-close" id="close-notification">&times;</button>
@@ -5315,11 +5314,12 @@
                 return;
             }
             
-            showToast(`Generating combined KML for ${parkIDs.size} parks...`);
+            showToast(`Preparing KML export for ${parkIDs.size} park${parkIDs.size > 1 ? 's' : ''}...`, 'info');
             
-            // Fetch KML for each park from server
+            // Fetch KML for each park from server with progress
             const kmlDocs = [];
             let successCount = 0;
+            let processed = 0;
             for (const parkID of parkIDs) {
                 try {
                     const resp = await fetch(`/api/parks/${encodeURIComponent(parkID)}/export.kml?pwd=${encodeURIComponent(pwd)}${dateParams}`);
@@ -5330,6 +5330,10 @@
                     }
                 } catch (err) {
                     console.error(`Failed to fetch KML for ${parkID}:`, err);
+                }
+                processed++;
+                if (parkIDs.size > 3) {
+                    showToast(`Processing KML ${processed}/${parkIDs.size}...`, 'info');
                 }
             }
             
@@ -7191,7 +7195,7 @@
                     fetch(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
                     fetch('/api/notifications?type=new_publication&limit=10'),
                     fetch('/api/fire-alerts?limit=100'),  // Fire group alerts (for map display)
-                    fetch('/api/notifications?type=fire_alert&limit=500'),  // Fire notifications (for bell)
+                    fetch('/api/notifications?type=fire_alert&active=1&limit=500'),  // Fire notifications (for bell) - only active ones
                     fetch('/api/notifications?type=fire_download_success&limit=5')  // Fire download notifications
                 ]);
                 
@@ -8803,6 +8807,16 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+        
+        function escapeXml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&apos;');
         }
         
         function showToast(message, type = 'info') {
@@ -14347,6 +14361,23 @@ ${starredItems.narratives.map(n => {
     
     // Generate RSS feed URL for starred items
     function generateRssFeed() {
+        // Build RSS feed URL for notifications
+        const params = new URLSearchParams();
+        const pwd = new URLSearchParams(window.location.search).get('pwd');
+        if (pwd) params.set('pwd', pwd);
+        
+        const feedUrl = window.location.origin + '/api/feed?' + params.toString();
+        
+        // Copy to clipboard
+        navigator.clipboard.writeText(feedUrl).then(() => {
+            showToast('RSS feed URL copied! Add to your feed reader');
+        }).catch(() => {
+            // Fallback: show modal with URL
+            prompt('RSS Feed URL (copy this):', feedUrl);
+        });
+    }
+    
+    function generateStarredRssFeed() {
         const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0);
         if (total === 0) {
             showToast('Star some items first to get an RSS feed');
