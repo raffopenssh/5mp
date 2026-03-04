@@ -4742,9 +4742,29 @@
             
             showToast('Collecting park data...');
             
+            // Fetch full park list to get area_km2
+            let parksMetadata = {};
+            try {
+                const parksResp = await fetch(`/api/parks/export?pwd=${pwd}`);
+                if (parksResp.ok) {
+                    const parksList = await parksResp.json();
+                    parksMetadata = Object.fromEntries(
+                        parksList.map(p => [p.id || p.wdpa_id, {area_km2: p.area_km2, name: p.name, country: p.country}])
+                    );
+                }
+            } catch (e) {
+                console.error('Failed to fetch parks metadata:', e);
+            }
+            
             // Collect all starred parks
             for (const park of starredItems.parks) {
-                allParks.push({id: park.id, name: park.name, country: park.country, area_km2: park.area_km2 || park.rep_area});
+                const metadata = parksMetadata[park.id] || {};
+                allParks.push({
+                    id: park.id, 
+                    name: park.name || metadata.name, 
+                    country: park.country || metadata.country, 
+                    area_km2: metadata.area_km2
+                });
             }
             
             // Collect parks from bboxes
@@ -4752,7 +4772,13 @@
                 const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
                 if (bboxData?.parks) {
                     for (const p of bboxData.parks) {
-                        allParks.push({id: p.id, name: p.name, country: p.country, area_km2: p.area_km2 || p.rep_area});
+                        const metadata = parksMetadata[p.id] || {};
+                        allParks.push({
+                            id: p.id, 
+                            name: p.name || metadata.name, 
+                            country: p.country || metadata.country, 
+                            area_km2: metadata.area_km2
+                        });
                     }
                 }
             }
@@ -4804,13 +4830,14 @@
                 const deforestation = data.deforestation || data.deforest || {};  // deforestation is primary
                 const grid = data.grid || {};
                 
-                const fireDetections = fire.totalFires || 0;
-                const fireGroups = fire.fireGroups || 0;
-                const responseRate = fire.responseRate || 0;
-                const peakSeason = fire.peakMonth || '';
-                const deforestKm2 = deforestation.totalLossKm2 || deforestation.total_loss_km2 || 0;
-                const settlements = settlement.count || settlement.settlement_count || 0;
-                const population = settlement.totalPopulation || settlement.total_population || 0;
+                // Use snake_case field names (matches API response format)
+                const fireDetections = fire.total_fires || 0;
+                const fireGroups = fire.fire_groups || 0;
+                const responseRate = fire.response_rate || 0;
+                const peakSeason = fire.peak_month || '';
+                const deforestKm2 = deforestation.total_loss_km2 || 0;
+                const settlements = settlement.settlement_count || 0;
+                const population = settlement.total_population || 0;
                 const activePixels = grid.activePixels || 0;
                 const distanceKm = grid.totalDistanceKm || 0;
                 
@@ -5065,52 +5092,58 @@
             }
             
             // === ALL DEFORESTATION SHEET ===
-            const allDeforestData = [['Park', 'Location', 'Area_km2', 'Year_Range', 'Classification', 'Coords']];
+            const allDeforestData = [['Park', 'Year', 'Area_km2', 'Classification', 'Narrative', 'Lat', 'Lon']];
             for (const {park, data} of parkReports) {
                 if (data.error) continue;
                 const deforestation = data.deforestation || data.deforest || {};
-                const events = deforestation.events || [];
+                // Use classified_events which have full narratives
+                const events = deforestation.classified_events || deforestation.events || [];
                 
                 for (const e of events) {
                     allDeforestData.push([
                         park.name || park.id,
-                        e.description ? e.description.substring(0, 50) : 'Deforested area',
-                        e.areaKm2 ? Math.round(e.areaKm2 * 100) / 100 : '',
-                        e.yearRange || e.year || '',
+                        e.year || '',
+                        e.area_km2 ? Math.round(e.area_km2 * 1000) / 1000 : '',  // 3 decimals
                         e.classification || '',
-                        formatCoords(e.coords)
+                        e.narrative || e.description || '',
+                        e.lat || '',
+                        e.lon || ''
                     ]);
                 }
             }
             
             if (allDeforestData.length > 1) {
                 const deforestSheet = XLSX.utils.aoa_to_sheet(allDeforestData);
-                deforestSheet['!cols'] = [{wch: 25}, {wch: 30}, {wch: 12}, {wch: 15}, {wch: 20}, {wch: 20}];
+                deforestSheet['!cols'] = [{wch: 25}, {wch: 10}, {wch: 12}, {wch: 20}, {wch: 60}, {wch: 12}, {wch: 12}];
                 XLSX.utils.book_append_sheet(wb, deforestSheet, 'All_Deforestation');
             }
             
             // === ALL SETTLEMENTS SHEET ===
-            const allSettlementsData = [['Park', 'Name', 'Population', 'Type', 'Inside_Park', 'Coords']];
+            const allSettlementsData = [['Park', 'Classification', 'Population', 'Area_km2', 'Narrative', 'Lat', 'Lon', 'Nearest_Place']];
             for (const {park, data} of parkReports) {
                 if (data.error) continue;
                 const settlement = data.settlement || data.ghsl || {};
-                const settlements = settlement.settlements || [];
+                // Use classified_settlements which have full narratives
+                const settlements = settlement.classified_settlements || settlement.settlements || [];
                 
                 for (const s of settlements) {
+                    const areaKm2 = s.area_m2 ? (s.area_m2 / 1000000).toFixed(3) : '0.000';
                     allSettlementsData.push([
                         park.name || park.id,
-                        s.name || 'Unnamed',
-                        s.population || 0,
-                        s.type || '',
-                        s.insidePark ? 'Yes' : 'No',
-                        formatCoords(s.coords)
+                        s.classification || s.type || '',
+                        s.population_est || s.population || 0,
+                        areaKm2,
+                        s.narrative || '',
+                        s.lat || '',
+                        s.lon || '',
+                        s.nearest_place || s.name || ''
                     ]);
                 }
             }
             
             if (allSettlementsData.length > 1) {
                 const settlementsSheet = XLSX.utils.aoa_to_sheet(allSettlementsData);
-                settlementsSheet['!cols'] = [{wch: 25}, {wch: 30}, {wch: 12}, {wch: 15}, {wch: 12}, {wch: 20}];
+                settlementsSheet['!cols'] = [{wch: 25}, {wch: 20}, {wch: 12}, {wch: 12}, {wch: 60}, {wch: 12}, {wch: 12}, {wch: 25}];
                 XLSX.utils.book_append_sheet(wb, settlementsSheet, 'All_Settlements');
             }
             
@@ -5151,8 +5184,8 @@
                 for (const s of speciesList) {
                     const row = [
                         park.name || park.id,
-                        s.commonName || s.common_name || '',
-                        s.name || s.scientific_name || '',
+                        s.common_name || '',
+                        s.binomial || s.scientific_name || '',  // binomial is primary field
                         s.status || '',
                         s.order || '',
                         s.family || ''
@@ -5431,14 +5464,31 @@
         async function exportFullReportKmlV2() {
             const allParks = [];
             let parksWithoutData = 0;
+            const pwd = getPwd();
+            
+            // Fetch full park list to get area_km2
+            let parksMetadata = {};
+            try {
+                const parksResp = await fetch(`/api/parks/export?pwd=${pwd}`);
+                if (parksResp.ok) {
+                    const parksList = await parksResp.json();
+                    parksMetadata = Object.fromEntries(
+                        parksList.map(p => [p.id || p.wdpa_id, {area_km2: p.area_km2, name: p.name, country: p.country}])
+                    );
+                }
+            } catch (e) {
+                console.error('Failed to fetch parks metadata:', e);
+            }
             
             // Collect all parks (direct stars + bbox)
             for (const park of starredItems.parks) {
                 const data = reportDataCache.parks.get(park.id);
+                const metadata = parksMetadata[park.id] || {};
+                const enrichedPark = {...park, area_km2: metadata.area_km2 || park.area_km2};
                 if (!data || (!data.fire && !data.deforestation && !data.settlement && !data.grid)) {
                     parksWithoutData++;
                 }
-                allParks.push({ park, data });
+                allParks.push({ park: enrichedPark, data });
             }
             
             for (const bbox of starredItems.bboxes) {
@@ -5446,10 +5496,12 @@
                 if (bboxData?.parks) {
                     for (const p of bboxData.parks) {
                         const data = p.reportData || {};
+                        const metadata = parksMetadata[p.id] || {};
+                        const enrichedPark = {...p, area_km2: metadata.area_km2 || p.area_km2};
                         if (!data.fire && !data.deforestation && !data.settlement && !data.grid) {
                             parksWithoutData++;
                         }
-                        allParks.push({ park: p, data });
+                        allParks.push({ park: enrichedPark, data });
                     }
                 }
             }
@@ -5580,16 +5632,16 @@
                 
                 if (data) {
                     if (data.fire) {
-                        parkDesc.push(`Fire Groups: ${data.fire.fireGroups || 0}`);
-                        parkDesc.push(`Total Fires: ${data.fire.totalFires || 0}`);
+                        parkDesc.push(`Fire Groups: ${data.fire.fire_groups || 0}`);
+                        parkDesc.push(`Total Fires: ${data.fire.total_fires || 0}`);
                     }
                     if (data.settlement || data.ghsl) {
                         const settlement = data.settlement || data.ghsl;
-                        parkDesc.push(`Settlements: ${settlement.count || settlement.settlement_count || 0}`);
+                        parkDesc.push(`Settlements: ${settlement.settlement_count || 0}`);
                     }
                     if (data.deforestation || data.deforest) {
                         const deforestation = data.deforestation || data.deforest;
-                        parkDesc.push(`Deforestation Events: ${deforestation.eventCount || deforestation.event_count || 0}`);
+                        parkDesc.push(`Deforestation Events: ${(deforestation.classified_events || []).length}`);
                     }
                     if (data.grid) {
                         parkDesc.push(`Patrol Points: ${data.grid.activePixels || 0}`);

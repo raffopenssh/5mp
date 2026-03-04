@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"srv.exe.dev/db/dbgen"
+	"srv.exe.dev/srv/areas"
 	"srv.exe.dev/srv/auth"
 )
 
@@ -1105,6 +1106,12 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	
+	// Handle park boundary from AreaStore
+	if featureType == "boundary" || featureType == "park" {
+		s.handleParkBoundary(w, internalID)
+		return
+	}
+	
 	// Handle places from osm_places table
 	if featureType == "place" {
 		s.handlePlaceFeatures(w, internalID, limitStr)
@@ -1236,6 +1243,58 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 			Geometry:   json.RawMessage(geojson),
 			Properties: props,
 		})
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(fc)
+}
+
+// handleParkBoundary returns the park boundary geometry from AreaStore
+func (s *Server) handleParkBoundary(w http.ResponseWriter, parkID string) {
+	if s.AreaStore == nil {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"type":     "FeatureCollection",
+			"features": []interface{}{},
+		})
+		return
+	}
+	
+	// Find the area in AreaStore
+	var area *areas.ProtectedArea
+	for i := range s.AreaStore.Areas {
+		if s.AreaStore.Areas[i].ID == parkID {
+			area = &s.AreaStore.Areas[i]
+			break
+		}
+	}
+	
+	if area == nil || len(area.Geometry.Coordinates) == 0 {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"type":     "FeatureCollection",
+			"features": []interface{}{},
+		})
+		return
+	}
+	
+	// Return the boundary as a GeoJSON Feature
+	feature := map[string]interface{}{
+		"type":     "Feature",
+		"geometry": area.Geometry,
+		"properties": map[string]interface{}{
+			"park_id":   area.ID,
+			"name":      area.Name,
+			"country":   area.Country,
+			"area_km2":  area.AreaKm2,
+			"wdpa_id":   area.WDPAID,
+			"type":      "boundary",
+		},
+	}
+	
+	fc := map[string]interface{}{
+		"type":     "FeatureCollection",
+		"features": []interface{}{feature},
 	}
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -3803,6 +3862,7 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 	bboxStr := r.URL.Query().Get("bbox")
 	
 	type ParkExport struct {
+		ID                  string  `json:"id"`
 		WDPAID              string  `json:"wdpa_id"`
 		Name                string  `json:"name"`
 		Country             string  `json:"country"`
@@ -3915,6 +3975,7 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 		s.DB.QueryRow(`SELECT COUNT(*) FROM pa_publications WHERE pa_id = ?`, area.WDPAID).Scan(&pubs)
 		
 		results = append(results, ParkExport{
+			ID:                  area.ID,
 			WDPAID:              area.WDPAID,
 			Name:                area.Name,
 			Country:             area.Country,
