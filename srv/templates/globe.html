@@ -9686,22 +9686,63 @@
                             'temporary_camp': '#a855f7'
                         };
                         const color = classColors[s.classification] || '#fbbf24';
+                        
+                        // Type tag labels (single word)
+                        const typeLabels = {
+                            'agricultural': 'farming',
+                            'residential': 'village',
+                            'pastoral': 'herding',
+                            'mining': 'mining',
+                            'fishing': 'fishing',
+                            'temporary_camp': 'camp'
+                        };
+                        const typeLabel = typeLabels[s.classification] || s.classification || 'unknown';
+                        
                         const text = s.narrative || `${s.classification || 'Unknown'} settlement at ${s.lat?.toFixed(3) || '?'}°, ${s.lon?.toFixed(3) || '?'}°`;
                         const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="settlement-0" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">0</span>` : '';
                         const shortText = text.length > 200 ? text.substring(0, 197) + '...' : text;
-                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}">${testBadge}<span style="color: ${color}; flex-shrink: 0;">◻</span> <span style="flex:1;">${shortText}</span></div>`;
+                        
+                        // Calculate severity score for priority (0-100)
+                        const pop = s.population_est || 0;
+                        const area = s.area_m2 || 0;
+                        const populationScore = Math.min(100, pop / 10); // 1 point per 10 people
+                        const areaScore = Math.min(100, area / 10000); // 1 point per hectare
+                        const proximityScore = s.nearest_boundary_km && s.nearest_boundary_km < 10 ? (100 - s.nearest_boundary_km * 10) : 0;
+                        const priorityScore = (populationScore * 0.4) + (areaScore * 0.3) + (proximityScore * 0.3);
+                        
+                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" data-classification="${s.classification || ''}" data-priority="${priorityScore.toFixed(0)}" data-population="${pop}" data-area="${area}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}">${testBadge}<span style="color: ${color}; flex-shrink: 0;">◻</span> <span style="flex:1;">${shortText}</span> <span style="color: ${color}; font-size: 8px; font-weight: 500; opacity: 0.7; margin-left: 4px; flex-shrink: 0;">${typeLabel}</span></div>`;
                     };
                     
                     // Get settlements - prefer classified if available
                     const classifiedSettlements = data.classified_settlements || [];
                     const settlements = data.largest_settlements || [];
                     const useClassified = classifiedSettlements.length > 0;
-                    const displayList = useClassified ? classifiedSettlements : settlements;
+                    
+                    // Sort classified settlements by priority
+                    let displayList = useClassified ? classifiedSettlements : settlements;
+                    if (useClassified) {
+                        displayList = [...classifiedSettlements].sort((a, b) => {
+                            const popA = a.population_est || 0;
+                            const popB = b.population_est || 0;
+                            const areaA = a.area_m2 || 0;
+                            const areaB = b.area_m2 || 0;
+                            const proxA = a.nearest_boundary_km && a.nearest_boundary_km < 10 ? (100 - a.nearest_boundary_km * 10) : 0;
+                            const proxB = b.nearest_boundary_km && b.nearest_boundary_km < 10 ? (100 - b.nearest_boundary_km * 10) : 0;
+                            const priorityA = (popA / 10 * 0.4) + (areaA / 10000 * 0.3) + (proxA * 0.3);
+                            const priorityB = (popB / 10 * 0.4) + (areaB / 10000 * 0.3) + (proxB * 0.3);
+                            return priorityB - priorityA; // Descending
+                        });
+                    }
+                    
                     const initial = displayList.slice(0, 10);
                     const remaining = displayList.slice(10);
                     const containerId = `settlements-list-${paId}`;
                     const parkName = data.park_name || paId;
                     const btnId = `settlements-more-btn-${paId}`;
+                    
+                    // Get unique classifications for filter
+                    const classifications = useClassified ? [...new Set(classifiedSettlements.map(s => s.classification).filter(Boolean))] : [];
+                    const showFilter = classifications.length > 1;
                     
                     el.innerHTML = `
                         <div class="pa-popup-mini-stat">
@@ -9717,7 +9758,13 @@
                         
                         ${initial.length > 0 ? `
                         <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-                            <div style="font-size: 9px; color: #666; margin-bottom: 6px;">${useClassified ? 'Settlement details (click to pin):' : 'Settlements by built-up area:'}</div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                <div style="font-size: 9px; color: #666;">${useClassified ? 'Settlement details (click to pin):' : 'Settlements by built-up area:'}</div>
+                                ${showFilter ? `<select id="settlement-filter-${paId}" onchange="filterSettlementEntries('${paId}', this.value)" style="font-size: 8px; padding: 2px 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #aaa; cursor: pointer;">
+                                    <option value="">all types</option>
+                                    ${classifications.map(c => `<option value="${c}">${c}</option>`).join('')}
+                                </select>` : ''}
+                            </div>
                             <div id="${containerId}">
                                 ${initial.map(s => useClassified ? formatClassifiedSettlement(s, paId, parkName) : formatSettlement(s, paId, parkName)).join('')}
                             </div>
@@ -9810,6 +9857,38 @@
             if (btn) btn.remove();
         }
         
+        // Filter deforestation entries by classification
+        function filterDeforestEntries(paId, classification) {
+            const container = document.getElementById(`deforest-stories-${paId}`);
+            if (!container) return;
+            
+            const entries = container.querySelectorAll('.narrative-row[data-type="deforestation"]');
+            entries.forEach(entry => {
+                const entryClass = entry.dataset.classification || '';
+                if (!classification || entryClass === classification) {
+                    entry.style.display = 'flex';
+                } else {
+                    entry.style.display = 'none';
+                }
+            });
+        }
+        
+        // Filter settlement entries by classification
+        function filterSettlementEntries(paId, classification) {
+            const container = document.getElementById(`settlements-list-${paId}`);
+            if (!container) return;
+            
+            const entries = container.querySelectorAll('.narrative-row[data-type="settlement"]');
+            entries.forEach(entry => {
+                const entryClass = entry.dataset.classification || '';
+                if (!classification || entryClass === classification) {
+                    entry.style.display = 'flex';
+                } else {
+                    entry.style.display = 'none';
+                }
+            });
+        }
+        
         async function fetchPopupDeforestData(paId) {
             const el = document.getElementById(`deforest-content-${paId}`);
             if (!el) return;
@@ -9877,15 +9956,33 @@
                                     'natural': '#22c55e'
                                 };
                                 const color = classColors[e.classification] || '#a855f7';
+                                
+                                // Type tag labels (single word)
+                                const typeLabels = {
+                                    'slash_burn': 'burn',
+                                    'logging': 'logging',
+                                    'mining': 'mining',
+                                    'encroachment': 'clearing',
+                                    'natural': 'natural'
+                                };
+                                const typeLabel = typeLabels[e.classification] || e.classification || 'unknown';
+                                
                                 const text = e.narrative || `${e.classification || 'Unknown'} (${e.year}): ${e.area_km2?.toFixed(2) || '?'} km²`;
                                 const shortText = text.length > 150 ? text.substring(0, 147) + '...' : text;
+                                
+                                // Calculate severity score for priority (0-100)
+                                const currentYear = new Date().getFullYear();
+                                const yearsSince = currentYear - e.year;
+                                const freshnessScore = Math.max(0, 100 - yearsSince * 4); // 4 points per year
+                                const severityScore = Math.min(100, (e.area_km2 || 0) * 10); // 10 points per km²
+                                const priorityScore = (freshnessScore * 0.6) + (severityScore * 0.4);
                                 
                                 // Return HTML for all polygons in this event
                                 let entryIndex = 0; // Will be set after rendering
                                 return polygonIds.map((featureId, idx) => {
                                     const patchInfo = polygonIds.length > 1 ? ` <span style="color: #666; font-size: 8px;">[patch ${idx+1}/${polygonIds.length}]</span>` : '';
                                     const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="deforestation-0" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">0</span>` : '';
-                                    return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span></div>`;
+                                    return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" data-classification="${e.classification || ''}" data-priority="${priorityScore.toFixed(0)}" data-year="${e.year}" data-area="${e.area_km2 || 0}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span> <span style="color: ${color}; font-size: 8px; font-weight: 500; opacity: 0.7; margin-left: 4px; flex-shrink: 0;">${typeLabel}</span></div>`;
                                 }).join('');
                             };
                             
@@ -9897,11 +9994,34 @@
                             };
                             
                             if (classifiedEvents.length > 0) {
-                                const initial = classifiedEvents.slice(0, 10);
-                                const remaining = classifiedEvents.slice(10);
+                                // Sort by priority: freshness (60%) + severity (40%)
+                                const sortedEvents = [...classifiedEvents].sort((a, b) => {
+                                    const currentYear = new Date().getFullYear();
+                                    const aFreshness = Math.max(0, 100 - (currentYear - a.year) * 4);
+                                    const bFreshness = Math.max(0, 100 - (currentYear - b.year) * 4);
+                                    const aSeverity = Math.min(100, (a.area_km2 || 0) * 10);
+                                    const bSeverity = Math.min(100, (b.area_km2 || 0) * 10);
+                                    const aPriority = (aFreshness * 0.6) + (aSeverity * 0.4);
+                                    const bPriority = (bFreshness * 0.6) + (bSeverity * 0.4);
+                                    return bPriority - aPriority; // Descending
+                                });
+                                
+                                const initial = sortedEvents.slice(0, 10);
+                                const remaining = sortedEvents.slice(10);
+                                
+                                // Get unique classifications for filter
+                                const classifications = [...new Set(sortedEvents.map(e => e.classification).filter(Boolean))];
+                                const showFilter = classifications.length > 1;
+                                
                                 return `
                                 <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-                                    <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Deforestation events (click to pin):</div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                        <div style="font-size: 9px; color: #666;">Deforestation events (click to pin):</div>
+                                        ${showFilter ? `<select id="deforest-filter-${paId}" onchange="filterDeforestEntries('${paId}', this.value)" style="font-size: 8px; padding: 2px 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #aaa; cursor: pointer;">
+                                            <option value="">all types</option>
+                                            ${classifications.map(c => `<option value="${c}">${c}</option>`).join('')}
+                                        </select>` : ''}
+                                    </div>
                                     <div id="deforest-stories-${paId}">
                                         ${initial.map(e => formatClassifiedDefo(e)).join('')}
                                     </div>
