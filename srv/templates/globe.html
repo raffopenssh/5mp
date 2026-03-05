@@ -9963,6 +9963,10 @@
                     // Show first 20, keep "Show more" button but update text
                     if (moreBtn) {
                         moreBtn.style.display = 'block';
+                        // Store original text if not already stored
+                        if (!moreBtn.dataset.originalText) {
+                            moreBtn.dataset.originalText = moreBtn.textContent;
+                        }
                         moreBtn.textContent = `Show ${matchingEntries.length - 20} more events`;
                         // Update click handler to show remaining matching entries
                         moreBtn.onclick = function(e) {
@@ -9971,6 +9975,35 @@
                             this.remove();
                         };
                     }
+                }
+            } else {
+                // Filter cleared - restore original state
+                const hiddenDiv = document.getElementById(`deforest-hidden-${paId}`);
+                const moreBtn = document.getElementById(`deforest-more-btn-${paId}`);
+                
+                // Show first 10 entries, hide rest (original state)
+                entries.forEach((entry, idx) => {
+                    entry.style.display = idx < 10 ? 'flex' : 'none';
+                });
+                
+                // Restore button if there are > 10 total entries
+                if (moreBtn) {
+                    const totalEntries = entries.length;
+                    if (totalEntries > 10) {
+                        moreBtn.style.display = 'block';
+                        // Restore original text and handler
+                        moreBtn.textContent = moreBtn.dataset.originalText || `Show ${totalEntries - 10} more events`;
+                        moreBtn.onclick = function(e) {
+                            e.stopPropagation();
+                            if (hiddenDiv) hiddenDiv.style.display = 'block';
+                            this.remove();
+                        };
+                    }
+                }
+                
+                // Reset hidden div
+                if (hiddenDiv) {
+                    hiddenDiv.style.display = 'none';
                 }
             }
             
@@ -10090,6 +10123,10 @@
                     // Show first 20, keep "Show more" button but update text
                     if (moreBtn) {
                         moreBtn.style.display = 'block';
+                        // Store original text if not already stored
+                        if (!moreBtn.dataset.originalText) {
+                            moreBtn.dataset.originalText = moreBtn.textContent;
+                        }
                         moreBtn.textContent = `Show ${matchingEntries.length - 20} more settlements`;
                         // Update click handler to show remaining matching entries
                         moreBtn.onclick = function(e) {
@@ -10098,6 +10135,35 @@
                             this.remove();
                         };
                     }
+                }
+            } else {
+                // Filter cleared - restore original state
+                const hiddenDiv = document.getElementById(`settlements-hidden-${paId}`);
+                const moreBtn = document.getElementById(`settlements-more-btn-${paId}`);
+                
+                // Show first 25 entries, hide rest (original state)
+                entries.forEach((entry, idx) => {
+                    entry.style.display = idx < 25 ? 'flex' : 'none';
+                });
+                
+                // Restore button if there are > 25 total entries
+                if (moreBtn) {
+                    const totalEntries = entries.length;
+                    if (totalEntries > 25) {
+                        moreBtn.style.display = 'block';
+                        // Restore original text and handler
+                        moreBtn.textContent = moreBtn.dataset.originalText || `Show ${totalEntries - 25} more settlements`;
+                        moreBtn.onclick = function(e) {
+                            e.stopPropagation();
+                            if (hiddenDiv) hiddenDiv.style.display = 'block';
+                            this.remove();
+                        };
+                    }
+                }
+                
+                // Reset hidden div
+                if (hiddenDiv) {
+                    hiddenDiv.style.display = 'none';
                 }
             }
             
