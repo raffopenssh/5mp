@@ -183,6 +183,36 @@ curl -X POST "http://localhost:8000/api/upload/async?pwd=test2026" -F "gpx=@file
 
 ---
 
+## Test Helpers (test=1 mode)
+
+Add `?test=1` to URL to enable advanced testing tools:
+
+**Entry ID Badges:** Blue numbered badges (0, 1, 2...) on fire/deforestation entries
+
+**Key TEST Functions:**
+```javascript
+// Navigate & inspect
+TEST.scrollToEntry('deforestation', 50)  // Scroll to entry by ID
+TEST.scrollToText('fire', 'safari')      // Find by content
+TEST.inspectEntry('fire', 10)            // Show full details
+TEST.findBrokenEntries('deforestation')  // Scan for issues
+
+// Manipulate UI
+TEST.expandAll('CAF_Chinko')             // Expand all accordions
+TEST.setPopupHeight(2000)                // Resize popup
+TEST.triggerLoadMore('deforestation', 'CAF_Chinko')  // Click load more
+
+// Shortcuts
+TEST.testDeforest('CAF_Chinko', 100)    // Scroll+inspect+click entry
+TEST.getEntryCount('fire')               // Count entries
+```
+
+**Benefits:** 50%+ token reduction in debugging (direct access replaces manual scrolling/clicking)
+
+**Docs:** `docs/TEST_HELPERS.md`, `docs/TEST_HELPERS_QUICK_REF.md`
+
+---
+
 ## Test Parks
 
 - **COD_Virunga** - Full data coverage, Mountain Gorillas

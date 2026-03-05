@@ -1,20 +1,20 @@
-3552edaa 2026-03-03 20:00:59 Add date params to narrative endpoints in fetchParkFullData
-066689dd 2026-03-03 19:58:35 Update git commits for version tracking
-bf3956ee 2026-03-03 19:55:43 Fix CSV and XLSX exports - remove Unknown values and fix data fields
-0b72b82a 2026-03-03 19:40:43 Fix ESC key to cancel bbox drawing
-3e9d5c37 2026-03-03 19:38:29 Fix template literal syntax error in + more buttons
-878b630e 2026-03-03 18:57:00 Add complete documentation for star report fixes
-8668679a 2026-03-03 18:56:04 Fix + more buttons in inline star report (renderParkReportInline)
-48b0eba5 2026-03-03 18:40:44 Add verification script for star report fixes
-42cd00c2 2026-03-03 18:38:15 Add + more buttons to star report and populate ghsl_data for built-up areas
-f6709ea0 2026-03-03 18:03:57 Implement collapsible parks and prepare for section expansion
-ba9aef45 2026-03-03 17:58:50 Remove printer emoji and add expansion infrastructure
-661ea455 2026-03-03 17:54:19 Critical fix: Parks never filtered entirely from reports
-ca8c0910 2026-03-03 17:49:14 Final UX polish: settings icon, remove clutter, clean inline reports
-82f40330 2026-03-03 17:28:05 Add comprehensive documentation of final report builder improvements
-1d3200f3 2026-03-03 17:26:28 Major UX improvements to report builder and starred reports
-d7c1e257 2026-03-03 16:58:50 Add implementation summary for intelligent report builder work
-69fb5ff3 2026-03-03 16:57:31 Add comprehensive documentation for intelligent report builder
-41900164 2026-03-03 16:56:21 Add comprehensive test suite for intelligent report builder
-9191d348 2026-03-03 16:54:27 Fix bbox loading from URL and enhance intelligent report builder wizard
-767e948d 2026-03-03 16:30:06 Fix PDF reports and simplify report builder
+085ba724 2026-03-05 10:33:39 Add TEST helpers quick reference card
+27a0f867 2026-03-05 10:31:59 Update TEST_HELPERS.md with new advanced helpers
+e1036b22 2026-03-05 10:30:46 Add advanced TEST helpers for efficient debugging
+5a10cc2d 2026-03-05 10:26:20 Add TEST_HELPERS.md documentation
+caa29bf2 2026-03-05 10:25:51 Add test=1 entry ID badges and TEST helpers
+a9d71759 2026-03-05 10:14:01 docs: add TEST helper design docs for future implementation
+ee34c04b 2026-03-05 10:12:53 feat: add TEST entry ID badges for deforestation (WIP - needs numbering fix and extension to all sections)
+28789334 2026-03-05 09:56:00 fix: deforestation 'Show more' button breaking onclick handlers
+5732e7e5 2026-03-05 09:31:00 fix: Escape HTML in deforestation event title and shortText
+a205f899 2026-03-05 09:17:49 fix: HTML escaping in deforestation/settlement popups + fire front removal
+0f542184 2026-03-04 16:57:14 docs: Add version management instructions to AGENTS.md
+7a73e394 2026-03-04 15:07:53 Add patrol effort grid cells to KML export with time stamps
+89342f1d 2026-03-04 14:55:00 Fix: Remove empty KML folders and ensure all infrastructure is included
+59813b5b 2026-03-04 14:46:48 docs: Document KML narrative and polygon fixes
+b411faf7 2026-03-04 14:46:07 Fix: KML export now includes full narratives and uses polygon_ids joins
+546c9eb3 2026-03-04 14:34:47 docs: Add documentation for KML XML escaping bug fix
+a8a9be9c 2026-03-04 14:34:15 Fix: Escape XML special characters in KML export names
+5fed63c5 2026-03-04 14:31:16 docs: Add documentation for grid buffer bug fix
+1bbdcf0a 2026-03-04 14:30:42 Fix: Use proper polygon buffer instead of bounding box buffer for grid cells
+f071b7bb 2026-03-04 13:02:48 FIX: Add print CSS to main page stylesheet

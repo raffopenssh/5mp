@@ -2175,7 +2175,10 @@
                 },
                 
                 getPinnedCount() {
-                    return Object.keys(pinnedLayers || {}).length;
+                    const categoryCount = Object.keys(pinnedLayers || {}).length;
+                    const singleCount = Object.keys(singlePinnedFeatures || {}).length;
+                    const rtCount = Object.keys(realtimeFireLayers || {}).length;
+                    return categoryCount + singleCount + rtCount;
                 },
                 
                 // Element queries
