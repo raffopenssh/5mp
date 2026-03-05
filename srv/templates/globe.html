@@ -2613,14 +2613,142 @@
                     });
                     console.table(entries);
                     return entries;
+                },
+                
+                // Advanced entry helpers
+                scrollToText(section, searchText) {
+                    const badges = document.querySelectorAll(`.test-entry-id[data-entry^="${section}-"]`);
+                    for (const badge of badges) {
+                        const row = badge.closest('.narrative-row, .pa-popup-feature-story, .legal-doc-row');
+                        if (row && (row.textContent.includes(searchText) || (row.title && row.title.includes(searchText)))) {
+                            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            console.log(`Found and scrolled to: ${badge.dataset.entry}`);
+                            return badge.dataset.entry;
+                        }
+                    }
+                    console.error(`Text "${searchText}" not found in ${section}`);
+                    return null;
+                },
+                
+                inspectEntry(section, entryId) {
+                    const badge = document.querySelector(`.test-entry-id[data-entry="${section}-${entryId}"]`);
+                    if (!badge) {
+                        console.error(`Entry ${section}-${entryId} not found`);
+                        return null;
+                    }
+                    const row = badge.closest('.narrative-row, .pa-popup-feature-story, .legal-doc-row');
+                    if (!row) {
+                        console.error('Row element not found');
+                        return null;
+                    }
+                    console.log('Entry details:');
+                    console.log('  ID:', badge.dataset.entry);
+                    console.log('  Text:', row.textContent.trim());
+                    console.log('  Title:', row.title || 'none');
+                    console.log('  onclick:', row.onclick ? 'present' : 'MISSING');
+                    console.log('  Classes:', row.className);
+                    console.log('  Dataset:', row.dataset);
+                    console.log('  HTML:', row.outerHTML.substring(0, 200) + '...');
+                    return row;
+                },
+                
+                findBrokenEntries(section) {
+                    const badges = document.querySelectorAll(`.test-entry-id[data-entry^="${section}-"]`);
+                    const broken = [];
+                    badges.forEach(badge => {
+                        const row = badge.closest('.narrative-row, .pa-popup-feature-story, .legal-doc-row');
+                        if (row && !row.onclick) {
+                            broken.push({
+                                id: badge.dataset.entry,
+                                text: row.textContent.trim().substring(0, 60),
+                                element: row
+                            });
+                        }
+                    });
+                    if (broken.length > 0) {
+                        console.error(`Found ${broken.length} broken entries:`);
+                        console.table(broken.map(b => ({ id: b.id, text: b.text })));
+                    } else {
+                        console.log(`All ${badges.length} entries in ${section} have onclick handlers ✓`);
+                    }
+                    return broken;
+                },
+                
+                triggerLoadMore(section, parkId) {
+                    const btnIds = {
+                        fire: `fire-load-more-${parkId}`,
+                        deforestation: `deforest-more-btn-${parkId}`,
+                        settlement: `settlement-more-btn-${parkId}`,
+                        legal: `legal-more-btn-${parkId}`
+                    };
+                    const btnId = btnIds[section];
+                    if (!btnId) {
+                        console.error(`Unknown section: ${section}`);
+                        return false;
+                    }
+                    const btn = document.getElementById(btnId);
+                    if (!btn) {
+                        console.log(`Load more button not found for ${section} (may already be loaded)`);
+                        return false;
+                    }
+                    console.log(`Clicking load more for ${section}...`);
+                    btn.click();
+                    return true;
+                },
+                
+                setPopupHeight(pixels) {
+                    const popup = document.querySelector('.maplibregl-popup-content');
+                    if (popup) {
+                        popup.style.maxHeight = pixels + 'px';
+                        popup.style.height = pixels + 'px';
+                        console.log(`Set popup height to ${pixels}px`);
+                        return true;
+                    }
+                    console.error('Popup not found');
+                    return false;
+                },
+                
+                // Quick test shortcuts
+                testDeforest(parkId, entryId) {
+                    console.log(`Testing deforestation entry ${entryId} for ${parkId}...`);
+                    const beforeCount = this.getPinnedCount();
+                    this.scrollToEntry('deforestation', entryId);
+                    this.inspectEntry('deforestation', entryId);
+                    this.clickEntry('deforestation', entryId);
+                    setTimeout(() => {
+                        const afterCount = this.getPinnedCount();
+                        if (afterCount > beforeCount) {
+                            console.log(`✓ Entry ${entryId} pinned successfully`);
+                        } else {
+                            console.error(`✗ Entry ${entryId} failed to pin`);
+                        }
+                    }, 500);
+                },
+                
+                validateLoadMore(parkId) {
+                    const sections = ['fire', 'deforestation'];
+                    sections.forEach(sec => {
+                        const before = this.getEntryCount(sec);
+                        console.log(`${sec}: ${before} entries before load more`);
+                        if (this.triggerLoadMore(sec, parkId)) {
+                            setTimeout(() => {
+                                const after = this.getEntryCount(sec);
+                                console.log(`${sec}: ${after} entries after load more (${after - before} added)`);
+                            }, 1000);
+                        }
+                    });
                 }
             };
             console.log('TEST mode enabled. Use window.TEST for assertions.');
             console.log('Star report helpers: TEST.STAR.getStats(), TEST.STAR.getReportData(id), TEST.STAR.exportXLSX()');
             console.log('Fire helpers: TEST.findFireNotification("Alpha-5"), TEST.clickFire("Hotel"), TEST.testFireClick("Alpha-5", "Aouk")');
             console.log('Notification helpers: TEST.getSingleNotifications(), TEST.getNotificationStats()');
-            console.log('Popup helpers: TEST.expandAll(parkId), TEST.collapseAll(parkId)');
-            console.log('Entry helpers: TEST.scrollToEntry(section, id), TEST.clickEntry(section, id), TEST.highlightEntry(section, id), TEST.getEntryCount(section), TEST.listEntries(section)');
+            console.log('Popup helpers: TEST.expandAll(parkId), TEST.collapseAll(parkId), TEST.setPopupHeight(pixels)');
+            console.log('Entry helpers: TEST.scrollToEntry(section, id), TEST.scrollToText(section, text), TEST.clickEntry(section, id)');
+            console.log('  TEST.highlightEntry(section, id, color), TEST.inspectEntry(section, id), TEST.findBrokenEntries(section)');
+            console.log('  TEST.getEntryCount(section), TEST.listEntries(section)');
+            console.log('Load more: TEST.triggerLoadMore(section, parkId), TEST.validateLoadMore(parkId)');
+            console.log('Quick tests: TEST.testDeforest(parkId, entryId)');
             console.log('TIP: For full UI testing, resize browser to 1280x1400+ to see all popup sections.');
         }
         
