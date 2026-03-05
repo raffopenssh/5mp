@@ -9905,14 +9905,25 @@
             const entries = container.querySelectorAll('.narrative-row[data-type="deforestation"]');
             let visibleCount = 0;
             let visibleArea = 0;
+            let matchingEntries = [];
+            
+            // First pass: identify matching entries
             entries.forEach(entry => {
                 const entryClass = entry.dataset.classification || '';
                 if (!classification || entryClass === classification) {
-                    entry.style.display = 'flex';
-                    visibleCount++;
-                    // Sum up the area (each entry has data-area attribute)
+                    matchingEntries.push(entry);
                     const area = parseFloat(entry.dataset.area) || 0;
                     visibleArea += area;
+                } else {
+                    entry.style.display = 'none';
+                }
+            });
+            
+            // Second pass: show first 20 matching entries, hide rest
+            matchingEntries.forEach((entry, idx) => {
+                if (idx < 20) {
+                    entry.style.display = 'flex';
+                    visibleCount++;
                 } else {
                     entry.style.display = 'none';
                 }
@@ -9937,13 +9948,29 @@
                 }
             }
             
-            // Auto-expand hidden items if filtered count < 20
-            if (classification && visibleCount < 20) {
+            // Auto-expand to show all matching if < 20, or show "Show more" button if >= 20
+            if (classification) {
                 const hiddenDiv = document.getElementById(`deforest-hidden-${paId}`);
                 const moreBtn = document.getElementById(`deforest-more-btn-${paId}`);
-                if (hiddenDiv && hiddenDiv.style.display === 'none') {
-                    hiddenDiv.style.display = 'block';
-                    if (moreBtn) moreBtn.remove();
+                
+                if (matchingEntries.length < 20) {
+                    // Show all matching entries
+                    matchingEntries.forEach(entry => entry.style.display = 'flex');
+                    visibleCount = matchingEntries.length;
+                    // Hide "Show more" button
+                    if (moreBtn) moreBtn.style.display = 'none';
+                } else if (matchingEntries.length >= 20) {
+                    // Show first 20, keep "Show more" button but update text
+                    if (moreBtn) {
+                        moreBtn.style.display = 'block';
+                        moreBtn.textContent = `Show ${matchingEntries.length - 20} more events`;
+                        // Update click handler to show remaining matching entries
+                        moreBtn.onclick = function(e) {
+                            e.stopPropagation();
+                            matchingEntries.forEach(entry => entry.style.display = 'flex');
+                            this.remove();
+                        };
+                    }
                 }
             }
             
@@ -10008,9 +10035,21 @@
             
             const entries = container.querySelectorAll('.narrative-row[data-type="settlement"]');
             let visibleCount = 0;
+            let matchingEntries = [];
+            
+            // First pass: identify matching entries
             entries.forEach(entry => {
                 const entryClass = entry.dataset.classification || '';
                 if (!classification || entryClass === classification) {
+                    matchingEntries.push(entry);
+                } else {
+                    entry.style.display = 'none';
+                }
+            });
+            
+            // Second pass: show first 20 matching entries, hide rest
+            matchingEntries.forEach((entry, idx) => {
+                if (idx < 20) {
                     entry.style.display = 'flex';
                     visibleCount++;
                 } else {
@@ -10036,13 +10075,29 @@
                 }
             }
             
-            // Auto-expand hidden items if filtered count < 20
-            if (classification && visibleCount < 20) {
+            // Auto-expand to show all matching if < 20, or show "Show more" button if >= 20
+            if (classification) {
                 const hiddenDiv = document.getElementById(`settlements-hidden-${paId}`);
                 const moreBtn = document.getElementById(`settlements-more-btn-${paId}`);
-                if (hiddenDiv && hiddenDiv.style.display === 'none') {
-                    hiddenDiv.style.display = 'block';
-                    if (moreBtn) moreBtn.remove();
+                
+                if (matchingEntries.length < 20) {
+                    // Show all matching entries
+                    matchingEntries.forEach(entry => entry.style.display = 'flex');
+                    visibleCount = matchingEntries.length;
+                    // Hide "Show more" button
+                    if (moreBtn) moreBtn.style.display = 'none';
+                } else if (matchingEntries.length >= 20) {
+                    // Show first 20, keep "Show more" button but update text
+                    if (moreBtn) {
+                        moreBtn.style.display = 'block';
+                        moreBtn.textContent = `Show ${matchingEntries.length - 20} more settlements`;
+                        // Update click handler to show remaining matching entries
+                        moreBtn.onclick = function(e) {
+                            e.stopPropagation();
+                            matchingEntries.forEach(entry => entry.style.display = 'flex');
+                            this.remove();
+                        };
+                    }
                 }
             }
             
