@@ -1338,8 +1338,8 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
     // Build narrative
     narrative := fmt.Sprintf("In the past %d days, %s has %d tracked fire groups with %d total fire detections.",
         days, parkName, len(groups), totalFires)
-    if activeCount > 0 {
-        narrative += fmt.Sprintf(" %d groups are currently active.", activeCount)
+    if len(activeGroups) > 0 {
+        narrative += fmt.Sprintf(" %d groups are currently active.", len(activeGroups))
     }
     
     resp := FireRealtimeResponse{
@@ -1348,7 +1348,7 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         AnalysisPeriod:    fmt.Sprintf("%s to %s", startDate.Format("2006-01-02"), endDate.Format("2006-01-02")),
         TotalFires:        totalFires,
         TotalGroups:       len(groups),
-        ActiveGroupsCount: activeCount,
+        ActiveGroupsCount: len(activeGroups),
         GroupsInsideCount: insideCount,
         Groups:            groups,
         ActiveGroups:      activeGroups,
