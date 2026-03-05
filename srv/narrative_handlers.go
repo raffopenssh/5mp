@@ -1093,7 +1093,17 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	}
 	
 	// Get classified deforestation events with individual narratives
-	narrative.ClassifiedEvents = s.GetCachedClassifiedDeforestation(internalID)
+	allEvents := s.GetCachedClassifiedDeforestation(internalID)
+	
+	// Filter by year range
+	var filteredEvents []ClassifiedDeforestation
+	for _, ev := range allEvents {
+		if ev.Year >= fromYear && ev.Year <= toYear {
+			filteredEvents = append(filteredEvents, ev)
+		}
+	}
+	narrative.ClassifiedEvents = filteredEvents
+	
 	if len(narrative.ClassifiedEvents) > 0 {
 		narrative.ByClassification = make(map[string]int)
 		narrative.AreaByClass = make(map[string]float64)
