@@ -9607,6 +9607,7 @@
                         };
                         const color = classColors[s.classification] || '#fbbf24';
                         const text = s.narrative || `${s.classification || 'Unknown'} settlement at ${s.lat?.toFixed(3) || '?'}°, ${s.lon?.toFixed(3) || '?'}°`;
+                        const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="settlement-0" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">0</span>` : '';
                         const shortText = text.length > 200 ? text.substring(0, 197) + '...' : text;
                         return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}">${testBadge}<span style="color: ${color}; flex-shrink: 0;">◻</span> <span style="flex:1;">${shortText}</span></div>`;
                     };
@@ -16435,6 +16436,13 @@ ${starredItems.narratives.map(n => {
         pinned.split(',').forEach(item => {
             const [parkId, type] = item.split(':');
             if (parkId && type) {
+                // Check if already pinned to avoid double-pinning
+                const key = getPinKey(parkId, type);
+                if (pinnedLayers[key]) {
+                    console.log(`Layer ${key} already pinned, skipping`);
+                    return;
+                }
+                
                 // Find park name from keystones
                 const park = (window.keystoneAreas || []).find(p => p.id === parkId);
                 const parkName = park ? park.name : parkId;
