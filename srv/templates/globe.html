@@ -2493,6 +2493,39 @@
                             totalPatrolPixels: totalPixels
                         };
                     }
+                },
+                
+                // Deforestation inspection helpers
+                DEFOREST: {
+                    getRows() {
+                        return Array.from(document.querySelectorAll('.narrative-row[data-type="deforestation"]'));
+                    },
+                    findRow(searchText) {
+                        const rows = this.getRows();
+                        return rows.find(r => (r.title || '').includes(searchText) || r.textContent.includes(searchText));
+                    },
+                    inspectRow(searchText) {
+                        const row = this.findRow(searchText);
+                        if (!row) { console.log('Row not found'); return null; }
+                        const idx = this.getRows().indexOf(row);
+                        console.log('Row index:', idx);
+                        console.log('outerHTML:', row.outerHTML);
+                        console.log('title:', row.getAttribute('title'));
+                        console.log('onclick:', row.getAttribute('onclick'));
+                        return row;
+                    },
+                    checkNextRows(searchText, count = 5) {
+                        const row = this.findRow(searchText);
+                        if (!row) return;
+                        const rows = this.getRows();
+                        const idx = rows.indexOf(row);
+                        console.log(`Found at index ${idx}, checking next ${count} rows:`);
+                        for (let i = 1; i <= count && idx + i < rows.length; i++) {
+                            const nextRow = rows[idx + i];
+                            console.log(`Row ${idx + i}:`, nextRow.textContent.substring(0, 60));
+                            console.log('  outerHTML:', nextRow.outerHTML);
+                        }
+                    }
                 }
             };
             console.log('TEST mode enabled. Use window.TEST for assertions.');
@@ -9539,7 +9572,8 @@
                                         ${initial.map(e => formatClassifiedDefo(e)).join('')}
                                     </div>
                                     ${remaining.length > 0 ? `
-                                    <button onclick="document.getElementById('deforest-stories-${paId}').innerHTML += '${remaining.map(e => formatClassifiedDefo(e).replace(/'/g, "\\'")).join('')}'; this.remove();" 
+                                    <button onclick="showMoreDeforestEvents('${paId}'); this.remove();" 
+                                            id="deforest-more-btn-${paId}"
                                             style="margin-top: 6px; font-size: 9px; color: #a855f7; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); padding: 4px 8px; border-radius: 4px; cursor: pointer; width: 100%;">
                                         Show ${remaining.length} more events
                                     </button>` : ''}
@@ -14731,6 +14765,36 @@ ${starredItems.narratives.map(n => {
     
     function isSingleFeaturePinned(parkId, type, featureId) {
         return !!singlePinnedFeatures[getSinglePinKey(parkId, type, featureId)];
+    }
+    
+    function showMoreDeforestEvents(paId) {
+        const container = document.getElementById(`deforest-stories-${paId}`);
+        if (!container) return;
+        const remaining = window._deforestRemainingEvents?.[paId]  || [];
+        const paData = window._parkDataCache?.[paId];
+        const parkName = paData?.properties?.NAME || paId;
+        
+        remaining.forEach(e => {
+            const polygonIds = e.polygon_ids ? e.polygon_ids.split(',').map(id => id.trim()) : [`deforest_${paId}_${e.year}_${e.id || 0}`];
+            const classColors = {'slash_burn': '#f59e0b', 'logging': '#ef4444', 'mining': '#dc2626', 'encroachment': '#fb923c', 'natural': '#22c55e'};
+            const color = classColors[e.classification] || '#a855f7';
+            const text = e.narrative || `${e.classification || 'Unknown'} (${e.year}): ${e.area_km2?.toFixed(2) || '?'} km²`;
+            const shortText = text.length > 150 ? text.substring(0, 147) + '...' : text;
+            
+            polygonIds.forEach((featureId, idx) => {
+                const patchInfo = polygonIds.length > 1 ? ` <span style="color: #666; font-size: 8px;">[patch ${idx+1}/${polygonIds.length}]</span>` : '';
+                const div = document.createElement('div');
+                div.className = 'narrative-row';
+                div.dataset.park = paId;
+                div.dataset.type = 'deforestation';
+                div.dataset.feature = featureId;
+                div.innerHTML = `<span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span>`;
+                div.style.cssText = 'font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;';
+                div.title = 'Click to pin on map. ' + text;
+                div.onclick = (event) => toggleSingleFeaturePin(paId, parkName, 'deforestation', featureId, div, event);
+                container.appendChild(div);
+            });
+        });
     }
     
     async function toggleSingleFeaturePin(parkId, parkName, type, featureId, btn, e) {
