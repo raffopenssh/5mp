@@ -9518,7 +9518,7 @@
                                 // Return HTML for all polygons in this event
                                 return polygonIds.map((featureId, idx) => {
                                     const patchInfo = polygonIds.length > 1 ? ` <span style="color: #666; font-size: 8px;">[patch ${idx+1}/${polygonIds.length}]</span>` : '';
-                                    return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}"><span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${shortText}${patchInfo}</span></div>`;
+                                    return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}"><span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span></div>`;
                                 }).join('');
                             };
                             
