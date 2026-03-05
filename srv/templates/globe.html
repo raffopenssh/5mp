@@ -17736,11 +17736,13 @@ ${starredItems.narratives.map(n => {
         const popupPaId = params.get('popup');
         const sectionsToOpen = params.get('sections')?.split(',') || [];
         if (popupPaId) {
+            console.log(`URL popup param: ${popupPaId}, sections: ${sectionsToOpen.join(',')}`);
             setTimeout(() => {
                 // Find the PA and show popup
                 const features = map.querySourceFeatures('areas', {
                     filter: ['==', ['get', 'id'], popupPaId]
                 });
+                console.log(`Found ${features.length} features for ${popupPaId}`);
                 if (features.length > 0) {
                     const props = features[0].properties;
                     const center = features[0].properties.center;
@@ -17752,9 +17754,28 @@ ${starredItems.narratives.map(n => {
                         if (sectionsToOpen.length > 0) {
                             setTimeout(() => {
                                 sectionsToOpen.forEach(secType => {
-                                    const section = document.getElementById(`${secType}-section-${popupPaId}`);
-                                    if (section && !section.classList.contains('open')) {
-                                        section.classList.add('open');
+                                    // Map URL section names to actual section IDs
+                                    const sectionIdMap = {
+                                        'fire': 'fire',
+                                        'settlement': 'ghsl',
+                                        'ghsl': 'ghsl',
+                                        'deforestation': 'deforest',
+                                        'deforest': 'deforest',
+                                        'road': 'road',
+                                        'roads': 'road',
+                                        'species': 'species',
+                                        'climate': 'climate',
+                                        'legal': 'legal',
+                                        'research': 'research'
+                                    };
+                                    
+                                    const sectionId = sectionIdMap[secType] || secType;
+                                    const section = document.getElementById(`${sectionId}-section-${popupPaId}`);
+                                    if (section) {
+                                        // Click the section to open it and trigger data load
+                                        if (!section.classList.contains('open')) {
+                                            section.click();
+                                        }
                                     }
                                 });
                             }, 500);
