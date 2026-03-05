@@ -40,6 +40,60 @@ type GeoJSONGeometry struct {
 	Coordinates interface{} `json:"coordinates"`
 }
 
+// buildMonthINClause creates SQL IN clause like "(11, 12, 1, 2, 3, 4)"
+func buildMonthINClause(months []int) string {
+	if len(months) == 0 {
+		return "(0)" // No months - will match nothing
+	}
+	var parts []string
+	for _, m := range months {
+		parts = append(parts, fmt.Sprintf("%d", m))
+	}
+	return "(" + strings.Join(parts, ", ") + ")"
+}
+
+// parseSeasonMonths converts season string like "Nov-Apr" or "Jun-Sep" to month numbers
+func parseSeasonMonths(season string) []int {
+	if season == "" || season == "None" {
+		return nil
+	}
+	
+	monthNames := map[string]int{
+		"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
+		"Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
+	}
+	
+	parts := strings.Split(season, "-")
+	if len(parts) != 2 {
+		return nil
+	}
+	
+	startMonth, startOk := monthNames[parts[0]]
+	endMonth, endOk := monthNames[parts[1]]
+	
+	if !startOk || !endOk {
+		return nil
+	}
+	
+	var months []int
+	if startMonth <= endMonth {
+		// Simple range: Jan-Jun
+		for m := startMonth; m <= endMonth; m++ {
+			months = append(months, m)
+		}
+	} else {
+		// Wraps around year: Nov-Apr
+		for m := startMonth; m <= 12; m++ {
+			months = append(months, m)
+		}
+		for m := 1; m <= endMonth; m++ {
+			months = append(months, m)
+		}
+	}
+	
+	return months
+}
+
 // minDistanceToPolygon calculates the minimum distance (in km) from a point to a polygon
 func minDistanceToPolygon(lat, lon float64, polygon [][]float64) float64 {
 	// Check if point is inside polygon first
@@ -211,42 +265,90 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 		queryMinLat := minLat - bufferDeg
 		queryMaxLat := maxLat + bufferDeg
 		
-		// Query grid data to get intensity (same as map uses)
-		gridParams := GridQueryParams{
-			FromYear: int64(2018),
-			ToYear:   int64(2026),
-			BBox:     &[4]float64{queryMinLon, queryMinLat, queryMaxLon, queryMaxLat},
+		// Get park climate data to determine actual dry/rainy seasons
+		var drySeason, rainySeason string
+		s.DB.QueryRow(`SELECT dry_season, rainy_season FROM park_climate WHERE park_id = ?`, parkID).Scan(&drySeason, &rainySeason)
+		
+		// Parse season strings (e.g., "Nov-Apr", "Jun-Sep") into month sets
+		dryMonths := parseSeasonMonths(drySeason)
+		rainyMonths := parseSeasonMonths(rainySeason)
+		
+		// Fallback to default if no climate data
+		if len(dryMonths) == 0 && len(rainyMonths) == 0 {
+			// Default: Nov-Apr dry, May-Oct rainy
+			dryMonths = []int{11, 12, 1, 2, 3, 4}
+			rainyMonths = []int{5, 6, 7, 8, 9, 10}
 		}
+		
+		// Calculate expected weight based on actual dry season length
+		expectedDryMonths := float64(len(dryMonths))
+		if expectedDryMonths == 0 {
+			expectedDryMonths = 6.0 // Fallback
+		}
+		
+		// Build custom grid query using park-specific climate seasons
+		fromYear := 2018
+		toYear := 2026
 		if fromStr != "" {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
-				gridParams.FromYear = int64(t.Year())
+				fromYear = t.Year()
 			}
 		}
 		if toStr != "" {
 			if t, err := time.Parse("2006-01-02", toStr); err == nil {
-				gridParams.ToYear = int64(t.Year())
+				toYear = t.Year()
 			}
 		}
 		
-		gridRows, err := s.QueryGridData(r.Context(), gridParams)
+		// Build SQL with park-specific dry/rainy month lists
+		dryMonthsSQL := buildMonthINClause(dryMonths)
+		rainyMonthsSQL := buildMonthINClause(rainyMonths)
+		
+		gridQuery := fmt.Sprintf(`
+			SELECT 
+				g.id as grid_cell_id,
+				g.lat_center,
+				g.lon_center,
+				COUNT(DISTINCT CASE WHEN e.month IN %s THEN e.year || '-' || e.month END) as dry_months,
+				COUNT(DISTINCT CASE WHEN e.month IN %s THEN e.year || '-' || e.month END) as rainy_months
+			FROM grid_cells g
+			JOIN effort_data e ON e.grid_cell_id = g.id
+			WHERE e.day IS NULL
+			  AND e.movement_type = 'all'
+			  AND e.year BETWEEN ? AND ?
+			  AND g.lat_center BETWEEN ? AND ?
+			  AND g.lon_center BETWEEN ? AND ?
+			GROUP BY g.id, g.lat_center, g.lon_center
+		`, dryMonthsSQL, rainyMonthsSQL)
+		
+		gridRows, err := s.DB.Query(gridQuery, fromYear, toYear, queryMinLat, queryMaxLat, queryMinLon, queryMaxLon)
 		if err != nil {
 			continue
 		}
+		defer gridRows.Close()
 		
-		// Build intensity map from grid data (using same logic as buildGridFeature)
+		// Build intensity map using park-specific climate data
 		intensityMap := make(map[string]float64)
-		for _, row := range gridRows {
+		for gridRows.Next() {
+			var gridCellID string
+			var lat, lon float64
+			var dryMonthCount, rainyMonthCount int64
+			
+			if err := gridRows.Scan(&gridCellID, &lat, &lon, &dryMonthCount, &rainyMonthCount); err != nil {
+				continue
+			}
+			
 			var intensity float64
-			if row.DryMonths > 0 || row.RainyMonths > 0 {
-				actualWeight := float64(row.DryMonths) + float64(row.RainyMonths)*0.3
-				expectedWeight := 6.0
-				intensity = actualWeight / expectedWeight
+			if dryMonthCount > 0 || rainyMonthCount > 0 {
+				actualWeight := float64(dryMonthCount) + float64(rainyMonthCount)*0.3
+				intensity = actualWeight / expectedDryMonths
 				if intensity > 1.5 {
 					intensity = 1.5
 				}
 			}
-			intensityMap[row.GridCellID] = intensity
+			intensityMap[gridCellID] = intensity
 		}
+		gridRows.Close()
 		
 		// Query patrol effort data for monthly details
 		query := `
