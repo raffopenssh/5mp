@@ -9590,6 +9590,7 @@
                         }
                         const name = s.name && s.name !== 'Unnamed settlement' ? s.name : `${s.lat.toFixed(3)}°, ${s.lon.toFixed(3)}°`;
                         const featureId = `settlement_${s.id || s.lat.toFixed(4)}_${s.lon.toFixed(4)}`;
+                        const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="settlement-0" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">0</span>` : '';
                         return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to pin on map">${formatArea(s.area_m2)} near ${name}${location}</div>`;
                     };
                     
@@ -9607,7 +9608,7 @@
                         const color = classColors[s.classification] || '#fbbf24';
                         const text = s.narrative || `${s.classification || 'Unknown'} settlement at ${s.lat?.toFixed(3) || '?'}°, ${s.lon?.toFixed(3) || '?'}°`;
                         const shortText = text.length > 200 ? text.substring(0, 197) + '...' : text;
-                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}"><span style="color: ${color}; flex-shrink: 0;">◻</span> <span style="flex:1;">${shortText}</span></div>`;
+                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}">${testBadge}<span style="color: ${color}; flex-shrink: 0;">◻</span> <span style="flex:1;">${shortText}</span></div>`;
                     };
                     
                     // Get settlements - prefer classified if available
@@ -9653,11 +9654,40 @@
                             btn.addEventListener('click', () => {
                                 const container = document.getElementById(containerId);
                                 if (container) {
+                                    const beforeCount = container.children.length;
                                     container.innerHTML += remaining.map(s => useClassified ? formatClassifiedSettlement(s, paId, parkName) : formatSettlement(s, paId, parkName)).join('');
+                                    // Number new entries
+                                    if (window.TEST) {
+                                        const entries = container.querySelectorAll('.narrative-row');
+                                        entries.forEach((entry, i) => {
+                                            const badge = entry.querySelector('.test-entry-id');
+                                            if (badge) {
+                                                badge.textContent = i;
+                                                badge.dataset.entry = 'settlement-' + i;
+                                            }
+                                        });
+                                    }
                                 }
                                 btn.remove();
                             });
                         }
+                    }
+                    
+                    // Number settlement entries if TEST mode is active
+                    if (window.TEST) {
+                        setTimeout(() => {
+                            const container = document.getElementById(containerId);
+                            if (container) {
+                                const entries = container.querySelectorAll('.narrative-row');
+                                entries.forEach((entry, i) => {
+                                    const badge = entry.querySelector('.test-entry-id');
+                                    if (badge) {
+                                        badge.textContent = i;
+                                        badge.dataset.entry = 'settlement-' + i;
+                                    }
+                                });
+                            }
+                        }, 150);
                     }
                 } else if (data.status === 'complete' || data.settlement_count === 0) {
                     el.innerHTML = `
@@ -15592,6 +15622,8 @@ ${starredItems.narratives.map(n => {
             }
             
             // Add source and layer to map
+            // Remove layer first if it exists, then remove source
+            if (map.getLayer(layerId)) map.removeLayer(layerId);
             if (map.getSource(sourceId)) map.removeSource(sourceId);
             
             map.addSource(sourceId, { type: 'geojson', data: geojson });
@@ -17359,22 +17391,6 @@ ${starredItems.narratives.map(n => {
         }
         
         // Restore pinned layers from URL param (in addition to restorePinnedFromURL)
-        const pinnedParam = params.get('pinned');
-        if (pinnedParam) {
-            setTimeout(() => {
-                pinnedParam.split(',').forEach(async (item) => {
-                    const [parkId, type] = item.split(':');
-                    if (parkId && type) {
-                        const park = (window.keystoneAreas || []).find(p => p.id === parkId);
-                        const parkName = park ? park.name : parkId;
-                        if (!pinnedLayers[getPinKey(parkId, type)]) {
-                            await addPinnedLayer(parkId, parkName, type);
-                        }
-                    }
-                });
-            }, 2500);
-        }
-        
         // Reload data with restored filters
         setTimeout(() => {
             reloadGridData();
