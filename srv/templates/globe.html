@@ -2526,12 +2526,101 @@
                             console.log('  outerHTML:', nextRow.outerHTML);
                         }
                     }
+                },
+                
+                // Popup accordion helpers
+                expandAll(parkId) {
+                    if (!parkId) {
+                        console.error('parkId required');
+                        return;
+                    }
+                    const sections = ['fire', 'deforestation', 'settlement', 'legal', 'publications', 'roads', 'climate', 'species'];
+                    sections.forEach(sec => {
+                        const elem = document.getElementById(`${sec}-section-${parkId}`);
+                        if (elem && !elem.classList.contains('open')) {
+                            elem.classList.add('open');
+                        }
+                    });
+                    console.log(`Expanded all sections for ${parkId}`);
+                },
+                
+                collapseAll(parkId) {
+                    if (!parkId) {
+                        console.error('parkId required');
+                        return;
+                    }
+                    const sections = ['fire', 'deforestation', 'settlement', 'legal', 'publications', 'roads', 'climate', 'species'];
+                    sections.forEach(sec => {
+                        const elem = document.getElementById(`${sec}-section-${parkId}`);
+                        if (elem && elem.classList.contains('open')) {
+                            elem.classList.remove('open');
+                        }
+                    });
+                    console.log(`Collapsed all sections for ${parkId}`);
+                },
+                
+                // Entry helpers (work with fire, deforestation, settlement, legal)
+                scrollToEntry(section, entryId) {
+                    const badge = document.querySelector(`.test-entry-id[data-entry="${section}-${entryId}"]`);
+                    if (!badge) {
+                        console.error(`Entry ${section}-${entryId} not found`);
+                        return;
+                    }
+                    badge.closest('.narrative-row, .pa-popup-feature-story, .legal-doc-row').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    console.log(`Scrolled to ${section}-${entryId}`);
+                },
+                
+                clickEntry(section, entryId) {
+                    const badge = document.querySelector(`.test-entry-id[data-entry="${section}-${entryId}"]`);
+                    if (!badge) {
+                        console.error(`Entry ${section}-${entryId} not found`);
+                        return;
+                    }
+                    const row = badge.closest('.narrative-row, .pa-popup-feature-story, .legal-doc-row');
+                    if (row && row.onclick) {
+                        row.click();
+                        console.log(`Clicked ${section}-${entryId}`);
+                    } else {
+                        console.error('No click handler found');
+                    }
+                },
+                
+                highlightEntry(section, entryId, color = 'yellow') {
+                    const badge = document.querySelector(`.test-entry-id[data-entry="${section}-${entryId}"]`);
+                    if (!badge) {
+                        console.error(`Entry ${section}-${entryId} not found`);
+                        return;
+                    }
+                    const row = badge.closest('.narrative-row, .pa-popup-feature-story, .legal-doc-row');
+                    if (row) {
+                        row.style.backgroundColor = color;
+                        console.log(`Highlighted ${section}-${entryId} with ${color}`);
+                    }
+                },
+                
+                getEntryCount(section) {
+                    return document.querySelectorAll(`.test-entry-id[data-entry^="${section}-"]`).length;
+                },
+                
+                listEntries(section) {
+                    const badges = document.querySelectorAll(`.test-entry-id[data-entry^="${section}-"]`);
+                    const entries = Array.from(badges).map(b => {
+                        const row = b.closest('.narrative-row, .pa-popup-feature-story, .legal-doc-row');
+                        return {
+                            id: b.dataset.entry,
+                            text: row ? row.textContent.trim().substring(0, 80) : ''
+                        };
+                    });
+                    console.table(entries);
+                    return entries;
                 }
             };
             console.log('TEST mode enabled. Use window.TEST for assertions.');
             console.log('Star report helpers: TEST.STAR.getStats(), TEST.STAR.getReportData(id), TEST.STAR.exportXLSX()');
             console.log('Fire helpers: TEST.findFireNotification("Alpha-5"), TEST.clickFire("Hotel"), TEST.testFireClick("Alpha-5", "Aouk")');
             console.log('Notification helpers: TEST.getSingleNotifications(), TEST.getNotificationStats()');
+            console.log('Popup helpers: TEST.expandAll(parkId), TEST.collapseAll(parkId)');
+            console.log('Entry helpers: TEST.scrollToEntry(section, id), TEST.clickEntry(section, id), TEST.highlightEntry(section, id), TEST.getEntryCount(section), TEST.listEntries(section)');
             console.log('TIP: For full UI testing, resize browser to 1280x1400+ to see all popup sections.');
         }
         
@@ -9200,7 +9289,8 @@
                         const fireFeatureId = n.feature_id || (data.park_id + '_' + (n.entry_date ? n.entry_date.substring(0,4) : data.year) + '_grp_' + n.group_num);
                         const isPinned = isSingleFeaturePinned(paId, 'fire', fireFeatureId);
                         const rowStyle = isPinned ? 'background: rgba(34,197,94,0.15); border-left: 2px solid #22c55e;' : 'background: rgba(0,0,0,0.2);';
-                        return `<div class="narrative-row" data-park="${paId}" data-type="fire" data-feature="${fireFeatureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(data.park_name || paId)}', 'fire', '${fireFeatureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; ${rowStyle} border-radius: 4px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;" title="Click to pin on map. ${fullText.replace(/"/g, '&quot;')}"><span style="color: ${outcomeColor}; margin-right: 4px;">●</span> <span style="flex:1;">${text}</span></div>`;
+                        const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="fire-${idx}" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">${idx}</span>` : '';
+                        return `<div class="narrative-row" data-park="${paId}" data-type="fire" data-feature="${fireFeatureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(data.park_name || paId)}', 'fire', '${fireFeatureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; ${rowStyle} border-radius: 4px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;" title="Click to pin on map. ${fullText.replace(/"/g, '&quot;')}">${testBadge}<span style="color: ${outcomeColor}; margin-right: 4px;">●</span> <span style="flex:1;">${text}</span></div>`;
                     };
                     
                     // Render active fire groups alert
@@ -9552,7 +9642,7 @@
                                 let entryIndex = 0; // Will be set after rendering
                                 return polygonIds.map((featureId, idx) => {
                                     const patchInfo = polygonIds.length > 1 ? ` <span style="color: #666; font-size: 8px;">[patch ${idx+1}/${polygonIds.length}]</span>` : '';
-                                    const testBadge = window.TEST ? `<span class="test-entry-id" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;"></span>` : '';
+                                    const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="deforestation-0" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">0</span>` : '';
                                     return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span></div>`;
                                 }).join('');
                             };
@@ -9581,7 +9671,10 @@
                                                 const entries = container.querySelectorAll('.narrative-row');
                                                 entries.forEach((entry, i) => {
                                                     const badge = entry.querySelector('.test-entry-id');
-                                                    if (badge) badge.textContent = i;
+                                                    if (badge) {
+                                                        badge.textContent = i;
+                                                        badge.dataset.entry = 'deforestation-' + i;
+                                                    }
                                                 });
                                             }
                                         }
@@ -14803,7 +14896,7 @@ ${starredItems.narratives.map(n => {
             polygonIds.forEach((featureId, idx) => {
                 const patchInfo = polygonIds.length > 1 ? ` <span style="color: #666; font-size: 8px;">[patch ${idx+1}/${polygonIds.length}]</span>` : '';
                 const entryId = currentCount + addedCount;
-                const testBadge = window.TEST ? `<span class="test-entry-id" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">${entryId}</span>` : '';
+                const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="deforestation-${entryId}" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">${entryId}</span>` : '';
                 const div = document.createElement('div');
                 div.className = 'narrative-row';
                 div.dataset.park = paId;
