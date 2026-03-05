@@ -5285,6 +5285,54 @@
                 XLSX.utils.book_append_sheet(wb, patrolSheet, 'Patrol_Summary');
             }
             
+            // === PATROL PIXELS DETAIL SHEET (NEW!) ===
+            showToast('Fetching patrol pixel details...');
+            const patrolPixelsData = [['Park', 'Start_Date', 'End_Date', 'Lat', 'Lon', 'Intensity', 'Foot_km', 'Vehicle_km', 'Aerial_km']];
+            
+            // Fetch patrol pixel data for all parks via new bulk endpoint
+            try {
+                const pwd = getPwd();
+                const parkIds = parkReports.map(p => p.park.id).join(',');
+                const pixelsUrl = `/api/export/patrol-pixels?parks=${encodeURIComponent(parkIds)}&pwd=${encodeURIComponent(pwd)}` +
+                                 (from ? `&from=${from}` : '') + (to ? `&to=${to}` : '');
+                
+                const pixelsResp = await fetch(pixelsUrl);
+                if (pixelsResp.ok) {
+                    const pixelsData = await pixelsResp.json();
+                    const pixels = pixelsData.pixels || [];
+                    
+                    for (const p of pixels) {
+                        const startDate = `${p.year}-${String(p.month).padStart(2, '0')}-01`;
+                        const endDate = `${p.year}-${String(p.month).padStart(2, '0')}-28`;
+                        
+                        // Calculate intensity from temporal frequency
+                        const isDryMonth = p.month >= 11 || p.month <= 4; // Nov-Apr
+                        const monthWeight = isDryMonth ? 1.0 : 0.3;
+                        const intensity = Math.min(monthWeight / 6.0, 1.0); // Normalize to 6 months
+                        
+                        patrolPixelsData.push([
+                            p.park_name || p.park_id || '',
+                            startDate,
+                            endDate,
+                            p.lat ? Math.round(p.lat * 100000) / 100000 : '',
+                            p.lon ? Math.round(p.lon * 100000) / 100000 : '',
+                            intensity ? Math.round(intensity * 1000) / 1000 : 0,
+                            p.foot_km ? Math.round(p.foot_km * 10) / 10 : 0,
+                            p.vehicle_km ? Math.round(p.vehicle_km * 10) / 10 : 0,
+                            p.aircraft_km ? Math.round(p.aircraft_km * 10) / 10 : 0
+                        ]);
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to fetch patrol pixel data:', e);
+            }
+            
+            if (patrolPixelsData.length > 1) {
+                const pixelsSheet = XLSX.utils.aoa_to_sheet(patrolPixelsData);
+                pixelsSheet['!cols'] = [{wch: 25}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}];
+                XLSX.utils.book_append_sheet(wb, pixelsSheet, 'Patrol_Pixels');
+            }
+            
             // === SPECIES SHEET (NEW!) ===
             const allSpeciesData = [['Park', 'Common_Name', 'Scientific_Name', 'Status', 'Order', 'Family']];
             const threatenedSpeciesData = [['Park', 'Common_Name', 'Scientific_Name', 'Status', 'Order', 'Family']];

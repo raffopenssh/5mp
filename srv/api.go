@@ -9,6 +9,7 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -37,6 +38,408 @@ type GeoJSONFeature struct {
 type GeoJSONGeometry struct {
 	Type        string      `json:"type"`
 	Coordinates interface{} `json:"coordinates"`
+}
+
+// minDistanceToPolygon calculates the minimum distance (in km) from a point to a polygon
+func minDistanceToPolygon(lat, lon float64, polygon [][]float64) float64 {
+	// Check if point is inside polygon first
+	if pointInPolygon(lat, lon, polygon) {
+		return 0.0
+	}
+	
+	// Find minimum distance to any edge
+	minDist := math.MaxFloat64
+	for i := 0; i < len(polygon)-1; i++ {
+		p1Lat, p1Lon := polygon[i][1], polygon[i][0]
+		p2Lat, p2Lon := polygon[i+1][1], polygon[i+1][0]
+		dist := distanceToLineSegment(lat, lon, p1Lat, p1Lon, p2Lat, p2Lon)
+		if dist < minDist {
+			minDist = dist
+		}
+	}
+	return minDist
+}
+
+// pointInPolygon checks if a point is inside a polygon using ray casting
+func pointInPolygon(lat, lon float64, polygon [][]float64) bool {
+	inside := false
+	j := len(polygon) - 1
+	for i := 0; i < len(polygon); i++ {
+		xi, yi := polygon[i][0], polygon[i][1]
+		xj, yj := polygon[j][0], polygon[j][1]
+		
+		if ((yi > lat) != (yj > lat)) && (lon < (xj-xi)*(lat-yi)/(yj-yi)+xi) {
+			inside = !inside
+		}
+		j = i
+	}
+	return inside
+}
+
+// distanceToLineSegment calculates the shortest distance from a point to a line segment (in km)
+func distanceToLineSegment(pLat, pLon, aLat, aLon, bLat, bLon float64) float64 {
+	// Convert to simple distance calculation
+	// Project point onto line segment and calculate distance
+	
+	// Vector from A to B
+	dx := bLon - aLon
+	dy := bLat - aLat
+	
+	if dx == 0 && dy == 0 {
+		// A and B are the same point
+		return haversineDistance(pLat, pLon, aLat, aLon)
+	}
+	
+	// Calculate parameter t for projection
+	t := ((pLon-aLon)*dx + (pLat-aLat)*dy) / (dx*dx + dy*dy)
+	
+	if t < 0 {
+		// Closest point is A
+		return haversineDistance(pLat, pLon, aLat, aLon)
+	} else if t > 1 {
+		// Closest point is B
+		return haversineDistance(pLat, pLon, bLat, bLon)
+	}
+	
+	// Closest point is on the segment
+	closestLat := aLat + t*dy
+	closestLon := aLon + t*dx
+	return haversineDistance(pLat, pLon, closestLat, closestLon)
+}
+
+// HandleAPIExportPatrolPixels returns patrol pixel effort data for multiple parks in bulk
+// GET /api/export/patrol-pixels?parks=ID1,ID2,ID3&from=YYYY-MM-DD&to=YYYY-MM-DD
+func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Request) {
+	parksStr := r.URL.Query().Get("parks")
+	if parksStr == "" {
+		http.Error(w, "parks parameter required", http.StatusBadRequest)
+		return
+	}
+	
+	parkIDs := strings.Split(parksStr, ",")
+	if len(parkIDs) == 0 || len(parkIDs) > 100 {
+		http.Error(w, "parks parameter must contain 1-100 park IDs", http.StatusBadRequest)
+		return
+	}
+	
+	fromStr := r.URL.Query().Get("from")
+	toStr := r.URL.Query().Get("to")
+	
+	// Build bbox for each park (30km buffer) and collect all pixels
+	type PixelData struct {
+		ParkID      string  `json:"park_id"`
+		ParkName    string  `json:"park_name"`
+		Year        int     `json:"year"`
+		Month       int     `json:"month"`
+		Lat         float64 `json:"lat"`
+		Lon         float64 `json:"lon"`
+		FootKm      float64 `json:"foot_km"`
+		VehicleKm   float64 `json:"vehicle_km"`
+		AircraftKm  float64 `json:"aircraft_km"`
+	}
+	
+	var allPixels []PixelData
+	
+	for _, parkID := range parkIDs {
+		parkID = strings.TrimSpace(parkID)
+		if parkID == "" {
+			continue
+		}
+		
+		// Get park name from AreaStore
+		parkName := parkID
+		if s.AreaStore != nil {
+			for _, area := range s.AreaStore.Areas {
+				if area.ID == parkID {
+					parkName = area.Name
+					break
+				}
+			}
+		}
+		
+		// Get park boundary from AreaStore
+		if s.AreaStore == nil {
+			continue
+		}
+		
+		var parkArea *areas.ProtectedArea
+		for i := range s.AreaStore.Areas {
+			if s.AreaStore.Areas[i].ID == parkID {
+				parkArea = &s.AreaStore.Areas[i]
+				break
+			}
+		}
+		
+		if parkArea == nil {
+			continue
+		}
+		
+		// Parse boundary coordinates
+		var coordsData [][][]float64
+		if err := json.Unmarshal(parkArea.Geometry.Coordinates, &coordsData); err != nil || len(coordsData) == 0 {
+			continue
+		}
+		
+		coords := coordsData[0]
+		if len(coords) == 0 {
+			continue
+		}
+		
+		// Calculate bounding box for initial query (with buffer for query efficiency)
+		minLon, maxLon := coords[0][0], coords[0][0]
+		minLat, maxLat := coords[0][1], coords[0][1]
+		for _, c := range coords {
+			if c[0] < minLon {
+				minLon = c[0]
+			}
+			if c[0] > maxLon {
+				maxLon = c[0]
+			}
+			if c[1] < minLat {
+				minLat = c[1]
+			}
+			if c[1] > maxLat {
+				maxLat = c[1]
+			}
+		}
+		
+		// Expand bbox slightly for initial query (35km to ensure we catch all cells within 30km of boundary)
+		bufferDeg := 35.0 / 111.0
+		queryMinLon := minLon - bufferDeg
+		queryMaxLon := maxLon + bufferDeg
+		queryMinLat := minLat - bufferDeg
+		queryMaxLat := maxLat + bufferDeg
+		
+		// Query patrol effort data
+		query := `
+			SELECT 
+				e.year,
+				e.month,
+				g.lat_center,
+				g.lon_center,
+				e.movement_type,
+				e.total_distance_km
+			FROM effort_data e
+			JOIN grid_cells g ON e.grid_cell_id = g.id
+			WHERE e.day IS NULL
+			  AND e.movement_type IN ('foot', 'vehicle', 'aircraft')
+			  AND g.lat_center BETWEEN ? AND ?
+			  AND g.lon_center BETWEEN ? AND ?
+		`
+		args := []interface{}{queryMinLat, queryMaxLat, queryMinLon, queryMaxLon}
+		
+		if fromStr != "" {
+			query += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
+			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
+				args = append(args, t.Year(), t.Year(), int(t.Month()))
+			}
+		}
+		if toStr != "" {
+			query += " AND (e.year < ? OR (e.year = ? AND e.month <= ?))"
+			if t, err := time.Parse("2006-01-02", toStr); err == nil {
+				args = append(args, t.Year(), t.Year(), int(t.Month()))
+			}
+		}
+		
+		query += " ORDER BY e.year DESC, e.month DESC LIMIT 5000"
+		
+		rows, err := s.DB.Query(query, args...)
+		if err != nil {
+			continue
+		}
+		
+		// Group by year/month/lat/lon
+		type PixelKey struct {
+			Year  int
+			Month int
+			Lat   float64
+			Lon   float64
+		}
+		pixelMap := make(map[PixelKey]*PixelData)
+		
+		for rows.Next() {
+			var year, month int
+			var lat, lon, distanceKm float64
+			var movementType string
+			
+			if err := rows.Scan(&year, &month, &lat, &lon, &movementType, &distanceKm); err != nil {
+				continue
+			}
+			
+			// Check if grid cell is within 30km of polygon boundary
+			minDist := minDistanceToPolygon(lat, lon, coords)
+			if minDist > 30.0 {
+				continue // Skip cells beyond 30km buffer
+			}
+			
+			key := PixelKey{Year: year, Month: month, Lat: lat, Lon: lon}
+			if pixelMap[key] == nil {
+				pixelMap[key] = &PixelData{
+					ParkID:   parkID,
+					ParkName: parkName,
+					Year:     year,
+					Month:    month,
+					Lat:      lat,
+					Lon:      lon,
+				}
+			}
+			
+			switch movementType {
+			case "foot":
+				pixelMap[key].FootKm += distanceKm
+			case "vehicle":
+				pixelMap[key].VehicleKm += distanceKm
+			case "aircraft":
+				pixelMap[key].AircraftKm += distanceKm
+			}
+		}
+		rows.Close()
+		
+		// Add to results
+		for _, p := range pixelMap {
+			allPixels = append(allPixels, *p)
+		}
+	}
+	
+	// Sort by park, year desc, month desc
+	sort.Slice(allPixels, func(i, j int) bool {
+		if allPixels[i].ParkID != allPixels[j].ParkID {
+			return allPixels[i].ParkID < allPixels[j].ParkID
+		}
+		if allPixels[i].Year != allPixels[j].Year {
+			return allPixels[i].Year > allPixels[j].Year
+		}
+		return allPixels[i].Month > allPixels[j].Month
+	})
+	
+	response := map[string]interface{}{
+		"pixels":       allPixels,
+		"total_pixels": len(allPixels),
+		"parks":        len(parkIDs),
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "public, max-age=300") // Cache for 5 minutes
+	json.NewEncoder(w).Encode(response)
+}
+
+// HandleAPIGridCellEffort returns monthly effort data for a specific grid cell
+// GET /api/grid/{id}/effort?from=YYYY-MM-DD&to=YYYY-MM-DD
+func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request) {
+	gridCellID := r.PathValue("id")
+	if gridCellID == "" {
+		http.Error(w, "grid cell id required", http.StatusBadRequest)
+		return
+	}
+	
+	fromStr := r.URL.Query().Get("from")
+	toStr := r.URL.Query().Get("to")
+	
+	// Build query for monthly effort data
+	query := `
+		SELECT 
+			e.year,
+			e.month,
+			e.movement_type,
+			e.total_distance_km,
+			e.total_points
+		FROM effort_data e
+		WHERE e.grid_cell_id = ?
+		  AND e.day IS NULL
+		  AND e.movement_type IN ('foot', 'vehicle', 'aircraft')
+	`
+	args := []interface{}{gridCellID}
+	
+	if fromStr != "" {
+		query += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
+		if t, err := time.Parse("2006-01-02", fromStr); err == nil {
+			args = append(args, t.Year(), t.Year(), int(t.Month()))
+		}
+	}
+	if toStr != "" {
+		query += " AND (e.year < ? OR (e.year = ? AND e.month <= ?))"
+		if t, err := time.Parse("2006-01-02", toStr); err == nil {
+			args = append(args, t.Year(), t.Year(), int(t.Month()))
+		}
+	}
+	
+	query += " ORDER BY e.year DESC, e.month DESC LIMIT 500"
+	
+	rows, err := s.DB.Query(query, args...)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	
+	type MonthlyEffort struct {
+		Year        int     `json:"year"`
+		Month       int     `json:"month"`
+		FootKm      float64 `json:"foot_km"`
+		VehicleKm   float64 `json:"vehicle_km"`
+		AircraftKm  float64 `json:"aircraft_km"`
+		FootPoints  int     `json:"foot_points"`
+		VehiclePts  int     `json:"vehicle_points"`
+		AircraftPts int     `json:"aircraft_points"`
+	}
+	
+	// Group by year/month
+	monthMap := make(map[string]*MonthlyEffort)
+	
+	for rows.Next() {
+		var year, month, points int
+		var movementType string
+		var distanceKm float64
+		
+		if err := rows.Scan(&year, &month, &movementType, &distanceKm, &points); err != nil {
+			continue
+		}
+		
+		key := fmt.Sprintf("%d-%02d", year, month)
+		if monthMap[key] == nil {
+			monthMap[key] = &MonthlyEffort{
+				Year:  year,
+				Month: month,
+			}
+		}
+		
+		switch movementType {
+		case "foot":
+			monthMap[key].FootKm = distanceKm
+			monthMap[key].FootPoints = points
+		case "vehicle":
+			monthMap[key].VehicleKm = distanceKm
+			monthMap[key].VehiclePts = points
+		case "aircraft":
+			monthMap[key].AircraftKm = distanceKm
+			monthMap[key].AircraftPts = points
+		}
+	}
+	
+	// Convert to sorted array
+	var months []MonthlyEffort
+	for _, m := range monthMap {
+		// Calculate intensity (temporal frequency)
+		// Dry season months (Nov-Apr) get full weight, rainy (May-Oct) get 30% weight
+		months = append(months, *m)
+	}
+	
+	// Sort by year desc, month desc
+	sort.Slice(months, func(i, j int) bool {
+		if months[i].Year != months[j].Year {
+			return months[i].Year > months[j].Year
+		}
+		return months[i].Month > months[j].Month
+	})
+	
+	response := map[string]interface{}{
+		"grid_cell_id": gridCellID,
+		"months":       months,
+		"total_months": len(months),
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
 
 // HandleAPIGrid returns grid cell effort data as GeoJSON FeatureCollection.

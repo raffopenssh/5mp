@@ -134,6 +134,7 @@ func (s *Server) Serve(addr string) error {
 	// API routes
 	mux.HandleFunc("GET /api/version", s.HandleAPIVersion)
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)
+	mux.HandleFunc("GET /api/grid/{id}/effort", s.HandleAPIGridCellEffort)
 	mux.HandleFunc("GET /api/areas", s.HandleAPIAreas)
 	mux.HandleFunc("GET /api/areas/search", s.HandleAPIAreasSearch)
 	mux.HandleFunc("GET /api/wdpa/search", s.HandleAPIWDPASearch)
@@ -205,6 +206,7 @@ func (s *Server) Serve(addr string) error {
 
 	// Export endpoint
 	mux.HandleFunc("GET /api/export/parks", s.HandleAPIExportParks)
+	mux.HandleFunc("GET /api/export/patrol-pixels", s.HandleAPIExportPatrolPixels)
 	
 	// Admin APIs
 	mux.HandleFunc("GET /api/admin/gpx-logs", s.HandleAPIGPXUploadLogs)
