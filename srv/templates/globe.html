@@ -9794,22 +9794,6 @@
                                     <div id="deforest-stories-${paId}">
                                         ${initial.map(e => formatClassifiedDefo(e)).join('')}
                                     </div>
-                                    <script>
-                                        // Number entries if TEST mode is active
-                                        if (window.TEST) {
-                                            const container = document.getElementById('deforest-stories-${paId}');
-                                            if (container) {
-                                                const entries = container.querySelectorAll('.narrative-row');
-                                                entries.forEach((entry, i) => {
-                                                    const badge = entry.querySelector('.test-entry-id');
-                                                    if (badge) {
-                                                        badge.textContent = i;
-                                                        badge.dataset.entry = 'deforestation-' + i;
-                                                    }
-                                                });
-                                            }
-                                        }
-                                    </script>
                                     ${remaining.length > 0 ? `
                                     <button onclick="showMoreDeforestEvents('${paId}'); this.remove();" 
                                             id="deforest-more-btn-${paId}"
@@ -9869,6 +9853,23 @@
                                 };
                             }
                         }, 100);
+                    }
+                    
+                    // Number deforestation entries if TEST mode is active
+                    if (window.TEST) {
+                        setTimeout(() => {
+                            const container = document.getElementById(`deforest-stories-${paId}`);
+                            if (container) {
+                                const entries = container.querySelectorAll('.narrative-row');
+                                entries.forEach((entry, i) => {
+                                    const badge = entry.querySelector('.test-entry-id');
+                                    if (badge) {
+                                        badge.textContent = i;
+                                        badge.dataset.entry = 'deforestation-' + i;
+                                    }
+                                });
+                            }
+                        }, 150);
                     }
                 } else {
                     // No deforestation - show positive empty state
