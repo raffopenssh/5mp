@@ -9904,17 +9904,21 @@
             
             const entries = container.querySelectorAll('.narrative-row[data-type="deforestation"]');
             let visibleCount = 0;
+            let visibleArea = 0;
             entries.forEach(entry => {
                 const entryClass = entry.dataset.classification || '';
                 if (!classification || entryClass === classification) {
                     entry.style.display = 'flex';
                     visibleCount++;
+                    // Sum up the area (each entry has data-area attribute)
+                    const area = parseFloat(entry.dataset.area) || 0;
+                    visibleArea += area;
                 } else {
                     entry.style.display = 'none';
                 }
             });
             
-            // Update accordion count to show filtered count
+            // Update accordion to show filtered area in km²
             const countEl = document.getElementById(`deforest-count-${paId}`);
             if (countEl) {
                 // Store original count if not already stored
@@ -9925,10 +9929,8 @@
                 if (classification) {
                     // Use friendly name for display
                     const displayName = classification === 'slash_burn' ? 'burn' : classification;
-                    // Keep km² suffix from original count
-                    const origText = countEl.dataset.originalCount || '';
-                    const hasSuffix = origText.includes('KM');
-                    countEl.textContent = hasSuffix ? `${visibleCount} (${displayName})` : `${visibleCount} (${displayName})`;
+                    // Show area in km² with filter name
+                    countEl.textContent = `${visibleArea.toFixed(2)} KM² (${displayName})`;
                 } else {
                     // Restore original count when filter cleared
                     countEl.textContent = countEl.dataset.originalCount || entries.length;
