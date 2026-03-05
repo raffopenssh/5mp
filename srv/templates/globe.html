@@ -17717,7 +17717,9 @@ ${starredItems.narratives.map(n => {
                                     const layerTypeMap = {
                                         'fire': 'fire_trajectory',
                                         'settlement': 'settlement',
+                                        'ghsl': 'settlement',  // Alias for settlements
                                         'deforestation': 'deforestation',
+                                        'deforest': 'deforestation',  // Alias
                                         'roads': 'road',
                                         'places': 'place',
                                         'infrastructure': 'infrastructure'
@@ -17728,13 +17730,18 @@ ${starredItems.narratives.map(n => {
                                     
                                     // Only pin if not already pinned
                                     if (!pinnedLayers[pinKey]) {
-                                        console.log(`Auto-pinning ${layerType} for ${popupPaId} from sections param`);
-                                        await addPinnedLayer(popupPaId, parkName, layerType);
-                                        
-                                        // Update the icon state
-                                        const icon = document.querySelector(`#${secType}-section-${popupPaId} .pa-popup-section-icon`);
-                                        if (icon) {
-                                            icon.classList.add('pinned');
+                                        try {
+                                            console.log(`Auto-pinning ${layerType} for ${popupPaId} from sections param`);
+                                            await addPinnedLayer(popupPaId, parkName, layerType);
+                                            
+                                            // Update the icon state
+                                            const icon = document.querySelector(`#${secType}-section-${popupPaId} .pa-popup-section-icon`);
+                                            if (icon) {
+                                                icon.classList.add('pinned');
+                                            }
+                                        } catch (e) {
+                                            // Silently skip if no data for this layer type
+                                            console.log(`No data for ${layerType}, skipping auto-pin`);
                                         }
                                     }
                                 }
