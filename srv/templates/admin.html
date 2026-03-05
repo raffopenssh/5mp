@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard - 5MP Globe</title>
+    <link href="https://unpkg.com/lucide-static@latest/font/lucide.css" rel="stylesheet">
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; min-height: 100vh; }
@@ -206,7 +207,7 @@
       <div class="section">
         <div class="section-header">
           <div class="section-title">Bulk Data Upload</div>
-          <div class="section-subtitle">Upload VIIRS fire data and GHSL tiles <span class="disk-info">💾 {{.DiskAvailable}} available</span></div>
+          <div class="section-subtitle">Upload VIIRS fire data and GHSL tiles <span class="disk-info"><i class="icon-hard-drive"></i> {{.DiskAvailable}} available</span></div>
         </div>
         <div class="section-content">
           {{if .ProcessingStatus}}
@@ -214,7 +215,7 @@
           {{end}}
           
           <div class="upload-section">
-            <h4 style="color: #fff; margin-bottom: 12px; font-size: 14px;">🔥 VIIRS Fire Data Upload</h4>
+            <h4 style="color: #fff; margin-bottom: 12px; font-size: 14px;"><i class="icon-flame"></i> VIIRS Fire Data Upload</h4>
             <form method="POST" action="/admin/upload/fire" enctype="multipart/form-data" class="upload-form">
               <input type="file" name="fire_csv" accept=".csv" required />
               <div style="display: flex; gap: 12px; align-items: center;">
@@ -227,7 +228,7 @@
           <div style="border-top: 1px solid rgba(255,255,255,0.08); margin: 20px 0;"></div>
           
           <div class="upload-section">
-            <h4 style="color: #fff; margin-bottom: 12px; font-size: 14px;">🏗️ GHSL Tile Upload</h4>
+            <h4 style="color: #fff; margin-bottom: 12px; font-size: 14px;"><i class="icon-construction"></i> GHSL Tile Upload</h4>
             <form method="POST" action="/admin/upload/ghsl" enctype="multipart/form-data" class="upload-form">
               <input type="file" name="ghsl_zip" accept=".zip" required />
               <div style="display: flex; gap: 12px; align-items: center;">

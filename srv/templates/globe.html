@@ -4256,7 +4256,7 @@
             allParks.push(...results);
             
             if (errors.length > 0) {
-                showToast(`⚠️ ${errors.length} park(s) had errors. Check console for details.`, 'warning');
+                showToast(` ${errors.length} park(s) had errors. Check console for details.`, 'warning');
             }
             
             // Build comprehensive CSV with ALL fields
@@ -5415,7 +5415,7 @@
             // Write file
             XLSX.writeFile(wb, filename);
             
-            showToast(`✓ Exported ${parkReports.length} parks with ${wb.SheetNames.length} sheets`, 'success');
+            showToast(` Exported ${parkReports.length} parks with ${wb.SheetNames.length} sheets`, 'success');
         }
         
         async function exportFullReportKml() {
@@ -5719,7 +5719,7 @@
             document.body.removeChild(link);
             URL.revokeObjectURL(link.href);
             
-            showToast(`✓ Exported KML with ${successCount} parks`, 'success');
+            showToast(` Exported KML with ${successCount} parks`, 'success');
         }
         
         // Helper function to merge multiple KML documents into one
@@ -5816,7 +5816,7 @@
             allParks.push(...results);
             
             if (errors.length > 0) {
-                showToast(`⚠️ ${errors.length} park(s) had errors`, 'warning');
+                showToast(` ${errors.length} park(s) had errors`, 'warning');
             }
             
             // Generate the text report
@@ -5832,7 +5832,7 @@
             a.click();
             URL.revokeObjectURL(url);
             
-            showToast(`✓ Exported ${allParks.length} park(s) to TXT`, 'success');
+            showToast(` Exported ${allParks.length} park(s) to TXT`, 'success');
         }
         
         // Generate formatted text report with ASCII graphics
@@ -7898,7 +7898,7 @@
             const isComplete = job.status === 'completed';
             const isFailed = job.status === 'failed';
             
-            const icon = isComplete ? '✓' : (isFailed ? '✕' : '⬇');
+            const iconHtml = isComplete ? icon('check', 'success') : (isFailed ? icon('x', 'fire') : icon('download', 'info'));
             const iconBg = isComplete ? 'rgba(34,197,94,0.15)' : (isFailed ? 'rgba(239,68,68,0.15)' : 'rgba(59,130,246,0.15)');
             const iconColor = isComplete ? '#22c55e' : (isFailed ? '#ef4444' : '#3b82f6');
             
@@ -7923,7 +7923,7 @@
             
             let html = `
                 <div class="${itemClass}" ${dataAttrs}>
-                    <div class="notification-icon" style="background: ${iconBg}; color: ${iconColor};">${icon}</div>
+                    <div class="notification-icon" style="background: ${iconBg}; color: ${iconColor};">${iconHtml}</div>
                     <div class="notification-content">
                         <div class="notification-location">${escapeHtml(job.park_name || job.park_id || 'MBTiles Export')}</div>
                         <div class="notification-subtitle">${escapeHtml(subtitle)}</div>`;
@@ -7974,7 +7974,7 @@
                 
                 const groupHtml = `
                     <div class="notification-item clickable notification-group" data-type="group" data-action="toggle_group" data-group-key="${notif._groupKey}">
-                        <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">●</div>
+                        <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">${icon('flame', 'fire')}</div>
                         <div class="notification-content">
                             <div class="notification-location">${escapeHtml(parkName)} • ${count} fire groups</div>
                             <div class="notification-subtitle">${subtitle}</div>
@@ -8008,7 +8008,7 @@
             // Single action: view on map (whole item clickable)
             return `
                 <div class="notification-item clickable" data-type="fire_alert" data-action="view_fire" data-park-id="${parkId}" data-park-name="${escapeHtml(parkName)}" data-feature-id="${featureId}" data-group-name="${groupName}">
-                    <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">●</div>
+                    <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">${icon('flame', 'fire')}</div>
                     <div class="notification-content">
                         <div class="notification-location">${location}</div>
                         <div class="notification-subtitle">${escapeHtml(notif.message)}</div>
@@ -8027,7 +8027,7 @@
             
             return `
                 <div class="notification-item" style="cursor:default;">
-                    <div class="notification-icon" style="background: rgba(34,197,94,0.15); color: #22c55e;">✓</div>
+                    <div class="notification-icon" style="background: rgba(34,197,94,0.15); color: #22c55e;">${icon('check', 'success')}</div>
                     <div class="notification-content">
                         <div class="notification-location">${escapeHtml(notif.title)}</div>
                         <div class="notification-subtitle">${fireCount ? `${fireCount} fires • ${parkCount} parks` : escapeHtml(message)}</div>
@@ -8052,7 +8052,7 @@
             
             return `
                 <div class="notification-item" onclick="handleFireAlertClick(${item._index})">
-                    <div class="notification-icon" style="background:${iconBg};color:${iconColor};">●</div>
+                    <div class="notification-icon" style="background:${iconBg};color:${iconColor};">${icon('activity', 'fire')}</div>
                     <div class="notification-content">
                         <div class="notification-location">${escapeHtml(parkName)}</div>
                         <div class="notification-subtitle">${escapeHtml(item.message || formatFireAlertMessage(item))}</div>
@@ -8068,7 +8068,7 @@
             
             return `
                 <div class="notification-item clickable" data-type="publication" data-action="view_publication" data-park-id="${pub.park_id}">
-                    <div class="notification-icon" style="background: rgba(168,85,247,0.15); color: #a855f7;">◆</div>
+                    <div class="notification-icon" style="background: rgba(168,85,247,0.15); color: #a855f7;">${icon('book-open', 'info')}</div>
                     <div class="notification-content">
                         <div class="notification-location">${escapeHtml(pub.title || 'New Research')}</div>
                         <div class="notification-subtitle">${escapeHtml(pub.message || 'View research')}</div>
@@ -8091,19 +8091,19 @@
             if (isRunning) {
                 iconColor = '#3b82f6';
                 iconBg = 'rgba(59,130,246,0.15)';
-                icon = '↻';  // Circular arrows
+                icon = icon('loader', 'info');  // Loading
             } else if (isComplete) {
                 iconColor = '#22c55e';
                 iconBg = 'rgba(34,197,94,0.15)';
-                icon = '✓';  // Checkmark
+                icon = icon('check', 'success');  // Checkmark
             } else if (isFailed) {
                 iconColor = '#ef4444';
                 iconBg = 'rgba(239,68,68,0.15)';
-                icon = '✕';  // X mark
+                icon = icon('x', 'fire');  // X mark
             } else {
                 iconColor = '#888';
                 iconBg = 'rgba(136,136,136,0.15)';
-                icon = '●';  // Circle
+                icon = icon('circle', 'neutral');  // Circle
             }
             
             let progressBar = '';
@@ -8138,7 +8138,7 @@
             
             return `
                 <div class="notification-item clickable" data-type="upload" data-action="view_upload" data-lat="${lat}" data-lon="${lon}" data-grid-cells='${escapeHtml(gridCells)}'>
-                    <div class="notification-icon" style="background: rgba(34,197,94,0.15); color: #22c55e;">▲</div>
+                    <div class="notification-icon" style="background: rgba(34,197,94,0.15); color: #22c55e;">${icon('map-pin-check', 'success')}</div>
                     <div class="notification-content">
                         <div class="notification-location">${escapeHtml(location)}</div>
                         <div class="notification-subtitle">${distance} km • ${pixels} pixels</div>
@@ -8162,7 +8162,7 @@
             
             return `
                 <div class="notification-item" style="cursor:default;">
-                    <div class="notification-icon" style="background:rgba(251,191,36,0.15);color:#fbbf24;">★</div>
+                    <div class="notification-icon" style="background:rgba(251,191,36,0.15);color:#fbbf24;">${icon('star', 'warning')}</div>
                     <div class="notification-content" style="flex:1;">
                         <div class="notification-location">${escapeHtml(notif.title || 'Report Ready')}</div>
                         <div class="notification-subtitle">${reportType}${itemCount > 0 ? ` • ${itemCount} items` : ''}</div>
@@ -10171,12 +10171,12 @@
                         <div style="font-size: 10px; color: #888; margin-bottom: 4px;">Seasons</div>
                         <div style="display: flex; gap: 10px;">
                             <div style="flex: 1; padding: 6px; background: rgba(59,130,246,0.15); border-radius: 4px; border-left: 3px solid #3b82f6;">
-                                <div style="font-size: 9px; color: #3b82f6; font-weight: 500;">🌧️ Rainy Season</div>
+                                <div style="font-size: 9px; color: #3b82f6; font-weight: 500;">${icon('cloud-rain', 'info')} Rainy Season</div>
                                 <div style="font-size: 11px; color: #fff; margin-top: 2px;">${data.rainy_season || 'N/A'}</div>
                                 <div style="font-size: 9px; color: #888;">Peak: ${precipWet} mm/month</div>
                             </div>
                             <div style="flex: 1; padding: 6px; background: rgba(217,119,6,0.15); border-radius: 4px; border-left: 3px solid #d97706;">
-                                <div style="font-size: 9px; color: #d97706; font-weight: 500;">☀️ Dry Season</div>
+                                <div style="font-size: 9px; color: #d97706; font-weight: 500;">${icon('sun', 'warning')} Dry Season</div>
                                 <div style="font-size: 11px; color: #fff; margin-top: 2px;">${data.dry_season || 'N/A'}</div>
                                 <div style="font-size: 9px; color: #888;">Min: ${precipDry} mm/month</div>
                             </div>
@@ -12405,26 +12405,26 @@
         const fireCount = data.fire?.total_fires || 0;
         if (fireCount > 0) {
             const fireGroups = data.fire?.narratives?.length || 0;
-            stats.push(`🔥 ${fireCount.toLocaleString()} fires (${fireGroups} groups)`);
+            stats.push(`${icon('flame', 'fire')} ${fireCount.toLocaleString()} fires (${fireGroups} groups)`);
         }
         
         // Deforestation stats
         const deforestKm2 = data.deforestation?.total_loss_km2 || data.stats?.deforestation?.total_loss_km2 || 0;
         if (deforestKm2 > 0) {
-            stats.push(`🌳 ${deforestKm2.toFixed(1)} km² deforested`);
+            stats.push(`${icon('tree-pine', 'tree')} ${deforestKm2.toFixed(1)} km² deforested`);
         }
         
         // Settlement stats
         const settlements = data.settlement?.settlement_count || data.stats?.settlement?.settlement_count || 0;
         if (settlements > 0) {
             const pop = data.settlement?.total_population || 0;
-            stats.push(`🏘️ ${settlements} settlements${pop > 0 ? ' (' + pop.toLocaleString() + ' pop.)' : ''}`);
+            stats.push(`${icon('home', 'neutral')} ${settlements} settlements${pop > 0 ? ' (' + pop.toLocaleString() + ' pop.)' : ''}`);
         }
         
         // Patrol stats
         const patrolPixels = data.grid?.activePixels || 0;
         if (patrolPixels > 0) {
-            stats.push(`📍 ${patrolPixels.toLocaleString()} patrol pixels`);
+            stats.push(`${icon('map-pin', 'neutral')} ${patrolPixels.toLocaleString()} patrol pixels`);
         }
         
         return stats.length > 0 ? stats.join(' • ') : 'No significant activity detected';
@@ -14499,7 +14499,7 @@
     
     ${shouldIncludeSection('biodiversity', fullData) && species && species.species && species.species.length > 0 ? `
     <div class="narrative-section" style="border-color: #10b981;">
-        <div class="narrative-title">🦁 Biodiversity</div>
+        <div class="narrative-title">${icon('bug', 'tree')} Biodiversity</div>
         <div class="narrative-stats">
             <span>${species.total_count || species.species.length} mammal species</span>
             ${species.threatened > 0 ? `<span>${species.threatened} threatened</span>` : ''}
@@ -14520,7 +14520,7 @@
     
     ${shouldIncludeSection('climate', fullData) && climate ? `
     <div class="narrative-section" style="border-color: #3b82f6;">
-        <div class="narrative-title">☁️ Climate</div>
+        <div class="narrative-title">${icon('cloud', 'info')} Climate</div>
         <div class="narrative-stats">
             <span>Annual rainfall: ${climate.annual_precipitation_mm || 'N/A'} mm</span>
             ${climate.dry_season ? `<span>Dry season: ${climate.dry_season}</span>` : ''}
@@ -14555,7 +14555,7 @@
     
     ${shouldIncludeSection('infrastructure', fullData) && features && (features.river?.features?.length || features.road?.features?.length || features.infrastructure?.features?.length) ? `
     <div class="narrative-section" style="border-color: #64748b;">
-        <div class="narrative-title">🗺️ Infrastructure & Features</div>
+        <div class="narrative-title">${icon('map', 'info')} Infrastructure & Features</div>
         <div class="narrative-stats">
             ${features.river?.features?.length ? `<span>Rivers: ${formatNumber(features.river.features.length)}</span>` : ''}
             ${features.road?.features?.length ? `<span>Roads: ${formatNumber(features.road.features.length)}</span>` : ''}
