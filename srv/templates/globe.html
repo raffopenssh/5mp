@@ -10068,7 +10068,7 @@
                 if (classification) {
                     // Use friendly name for display
                     const displayName = classification === 'agricultural' ? 'farming' : (classification === 'temporary_camp' ? 'camp' : classification);
-                    countEl.textContent = `${visibleCount} (${displayName})`;
+                    countEl.textContent = `${matchingEntries.length} (${displayName})`;
                 } else {
                     // Restore original count when filter cleared
                     countEl.textContent = countEl.dataset.originalCount || entries.length;
