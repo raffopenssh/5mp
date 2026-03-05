@@ -9811,14 +9811,15 @@
                     // Apply filter from URL if present
                     const urlParams = new URLSearchParams(window.location.search);
                     const settlementFilter = urlParams.get('settlement_filter');
-                    if (settlementFilter && showFilter) {
+                    if (settlementFilter && classifications.length > 1) {
                         setTimeout(() => {
+                            // Apply filter even if select doesn't exist (happens when URL pre-filters)
                             const filterSelect = document.getElementById(`settlement-filter-${paId}`);
                             if (filterSelect) {
                                 filterSelect.value = settlementFilter;
-                                // Wait for entries to be fully rendered in DOM
-                                setTimeout(() => filterSettlementEntries(paId, settlementFilter, null), 200);
                             }
+                            // Wait for entries to be fully rendered in DOM, then apply filter
+                            setTimeout(() => filterSettlementEntries(paId, settlementFilter, null), 200);
                         }, 500);
                     }
                     
@@ -9880,6 +9881,8 @@
         
         // Filter deforestation entries by classification
         async function filterDeforestEntries(paId, classification, event) {
+            console.log('[filterDeforestEntries] Called with:', { paId, classification });
+            
             // Prevent event from bubbling to section header (which would collapse)
             if (event) {
                 event.stopPropagation();
@@ -9903,7 +9906,20 @@
             const container = document.getElementById(`deforest-stories-${paId}`);
             if (!container) return;
             
+            // Move all entries from hidden div to main container so we can control their visibility
+            const hiddenDiv = document.getElementById(`deforest-hidden-${paId}`);
+            if (hiddenDiv) {
+                const entriesInHiddenDiv = hiddenDiv.querySelectorAll('.narrative-row[data-type="deforestation"]');
+                entriesInHiddenDiv.forEach(entry => {
+                    container.insertBefore(entry, hiddenDiv);
+                });
+                // Keep hidden div but it's now empty
+                hiddenDiv.style.display = 'none';
+            }
+            
+            // NOW query all entries (after moving them out of hidden div)
             const entries = container.querySelectorAll('.narrative-row[data-type="deforestation"]');
+            
             let visibleCount = 0;
             let visibleArea = 0;
             let matchingEntries = [];
@@ -9929,6 +9945,7 @@
                     entry.style.display = 'none';
                 }
             });
+            console.log('[filterDeforestEntries] After second pass:', { matchingTotal: matchingEntries.length, visibleCount });
             
             // Update accordion to show filtered area in km²
             const countEl = document.getElementById(`deforest-count-${paId}`);
@@ -10072,6 +10089,18 @@
             const container = document.getElementById(`settlements-list-${paId}`);
             if (!container) return;
             
+            // Move all entries from hidden div to main container so we can control their visibility
+            const hiddenDiv = document.getElementById(`settlements-hidden-${paId}`);
+            if (hiddenDiv) {
+                const entriesInHiddenDiv = hiddenDiv.querySelectorAll('.narrative-row[data-type="settlement"]');
+                entriesInHiddenDiv.forEach(entry => {
+                    container.insertBefore(entry, hiddenDiv);
+                });
+                // Keep hidden div but it's now empty
+                hiddenDiv.style.display = 'none';
+            }
+            
+            // NOW query all entries (after moving them out of hidden div)
             const entries = container.querySelectorAll('.narrative-row[data-type="settlement"]');
             let visibleCount = 0;
             let matchingEntries = [];
@@ -10427,12 +10456,13 @@
                     const deforestFilter = urlParams.get('deforest_filter');
                     if (deforestFilter && classifiedEvents && classifiedEvents.length > 0) {
                         setTimeout(() => {
+                            // Apply filter even if select doesn't exist (happens when URL pre-filters)
                             const filterSelect = document.getElementById(`deforest-filter-${paId}`);
                             if (filterSelect) {
                                 filterSelect.value = deforestFilter;
-                                // Wait for entries to be fully rendered in DOM
-                                setTimeout(() => filterDeforestEntries(paId, deforestFilter, null), 200);
                             }
+                            // Wait for entries to be fully rendered in DOM, then apply filter
+                            setTimeout(() => filterDeforestEntries(paId, deforestFilter, null), 200);
                         }, 500);
                     }
                     
