@@ -2,12 +2,14 @@
 """
 Extract WorldClim precipitation data for grid cells.
 Creates a simple JSON lookup: grid_cell_id -> [monthly precipitation mm]
+
+Uses GDAL's /vsizip/ virtual file system to read directly from ZIP without extraction.
 """
-import zipfile
 import numpy as np
 from osgeo import gdal
 import json
 import sqlite3
+import os
 
 def get_precip_at_point(tif_path, lon, lat):
     """Get precipitation value at a specific lat/lon from GeoTIFF"""
@@ -49,25 +51,27 @@ def main():
     # Extract monthly precipitation for each grid cell
     grid_precip = {}
     
-    with zipfile.ZipFile(zip_path, 'r') as zf:
-        for grid_id, lat, lon in grid_cells:
-            monthly_precip = []
+    # Use absolute path for ZIP file
+    abs_zip_path = os.path.abspath(zip_path)
+    
+    for grid_id, lat, lon in grid_cells:
+        monthly_precip = []
+        
+        for month in range(1, 13):
+            tif_name = f'wc2.1_2.5m_prec_{month:02d}.tif'
             
-            for month in range(1, 13):
-                tif_name = f'wc2.1_2.5m_prec_{month:02d}.tif'
-                
-                # Extract to temp location
-                zf.extract(tif_name, '/tmp/')
-                tif_path = f'/tmp/{tif_name}'
-                
-                # Get precipitation at this point
-                precip = get_precip_at_point(tif_path, lon, lat)
-                monthly_precip.append(precip if precip is not None else 0)
+            # Read directly from ZIP using GDAL's virtual file system
+            # No extraction to disk needed!
+            tif_path = f'/vsizip/{abs_zip_path}/{tif_name}'
             
-            grid_precip[grid_id] = monthly_precip
-            
-            if len(grid_precip) % 100 == 0:
-                print(f"Processed {len(grid_precip)} grid cells...")
+            # Get precipitation at this point
+            precip = get_precip_at_point(tif_path, lon, lat)
+            monthly_precip.append(precip if precip is not None else 0)
+        
+        grid_precip[grid_id] = monthly_precip
+        
+        if len(grid_precip) % 100 == 0:
+            print(f"Processed {len(grid_precip)} grid cells...")
     
     # Save to JSON
     with open(output_path, 'w') as f:
