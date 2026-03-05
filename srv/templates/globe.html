@@ -11923,13 +11923,13 @@
             html += '<div style="font-size:9px;color:#666;margin-bottom:4px;">Recent events:</div>';
             samples.forEach(e => {
                 const text = e.narrative || `${e.classification || 'Event'} (${(e.area_km2 || 0).toFixed(2)} km²)`;
-                html += `<div style="margin:4px 0;font-size:10px;color:#aaa;">• ${text}</div>`;
+                html += `<div style="margin:4px 0;font-size:10px;color:#aaa;">• ${escapeHtml(text)}</div>`;
             });
             if (classifiedEvents.length > samples.length) {
                 html += `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.classList.add('expanded')">+ Show ${classifiedEvents.length - samples.length} more events</div>`;
                 html += `<div class="section-detail">${classifiedEvents.slice(samples.length).map(e => {
                     const text = e.narrative || (e.classification || 'Event') + ' (' + ((e.area_km2 || 0).toFixed(2)) + ' km²)';
-                    return '<div style="margin:4px 0;font-size:10px;color:#aaa;">• ' + text + '</div>';
+                    return '<div style="margin:4px 0;font-size:10px;color:#aaa;">• ' + escapeHtml(text) + '</div>';
                 }).join('')}</div>`;
             }
             html += '</div>';
@@ -11994,13 +11994,13 @@
             html += '<div style="font-size:9px;color:#666;margin-bottom:4px;">Examples:</div>';
             samples.forEach(s => {
                 const text = s.narrative || `${s.classification || 'Settlement'} near ${s.nearest_place || 'unknown'} (~${s.population_est || 0} people)`;
-                html += `<div style="margin:4px 0;font-size:10px;color:#aaa;">• ${text}</div>`;
+                html += `<div style="margin:4px 0;font-size:10px;color:#aaa;">• ${escapeHtml(text)}</div>`;
             });
             if (classifiedSettlements.length > samples.length) {
                 html += `<div class="section-more-btn" onclick="this.style.display='none';this.nextElementSibling.classList.add('expanded')">+ Show ${classifiedSettlements.length - samples.length} more settlements</div>`;
                 html += `<div class="section-detail">${classifiedSettlements.slice(samples.length).map(s => {
                     const text = s.narrative || (s.classification || 'Settlement') + ' near ' + (s.nearest_place || 'unknown') + ' (~' + (s.population_est || 0) + ' people)';
-                    return '<div style="margin:4px 0;font-size:10px;color:#aaa;">• ' + text + '</div>';
+                    return '<div style="margin:4px 0;font-size:10px;color:#aaa;">• ' + escapeHtml(text) + '</div>';
                 }).join('')}</div>`;
             }
             html += '</div>';
@@ -15108,10 +15108,12 @@ ${starredItems.narratives.map(n => {
     function clearAllRealtimeFireLayers() {
         Object.keys(realtimeFireLayers).forEach(key => {
             const layer = realtimeFireLayers[key];
-            [layer.layerId, layer.arrowLayerId, layer.pointLayerId].forEach(id => {
-                if (map.getLayer(id)) map.removeLayer(id);
+            [layer.layerId, layer.arrowLayerId, layer.pointLayerId, layer.frontLayerId, layer.frontGlowId].forEach(id => {
+                if (id && map.getLayer(id)) map.removeLayer(id);
             });
-            if (map.getSource(layer.sourceId)) map.removeSource(layer.sourceId);
+            [layer.sourceId, layer.frontSourceId].forEach(id => {
+                if (id && map.getSource(id)) map.removeSource(id);
+            });
         });
         realtimeFireLayers = {};
     }
