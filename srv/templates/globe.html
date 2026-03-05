@@ -9858,7 +9858,7 @@
         }
         
         // Filter deforestation entries by classification
-        function filterDeforestEntries(paId, classification, event) {
+        async function filterDeforestEntries(paId, classification, event) {
             // Prevent event from bubbling to section header (which would collapse)
             if (event) {
                 event.stopPropagation();
@@ -9876,10 +9876,17 @@
                     entry.style.display = 'none';
                 }
             });
+            
+            // Refresh pinned deforestation layer if it exists
+            const pinKey = getPinKey(paId, 'deforestation');
+            if (pinnedLayers[pinKey]) {
+                const parkName = pinnedLayers[pinKey].parkName;
+                await addPinnedLayer(paId, parkName, 'deforestation');
+            }
         }
         
         // Filter settlement entries by classification
-        function filterSettlementEntries(paId, classification, event) {
+        async function filterSettlementEntries(paId, classification, event) {
             // Prevent event from bubbling to section header (which would collapse)
             if (event) {
                 event.stopPropagation();
@@ -9897,6 +9904,13 @@
                     entry.style.display = 'none';
                 }
             });
+            
+            // Refresh pinned settlement layer if it exists
+            const pinKey = getPinKey(paId, 'settlement');
+            if (pinnedLayers[pinKey]) {
+                const parkName = pinnedLayers[pinKey].parkName;
+                await addPinnedLayer(paId, parkName, 'settlement');
+            }
         }
         
         async function fetchPopupDeforestData(paId) {
@@ -15792,6 +15806,16 @@ ${starredItems.narratives.map(n => {
                 }
             }
             
+            // Get current filter value for this type
+            let filterClassification = null;
+            if (type === 'deforestation') {
+                const filter = document.querySelector(`#deforest-filter-${parkId}`);
+                if (filter) filterClassification = filter.value || null;
+            } else if (type === 'settlement') {
+                const filter = document.querySelector(`#settlement-filter-${parkId}`);
+                if (filter) filterClassification = filter.value || null;
+            }
+            
             let geojson;
             
             // Infrastructure comes from learned features endpoint
@@ -15827,15 +15851,27 @@ ${starredItems.narratives.map(n => {
                 geojson = await response.json();
             }
             
+            // Apply classification filter if active
+            if (filterClassification && geojson.features) {
+                const originalCount = geojson.features.length;
+                geojson.features = geojson.features.filter(f => {
+                    const props = f.properties || {};
+                    const classification = props.classification || props.class || '';
+                    return classification === filterClassification;
+                });
+                console.log(`Filter applied: ${originalCount} -> ${geojson.features.length} features (${filterClassification})`);
+            }
+            
             if (!geojson.features || geojson.features.length === 0) {
                 showToast(`No ${type} features found for ${parkName}`, 'warning');
                 return;
             }
             
             // Add source and layer to map
-            // Remove layer first if it exists, then remove source
-            if (map.getLayer(layerId)) map.removeLayer(layerId);
-            if (map.getSource(sourceId)) map.removeSource(sourceId);
+            // Remove existing pinned layer completely (including arrow/text/outline layers)
+            if (pinnedLayers[key]) {
+                removePinnedLayer(key);
+            }
             
             map.addSource(sourceId, { type: 'geojson', data: geojson });
             
