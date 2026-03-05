@@ -5260,32 +5260,7 @@
                 XLSX.utils.book_append_sheet(wb, settlementsSheet, 'All_Settlements');
             }
             
-            // === PATROL SUMMARY SHEET (NEW!) ===
-            const patrolSummaryData = [['Park', 'Active_Pixels', 'Total_Distance_km', 'Foot_km', 'Vehicle_km', 'Boat_km', 'Air_km']];
-            for (const {park, data} of parkReports) {
-                if (data.error) continue;
-                const grid = data.grid || {};
-                
-                if (grid.activePixels || grid.totalDistanceKm) {
-                    patrolSummaryData.push([
-                        park.name || park.id,
-                        grid.activePixels || 0,
-                        grid.totalDistanceKm ? Math.round(grid.totalDistanceKm * 10) / 10 : 0,
-                        grid.byType?.foot ? Math.round(grid.byType.foot * 10) / 10 : 0,
-                        grid.byType?.vehicle ? Math.round(grid.byType.vehicle * 10) / 10 : 0,
-                        grid.byType?.boat ? Math.round(grid.byType.boat * 10) / 10 : 0,
-                        grid.byType?.air ? Math.round(grid.byType.air * 10) / 10 : 0
-                    ]);
-                }
-            }
-            
-            if (patrolSummaryData.length > 1) {
-                const patrolSheet = XLSX.utils.aoa_to_sheet(patrolSummaryData);
-                patrolSheet['!cols'] = [{wch: 30}, {wch: 15}, {wch: 18}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}];
-                XLSX.utils.book_append_sheet(wb, patrolSheet, 'Patrol_Summary');
-            }
-            
-            // === PATROL PIXELS DETAIL SHEET (NEW!) ===
+            // === PATROL PIXELS DETAIL SHEET ===
             showToast('Fetching patrol pixel details...');
             const patrolPixelsData = [['Park', 'Start_Date', 'End_Date', 'Lat', 'Lon', 'Intensity', 'Foot_km', 'Vehicle_km', 'Aerial_km']];
             
@@ -5305,18 +5280,13 @@
                         const startDate = `${p.year}-${String(p.month).padStart(2, '0')}-01`;
                         const endDate = `${p.year}-${String(p.month).padStart(2, '0')}-28`;
                         
-                        // Calculate intensity from temporal frequency
-                        const isDryMonth = p.month >= 11 || p.month <= 4; // Nov-Apr
-                        const monthWeight = isDryMonth ? 1.0 : 0.3;
-                        const intensity = Math.min(monthWeight / 6.0, 1.0); // Normalize to 6 months
-                        
                         patrolPixelsData.push([
                             p.park_name || p.park_id || '',
                             startDate,
                             endDate,
                             p.lat ? Math.round(p.lat * 100000) / 100000 : '',
                             p.lon ? Math.round(p.lon * 100000) / 100000 : '',
-                            intensity ? Math.round(intensity * 1000) / 1000 : 0,
+                            p.intensity ? Math.round(p.intensity * 1000) / 1000 : 0,
                             p.foot_km ? Math.round(p.foot_km * 10) / 10 : 0,
                             p.vehicle_km ? Math.round(p.vehicle_km * 10) / 10 : 0,
                             p.aircraft_km ? Math.round(p.aircraft_km * 10) / 10 : 0

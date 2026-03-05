@@ -133,6 +133,7 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 		Month       int     `json:"month"`
 		Lat         float64 `json:"lat"`
 		Lon         float64 `json:"lon"`
+		Intensity   float64 `json:"intensity"`
 		FootKm      float64 `json:"foot_km"`
 		VehicleKm   float64 `json:"vehicle_km"`
 		AircraftKm  float64 `json:"aircraft_km"`
@@ -211,8 +212,10 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 		queryMaxLat := maxLat + bufferDeg
 		
 		// Query patrol effort data
+		// Get grid cell ID to calculate intensity properly per cell
 		query := `
 			SELECT 
+				e.grid_cell_id,
 				e.year,
 				e.month,
 				g.lat_center,
@@ -248,21 +251,23 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			continue
 		}
 		
-		// Group by year/month/lat/lon
-		type PixelKey struct {
-			Year  int
-			Month int
-			Lat   float64
-			Lon   float64
+		// Group by grid_cell_id to calculate intensity per cell
+		type GridCellData struct {
+			GridCellID string
+			Lat        float64
+			Lon        float64
+			DryMonths  map[string]bool  // Track unique dry months
+			RainyMonths map[string]bool // Track unique rainy months
+			Months     map[string]*PixelData // Track per-month data
 		}
-		pixelMap := make(map[PixelKey]*PixelData)
+		gridCells := make(map[string]*GridCellData)
 		
 		for rows.Next() {
+			var gridCellID, movementType string
 			var year, month int
 			var lat, lon, distanceKm float64
-			var movementType string
 			
-			if err := rows.Scan(&year, &month, &lat, &lon, &movementType, &distanceKm); err != nil {
+			if err := rows.Scan(&gridCellID, &year, &month, &lat, &lon, &movementType, &distanceKm); err != nil {
 				continue
 			}
 			
@@ -272,9 +277,32 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 				continue // Skip cells beyond 30km buffer
 			}
 			
-			key := PixelKey{Year: year, Month: month, Lat: lat, Lon: lon}
-			if pixelMap[key] == nil {
-				pixelMap[key] = &PixelData{
+			// Initialize grid cell data
+			if gridCells[gridCellID] == nil {
+				gridCells[gridCellID] = &GridCellData{
+					GridCellID:  gridCellID,
+					Lat:         lat,
+					Lon:         lon,
+					DryMonths:   make(map[string]bool),
+					RainyMonths: make(map[string]bool),
+					Months:      make(map[string]*PixelData),
+				}
+			}
+			
+			cell := gridCells[gridCellID]
+			
+			// Track dry/rainy months for intensity calculation
+			monthKey := fmt.Sprintf("%d-%02d", year, month)
+			isDryMonth := month >= 11 || month <= 4 // Nov-Apr
+			if isDryMonth {
+				cell.DryMonths[monthKey] = true
+			} else {
+				cell.RainyMonths[monthKey] = true
+			}
+			
+			// Initialize month data
+			if cell.Months[monthKey] == nil {
+				cell.Months[monthKey] = &PixelData{
 					ParkID:   parkID,
 					ParkName: parkName,
 					Year:     year,
@@ -284,20 +312,41 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 				}
 			}
 			
+			// Aggregate movement types
 			switch movementType {
 			case "foot":
-				pixelMap[key].FootKm += distanceKm
+				cell.Months[monthKey].FootKm += distanceKm
 			case "vehicle":
-				pixelMap[key].VehicleKm += distanceKm
+				cell.Months[monthKey].VehicleKm += distanceKm
 			case "aircraft":
-				pixelMap[key].AircraftKm += distanceKm
+				cell.Months[monthKey].AircraftKm += distanceKm
 			}
 		}
 		rows.Close()
 		
-		// Add to results
-		for _, p := range pixelMap {
-			allPixels = append(allPixels, *p)
+		// Calculate intensity for each cell and add pixels to results
+		for _, cell := range gridCells {
+			// Calculate intensity based on temporal frequency
+			dryMonthCount := len(cell.DryMonths)
+			rainyMonthCount := len(cell.RainyMonths)
+			
+			var intensity float64
+			if dryMonthCount > 0 || rainyMonthCount > 0 {
+				// Weight: dry months count fully, rainy months count 30%
+				actualWeight := float64(dryMonthCount) + float64(rainyMonthCount)*0.3
+				// Expected: 6 dry months = full coverage for a year
+				expectedWeight := 6.0
+				intensity = actualWeight / expectedWeight
+				if intensity > 1.5 {
+					intensity = 1.5 // Cap for overglow effect
+				}
+			}
+			
+			// Add all month records for this cell with calculated intensity
+			for _, pixelData := range cell.Months {
+				pixelData.Intensity = intensity
+				allPixels = append(allPixels, *pixelData)
+			}
 		}
 	}
 	
