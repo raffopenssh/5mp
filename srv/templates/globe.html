@@ -16828,6 +16828,7 @@ ${starredItems.narratives.map(n => {
         
         if (!pinned) return;
         
+        const parkIds = new Set();
         pinned.split(',').forEach(item => {
             const [parkId, type] = item.split(':');
             if (parkId && type) {
@@ -16842,10 +16843,17 @@ ${starredItems.narratives.map(n => {
                 const park = (window.keystoneAreas || []).find(p => p.id === parkId);
                 const parkName = park ? park.name : parkId;
                 addPinnedLayer(parkId, parkName, type);
+                parkIds.add(parkId);
             }
         });
         
-        setTimeout(updatePinnedIndicator, 1000);
+        setTimeout(() => {
+            updatePinnedIndicator();
+            // Update icon states for all parks with pinned layers
+            parkIds.forEach(parkId => {
+                updateIconPinStates(parkId);
+            });
+        }, 1000);
     }
     
     function createPinToggle(parkId, parkName, type) {
