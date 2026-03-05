@@ -19,19 +19,29 @@ Entry IDs use format: `section-N` (e.g., `fire-0`, `deforestation-5`)
 ```javascript
 TEST.expandAll('CAF_Chinko')   // Expand all accordion sections
 TEST.collapseAll('CAF_Chinko') // Collapse all sections
+TEST.setPopupHeight(1500)      // Set popup height in pixels for full visibility
 ```
 
 ### Entry Manipulation
 
 ```javascript
-// Scroll to specific entry
+// Scroll to specific entry by ID
 TEST.scrollToEntry('deforestation', 5)
+
+// Scroll to entry by text content
+TEST.scrollToText('deforestation', 'safari')  // Returns entry ID or null
 
 // Click entry programmatically
 TEST.clickEntry('fire', 10)
 
 // Highlight entry with color
 TEST.highlightEntry('deforestation', 15, 'yellow')
+
+// Inspect entry details (text, title, onclick, HTML)
+TEST.inspectEntry('deforestation', 100)  // Prints full details to console
+
+// Find entries with broken onclick handlers
+TEST.findBrokenEntries('deforestation')  // Returns array of broken entries
 
 // Count entries in section
 TEST.getEntryCount('fire')  // Returns number
@@ -74,14 +84,34 @@ TEST.getSingleNotifications()      // Get notification list
 TEST.getNotificationStats()        // Get notification counts
 ```
 
+### Load More Helpers
+
+```javascript
+// Trigger load more button for a section
+TEST.triggerLoadMore('deforestation', 'CAF_Chinko')  // Returns true if clicked
+
+// Test load more across all sections
+TEST.validateLoadMore('CAF_Chinko')  // Shows before/after counts
+```
+
+### Quick Test Shortcuts
+
+```javascript
+// Test a specific deforestation entry (scroll, inspect, click)
+TEST.testDeforest('CAF_Chinko', 100)
+
+// More shortcuts can be added as needed
+```
+
 ## Browser Setup for Testing
 
 **Recommended viewport:** 1280x1400 or taller
 
 This ensures all popup accordion sections are visible without scrolling, making screenshots more useful.
 
-## Example Test Workflow
+## Example Test Workflows
 
+### Basic Entry Testing
 ```javascript
 // 1. Open park popup with deforestation expanded
 // URL: ?test=1&popup=CAF_Chinko&sections=deforestation
@@ -99,6 +129,36 @@ TEST.clickEntry('deforestation', 15)   // Pin to map
 // 4. Verify state:
 TEST.isPinned('CAF_Chinko', 'deforestation')
 TEST.getPinnedCount()                  // Should be > 0
+```
+
+### Debugging Load More Issues
+```javascript
+// 1. Check initial state
+const before = TEST.getEntryCount('deforestation')  // 22
+TEST.findBrokenEntries('deforestation')  // Verify all have onclick
+
+// 2. Trigger load more
+TEST.triggerLoadMore('deforestation', 'CAF_Chinko')
+
+// 3. Wait and verify
+setTimeout(() => {
+  const after = TEST.getEntryCount('deforestation')  // 392
+  console.log(`Loaded ${after - before} entries`)  // 370
+  TEST.findBrokenEntries('deforestation')  // Check new entries
+}, 1000)
+```
+
+### Quick Entry Investigation
+```javascript
+// Find entry by text content
+const entryId = TEST.scrollToText('deforestation', 'safari')
+
+// If found, inspect it
+if (entryId) {
+  const id = parseInt(entryId.split('-')[1])  // Extract number
+  TEST.inspectEntry('deforestation', id)
+  TEST.testDeforest('CAF_Chinko', id)  // Test clicking it
+}
 ```
 
 ## Benefits
