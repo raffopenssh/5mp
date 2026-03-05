@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 """
-Extract WorldClim precipitation data for grid cells.
-Creates a simple JSON lookup: grid_cell_id -> [monthly precipitation mm]
-
-Uses GDAL's /vsizip/ virtual file system to read directly from ZIP without extraction.
+Extract WorldClim precipitation data for grid cells (OPTIMIZED).
+Reads each monthly TIF once and extracts all points.
 """
 import numpy as np
 from osgeo import gdal
@@ -11,73 +9,87 @@ import json
 import sqlite3
 import os
 
-def get_precip_at_point(tif_path, lon, lat):
-    """Get precipitation value at a specific lat/lon from GeoTIFF"""
+def extract_precip_for_all_points(tif_path, points):
+    """Extract precipitation for multiple points from a single TIF file"""
     ds = gdal.Open(tif_path)
     if ds is None:
-        return None
+        return [None] * len(points)
     
-    # Get geotransform
     gt = ds.GetGeoTransform()
-    
-    # Convert lat/lon to pixel coordinates
-    x = int((lon - gt[0]) / gt[1])
-    y = int((lat - gt[3]) / gt[5])
-    
-    # Check bounds
-    if x < 0 or x >= ds.RasterXSize or y < 0 or y >= ds.RasterYSize:
-        ds = None
-        return None
-    
-    # Read pixel value
     band = ds.GetRasterBand(1)
-    value = band.ReadAsArray(x, y, 1, 1)[0, 0]
+    
+    results = []
+    for lon, lat in points:
+        # Convert lat/lon to pixel coordinates
+        x = int((lon - gt[0]) / gt[1])
+        y = int((lat - gt[3]) / gt[5])
+        
+        # Check bounds
+        if x < 0 or x >= ds.RasterXSize or y < 0 or y >= ds.RasterYSize:
+            results.append(None)
+            continue
+        
+        # Read pixel value
+        try:
+            value = band.ReadAsArray(x, y, 1, 1)[0, 0]
+            results.append(float(value) if value > -9999 else None)
+        except:
+            results.append(None)
     
     ds = None
-    # WorldClim uses -32768 as nodata typically
-    return float(value) if value > -9999 else None
+    return results
+
+def generate_africa_grid_cells(resolution=0.5):
+    """Generate all grid cells covering Africa at specified resolution (degrees)"""
+    min_lon, max_lon = -25.0, 56.0
+    min_lat, max_lat = -35.0, 38.0
+    
+    grid_cells = []
+    lon = min_lon + resolution / 2
+    while lon < max_lon:
+        lat = min_lat + resolution / 2
+        while lat < max_lat:
+            cell_id = f"{lon:.1f}_{lat:.1f}"
+            grid_cells.append((cell_id, lat, lon))
+            lat += resolution
+        lon += resolution
+    
+    return grid_cells
 
 def main():
-    db_path = '../db.sqlite3'
     zip_path = '../data/worldclim/wc2.1_2.5m_prec.zip'
     output_path = '../data/worldclim/grid_precip.json'
     
-    # Get all grid cells
-    conn = sqlite3.connect(db_path)
-    cursor = conn.execute("SELECT id, lat_center, lon_center FROM grid_cells")
-    grid_cells = cursor.fetchall()
-    print(f"Found {len(grid_cells)} grid cells")
+    print("Generating Africa grid cells at 0.5° resolution...")
+    africa_grid_cells = generate_africa_grid_cells(resolution=0.5)
+    print(f"Generated {len(africa_grid_cells)} grid cells covering Africa")
     
-    # Extract monthly precipitation for each grid cell
-    grid_precip = {}
+    # Prepare data structures
+    grid_precip = {cell_id: [] for cell_id, lat, lon in africa_grid_cells}
+    points = [(lon, lat) for cell_id, lat, lon in africa_grid_cells]
     
     # Use absolute path for ZIP file
     abs_zip_path = os.path.abspath(zip_path)
     
-    for grid_id, lat, lon in grid_cells:
-        monthly_precip = []
+    # Process each month (read TIF once, extract all points)
+    for month in range(1, 13):
+        tif_name = f'wc2.1_2.5m_prec_{month:02d}.tif'
+        tif_path = f'/vsizip/{abs_zip_path}/{tif_name}'
         
-        for month in range(1, 13):
-            tif_name = f'wc2.1_2.5m_prec_{month:02d}.tif'
-            
-            # Read directly from ZIP using GDAL's virtual file system
-            # No extraction to disk needed!
-            tif_path = f'/vsizip/{abs_zip_path}/{tif_name}'
-            
-            # Get precipitation at this point
-            precip = get_precip_at_point(tif_path, lon, lat)
-            monthly_precip.append(precip if precip is not None else 0)
+        print(f"Processing month {month}/12...")
+        monthly_values = extract_precip_for_all_points(tif_path, points)
         
-        grid_precip[grid_id] = monthly_precip
-        
-        if len(grid_precip) % 100 == 0:
-            print(f"Processed {len(grid_precip)} grid cells...")
+        # Assign values to grid cells
+        for i, (cell_id, lat, lon) in enumerate(africa_grid_cells):
+            precip = monthly_values[i]
+            grid_precip[cell_id].append(precip if precip is not None else 0)
     
     # Save to JSON
     with open(output_path, 'w') as f:
-        json.dump(grid_precip, f)
+        json.dump(grid_precip, f, indent=2)
     
-    print(f"Saved precipitation data for {len(grid_precip)} grid cells to {output_path}")
+    print(f"\nSaved precipitation data for {len(grid_precip)} grid cells to {output_path}")
+    print(f"File size: {os.path.getsize(output_path) / 1024:.1f} KB")
 
 if __name__ == '__main__':
     main()
