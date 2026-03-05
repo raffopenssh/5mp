@@ -438,3 +438,77 @@ Syncs conservation-related legal documents from FAO FAOLEX database:
 
 API endpoint: `GET /api/parks/{id}/legal`
 
+---
+
+## Icon System - Lucide Icons
+
+**All emojis replaced with Lucide icon font** for consistent styling across dark theme.
+
+### Infrastructure
+
+- **CDN**: `https://unpkg.com/lucide-static@latest/font/lucide.css` (2KB)
+- **Icon font**: Uses `icon-{name}` classes with CSS `::before` pseudo-elements
+- **Colors**: CSS utility classes (`.icon-color-fire`, `.icon-color-success`, etc.)
+
+### Helper Functions
+
+```javascript
+// Generate icon HTML
+icon('flame', 'fire')  // → <i class="icon-flame icon-color-fire"></i>
+icon('zap', 'warning', 'lg')  // → <i class="icon-zap icon-color-warning icon-size-lg"></i>
+
+// Convert backend emojis to icons
+emojiToIcon('🔥')  // → <i class="icon-flame icon-color-fire"></i>
+```
+
+### Icon Colors
+
+| Class | Color | Usage |
+|-------|-------|-------|
+| `icon-color-fire` | #ef4444 (red) | Active fires, errors |
+| `icon-color-warning` | #f59e0b (orange) | Warnings, approaching fires |
+| `icon-color-success` | #22c55e (green) | Success, checkmarks |
+| `icon-color-info` | #3b82f6 (blue) | Info, downloads, water |
+| `icon-color-cool` | #60a5fa (light blue) | Cooling fires |
+| `icon-color-neutral` | #888 (gray) | Default, points, settlements |
+| `icon-color-tree` | #22c55e (green) | Forest, nature |
+
+### Common Icons
+
+| Icon | Class | Usage |
+|------|-------|-------|
+| 🔥 | `icon-flame` | Active fires |
+| ⚡ | `icon-zap` | Rapid fire spread |
+| ❄️ | `icon-snowflake` | Cooling fires |
+| ⚠️ | `icon-alert-triangle` | Warnings |
+| ✓ | `icon-check` | Success |
+| ✗ | `icon-x` | Errors |
+| 🚶 | `icon-footprints` | Foot patrol |
+| 🚗 | `icon-car` | Vehicle patrol |
+| ✈️ | `icon-plane` | Aircraft patrol |
+| 🌳 | `icon-tree-pine` | Forest/deforestation |
+| 🏘️ | `icon-home` | Settlements |
+| 🦁 | `icon-bug` | Biodiversity |
+| ☀️ | `icon-sun` | Dry season |
+| 🌧️ | `icon-cloud-rain` | Rainy season |
+| 🗺️ | `icon-map` | Map/infrastructure |
+
+### Usage Locations
+
+1. **Fire status indicators** - Popup "Currently Active" section
+2. **Notification panel** - All notification types (fire, upload, download, etc.)
+3. **Star report stats** - Quick stats display
+4. **Biodiversity/Climate sections** - Section titles
+5. **Admin panel** - Upload section headers
+6. **Movement types** - GPX track classification
+
+### Benefits
+
+- **Consistent styling** - All icons match dark theme colors
+- **Performance** - 2KB font vs ~20KB emoji fallbacks (-90%)
+- **Cross-platform** - No rendering differences between browsers/OS
+- **Flexibility** - Easy color changes via CSS
+- **Professional** - Clean, recognizable icon shapes
+
+**Documentation**: See `LUCIDE_ICONS_PROGRESS.md` for full implementation details.
+
