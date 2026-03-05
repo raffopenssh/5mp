@@ -9760,9 +9760,9 @@
                         <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
                                 <div style="font-size: 9px; color: #666;">${useClassified ? 'Settlement details (click to pin):' : 'Settlements by built-up area:'}</div>
-                                ${showFilter ? `<select id="settlement-filter-${paId}" onchange="filterSettlementEntries('${paId}', this.value)" style="font-size: 8px; padding: 2px 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #aaa; cursor: pointer;">
-                                    <option value="">all types</option>
-                                    ${classifications.map(c => `<option value="${c}">${c}</option>`).join('')}
+                                ${showFilter ? `<select id="settlement-filter-${paId}" onchange="filterSettlementEntries('${paId}', this.value, event)" onclick="event.stopPropagation()" style="font-size: 8px; padding: 2px 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #aaa; cursor: pointer;">
+                                    <option value="" style="background: #1f1f1f; color: #e4e4e7;">all types</option>
+                                    ${classifications.map(c => `<option value="${c}" style="background: #1f1f1f; color: #e4e4e7;">${c}</option>`).join('')}
                                 </select>` : ''}
                             </div>
                             <div id="${containerId}">
@@ -9858,7 +9858,12 @@
         }
         
         // Filter deforestation entries by classification
-        function filterDeforestEntries(paId, classification) {
+        function filterDeforestEntries(paId, classification, event) {
+            // Prevent event from bubbling to section header (which would collapse)
+            if (event) {
+                event.stopPropagation();
+            }
+            
             const container = document.getElementById(`deforest-stories-${paId}`);
             if (!container) return;
             
@@ -9874,7 +9879,12 @@
         }
         
         // Filter settlement entries by classification
-        function filterSettlementEntries(paId, classification) {
+        function filterSettlementEntries(paId, classification, event) {
+            // Prevent event from bubbling to section header (which would collapse)
+            if (event) {
+                event.stopPropagation();
+            }
+            
             const container = document.getElementById(`settlements-list-${paId}`);
             if (!container) return;
             
@@ -10017,9 +10027,9 @@
                                 <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
                                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
                                         <div style="font-size: 9px; color: #666;">Deforestation events (click to pin):</div>
-                                        ${showFilter ? `<select id="deforest-filter-${paId}" onchange="filterDeforestEntries('${paId}', this.value)" style="font-size: 8px; padding: 2px 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #aaa; cursor: pointer;">
-                                            <option value="">all types</option>
-                                            ${classifications.map(c => `<option value="${c}">${c}</option>`).join('')}
+                                        ${showFilter ? `<select id="deforest-filter-${paId}" onchange="filterDeforestEntries('${paId}', this.value, event)" onclick="event.stopPropagation()" style="font-size: 8px; padding: 2px 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #aaa; cursor: pointer;">
+                                            <option value="" style="background: #1f1f1f; color: #e4e4e7;">all types</option>
+                                            ${classifications.map(c => `<option value="${c}" style="background: #1f1f1f; color: #e4e4e7;">${c}</option>`).join('')}
                                         </select>` : ''}
                                     </div>
                                     <div id="deforest-stories-${paId}">
