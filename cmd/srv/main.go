@@ -67,6 +67,14 @@ func run() error {
 		slog.Warn("failed to load GADM data", "error", err)
 	}
 
+	// Load WorldClim precipitation data for grid cells
+	worldclimPath := dataDir + "/worldclim/grid_precip.json"
+	if err := srv.LoadWorldClimData(worldclimPath); err == nil {
+		slog.Info("loaded WorldClim grid precipitation data")
+	} else {
+		slog.Warn("failed to load WorldClim data", "error", err)
+	}
+
 	// Start background workers
 	ctx := context.Background()
 	go server.StartResearchWorker(ctx)

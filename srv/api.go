@@ -265,90 +265,30 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 		queryMinLat := minLat - bufferDeg
 		queryMaxLat := maxLat + bufferDeg
 		
-		// Get park climate data to determine actual dry/rainy seasons
-		var drySeason, rainySeason string
-		s.DB.QueryRow(`SELECT dry_season, rainy_season FROM park_climate WHERE park_id = ?`, parkID).Scan(&drySeason, &rainySeason)
+		// Use WorldClim precipitation data for accurate dry/rainy classification per grid cell
+		// Falls back to park climate, then defaults if unavailable
 		
-		// Parse season strings (e.g., "Nov-Apr", "Jun-Sep") into month sets
-		dryMonths := parseSeasonMonths(drySeason)
-		rainyMonths := parseSeasonMonths(rainySeason)
-		
-		// Fallback to default if no climate data
-		if len(dryMonths) == 0 && len(rainyMonths) == 0 {
-			// Default: Nov-Apr dry, May-Oct rainy
-			dryMonths = []int{11, 12, 1, 2, 3, 4}
-			rainyMonths = []int{5, 6, 7, 8, 9, 10}
+		// Query intensity using WorldClim-aware function
+		gridParams := GridQueryParams{
+			FromYear: int64(2018),
+			ToYear:   int64(2026),
+			BBox:     &[4]float64{queryMinLon, queryMinLat, queryMaxLon, queryMaxLat},
 		}
-		
-		// Calculate expected weight based on actual dry season length
-		expectedDryMonths := float64(len(dryMonths))
-		if expectedDryMonths == 0 {
-			expectedDryMonths = 6.0 // Fallback
-		}
-		
-		// Build custom grid query using park-specific climate seasons
-		fromYear := 2018
-		toYear := 2026
 		if fromStr != "" {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
-				fromYear = t.Year()
+				gridParams.FromYear = int64(t.Year())
 			}
 		}
 		if toStr != "" {
 			if t, err := time.Parse("2006-01-02", toStr); err == nil {
-				toYear = t.Year()
+				gridParams.ToYear = int64(t.Year())
 			}
 		}
 		
-		// Build SQL with park-specific dry/rainy month lists
-		dryMonthsSQL := buildMonthINClause(dryMonths)
-		rainyMonthsSQL := buildMonthINClause(rainyMonths)
-		
-		gridQuery := fmt.Sprintf(`
-			SELECT 
-				g.id as grid_cell_id,
-				g.lat_center,
-				g.lon_center,
-				COUNT(DISTINCT CASE WHEN e.month IN %s THEN e.year || '-' || e.month END) as dry_months,
-				COUNT(DISTINCT CASE WHEN e.month IN %s THEN e.year || '-' || e.month END) as rainy_months
-			FROM grid_cells g
-			JOIN effort_data e ON e.grid_cell_id = g.id
-			WHERE e.day IS NULL
-			  AND e.movement_type = 'all'
-			  AND e.year BETWEEN ? AND ?
-			  AND g.lat_center BETWEEN ? AND ?
-			  AND g.lon_center BETWEEN ? AND ?
-			GROUP BY g.id, g.lat_center, g.lon_center
-		`, dryMonthsSQL, rainyMonthsSQL)
-		
-		gridRows, err := s.DB.Query(gridQuery, fromYear, toYear, queryMinLat, queryMaxLat, queryMinLon, queryMaxLon)
+		intensityMap, err := s.QueryGridDataWithWorldClim(r.Context(), gridParams, parkID)
 		if err != nil {
 			continue
 		}
-		defer gridRows.Close()
-		
-		// Build intensity map using park-specific climate data
-		intensityMap := make(map[string]float64)
-		for gridRows.Next() {
-			var gridCellID string
-			var lat, lon float64
-			var dryMonthCount, rainyMonthCount int64
-			
-			if err := gridRows.Scan(&gridCellID, &lat, &lon, &dryMonthCount, &rainyMonthCount); err != nil {
-				continue
-			}
-			
-			var intensity float64
-			if dryMonthCount > 0 || rainyMonthCount > 0 {
-				actualWeight := float64(dryMonthCount) + float64(rainyMonthCount)*0.3
-				intensity = actualWeight / expectedDryMonths
-				if intensity > 1.5 {
-					intensity = 1.5
-				}
-			}
-			intensityMap[gridCellID] = intensity
-		}
-		gridRows.Close()
 		
 		// Query patrol effort data for monthly details
 		query := `
