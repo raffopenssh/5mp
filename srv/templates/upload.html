@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Upload GPX - {{.Hostname}}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/lucide-static@latest/font/lucide.css" rel="stylesheet">
   </head>
   <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-3xl">
@@ -306,10 +307,10 @@
 
       function getMovementTypeIcon(type) {
         switch (type) {
-          case 'foot': return '🚶';
-          case 'vehicle': return '🚗';
-          case 'aircraft': return '✈️';
-          default: return '📍';
+          case 'foot': return '<i class="lucide-footprints" style="width:1em;height:1em;"></i>';
+          case 'vehicle': return '<i class="lucide-car" style="width:1em;height:1em;"></i>';
+          case 'aircraft': return '<i class="lucide-plane" style="width:1em;height:1em;"></i>';
+          default: return '<i class="lucide-map-pin" style="width:1em;height:1em;"></i>';
         }
       }
     </script>

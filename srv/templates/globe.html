@@ -31,6 +31,9 @@
     <meta name="theme-color" content="#0a0a0a">
     <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet">
     <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
+    
+    <!-- Lucide Icons -->
+    <link href="https://unpkg.com/lucide-static@latest/font/lucide.css" rel="stylesheet">
     <style>
         :root {
             /* Category Colors - consistent across UI */
@@ -57,6 +60,19 @@
         /* Touch-friendly defaults */
         button, .btn, [onclick] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
         input, textarea { font-size: 16px; /* Prevents iOS zoom on focus */ }
+        
+        /* Icon System - Lucide Icons */
+        .icon-color-fire { color: #ef4444; }
+        .icon-color-warning { color: #f59e0b; }
+        .icon-color-success { color: #22c55e; }
+        .icon-color-info { color: #3b82f6; }
+        .icon-color-cool { color: #60a5fa; }
+        .icon-color-neutral { color: #888; }
+        .icon-color-tree { color: #22c55e; }
+        .icon-size-sm { font-size: 0.875em; }
+        .icon-size-md { font-size: 1em; }
+        .icon-size-lg { font-size: 1.25em; }
+        .icon-size-xl { font-size: 1.5em; }
         
 
         .logo { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; color: #fff; }
@@ -1674,6 +1690,51 @@
         // Get current password from URL
         function getPwd() {
             return new URLSearchParams(window.location.search).get('pwd') || '';
+        }
+        
+        // Icon helper function - generates Lucide icon HTML
+        function icon(name, color = '', size = '') {
+            const classes = [`icon-${name}`];
+            if (color) classes.push(`icon-color-${color}`);
+            if (size) classes.push(`icon-size-${size}`);
+            return `<i class="${classes.join(' ')}"></i>`;
+        }
+        
+        // Emoji to icon mapping - converts backend emojis to Lucide icons
+        function emojiToIcon(emoji) {
+            const map = {
+                '🔥': icon('flame', 'fire'),
+                '⚡': icon('zap', 'warning'),
+                '❄️': icon('snowflake', 'cool'),
+                '🌊': icon('waves', 'info'),
+                '⚠️': icon('alert-triangle', 'warning'),
+                '📍': icon('map-pin', 'neutral'),
+                '🚨': icon('alert-triangle', 'fire'),
+                '🌙': icon('moon', 'neutral'),
+                '🚶': icon('footprints', 'neutral'),
+                '🚗': icon('car', 'neutral'),
+                '✈️': icon('plane', 'neutral'),
+                '🌳': icon('tree-pine', 'tree'),
+                '🌲': icon('tree-pine', 'tree'),
+                '🏘️': icon('home', 'neutral'),
+                '🏠': icon('home', 'neutral'),
+                '🦁': icon('bug', 'warning'),
+                '☀️': icon('sun', 'warning'),
+                '🌧️': icon('cloud-rain', 'info'),
+                '🏞️': icon('mountain', 'tree'),
+                '📊': icon('bar-chart-3', 'info'),
+                '📈': icon('trending-up', 'fire'),
+                '📉': icon('trending-down', 'success'),
+                '🗺️': icon('map', 'info'),
+                '💾': icon('hard-drive', 'neutral'),
+                '🛤️': icon('route', 'neutral'),
+                '🏗️': icon('construction', 'neutral'),
+                '🖨️': icon('printer', 'neutral'),
+                '📅': icon('calendar', 'neutral'),
+                '✓': icon('check', 'success'),
+                '✗': icon('x', 'fire'),
+            };
+            return map[emoji] || emoji; // Return icon or fallback to emoji
         }
 
         // Format numbers - only use commas for numbers >= 1000
@@ -9460,6 +9521,7 @@
                             <div id="active-groups-${paId}">
                             ${topFive.map(g => {
                                 const emoji = g.status_emoji || '🔥';
+                                const iconHtml = emojiToIcon(emoji);
                                 const statusLabel = g.status || 'Active';
                                 const statusDetail = g.status_detail || '';
                                 const fires = g.metrics?.fires || g.fires_inside || '?';
@@ -9467,7 +9529,7 @@
                                 return `<div class="fire-alert-group" style="cursor: pointer;" onclick="event.stopPropagation(); showRealtimeTrajectory('${paId}', '${escapeHtml(data.park_name || paId)}', '${g.name}', ${JSON.stringify(g.trajectory || []).replace(/"/g, '&quot;')})">
                                     <div style="display: flex; justify-content: space-between; align-items: start; width: 100%;">
                                         <span style="flex: 1;">
-                                            <span style="font-size: 12px;">${emoji}</span> <strong>${g.name}</strong> (${statusLabel})<br>
+                                            ${iconHtml} <strong>${g.name}</strong> (${statusLabel})<br>
                                             <span style="font-size: 9px; color: #999;">${fires} fires, ${days}d • ${statusDetail}</span>
                                         </span>
                                     </div>
