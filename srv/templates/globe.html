@@ -9549,9 +9549,11 @@
                                 const shortText = text.length > 150 ? text.substring(0, 147) + '...' : text;
                                 
                                 // Return HTML for all polygons in this event
+                                let entryIndex = 0; // Will be set after rendering
                                 return polygonIds.map((featureId, idx) => {
                                     const patchInfo = polygonIds.length > 1 ? ` <span style="color: #666; font-size: 8px;">[patch ${idx+1}/${polygonIds.length}]</span>` : '';
-                                    return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}"><span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span></div>`;
+                                    const testBadge = window.TEST ? `<span class="test-entry-id" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;"></span>` : '';
+                                    return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span></div>`;
                                 }).join('');
                             };
                             
@@ -9571,6 +9573,19 @@
                                     <div id="deforest-stories-${paId}">
                                         ${initial.map(e => formatClassifiedDefo(e)).join('')}
                                     </div>
+                                    <script>
+                                        // Number entries if TEST mode is active
+                                        if (window.TEST) {
+                                            const container = document.getElementById('deforest-stories-${paId}');
+                                            if (container) {
+                                                const entries = container.querySelectorAll('.narrative-row');
+                                                entries.forEach((entry, i) => {
+                                                    const badge = entry.querySelector('.test-entry-id');
+                                                    if (badge) badge.textContent = i;
+                                                });
+                                            }
+                                        }
+                                    </script>
                                     ${remaining.length > 0 ? `
                                     <button onclick="showMoreDeforestEvents('${paId}'); this.remove();" 
                                             id="deforest-more-btn-${paId}"
@@ -14774,6 +14789,10 @@ ${starredItems.narratives.map(n => {
         const paData = window._parkDataCache?.[paId];
         const parkName = paData?.properties?.NAME || paId;
         
+        // Get current entry count for numbering
+        const currentCount = container.children.length;
+        let addedCount = 0;
+        
         remaining.forEach(e => {
             const polygonIds = e.polygon_ids ? e.polygon_ids.split(',').map(id => id.trim()) : [`deforest_${paId}_${e.year}_${e.id || 0}`];
             const classColors = {'slash_burn': '#f59e0b', 'logging': '#ef4444', 'mining': '#dc2626', 'encroachment': '#fb923c', 'natural': '#22c55e'};
@@ -14783,16 +14802,19 @@ ${starredItems.narratives.map(n => {
             
             polygonIds.forEach((featureId, idx) => {
                 const patchInfo = polygonIds.length > 1 ? ` <span style="color: #666; font-size: 8px;">[patch ${idx+1}/${polygonIds.length}]</span>` : '';
+                const entryId = currentCount + addedCount;
+                const testBadge = window.TEST ? `<span class="test-entry-id" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">${entryId}</span>` : '';
                 const div = document.createElement('div');
                 div.className = 'narrative-row';
                 div.dataset.park = paId;
                 div.dataset.type = 'deforestation';
                 div.dataset.feature = featureId;
-                div.innerHTML = `<span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span>`;
+                div.innerHTML = `${testBadge}<span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span>`;
                 div.style.cssText = 'font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;';
                 div.title = 'Click to pin on map. ' + text;
                 div.onclick = (event) => toggleSingleFeaturePin(paId, parkName, 'deforestation', featureId, div, event);
                 container.appendChild(div);
+                addedCount++;
             });
         });
     }
