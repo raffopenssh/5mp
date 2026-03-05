@@ -1311,15 +1311,22 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         groupIndex++
     }
     
-    // Sort by priority (lowest number = highest priority), then by last seen
+    // Sort by active status first (active groups at top), then by priority, then by last seen
+    // This ensures that when we truncate to 100 groups, we keep all active groups
     sort.Slice(groups, func(i, j int) bool {
+        // Active groups come first
+        if groups[i].IsActive != groups[j].IsActive {
+            return groups[i].IsActive
+        }
+        // Then by priority (lowest number = highest priority)
         if groups[i].Priority != groups[j].Priority {
             return groups[i].Priority < groups[j].Priority
         }
+        // Finally by last seen
         return groups[i].LastSeen > groups[j].LastSeen
     })
     
-    // Limit to reasonable number
+    // Limit to reasonable number (but active groups are already at the top, so we won't lose them)
     if len(groups) > 100 {
         groups = groups[:100]
     }
