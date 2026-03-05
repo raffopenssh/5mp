@@ -1,20 +1,20 @@
-085ba724 2026-03-05 10:33:39 Add TEST helpers quick reference card
-27a0f867 2026-03-05 10:31:59 Update TEST_HELPERS.md with new advanced helpers
-e1036b22 2026-03-05 10:30:46 Add advanced TEST helpers for efficient debugging
-5a10cc2d 2026-03-05 10:26:20 Add TEST_HELPERS.md documentation
-caa29bf2 2026-03-05 10:25:51 Add test=1 entry ID badges and TEST helpers
-a9d71759 2026-03-05 10:14:01 docs: add TEST helper design docs for future implementation
-ee34c04b 2026-03-05 10:12:53 feat: add TEST entry ID badges for deforestation (WIP - needs numbering fix and extension to all sections)
-28789334 2026-03-05 09:56:00 fix: deforestation 'Show more' button breaking onclick handlers
-5732e7e5 2026-03-05 09:31:00 fix: Escape HTML in deforestation event title and shortText
-a205f899 2026-03-05 09:17:49 fix: HTML escaping in deforestation/settlement popups + fire front removal
-0f542184 2026-03-04 16:57:14 docs: Add version management instructions to AGENTS.md
-7a73e394 2026-03-04 15:07:53 Add patrol effort grid cells to KML export with time stamps
-89342f1d 2026-03-04 14:55:00 Fix: Remove empty KML folders and ensure all infrastructure is included
-59813b5b 2026-03-04 14:46:48 docs: Document KML narrative and polygon fixes
-b411faf7 2026-03-04 14:46:07 Fix: KML export now includes full narratives and uses polygon_ids joins
-546c9eb3 2026-03-04 14:34:47 docs: Add documentation for KML XML escaping bug fix
-a8a9be9c 2026-03-04 14:34:15 Fix: Escape XML special characters in KML export names
-5fed63c5 2026-03-04 14:31:16 docs: Add documentation for grid buffer bug fix
-1bbdcf0a 2026-03-04 14:30:42 Fix: Use proper polygon buffer instead of bounding box buffer for grid cells
-f071b7bb 2026-03-04 13:02:48 FIX: Add print CSS to main page stylesheet
+a3e97cab 2026-03-05 15:50:59 Add WorldClim test endpoint for verifying on-demand lookups
+c16742d3 2026-03-05 15:50:00 Pre-generate WorldClim data for all Africa + on-demand lookup for rest
+dbde3e3d 2026-03-05 15:22:19 Fix WorldClim script to read directly from ZIP without extraction
+c761cec7 2026-03-05 15:11:35 Fix settlement icon not showing as pinned when loaded from URL
+866f1519 2026-03-05 15:07:17 Fix 'No ghsl features found' error when opening sections without data
+87cf1066 2026-03-05 15:01:18 Fix settlement/deforestation filter issues: preserve pinned state, update counts, add URL params
+6862b4c6 2026-03-05 13:14:43 Make filters affect pinned map layers
+54a5c279 2026-03-05 13:06:39 Fix filter dropdown styling and preserve accordion state
+3afc9823 2026-03-05 13:01:24 Add real-world examples and use cases for priority ranking
+c37d638a 2026-03-05 13:00:12 Add comprehensive priority ranking documentation
+36445e0f 2026-03-05 12:59:13 Add priority-based ranking and type tags for deforestation/settlement narratives
+e1aa2fdc 2026-03-05 12:51:27 Add final Lucide icons implementation summary
+86d87e64 2026-03-05 12:50:17 Add icon system documentation to AGENTS.md
+dbcf53b0 2026-03-05 12:48:38 Complete emoji replacement with Lucide icons
+a2ef85c5 2026-03-05 12:43:10 Add Lucide Icons implementation documentation
+abc7380c 2026-03-05 12:42:16 Replace emojis with Lucide icon font
+e8b97ebe 2026-03-05 12:19:24 Integrate WorldClim 2.1 precipitation data for accurate patrol intensity
+7ae30ef2 2026-03-05 12:05:05 Use actual WorldClim climate data for patrol intensity calculation
+bfac01d9 2026-03-05 11:58:56 Fix patrol pixel intensity to match map visualization exactly
+c605123d 2026-03-05 11:48:49 Fix patrol pixel intensity calculation and remove patrol_summary sheet

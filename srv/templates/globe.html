@@ -9710,7 +9710,7 @@
                         const proximityScore = s.nearest_boundary_km && s.nearest_boundary_km < 10 ? (100 - s.nearest_boundary_km * 10) : 0;
                         const priorityScore = (populationScore * 0.4) + (areaScore * 0.3) + (proximityScore * 0.3);
                         
-                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" data-classification="${s.classification || ''}" data-priority="${priorityScore.toFixed(0)}" data-population="${pop}" data-area="${area}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}">${testBadge}<span style="color: ${color}; flex-shrink: 0;">◻</span> <span style="flex:1;">${shortText}</span> <span style="color: ${color}; font-size: 8px; font-weight: 500; opacity: 0.7; margin-left: 4px; flex-shrink: 0;">${typeLabel}</span></div>`;
+                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" data-classification="${s.classification || ''}" data-priority="${priorityScore.toFixed(0)}" data-population="${pop}" data-area="${area}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 6px; transition: all 0.2s;" title="Click to pin on map. ${text.replace(/"/g, '&quot;')}">${testBadge}<span style="color: ${color}; font-size: 8px; font-weight: 600; flex-shrink: 0; text-transform: uppercase;">${typeLabel}</span> <span style="flex:1;">${shortText}</span></div>`;
                     };
                     
                     // Get settlements - prefer classified if available
@@ -9754,25 +9754,22 @@
                     const showFilter = classifications.length > 1;
                     
                     el.innerHTML = `
-                        <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Settlements detected</span>
-                            <span class="pa-popup-mini-stat-value">${formatNumber(data.settlement_count)}</span>
-                        </div>
-                        <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Human-wildlife conflict risk</span>
-                            <span class="pa-popup-mini-stat-value${riskClass}">${riskIcon} ${data.conflict_risk || 'unknown'}</span>
-                        </div>
-                        
                         ${data.summary ? `<div style="margin-top: 8px; font-size: 10px; color: #aaa; line-height: 1.4;">${data.summary.split('\n\n')[0]}</div>` : ''}
                         
                         ${initial.length > 0 ? `
                         <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 6px;">
                                 <div style="font-size: 9px; color: #666;">${useClassified ? 'Settlement details (click to pin):' : 'Settlements by built-up area:'}</div>
-                                ${showFilter ? `<select id="settlement-filter-${paId}" onchange="filterSettlementEntries('${paId}', this.value, event)" onclick="event.stopPropagation()" style="font-size: 8px; padding: 2px 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #aaa; cursor: pointer;">
-                                    <option value="" style="background: #1f1f1f; color: #e4e4e7;">all types (${classifiedSettlements.length})</option>
-                                    ${classifications.map(c => `<option value="${c}" style="background: #1f1f1f; color: #e4e4e7;">${c} (${classificationCounts[c]})</option>`).join('')}
-                                </select>` : ''}
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    ${showFilter ? `<select id="settlement-filter-${paId}" onchange="filterSettlementEntries('${paId}', this.value, event)" onclick="event.stopPropagation()" style="font-size: 8px; padding: 2px 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #aaa; cursor: pointer;">
+                                        <option value="" style="background: #1f1f1f; color: #e4e4e7;">all types (${classifiedSettlements.length})</option>
+                                        ${classifications.map(c => {
+                                            const displayName = c === 'agricultural' ? 'farming' : c;
+                                            return `<option value="${c}" style="background: #1f1f1f; color: #e4e4e7;">${displayName} (${classificationCounts[c]})</option>`;
+                                        }).join('')}
+                                    </select>` : ''}
+                                    ${showFilter ? `<button id="settlement-filter-clear-${paId}" onclick="document.getElementById('settlement-filter-${paId}').value='';filterSettlementEntries('${paId}','',event);event.stopPropagation();" style="font-size: 8px; padding: 2px 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #aaa; cursor: pointer; display: none;">✕ clear</button>` : ''}
+                                </div>
                             </div>
                             <div id="${containerId}">
                                 ${initial.map(s => useClassified ? formatClassifiedSettlement(s, paId, parkName) : formatSettlement(s, paId, parkName)).join('')}
@@ -9887,6 +9884,12 @@
                 event.stopPropagation();
             }
             
+            // Show/hide clear button
+            const clearBtn = document.getElementById(`deforest-filter-clear-${paId}`);
+            if (clearBtn) {
+                clearBtn.style.display = classification ? 'block' : 'none';
+            }
+            
             // Update URL with filter state
             const url = new URL(window.location);
             if (classification) {
@@ -9920,7 +9923,9 @@
                 }
                 
                 if (classification) {
-                    countEl.textContent = `${visibleCount} (${classification})`;
+                    // Use friendly name for display
+                    const displayName = classification === 'slash_burn' ? 'burn' : classification;
+                    countEl.textContent = `${visibleCount} (${displayName})`;
                 } else {
                     // Restore original count when filter cleared
                     countEl.textContent = countEl.dataset.originalCount || entries.length;
@@ -9968,6 +9973,12 @@
                 event.stopPropagation();
             }
             
+            // Show/hide clear button
+            const clearBtn = document.getElementById(`settlement-filter-clear-${paId}`);
+            if (clearBtn) {
+                clearBtn.style.display = classification ? 'block' : 'none';
+            }
+            
             // Update URL with filter state
             const url = new URL(window.location);
             if (classification) {
@@ -10001,7 +10012,9 @@
                 }
                 
                 if (classification) {
-                    countEl.textContent = `${visibleCount} (${classification})`;
+                    // Use friendly name for display
+                    const displayName = classification === 'agricultural' ? 'farming' : classification;
+                    countEl.textContent = `${visibleCount} (${displayName})`;
                 } else {
                     // Restore original count when filter cleared
                     countEl.textContent = countEl.dataset.originalCount || entries.length;
@@ -10135,7 +10148,7 @@
                                 return polygonIds.map((featureId, idx) => {
                                     const patchInfo = polygonIds.length > 1 ? ` <span style="color: #666; font-size: 8px;">[patch ${idx+1}/${polygonIds.length}]</span>` : '';
                                     const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="deforestation-0" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">0</span>` : '';
-                                    return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" data-classification="${e.classification || ''}" data-priority="${priorityScore.toFixed(0)}" data-year="${e.year}" data-area="${e.area_km2 || 0}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 4px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="color: ${color}; flex-shrink: 0;">▲</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span> <span style="color: ${color}; font-size: 8px; font-weight: 500; opacity: 0.7; margin-left: 4px; flex-shrink: 0;">${typeLabel}</span></div>`;
+                                    return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" data-classification="${e.classification || ''}" data-priority="${priorityScore.toFixed(0)}" data-year="${e.year}" data-area="${e.area_km2 || 0}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 6px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="color: ${color}; font-size: 8px; font-weight: 600; flex-shrink: 0; text-transform: uppercase;">${typeLabel}</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span></div>`;
                                 }).join('');
                             };
                             
@@ -10174,12 +10187,18 @@
                                 
                                 return `
                                 <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 6px;">
                                         <div style="font-size: 9px; color: #666;">Deforestation events (click to pin):</div>
-                                        ${showFilter ? `<select id="deforest-filter-${paId}" onchange="filterDeforestEntries('${paId}', this.value, event)" onclick="event.stopPropagation()" style="font-size: 8px; padding: 2px 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #aaa; cursor: pointer;">
-                                            <option value="" style="background: #1f1f1f; color: #e4e4e7;">all types (${sortedEvents.length})</option>
-                                            ${classifications.map(c => `<option value="${c}" style="background: #1f1f1f; color: #e4e4e7;">${c} (${classificationCounts[c]})</option>`).join('')}
-                                        </select>` : ''}
+                                        <div style="display: flex; align-items: center; gap: 4px;">
+                                            ${showFilter ? `<select id="deforest-filter-${paId}" onchange="filterDeforestEntries('${paId}', this.value, event)" onclick="event.stopPropagation()" style="font-size: 8px; padding: 2px 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #aaa; cursor: pointer;">
+                                                <option value="" style="background: #1f1f1f; color: #e4e4e7;">all types (${sortedEvents.length})</option>
+                                                ${classifications.map(c => {
+                                                    const displayName = c === 'slash_burn' ? 'burn' : c;
+                                                    return `<option value="${c}" style="background: #1f1f1f; color: #e4e4e7;">${displayName} (${classificationCounts[c]})</option>`;
+                                                }).join('')}
+                                            </select>` : ''}
+                                            ${showFilter ? `<button id="deforest-filter-clear-${paId}" onclick="document.getElementById('deforest-filter-${paId}').value='';filterDeforestEntries('${paId}','',event);event.stopPropagation();" style="font-size: 8px; padding: 2px 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #aaa; cursor: pointer; display: none;">✕ clear</button>` : ''}
+                                        </div>
                                     </div>
                                     <div id="deforest-stories-${paId}">
                                         ${initial.map(e => formatClassifiedDefo(e)).join('')}
