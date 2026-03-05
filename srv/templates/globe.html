@@ -9816,9 +9816,10 @@
                             const filterSelect = document.getElementById(`settlement-filter-${paId}`);
                             if (filterSelect) {
                                 filterSelect.value = settlementFilter;
-                                filterSettlementEntries(paId, settlementFilter, null);
+                                // Wait for entries to be fully rendered in DOM
+                                setTimeout(() => filterSettlementEntries(paId, settlementFilter, null), 200);
                             }
-                        }, 100);
+                        }, 500);
                     }
                     
                     // Number settlement entries if TEST mode is active
@@ -9952,6 +9953,11 @@
             if (classification) {
                 const hiddenDiv = document.getElementById(`deforest-hidden-${paId}`);
                 const moreBtn = document.getElementById(`deforest-more-btn-${paId}`);
+                
+                // Reset hidden div (in case it was expanded before filter was applied)
+                if (hiddenDiv) {
+                    hiddenDiv.style.display = 'none';
+                }
                 
                 if (matchingEntries.length < 20) {
                     // Show all matching entries
@@ -10112,6 +10118,11 @@
             if (classification) {
                 const hiddenDiv = document.getElementById(`settlements-hidden-${paId}`);
                 const moreBtn = document.getElementById(`settlements-more-btn-${paId}`);
+                
+                // Reset hidden div (in case it was expanded before filter was applied)
+                if (hiddenDiv) {
+                    hiddenDiv.style.display = 'none';
+                }
                 
                 if (matchingEntries.length < 20) {
                     // Show all matching entries
@@ -10419,9 +10430,10 @@
                             const filterSelect = document.getElementById(`deforest-filter-${paId}`);
                             if (filterSelect) {
                                 filterSelect.value = deforestFilter;
-                                filterDeforestEntries(paId, deforestFilter, null);
+                                // Wait for entries to be fully rendered in DOM
+                                setTimeout(() => filterDeforestEntries(paId, deforestFilter, null), 200);
                             }
-                        }, 100);
+                        }, 500);
                     }
                     
                     // Number deforestation entries if TEST mode is active
