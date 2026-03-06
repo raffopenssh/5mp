@@ -17063,6 +17063,41 @@ ${starredItems.narratives.map(n => {
         }, 1000);
     }
     
+    async function restoreSinglePinnedFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        const pinnedFeatures = params.get('pinned_features');
+        
+        if (!pinnedFeatures) return;
+        
+        console.log('[Share Link] Restoring single pinned features:', pinnedFeatures);
+        
+        for (const item of pinnedFeatures.split(',')) {
+            const parts = item.split(':');
+            if (parts.length < 3) continue;
+            
+            const parkId = parts[0];
+            const type = parts[1];
+            const featureId = parts.slice(2).join(':'); // Rejoin in case featureId contains ':'
+            
+            // Find park name from keystones
+            const park = (window.keystoneAreas || []).find(p => p.id === parkId);
+            const parkName = park ? park.name : parkId;
+            
+            try {
+                // Add the single pinned feature
+                await addSinglePinnedFeature(parkId, parkName, type, featureId);
+                console.log(`[Share Link] ✓ Restored single pin: ${parkName} - ${type} - ${featureId}`);
+            } catch (err) {
+                console.error(`[Share Link] Failed to restore single pin ${featureId}:`, err);
+            }
+        }
+        
+        // Update indicator after all pins are added
+        setTimeout(() => {
+            updatePinnedIndicator();
+        }, 500);
+    }
+    
     function createPinToggle(parkId, parkName, type) {
         const pinned = isPinned(parkId, type);
         return `<button class="pin-toggle${pinned ? ' pinned' : ''}" onclick="event.stopPropagation(); togglePinLayer('${parkId}', '${escapeHtml(parkName)}', '${type}', this)" title="Pin ${type} to map">
@@ -17730,7 +17765,7 @@ ${starredItems.narratives.map(n => {
             }
         }
         
-        // Add pinned layers
+        // Add pinned layers (category pins - all features of a type)
         const pinnedKeys = Object.keys(pinnedLayers || {});
         if (pinnedKeys.length > 0) {
             const pinned = pinnedKeys.map(key => {
@@ -17738,6 +17773,17 @@ ${starredItems.narratives.map(n => {
                 return `${layer.parkId}:${layer.type}`;
             }).join(',');
             params.set('pinned', pinned);
+        }
+        
+        // Add single pinned features (individual pins - specific features)
+        const singlePinKeys = Object.keys(singlePinnedFeatures || {});
+        if (singlePinKeys.length > 0) {
+            const singlePins = singlePinKeys.map(key => {
+                const pinData = singlePinnedFeatures[key];
+                // Format: parkId:type:featureId
+                return `${pinData.parkId}:${pinData.type}:${pinData.featureId}`;
+            }).join(',');
+            params.set('pinned_features', singlePins);
         }
         
         // Add starred items
@@ -18065,6 +18111,9 @@ ${starredItems.narratives.map(n => {
         
         // Restore pinned layers from URL
         setTimeout(restorePinnedFromURL, 1500);
+        
+        // Restore single pinned features from URL
+        setTimeout(restoreSinglePinnedFromURL, 2000);
         
         // Restore panel states
         const panelParam = params.get('panel');
