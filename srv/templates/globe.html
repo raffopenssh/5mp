@@ -2078,8 +2078,41 @@
                     }
                 });
                 
+                // Adjust park polygon fill visibility based on basemap
+                updateParkFillForBasemap();
+                
                 showToast('Basemap changed', `Switched to ${newStyle.name}`, null, null, 'success');
             });
+        }
+        
+        // Update park fill visibility based on basemap (hide on satellite)
+        function updateParkFillForBasemap() {
+            if (!map || !map.getLayer || !map.getLayer('areas-fill')) return;
+            
+            const isSatellite = currentBasemap && currentBasemap.startsWith('satellite-');
+            
+            if (isSatellite) {
+                // Hide fill on satellite basemap (keep outline visible)
+                map.setPaintProperty('areas-fill', 'fill-opacity', 0);
+            } else {
+                // Show fill on dark basemap with original styling
+                // Check if we need to restore highlight colors
+                const currentFillColor = map.getPaintProperty('areas-fill', 'fill-color');
+                const isHighlighted = Array.isArray(currentFillColor);
+                
+                if (isHighlighted) {
+                    // Restore highlight opacity
+                    map.setPaintProperty('areas-fill', 'fill-opacity', [
+                        'case',
+                        ['==', ['get', 'fire_active'], true], 0.35,
+                        ['boolean', ['feature-state', 'selected'], false], 0.3,
+                        0.2
+                    ]);
+                } else {
+                    // Restore default opacity
+                    map.setPaintProperty('areas-fill', 'fill-opacity', 0.2);
+                }
+            }
         }
         
         // Satellite hint for high zoom levels
@@ -3081,6 +3114,9 @@
             map.on('click', cleanupStrayPopups);
 
             // Note: Legend is now in HTML, not dynamically created (removed duplicate)
+            
+            // Set initial park fill visibility based on current basemap
+            updateParkFillForBasemap();
         });
 
         function showModal(name) { document.getElementById(`modal-${name}`).classList.add('active'); }
@@ -6869,16 +6905,18 @@
         function updatePAHighlighting() {
             if (!map || !map.getLayer || !map.getLayer('areas-fill')) return;
             
+            const isSatellite = currentBasemap && currentBasemap.startsWith('satellite-');
+            
             if (selectedPAIds.size === 0) {
                 // No selection - use default keystones styling
                 if (keystonesEnabled) {
                     map.setPaintProperty('areas-fill', 'fill-color', '#22c55e');
-                    map.setPaintProperty('areas-fill', 'fill-opacity', 0.2);
+                    map.setPaintProperty('areas-fill', 'fill-opacity', isSatellite ? 0 : 0.2);
                     map.setPaintProperty('areas-outline', 'line-color', '#22c55e');
                     map.setPaintProperty('areas-outline', 'line-width', 1);
                 } else {
                     map.setPaintProperty('areas-fill', 'fill-color', '#666666');
-                    map.setPaintProperty('areas-fill', 'fill-opacity', 0.1);
+                    map.setPaintProperty('areas-fill', 'fill-opacity', isSatellite ? 0 : 0.1);
                     map.setPaintProperty('areas-outline', 'line-color', '#555555');
                     map.setPaintProperty('areas-outline', 'line-width', 1);
                 }
@@ -6893,12 +6931,18 @@
                     '#666666'   // Not selected: grey
                 ]);
                 
-                map.setPaintProperty('areas-fill', 'fill-opacity', [
-                    'case',
-                    ['in', ['get', 'id'], ['literal', selectedIds]],
-                    0.35,  // Selected: more opaque
-                    0.1    // Not selected: faded
-                ]);
+                if (isSatellite) {
+                    // Hide fill on satellite
+                    map.setPaintProperty('areas-fill', 'fill-opacity', 0);
+                } else {
+                    // Show fill on dark basemap
+                    map.setPaintProperty('areas-fill', 'fill-opacity', [
+                        'case',
+                        ['in', ['get', 'id'], ['literal', selectedIds]],
+                        0.35,  // Selected: more opaque
+                        0.1    // Not selected: faded
+                    ]);
+                }
                 
                 map.setPaintProperty('areas-outline', 'line-color', [
                     'case',
