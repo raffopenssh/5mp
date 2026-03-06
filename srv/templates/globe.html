@@ -15957,18 +15957,68 @@ ${starredItems.narratives.map(n => {
                 }
             });
             
-            // Click shows detailed info and closes park popup
-            map.on('click', layerId, (e) => {
+            // Click opens park popup and scrolls to the entry
+            map.on('click', layerId, async (e) => {
                 e.preventDefault();
                 e.originalEvent?.stopPropagation();
                 if (hoverPopup) hoverPopup.remove();
                 
-                // Close park popup if open
-                const parkPopup = document.querySelector('.pa-popup');
-                if (parkPopup) parkPopup.remove();
+                // Find the park and open its popup
+                const park = (window.keystoneAreas || []).find(p => p.id === parkId);
+                if (!park) {
+                    console.error('Park not found:', parkId);
+                    return;
+                }
                 
-                const props = e.features[0]?.properties || {};
-                showPinnedFeaturePopup(props, e.lngLat, type, null);
+                // Close existing popup and open new one for this park
+                if (currentPAPopup) currentPAPopup.remove();
+                
+                // Get park center
+                const center = park.center ? (typeof park.center === 'string' ? JSON.parse(park.center) : park.center) : null;
+                if (!center) {
+                    console.error('Park center not found:', parkId);
+                    return;
+                }
+                
+                // Show park popup
+                showPAPopup(park, { lng: center[0], lat: center[1] });
+                
+                // Wait for popup to render and data to load
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Map type to section ID
+                const sectionMap = {
+                    'fire': 'fire',
+                    'settlement': 'ghsl',
+                    'deforestation': 'deforest'
+                };
+                const sectionId = sectionMap[type] || type;
+                
+                // Expand the section
+                const section = document.getElementById(`${sectionId}-section-${parkId}`);
+                if (section && !section.classList.contains('open')) {
+                    togglePopupSection(section);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Find and scroll to the entry
+                const entry = document.querySelector(`[data-park="${parkId}"][data-type="${type}"][data-feature="${featureId}"]`);
+                if (entry) {
+                    // Highlight the entry
+                    entry.style.background = 'rgba(59, 130, 246, 0.3)';
+                    entry.style.border = '1px solid #3b82f6';
+                    
+                    // Scroll to it
+                    entry.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Remove highlight after 3s
+                    setTimeout(() => {
+                        entry.style.background = '';
+                        entry.style.border = '';
+                    }, 3000);
+                } else {
+                    console.warn('Entry not found:', featureId);
+                }
             });
             
             // Pulse animation for glow - makes pinned feature easy to find
