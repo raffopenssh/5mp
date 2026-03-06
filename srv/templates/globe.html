@@ -15787,10 +15787,16 @@ ${starredItems.narratives.map(n => {
             const geojson = { type: 'FeatureCollection', features };
             const feature = features[0]; // For property access
             
+            // If no narrative passed, extract from feature properties
+            if (!narrative && feature.properties?.narrative) {
+                narrative = feature.properties.narrative;
+            }
+            
             // Add to map with highlight style
             // Remove existing layers and source if they exist (cleanup from previous pin)
             if (map.getLayer(layerId + '-arrows')) map.removeLayer(layerId + '-arrows');
             if (map.getLayer(layerId + '-glow')) map.removeLayer(layerId + '-glow');
+            if (map.getLayer(layerId + '-fill')) map.removeLayer(layerId + '-fill');
             if (map.getLayer(layerId + '-front-glow')) map.removeLayer(layerId + '-front-glow');
             if (map.getLayer(layerId + '-front')) map.removeLayer(layerId + '-front');
             if (map.getLayer(layerId)) map.removeLayer(layerId);
@@ -15933,8 +15939,8 @@ ${starredItems.narratives.map(n => {
             // Add click and hover handlers for popup with narrative
             let hoverPopup = null;
             
-            // Hover shows narrative
-            map.on('mouseenter', layerId, (e) => {
+            // Handler functions - reused for both line and fill layers
+            const handleMouseEnter = (e) => {
                 map.getCanvas().style.cursor = 'pointer';
                 const pin = singlePinnedFeatures[key];
                 if (pin && pin.narrative) {
@@ -15947,18 +15953,17 @@ ${starredItems.narratives.map(n => {
                         .setHTML(`<div style="font-size:11px;max-width:280px;line-height:1.4;padding:4px;">${pin.narrative}</div>`)
                         .addTo(map);
                 }
-            });
+            };
             
-            map.on('mouseleave', layerId, () => {
+            const handleMouseLeave = () => {
                 map.getCanvas().style.cursor = '';
                 if (hoverPopup) {
                     hoverPopup.remove();
                     hoverPopup = null;
                 }
-            });
+            };
             
-            // Click opens park popup and scrolls to the entry
-            map.on('click', layerId, async (e) => {
+            const handleClick = async (e) => {
                 e.preventDefault();
                 e.originalEvent?.stopPropagation();
                 if (hoverPopup) hoverPopup.remove();
@@ -16019,7 +16024,19 @@ ${starredItems.narratives.map(n => {
                 } else {
                     console.warn('Entry not found:', featureId);
                 }
-            });
+            };
+            
+            // Attach handlers to main layer (line/point/circle)
+            map.on('mouseenter', layerId, handleMouseEnter);
+            map.on('mouseleave', layerId, handleMouseLeave);
+            map.on('click', layerId, handleClick);
+            
+            // For polygons, also attach handlers to fill layer so hover works on the filled area
+            if (geomType.includes('Polygon') && map.getLayer(layerId + '-fill')) {
+                map.on('mouseenter', layerId + '-fill', handleMouseEnter);
+                map.on('mouseleave', layerId + '-fill', handleMouseLeave);
+                map.on('click', layerId + '-fill', handleClick);
+            }
             
             // Pulse animation for glow - makes pinned feature easy to find
             let pulseCount = 0;
@@ -16062,6 +16079,7 @@ ${starredItems.narratives.map(n => {
         // Remove arrow layer if it exists (fire trajectories)
         if (map.getLayer(pin.layerId + '-arrows')) map.removeLayer(pin.layerId + '-arrows');
         if (map.getLayer(pin.layerId + '-glow')) map.removeLayer(pin.layerId + '-glow');
+        if (map.getLayer(pin.layerId + '-fill')) map.removeLayer(pin.layerId + '-fill');
         if (map.getLayer(pin.layerId)) map.removeLayer(pin.layerId);
         if (map.getSource(pin.sourceId)) map.removeSource(pin.sourceId);
         
