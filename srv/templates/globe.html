@@ -15938,10 +15938,20 @@ ${starredItems.narratives.map(n => {
             
             // Add click and hover handlers for popup with narrative
             let hoverPopup = null;
+            let leaveTimeout = null;
             
             // Handler functions - reused for both line and fill layers
+            // Uses debounce to handle fill↔line transitions without flicker
             const handleMouseEnter = (e) => {
                 map.getCanvas().style.cursor = 'pointer';
+                // Cancel pending removal (user moved between fill and line layers)
+                if (leaveTimeout) {
+                    clearTimeout(leaveTimeout);
+                    leaveTimeout = null;
+                }
+                // Don't create duplicate popups
+                if (hoverPopup) return;
+                
                 const pin = singlePinnedFeatures[key];
                 if (pin && pin.narrative) {
                     hoverPopup = new maplibregl.Popup({
@@ -15957,10 +15967,15 @@ ${starredItems.narratives.map(n => {
             
             const handleMouseLeave = () => {
                 map.getCanvas().style.cursor = '';
-                if (hoverPopup) {
-                    hoverPopup.remove();
-                    hoverPopup = null;
-                }
+                // Debounce removal - allows transition between fill and line without flicker
+                if (leaveTimeout) clearTimeout(leaveTimeout);
+                leaveTimeout = setTimeout(() => {
+                    if (hoverPopup) {
+                        hoverPopup.remove();
+                        hoverPopup = null;
+                    }
+                    leaveTimeout = null;
+                }, 50); // 50ms debounce
             };
             
             const handleClick = async (e) => {
