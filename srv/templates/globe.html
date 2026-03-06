@@ -17664,6 +17664,11 @@ ${starredItems.narratives.map(n => {
             params.set('z', map.getZoom().toFixed(1));
         }
         
+        // Add basemap selection
+        if (currentBasemap && currentBasemap !== 'dark') {
+            params.set('basemap', currentBasemap);
+        }
+        
         // Add time range
         if (dateFrom) params.set('from', dateFrom);
         if (dateTo) params.set('to', dateTo);
@@ -17798,11 +17803,26 @@ ${starredItems.narratives.map(n => {
     function restoreStateFromURL() {
         const params = new URLSearchParams(window.location.search);
         
-        // Restore map position
+        // Restore basemap first (before map position)
+        const basemap = params.get('basemap');
         const lat = parseFloat(params.get('lat'));
         const lng = parseFloat(params.get('lng'));
         const zoom = parseFloat(params.get('z'));
-        if (!isNaN(lat) && !isNaN(lng) && typeof map !== 'undefined') {
+        
+        if (basemap && typeof switchBasemap === 'function') {
+            // Force basemap switch by temporarily setting currentBasemap to something else
+            currentBasemap = 'dark';  // Reset to force switch
+            switchBasemap(basemap);
+            
+            // After basemap switch, restore position (once styledata fires)
+            if (!isNaN(lat) && !isNaN(lng)) {
+                map.once('styledata', function() {
+                    map.setCenter([lng, lat]);
+                    if (!isNaN(zoom)) map.setZoom(zoom);
+                });
+            }
+        } else if (!isNaN(lat) && !isNaN(lng) && typeof map !== 'undefined') {
+            // No basemap switch, just set position directly
             map.setCenter([lng, lat]);
             if (!isNaN(zoom)) map.setZoom(zoom);
         }
