@@ -1058,7 +1058,17 @@
                 },
                 
                 isAccordionOpen(parkId, section) {
-                    const sec = document.getElementById(`${section}-section-${parkId}`);
+                    // Map friendly names to actual section element IDs
+                    const sectionIdMap = {
+                        'fire': 'fire', 'settlement': 'ghsl', 'ghsl': 'ghsl',
+                        'deforestation': 'deforest', 'deforest': 'deforest',
+                        'road': 'road', 'roads': 'road', 'infrastructure': 'road',
+                        'species': 'species', 'biodiversity': 'species',
+                        'climate': 'climate', 'legal': 'legal',
+                        'research': 'research', 'publications': 'research'
+                    };
+                    const sectionId = sectionIdMap[section] || section;
+                    const sec = document.getElementById(`${sectionId}-section-${parkId}`);
                     return sec && sec.classList.contains('open');
                 },
                 
@@ -1220,25 +1230,39 @@
                 
                 // Notification-specific helpers
                 getGroupedNotifications() {
-                    return Array.from(document.querySelectorAll('.notification-group'));
+                    return Array.from(document.querySelectorAll('.notification-group')).map(el => ({
+                        type: el.dataset.type || '',
+                        parkId: el.dataset.parkId || '',
+                        text: el.textContent.trim().substring(0, 200),
+                        count: el.querySelectorAll('.notification-item').length
+                    }));
                 },
                 
                 getSingleNotifications() {
                     // Get all notification items that are NOT inside a group-items container
                     const allItems = Array.from(document.querySelectorAll('.notification-item'));
                     return allItems.filter(item => {
-                        // Exclude if inside .notification-group-items (nested in expanded group)
                         const parent = item.closest('.notification-group-items');
-                        // Exclude if IS a group itself
                         const isGroup = item.classList.contains('notification-group');
                         return !parent && !isGroup;
-                    });
+                    }).map(el => ({
+                        type: el.dataset.type || '',
+                        parkId: el.dataset.parkId || '',
+                        action: el.dataset.action || '',
+                        text: el.textContent.trim().substring(0, 200)
+                    }));
                 },
                 
                 findSingleNotification(searchText) {
                     // Find a truly single (ungrouped) notification by text
-                    const singles = this.getSingleNotifications();
-                    return singles.find(item => item.textContent.includes(searchText));
+                    const allItems = Array.from(document.querySelectorAll('.notification-item'));
+                    const singles = allItems.filter(item => {
+                        const parent = item.closest('.notification-group-items');
+                        const isGroup = item.classList.contains('notification-group');
+                        return !parent && !isGroup;
+                    });
+                    const found = singles.find(item => item.textContent.includes(searchText));
+                    return found ? { type: found.dataset.type || '', text: found.textContent.trim().substring(0, 200), ...found.dataset } : null;
                 },
                 
                 getNotificationStats() {
@@ -1292,7 +1316,7 @@
                         let resolved = false;
                         const checkPins = () => {
                             if (resolved) return;
-                            const pins = document.querySelectorAll('.pinned-layer-item');
+                            const pins = document.querySelectorAll('.pinned-layer-chip');
                             if (pins.length > 0) {
                                 resolved = true;
                                 const lastPin = pins[pins.length - 1];
@@ -1304,7 +1328,7 @@
                         setTimeout(() => {
                             if (!resolved) {
                                 resolved = true;
-                                const pins = document.querySelectorAll('.pinned-layer-item');
+                                const pins = document.querySelectorAll('.pinned-layer-chip');
                                 resolve({success: pins.length > 0, timeout: true, count: pins.length});
                             }
                         }, timeout);
@@ -1384,10 +1408,10 @@
                         if (!sectionData) return false;
                         
                         // Check if section has meaningful data
-                        if (section === 'fire') return (sectionData.totalFires || 0) > 0;
-                        if (section === 'ghsl') return (sectionData.count || 0) > 0;
-                        if (section === 'deforest') return (sectionData.totalLossKm2 || 0) > 0;
-                        if (section === 'grid') return (sectionData.activePixels || 0) > 0;
+                        if (section === 'fire') return (sectionData.total_fires || sectionData.totalFires || 0) > 0;
+                        if (section === 'ghsl') return (sectionData.count || sectionData.settlement_count || 0) > 0;
+                        if (section === 'deforest' || section === 'deforestation') return (sectionData.total_loss_km2 || sectionData.totalLossKm2 || 0) > 0;
+                        if (section === 'grid') return (sectionData.activePixels || sectionData.active_pixels || 0) > 0;
                         return true;
                     },
                     
@@ -1403,10 +1427,10 @@
                     getStats: () => {
                         let totalFires = 0, totalDeforest = 0, totalPop = 0, totalPixels = 0;
                         for (const [parkId, data] of reportDataCache.parks.entries()) {
-                            totalFires += data.fire?.totalFires || 0;
-                            totalDeforest += data.deforestation?.totalLossKm2 || 0;
+                            totalFires += data.fire?.total_fires || data.fire?.totalFires || 0;
+                            totalDeforest += data.deforestation?.total_loss_km2 || data.deforestation?.totalLossKm2 || 0;
                             totalPop += data.settlement?.total_population || 0;
-                            totalPixels += data.grid?.activePixels || 0;
+                            totalPixels += data.grid?.activePixels || data.grid?.active_pixels || 0;
                         }
                         return {
                             parksCount: reportDataCache.parks.size,
@@ -1458,11 +1482,11 @@
                         console.error('parkId required');
                         return;
                     }
-                    const sections = ['fire', 'deforestation', 'settlement', 'legal', 'publications', 'roads', 'climate', 'species'];
+                    const sections = ['fire', 'deforest', 'ghsl', 'legal', 'research', 'road', 'climate', 'species'];
                     sections.forEach(sec => {
                         const elem = document.getElementById(`${sec}-section-${parkId}`);
                         if (elem && !elem.classList.contains('open')) {
-                            elem.classList.add('open');
+                            elem.click(); // Use click to trigger data loading
                         }
                     });
                     console.log(`Expanded all sections for ${parkId}`);
@@ -1473,7 +1497,7 @@
                         console.error('parkId required');
                         return;
                     }
-                    const sections = ['fire', 'deforestation', 'settlement', 'legal', 'publications', 'roads', 'climate', 'species'];
+                    const sections = ['fire', 'deforest', 'ghsl', 'legal', 'research', 'road', 'climate', 'species'];
                     sections.forEach(sec => {
                         const elem = document.getElementById(`${sec}-section-${parkId}`);
                         if (elem && elem.classList.contains('open')) {
@@ -1565,15 +1589,17 @@
                         console.error('Row element not found');
                         return null;
                     }
-                    console.log('Entry details:');
-                    console.log('  ID:', badge.dataset.entry);
-                    console.log('  Text:', row.textContent.trim());
-                    console.log('  Title:', row.title || 'none');
-                    console.log('  onclick:', row.onclick ? 'present' : 'MISSING');
-                    console.log('  Classes:', row.className);
-                    console.log('  Dataset:', row.dataset);
-                    console.log('  HTML:', row.outerHTML.substring(0, 200) + '...');
-                    return row;
+                    const result = {
+                        id: badge.dataset.entry,
+                        text: row.textContent.trim(),
+                        title: row.title || '',
+                        hasOnclick: !!row.onclick,
+                        classes: row.className,
+                        dataset: {...row.dataset},
+                        html: row.outerHTML.substring(0, 300)
+                    };
+                    console.log('Entry details:', JSON.stringify(result, null, 2));
+                    return result;
                 },
                 
                 findBrokenEntries(section) {
@@ -5496,8 +5522,10 @@
                                     }
                                 }
                             }, 500);
-                            // Handle the click with correct parameters: (parkId, featureId, groupName, event)
-                            handleFireNotificationClick(parkId, featureId, null, null);
+                            // Look up display name from keystoneAreas
+                            const parkObj = (window.keystoneAreas || []).find(p => p.id === parkId);
+                            const displayName = parkObj ? parkObj.name : parkId.replace(/^[A-Z]{3}_/, '').replace(/_/g, ' ');
+                            handleFireNotificationClick(parkId, featureId, null, displayName);
                         }
                     }, 100);
                     // Timeout after 10 seconds
@@ -6557,19 +6585,19 @@
                     };
                     
                     // Format settlement with place-based location and pinning
-                    const formatSettlement = (s, paId, parkName) => {
+                    const formatSettlement = (s, paId, parkName, idx) => {
                         let location = '';
                         if (s.direction && s.nearest_boundary_km && s.nearest_boundary_km < 50) {
                             location = ` (${s.nearest_boundary_km.toFixed(1)} km ${s.direction})`;
                         }
                         const name = s.name && s.name !== 'Unnamed settlement' ? s.name : `${s.lat.toFixed(3)}°, ${s.lon.toFixed(3)}°`;
                         const featureId = `settlement_${s.id || s.lat.toFixed(4)}_${s.lon.toFixed(4)}`;
-                        const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="settlement-0" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">0</span>` : '';
+                        const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="settlement-${idx}" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">${idx}</span>` : '';
                         return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to pin on map">${formatArea(s.area_m2)} near ${escapeHtml(name)}${escapeHtml(location)}</div>`;
                     };
                     
                     // Format classified settlement with narrative
-                    const formatClassifiedSettlement = (s, paId, parkName) => {
+                    const formatClassifiedSettlement = (s, paId, parkName, idx) => {
                         const featureId = `settlement_${s.id}`;
                         const classColors = {
                             'agricultural': '#f59e0b',
@@ -6593,7 +6621,7 @@
                         const typeLabel = typeLabels[s.classification] || s.classification || 'unknown';
                         
                         const text = s.narrative || `${s.classification || 'Unknown'} settlement at ${s.lat?.toFixed(3) || '?'}°, ${s.lon?.toFixed(3) || '?'}°`;
-                        const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="settlement-0" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">0</span>` : '';
+                        const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="settlement-${idx}" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">${idx}</span>` : '';
                         const shortText = text.length > 200 ? text.substring(0, 197) + '...' : text;
                         
                         // Calculate severity score for priority (0-100)
@@ -6666,8 +6694,8 @@
                                 </div>
                             </div>
                             <div id="${containerId}">
-                                ${initial.map(s => useClassified ? formatClassifiedSettlement(s, paId, parkName) : formatSettlement(s, paId, parkName)).join('')}
-                                ${remaining.length > 0 ? `<div id="${hiddenId}" style="display: none;">${remaining.map(s => useClassified ? formatClassifiedSettlement(s, paId, parkName) : formatSettlement(s, paId, parkName)).join('')}</div>` : ''}
+                                ${initial.map((s, i) => useClassified ? formatClassifiedSettlement(s, paId, parkName, i) : formatSettlement(s, paId, parkName, i)).join('')}
+                                ${remaining.length > 0 ? `<div id="${hiddenId}" style="display: none;">${remaining.map((s, i) => useClassified ? formatClassifiedSettlement(s, paId, parkName, initial.length + i) : formatSettlement(s, paId, parkName, initial.length + i)).join('')}</div>` : ''}
                             </div>
                             ${remaining.length > 0 ? `
                             <button id="${btnId}" style="margin-top: 6px; padding: 4px 8px; font-size: 9px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: #aaa; cursor: pointer; width: 100%;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
@@ -6684,7 +6712,7 @@
                                 const container = document.getElementById(containerId);
                                 if (container) {
                                     const beforeCount = container.children.length;
-                                    container.innerHTML += remaining.map(s => useClassified ? formatClassifiedSettlement(s, paId, parkName) : formatSettlement(s, paId, parkName)).join('');
+                                    container.innerHTML += remaining.map((s, i) => useClassified ? formatClassifiedSettlement(s, paId, parkName, initial.length + i) : formatSettlement(s, paId, parkName, initial.length + i)).join('');
                                     // Number new entries
                                     if (window.TEST) {
                                         const entries = container.querySelectorAll('.narrative-row');
@@ -7145,6 +7173,7 @@
                 if (dateTo) params.push('to=' + dateTo);
                 url += '?' + params.join('&');
                 const resp = await fetch(url);
+                if (!resp.ok) { el.innerHTML = '<div style="color:#888;font-size:10px;">No deforestation data available</div>'; return; }
                 const data = await resp.json();
                 const totalLoss = data.total_loss_km2 || data.total_area_km2 || 0;
                 const yearsCount = data.yearly_stories?.length || data.years_analyzed || 0;
@@ -7189,6 +7218,7 @@
                         
                         ${(() => {
                             // Use classifiedEvents and parkName from outer scope
+                            let deforestBadgeIdx = 0;
                             
                             // Format classified deforestation event with pinning
                             const formatClassifiedDefo = (e) => {
@@ -7227,7 +7257,8 @@
                                 let entryIndex = 0; // Will be set after rendering
                                 return polygonIds.map((featureId, idx) => {
                                     const patchInfo = polygonIds.length > 1 ? ` <span style="color: #666; font-size: 8px;">[patch ${idx+1}/${polygonIds.length}]</span>` : '';
-                                    const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="deforestation-0" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">0</span>` : '';
+                                    const badgeNum = deforestBadgeIdx++;
+                                    const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="deforestation-${badgeNum}" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">${badgeNum}</span>` : '';
                                     return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" data-classification="${e.classification || ''}" data-priority="${priorityScore.toFixed(0)}" data-year="${e.year}" data-area="${e.area_km2 || 0}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 6px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="background: rgba(${parseInt(color.slice(1,3), 16)}, ${parseInt(color.slice(3,5), 16)}, ${parseInt(color.slice(5,7), 16)}, 0.2); border: 1px solid ${color}40; color: ${color}; font-size: 8px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; padding: 2px 4px; border-radius: 3px;">${escapeHtml(typeLabel)}</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span></div>`;
                                 }).join('');
                             };
@@ -8381,6 +8412,7 @@
                 if (params.length > 0) url += '?' + params.join('&');
                 
                 const response = await fetch(url);
+                if (!response.ok) { console.warn('Grid fetch failed:', response.status); return; }
                 const data = await response.json();
                 
                 if (data.features && data.features.length > 0) {
@@ -8794,8 +8826,9 @@
         
         // Load reports for narratives' parks
         for (const narrative of starredItems.narratives) {
-            if (!reportDataCache.parks.has(narrative.parkId) && !reportDataCache.loading.has(narrative.parkId)) {
-                prefetchParkReportData(narrative.parkId);
+            const narrParkId = narrative.park_id || narrative.parkId;
+            if (narrParkId && !reportDataCache.parks.has(narrParkId) && !reportDataCache.loading.has(narrParkId)) {
+                prefetchParkReportData(narrParkId);
                 loadingCount++;
             }
         }
@@ -9168,8 +9201,10 @@
         // Narratives section - specific narrative only
         if (starredItems.narratives.length > 0) {
             html += renderStarredSection('Specific Narratives', 'narrative', starredItems.narratives, item => {
-                const cached = reportDataCache.parks.get(item.parkId);
-                const isLoading = reportDataCache.loading.has(item.parkId);
+                const narrParkId = item.park_id || item.parkId;
+                const narrParkName = item.park_name || item.parkName || narrParkId;
+                const cached = reportDataCache.parks.get(narrParkId);
+                const isLoading = reportDataCache.loading.has(narrParkId);
                 
                 // Generate preview for specific narrative type
                 let summaryPreview = '';
@@ -9190,10 +9225,10 @@
                 }
                 
                 return {
-                    id: item.parkId + '_' + item.type,
-                    parkId: item.parkId,
-                    name: item.title || item.type,
-                    meta: item.parkName || '',
+                    id: narrParkId + '_' + item.type,
+                    parkId: narrParkId,
+                    name: `${narrParkName} — ${item.type}`,
+                    meta: narrParkName,
                     icon: {'fire': '◆', 'deforestation': '▲', 'settlement': '■', 'road': '═'}[item.type] || '●',
                     status: cached ? '<div class="starred-report-ready">✓ Ready</div>' + summaryPreview : '<div class="starred-report-loading" style="padding:2px 0;"><div class="spinner" style="width:10px;height:10px;"></div><span style="font-size:10px;">Loading...</span></div>',
                     reportHtml: cached ? renderNarrativeReportInline(item, cached) : '<div class="starred-report-loading"><div class="spinner"></div>Loading...</div>'
@@ -10003,7 +10038,7 @@
             params.set('starred_bboxes', starredItems.bboxes.map(b => b.bbox.join(':')).join(','));
         }
         if (starredItems.narratives.length > 0) {
-            params.set('starred_narratives', starredItems.narratives.map(n => `${n.parkId}:${n.type}`).join(','));
+            params.set('starred_narratives', starredItems.narratives.map(n => `${n.park_id || n.parkId}:${n.type}`).join(','));
         }
         
         // Include time filter
@@ -11394,8 +11429,9 @@
         
         // Fetch data for narrative-only stars
         for (const narr of starredItems.narratives) {
-            if (narr.parkId && !parkDataMap.has(narr.parkId)) {
-                parkDataMap.set(narr.parkId, await fetchParkFullData(narr.parkId));
+            const narrParkId = narr.park_id || narr.parkId;
+            if (narrParkId && !parkDataMap.has(narrParkId)) {
+                parkDataMap.set(narrParkId, await fetchParkFullData(narrParkId));
             }
         }
         
@@ -13181,12 +13217,13 @@ ${starredItems.narratives.map(n => {
         
         // Type icons and labels
         const typeIcons = {
-            'fire': '◇', 'settlement': '◻', 'deforestation': '△', 
+            'fire': '◇', 'fire_trajectory': '◇', 'settlement': '◻', 'deforestation': '△', 
             'road': '═', 'place': '●', 'river': '~', 'water': '○',
             'active-fire': '◆', 'infrastructure': '▣'
         };
         const typeLabels = {
-            'fire': 'Fire trajectories', 'settlement': 'Settlements', 'deforestation': 'Deforestation',
+            'fire': 'Fire trajectories', 'fire_trajectory': 'Fire trajectories',
+            'settlement': 'Settlements', 'deforestation': 'Deforestation',
             'road': 'Roads', 'place': 'Places', 'river': 'Rivers', 'water': 'Waterbodies',
             'active-fire': 'Active fire', 'infrastructure': 'Infrastructure'
         };
@@ -14353,9 +14390,18 @@ ${starredItems.narratives.map(n => {
         const zoom = parseFloat(params.get('z'));
         
         if (basemap && typeof switchBasemap === 'function') {
+            // Map short aliases to actual basemap IDs
+            const basemapAliases = {
+                'satellite': 'satellite-esri',
+                'sat': 'satellite-esri',
+                'esri': 'satellite-esri',
+                'bing': 'satellite-bing',
+                'google': 'satellite-google'
+            };
+            const resolvedBasemap = basemapAliases[basemap] || basemap;
             // Force basemap switch by temporarily setting currentBasemap to something else
             currentBasemap = 'dark';  // Reset to force switch
-            switchBasemap(basemap);
+            switchBasemap(resolvedBasemap);
             
             // After basemap switch, restore position (once styledata fires)
             if (!isNaN(lat) && !isNaN(lng)) {
@@ -14429,6 +14475,10 @@ ${starredItems.narratives.map(n => {
         // Restore search query
         const searchQuery = params.get('q');
         if (searchQuery) {
+            // Open search panel first
+            if (!searchOpen && typeof toggleSearch === 'function') {
+                toggleSearch();
+            }
             const searchInput = document.getElementById('search-input');
             if (searchInput) {
                 searchInput.value = searchQuery;
@@ -14625,6 +14675,7 @@ ${starredItems.narratives.map(n => {
                         const starModal = document.getElementById('star-modal');
                         if (starModal) starModal.classList.add('active');
                         renderStarredItems();
+                        autoLoadStarredReportData();
                         break;
                     case 'admin':
                         toggleAdminPanel();
