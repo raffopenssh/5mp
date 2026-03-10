@@ -21,8 +21,11 @@ func loadPasswords() []string {
 // PasswordMiddleware checks for valid password in cookie or query param
 func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Allow static downloads and SEO files without password
-		if strings.HasPrefix(r.URL.Path, "/static/downloads/") ||
+		// Allow static assets, downloads and SEO files without password
+		if strings.HasSuffix(r.URL.Path, ".css") ||
+			strings.HasSuffix(r.URL.Path, ".js") ||
+			strings.HasSuffix(r.URL.Path, ".svg") ||
+			strings.HasPrefix(r.URL.Path, "/static/downloads/") ||
 			r.URL.Path == "/healthz" ||
 			r.URL.Path == "/robots.txt" ||
 			r.URL.Path == "/sitemap.xml" ||

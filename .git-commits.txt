@@ -1,20 +1,20 @@
-a3e97cab 2026-03-05 15:50:59 Add WorldClim test endpoint for verifying on-demand lookups
-c16742d3 2026-03-05 15:50:00 Pre-generate WorldClim data for all Africa + on-demand lookup for rest
-dbde3e3d 2026-03-05 15:22:19 Fix WorldClim script to read directly from ZIP without extraction
-c761cec7 2026-03-05 15:11:35 Fix settlement icon not showing as pinned when loaded from URL
-866f1519 2026-03-05 15:07:17 Fix 'No ghsl features found' error when opening sections without data
-87cf1066 2026-03-05 15:01:18 Fix settlement/deforestation filter issues: preserve pinned state, update counts, add URL params
-6862b4c6 2026-03-05 13:14:43 Make filters affect pinned map layers
-54a5c279 2026-03-05 13:06:39 Fix filter dropdown styling and preserve accordion state
-3afc9823 2026-03-05 13:01:24 Add real-world examples and use cases for priority ranking
-c37d638a 2026-03-05 13:00:12 Add comprehensive priority ranking documentation
-36445e0f 2026-03-05 12:59:13 Add priority-based ranking and type tags for deforestation/settlement narratives
-e1aa2fdc 2026-03-05 12:51:27 Add final Lucide icons implementation summary
-86d87e64 2026-03-05 12:50:17 Add icon system documentation to AGENTS.md
-dbcf53b0 2026-03-05 12:48:38 Complete emoji replacement with Lucide icons
-a2ef85c5 2026-03-05 12:43:10 Add Lucide Icons implementation documentation
-abc7380c 2026-03-05 12:42:16 Replace emojis with Lucide icon font
-e8b97ebe 2026-03-05 12:19:24 Integrate WorldClim 2.1 precipitation data for accurate patrol intensity
-7ae30ef2 2026-03-05 12:05:05 Use actual WorldClim climate data for patrol intensity calculation
-bfac01d9 2026-03-05 11:58:56 Fix patrol pixel intensity to match map visualization exactly
-c605123d 2026-03-05 11:48:49 Fix patrol pixel intensity calculation and remove patrol_summary sheet
+2b12fe12 2026-03-10 11:19:46 Security, performance & reliability hardening (P0-P2)
+d10eadac 2026-03-06 09:18:07 Fix: Debounce hover popup to prevent duplicates on polygon fill/line transitions
+6048cd70 2026-03-06 09:10:47 Fix: Hover tooltip works on filled area of pinned polygons
+11a50543 2026-03-06 08:48:05 Fix: Click on pinned feature now opens park popup with highlighted entry
+97827901 2026-03-06 08:25:38 Fix: Replace map emoji with Lucide icon in star report
+7baa84e1 2026-03-06 08:19:29 Fix: Hide park polygon fill on satellite basemap
+1376f564 2026-03-06 08:10:42 feat: Encode and restore individual pinned features in share links
+8c6cd75d 2026-03-06 07:44:19 Fix: Encode and restore basemap choice in share links
+6046dfc2 2026-03-06 07:18:23 docs: Git history cleanup - remove binaries and regenerable files
+5dd40e16 2026-03-05 19:34:49 Fix: URL-loaded filters now correctly limit entries to first 20
+c7273bc3 2026-03-05 19:20:28 Fix: Reset hidden div when filter is applied to prevent showing all entries
+d756a8a5 2026-03-05 19:04:21 Fix 'Load More' button to adapt count to active filter in deforestation and settlement sections
+5a47629d 2026-03-05 18:57:46 Fix settlement filter count to show total matching events, not just visible (display-limited) count
+35c27c37 2026-03-05 18:30:09 Fix: Apply time filter to classified deforestation events
+a29d4d1d 2026-03-05 18:06:06 Fix: Show first 20 entries when filtering, not just initial 10
+f929055b 2026-03-05 17:57:52 Fix: Show filtered area in km² for deforestation, not count
+a4e843fb 2026-03-05 16:58:28 Fix: Remove extra closing braces breaking JavaScript
+a8285fca 2026-03-05 16:50:35 Fix: URL popup and sections parameter not working
+f6f78e94 2026-03-05 16:40:48 UI: Refine filter UX - boxed tags, shorter labels, auto-expand
+7172a5a9 2026-03-05 16:17:55 UI: Improve settlement/deforestation filter UX
