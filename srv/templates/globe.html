@@ -7408,7 +7408,8 @@
                 
                 const data = statsResp.ok ? await statsResp.json() : {};
                 const infra = infraResp.ok ? await infraResp.json() : { rivers: [], roads: [], places: [], summary: {} };
-                const learned = learnedResp.ok ? await learnedResp.json() : { airstrips: [], places: [] };
+                const learned = (learnedResp.ok && (learnedResp.headers.get('content-type') || '').includes('json'))
+                    ? await learnedResp.json() : { airstrips: [], places: [] };
                 
                 const s = infra.summary || {};
                 const parkName = el.closest('.pa-popup')?.querySelector('.pa-popup-name span')?.textContent || paId;
