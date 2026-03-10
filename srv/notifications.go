@@ -70,7 +70,7 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 
 	rows, err := s.DB.Query(query, args...)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "request failed", err)
 		return
 	}
 	defer rows.Close()
@@ -142,7 +142,7 @@ func (s *Server) HandleMarkNotificationRead(w http.ResponseWriter, r *http.Reque
 
 	_, err = s.DB.Exec("UPDATE notifications SET is_read = 1 WHERE id = ?", id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "request failed", err)
 		return
 	}
 
@@ -155,7 +155,7 @@ func (s *Server) HandleMarkNotificationRead(w http.ResponseWriter, r *http.Reque
 func (s *Server) HandleMarkAllNotificationsRead(w http.ResponseWriter, r *http.Request) {
 	result, err := s.DB.Exec("UPDATE notifications SET is_read = 1 WHERE is_read = 0")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "request failed", err)
 		return
 	}
 

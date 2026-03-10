@@ -1,1 +1,0 @@
-{"park_id": "CMR_Nki", "year": 2022, "buffer_km": 50, "fires": [{"lat": 2.53286, "lon": 15.08945, "date": "2022-01-29", "time": "1213", "frp": 2.74, "confidence": "n"}, {"lat": 2.56814, "lon": 15.02655, "date": "2022-12-29", "time": "1251", "frp": 50.03, "confidence": "n"}], "count_buffer": 2}

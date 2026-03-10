@@ -5,8 +5,8 @@ Description=Go web server
 Type=simple
 User=exedev
 Group=exedev
-WorkingDirectory=/home/exedev
-ExecStart=/home/exedev/srv
+WorkingDirectory=/home/exedev/5mp
+ExecStart=/home/exedev/5mp/server
 Restart=always
 RestartSec=5
 Environment=HOME=/home/exedev

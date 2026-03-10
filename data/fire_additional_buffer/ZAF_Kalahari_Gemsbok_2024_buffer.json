@@ -1,1 +1,0 @@
-{"park_id": "ZAF_Kalahari_Gemsbok", "year": 2024, "buffer_km": 50, "fires": [{"lat": -26.28552, "lon": 21.10757, "date": "2024-04-06", "time": "2333", "frp": 0.06, "confidence": "n"}, {"lat": -25.72296, "lon": 20.98045, "date": "2024-12-07", "time": "2337", "frp": 0.05, "confidence": "n"}], "count_buffer": 2}

@@ -573,7 +573,7 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "request failed", err)
 		return
 	}
 	
@@ -919,7 +919,7 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		ORDER BY de.year ASC
 	`, internalID, fromYear, toYear)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "request failed", err)
 		return
 	}
 	defer rows.Close()

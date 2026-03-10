@@ -304,7 +304,7 @@ func (s *Server) HandleAPIFireRealtime(w http.ResponseWriter, r *http.Request) {
 		startDate.Format("2006-01-02"), endDate.Format("2006-01-02"))
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "request failed", err)
 		return
 	}
 	defer rows.Close()
@@ -1162,7 +1162,7 @@ func (s *Server) HandleAPIUpdateFireAlerts(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	if err := s.UpdateFireGroupAlerts(); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "request failed", err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -1186,7 +1186,7 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
     `, parkID, startDate.Format("2006-01-02"))
     
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        internalError(w, "request failed", err)
         return
     }
     defer rows.Close()

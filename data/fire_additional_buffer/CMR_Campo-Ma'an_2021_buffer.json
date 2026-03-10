@@ -1,1 +1,0 @@
-{"park_id": "CMR_Campo-Ma'an", "year": 2021, "buffer_km": 50, "fires": [{"lat": 1.72473, "lon": 10.29281, "date": "2021-02-01", "time": "100", "frp": 0.63, "confidence": "n"}, {"lat": 1.72865, "lon": 10.29424, "date": "2021-08-31", "time": "1246", "frp": 4.05, "confidence": "n"}], "count_buffer": 2}

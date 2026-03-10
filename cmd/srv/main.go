@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"srv.exe.dev/srv"
 	"srv.exe.dev/srv/areas"
@@ -17,6 +19,7 @@ var flagDataDir = flag.String("data", "data", "path to data directory")
 func main() {
 	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 }
 
@@ -75,10 +78,41 @@ func run() error {
 		slog.Warn("failed to load WorldClim data", "error", err)
 	}
 
-	// Start background workers
-	ctx := context.Background()
+	// Create cancellable context for background workers
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Start background workers with cancellable context
 	go server.StartResearchWorker(ctx)
 	go server.StartNarrativeCacheWorker(ctx)
 
-	return server.Serve(*flagListenAddr)
+	// Start HTTP server in a goroutine
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- server.Serve(*flagListenAddr)
+	}()
+
+	// Wait for interrupt signal or server error
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case sig := <-sigCh:
+		slog.Info("received signal, shutting down", "signal", sig)
+	case err := <-errCh:
+		if err != nil {
+			return fmt.Errorf("server error: %w", err)
+		}
+	}
+
+	// Cancel background workers
+	cancel()
+
+	// Gracefully shutdown HTTP server
+	if err := server.Shutdown(); err != nil {
+		slog.Warn("shutdown error", "error", err)
+	}
+
+	slog.Info("server stopped")
+	return nil
 }

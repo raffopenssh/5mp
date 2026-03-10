@@ -1,1 +1,0 @@
-{"park_id": "NAM_Ai-Ais_Hot_Springs", "year": 2025, "buffer_km": 50, "fires": [{"lat": -27.98053, "lon": 16.73135, "date": "2025-02-26", "time": "1322", "frp": 4.76, "confidence": "l", "inside": false, "dist_to_boundary_km": 12.97}], "near_boundary": [], "count_inside": 0, "count_buffer": 1, "count_near_boundary": 0}

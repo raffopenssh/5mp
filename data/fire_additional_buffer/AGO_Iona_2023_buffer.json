@@ -1,1 +1,0 @@
-{"park_id": "AGO_Iona", "year": 2023, "buffer_km": 50, "fires": [{"lat": -17.53682, "lon": 11.816, "date": "2023-11-17", "time": "59", "frp": 0.23, "confidence": "n"}, {"lat": -17.5229, "lon": 11.82286, "date": "2023-02-02", "time": "59", "frp": 0.2, "confidence": "n"}], "count_buffer": 2}

@@ -470,7 +470,7 @@ func (s *Server) HandleAPIParkFireLog(w http.ResponseWriter, r *http.Request) {
 	`, internalID)
 	
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "request failed", err)
 		return
 	}
 	defer rows.Close()

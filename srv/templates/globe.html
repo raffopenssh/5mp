@@ -33,7 +33,7 @@
     <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
     
     <!-- Lucide Icons -->
-    <link href="https://unpkg.com/lucide-static@latest/font/lucide.css" rel="stylesheet">
+    <link href="https://unpkg.com/lucide-static@0.577.0/font/lucide.css" rel="stylesheet">
     <style>
         :root {
             /* Category Colors - consistent across UI */
@@ -1684,6 +1684,11 @@
     </div>
 
     <script>
+        // Suppress console.log in production (keep warn/error)
+        if (!new URLSearchParams(location.search).has('debug')) {
+            console.log = () => {};
+        }
+
         const MAPTILER_KEY = 'dea58ea0389007e386776c4f583f4425';
         const API_HOST = 'five-mp-conservation-effort';
 
@@ -4114,14 +4119,18 @@
         }
         
         // Helper to load external scripts
+        const _loadedScripts = new Map();
         function loadScript(src) {
-            return new Promise((resolve, reject) => {
+            if (_loadedScripts.has(src)) return _loadedScripts.get(src);
+            const p = new Promise((resolve, reject) => {
                 const script = document.createElement('script');
                 script.src = src;
                 script.onload = resolve;
-                script.onerror = reject;
+                script.onerror = () => { _loadedScripts.delete(src); reject(); };
                 document.head.appendChild(script);
             });
+            _loadedScripts.set(src, p);
+            return p;
         }
         
         // Export full starred report as CSV
@@ -8898,8 +8907,8 @@
             setTimeout(loadNotifications, 1000);
             setTimeout(loadFireActiveParks, 1500);
             
-            // Periodically check for new notifications (every 30 seconds)
-            setInterval(checkForNewNotifications, 30000);
+            // Periodically check for new notifications (every 30 seconds, paused when tab hidden)
+            setInterval(() => { if (!document.hidden) checkForNewNotifications(); }, 30000);
         });
         
         let lastNotificationCheck = 0;

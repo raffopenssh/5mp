@@ -1,6 +1,7 @@
 package srv
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"html/template"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"srv.exe.dev/db"
 	"srv.exe.dev/srv/areas"
@@ -26,6 +28,8 @@ type Server struct {
 	GADMStore    *GADMStore
 	GPXLearner   *GPXLearner
 	UploadQueueProcessor *UploadQueueProcessor
+	httpServer   *http.Server
+	templates    map[string]*template.Template
 }
 
 // Version is set at build time via ldflags
@@ -47,6 +51,9 @@ func New(dbPath, hostname string) (*Server, error) {
 	}
 	if err := srv.setUpDatabase(dbPath); err != nil {
 		return nil, err
+	}
+	if err := srv.loadTemplates(); err != nil {
+		return nil, fmt.Errorf("load templates: %w", err)
 	}
 	srv.Auth = auth.NewManager(srv.DB)
 	
@@ -76,11 +83,28 @@ func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) renderTemplate(w http.ResponseWriter, name string, data any) error {
-	path := filepath.Join(s.TemplatesDir, name)
-	tmpl, err := template.ParseFiles(path)
+func (s *Server) loadTemplates() error {
+	s.templates = make(map[string]*template.Template)
+	entries, err := filepath.Glob(filepath.Join(s.TemplatesDir, "*.html"))
 	if err != nil {
-		return fmt.Errorf("parse template %q: %w", name, err)
+		return fmt.Errorf("glob templates: %w", err)
+	}
+	for _, path := range entries {
+		name := filepath.Base(path)
+		tmpl, err := template.ParseFiles(path)
+		if err != nil {
+			return fmt.Errorf("parse template %q: %w", name, err)
+		}
+		s.templates[name] = tmpl
+	}
+	slog.Info("cached templates", "count", len(s.templates))
+	return nil
+}
+
+func (s *Server) renderTemplate(w http.ResponseWriter, name string, data any) error {
+	tmpl, ok := s.templates[name]
+	if !ok {
+		return fmt.Errorf("template %q not found", name)
 	}
 	if err := tmpl.Execute(w, data); err != nil {
 		return fmt.Errorf("execute template %q: %w", name, err)
@@ -106,21 +130,25 @@ func (s *Server) setUpDatabase(dbPath string) error {
 // Serve starts the HTTP server with the configured routes
 func (s *Server) Serve(addr string) error {
 	mux := http.NewServeMux()
-	
+
+	// Rate limiters
+	authRL := newRateLimiter(1, time.Second, 10)    // 10 burst, 1/sec refill
+	uploadRL := newRateLimiter(1, time.Second, 5)   // 5 burst, 1/sec refill
+
 	// Public routes
 	mux.HandleFunc("GET /{$}", s.HandleRoot)
 	mux.HandleFunc("GET /login", s.HandleLoginPage)
-	mux.HandleFunc("POST /login", s.HandleLogin)
+	mux.HandleFunc("POST /login", RateLimitMiddleware(authRL, s.HandleLogin))
 	mux.HandleFunc("GET /logout", s.HandleLogout)
 	mux.HandleFunc("GET /register", s.HandleRegisterPage)
-	mux.HandleFunc("POST /register", s.HandleRegister)
+	mux.HandleFunc("POST /register", RateLimitMiddleware(authRL, s.HandleRegister))
 	
 	// Protected routes (require auth)
 	mux.HandleFunc("GET /upload", s.HandleUploadPage)
-	mux.HandleFunc("POST /upload", s.HandleUpload)
+	mux.HandleFunc("POST /upload", RateLimitMiddleware(uploadRL, s.HandleUpload))
 
 	// Async upload endpoints
-	mux.HandleFunc("POST /api/upload/async", s.HandleAsyncUpload)
+	mux.HandleFunc("POST /api/upload/async", RateLimitMiddleware(uploadRL, s.HandleAsyncUpload))
 	mux.HandleFunc("GET /api/upload/status/{id}", s.HandleUploadStatus)
 	
 	// Admin routes (require admin role)
@@ -144,7 +172,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/login", s.HandleAPILogin)
 	mux.HandleFunc("POST /api/register", s.HandleAPIRegister)
 	mux.HandleFunc("POST /api/logout", s.HandleAPILogout)
-	mux.HandleFunc("POST /api/upload", s.HandleAPIUpload)
+	mux.HandleFunc("POST /api/upload", RateLimitMiddleware(uploadRL, s.HandleAPIUpload))
 	mux.HandleFunc("GET /api/stats", s.HandleAPIStats)
 	mux.HandleFunc("GET /api/parks/export", s.HandleAPIParksExport)
 	mux.HandleFunc("GET /api/activity", s.HandleAPIActivity)
@@ -198,8 +226,8 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/parks/{id}/fire-narrative", s.HandleAPIFireNarrative)
 	mux.HandleFunc("GET /api/parks/{id}/fire-realtime", s.HandleAPIFireRealtime)
 	mux.HandleFunc("GET /api/fire-alerts", s.HandleAPIFireAlerts)
-	mux.HandleFunc("POST /api/admin/update-fire-alerts", s.HandleAPIUpdateFireAlerts)
-	mux.HandleFunc("POST /api/update-fire-alerts", s.HandleAPIUpdateFireAlerts) // Non-admin for cron
+	mux.HandleFunc("POST /api/admin/update-fire-alerts", s.RequireAdmin(s.HandleAPIUpdateFireAlerts))
+	mux.HandleFunc("POST /api/update-fire-alerts", s.RequireAdminOrLocal(s.HandleAPIUpdateFireAlerts))
 	mux.HandleFunc("GET /api/parks/{id}/deforestation-narrative", s.HandleAPIDeforestationNarrative)
 	mux.HandleFunc("GET /api/parks/{id}/settlement-narrative", s.HandleAPISettlementNarrative)
 	mux.HandleFunc("GET /api/parks/{id}/classified-settlements", s.HandleAPIClassifiedSettlements)
@@ -210,15 +238,14 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/export/patrol-pixels", s.HandleAPIExportPatrolPixels)
 	
 	// Admin APIs
-	mux.HandleFunc("GET /api/admin/gpx-logs", s.HandleAPIGPXUploadLogs)
-	mux.HandleFunc("GET /api/admin/learning-results", s.HandleAPILearningResults)
-	mux.HandleFunc("GET /api/admin/pending-approvals", s.HandleAPIPendingApprovals)
-	// Admin sync triggers - use password auth, not session (for cron jobs)
-	mux.HandleFunc("POST /api/admin/trigger-faolex-sync", s.HandleAPITriggerFAOLEXSync)
-	mux.HandleFunc("POST /api/admin/trigger-publication-sync", s.HandleAPITriggerPublicationSync)
-	mux.HandleFunc("GET /api/admin/learned-features", s.HandleAPILearnedFeatures)
-	mux.HandleFunc("GET /api/admin/feature-history", s.HandleAPIFeatureHistory)
-	mux.HandleFunc("POST /api/admin/rollback-feature", s.HandleAPIRollbackFeature)
+	mux.HandleFunc("GET /api/admin/gpx-logs", s.RequireAdmin(s.HandleAPIGPXUploadLogs))
+	mux.HandleFunc("GET /api/admin/learning-results", s.RequireAdmin(s.HandleAPILearningResults))
+	mux.HandleFunc("GET /api/admin/pending-approvals", s.RequireAdmin(s.HandleAPIPendingApprovals))
+	mux.HandleFunc("POST /api/admin/trigger-faolex-sync", s.RequireAdminOrLocal(s.HandleAPITriggerFAOLEXSync))
+	mux.HandleFunc("POST /api/admin/trigger-publication-sync", s.RequireAdminOrLocal(s.HandleAPITriggerPublicationSync))
+	mux.HandleFunc("GET /api/admin/learned-features", s.RequireAdmin(s.HandleAPILearnedFeatures))
+	mux.HandleFunc("GET /api/admin/feature-history", s.RequireAdmin(s.HandleAPIFeatureHistory))
+	mux.HandleFunc("POST /api/admin/rollback-feature", s.RequireAdmin(s.HandleAPIRollbackFeature))
 	mux.HandleFunc("GET /api/parks/{id}/patrol-mcp", s.HandleAPIPatrolMCP)
 	mux.HandleFunc("GET /api/parks/{id}/learned-stats", s.HandleAPILearnedFeatureStats)
 	mux.HandleFunc("POST /api/admin/approve-feature", s.RequireAdmin(s.HandleAPIApproveLearnedFeature))
@@ -237,6 +264,9 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/notifications/{id}/read", s.HandleMarkNotificationRead)
 	mux.HandleFunc("POST /api/notifications/read-all", s.HandleMarkAllNotificationsRead)
 
+	// Health check (bypasses password middleware)
+	mux.HandleFunc("GET /healthz", s.HandleHealthz)
+
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
 	
@@ -245,9 +275,27 @@ func (s *Server) Serve(addr string) error {
 	
 	slog.Info("starting server", "addr", addr)
 	
-	// Wrap with password protection middleware
-	protectedHandler := s.PasswordMiddleware(mux)
-	return http.ListenAndServe(addr, protectedHandler)
+	// Wrap with security headers, compression, and password protection
+	protectedHandler := SecurityHeadersMiddleware(GzipMiddleware(s.PasswordMiddleware(mux)))
+
+	s.httpServer = &http.Server{
+		Addr:         addr,
+		Handler:      protectedHandler,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 120 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
+	return s.httpServer.ListenAndServe()
+}
+
+// Shutdown gracefully stops the HTTP server.
+func (s *Server) Shutdown() error {
+	if s.httpServer == nil {
+		return nil
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return s.httpServer.Shutdown(ctx)
 }
 
 

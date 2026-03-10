@@ -33,10 +33,12 @@ func Open(path string) (*sql.DB, error) {
 		_ = db.Close()
 		return nil, fmt.Errorf("set WAL: %w", err)
 	}
-	if _, err := db.Exec("PRAGMA busy_timeout=1000;"); err != nil {
+	if _, err := db.Exec("PRAGMA busy_timeout=5000;"); err != nil {
 		_ = db.Close()
 		return nil, fmt.Errorf("set busy_timeout: %w", err)
 	}
+	db.SetMaxOpenConns(4)
+	db.SetMaxIdleConns(2)
 	return db, nil
 }
 

@@ -3,17 +3,27 @@ package srv
 import (
 	"crypto/subtle"
 	"net/http"
+	"os"
 	"strings"
 )
 
-// Valid passwords for testing access
-var validPasswords = []string{"test2026", "REDACTED_PWD", "REDACTED_PWD"}
+// validPasswords are loaded from ACCESS_PASSWORDS env var (comma-separated),
+// falling back to defaults if unset.
+var validPasswords = loadPasswords()
+
+func loadPasswords() []string {
+	if env := os.Getenv("ACCESS_PASSWORDS"); env != "" {
+		return strings.Split(env, ",")
+	}
+	return []string{"test2026", "REDACTED_PWD", "REDACTED_PWD"}
+}
 
 // PasswordMiddleware checks for valid password in cookie or query param
 func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Allow static downloads and SEO files without password
 		if strings.HasPrefix(r.URL.Path, "/static/downloads/") ||
+			r.URL.Path == "/healthz" ||
 			r.URL.Path == "/robots.txt" ||
 			r.URL.Path == "/sitemap.xml" ||
 			r.URL.Path == "/static/robots.txt" ||
@@ -44,6 +54,7 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 				Path:     "/",
 				MaxAge:   86400 * 30, // 30 days
 				HttpOnly: true,
+				Secure:   true,
 				SameSite: http.SameSiteLaxMode,
 			})
 			// Redirect to remove pwd from URL

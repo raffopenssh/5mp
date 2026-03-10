@@ -170,6 +170,30 @@ func (s *Server) RequireAdmin(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// RequireAdminOrLocal is middleware that requires admin role OR localhost origin.
+// This allows cron jobs running on the same machine to call admin endpoints.
+func (s *Server) RequireAdminOrLocal(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Allow requests from localhost (for cron jobs)
+		host := r.RemoteAddr
+		if strings.HasPrefix(host, "127.0.0.1:") || strings.HasPrefix(host, "[::1]:") {
+			next(w, r)
+			return
+		}
+		// Otherwise require admin session
+		user := s.Auth.GetUserFromRequest(r)
+		if user == nil {
+			http.Error(w, "Admin access required", http.StatusForbidden)
+			return
+		}
+		if user.Role != "admin" {
+			http.Error(w, "Admin access required", http.StatusForbidden)
+			return
+		}
+		next(w, r)
+	}
+}
+
 // renderTemplate with funcmap for templates
 func (s *Server) renderTemplateWithFuncs(w http.ResponseWriter, name string, data any) error {
 	tmpl := template.New(name).Funcs(template.FuncMap{

@@ -459,7 +459,7 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 	
 	rows, err := s.DB.Query(query, args...)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "grid query failed", err)
 		return
 	}
 	defer rows.Close()

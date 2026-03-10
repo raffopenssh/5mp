@@ -66,7 +66,7 @@ func (s *Server) handleParkFireAnalysis(w http.ResponseWriter, r *http.Request) 
 	`, parkID)
 	if err != nil {
 		log.Printf("Query error: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "request failed", err)
 		return
 	}
 	defer rows.Close()
