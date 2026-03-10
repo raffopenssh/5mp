@@ -620,8 +620,8 @@ func (s *Server) HandleAPIMBTilesCreate(w http.ResponseWriter, r *http.Request) 
 		"total_tiles":         len(tiles),
 		"estimated_size_mb":   estimatedSize / (1024 * 1024),
 		"estimated_seconds":   estimatedSeconds,
-		"status_url":          fmt.Sprintf("/api/mbtiles/%s/status?pwd=%s", job.ID, r.URL.Query().Get("pwd")),
-		"download_url":        fmt.Sprintf("/api/mbtiles/%s/download?pwd=%s", job.ID, r.URL.Query().Get("pwd")),
+		"status_url":          fmt.Sprintf("/api/mbtiles/%s/status", job.ID),
+		"download_url":        fmt.Sprintf("/api/mbtiles/%s/download", job.ID),
 	})
 }
 

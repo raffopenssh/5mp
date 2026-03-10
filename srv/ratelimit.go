@@ -2,6 +2,7 @@ package srv
 
 import (
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -79,9 +80,13 @@ func (rl *rateLimiter) cleanup() {
 
 func extractIP(r *http.Request) string {
 	if fwd := r.Header.Get("X-Forwarded-For"); fwd != "" {
-		return fwd
+		// Take only the first IP (the original client)
+		if first, _, ok := strings.Cut(fwd, ","); ok {
+			return strings.TrimSpace(first)
+		}
+		return strings.TrimSpace(fwd)
 	}
-	// Strip port
+	// Strip port from RemoteAddr
 	host := r.RemoteAddr
 	for i := len(host) - 1; i >= 0; i-- {
 		if host[i] == ':' {

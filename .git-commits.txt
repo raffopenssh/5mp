@@ -1,3 +1,6 @@
+c96ca8af 2026-03-10 12:04:41 Fix: Script elements visible as text in footer
+481ae9ff 2026-03-10 11:57:46 Fix: Road data error from admin-only learned-features endpoint
+969bd727 2026-03-10 11:56:02 P3: Dead code removal (~2500 lines), XSS escaping (~40 fixes), CSS extraction
 2b12fe12 2026-03-10 11:19:46 Security, performance & reliability hardening (P0-P2)
 d10eadac 2026-03-06 09:18:07 Fix: Debounce hover popup to prevent duplicates on polygon fill/line transitions
 6048cd70 2026-03-06 09:10:47 Fix: Hover tooltip works on filled area of pinned polygons
@@ -15,6 +18,3 @@ d756a8a5 2026-03-05 19:04:21 Fix 'Load More' button to adapt count to active fil
 a29d4d1d 2026-03-05 18:06:06 Fix: Show first 20 entries when filtering, not just initial 10
 f929055b 2026-03-05 17:57:52 Fix: Show filtered area in km² for deforestation, not count
 a4e843fb 2026-03-05 16:58:28 Fix: Remove extra closing braces breaking JavaScript
-a8285fca 2026-03-05 16:50:35 Fix: URL popup and sections parameter not working
-f6f78e94 2026-03-05 16:40:48 UI: Refine filter UX - boxed tags, shorter labels, auto-expand
-7172a5a9 2026-03-05 16:17:55 UI: Improve settlement/deforestation filter UX

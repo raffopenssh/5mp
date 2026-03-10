@@ -169,8 +169,8 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/wdpa/search", s.HandleAPIWDPASearch)
 	
 	// API auth endpoints
-	mux.HandleFunc("POST /api/login", s.HandleAPILogin)
-	mux.HandleFunc("POST /api/register", s.HandleAPIRegister)
+	mux.HandleFunc("POST /api/login", RateLimitMiddleware(authRL, s.HandleAPILogin))
+	mux.HandleFunc("POST /api/register", RateLimitMiddleware(authRL, s.HandleAPIRegister))
 	mux.HandleFunc("POST /api/logout", s.HandleAPILogout)
 	mux.HandleFunc("POST /api/upload", RateLimitMiddleware(uploadRL, s.HandleAPIUpload))
 	mux.HandleFunc("GET /api/stats", s.HandleAPIStats)
