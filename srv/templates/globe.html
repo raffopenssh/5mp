@@ -17654,114 +17654,96 @@ ${starredItems.narratives.map(n => {
     }
     
     async function showUploadDetail(id) {
-        const modal = document.getElementById('feature-modal');
-        if (!modal) return;
+        // Toggle inline detail row below the clicked upload row
+        const existingDetail = document.getElementById(`upload-detail-${id}`);
+        if (existingDetail) {
+            existingDetail.remove();
+            return;
+        }
         
-        const content = modal.querySelector('.feature-modal-content') || modal;
-        content.innerHTML = '<div style="text-align:center;padding:40px;">Loading...</div>';
-        modal.classList.add('active');
+        // Remove any other open detail rows
+        document.querySelectorAll('.upload-detail-row').forEach(r => r.remove());
+        
+        const row = document.querySelector(`tr[data-id="${id}"][data-type="upload"]`);
+        if (!row) return;
+        
+        // Insert loading row
+        const detailRow = document.createElement('tr');
+        detailRow.id = `upload-detail-${id}`;
+        detailRow.className = 'upload-detail-row';
+        detailRow.innerHTML = `<td colspan="6" style="padding:12px 16px;background:#111;border-left:3px solid #3b82f6;"><div style="text-align:center;color:#888;">Loading...</div></td>`;
+        row.after(detailRow);
         
         try {
             const res = await fetch(`/api/admin/upload-detail?id=${id}`);
-            if (!res.ok) throw new Error('Failed to load upload details');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             
             // Parse classified segments
             let segments = [];
             if (data.classified_segments_json) {
-                try {
-                    segments = JSON.parse(data.classified_segments_json);
-                } catch (e) {
-                    console.error('Failed to parse segments:', e);
-                }
+                try { segments = JSON.parse(data.classified_segments_json); } catch(e) {}
             }
             
-            // Build segment breakdown HTML
-            let segmentsHTML = '';
-            if (segments.length > 0) {
-                segmentsHTML = `
-                    <div class="upload-segments" style="margin-top:20px;">
-                        <h4 style="margin-bottom:10px;font-size:14px;">Classified Segments (${segments.length}):</h4>
-                        <div style="max-height:300px;overflow-y:auto;">
-                            ${segments.map((seg, idx) => `
-                                <div class="segment-item" style="background:${seg.include_in_effort ? '#1a2b1a' : '#2b1a1a'};border-left:3px solid ${seg.include_in_effort ? '#22c55e' : '#ef4444'};padding:8px;margin-bottom:8px;border-radius:3px;">
-                                    <div style="font-weight:bold;color:${seg.include_in_effort ? '#22c55e' : '#ef4444'};">Segment ${idx + 1}: ${seg.classification}</div>
-                                    <div style="font-size:11px;color:#aaa;margin-top:4px;">
-                                        <div><strong>Movement:</strong> ${seg.movement_type || 'N/A'} ${seg.activity_type ? `(${seg.activity_type})` : ''}</div>
-                                        <div><strong>Distance:</strong> ${seg.distance_km ? seg.distance_km.toFixed(2) : '0.00'} km</div>
-                                        <div><strong>Speed:</strong> ${seg.avg_speed_kmh ? seg.avg_speed_kmh.toFixed(1) : '0.0'} km/h</div>
-                                        <div><strong>Duration:</strong> ${seg.duration || 'N/A'}</div>
-                                        ${seg.smoothness ? `<div><strong>Smoothness:</strong> ${seg.smoothness.toFixed(2)}</div>` : ''}
-                                        <div style="margin-top:4px;font-style:italic;">${seg.reason || ''}</div>
-                                        <div style="color:${seg.include_in_effort ? '#22c55e' : '#ef4444'};margin-top:4px;"><strong>${seg.include_in_effort ? '✓ Included in patrol effort' : '✗ Excluded from patrol effort'}</strong></div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
+            // Parse validation
+            const errors = data.validation_errors ? (() => { try { return JSON.parse(data.validation_errors); } catch(e) { return []; } })() : [];
+            const warnings = data.validation_warnings ? (() => { try { return JSON.parse(data.validation_warnings); } catch(e) { return []; } })() : [];
+            
+            // Status color
+            const statusColor = data.processing_status === 'completed' ? '#22c55e' : data.processing_status === 'partial' ? '#f59e0b' : '#ef4444';
+            
+            // Build segments HTML
+            const segsHTML = segments.length > 0 ? segments.map((seg, idx) => {
+                const c = seg.include_in_effort ? '#22c55e' : '#ef4444';
+                const bg = seg.include_in_effort ? '#1a2b1a' : '#2b1a1a';
+                return `<div style="background:${bg};border-left:3px solid ${c};padding:6px 8px;margin-bottom:4px;border-radius:3px;font-size:11px;">
+                    <span style="color:${c};font-weight:bold;">Seg ${idx+1}: ${seg.classification}</span>
+                    <span style="color:#aaa;"> · ${seg.movement_type || '?'}${seg.activity_type ? ' ('+seg.activity_type+')' : ''} · ${(seg.distance_km||0).toFixed(2)} km · ${(seg.avg_speed_kmh||0).toFixed(1)} km/h${seg.duration ? ' · '+seg.duration : ''}</span>
+                    ${seg.reason ? `<div style="color:#666;font-style:italic;margin-top:2px;">${seg.reason}</div>` : ''}
+                </div>`;
+            }).join('') : '<div style="color:#666;font-size:11px;">No classified segments</div>';
+            
+            // Build validation HTML
+            let valHTML = '';
+            if (errors.length > 0) valHTML += errors.map(e => `<div style="color:#f87171;font-size:11px;">✗ ${escapeHtml(e)}</div>`).join('');
+            if (warnings.length > 0) valHTML += warnings.map(w => `<div style="color:#fbbf24;font-size:11px;">⚠ ${escapeHtml(w)}</div>`).join('');
+            
+            detailRow.innerHTML = `<td colspan="6" style="padding:0;background:#111;border-left:3px solid #3b82f6;">
+                <div style="padding:12px 16px;">
+                    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:10px;">
+                        <div><strong style="color:#888;">Status:</strong> <span style="color:${statusColor};font-weight:bold;">${data.processing_status || 'unknown'}</span></div>
+                        <div><strong style="color:#888;">Points:</strong> <span style="color:#ddd;">${data.total_points || 0}</span></div>
+                        <div><strong style="color:#888;">Uploaded:</strong> <span style="color:#ddd;">${data.upload_time ? new Date(data.upload_time).toLocaleString() : '?'}</span></div>
+                        ${data.protected_area_name ? `<div><strong style="color:#888;">Park:</strong> <span style="color:#ddd;">${escapeHtml(data.protected_area_name)}</span></div>` : ''}
                     </div>
-                `;
-            }
-            
-            // Validation errors/warnings
-            let validationHTML = '';
-            const errors = data.validation_errors ? JSON.parse(data.validation_errors) : [];
-            const warnings = data.validation_warnings ? JSON.parse(data.validation_warnings) : [];
-            if (errors.length > 0 || warnings.length > 0) {
-                validationHTML = `
-                    <div style="margin-top:15px;">
-                        ${errors.length > 0 ? `
-                            <div style="background:#2b1a1a;border-left:3px solid #ef4444;padding:10px;margin-bottom:10px;border-radius:3px;">
-                                <strong style="color:#ef4444;">Errors:</strong>
-                                <ul style="margin:5px 0 0 20px;">${errors.map(e => `<li style="color:#f87171;font-size:11px;">${escapeHtml(e)}</li>`).join('')}</ul>
-                            </div>
-                        ` : ''}
-                        ${warnings.length > 0 ? `
-                            <div style="background:#2b2a1a;border-left:3px solid #f59e0b;padding:10px;border-radius:3px;">
-                                <strong style="color:#f59e0b;">Warnings:</strong>
-                                <ul style="margin:5px 0 0 20px;">${warnings.map(w => `<li style="color:#fbbf24;font-size:11px;">${escapeHtml(w)}</li>`).join('')}</ul>
-                            </div>
-                        ` : ''}
+                    
+                    <div style="display:flex;gap:16px;margin-bottom:10px;font-size:12px;">
+                        <span style="color:#22c55e;">Patrol: ${(data.patrol_km||0).toFixed(2)} km</span>
+                        <span style="color:#888;">Road: ${(data.road_km||0).toFixed(2)} km</span>
+                        <span style="color:#888;">Boundary: ${(data.boundary_km||0).toFixed(2)} km</span>
+                        <span style="color:#ef4444;">Excluded: ${(data.excluded_km||0).toFixed(2)} km</span>
                     </div>
-                `;
-            }
-            
-            content.innerHTML = `
-                <div class="feature-modal-header">
-                    <h3>${escapeHtml(data.filename || 'Upload Details')}</h3>
-                    <button class="feature-modal-close" onclick="closeFeatureModal()">&times;</button>
+                    
+                    <div style="display:flex;gap:16px;margin-bottom:10px;font-size:12px;">
+                        ${data.foot_segments > 0 ? `<span style="color:#ddd;">🚶 ${data.foot_segments}× ${(data.foot_km||0).toFixed(1)} km / ${Math.round(data.foot_minutes||0)} min</span>` : ''}
+                        ${data.vehicle_segments > 0 ? `<span style="color:#ddd;">🚗 ${data.vehicle_segments}× ${(data.vehicle_km||0).toFixed(1)} km / ${Math.round(data.vehicle_minutes||0)} min</span>` : ''}
+                        ${data.aircraft_segments > 0 ? `<span style="color:#ddd;">✈ ${data.aircraft_segments}× ${(data.aircraft_km||0).toFixed(1)} km / ${Math.round(data.aircraft_minutes||0)} min</span>` : ''}
+                    </div>
+                    
+                    ${valHTML ? `<div style="margin-bottom:10px;">${valHTML}</div>` : ''}
+                    
+                    <details style="margin-top:4px;">
+                        <summary style="cursor:pointer;color:#3b82f6;font-size:12px;user-select:none;">Segments (${segments.length})</summary>
+                        <div style="margin-top:6px;max-height:200px;overflow-y:auto;">${segsHTML}</div>
+                    </details>
+                    
+                    <div style="margin-top:10px;text-align:right;">
+                        <button class="admin-btn admin-btn-danger" style="font-size:11px;padding:4px 10px;" onclick="event.stopPropagation();deleteUpload(${data.id});">Delete</button>
+                    </div>
                 </div>
-                <div class="feature-modal-body" style="max-height:70vh;overflow-y:auto;">
-                    <div class="feature-detail-row"><strong>Upload ID:</strong> ${data.id}</div>
-                    <div class="feature-detail-row"><strong>Status:</strong> <span style="color:${data.processing_status === 'completed' ? '#22c55e' : data.processing_status === 'partial' ? '#f59e0b' : '#ef4444'};font-weight:bold;">${data.processing_status}</span></div>
-                    ${data.protected_area_name ? `<div class="feature-detail-row"><strong>Park:</strong> ${escapeHtml(data.protected_area_name)}</div>` : ''}
-                    <div class="feature-detail-row"><strong>Upload Time:</strong> ${data.upload_time ? new Date(data.upload_time).toLocaleString() : 'Unknown'}</div>
-                    <div class="feature-detail-row"><strong>Total Points:</strong> ${data.total_points || 0}</div>
-                    
-                    <hr style="margin:15px 0;border:none;border-top:1px solid #333;">
-                    
-                    <h4 style="margin-bottom:10px;font-size:14px;">Distance Breakdown:</h4>
-                    <div class="feature-detail-row"><strong>Patrol:</strong> <span style="color:#22c55e;">${(data.patrol_km || 0).toFixed(2)} km</span></div>
-                    <div class="feature-detail-row"><strong>Boundary:</strong> ${(data.boundary_km || 0).toFixed(2)} km</div>
-                    <div class="feature-detail-row"><strong>Road:</strong> ${(data.road_km || 0).toFixed(2)} km</div>
-                    <div class="feature-detail-row"><strong>Excluded:</strong> <span style="color:#ef4444;">${(data.excluded_km || 0).toFixed(2)} km</span></div>
-                    
-                    <hr style="margin:15px 0;border:none;border-top:1px solid #333;">
-                    
-                    <h4 style="margin-bottom:10px;font-size:14px;">Movement Breakdown:</h4>
-                    ${data.foot_segments > 0 ? `<div class="feature-detail-row"><strong>Foot:</strong> ${data.foot_segments} segments, ${(data.foot_km || 0).toFixed(2)} km, ${Math.round(data.foot_minutes || 0)} min</div>` : ''}
-                    ${data.vehicle_segments > 0 ? `<div class="feature-detail-row"><strong>Vehicle:</strong> ${data.vehicle_segments} segments, ${(data.vehicle_km || 0).toFixed(2)} km, ${Math.round(data.vehicle_minutes || 0)} min</div>` : ''}
-                    ${data.aircraft_segments > 0 ? `<div class="feature-detail-row"><strong>Aircraft:</strong> ${data.aircraft_segments} segments, ${(data.aircraft_km || 0).toFixed(2)} km, ${Math.round(data.aircraft_minutes || 0)} min</div>` : ''}
-                    
-                    ${validationHTML}
-                    ${segmentsHTML}
-                </div>
-                <div class="feature-modal-footer">
-                    <button class="admin-btn admin-btn-danger" onclick="deleteUpload(${data.id});closeFeatureModal();">Delete Upload</button>
-                    <button class="admin-btn" onclick="closeFeatureModal()">Close</button>
-                </div>
-            `;
+            </td>`;
         } catch (err) {
-            content.innerHTML = `<div style="text-align:center;padding:40px;color:#f87171;">Error: ${err.message}<br><button class="admin-btn" onclick="closeFeatureModal()" style="margin-top:10px;">Close</button></div>`;
+            detailRow.innerHTML = `<td colspan="6" style="padding:12px 16px;background:#111;border-left:3px solid #ef4444;color:#f87171;font-size:12px;">Error loading details: ${err.message}</td>`;
         }
     }
     
