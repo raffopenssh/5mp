@@ -2869,6 +2869,102 @@ func (s *Server) HandleAPIDeleteUpload(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "deleted"})
 }
 
+// HandleAPIUploadDetail returns detailed information about a GPX upload
+// GET /api/admin/upload-detail?id=123
+func (s *Server) HandleAPIUploadDetail(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		http.Error(w, "Missing id parameter", http.StatusBadRequest)
+		return
+	}
+
+	uploadID, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	// Get upload log details
+	var result struct {
+		ID                 int64   `json:"id"`
+		Filename           string  `json:"filename"`
+		UploadTime         string  `json:"upload_time"`
+		TotalPoints        int64   `json:"total_points"`
+		ProtectedAreaID    *string `json:"protected_area_id"`
+		ProtectedAreaName  *string `json:"protected_area_name"`
+		ProcessingStatus   string  `json:"processing_status"`
+		RejectionReason    *string `json:"rejection_reason"`
+		ValidationErrors   *string `json:"validation_errors"`
+		ValidationWarnings *string `json:"validation_warnings"`
+
+		// Distance stats
+		PatrolKm   float64 `json:"patrol_km"`
+		RoadKm     float64 `json:"road_km"`
+		BoundaryKm float64 `json:"boundary_km"`
+		ExcludedKm float64 `json:"excluded_km"`
+
+		// Segment counts
+		TotalSegments    int64 `json:"total_segments"`
+		PatrolSegments   int64 `json:"patrol_segments"`
+		StaticSegments   int64 `json:"static_segments"`
+		ExcludedSegments int64 `json:"excluded_segments"`
+
+		// Movement type breakdown
+		FootSegments     int64   `json:"foot_segments"`
+		FootKm           float64 `json:"foot_km"`
+		FootMinutes      float64 `json:"foot_minutes"`
+		VehicleSegments  int64   `json:"vehicle_segments"`
+		VehicleKm        float64 `json:"vehicle_km"`
+		VehicleMinutes   float64 `json:"vehicle_minutes"`
+		AircraftSegments int64   `json:"aircraft_segments"`
+		AircraftKm       float64 `json:"aircraft_km"`
+		AircraftMinutes  float64 `json:"aircraft_minutes"`
+
+		// Classified segments JSON
+		ClassifiedSegmentsJSON *string `json:"classified_segments_json"`
+	}
+
+	err = s.DB.QueryRowContext(ctx, `
+		SELECT 
+			id, filename, upload_time, total_points,
+			protected_area_id, protected_area_name,
+			processing_status, rejection_reason,
+			validation_errors, validation_warnings,
+			patrol_km, road_km, boundary_km, excluded_km,
+			total_segments, patrol_segments, static_segments, excluded_segments,
+			foot_segments, foot_km, foot_minutes,
+			vehicle_segments, vehicle_km, vehicle_minutes,
+			aircraft_segments, aircraft_km, aircraft_minutes,
+			classified_segments_json
+		FROM gpx_upload_logs
+		WHERE id = ?
+	`, uploadID).Scan(
+		&result.ID, &result.Filename, &result.UploadTime, &result.TotalPoints,
+		&result.ProtectedAreaID, &result.ProtectedAreaName,
+		&result.ProcessingStatus, &result.RejectionReason,
+		&result.ValidationErrors, &result.ValidationWarnings,
+		&result.PatrolKm, &result.RoadKm, &result.BoundaryKm, &result.ExcludedKm,
+		&result.TotalSegments, &result.PatrolSegments, &result.StaticSegments, &result.ExcludedSegments,
+		&result.FootSegments, &result.FootKm, &result.FootMinutes,
+		&result.VehicleSegments, &result.VehicleKm, &result.VehicleMinutes,
+		&result.AircraftSegments, &result.AircraftKm, &result.AircraftMinutes,
+		&result.ClassifiedSegmentsJSON,
+	)
+	if err == sql.ErrNoRows {
+		http.Error(w, "Upload not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		slog.Error("failed to fetch upload detail", "error", err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
+}
+
 // HandleAPIHideNotification hides a notification
 // POST /api/admin/hide-notification
 func (s *Server) HandleAPIHideNotification(w http.ResponseWriter, r *http.Request) {

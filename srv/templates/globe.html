@@ -17653,6 +17653,118 @@ ${starredItems.narratives.map(n => {
         if (modal) modal.classList.remove('active');
     }
     
+    async function showUploadDetail(id) {
+        const modal = document.getElementById('feature-modal');
+        if (!modal) return;
+        
+        const content = modal.querySelector('.feature-modal-content') || modal;
+        content.innerHTML = '<div style="text-align:center;padding:40px;">Loading...</div>';
+        modal.classList.add('active');
+        
+        try {
+            const res = await fetch(`/api/admin/upload-detail?id=${id}`);
+            if (!res.ok) throw new Error('Failed to load upload details');
+            const data = await res.json();
+            
+            // Parse classified segments
+            let segments = [];
+            if (data.classified_segments_json) {
+                try {
+                    segments = JSON.parse(data.classified_segments_json);
+                } catch (e) {
+                    console.error('Failed to parse segments:', e);
+                }
+            }
+            
+            // Build segment breakdown HTML
+            let segmentsHTML = '';
+            if (segments.length > 0) {
+                segmentsHTML = `
+                    <div class="upload-segments" style="margin-top:20px;">
+                        <h4 style="margin-bottom:10px;font-size:14px;">Classified Segments (${segments.length}):</h4>
+                        <div style="max-height:300px;overflow-y:auto;">
+                            ${segments.map((seg, idx) => `
+                                <div class="segment-item" style="background:${seg.include_in_effort ? '#1a2b1a' : '#2b1a1a'};border-left:3px solid ${seg.include_in_effort ? '#22c55e' : '#ef4444'};padding:8px;margin-bottom:8px;border-radius:3px;">
+                                    <div style="font-weight:bold;color:${seg.include_in_effort ? '#22c55e' : '#ef4444'};">Segment ${idx + 1}: ${seg.classification}</div>
+                                    <div style="font-size:11px;color:#aaa;margin-top:4px;">
+                                        <div><strong>Movement:</strong> ${seg.movement_type || 'N/A'} ${seg.activity_type ? `(${seg.activity_type})` : ''}</div>
+                                        <div><strong>Distance:</strong> ${seg.distance_km ? seg.distance_km.toFixed(2) : '0.00'} km</div>
+                                        <div><strong>Speed:</strong> ${seg.avg_speed_kmh ? seg.avg_speed_kmh.toFixed(1) : '0.0'} km/h</div>
+                                        <div><strong>Duration:</strong> ${seg.duration || 'N/A'}</div>
+                                        ${seg.smoothness ? `<div><strong>Smoothness:</strong> ${seg.smoothness.toFixed(2)}</div>` : ''}
+                                        <div style="margin-top:4px;font-style:italic;">${seg.reason || ''}</div>
+                                        <div style="color:${seg.include_in_effort ? '#22c55e' : '#ef4444'};margin-top:4px;"><strong>${seg.include_in_effort ? '✓ Included in patrol effort' : '✗ Excluded from patrol effort'}</strong></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Validation errors/warnings
+            let validationHTML = '';
+            const errors = data.validation_errors ? JSON.parse(data.validation_errors) : [];
+            const warnings = data.validation_warnings ? JSON.parse(data.validation_warnings) : [];
+            if (errors.length > 0 || warnings.length > 0) {
+                validationHTML = `
+                    <div style="margin-top:15px;">
+                        ${errors.length > 0 ? `
+                            <div style="background:#2b1a1a;border-left:3px solid #ef4444;padding:10px;margin-bottom:10px;border-radius:3px;">
+                                <strong style="color:#ef4444;">Errors:</strong>
+                                <ul style="margin:5px 0 0 20px;">${errors.map(e => `<li style="color:#f87171;font-size:11px;">${escapeHtml(e)}</li>`).join('')}</ul>
+                            </div>
+                        ` : ''}
+                        ${warnings.length > 0 ? `
+                            <div style="background:#2b2a1a;border-left:3px solid #f59e0b;padding:10px;border-radius:3px;">
+                                <strong style="color:#f59e0b;">Warnings:</strong>
+                                <ul style="margin:5px 0 0 20px;">${warnings.map(w => `<li style="color:#fbbf24;font-size:11px;">${escapeHtml(w)}</li>`).join('')}</ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = `
+                <div class="feature-modal-header">
+                    <h3>${escapeHtml(data.filename || 'Upload Details')}</h3>
+                    <button class="feature-modal-close" onclick="closeFeatureModal()">&times;</button>
+                </div>
+                <div class="feature-modal-body" style="max-height:70vh;overflow-y:auto;">
+                    <div class="feature-detail-row"><strong>Upload ID:</strong> ${data.id}</div>
+                    <div class="feature-detail-row"><strong>Status:</strong> <span style="color:${data.processing_status === 'completed' ? '#22c55e' : data.processing_status === 'partial' ? '#f59e0b' : '#ef4444'};font-weight:bold;">${data.processing_status}</span></div>
+                    ${data.protected_area_name ? `<div class="feature-detail-row"><strong>Park:</strong> ${escapeHtml(data.protected_area_name)}</div>` : ''}
+                    <div class="feature-detail-row"><strong>Upload Time:</strong> ${data.upload_time ? new Date(data.upload_time).toLocaleString() : 'Unknown'}</div>
+                    <div class="feature-detail-row"><strong>Total Points:</strong> ${data.total_points || 0}</div>
+                    
+                    <hr style="margin:15px 0;border:none;border-top:1px solid #333;">
+                    
+                    <h4 style="margin-bottom:10px;font-size:14px;">Distance Breakdown:</h4>
+                    <div class="feature-detail-row"><strong>Patrol:</strong> <span style="color:#22c55e;">${(data.patrol_km || 0).toFixed(2)} km</span></div>
+                    <div class="feature-detail-row"><strong>Boundary:</strong> ${(data.boundary_km || 0).toFixed(2)} km</div>
+                    <div class="feature-detail-row"><strong>Road:</strong> ${(data.road_km || 0).toFixed(2)} km</div>
+                    <div class="feature-detail-row"><strong>Excluded:</strong> <span style="color:#ef4444;">${(data.excluded_km || 0).toFixed(2)} km</span></div>
+                    
+                    <hr style="margin:15px 0;border:none;border-top:1px solid #333;">
+                    
+                    <h4 style="margin-bottom:10px;font-size:14px;">Movement Breakdown:</h4>
+                    ${data.foot_segments > 0 ? `<div class="feature-detail-row"><strong>Foot:</strong> ${data.foot_segments} segments, ${(data.foot_km || 0).toFixed(2)} km, ${Math.round(data.foot_minutes || 0)} min</div>` : ''}
+                    ${data.vehicle_segments > 0 ? `<div class="feature-detail-row"><strong>Vehicle:</strong> ${data.vehicle_segments} segments, ${(data.vehicle_km || 0).toFixed(2)} km, ${Math.round(data.vehicle_minutes || 0)} min</div>` : ''}
+                    ${data.aircraft_segments > 0 ? `<div class="feature-detail-row"><strong>Aircraft:</strong> ${data.aircraft_segments} segments, ${(data.aircraft_km || 0).toFixed(2)} km, ${Math.round(data.aircraft_minutes || 0)} min</div>` : ''}
+                    
+                    ${validationHTML}
+                    ${segmentsHTML}
+                </div>
+                <div class="feature-modal-footer">
+                    <button class="admin-btn admin-btn-danger" onclick="deleteUpload(${data.id});closeFeatureModal();">Delete Upload</button>
+                    <button class="admin-btn" onclick="closeFeatureModal()">Close</button>
+                </div>
+            `;
+        } catch (err) {
+            content.innerHTML = `<div style="text-align:center;padding:40px;color:#f87171;">Error: ${err.message}<br><button class="admin-btn" onclick="closeFeatureModal()" style="margin-top:10px;">Close</button></div>`;
+        }
+    }
+    
     async function approveAllHighConfidence() {
         if (!confirm('Approve all features with >75% confidence?')) return;
         try {
@@ -17735,9 +17847,13 @@ ${starredItems.narratives.map(n => {
                 row.classList.add('selected');
             }
         } else {
-            document.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
-            adminSelectedItems = [{ type, id }];
-            event.currentTarget.classList.add('selected');
+            // Single click without modifiers - show detail modal
+            if (type === 'upload') {
+                showUploadDetail(id);
+            } else {
+                showFeatureDetail(type, id);
+            }
+            return;
         }
         updateBulkActionBar();
     }

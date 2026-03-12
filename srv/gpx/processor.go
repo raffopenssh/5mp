@@ -494,35 +494,44 @@ func removeGapsFromSegment(seg Segment) []Segment {
 
 		prevPt := seg.Points[i-1]
 
+		// Calculate distance between points
+		dist := haversineDistance(prevPt, pt)
+
 		// Check for gap characteristics
 		isGap := false
 
-		// Time gap check (>5 minutes)
 		if pt.Time != nil && prevPt.Time != nil {
 			timeGap := pt.Time.Sub(*prevPt.Time)
-			if timeGap > 5*time.Minute {
-				// Calculate instantaneous speed during the gap
-				dist := haversineDistance(prevPt, pt)
-				hours := timeGap.Hours()
-				if hours > 0 {
-					speed := dist / hours
-					// If speed > 200 km/h during a gap, it's likely GPS loss
-					if speed > 200 {
-						isGap = true
-					}
-				}
+			hours := timeGap.Hours()
+			var speed float64
+			if hours > 0 {
+				speed = dist / hours
 			}
-		}
 
-		// Also check for unrealistically long distance jumps (>10km in single point)
-		dist := haversineDistance(prevPt, pt)
-		if dist > 10 {
-			// Check if there's a time gap too
-			if pt.Time != nil && prevPt.Time != nil {
-				timeGap := pt.Time.Sub(*prevPt.Time)
-				if timeGap > 1*time.Minute {
-					isGap = true
-				}
+			// Multiple detection criteria (any one triggers gap detection):
+
+			// 1. Long time gap with unrealistic speed (>200 km/h)
+			//    e.g., GPS signal loss, teleportation
+			if timeGap > 5*time.Minute && speed > 200 {
+				isGap = true
+			}
+
+			// 2. Large distance jump (>10km) with significant time gap
+			//    e.g., long transit between locations
+			if dist > 10 && timeGap > 1*time.Minute {
+				isGap = true
+			}
+
+			// 3. Medium distance jump (>0.5km) with long time gap (>2 minutes)
+			//    e.g., car/train transit, GPS turned off during transport
+			if dist > 0.5 && timeGap > 2*time.Minute {
+				isGap = true
+			}
+
+			// 4. Fast movement (>50 km/h) over short distance (>0.3km)
+			//    e.g., car/train segment that should be excluded from foot patrol
+			if dist > 0.3 && speed > 50 {
+				isGap = true
 			}
 		}
 

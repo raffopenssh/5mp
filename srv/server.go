@@ -226,6 +226,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/admin/bulk-approve", s.RequireAdmin(s.HandleAPIBulkApprove))
 	mux.HandleFunc("POST /api/admin/bulk-reject", s.RequireAdmin(s.HandleAPIBulkReject))
 	mux.HandleFunc("POST /api/admin/delete-upload", s.RequireAdmin(s.HandleAPIDeleteUpload))
+	mux.HandleFunc("GET /api/admin/upload-detail", s.RequireAdmin(s.HandleAPIUploadDetail))
 	mux.HandleFunc("POST /api/admin/hide-notification", s.RequireAdmin(s.HandleAPIHideNotification))
 
 	// RSS Feed for starred items
