@@ -87,18 +87,18 @@ type ClassifiedSegment struct {
 // MinimumWaypoints is the minimum required waypoints for a valid GPX file
 const MinimumWaypoints = 10
 
-// ValidateAndClassifyGPX validates a GPX file and classifies its segments
-func ValidateAndClassifyGPX(data *gpx.GPXData) *GPXValidationResult {
+// ValidateAndClassifyGPX validates a GPX file and classifies its segments.
+// It accepts pre-processed segments (already split and gap-cleaned) so that
+// upstream processing like RemoveStraightLineGaps is respected.
+func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 	result := &GPXValidationResult{
 		IsValid:            true,
 		ClassifiedSegments: []ClassifiedSegment{},
 	}
 
-	// Count total points
-	for _, track := range data.Tracks {
-		for _, seg := range track.Segments {
-			result.TotalPoints += len(seg)
-		}
+	// Count total points from pre-processed segments
+	for _, seg := range segments {
+		result.TotalPoints += len(seg.Points)
 	}
 
 	// Validation: minimum points
@@ -109,12 +109,8 @@ func ValidateAndClassifyGPX(data *gpx.GPXData) *GPXValidationResult {
 		return result
 	}
 
-	// Split GPX data into time-bounded segments (30 min max) to avoid
-	// treating multi-day tracks as single segments with unrealistic distances
-	timeSegments := gpx.SplitIntoSegments(data, 0)
-
-	// Process each time-bounded segment
-	for _, timeSeg := range timeSegments {
+	// Process each pre-processed segment
+	for _, timeSeg := range segments {
 		seg := timeSeg.Points
 		if len(seg) < 2 {
 			continue

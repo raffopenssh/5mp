@@ -7,6 +7,13 @@ import (
 	"srv.exe.dev/srv/gpx"
 )
 
+// segmentsFromGPX is a test helper that converts raw GPXData to segments
+// (the same preprocessing that upload_queue.go and upload.go do before
+// calling ValidateAndClassifyGPX).
+func segmentsFromGPX(data *gpx.GPXData) []gpx.Segment {
+	return gpx.SplitIntoSegments(data, 0)
+}
+
 // TestValidateAndClassifyGPX_TimeBasedSegmentation tests that large time spans
 // are split into smaller segments (30 min max) to avoid unrealistic distances
 func TestValidateAndClassifyGPX_TimeBasedSegmentation(t *testing.T) {
@@ -32,7 +39,7 @@ func TestValidateAndClassifyGPX_TimeBasedSegmentation(t *testing.T) {
 		},
 	}
 
-	result := ValidateAndClassifyGPX(data)
+	result := ValidateAndClassifyGPX(segmentsFromGPX(data))
 
 	// Should be valid
 	if !result.IsValid {
@@ -75,7 +82,7 @@ func TestValidateAndClassifyGPX_ShortSegment(t *testing.T) {
 		},
 	}
 
-	result := ValidateAndClassifyGPX(data)
+	result := ValidateAndClassifyGPX(segmentsFromGPX(data))
 
 	if !result.IsValid {
 		t.Errorf("Expected valid GPX, got invalid: %v", result.ValidationErrors)
@@ -119,7 +126,7 @@ func TestValidateAndClassifyGPX_MultiDayTrack(t *testing.T) {
 		},
 	}
 
-	result := ValidateAndClassifyGPX(data)
+	result := ValidateAndClassifyGPX(segmentsFromGPX(data))
 
 	if !result.IsValid {
 		t.Errorf("Expected valid GPX, got invalid: %v", result.ValidationErrors)
@@ -155,7 +162,7 @@ func TestValidateAndClassifyGPX_InsufficientPoints(t *testing.T) {
 		},
 	}
 
-	result := ValidateAndClassifyGPX(data)
+	result := ValidateAndClassifyGPX(segmentsFromGPX(data))
 
 	if result.IsValid {
 		t.Error("Expected invalid GPX due to insufficient points")
@@ -198,7 +205,7 @@ func TestValidateAndClassifyGPX_RealisticDistances(t *testing.T) {
 		}},
 	}
 
-	result := ValidateAndClassifyGPX(data)
+	result := ValidateAndClassifyGPX(segmentsFromGPX(data))
 
 	if !result.IsValid {
 		t.Errorf("Expected valid GPX, got invalid: %v", result.ValidationErrors)
@@ -252,7 +259,7 @@ func TestValidateAndClassifyGPX_AircraftSeparation(t *testing.T) {
 		}},
 	}
 	
-	result := ValidateAndClassifyGPX(data)
+	result := ValidateAndClassifyGPX(segmentsFromGPX(data))
 	
 	if !result.IsValid {
 		t.Errorf("Expected valid GPX, got invalid: %v", result.ValidationErrors)

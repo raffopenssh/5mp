@@ -236,7 +236,7 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 
 		// Validate and persist upload to database
 		if s.DB != nil {
-			validationResult, err := s.persistUploadWithValidation(ctx, userID, userEmail, filename, fileHash, gpxData, segments)
+			validationResult, err := s.persistUploadWithValidation(ctx, userID, userEmail, filename, fileHash, segments)
 			if err != nil {
 				slog.Warn("failed to persist upload", "error", err, "filename", filename)
 			} else {
@@ -999,9 +999,10 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 
 // persistUploadWithValidation validates, classifies, and persists GPX upload data
 // Returns the validation result for user feedback
-func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEmail, filename, fileHash string, gpxData *gpx.GPXData, segments []gpx.Segment) (*GPXValidationResult, error) {
-	// Run validation and classification
-	validationResult := ValidateAndClassifyGPX(gpxData)
+func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEmail, filename, fileHash string, segments []gpx.Segment) (*GPXValidationResult, error) {
+	// Run validation and classification on pre-processed segments
+	// (already split and gap-cleaned by caller)
+	validationResult := ValidateAndClassifyGPX(segments)
 	
 	// Find protected area from first point
 	if len(segments) > 0 && len(segments[0].Points) > 0 && s.AreaStore != nil {

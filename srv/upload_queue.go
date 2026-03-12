@@ -153,7 +153,6 @@ func (p *UploadQueueProcessor) processUpload(ctx context.Context, item dbgen.Get
 		item.UserEmail,
 		item.Filename,
 		stringOrEmpty(fileHash),
-		gpxData,
 		segments,
 	)
 	if err != nil {
