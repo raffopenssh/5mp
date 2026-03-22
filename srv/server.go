@@ -246,9 +246,10 @@ func (s *Server) Serve(addr string) error {
 	
 	slog.Info("starting server", "addr", addr)
 	
-	// Wrap with password protection middleware
+	// Wrap with password protection middleware, then gzip compression
 	protectedHandler := s.PasswordMiddleware(mux)
-	return http.ListenAndServe(addr, protectedHandler)
+	compressedHandler := GzipMiddleware(protectedHandler)
+	return http.ListenAndServe(addr, compressedHandler)
 }
 
 

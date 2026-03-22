@@ -7596,14 +7596,16 @@
         
         async function loadNotifications() {
             try {
-                // Fetch all notification types, MBTiles jobs, and fire alerts
-                const [uploadRes, mbtilesRes, pubRes, fireAlertsRes, fireNotifRes, fireDownloadRes] = await Promise.all([
+                // Load critical notifications first (fire alerts for map), then others sequentially
+                // This avoids overwhelming slow connections with 6+ concurrent requests
+                const fireAlertsRes = await fetch('/api/fire-alerts?limit=100');
+                const fireNotifRes = await fetch('/api/notifications?type=fire_alert&active=1&limit=500');
+                // Non-critical: load in parallel batch (fewer concurrent)
+                const [uploadRes, mbtilesRes, pubRes, fireDownloadRes] = await Promise.all([
                     fetch('/api/notifications?type=new_upload&limit=10'),
                     fetch(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
                     fetch('/api/notifications?type=new_publication&limit=10'),
-                    fetch('/api/fire-alerts?limit=100'),  // Fire group alerts (for map display)
-                    fetch('/api/notifications?type=fire_alert&active=1&limit=500'),  // Fire notifications (for bell) - only active ones
-                    fetch('/api/notifications?type=fire_download_success&limit=5')  // Fire download notifications
+                    fetch('/api/notifications?type=fire_download_success&limit=5')
                 ]);
                 
                 // Process upload notifications
@@ -7648,7 +7650,7 @@
                     }));
                 }
                 
-                // Process fire group alerts (for map display)
+                // Process fire group alerts (for map display + fire-active parks layer)
                 if (fireAlertsRes.ok) {
                     fireAlerts = await fireAlertsRes.json();
                     fireAlerts = fireAlerts.map(a => ({
@@ -7657,6 +7659,16 @@
                         lat: a.latest_lat || a.centroid_lat,
                         lon: a.latest_lon || a.centroid_lon
                     }));
+                    // Update fire-active parks (eliminates duplicate /api/fire-alerts call)
+                    fireActiveParks.clear();
+                    fireAlerts.forEach(a => {
+                        if ((a.alert_type === 'active_inside' || a.alert_type === 'entered') && a.park_id) {
+                            fireActiveParks.add(a.park_id);
+                        }
+                    });
+                    if (map && map.getLayer && map.getLayer('areas-fire-glow')) {
+                        map.setFilter('areas-fire-glow', ['in', ['get', 'id'], ['literal', Array.from(fireActiveParks)]]);
+                    }
                 }
                 
                 // Process fire alert notifications (for bell dropdown)
@@ -8896,7 +8908,7 @@
             // Small delay to let other things initialize
             initNotificationTypeFilters();
             setTimeout(loadNotifications, 1000);
-            setTimeout(loadFireActiveParks, 1500);
+            // loadFireActiveParks is now integrated into loadNotifications
             
             // Periodically check for new notifications (every 30 seconds)
             setInterval(checkForNewNotifications, 30000);
