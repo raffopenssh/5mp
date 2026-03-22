@@ -18760,6 +18760,12 @@ ${starredItems.narratives.map(n => {
                             fetch patrol tracks daily. Tracks are anonymised — no names or personal data are stored.
                             Only person, vehicle, and aircraft tracks are fetched; animal collar data is excluded.
                         </p>
+                        <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:11px;line-height:1.6;color:#9ca3af;">
+                            <span style="color:#22c55e;font-weight:600;"><i class="icon-shield icon-color-success" style="font-size:11px;"></i> Credential security</span><br>
+                            Passwords are encrypted with AES-256-GCM before storage — they are never saved in plaintext
+                            and never passed as command-line arguments. The encryption key is stored separately with
+                            restricted file permissions. Disabling a source immediately purges its stored password.
+                        </div>
 
                         <!-- Add new source form -->
                         <div id="autofetch-add-form" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px;margin-bottom:20px;">
