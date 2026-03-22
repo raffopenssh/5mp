@@ -338,3 +338,95 @@ func BenchmarkParseGPX(b *testing.B) {
 		_, _ = ParseGPX(reader)
 	}
 }
+
+const testLocusGPX = `<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<gpx version="1.1" creator="Locus Map, Android"
+ xmlns="http://www.topografix.com/GPX/1/1"
+ xmlns:locus="http://www.locusmap.eu">
+<trk>
+<name>in to nyerere 2026-03-22 09:23</name>
+	<extensions>
+		<locus:activity>transport_airplane</locus:activity>
+	</extensions>
+<trkseg>
+<trkpt lat="-6.7974583" lon="37.6524417">
+	<ele>519.50</ele>
+	<time>2026-03-22T06:23:35Z</time>
+</trkpt>
+<trkpt lat="-7.1057550" lon="37.2469417">
+	<ele>728.93</ele>
+	<time>2026-03-22T06:44:21Z</time>
+</trkpt>
+<trkpt lat="-8.2036683" lon="36.9564983">
+	<ele>286.86</ele>
+	<time>2026-03-22T08:01:40Z</time>
+</trkpt>
+</trkseg>
+</trk>
+</gpx>`
+
+func TestParseGPXLocusActivity(t *testing.T) {
+	reader := strings.NewReader(testLocusGPX)
+	data, err := ParseGPX(reader)
+	if err != nil {
+		t.Fatalf("ParseGPX error: %v", err)
+	}
+
+	if len(data.Tracks) != 1 {
+		t.Fatalf("expected 1 track, got %d", len(data.Tracks))
+	}
+
+	track := data.Tracks[0]
+	if track.Activity != "transport_airplane" {
+		t.Errorf("expected activity 'transport_airplane', got %q", track.Activity)
+	}
+	if track.Name != "in to nyerere 2026-03-22 09:23" {
+		t.Errorf("expected track name, got %q", track.Name)
+	}
+}
+
+func TestMergeTrackActivityHint(t *testing.T) {
+	tests := []struct {
+		activity string
+		wantType string
+	}{
+		{"transport_airplane", "aircraft"},
+		{"transport_car", "vehicle"},
+		{"walk", "foot"},
+		{"run", "foot"},
+		{"bike", ""},    // bike not mapped
+		{"", ""},         // empty stays empty
+	}
+
+	for _, tt := range tests {
+		hint := mergeTrackActivityHint(MovementHint{}, tt.activity)
+		if hint.Type != tt.wantType {
+			t.Errorf("activity %q: want type %q, got %q", tt.activity, tt.wantType, hint.Type)
+		}
+		if tt.wantType != "" && hint.Confidence < 0.9 {
+			t.Errorf("activity %q: want high confidence, got %.2f", tt.activity, hint.Confidence)
+		}
+	}
+}
+
+func TestLocusAircraftClassification(t *testing.T) {
+	// Simulate: Locus says airplane, speed is ~113 km/h (normally classified as vehicle)
+	reader := strings.NewReader(testLocusGPX)
+	data, err := ParseGPX(reader)
+	if err != nil {
+		t.Fatalf("ParseGPX error: %v", err)
+	}
+
+	// Use 2-hour max duration to keep all 3 points in one segment
+	segments := SplitIntoSegments(data, 2*time.Hour)
+	if len(segments) == 0 {
+		t.Fatal("expected at least 1 segment")
+	}
+
+	// With Locus hint, even the avg speed ~113 km/h segment should be classified as aircraft
+	for _, seg := range segments {
+		if seg.MovementType != "aircraft" {
+			t.Errorf("expected aircraft classification, got %q (speed: %.1f km/h)", seg.MovementType, seg.AvgSpeedKmh)
+		}
+	}
+}

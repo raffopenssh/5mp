@@ -31,6 +31,7 @@ type Segment struct {
 type Track struct {
 	Name     string
 	Segments [][]Point
+	Activity string // Locus activity hint (e.g., "transport_airplane")
 }
 
 // GPXData represents the parsed GPX file data.
@@ -86,6 +87,33 @@ func ExtractMovementHintsFromWaypoints(waypoints []Waypoint) MovementHint {
 	return hint
 }
 
+// mergeTrackActivityHint merges a Locus/GPX track-level activity string into a movement hint.
+// Common Locus activities: transport_airplane, transport_car, run, walk, bike.
+func mergeTrackActivityHint(base MovementHint, activity string) MovementHint {
+	if activity == "" {
+		return base
+	}
+	activity = strings.ToLower(activity)
+	switch {
+	case strings.Contains(activity, "airplane") || strings.Contains(activity, "aircraft") ||
+		strings.Contains(activity, "helicopter") || strings.Contains(activity, "flight"):
+		base.IsAircraft = true
+		base.Type = "aircraft"
+		base.Confidence = 0.95 // Explicit app tag is very reliable
+	case strings.Contains(activity, "car") || strings.Contains(activity, "vehicle") ||
+		strings.Contains(activity, "motor") || strings.Contains(activity, "drive"):
+		base.IsVehicle = true
+		base.Type = "vehicle"
+		base.Confidence = 0.95
+	case strings.Contains(activity, "walk") || strings.Contains(activity, "run") ||
+		strings.Contains(activity, "hike") || strings.Contains(activity, "foot"):
+		base.IsFoot = true
+		base.Type = "foot"
+		base.Confidence = 0.95
+	}
+	return base
+}
+
 type gpxFile struct {
 	XMLName   xml.Name      `xml:"gpx"`
 	Metadata  gpxMeta       `xml:"metadata"`
@@ -106,9 +134,14 @@ type gpxMeta struct {
 	Name string `xml:"name"`
 }
 
+type gpxTrackExtensions struct {
+	LocusActivity string `xml:"activity"`
+}
+
 type gpxTrack struct {
-	Name     string       `xml:"name"`
-	Segments []gpxSegment `xml:"trkseg"`
+	Name       string             `xml:"name"`
+	Segments   []gpxSegment       `xml:"trkseg"`
+	Extensions gpxTrackExtensions `xml:"extensions"`
 }
 
 type gpxSegment struct {
@@ -171,6 +204,7 @@ func ParseGPX(r io.Reader) (*GPXData, error) {
 		track := Track{
 			Name:     trk.Name,
 			Segments: make([][]Point, 0, len(trk.Segments)),
+			Activity: trk.Extensions.LocusActivity,
 		}
 
 		for _, seg := range trk.Segments {
@@ -217,13 +251,16 @@ func SplitIntoSegments(data *GPXData, maxDuration time.Duration) []Segment {
 	var segments []Segment
 
 	for _, track := range data.Tracks {
+		// Merge track-level activity hint (e.g., Locus "transport_airplane")
+		trackHint := mergeTrackActivityHint(hint, track.Activity)
+
 		for _, trackSeg := range track.Segments {
 			if len(trackSeg) == 0 {
 				continue
 			}
 
 			// Split this track segment into time-bounded segments
-			segs := splitByDurationWithHint(trackSeg, maxDuration, hint)
+			segs := splitByDurationWithHint(trackSeg, maxDuration, trackHint)
 			segments = append(segments, segs...)
 		}
 	}

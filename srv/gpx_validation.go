@@ -225,7 +225,11 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 		includeInEffort := true
 		if movementType == "aircraft" {
 			classType = "aircraft"
-			includeInEffort = false // Aircraft excluded from patrol effort
+			// Aircraft patrol/reconnaissance (aerial surveys) count as effort;
+			// only logistics (point-to-point transport) is excluded
+			if activityType == "logistics" {
+				includeInEffort = false
+			}
 		}
 
 		classified := ClassifiedSegment{

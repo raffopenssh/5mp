@@ -398,6 +398,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		startTime       *time.Time
 		endTime         *time.Time
 		movementType    = "foot" // default
+		typeDistKm      = make(map[string]float64)
 	)
 
 	for _, seg := range segments {
@@ -412,9 +413,18 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 			endTime = seg.EndTime
 		}
 
-		// Use most common movement type (simplified: just use first valid one)
+		// Track distance per movement type for majority vote
 		if seg.MovementType != "" {
-			movementType = seg.MovementType
+			typeDistKm[seg.MovementType] += seg.DistanceKm
+		}
+	}
+
+	// Use movement type that covers the most distance
+	var maxDist float64
+	for mt, dist := range typeDistKm {
+		if dist > maxDist {
+			maxDist = dist
+			movementType = mt
 		}
 	}
 
@@ -1098,9 +1108,11 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		slog.Warn("failed to create gpx upload log", "error", err)
 	}
 	
-	// If valid, persist to the original upload tables using the raw segments
-	slog.Info("upload validation", "isValid", validationResult.IsValid, "patrolKm", validationResult.PatrolKm, "segments", len(segments))
-	if validationResult.IsValid && validationResult.PatrolKm > 0 {
+	// If valid, persist to the original upload tables using the raw segments.
+	// Include uploads with any patrol or aircraft effort (aerial surveys count).
+	totalEffortKm := validationResult.PatrolKm + validationResult.MovementStats.AircraftKm
+	slog.Info("upload validation", "isValid", validationResult.IsValid, "patrolKm", validationResult.PatrolKm, "aircraftKm", validationResult.MovementStats.AircraftKm, "segments", len(segments))
+	if validationResult.IsValid && totalEffortKm > 0 {
 		// Use the raw segments for persistence - they contain the actual GPS points.
 		// The validation result classifies the GPX track segments, but Points are not
 		// stored in ClassifiedSegment (json:"-"), so we use the original segments.
