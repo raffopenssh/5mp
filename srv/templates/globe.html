@@ -1691,6 +1691,30 @@
         function getPwd() {
             return new URLSearchParams(window.location.search).get('pwd') || '';
         }
+
+        // Fetch with retry for 503 errors (proxy timeout on slow connections)
+        async function fetchRetry(url, opts, retries = 3, delay = 2000) {
+            for (let i = 0; i <= retries; i++) {
+                try {
+                    const res = await fetch(url, opts);
+                    if (res.status === 503 && i < retries) {
+                        console.warn(`[fetchRetry] 503 on ${url.split('?')[0]}, retry ${i+1}/${retries} in ${delay}ms`);
+                        await new Promise(r => setTimeout(r, delay));
+                        delay *= 1.5;
+                        continue;
+                    }
+                    return res;
+                } catch (err) {
+                    if (i < retries) {
+                        console.warn(`[fetchRetry] Error on ${url.split('?')[0]}, retry ${i+1}/${retries}`);
+                        await new Promise(r => setTimeout(r, delay));
+                        delay *= 1.5;
+                        continue;
+                    }
+                    throw err;
+                }
+            }
+        }
         
         // Icon helper function - generates Lucide icon HTML
         function icon(name, color = '', size = '') {
@@ -3814,7 +3838,7 @@
                 }
                 if (params.length > 0) url += '?' + params.join('&');
                 
-                const res = await fetch(url);
+                const res = await fetchRetry(url);
                 if (res.ok) {
                     const stats = await res.json();
                     const setIfExists = (id, value) => {
@@ -6699,9 +6723,25 @@
         
         map.on('load', function() {
             mapLoaded = true;
+            // Wait for areas source to load before fetching grid data
+            // This prevents concurrent requests that overwhelm slow connections
+            function onAreasLoaded(e) {
+                if (e.sourceId === 'areas' && e.isSourceLoaded) {
+                    map.off('sourcedata', onAreasLoaded);
+                    if (pendingGridReload) {
+                        pendingGridReload = false;
+                        reloadGridData();
+                    }
+                }
+            }
             if (pendingGridReload) {
-                pendingGridReload = false;
-                reloadGridData();
+                // Check if areas already loaded (fast connection)
+                if (map.isSourceLoaded('areas')) {
+                    pendingGridReload = false;
+                    reloadGridData();
+                } else {
+                    map.on('sourcedata', onAreasLoaded);
+                }
             }
         });
         
@@ -6726,8 +6766,8 @@
             
             console.log('Reloading grid data: from=' + dateFrom + ', to=' + dateTo + ', bbox=' + (currentBbox ? currentBbox.join(',') : 'none') + ', types=' + types.join(','));
             
-            // Fetch data and set it
-            fetch(url)
+            // Fetch data and set it (with retry for 503 proxy timeouts)
+            fetchRetry(url)
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     var gridSource = map.getSource('grid');
@@ -7598,14 +7638,14 @@
             try {
                 // Load critical notifications first (fire alerts for map), then others sequentially
                 // This avoids overwhelming slow connections with 6+ concurrent requests
-                const fireAlertsRes = await fetch('/api/fire-alerts?limit=100');
-                const fireNotifRes = await fetch('/api/notifications?type=fire_alert&active=1&limit=500');
+                const fireAlertsRes = await fetchRetry('/api/fire-alerts?limit=100');
+                const fireNotifRes = await fetchRetry('/api/notifications?type=fire_alert&active=1&limit=500');
                 // Non-critical: load in parallel batch (fewer concurrent)
                 const [uploadRes, mbtilesRes, pubRes, fireDownloadRes] = await Promise.all([
-                    fetch('/api/notifications?type=new_upload&limit=10'),
-                    fetch(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
-                    fetch('/api/notifications?type=new_publication&limit=10'),
-                    fetch('/api/notifications?type=fire_download_success&limit=5')
+                    fetchRetry('/api/notifications?type=new_upload&limit=10'),
+                    fetchRetry(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
+                    fetchRetry('/api/notifications?type=new_publication&limit=10'),
+                    fetchRetry('/api/notifications?type=fire_download_success&limit=5')
                 ]);
                 
                 // Process upload notifications
@@ -8907,7 +8947,8 @@
         map.on('load', function() {
             // Small delay to let other things initialize
             initNotificationTypeFilters();
-            setTimeout(loadNotifications, 1000);
+            // Delay notifications further to avoid competing with areas+grid on slow connections
+            setTimeout(loadNotifications, 3000);
             // loadFireActiveParks is now integrated into loadNotifications
             
             // Periodically check for new notifications (every 30 seconds)
@@ -8936,7 +8977,13 @@
         }
 
         
-        initDateRange();
+        // Set initial date range to match time slider defaults (Jan 2023 → today)
+        // The time slider (initTimeSlider on DOMContentLoaded) will take over later.
+        (function() {
+            const now = new Date();
+            dateFrom = '2023-01-01';
+            dateTo = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-01';
+        })();
 
         
         var searchTimeout = null;
