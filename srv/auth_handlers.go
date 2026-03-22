@@ -155,8 +155,21 @@ func (s *Server) RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 }
 
 // RequireAdmin is middleware that requires admin role.
+// Alpha: accept any valid password (test2026/REDACTED_PWD/REDACTED_PWD) instead of
+// requiring a full admin session, so all users can approve learnings,
+// delete entries, etc.
 func (s *Server) RequireAdmin(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Alpha: allow access with valid password cookie or query param
+		if cookie, err := r.Cookie("access_pwd"); err == nil && isValidPassword(cookie.Value) {
+			next(w, r)
+			return
+		}
+		if isValidPassword(r.URL.Query().Get("pwd")) {
+			next(w, r)
+			return
+		}
+		// Fall back to session-based admin check
 		user := s.Auth.GetUserFromRequest(r)
 		if user == nil {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
