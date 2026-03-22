@@ -35,7 +35,6 @@ type pageData struct {
 	Hostname string
 	User     *auth.User
 	Version  string
-	Pwd      string
 }
 
 func New(dbPath, hostname string) (*Server, error) {
@@ -65,19 +64,10 @@ func New(dbPath, hostname string) (*Server, error) {
 func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 	user := s.Auth.GetUserFromRequest(r)
 
-	// Recover the validated password to inject into the page
-	pwd := ""
-	if cookie, err := r.Cookie("access_pwd"); err == nil && isValidPassword(cookie.Value) {
-		pwd = cookie.Value
-	} else if p := r.URL.Query().Get("pwd"); isValidPassword(p) {
-		pwd = p
-	}
-
 	data := pageData{
 		Hostname: s.Hostname,
 		User:     user,
 		Version:  Version,
-		Pwd:      pwd,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
