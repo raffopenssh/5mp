@@ -3927,7 +3927,7 @@
                 // Fetch enriched park data from API
                 const dateFrom = document.getElementById('date-from')?.value || '';
                 const dateTo = document.getElementById('date-to')?.value || '';
-                let url = `/api/parks/export?pwd=${window.accessPwd || ''}`;
+                let url = `/api/parks/export?pwd=${window.getPwd() || ''}`;
                 if (dateFrom) url += `&from=${dateFrom}`;
                 if (dateTo) url += `&to=${dateTo}`;
                 if (currentCountryFilter) url += `&country=${encodeURIComponent(currentCountryFilter)}`;
@@ -5063,7 +5063,7 @@
             if (!bounds) return null;
             
             // Fetch grid data for this park's bbox
-            let url = `/api/grid?pwd=${window.accessPwd || ''}`;
+            let url = `/api/grid?pwd=${window.getPwd() || ''}`;
             if (fromDate) url += `&from=${fromDate}`;
             if (toDate) url += `&to=${toDate}`;
             if (Array.isArray(bounds)) {
@@ -10878,7 +10878,7 @@
                 
                 // FAOLEX documents (new data source)
                 try {
-                    const faolexResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/legal?pwd=${window.accessPwd || ''}`);
+                    const faolexResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/legal?pwd=${window.getPwd() || ''}`);
                     if (faolexResp.ok) {
                         const faolexData = await faolexResp.json();
                         if (faolexData.documents && faolexData.documents.length > 0) {
@@ -15804,7 +15804,7 @@ ${starredItems.narratives.map(n => {
             const featureType = type === 'fire' ? 'fire_trajectory' : type;
             
             // First try to fetch the specific feature by ID (efficient)
-            let response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&feature_id=${encodeURIComponent(featureId)}&pwd=${window.accessPwd || ''}`);
+            let response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&feature_id=${encodeURIComponent(featureId)}&pwd=${window.getPwd() || ''}`);
             let allFeatures = response.ok ? await response.json() : { features: [] };
             
             // Find the specific feature(s)
@@ -15813,7 +15813,7 @@ ${starredItems.narratives.map(n => {
             // If found by direct ID query, we're done
             // If not found, fall back to searching in all features
             if (features.length === 0) {
-                response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&limit=5000&pwd=${window.accessPwd || ''}`);
+                response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&limit=5000&pwd=${window.getPwd() || ''}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 allFeatures = await response.json();
                 
@@ -16362,7 +16362,7 @@ ${starredItems.narratives.map(n => {
             
             // Infrastructure comes from learned features endpoint
             if (type === 'infrastructure') {
-                const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&pwd=${window.accessPwd || ''}`);
+                const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&pwd=${window.getPwd() || ''}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 const learned = await response.json();
                 
@@ -16388,7 +16388,7 @@ ${starredItems.narratives.map(n => {
                 });
                 geojson = { type: 'FeatureCollection', features };
             } else {
-                const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.accessPwd || ''}`);
+                const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.getPwd() || ''}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 geojson = await response.json();
             }
@@ -16961,7 +16961,7 @@ ${starredItems.narratives.map(n => {
                 }
                 
                 // Fetch updated data
-                const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.accessPwd || ''}`);
+                const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.getPwd() || ''}`);
                 if (!response.ok) continue;
                 
                 const geojson = await response.json();
@@ -17728,7 +17728,7 @@ ${starredItems.narratives.map(n => {
         const tbody = document.getElementById('autofetch-table-body');
         if (!tbody) return;
         try {
-            const res = await fetch('/api/admin/autofetch?pwd=' + accessPwd);
+            const res = await fetch('/api/admin/autofetch?pwd=' + getPwd());
             const data = await res.json();
             const sources = data.sources || [];
             if (sources.length === 0) {
@@ -17780,7 +17780,7 @@ ${starredItems.narratives.map(n => {
         status.textContent = 'Connecting and validating credentials...';
 
         try {
-            const res = await fetch('/api/admin/autofetch/add?pwd=' + accessPwd, {
+            const res = await fetch('/api/admin/autofetch/add?pwd=' + getPwd(), {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({api_type: apiType, service_url: url, username: user, password: pass, interval_h: interval})
@@ -17805,7 +17805,7 @@ ${starredItems.narratives.map(n => {
     async function autofetchDisable(id) {
         if (!confirm('Disable this source? The password will be cleared.')) return;
         try {
-            const res = await fetch(`/api/admin/autofetch/disable?pwd=${accessPwd}&id=${id}`, {method: 'POST'});
+            const res = await fetch(`/api/admin/autofetch/disable?pwd=${getPwd()}&id=${id}`, {method: 'POST'});
             if (!res.ok) throw new Error((await res.json()).error);
             showToast('Source disabled', 'info');
             loadAutofetchSources();
@@ -17816,7 +17816,7 @@ ${starredItems.narratives.map(n => {
         const pw = prompt('Enter password to re-enable this source:');
         if (!pw) return;
         try {
-            const res = await fetch(`/api/admin/autofetch/enable?pwd=${accessPwd}`, {
+            const res = await fetch(`/api/admin/autofetch/enable?pwd=${getPwd()}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({id: id, password: pw})
@@ -17831,7 +17831,7 @@ ${starredItems.narratives.map(n => {
     async function autofetchDelete(id) {
         if (!confirm('Delete this source? All credentials will be permanently removed.')) return;
         try {
-            const res = await fetch(`/api/admin/autofetch/delete?pwd=${accessPwd}&id=${id}`, {method: 'POST'});
+            const res = await fetch(`/api/admin/autofetch/delete?pwd=${getPwd()}&id=${id}`, {method: 'POST'});
             if (!res.ok) throw new Error((await res.json()).error);
             showToast('Source deleted', 'info');
             loadAutofetchSources();
@@ -17840,7 +17840,7 @@ ${starredItems.narratives.map(n => {
 
     async function autofetchRunNow(id) {
         try {
-            const res = await fetch(`/api/admin/autofetch/run?pwd=${accessPwd}&id=${id}`, {method: 'POST'});
+            const res = await fetch(`/api/admin/autofetch/run?pwd=${getPwd()}&id=${id}`, {method: 'POST'});
             if (!res.ok) throw new Error((await res.json()).error);
             showToast('Fetch started in background', 'success');
             // Refresh after a short delay to show updated status

@@ -231,11 +231,11 @@ func (s *Server) Serve(addr string) error {
 
 	// Automated fetch (EarthRanger/PAMDAS GPS sync)
 	mux.HandleFunc("GET /api/admin/autofetch", s.HandleAPIAutofetchList)
-	mux.HandleFunc("POST /api/admin/autofetch/add", s.RequireAdmin(s.HandleAPIAutofetchAdd))
-	mux.HandleFunc("POST /api/admin/autofetch/disable", s.RequireAdmin(s.HandleAPIAutofetchDisable))
-	mux.HandleFunc("POST /api/admin/autofetch/enable", s.RequireAdmin(s.HandleAPIAutofetchEnable))
-	mux.HandleFunc("POST /api/admin/autofetch/delete", s.RequireAdmin(s.HandleAPIAutofetchDelete))
-	mux.HandleFunc("POST /api/admin/autofetch/run", s.RequireAdmin(s.HandleAPIAutofetchRunNow))
+	mux.HandleFunc("POST /api/admin/autofetch/add", s.HandleAPIAutofetchAdd)
+	mux.HandleFunc("POST /api/admin/autofetch/disable", s.HandleAPIAutofetchDisable)
+	mux.HandleFunc("POST /api/admin/autofetch/enable", s.HandleAPIAutofetchEnable)
+	mux.HandleFunc("POST /api/admin/autofetch/delete", s.HandleAPIAutofetchDelete)
+	mux.HandleFunc("POST /api/admin/autofetch/run", s.HandleAPIAutofetchRunNow)
 
 	// RSS Feed for starred items
 	mux.HandleFunc("GET /api/feed", s.HandleAPIFeed)
