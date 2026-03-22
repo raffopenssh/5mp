@@ -1014,12 +1014,31 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 	// (already split and gap-cleaned by caller)
 	validationResult := ValidateAndClassifyGPX(segments)
 	
-	// Find protected area from first point
-	if len(segments) > 0 && len(segments[0].Points) > 0 && s.AreaStore != nil {
-		pt := segments[0].Points[0]
-		if area := s.AreaStore.FindArea(pt.Lat, pt.Lon); area != nil {
-			validationResult.ProtectedAreaID = area.ID
-			validationResult.ProtectedAreaName = area.Name
+	// Find protected area from track points.
+	// Check first point, last point, and segment endpoints — aircraft tracks
+	// often start outside parks (e.g. takeoff from a city) and land inside one.
+	if s.AreaStore != nil && len(segments) > 0 {
+		var candidates []gpx.Point
+		// First point
+		if len(segments[0].Points) > 0 {
+			candidates = append(candidates, segments[0].Points[0])
+		}
+		// Last point of last segment
+		if last := segments[len(segments)-1]; len(last.Points) > 0 {
+			candidates = append(candidates, last.Points[len(last.Points)-1])
+		}
+		// Also check start/end of each segment (catches multi-leg flights)
+		for _, seg := range segments {
+			if len(seg.Points) > 1 {
+				candidates = append(candidates, seg.Points[len(seg.Points)-1])
+			}
+		}
+		for _, pt := range candidates {
+			if area := s.AreaStore.FindArea(pt.Lat, pt.Lon); area != nil {
+				validationResult.ProtectedAreaID = area.ID
+				validationResult.ProtectedAreaName = area.Name
+				break
+			}
 		}
 	}
 	

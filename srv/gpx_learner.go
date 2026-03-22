@@ -233,16 +233,22 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	if uploadID > 0 {
 		rawPoints := l.loadTrackPoints(ctx, uploadID)
 		if len(rawPoints) > 0 {
-			// Assign raw points to patrol segments that have no GeoJSON
+			// Assign raw points to all segments that have no GeoJSON.
+			// All types need points (patrol for MCP, aircraft for airstrip detection, etc.)
+			// Track_points are stored sequentially across GPX track segments,
+			// but start/end indices are per-segment (reset to 0 for each).
+			// We accumulate a global offset as we assign points.
+			globalOffset := 0
 			for i := range segments {
-				if len(segments[i].Points) == 0 && segments[i].Classification == "patrol" {
-					// Use start/end index to extract points from raw data
-					start := segments[i].StartIndex
-					end := segments[i].EndIndex
+				if len(segments[i].Points) == 0 {
+					start := globalOffset + segments[i].StartIndex
+					end := globalOffset + segments[i].EndIndex
 					if start >= 0 && end < len(rawPoints) && end >= start {
 						segments[i].Points = rawPoints[start : end+1]
 					}
 				}
+				// Advance offset past this segment's points
+				globalOffset += segments[i].EndIndex + 1
 			}
 		}
 	}
