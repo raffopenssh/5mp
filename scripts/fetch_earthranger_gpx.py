@@ -7,9 +7,11 @@ EarthRanger API — no writes, no deletes.
 Usage:
     python3 fetch_earthranger_gpx.py \
         --url https://nyerere.pamdas.org \
-        --user MananeCR --pass 'secret' \
+        --user MananeCR \
         --upload-url http://localhost:8000/api/upload/async?pwd=test2026 \
         [--days 1] [--dry-run]
+
+    Password is read from EARTHRANGER_PASSWORD env var (never passed as arg).
 
 What it does:
   1. Authenticates via OAuth2 (read-only session)
@@ -25,6 +27,8 @@ What it does:
 
 import argparse
 import json
+import os
+import re
 import sys
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -95,7 +99,7 @@ def fetch_sources(session: requests.Session, api: str, subject_id: str) -> list:
     items = data.get('data', data) if isinstance(data, dict) else data
     if not isinstance(items, list):
         return []
-    return [s.get('source') for s in items if s.get('source')]
+    return [s.get('source') for s in items if isinstance(s, dict) and s.get('source')]
 
 
 def fetch_tracks(session: requests.Session, api: str,
@@ -126,10 +130,28 @@ def fetch_tracks(session: requests.Session, api: str,
     return points
 
 
+# ── Timestamp normalisation ───────────────────────────────────────────────────
+
+def normalise_timestamp(t: str) -> str:
+    """Convert any ISO-8601 timestamp to valid RFC3339 ending in 'Z'.
+
+    EarthRanger returns e.g. '2026-03-22T19:15:06+00:00'.
+    GPX 1.1 requires UTC timestamps.  We strip any offset and append 'Z'.
+    """
+    # Remove trailing Z if present (we'll re-add it)
+    t = t.rstrip('Z')
+    # Remove UTC offset (+00:00, +0000, -05:00, etc.)
+    t = re.sub(r'[+-]\d{2}:?\d{2}$', '', t)
+    return t + 'Z'
+
+
 # ── GPX builder ───────────────────────────────────────────────────────────────
 
-def build_gpx(tracks: dict) -> str:
-    """Build a GPX 1.1 XML string from {track_id: [(lon, lat, time), ...]}."""
+def build_gpx(tracks: dict) -> tuple:
+    """Build a GPX 1.1 XML string from {track_id: [(lon, lat, time), ...]}.
+
+    Returns (xml_string, total_points).
+    """
     gpx = ET.Element('gpx', {
         'version': '1.1',
         'creator': '5mp-autofetch',
@@ -138,7 +160,7 @@ def build_gpx(tracks: dict) -> str:
 
     metadata = ET.SubElement(gpx, 'metadata')
     ET.SubElement(metadata, 'name').text = f'autofetch-{datetime.now(timezone.utc).strftime("%Y%m%d")}'
-    ET.SubElement(metadata, 'time').text = datetime.now(timezone.utc).isoformat()
+    ET.SubElement(metadata, 'time').text = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
 
     total_pts = 0
     for track_id, points in tracks.items():
@@ -153,7 +175,7 @@ def build_gpx(tracks: dict) -> str:
 
         for lon, lat, t in points:
             trkpt = ET.SubElement(trkseg, 'trkpt', {'lat': f'{lat:.6f}', 'lon': f'{lon:.6f}'})
-            ET.SubElement(trkpt, 'time').text = t if t.endswith('Z') else t + 'Z'
+            ET.SubElement(trkpt, 'time').text = normalise_timestamp(t)
             total_pts += 1
 
     ET.indent(gpx)
@@ -166,18 +188,23 @@ def main():
     ap = argparse.ArgumentParser(description='Fetch EarthRanger GPS tracks → anonymised GPX')
     ap.add_argument('--url', required=True, help='PAMDAS server URL')
     ap.add_argument('--user', required=True, help='Username')
-    ap.add_argument('--pass', dest='pw', required=True, help='Password')
     ap.add_argument('--upload-url', required=True, help='App async upload URL')
     ap.add_argument('--days', type=int, default=1, help='Days of history (default: 1)')
     ap.add_argument('--dry-run', action='store_true', help='Build GPX but do not upload')
     args = ap.parse_args()
+
+    # Password from environment variable — never from command line
+    password = os.environ.get('EARTHRANGER_PASSWORD', '')
+    if not password:
+        print(json.dumps({'ok': False, 'error': 'EARTHRANGER_PASSWORD env var not set'}))
+        sys.exit(1)
 
     session = requests.Session()
     session.headers['User-Agent'] = '5mp-autofetch/1.0'
 
     # 1. Authenticate
     try:
-        token = er_authenticate(session, args.url, args.user, args.pw)
+        token = er_authenticate(session, args.url, args.user, password)
     except RuntimeError as e:
         print(json.dumps({'ok': False, 'error': str(e)}))
         sys.exit(1)

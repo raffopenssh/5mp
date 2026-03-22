@@ -490,21 +490,14 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		}
 	}
 
-	// Queue for learning - find park ID from first segment's location
+	// Determine park for settlement visits and notifications.
+	// (Learning queue is handled by processUploadAsync with per-park dedup.)
 	var parkID *string
 	if len(segments) > 0 && len(segments[0].Points) > 0 && s.AreaStore != nil {
 		pt := segments[0].Points[0]
 		if area := s.AreaStore.FindArea(pt.Lat, pt.Lon); area != nil {
 			parkID = &area.ID
 		}
-	}
-	_, err = q.QueueGPXLearning(ctx, dbgen.QueueGPXLearningParams{
-		UploadID: &uploadID,
-		ParkID:   parkID,
-	})
-	if err != nil {
-		slog.Warn("failed to queue upload for learning", "uploadID", uploadID, "error", err)
-		// Don't fail the upload just because learning queue failed
 	}
 
 	// Update effort_data grid cells (non-fatal error - continue even if this fails)
@@ -1014,32 +1007,50 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 	// (already split and gap-cleaned by caller)
 	validationResult := ValidateAndClassifyGPX(segments)
 	
-	// Find protected area from track points.
-	// Check first point, last point, and segment endpoints — aircraft tracks
-	// often start outside parks (e.g. takeoff from a city) and land inside one.
-	if s.AreaStore != nil && len(segments) > 0 {
-		var candidates []gpx.Point
-		// First point
-		if len(segments[0].Points) > 0 {
-			candidates = append(candidates, segments[0].Points[0])
-		}
-		// Last point of last segment
-		if last := segments[len(segments)-1]; len(last.Points) > 0 {
-			candidates = append(candidates, last.Points[len(last.Points)-1])
-		}
-		// Also check start/end of each segment (catches multi-leg flights)
-		for _, seg := range segments {
-			if len(seg.Points) > 1 {
-				candidates = append(candidates, seg.Points[len(seg.Points)-1])
+	// Find protected area per segment using median point (robust to transit).
+	// The overall upload is assigned to the park with the most segment distance.
+	parkDistKm := make(map[string]float64)      // park_id -> total km
+	parkNames := make(map[string]string)          // park_id -> name
+	segmentParks := make(map[int]string)          // segment_index -> park_id
+	if s.AreaStore != nil {
+		for i, seg := range segments {
+			if len(seg.Points) == 0 {
+				continue
+			}
+			// Try median point first (most representative)
+			mid := seg.Points[len(seg.Points)/2]
+			area := s.AreaStore.FindArea(mid.Lat, mid.Lon)
+			// Fall back to first/last point
+			if area == nil {
+				area = s.AreaStore.FindArea(seg.Points[0].Lat, seg.Points[0].Lon)
+			}
+			if area == nil {
+				area = s.AreaStore.FindArea(seg.Points[len(seg.Points)-1].Lat, seg.Points[len(seg.Points)-1].Lon)
+			}
+			if area != nil {
+				segmentParks[i] = area.ID
+				parkNames[area.ID] = area.Name
+				// Use classified segment distance if available, else raw
+				dist := 0.0
+				if i < len(validationResult.ClassifiedSegments) {
+					dist = validationResult.ClassifiedSegments[i].DistanceKm
+				}
+				parkDistKm[area.ID] += dist
 			}
 		}
-		for _, pt := range candidates {
-			if area := s.AreaStore.FindArea(pt.Lat, pt.Lon); area != nil {
-				validationResult.ProtectedAreaID = area.ID
-				validationResult.ProtectedAreaName = area.Name
-				break
-			}
+	}
+	// Pick majority park by distance
+	var bestPark string
+	var bestDist float64
+	for pid, d := range parkDistKm {
+		if d > bestDist {
+			bestDist = d
+			bestPark = pid
 		}
+	}
+	if bestPark != "" {
+		validationResult.ProtectedAreaID = bestPark
+		validationResult.ProtectedAreaName = parkNames[bestPark]
 	}
 	
 	q := dbgen.New(s.DB)
@@ -1156,15 +1167,27 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		}
 	}
 	
-	// Queue for background learning if we have a park and valid data
-	if validationResult.ProtectedAreaID != "" && len(validationResult.ClassifiedSegments) > 0 {
-		_, err := q.QueueGPXLearning(ctx, dbgen.QueueGPXLearningParams{
+	// Queue for background learning — one job per park that has segments.
+	// This correctly handles multi-park GPX files (e.g. autofetch from EarthRanger).
+	queuedParks := make(map[string]bool)
+	for _, pid := range segmentParks {
+		if pid != "" && !queuedParks[pid] {
+			queuedParks[pid] = true
+			_, err := q.QueueGPXLearning(ctx, dbgen.QueueGPXLearningParams{
+				UploadID: uploadID,
+				ParkID:   strPtr(pid),
+			})
+			if err != nil {
+				slog.Debug("failed to queue gpx learning", "park", pid, "error", err)
+			}
+		}
+	}
+	// Fallback: if no per-segment parks but overall park detected, queue that
+	if len(queuedParks) == 0 && validationResult.ProtectedAreaID != "" && len(validationResult.ClassifiedSegments) > 0 {
+		_, _ = q.QueueGPXLearning(ctx, dbgen.QueueGPXLearningParams{
 			UploadID: uploadID,
 			ParkID:   strPtr(validationResult.ProtectedAreaID),
 		})
-		if err != nil {
-			slog.Debug("failed to queue gpx learning", "error", err)
-		}
 	}
 	
 	return validationResult, nil

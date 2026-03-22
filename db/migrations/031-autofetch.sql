@@ -1,6 +1,6 @@
 -- Automated fetch configuration for external GPS tracking APIs (e.g. EarthRanger/PAMDAS)
--- Credentials are stored encrypted-at-rest and deleted on removal.
--- When disabled, the password is wiped; user must re-enter to reactivate.
+-- Passwords are AES-256-GCM encrypted before storage (key from AUTOFETCH_SECRET env
+-- var or auto-generated .autofetch_key file).  Wiped on disable; deleted on removal.
 
 CREATE TABLE IF NOT EXISTS autofetch_sources (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,

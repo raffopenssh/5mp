@@ -80,6 +80,7 @@ func run() error {
 	go server.StartResearchWorker(ctx)
 	go server.StartNarrativeCacheWorker(ctx)
 	go server.StartAutofetchWorker(ctx)
+	go server.StartUploadQueueCleanup(ctx)
 
 	return server.Serve(*flagListenAddr)
 }

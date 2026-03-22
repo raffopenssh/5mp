@@ -183,18 +183,7 @@ func ParseGPX(r io.Reader) (*GPXData, error) {
 		}
 
 		if wpt.Time != "" {
-			// Try multiple time formats
-			for _, format := range []string{
-				time.RFC3339,
-				time.RFC3339Nano,
-				"2006-01-02T15:04:05Z",
-				"2006-01-02T15:04:05",
-			} {
-				if t, err := time.Parse(format, wpt.Time); err == nil {
-					waypoint.Time = &t
-					break
-				}
-			}
+			waypoint.Time = parseFlexibleTime(wpt.Time)
 		}
 
 		data.Waypoints = append(data.Waypoints, waypoint)
@@ -218,9 +207,7 @@ func ParseGPX(r io.Reader) (*GPXData, error) {
 				}
 
 				if pt.Time != "" {
-					if t, err := time.Parse(time.RFC3339, pt.Time); err == nil {
-						point.Time = &t
-					}
+					point.Time = parseFlexibleTime(pt.Time)
 				}
 
 				points = append(points, point)
@@ -593,4 +580,47 @@ func removeGapsFromSegment(seg Segment) []Segment {
 	}
 
 	return result
+}
+
+// parseFlexibleTime parses ISO-8601 timestamps with various offset formats.
+// Handles EarthRanger's "+00:00" and malformed "+00:00Z" double-suffix.
+func parseFlexibleTime(s string) *time.Time {
+	// Try standard RFC3339 first (fastest path)
+	if t, err := time.Parse(time.RFC3339, s); err == nil {
+		return &t
+	}
+	if t, err := time.Parse(time.RFC3339Nano, s); err == nil {
+		return &t
+	}
+
+	// Strip double-suffix like "+00:00Z" → try again
+	norm := s
+	if strings.HasSuffix(norm, "Z") {
+		withoutZ := norm[:len(norm)-1]
+		// Check if there's still an offset before the Z
+		if len(withoutZ) > 6 {
+			tail := withoutZ[len(withoutZ)-6:]
+			if (tail[0] == '+' || tail[0] == '-') && tail[3] == ':' {
+				// e.g. "2026-03-22T19:15:06+00:00Z" → "2026-03-22T19:15:06+00:00"
+				norm = withoutZ
+			}
+		}
+	}
+	if norm != s {
+		if t, err := time.Parse(time.RFC3339, norm); err == nil {
+			return &t
+		}
+	}
+
+	// Try other common formats
+	for _, format := range []string{
+		"2006-01-02T15:04:05Z",
+		"2006-01-02T15:04:05",
+		"2006-01-02 15:04:05",
+	} {
+		if t, err := time.Parse(format, s); err == nil {
+			return &t
+		}
+	}
+	return nil
 }

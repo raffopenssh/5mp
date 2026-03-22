@@ -2,18 +2,25 @@ package srv
 
 import (
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 )
 
-// autofetchSource mirrors the DB row.
+// autofetchSource mirrors the DB row (no credentials exposed).
 type autofetchSource struct {
 	ID         int64  `json:"id"`
 	APIType    string `json:"api_type"`
@@ -26,6 +33,88 @@ type autofetchSource struct {
 	LastRunAt  string `json:"last_run_at,omitempty"`
 	LastStatus string `json:"last_status,omitempty"`
 	LastPoints int    `json:"last_points"`
+}
+
+// ── Credential encryption ────────────────────────────────────────────────────
+//
+// Passwords are encrypted with AES-256-GCM before storage.
+// The key is derived from the AUTOFETCH_SECRET environment variable.
+// If the env var is unset, a per-installation random key is generated
+// and written to .autofetch_key (gitignored, mode 0600).
+
+const autofetchKeyFile = ".autofetch_key"
+
+// autofetchKey returns the 32-byte AES key, derived from env or keyfile.
+func autofetchKey() ([]byte, error) {
+	if secret := os.Getenv("AUTOFETCH_SECRET"); secret != "" {
+		h := sha256.Sum256([]byte(secret))
+		return h[:], nil
+	}
+	// Fall back to on-disk key file
+	data, err := os.ReadFile(autofetchKeyFile)
+	if err == nil && len(data) >= 32 {
+		return data[:32], nil
+	}
+	// Generate new key
+	key := make([]byte, 32)
+	if _, err := io.ReadFull(rand.Reader, key); err != nil {
+		return nil, fmt.Errorf("generate autofetch key: %w", err)
+	}
+	if err := os.WriteFile(autofetchKeyFile, key, 0600); err != nil {
+		slog.Warn("autofetch: could not write key file, using ephemeral key", "error", err)
+	}
+	return key, nil
+}
+
+// encryptPassword encrypts plaintext with AES-256-GCM, returns base64.
+func encryptPassword(plaintext string) (string, error) {
+	key, err := autofetchKey()
+	if err != nil {
+		return "", err
+	}
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return "", err
+	}
+	sealed := gcm.Seal(nonce, nonce, []byte(plaintext), nil)
+	return base64.StdEncoding.EncodeToString(sealed), nil
+}
+
+// decryptPassword decrypts a base64-encoded AES-256-GCM ciphertext.
+func decryptPassword(ciphertext string) (string, error) {
+	key, err := autofetchKey()
+	if err != nil {
+		return "", err
+	}
+	data, err := base64.StdEncoding.DecodeString(ciphertext)
+	if err != nil {
+		return "", fmt.Errorf("decode base64: %w", err)
+	}
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
+	nonceSize := gcm.NonceSize()
+	if len(data) < nonceSize {
+		return "", fmt.Errorf("ciphertext too short")
+	}
+	plaintext, err := gcm.Open(nil, data[:nonceSize], data[nonceSize:], nil)
+	if err != nil {
+		return "", fmt.Errorf("decrypt: %w", err)
+	}
+	return string(plaintext), nil
 }
 
 // HandleAPIAutofetchList returns configured sources (no credentials).
@@ -64,7 +153,7 @@ func (s *Server) HandleAPIAutofetchList(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(map[string]interface{}{"sources": sources})
 }
 
-// HandleAPIAutofetchAdd validates credentials, discovers parks, and stores.
+// HandleAPIAutofetchAdd validates credentials, discovers parks, encrypts password, and stores.
 func (s *Server) HandleAPIAutofetchAdd(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		APIType    string `json:"api_type"`
@@ -86,17 +175,24 @@ func (s *Server) HandleAPIAutofetchAdd(w http.ResponseWriter, r *http.Request) {
 		req.IntervalH = 24
 	}
 
-	// Probe: authenticate and discover park names from patrol/subject data
+	// Probe: authenticate and discover park names
 	parkNames, err := probeEarthRanger(req.ServiceURL, req.Username, req.Password)
 	if err != nil {
 		writeJSON(w, 400, map[string]string{"error": fmt.Sprintf("Connection failed: %v", err)})
 		return
 	}
 
+	// Encrypt password before storage
+	encrypted, err := encryptPassword(req.Password)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": "Failed to encrypt credentials"})
+		return
+	}
+
 	result, err := s.DB.ExecContext(r.Context(),
 		`INSERT INTO autofetch_sources (api_type, service_url, username, password, interval_h, enabled, park_names)
 		 VALUES (?, ?, ?, ?, ?, 1, ?)`,
-		req.APIType, req.ServiceURL, req.Username, req.Password, req.IntervalH, parkNames)
+		req.APIType, req.ServiceURL, req.Username, encrypted, req.IntervalH, parkNames)
 	if err != nil {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
 		return
@@ -153,8 +249,15 @@ func (s *Server) HandleAPIAutofetchEnable(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// Encrypt password before storage
+	encrypted, err := encryptPassword(req.Password)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": "Failed to encrypt credentials"})
+		return
+	}
+
 	_, err = s.DB.ExecContext(r.Context(),
-		`UPDATE autofetch_sources SET enabled = 1, password = ? WHERE id = ?`, req.Password, req.ID)
+		`UPDATE autofetch_sources SET enabled = 1, password = ? WHERE id = ?`, encrypted, req.ID)
 	if err != nil {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
 		return
@@ -195,6 +298,7 @@ func (s *Server) HandleAPIAutofetchRunNow(w http.ResponseWriter, r *http.Request
 
 // StartAutofetchWorker checks sources every 15 minutes and runs overdue ones.
 func (s *Server) StartAutofetchWorker(ctx context.Context) {
+	slog.Info("autofetch worker started")
 	ticker := time.NewTicker(15 * time.Minute)
 	defer ticker.Stop()
 
@@ -255,16 +359,25 @@ func (s *Server) runAutofetchDue(ctx context.Context) {
 	}
 }
 
-// runAutofetchSource executes the Python fetch script for a single source.
+// runAutofetchSource decrypts credentials and runs the Python fetch script.
 func (s *Server) runAutofetchSource(ctx context.Context, id int64) {
-	var apiType, serviceURL, username, password string
+	var apiType, serviceURL, username, encryptedPw string
 	var intervalH int
 	err := s.DB.QueryRowContext(ctx,
 		`SELECT api_type, service_url, username, password, interval_h
 		 FROM autofetch_sources WHERE id = ? AND enabled = 1 AND password != ''`, id,
-	).Scan(&apiType, &serviceURL, &username, &password, &intervalH)
+	).Scan(&apiType, &serviceURL, &username, &encryptedPw, &intervalH)
 	if err != nil {
 		slog.Error("autofetch: source not found or disabled", "id", id, "error", err)
+		return
+	}
+
+	// Decrypt password
+	password, err := decryptPassword(encryptedPw)
+	if err != nil {
+		slog.Error("autofetch: failed to decrypt credentials", "id", id, "error", err)
+		_, _ = s.DB.ExecContext(ctx,
+			`UPDATE autofetch_sources SET last_status = 'error: credential decryption failed' WHERE id = ?`, id)
 		return
 	}
 
@@ -275,10 +388,11 @@ func (s *Server) runAutofetchSource(ctx context.Context, id int64) {
 	cmd := exec.CommandContext(ctx, "python3", "scripts/fetch_earthranger_gpx.py",
 		"--url", serviceURL,
 		"--user", username,
-		"--pass", password,
 		"--upload-url", uploadURL,
 		"--days", strconv.Itoa(max(intervalH/24, 1)),
 	)
+	// Pass password via environment variable — not command-line args
+	cmd.Env = append(os.Environ(), "EARTHRANGER_PASSWORD="+password)
 
 	output, err := cmd.CombinedOutput()
 
@@ -306,6 +420,40 @@ func (s *Server) runAutofetchSource(ctx context.Context, id int64) {
 	_, _ = s.DB.ExecContext(ctx,
 		`UPDATE autofetch_sources SET last_run_at = CURRENT_TIMESTAMP, last_status = ?, last_points = ? WHERE id = ?`,
 		status, points, id)
+}
+
+// ── Upload queue cleanup ─────────────────────────────────────────────────────
+
+// StartUploadQueueCleanup periodically purges completed upload_queue entries
+// older than 7 days to remove stored file BLOBs.
+func (s *Server) StartUploadQueueCleanup(ctx context.Context) {
+	ticker := time.NewTicker(6 * time.Hour)
+	defer ticker.Stop()
+
+	// Initial cleanup after 5 minutes
+	time.Sleep(5 * time.Minute)
+	s.cleanupUploadQueue(ctx)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			s.cleanupUploadQueue(ctx)
+		}
+	}
+}
+
+func (s *Server) cleanupUploadQueue(ctx context.Context) {
+	result, err := s.DB.ExecContext(ctx,
+		`DELETE FROM upload_queue WHERE completed_at < datetime('now', '-7 days')`)
+	if err != nil {
+		slog.Error("upload queue cleanup failed", "error", err)
+		return
+	}
+	if n, _ := result.RowsAffected(); n > 0 {
+		slog.Info("upload queue cleanup", "deleted", n)
+	}
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -350,26 +498,23 @@ func probeEarthRanger(serviceURL, username, password string) (string, error) {
 	}
 
 	// Discover park names from the PAMDAS instance hostname
-	// e.g. "nyerere.pamdas.org" -> try to read patrol area names
 	parkNames := extractParkName(serviceURL)
 
 	return parkNames, nil
 }
 
 // extractParkName derives park name(s) from a PAMDAS URL.
-// e.g. "https://nyerere.pamdas.org" -> "Nyerere NP"
 func extractParkName(serviceURL string) string {
-	// Known mappings for PAMDAS instances
 	known := map[string]string{
-		"nyerere":  "Nyerere NP, Ruaha NP",
-		"chinko":   "Chinko",
-		"virunga":  "Virunga NP",
-		"garamba":  "Garamba NP",
-		"odzala":   "Odzala-Kokoua NP",
-		"akagera":  "Akagera NP",
-		"zakouma":  "Zakouma NP",
-		"pendjari": "Pendjari NP",
-		"limpopo":  "Limpopo NP",
+		"nyerere":   "Nyerere NP, Ruaha NP",
+		"chinko":    "Chinko",
+		"virunga":   "Virunga NP",
+		"garamba":   "Garamba NP",
+		"odzala":    "Odzala-Kokoua NP",
+		"akagera":   "Akagera NP",
+		"zakouma":   "Zakouma NP",
+		"pendjari":  "Pendjari NP",
+		"limpopo":   "Limpopo NP",
 		"serengeti": "Serengeti NP",
 	}
 
@@ -394,6 +539,5 @@ func extractParkName(serviceURL string) string {
 
 // listenPort returns the port the server is listening on.
 func (s *Server) listenPort() string {
-	// Default to 8000; the server address is set at startup
 	return "8000"
 }
