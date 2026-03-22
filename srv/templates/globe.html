@@ -17445,7 +17445,7 @@ ${starredItems.narratives.map(n => {
         else if (tabName === 'pending') loadPendingApprovals();
         else if (tabName === 'learning') loadLearningResults();
         else if (tabName === 'features') loadLearnedFeatures();
-        else if (tabName === 'autofetch') loadAutofetchSources();
+        else if (tabName === 'autofetch') { loadAutofetchSources(); initAfSourceViewer(); }
     }
     
     function safeDateStr(ts) {
@@ -17504,24 +17504,38 @@ ${starredItems.narratives.map(n => {
     async function loadPendingApprovals() {
         const tbody = document.getElementById('pending-table-body');
         if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Loading...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Loading...</td></tr>';
         
         try {
             const res = await fetch('/api/admin/pending-approvals');
             const data = await res.json();
             
             if (!data.features || data.features.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#888;">No pending features</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#888;">No pending features</td></tr>';
                 return;
             }
             
+            // Update stats
+            const stats = data.stats || {};
+            const el = id => document.getElementById(id);
+            if (el('stat-pending-roads')) el('stat-pending-roads').textContent = stats.pending_roads || 0;
+            if (el('stat-pending-places')) el('stat-pending-places').textContent = stats.pending_places || 0;
+            if (el('stat-pending-airstrips')) el('stat-pending-airstrips').textContent = stats.pending_airstrips || 0;
+            if (el('stat-high-confidence')) el('stat-high-confidence').textContent = stats.high_confidence || 0;
+            
             tbody.innerHTML = data.features.map(f => {
                 const confidence = f.confidence_pct || f.confidence || 0;
+                const hasCoords = f.lat != null && f.lon != null;
+                const coordStr = hasCoords ? `${f.lat.toFixed(4)}, ${f.lon.toFixed(4)}` : '-';
+                const flyBtn = hasCoords
+                    ? `<a href="#" onclick="event.stopPropagation();event.preventDefault();flyToApproval(${f.lat},${f.lon},'${f.type}')" style="color:#3b82f6;font-size:11px;text-decoration:none;white-space:nowrap;" title="Fly to location on map"><i class='icon-map-pin icon-color-info' style='font-size:10px;'></i> ${coordStr}</a>`
+                    : `<span style="color:#555;font-size:11px;">${coordStr}</span>`;
                 return `
                 <tr data-id="${f.id}" data-type="${f.type}" onclick="handleAdminRowClick(event, '${f.type}', ${f.id})">
                     <td>${escapeHtml(f.park_id || f.park_name || 'Unknown')}</td>
                     <td><span class="feature-type-badge type-${f.type}">${f.type}</span></td>
                     <td style="font-size:11px;">${escapeHtml(f.details || f.name || 'Unnamed')}</td>
+                    <td>${flyBtn}</td>
                     <td>
                         <div class="confidence-bar">
                             <div class="confidence-fill" style="width:${confidence}%;background:${getConfidenceColor(confidence)}"></div>
@@ -17536,7 +17550,17 @@ ${starredItems.narratives.map(n => {
                 </tr>`;
             }).join('');
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#f87171;">${err.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#f87171;">${err.message}</td></tr>`;
+        }
+    }
+    
+    function flyToApproval(lat, lon, type) {
+        // Close admin panel and fly to location
+        if (window.viewer) {
+            window.viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(lon, lat, type === 'road' ? 30000 : 8000),
+                duration: 1.5
+            });
         }
     }
     
@@ -17846,6 +17870,29 @@ ${starredItems.narratives.map(n => {
             // Refresh after a short delay to show updated status
             setTimeout(loadAutofetchSources, 3000);
         } catch (err) { showToast(err.message, 'error'); }
+    }
+    
+    // Lazy-load fetch script source code on first expand
+    let _afSourceLoaded = false;
+    function initAfSourceViewer() {
+        if (_afSourceLoaded) return;
+        const details = document.getElementById('af-source-details');
+        if (!details || details.dataset.listening) return;
+        details.dataset.listening = '1';
+        details.addEventListener('toggle', async () => {
+            if (!details.open || _afSourceLoaded) return;
+            _afSourceLoaded = true;
+            try {
+                const res = await fetch('/api/admin/autofetch/script?pwd=' + getPwd());
+                if (!res.ok) throw new Error('Failed to load script');
+                const text = await res.text();
+                const codeEl = document.getElementById('af-source-text');
+                if (codeEl) codeEl.textContent = text;
+            } catch (err) {
+                const codeEl = document.getElementById('af-source-text');
+                if (codeEl) codeEl.textContent = 'Error loading script: ' + err.message;
+            }
+        });
     }
     
     async function showUploadDetail(id) {
@@ -18670,8 +18717,8 @@ ${starredItems.narratives.map(n => {
                     <div style="margin-bottom:12px;"><button class="admin-btn approve" onclick="approveAllHighConfidence()">✓ Approve All &gt;75% Confidence</button></div>
                     <div class="admin-table-container">
                         <table class="admin-table">
-                            <thead><tr><th>Type</th><th>Park</th><th>Confidence</th><th>Details</th><th>Actions</th></tr></thead>
-                            <tbody id="pending-table-body"><tr><td colspan="5" style="text-align:center;color:#666;">Loading...</td></tr></tbody>
+                            <thead><tr><th>Park</th><th>Type</th><th>Details</th><th>Location</th><th>Confidence</th><th>Date</th><th>Actions</th></tr></thead>
+                            <tbody id="pending-table-body"><tr><td colspan="7" style="text-align:center;color:#666;">Loading...</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -18768,6 +18815,17 @@ ${starredItems.narratives.map(n => {
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Source code viewer -->
+                        <details id="af-source-details" style="margin-top:20px;">
+                            <summary style="cursor:pointer;color:#3b82f6;font-size:12px;font-weight:500;padding:8px 0;user-select:none;">
+                                <i class="icon-code icon-color-info" style="font-size:12px;"></i>
+                                View fetch script source code (fetch_earthranger_gpx.py)
+                            </summary>
+                            <div id="af-source-code" style="margin-top:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:16px;max-height:500px;overflow:auto;">
+                                <pre style="color:#d4d4d4;font-size:11px;line-height:1.5;margin:0;white-space:pre;font-family:'Fira Code',Consolas,Monaco,monospace;"><code id="af-source-text" style="color:#d4d4d4;">Loading...</code></pre>
+                            </div>
+                        </details>
                     </div>
                 </div>
 

@@ -541,3 +541,15 @@ func extractParkName(serviceURL string) string {
 func (s *Server) listenPort() string {
 	return "8000"
 }
+
+// HandleAPIAutofetchScript serves the fetch_earthranger_gpx.py source code
+// so users can inspect exactly what runs during autofetch.
+func (s *Server) HandleAPIAutofetchScript(w http.ResponseWriter, r *http.Request) {
+	data, err := os.ReadFile("scripts/fetch_earthranger_gpx.py")
+	if err != nil {
+		http.Error(w, "Script not found", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Write(data)
+}

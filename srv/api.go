@@ -2484,6 +2484,8 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 		Type          string   `json:"type"`
 		ID            int64    `json:"id"`
 		ParkID        string   `json:"park_id"`
+		Lat           *float64 `json:"lat"`
+		Lon           *float64 `json:"lon"`
 		ConfidencePct *float64 `json:"confidence_pct"`
 		Details       string   `json:"details"`
 		CreatedAt     string   `json:"created_at"`
@@ -2493,17 +2495,20 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 	
 	// Get pending roads
 	rows, err := s.DB.Query(`
-		SELECT 'road' as type, id, park_id, confidence_pct, 
+		SELECT 'road' as type, id, park_id,
+		       json_extract(geojson, '$.coordinates[0][1]') as lat,
+		       json_extract(geojson, '$.coordinates[0][0]') as lon,
+		       confidence_pct, 
 		       COALESCE(printf('%.1f km, %d matches', length_m/1000.0, match_count), 'Unknown'),
 		       datetime(created_at) as created_at
 		FROM learned_roads WHERE status = 'pending'
 		UNION ALL
-		SELECT 'airstrip' as type, id, park_id, confidence_pct,
+		SELECT 'airstrip' as type, id, park_id, lat, lon, confidence_pct,
 		       COALESCE(printf('%s, %d landings', aircraft_type, landing_count), 'Unknown'),
 		       datetime(created_at) as created_at
 		FROM learned_airstrips WHERE status = 'pending'
 		UNION ALL
-		SELECT 'place' as type, id, park_id, confidence_pct,
+		SELECT 'place' as type, id, park_id, lat, lon, confidence_pct,
 		       COALESCE(printf('%s, %d visits', place_type, visit_count), 'Unknown'),
 		       datetime(created_at) as created_at
 		FROM learned_places WHERE status = 'pending'
@@ -2519,7 +2524,7 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 	
 	for rows.Next() {
 		var f PendingFeature
-		if err := rows.Scan(&f.Type, &f.ID, &f.ParkID, &f.ConfidencePct, &f.Details, &f.CreatedAt); err != nil {
+		if err := rows.Scan(&f.Type, &f.ID, &f.ParkID, &f.Lat, &f.Lon, &f.ConfidencePct, &f.Details, &f.CreatedAt); err != nil {
 			continue
 		}
 		features = append(features, f)
