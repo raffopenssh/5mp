@@ -1687,9 +1687,10 @@
         const MAPTILER_KEY = 'dea58ea0389007e386776c4f583f4425';
         const API_HOST = 'five-mp-conservation-effort';
 
-        // Get current password from URL
+        // Password injected server-side (cookie-independent, works in all browsers)
+        const APP_PWD = '{{.Pwd}}';
         function getPwd() {
-            return new URLSearchParams(window.location.search).get('pwd') || '';
+            return APP_PWD || new URLSearchParams(window.location.search).get('pwd') || '';
         }
         
         // Icon helper function - generates Lucide icon HTML
@@ -3903,7 +3904,7 @@
                 // Fetch enriched park data from API
                 const dateFrom = document.getElementById('date-from')?.value || '';
                 const dateTo = document.getElementById('date-to')?.value || '';
-                let url = `/api/parks/export?pwd=${window.accessPwd || ''}`;
+                let url = `/api/parks/export?pwd=${getPwd()}`;
                 if (dateFrom) url += `&from=${dateFrom}`;
                 if (dateTo) url += `&to=${dateTo}`;
                 if (currentCountryFilter) url += `&country=${encodeURIComponent(currentCountryFilter)}`;
@@ -5039,7 +5040,7 @@
             if (!bounds) return null;
             
             // Fetch grid data for this park's bbox
-            let url = `/api/grid?pwd=${window.accessPwd || ''}`;
+            let url = `/api/grid?pwd=${getPwd()}`;
             if (fromDate) url += `&from=${fromDate}`;
             if (toDate) url += `&to=${toDate}`;
             if (Array.isArray(bounds)) {
@@ -10819,7 +10820,7 @@
                 
                 // FAOLEX documents (new data source)
                 try {
-                    const faolexResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/legal?pwd=${window.accessPwd || ''}`);
+                    const faolexResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/legal?pwd=${getPwd()}`);
                     if (faolexResp.ok) {
                         const faolexData = await faolexResp.json();
                         if (faolexData.documents && faolexData.documents.length > 0) {
@@ -15745,7 +15746,7 @@ ${starredItems.narratives.map(n => {
             const featureType = type === 'fire' ? 'fire_trajectory' : type;
             
             // First try to fetch the specific feature by ID (efficient)
-            let response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&feature_id=${encodeURIComponent(featureId)}&pwd=${window.accessPwd || ''}`);
+            let response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&feature_id=${encodeURIComponent(featureId)}&pwd=${getPwd()}`);
             let allFeatures = response.ok ? await response.json() : { features: [] };
             
             // Find the specific feature(s)
@@ -15754,7 +15755,7 @@ ${starredItems.narratives.map(n => {
             // If found by direct ID query, we're done
             // If not found, fall back to searching in all features
             if (features.length === 0) {
-                response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&limit=5000&pwd=${window.accessPwd || ''}`);
+                response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&limit=5000&pwd=${getPwd()}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 allFeatures = await response.json();
                 
@@ -16303,7 +16304,7 @@ ${starredItems.narratives.map(n => {
             
             // Infrastructure comes from learned features endpoint
             if (type === 'infrastructure') {
-                const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&pwd=${window.accessPwd || ''}`);
+                const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&pwd=${getPwd()}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 const learned = await response.json();
                 
@@ -16329,7 +16330,7 @@ ${starredItems.narratives.map(n => {
                 });
                 geojson = { type: 'FeatureCollection', features };
             } else {
-                const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.accessPwd || ''}`);
+                const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${getPwd()}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 geojson = await response.json();
             }
@@ -16902,7 +16903,7 @@ ${starredItems.narratives.map(n => {
                 }
                 
                 // Fetch updated data
-                const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.accessPwd || ''}`);
+                const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${getPwd()}`);
                 if (!response.ok) continue;
                 
                 const geojson = await response.json();
@@ -17403,7 +17404,7 @@ ${starredItems.narratives.map(n => {
         tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;">Loading...</td></tr>';
         
         try {
-            const res = await fetch('/api/admin/gpx-logs?limit=50');
+            const res = await fetch(`/api/admin/gpx-logs?limit=50&pwd=${encodeURIComponent(getPwd())}`);
             const data = await res.json();
             
             if (data.stats) {
@@ -17447,7 +17448,7 @@ ${starredItems.narratives.map(n => {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Loading...</td></tr>';
         
         try {
-            const res = await fetch('/api/admin/pending-approvals');
+            const res = await fetch(`/api/admin/pending-approvals?pwd=${encodeURIComponent(getPwd())}`);
             const data = await res.json();
             
             if (!data.features || data.features.length === 0) {
@@ -17486,7 +17487,7 @@ ${starredItems.narratives.map(n => {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Loading...</td></tr>';
         
         try {
-            const res = await fetch('/api/admin/learning-results?limit=50');
+            const res = await fetch(`/api/admin/learning-results?limit=50&pwd=${encodeURIComponent(getPwd())}`);
             if (!res.ok) throw new Error('Failed to load results');
             const data = await res.json();
             
@@ -17581,7 +17582,7 @@ ${starredItems.narratives.map(n => {
     
     async function approveFeature(type, id) {
         try {
-            const res = await fetch('/api/admin/approve-feature', {
+            const res = await fetch(`/api/admin/approve-feature?pwd=${encodeURIComponent(getPwd())}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ type, id })
@@ -17598,7 +17599,7 @@ ${starredItems.narratives.map(n => {
     async function rejectFeature(type, id) {
         if (!confirm('Reject this feature? It will be marked as invalid.')) return;
         try {
-            const res = await fetch('/api/admin/reject-feature', {
+            const res = await fetch(`/api/admin/reject-feature?pwd=${encodeURIComponent(getPwd())}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ type, id })
@@ -17621,7 +17622,7 @@ ${starredItems.narratives.map(n => {
         modal.classList.add('active');
         
         try {
-            const res = await fetch(`/api/admin/feature-detail?type=${type}&id=${id}`);
+            const res = await fetch(`/api/admin/feature-detail?type=${type}&id=${id}&pwd=${encodeURIComponent(getPwd())}`);
             const data = await res.json();
             
             content.innerHTML = `
@@ -17684,7 +17685,7 @@ ${starredItems.narratives.map(n => {
         row.after(detailRow);
         
         try {
-            const res = await fetch(`/api/admin/upload-detail?id=${id}`);
+            const res = await fetch(`/api/admin/upload-detail?id=${id}&pwd=${encodeURIComponent(getPwd())}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             
@@ -17759,7 +17760,7 @@ ${starredItems.narratives.map(n => {
     async function approveAllHighConfidence() {
         if (!confirm('Approve all features with >75% confidence?')) return;
         try {
-            const res = await fetch('/api/admin/approve-high-confidence', {
+            const res = await fetch(`/api/admin/approve-high-confidence?pwd=${encodeURIComponent(getPwd())}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ threshold: 75 })
@@ -17776,7 +17777,7 @@ ${starredItems.narratives.map(n => {
     async function deleteUpload(uploadId) {
         if (!confirm('Delete this upload? The GPX data will be hidden.')) return;
         try {
-            const res = await fetch('/api/admin/delete-upload', {
+            const res = await fetch(`/api/admin/delete-upload?pwd=${encodeURIComponent(getPwd())}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: uploadId })
@@ -17791,7 +17792,7 @@ ${starredItems.narratives.map(n => {
     
     async function hideNotification(notificationId) {
         try {
-            const res = await fetch('/api/admin/hide-notification', {
+            const res = await fetch(`/api/admin/hide-notification?pwd=${encodeURIComponent(getPwd())}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: notificationId })
@@ -17874,7 +17875,7 @@ ${starredItems.narratives.map(n => {
     async function bulkApprove() {
         if (!confirm(`Approve ${adminSelectedItems.length} items?`)) return;
         try {
-            const res = await fetch('/api/admin/bulk-approve', {
+            const res = await fetch(`/api/admin/bulk-approve?pwd=${encodeURIComponent(getPwd())}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ items: adminSelectedItems })
@@ -17893,7 +17894,7 @@ ${starredItems.narratives.map(n => {
     async function bulkReject() {
         if (!confirm(`Reject ${adminSelectedItems.length} items?`)) return;
         try {
-            const res = await fetch('/api/admin/bulk-reject', {
+            const res = await fetch(`/api/admin/bulk-reject?pwd=${encodeURIComponent(getPwd())}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ items: adminSelectedItems })
