@@ -17388,10 +17388,19 @@ ${starredItems.narratives.map(n => {
         else if (tabName === 'features') loadLearnedFeatures();
     }
     
+    function safeDateStr(ts) {
+        if (!ts) return '-';
+        try {
+            // Truncate nanosecond timestamps to ms (Safari compat)
+            const s = ts.replace(/(\.[0-9]{3})[0-9]*Z$/, '$1Z');
+            return new Date(s).toLocaleDateString();
+        } catch(e) { return ts.slice(0, 10); }
+    }
+
     async function loadUploadLogs() {
         const tbody = document.getElementById('uploads-table-body');
         if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Loading...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;">Loading...</td></tr>';
         
         try {
             const res = await fetch('/api/admin/gpx-logs?limit=50');
@@ -17400,35 +17409,35 @@ ${starredItems.narratives.map(n => {
             if (data.stats) {
                 const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
                 el('stat-total-uploads', data.stats.total_uploads || 0);
-                el('stat-patrol-km', (data.stats.total_patrol_km || 0).toFixed(1));
-                el('stat-boundary-km', (data.stats.total_boundary_km || 0).toFixed(1));
-                el('stat-excluded-km', (data.stats.total_excluded_km || 0).toFixed(1));
+                el('stat-foot-km', (data.stats.total_foot_km || 0).toFixed(1));
+                el('stat-vehicle-km', (data.stats.total_vehicle_km || 0).toFixed(1));
+                el('stat-aircraft-km', (data.stats.total_aircraft_km || 0).toFixed(1));
             }
             
             if (!data.logs || data.logs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#888;">No upload logs found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#888;">No upload logs found</td></tr>';
                 return;
             }
             
+            const km = v => { const n = v || 0; return n < 0.05 ? '-' : n.toFixed(1); };
+            const kmC = (v, c) => { const s = km(v); return s === '-' ? '<span style="color:#444">-</span>' : `<span style="color:${c}">${s}</span>`; };
             tbody.innerHTML = data.logs.map(log => {
-                const uploadTime = log.upload_time ? new Date(log.upload_time).toLocaleDateString() : '-';
                 const parkDisplay = log.protected_area_name || log.park_name || '-';
-                const patrolKm = (log.patrol_km || 0).toFixed(1);
-                const boundaryKm = (log.boundary_km || 0).toFixed(1);
-                const excludedKm = (log.excluded_km || 0).toFixed(1);
                 return `
                 <tr data-id="${log.id}" data-type="upload" onclick="handleAdminRowClick(event, 'upload', ${log.id})">
                     <td title="${escapeHtml(log.filename || '')}">${escapeHtml((log.filename || 'unnamed').slice(0, 20))}${(log.filename || '').length > 20 ? '...' : ''}</td>
                     <td>${escapeHtml(parkDisplay)}</td>
-                    <td class="km-patrol">${patrolKm}</td>
-                    <td class="km-boundary">${boundaryKm}</td>
-                    <td class="km-excluded">${excludedKm}</td>
-                    <td>${uploadTime}</td>
+                    <td>${kmC(log.foot_km, '#22c55e')}</td>
+                    <td>${kmC(log.vehicle_km, '#3b82f6')}</td>
+                    <td>${kmC(log.aircraft_km, '#a78bfa')}</td>
+                    <td>${kmC(log.boundary_km, '#f59e0b')}</td>
+                    <td>${kmC(log.excluded_km, '#ef4444')}</td>
+                    <td>${safeDateStr(log.upload_time)}</td>
                 </tr>
             `;
             }).join('');
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#f87171;">${err.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#f87171;">${err.message}</td></tr>`;
         }
     }
     
@@ -17671,7 +17680,7 @@ ${starredItems.narratives.map(n => {
         const detailRow = document.createElement('tr');
         detailRow.id = `upload-detail-${id}`;
         detailRow.className = 'upload-detail-row';
-        detailRow.innerHTML = `<td colspan="6" style="padding:12px 16px;background:#111;border-left:3px solid #3b82f6;"><div style="text-align:center;color:#888;">Loading...</div></td>`;
+        detailRow.innerHTML = `<td colspan="8" style="padding:12px 16px;background:#111;border-left:3px solid #3b82f6;"><div style="text-align:center;color:#888;">Loading...</div></td>`;
         row.after(detailRow);
         
         try {
@@ -17708,12 +17717,12 @@ ${starredItems.narratives.map(n => {
             if (errors.length > 0) valHTML += errors.map(e => `<div style="color:#f87171;font-size:11px;">✗ ${escapeHtml(e)}</div>`).join('');
             if (warnings.length > 0) valHTML += warnings.map(w => `<div style="color:#fbbf24;font-size:11px;">⚠ ${escapeHtml(w)}</div>`).join('');
             
-            detailRow.innerHTML = `<td colspan="6" style="padding:0;background:#111;border-left:3px solid #3b82f6;">
+            detailRow.innerHTML = `<td colspan="8" style="padding:0;background:#111;border-left:3px solid #3b82f6;">
                 <div style="padding:12px 16px;">
                     <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:10px;">
                         <div><strong style="color:#888;">Status:</strong> <span style="color:${statusColor};font-weight:bold;">${data.processing_status || 'unknown'}</span></div>
                         <div><strong style="color:#888;">Points:</strong> <span style="color:#ddd;">${data.total_points || 0}</span></div>
-                        <div><strong style="color:#888;">Uploaded:</strong> <span style="color:#ddd;">${data.upload_time ? new Date(data.upload_time).toLocaleString() : '?'}</span></div>
+                        <div><strong style="color:#888;">Uploaded:</strong> <span style="color:#ddd;">${safeDateStr(data.upload_time)}</span></div>
                         ${data.protected_area_name ? `<div><strong style="color:#888;">Park:</strong> <span style="color:#ddd;">${escapeHtml(data.protected_area_name)}</span></div>` : ''}
                     </div>
                     
@@ -17743,7 +17752,7 @@ ${starredItems.narratives.map(n => {
                 </div>
             </td>`;
         } catch (err) {
-            detailRow.innerHTML = `<td colspan="6" style="padding:12px 16px;background:#111;border-left:3px solid #ef4444;color:#f87171;font-size:12px;">Error loading details: ${err.message}</td>`;
+            detailRow.innerHTML = `<td colspan="8" style="padding:12px 16px;background:#111;border-left:3px solid #ef4444;color:#f87171;font-size:12px;">Error loading details: ${err.message}</td>`;
         }
     }
     
@@ -18447,15 +18456,15 @@ ${starredItems.narratives.map(n => {
                 <!-- Upload Logs Tab -->
                 <div class="admin-tab-content active" id="tab-uploads">
                     <div class="admin-stats-row" id="uploads-stats">
-                        <div class="admin-stat-card"><div class="admin-stat-label">Total Uploads</div><div class="admin-stat-value" id="stat-total-uploads">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label">Patrol km</div><div class="admin-stat-value km-patrol" id="stat-patrol-km">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label">Boundary km</div><div class="admin-stat-value km-boundary" id="stat-boundary-km">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label">Excluded km</div><div class="admin-stat-value km-excluded" id="stat-excluded-km">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label">Uploads</div><div class="admin-stat-value" id="stat-total-uploads">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-footprints icon-color-success"></i> Foot km</div><div class="admin-stat-value" style="color:#22c55e" id="stat-foot-km">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-car icon-color-info"></i> Vehicle km</div><div class="admin-stat-value" style="color:#3b82f6" id="stat-vehicle-km">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-plane icon-color-neutral"></i> Aviation km</div><div class="admin-stat-value" style="color:#a78bfa" id="stat-aircraft-km">-</div></div>
                     </div>
                     <div class="admin-table-container">
                         <table class="admin-table">
-                            <thead><tr><th>File</th><th>Park</th><th>Patrol</th><th>Boundary</th><th>Excluded</th><th>Date</th></tr></thead>
-                            <tbody id="uploads-table-body"><tr><td colspan="6" style="text-align:center;color:#666;">Loading...</td></tr></tbody>
+                            <thead><tr><th>File</th><th>Park</th><th>Ft km</th><th>Vhl km</th><th>Aviation km</th><th>Boundary</th><th>Excluded</th><th>Date</th></tr></thead>
+                            <tbody id="uploads-table-body"><tr><td colspan="8" style="text-align:center;color:#666;">Loading...</td></tr></tbody>
                         </table>
                     </div>
                 </div>
