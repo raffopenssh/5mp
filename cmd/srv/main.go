@@ -79,6 +79,7 @@ func run() error {
 	ctx := context.Background()
 	go server.StartResearchWorker(ctx)
 	go server.StartNarrativeCacheWorker(ctx)
+	go server.StartAutofetchWorker(ctx)
 
 	return server.Serve(*flagListenAddr)
 }
