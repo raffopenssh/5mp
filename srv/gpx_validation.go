@@ -82,6 +82,7 @@ type ClassifiedSegment struct {
 	IncludeInEffort bool          `json:"include_in_effort"`
 	GeoJSON         string        `json:"geojson,omitempty"`
 	Points          []gpx.Point   `json:"-"` // For internal processing
+	OriginalIndices []int         `json:"original_indices,omitempty"` // Input segment indices covered by this classified segment (after merging)
 }
 
 // MinimumWaypoints is the minimum required waypoints for a valid GPX file
@@ -110,7 +111,7 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 	}
 
 	// Process each pre-processed segment
-	for _, timeSeg := range segments {
+	for segIdx, timeSeg := range segments {
 		seg := timeSeg.Points
 		if len(seg) < 2 {
 			continue
@@ -125,6 +126,7 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 				DistanceKm:      calculateSegmentDistance(seg),
 				Reason:          "Detected systematic pattern (regular intervals or grid coordinates)",
 				IncludeInEffort: false,
+				OriginalIndices: []int{segIdx},
 			}
 			result.ClassifiedSegments = append(result.ClassifiedSegments, classified)
 			result.ExcludedSegments++
@@ -138,6 +140,7 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 		staticSegs := detectStaticSegments(seg)
 		if len(staticSegs) > 0 {
 			for _, ss := range staticSegs {
+				ss.OriginalIndices = []int{segIdx}
 				result.ClassifiedSegments = append(result.ClassifiedSegments, ss)
 				result.StaticSegments++
 				result.ExcludedKm += ss.DistanceKm
@@ -154,6 +157,7 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 				Reason:          "Detected as boundary trace (closed polygon)",
 				IncludeInEffort: false,
 				GeoJSON:         pointsToGeoJSON(seg),
+				OriginalIndices: []int{segIdx},
 			}
 			result.ClassifiedSegments = append(result.ClassifiedSegments, classified)
 			result.BoundaryKm += classified.DistanceKm
@@ -170,6 +174,7 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 				Reason:          "Detected as road trace (high bearing consistency)",
 				IncludeInEffort: false,
 				GeoJSON:         pointsToGeoJSON(seg),
+				OriginalIndices: []int{segIdx},
 			}
 			result.ClassifiedSegments = append(result.ClassifiedSegments, classified)
 			result.RoadKm += classified.DistanceKm
@@ -261,6 +266,7 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 			Reason:          reason,
 			IncludeInEffort: includeInEffort,
 			Points:          seg,
+			OriginalIndices: []int{segIdx},
 		}
 
 		// Calculate duration
@@ -330,6 +336,16 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 		}
 	}
 
+	// === Post-classification merge pass ===
+	// Merge adjacent segments to fix fragmentation from 30-min time splitting.
+	// When a flight is split into [aircraft, tiny-foot, aircraft], the tiny
+	// middle segment is a boundary artifact, not real foot patrol.
+	result.ClassifiedSegments = mergeAdjacentSegments(result.ClassifiedSegments)
+
+	// Recompute all stats from merged segments (the per-segment accumulation
+	// above is now stale because segments were merged/absorbed).
+	recomputeStatsFromSegments(result)
+
 	// Final validation checks
 	if result.PatrolKm == 0 && result.TotalPoints >= MinimumWaypoints {
 		result.ValidationWarnings = append(result.ValidationWarnings,
@@ -345,6 +361,242 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 // 2. Grid-pattern coordinates (coordinates on exact grid lines)
 // 3. Impossible speeds combined with microsecond intervals
 // NOTE: Regular 3-second intervals from GPS devices are NORMAL and should NOT be flagged
+// mergeAdjacentSegments performs a post-classification merge to fix
+// fragmentation caused by rigid 30-minute time-window splitting.
+//
+// Problem: A continuous flight split into 30-min windows produces many
+// tiny segments at boundaries. A 2-point segment between two aircraft
+// segments gets classified as "foot" because there's not enough data
+// to determine it's aircraft. These phantom segments create wrong grid pixels.
+//
+// Strategy:
+// 1. Absorb orphans: A small segment (< 5 points AND < 200m) sitting between
+//    two segments of the same movement type gets absorbed into the preceding one.
+// 2. Merge consecutive: Adjacent segments with the same movement type and
+//    classification are merged into one.
+// 3. Idle segments from ER hints: If a segment is "idle" but has a strong
+//    ER hint, leave it idle (parked aircraft is still idle).
+func mergeAdjacentSegments(segs []ClassifiedSegment) []ClassifiedSegment {
+	if len(segs) < 3 {
+		return segs
+	}
+
+	// Pass 1: Absorb orphan segments between same-type neighbors.
+	// An orphan is a small segment (< 5 actual points, < 200m distance)
+	// sandwiched between two segments of the same movement type.
+	// Only absorb patrol/aircraft/idle classifications — not road/boundary/auto_generated.
+	absorbable := func(cs *ClassifiedSegment) bool {
+		if cs.Classification == "road" || cs.Classification == "boundary" || cs.Classification == "auto_generated" {
+			return false
+		}
+		nPts := cs.EndIndex - cs.StartIndex + 1
+		return nPts < 5 && cs.DistanceKm < 0.2
+	}
+
+	mergeableType := func(cs *ClassifiedSegment) bool {
+		return cs.Classification == "patrol" || cs.Classification == "aircraft" || cs.Classification == "idle"
+	}
+
+	absorbed := make([]bool, len(segs))
+	for i := 1; i < len(segs)-1; i++ {
+		if !absorbable(&segs[i]) || !mergeableType(&segs[i]) {
+			continue
+		}
+		// Find previous non-absorbed segment
+		prev := -1
+		for p := i - 1; p >= 0; p-- {
+			if !absorbed[p] {
+				prev = p
+				break
+			}
+		}
+		if prev < 0 {
+			continue
+		}
+		// Find next non-absorbed segment
+		next := -1
+		for n := i + 1; n < len(segs); n++ {
+			if !absorbed[n] {
+				next = n
+				break
+			}
+		}
+		if next < 0 {
+			continue
+		}
+		// Both neighbors must be mergeable and same movement type
+		if !mergeableType(&segs[prev]) || !mergeableType(&segs[next]) {
+			continue
+		}
+		if segs[prev].MovementType == segs[next].MovementType {
+			// Absorb into previous segment
+			segs[prev].DistanceKm += segs[i].DistanceKm
+			segs[prev].Points = append(segs[prev].Points, segs[i].Points...)
+			segs[prev].EndIndex += segs[i].EndIndex - segs[i].StartIndex + 1
+			segs[prev].OriginalIndices = append(segs[prev].OriginalIndices, segs[i].OriginalIndices...)
+			// Update duration
+			if len(segs[prev].Points) > 0 && len(segs[i].Points) > 0 {
+				first := segs[prev].Points[0]
+				last := segs[prev].Points[len(segs[prev].Points)-1]
+				if first.Time != nil && last.Time != nil {
+					segs[prev].Duration = last.Time.Sub(*first.Time)
+					segs[prev].DurationStr = formatDuration(segs[prev].Duration)
+				}
+			}
+			// Inherit the stronger classification (aircraft > patrol)
+			segs[prev].IncludeInEffort = segs[prev].IncludeInEffort || segs[i].IncludeInEffort
+			absorbed[i] = true
+		}
+	}
+
+	// Build list without absorbed segments
+	var pass1 []ClassifiedSegment
+	for i, s := range segs {
+		if !absorbed[i] {
+			pass1 = append(pass1, s)
+		}
+	}
+
+	// Pass 2: Merge consecutive segments of the same movement type + classification.
+	if len(pass1) < 2 {
+		return pass1
+	}
+	var merged []ClassifiedSegment
+	current := pass1[0]
+	for i := 1; i < len(pass1); i++ {
+		nxt := pass1[i]
+		// Merge if same movement type, same classification, both mergeable
+		if mergeableType(&current) && mergeableType(&nxt) &&
+			current.MovementType == nxt.MovementType &&
+			current.Classification == nxt.Classification {
+			// Merge nxt into current
+			current.DistanceKm += nxt.DistanceKm
+			current.Points = append(current.Points, nxt.Points...)
+			current.EndIndex += nxt.EndIndex - nxt.StartIndex + 1
+			current.OriginalIndices = append(current.OriginalIndices, nxt.OriginalIndices...)
+			current.IncludeInEffort = current.IncludeInEffort || nxt.IncludeInEffort
+			// Recompute avg speed from merged points
+			if len(current.Points) > 1 {
+				current.AvgSpeedKmh = gpx.CalculateSpeed(current.Points)
+			}
+			// Update duration
+			if len(current.Points) > 0 {
+				first := current.Points[0]
+				last := current.Points[len(current.Points)-1]
+				if first.Time != nil && last.Time != nil {
+					current.Duration = last.Time.Sub(*first.Time)
+					current.DurationStr = formatDuration(current.Duration)
+				}
+			}
+			// Update reason with combined stats
+			switch current.MovementType {
+			case "aircraft":
+				current.Reason = fmt.Sprintf("Aircraft %s (avg %.0f km/h, %.1f km merged from %d segments)",
+					current.ActivityType, current.AvgSpeedKmh, current.DistanceKm, len(current.OriginalIndices))
+			case "vehicle":
+				current.Reason = fmt.Sprintf("Vehicle %s (avg %.0f km/h, %.1f km merged from %d segments)",
+					current.ActivityType, current.AvgSpeedKmh, current.DistanceKm, len(current.OriginalIndices))
+			case "foot":
+				current.Reason = fmt.Sprintf("Foot %s (avg %.1f km/h, %.1f km merged from %d segments)",
+					current.ActivityType, current.AvgSpeedKmh, current.DistanceKm, len(current.OriginalIndices))
+			}
+		} else {
+			merged = append(merged, current)
+			current = nxt
+		}
+	}
+	merged = append(merged, current)
+
+	return merged
+}
+
+// recomputeStatsFromSegments recalculates all stats from the (potentially merged)
+// classified segments. Called after mergeAdjacentSegments to ensure consistency.
+func recomputeStatsFromSegments(result *GPXValidationResult) {
+	// Reset all stats
+	result.PatrolKm = 0
+	result.ExcludedKm = 0
+	result.RoadKm = 0
+	result.BoundaryKm = 0
+	result.StaticSegments = 0
+	result.ExcludedSegments = 0
+	result.MovementStats = MovementStats{}
+
+	for _, cs := range result.ClassifiedSegments {
+		durationMin := cs.Duration.Minutes()
+
+		// Km accounting
+		switch cs.Classification {
+		case "idle":
+			result.StaticSegments++
+		case "auto_generated":
+			result.ExcludedSegments++
+			result.ExcludedKm += cs.DistanceKm
+		case "boundary":
+			result.BoundaryKm += cs.DistanceKm
+		case "road":
+			result.RoadKm += cs.DistanceKm
+		case "aircraft":
+			if cs.IncludeInEffort {
+				result.PatrolKm += cs.DistanceKm
+			} else {
+				result.ExcludedKm += cs.DistanceKm
+			}
+		case "patrol":
+			if cs.IncludeInEffort {
+				result.PatrolKm += cs.DistanceKm
+			} else {
+				result.ExcludedKm += cs.DistanceKm
+			}
+		}
+
+		// Skip idle/non-patrol from movement stats
+		if cs.Classification == "idle" || cs.Classification == "auto_generated" ||
+			cs.Classification == "boundary" || cs.Classification == "road" {
+			continue
+		}
+
+		// Movement type stats
+		switch cs.MovementType {
+		case "foot":
+			result.MovementStats.FootSegments++
+			result.MovementStats.FootKm += cs.DistanceKm
+			result.MovementStats.FootMinutes += durationMin
+			if cs.AvgSpeedKmh >= 0.5 && cs.AvgSpeedKmh <= 4 {
+				result.MovementStats.ReconSegments++
+				result.MovementStats.ReconKm += cs.DistanceKm
+				result.MovementStats.ReconMinutes += durationMin
+			}
+		case "vehicle":
+			result.MovementStats.VehicleSegments++
+			result.MovementStats.VehicleKm += cs.DistanceKm
+			result.MovementStats.VehicleMinutes += durationMin
+			if cs.AvgSpeedKmh > 60 {
+				result.MovementStats.FastVehicleSegments++
+				result.MovementStats.FastVehicleKm += cs.DistanceKm
+				result.MovementStats.FastVehicleMinutes += durationMin
+			}
+		case "aircraft":
+			result.MovementStats.AircraftSegments++
+			result.MovementStats.AircraftKm += cs.DistanceKm
+			result.MovementStats.AircraftMinutes += durationMin
+		}
+
+		// Activity type stats
+		switch cs.ActivityType {
+		case "patrol", "reconnaissance":
+			result.MovementStats.PatrolSegments++
+			result.MovementStats.PatrolKm += cs.DistanceKm
+		case "transit":
+			result.MovementStats.TransitSegments++
+			result.MovementStats.TransitKm += cs.DistanceKm
+		case "logistics":
+			result.MovementStats.LogisticsSegments++
+			result.MovementStats.LogisticsKm += cs.DistanceKm
+		}
+	}
+}
+
 func isAutoGenerated(points []gpx.Point) bool {
 	if len(points) < 10 {
 		return false

@@ -1299,12 +1299,9 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 			if area != nil {
 				segmentParks[i] = area.ID
 				parkNames[area.ID] = area.Name
-				// Use classified segment distance if available, else raw
-				dist := 0.0
-				if i < len(validationResult.ClassifiedSegments) {
-					dist = validationResult.ClassifiedSegments[i].DistanceKm
-				}
-				parkDistKm[area.ID] += dist
+				// Use raw segment distance for park detection (classified segments
+				// may have been merged, breaking the 1:1 index mapping)
+				parkDistKm[area.ID] += seg.DistanceKm
 			}
 		}
 	}
@@ -1413,22 +1410,23 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 	slog.Info("upload validation", "isValid", validationResult.IsValid, "patrolKm", validationResult.PatrolKm, "aircraftKm", validationResult.MovementStats.AircraftKm, "segments", len(segments))
 	if validationResult.IsValid && totalEffortKm > 0 {
 		// Apply validation classifier's movement types to the raw segments.
-		// The processor-level classifier (speed-only) may disagree with the
-		// validation classifier (multi-signal scoring), e.g. classifying
-		// 80-120 km/h aircraft as vehicle. Also filter out non-effort segments
-		// (logistics, road, auto_generated, static).
+		// After merging, classified segments track which original input segments
+		// they cover via OriginalIndices. Use that to map back correctly.
 		var patrolOnlySegments []gpx.Segment
-		for i, seg := range segments {
-			if i < len(validationResult.ClassifiedSegments) {
-				cs := validationResult.ClassifiedSegments[i]
-				if !cs.IncludeInEffort {
-					continue // skip logistics, road, auto_generated, static
-				}
-				if cs.MovementType != "" {
-					seg.MovementType = cs.MovementType
+		for _, cs := range validationResult.ClassifiedSegments {
+			if !cs.IncludeInEffort {
+				continue // skip logistics, road, auto_generated, static, idle
+			}
+			// Collect original segments covered by this classified segment
+			for _, origIdx := range cs.OriginalIndices {
+				if origIdx < len(segments) {
+					seg := segments[origIdx]
+					if cs.MovementType != "" {
+						seg.MovementType = cs.MovementType
+					}
+					patrolOnlySegments = append(patrolOnlySegments, seg)
 				}
 			}
-			patrolOnlySegments = append(patrolOnlySegments, seg)
 		}
 		slog.Info("persisting patrol segments", "count", len(patrolOnlySegments), "filtered_from", len(segments))
 		

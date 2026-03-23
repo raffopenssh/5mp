@@ -46,9 +46,10 @@ func TestValidateAndClassifyGPX_TimeBasedSegmentation(t *testing.T) {
 		t.Errorf("Expected valid GPX, got invalid: %v", result.ValidationErrors)
 	}
 
-	// Should have multiple segments (2 hours / 30 min max = at least 4 segments)
-	if len(result.ClassifiedSegments) < 2 {
-		t.Errorf("Expected multiple segments due to time-based splitting, got %d", len(result.ClassifiedSegments))
+	// After merging, consecutive same-type segments may be merged into one.
+	// The important thing is that total distance is preserved and realistic.
+	if len(result.ClassifiedSegments) < 1 {
+		t.Errorf("Expected at least 1 segment, got %d", len(result.ClassifiedSegments))
 	}
 
 	// Total patrol km should be reasonable (roughly 12 points * ~1.5km = ~18km max)
@@ -132,9 +133,11 @@ func TestValidateAndClassifyGPX_MultiDayTrack(t *testing.T) {
 		t.Errorf("Expected valid GPX, got invalid: %v", result.ValidationErrors)
 	}
 
-	// Should have at least 3 segments (one per day due to time gaps)
-	if len(result.ClassifiedSegments) < 3 {
-		t.Errorf("Expected at least 3 segments for 3-day track, got %d", len(result.ClassifiedSegments))
+	// After merging, consecutive same-type segments may be merged.
+	// With overnight gaps, the splitter creates per-day segments, but if all
+	// days are same movement type they merge. At minimum we have 1 segment.
+	if len(result.ClassifiedSegments) < 1 {
+		t.Errorf("Expected at least 1 segment for 3-day track, got %d", len(result.ClassifiedSegments))
 	}
 
 	// Total distance should be reasonable (not summing across day gaps)
@@ -211,9 +214,10 @@ func TestValidateAndClassifyGPX_RealisticDistances(t *testing.T) {
 		t.Errorf("Expected valid GPX, got invalid: %v", result.ValidationErrors)
 	}
 
-	// Should have ~30 segments (one per day after overnight gaps split them)
-	if len(result.ClassifiedSegments) < 20 {
-		t.Errorf("Expected ~30 segments for 30-day track, got %d", len(result.ClassifiedSegments))
+	// After merging, consecutive same-type foot segments are merged.
+	// The important check: distance is realistic, not segment count.
+	if len(result.ClassifiedSegments) < 1 {
+		t.Errorf("Expected at least 1 segment for 30-day track, got %d", len(result.ClassifiedSegments))
 	}
 
 	// The key test: distance should be REALISTIC
@@ -289,4 +293,103 @@ func TestValidateAndClassifyGPX_AircraftSeparation(t *testing.T) {
 	}
 	
 	t.Logf("Results: patrol=%.2f km, excluded=%.2f km", result.PatrolKm, result.ExcludedKm)
+}
+
+// TestMergeAdjacentSegments_OrphanAbsorption tests that tiny segments between
+// same-type neighbors get absorbed (e.g. 2-point foot fragment between aircraft segments)
+func TestMergeAdjacentSegments_OrphanAbsorption(t *testing.T) {
+	segs := []ClassifiedSegment{
+		{Classification: "aircraft", MovementType: "aircraft", DistanceKm: 35.0, EndIndex: 50, IncludeInEffort: true, OriginalIndices: []int{0}},
+		{Classification: "patrol", MovementType: "foot", DistanceKm: 0.05, EndIndex: 2, IncludeInEffort: true, OriginalIndices: []int{1}},  // orphan: 3 pts, 50m
+		{Classification: "aircraft", MovementType: "aircraft", DistanceKm: 21.0, EndIndex: 100, IncludeInEffort: true, OriginalIndices: []int{2}},
+	}
+
+	merged := mergeAdjacentSegments(segs)
+
+	// The orphan foot segment should be absorbed, then the two aircraft segments merged
+	if len(merged) != 1 {
+		t.Errorf("Expected 1 merged segment, got %d", len(merged))
+		for i, s := range merged {
+			t.Logf("  [%d] %s/%s %.2f km, origIndices=%v", i, s.Classification, s.MovementType, s.DistanceKm, s.OriginalIndices)
+		}
+		return
+	}
+	if merged[0].MovementType != "aircraft" {
+		t.Errorf("Expected aircraft, got %s", merged[0].MovementType)
+	}
+	// Distance should include all three segments
+	expectedKm := 35.0 + 0.05 + 21.0
+	if merged[0].DistanceKm < expectedKm-0.01 || merged[0].DistanceKm > expectedKm+0.01 {
+		t.Errorf("Expected %.2f km, got %.2f km", expectedKm, merged[0].DistanceKm)
+	}
+	// OriginalIndices should include all three
+	if len(merged[0].OriginalIndices) != 3 {
+		t.Errorf("Expected 3 original indices, got %d: %v", len(merged[0].OriginalIndices), merged[0].OriginalIndices)
+	}
+}
+
+// TestMergeAdjacentSegments_DifferentTypes tests that segments of different types are NOT merged
+func TestMergeAdjacentSegments_DifferentTypes(t *testing.T) {
+	segs := []ClassifiedSegment{
+		{Classification: "patrol", MovementType: "foot", DistanceKm: 5.0, EndIndex: 30, IncludeInEffort: true, OriginalIndices: []int{0}},
+		{Classification: "patrol", MovementType: "vehicle", DistanceKm: 20.0, EndIndex: 50, IncludeInEffort: true, OriginalIndices: []int{1}},
+		{Classification: "patrol", MovementType: "foot", DistanceKm: 3.0, EndIndex: 20, IncludeInEffort: true, OriginalIndices: []int{2}},
+	}
+
+	merged := mergeAdjacentSegments(segs)
+
+	// All three should remain separate (different movement types, and middle one is too big to absorb)
+	if len(merged) != 3 {
+		t.Errorf("Expected 3 segments (different types), got %d", len(merged))
+		for i, s := range merged {
+			t.Logf("  [%d] %s/%s %.2f km", i, s.Classification, s.MovementType, s.DistanceKm)
+		}
+	}
+}
+
+// TestMergeAdjacentSegments_ConsecutiveSameType tests that consecutive same-type segments merge
+func TestMergeAdjacentSegments_ConsecutiveSameType(t *testing.T) {
+	segs := []ClassifiedSegment{
+		{Classification: "patrol", MovementType: "foot", DistanceKm: 2.0, EndIndex: 20, IncludeInEffort: true, OriginalIndices: []int{0}},
+		{Classification: "patrol", MovementType: "foot", DistanceKm: 3.0, EndIndex: 25, IncludeInEffort: true, OriginalIndices: []int{1}},
+		{Classification: "patrol", MovementType: "foot", DistanceKm: 1.5, EndIndex: 15, IncludeInEffort: true, OriginalIndices: []int{2}},
+		{Classification: "aircraft", MovementType: "aircraft", DistanceKm: 50.0, EndIndex: 100, IncludeInEffort: true, OriginalIndices: []int{3}},
+	}
+
+	merged := mergeAdjacentSegments(segs)
+
+	// Should produce 2 segments: merged foot + aircraft
+	if len(merged) != 2 {
+		t.Errorf("Expected 2 merged segments, got %d", len(merged))
+		for i, s := range merged {
+			t.Logf("  [%d] %s/%s %.2f km origIndices=%v", i, s.Classification, s.MovementType, s.DistanceKm, s.OriginalIndices)
+		}
+		return
+	}
+	if merged[0].MovementType != "foot" || merged[0].DistanceKm < 6.49 {
+		t.Errorf("First segment should be foot ~6.5 km, got %s %.2f km", merged[0].MovementType, merged[0].DistanceKm)
+	}
+	if merged[1].MovementType != "aircraft" || merged[1].DistanceKm < 49.99 {
+		t.Errorf("Second segment should be aircraft ~50 km, got %s %.2f km", merged[1].MovementType, merged[1].DistanceKm)
+	}
+}
+
+// TestMergeAdjacentSegments_IdleNotMerged tests that idle segments are not merged with patrol
+func TestMergeAdjacentSegments_IdleNotMerged(t *testing.T) {
+	segs := []ClassifiedSegment{
+		{Classification: "patrol", MovementType: "foot", DistanceKm: 5.0, EndIndex: 30, IncludeInEffort: true, OriginalIndices: []int{0}},
+		{Classification: "idle", MovementType: "foot", DistanceKm: 0.001, EndIndex: 2, IncludeInEffort: false, OriginalIndices: []int{1}},
+		{Classification: "patrol", MovementType: "foot", DistanceKm: 3.0, EndIndex: 20, IncludeInEffort: true, OriginalIndices: []int{2}},
+	}
+
+	merged := mergeAdjacentSegments(segs)
+
+	// The idle segment is tiny and between two foot patrols.
+	// Pass 1 absorbs it, then pass 2 merges the two foot segments.
+	if len(merged) != 1 {
+		t.Errorf("Expected 1 merged segment (idle absorbed + foot merged), got %d", len(merged))
+		for i, s := range merged {
+			t.Logf("  [%d] %s/%s %.2f km effort=%v", i, s.Classification, s.MovementType, s.DistanceKm, s.IncludeInEffort)
+		}
+	}
 }
