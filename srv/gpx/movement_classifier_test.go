@@ -650,5 +650,80 @@ func TestAirstripHintNotAppliedToSlowTrack(t *testing.T) {
 	}
 }
 
+func TestClassifyActivityType_AircraftSurveyLowAltitude(t *testing.T) {
+	// Low-altitude survey flight: 120 km/h, ~300-800m elevation, terrain-following
+	// Should be classified as patrol, not logistics
+	base := time.Date(2024, 6, 15, 8, 0, 0, 0, time.UTC)
+	points := make([]Point, 80)
+	for i := 0; i < 80; i++ {
+		tm := makeTime(base, float64(i)*30) // 30s intervals, ~40 min total
+		// Terrain-following: altitude varies 300-800m with undulations
+		elev := 500.0 + 200.0*math.Sin(float64(i)*0.3) + float64(i%7)*20.0
+		// ~120 km/h → 1 km per 30s
+		points[i] = Point{
+			Lat:       -8.0 + float64(i)*0.009, // roughly straight line
+			Lon:       35.0 + float64(i)*0.001*math.Sin(float64(i)*0.1),
+			Time:      tm,
+			Elevation: makeElev(elev),
+		}
+	}
+
+	c := ClassifyMovementFull(points)
+	if c.MovementType != "aircraft" {
+		t.Fatalf("expected aircraft, got %s", c.MovementType)
+	}
+	if c.ActivityType != "patrol" {
+		t.Errorf("expected survey flight as patrol, got %s (elevChangeRate=%.1f, avgElev=%.0f, elevRange=%.0f, linear=%.2f, dist=%.1fkm)",
+			c.ActivityType, c.Metrics.ElevationChangeRate, c.Metrics.AvgElevationM,
+			c.Metrics.ElevationRangeM, c.Metrics.LinearityScore, c.Metrics.TotalDistanceKm)
+	}
+}
+
+func TestClassifyActivityType_AircraftLogisticsHighAltitude(t *testing.T) {
+	// High-altitude transport flight: 200 km/h, 3000m steady, straight line, 50 km
+	// Should be classified as logistics
+	base := time.Date(2024, 6, 15, 8, 0, 0, 0, time.UTC)
+	points := make([]Point, 100)
+	for i := 0; i < 100; i++ {
+		tm := makeTime(base, float64(i)*15) // 15s intervals, ~25 min total
+		elev := 3000.0 + float64(i%3)*10.0 // Very steady cruise altitude
+		// ~200 km/h straight line
+		points[i] = Point{
+			Lat:       -8.0 + float64(i)*0.0045,
+			Lon:       35.0,
+			Time:      tm,
+			Elevation: makeElev(elev),
+		}
+	}
+
+	c := ClassifyMovementFull(points)
+	if c.MovementType != "aircraft" {
+		t.Fatalf("expected aircraft, got %s", c.MovementType)
+	}
+	if c.ActivityType != "logistics" {
+		t.Errorf("expected high-altitude transport as logistics, got %s (avgElev=%.0f, elevRange=%.0f, linear=%.2f, dist=%.1fkm)",
+			c.ActivityType, c.Metrics.AvgElevationM, c.Metrics.ElevationRangeM,
+			c.Metrics.LinearityScore, c.Metrics.TotalDistanceKm)
+	}
+}
+
+func TestClassifyActivityType_AircraftShortStraightLeg(t *testing.T) {
+	// Short straight-line aircraft segment: 2 km, 3 points, 30 seconds
+	// Normal repositioning between survey transects — should NOT be logistics
+	base := time.Date(2024, 6, 15, 8, 0, 0, 0, time.UTC)
+	points := []Point{
+		{Lat: -8.0, Lon: 35.0, Time: makeTime(base, 0)},
+		{Lat: -8.005, Lon: 35.0, Time: makeTime(base, 10)},
+		{Lat: -8.01, Lon: 35.0, Time: makeTime(base, 20)},
+		{Lat: -8.015, Lon: 35.0, Time: makeTime(base, 30)},
+	}
+
+	c := ClassifyMovementFull(points)
+	if c.ActivityType == "logistics" {
+		t.Errorf("short straight aircraft leg should be patrol, got logistics (dist=%.2fkm, dur=%.1fmin)",
+			c.Metrics.TotalDistanceKm, c.Metrics.DurationMinutes)
+	}
+}
+
 // Ensure unused import doesn't cause issues
 var _ = math.Abs

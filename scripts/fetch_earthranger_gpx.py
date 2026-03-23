@@ -230,7 +230,7 @@ def fetch_sources(session: requests.Session, api: str, subject_id: str) -> list:
 def fetch_tracks(session: requests.Session, api: str,
                  subject_id: str, source_id: str,
                  since: str, until: str) -> list:
-    """Return list of (lon, lat, time) tuples for a subject+source."""
+    """Return list of (lon, lat, time, alt) tuples for a subject+source."""
     data = er_get(session, api, f'subject/{subject_id}/source/{source_id}/tracks',
                   {'since': since, 'until': until})
     inner = data.get('data', data) if isinstance(data, dict) else data
@@ -249,9 +249,10 @@ def fetch_tracks(session: requests.Session, api: str,
 
         for i, coord in enumerate(coords):
             lon, lat = coord[0], coord[1]
+            alt = coord[2] if len(coord) > 2 else None
             t = times[i] if i < len(times) else None
             if t:  # only include points with timestamps
-                points.append((lon, lat, t))
+                points.append((lon, lat, t, alt))
     return points
 
 
@@ -276,7 +277,7 @@ def build_gpx(tracks: dict, subject_meta: dict) -> tuple:
     """Build a GPX 1.1 XML string with EarthRanger subject extensions.
 
     Args:
-        tracks:       {subject_id: [(lon, lat, time), ...]}
+        tracks:       {subject_id: [(lon, lat, time, alt), ...]}
         subject_meta: {subject_id: {'subject_type': ..., 'subject_subtype': ...,
                                      'patrol_type': ... (optional)}}
 
@@ -332,8 +333,12 @@ def build_gpx(tracks: dict, subject_meta: dict) -> tuple:
 
         trkseg = ET.SubElement(trk, 'trkseg')
 
-        for lon, lat, t in points:
+        for pt in points:
+            lon, lat, t = pt[0], pt[1], pt[2]
+            alt = pt[3] if len(pt) > 3 else None
             trkpt = ET.SubElement(trkseg, 'trkpt', {'lat': f'{lat:.6f}', 'lon': f'{lon:.6f}'})
+            if alt is not None:
+                ET.SubElement(trkpt, 'ele').text = f'{alt:.1f}'
             ET.SubElement(trkpt, 'time').text = normalise_timestamp(t)
             total_pts += 1
 
@@ -416,7 +421,7 @@ def main():
         subject_meta[sid] = meta
 
     # 5. Fetch tracks per subject
-    tracks = {}  # subject_id → [(lon, lat, time), ...]
+    tracks = {}  # subject_id → [(lon, lat, time, alt), ...]
     subject_count = 0
     skipped_no_source = 0
 

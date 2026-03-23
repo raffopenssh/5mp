@@ -42,6 +42,12 @@ type MovementMetrics struct {
 	// Speed percentiles
 	P90SpeedKmh float64 // 90th percentile speed
 	P10SpeedKmh float64 // 10th percentile speed (lowest non-zero)
+
+	// Total distance along the track
+	TotalDistanceKm float64
+
+	// Duration in minutes
+	DurationMinutes float64
 }
 
 // MovementClassification contains both movement type and activity type
@@ -347,7 +353,15 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 		if p10idx >= len(sortedSpeeds) { p10idx = len(sortedSpeeds) - 1 }
 		metrics.P10SpeedKmh = sortedSpeeds[p10idx]
 	}
-	
+
+	// Total distance along the track
+	metrics.TotalDistanceKm = totalDist
+
+	// Duration from first to last point
+	if len(points) >= 2 && points[0].Time != nil && points[len(points)-1].Time != nil {
+		metrics.DurationMinutes = points[len(points)-1].Time.Sub(*points[0].Time).Minutes()
+	}
+
 	return metrics
 }
 
@@ -580,13 +594,58 @@ func classifyActivityType(movementType string, speed, smooth, bearingVar, linear
 		return "patrol"
 		
 	case "aircraft":
-		if linear > 0.8 && smooth > 0.7 {
-			return "logistics"
+		dist := metrics.TotalDistanceKm
+		dur := metrics.DurationMinutes
+
+		// Short segments (< 5 km or < 5 min) are normal survey flight behaviour:
+		// turns, repositioning between transect lines, brief straight legs.
+		// Never classify these as logistics.
+		if dist < 5 || dur < 5 {
+			return "patrol"
 		}
+
+		// Clear patrol indicators: erratic bearing or frequent stops
 		if bearingVar > 0.2 || metrics.StopFrequency > 0.1 {
 			return "patrol"
 		}
-		return "logistics"
+
+		// Elevation-based classification when data is available.
+		// Survey/patrol flights fly low (terrain-following, 100-500m AGL)
+		// with variable altitude. Transport flights cruise high and steady.
+		if metrics.HasElevation {
+			// High elevation change rate = terrain following = survey
+			// (>30 m change per km of horizontal travel)
+			if metrics.ElevationChangeRate > 30 {
+				return "patrol"
+			}
+			// Low average elevation with meaningful range = survey
+			// Survey flights in Africa typically < 1500m ASL with undulations
+			if metrics.AvgElevationM < 1500 && metrics.ElevationRangeM > 50 {
+				return "patrol"
+			}
+			// Very high and steady = cruise altitude = logistics
+			if metrics.AvgElevationM > 2500 && metrics.ElevationRangeM < 200 {
+				if dist >= 10 && linear > 0.7 {
+					return "logistics"
+				}
+			}
+		}
+
+		// Logistics = sustained straight-line flight over significant distance.
+		// Require BOTH high linearity AND sufficient length to distinguish
+		// point-to-point transport from a survey leg.
+		if dist >= 15 && linear > 0.8 && smooth > 0.7 {
+			return "logistics"
+		}
+
+		// Medium distance (5-15 km): only flag as logistics if very straight
+		// and fast, indicating repositioning rather than area coverage.
+		if dist >= 5 && linear > 0.9 && smooth > 0.8 && speed > 120 {
+			return "logistics"
+		}
+
+		// Default: aircraft segments are patrol/survey
+		return "patrol"
 	}
 	return "patrol"
 }

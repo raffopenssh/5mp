@@ -2972,6 +2972,12 @@ func (s *Server) HandleAPIUploadDetail(w http.ResponseWriter, r *http.Request) {
 		AircraftKm       float64 `json:"aircraft_km"`
 		AircraftMinutes  float64 `json:"aircraft_minutes"`
 
+		// Activity breakdown
+		LogisticsSegments int64   `json:"logistics_segments"`
+		LogisticsKm       float64 `json:"logistics_km"`
+		TransitSegments   int64   `json:"transit_segments"`
+		TransitKm         float64 `json:"transit_km"`
+
 		// Classified segments JSON
 		ClassifiedSegmentsJSON *string `json:"classified_segments_json"`
 	}
@@ -2987,6 +2993,8 @@ func (s *Server) HandleAPIUploadDetail(w http.ResponseWriter, r *http.Request) {
 			foot_segments, foot_km, foot_minutes,
 			vehicle_segments, vehicle_km, vehicle_minutes,
 			aircraft_segments, aircraft_km, aircraft_minutes,
+			COALESCE(logistics_segments, 0), COALESCE(logistics_km, 0),
+			COALESCE(transit_segments, 0), COALESCE(transit_km, 0),
 			classified_segments_json
 		FROM gpx_upload_logs
 		WHERE id = ?
@@ -3000,6 +3008,8 @@ func (s *Server) HandleAPIUploadDetail(w http.ResponseWriter, r *http.Request) {
 		&result.FootSegments, &result.FootKm, &result.FootMinutes,
 		&result.VehicleSegments, &result.VehicleKm, &result.VehicleMinutes,
 		&result.AircraftSegments, &result.AircraftKm, &result.AircraftMinutes,
+		&result.LogisticsSegments, &result.LogisticsKm,
+		&result.TransitSegments, &result.TransitKm,
 		&result.ClassifiedSegmentsJSON,
 	)
 	if err == sql.ErrNoRows {

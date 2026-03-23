@@ -17464,6 +17464,20 @@ ${starredItems.narratives.map(n => {
         } catch(e) { return ts.slice(0, 10); }
     }
 
+    function buildExcludedReasons(log) {
+        // excluded_km = aircraft logistics + auto_generated + static segments
+        // (road_km and boundary_km are tracked separately)
+        const parts = [];
+        const lk = log.logistics_km || 0;
+        const ls = log.logistics_segments || 0;
+        if (lk >= 0.05) parts.push(`${ls}× flight logistics ${lk.toFixed(1)}km`);
+        // Remaining excluded = auto-generated, static, or other non-effort
+        const excl = log.excluded_km || 0;
+        const remainder = excl - lk;
+        if (remainder >= 0.05) parts.push(`other ${remainder.toFixed(1)}km`);
+        return parts.join(', ');
+    }
+
     async function loadUploadLogs() {
         const tbody = document.getElementById('uploads-table-body');
         if (!tbody) return;
@@ -17490,6 +17504,10 @@ ${starredItems.narratives.map(n => {
             const kmC = (v, c) => { const s = km(v); return s === '-' ? '<span style="color:#444">-</span>' : `<span style="color:${c}">${s}</span>`; };
             tbody.innerHTML = data.logs.map(log => {
                 const parkDisplay = log.protected_area_name || log.park_name || '-';
+                const exclReasons = buildExcludedReasons(log);
+                const exclHtml = (log.excluded_km || 0) < 0.05
+                    ? '<span style="color:#444">-</span>'
+                    : `<span style="color:#ef4444">${km(log.excluded_km)}</span>${exclReasons ? `<span style="color:#888;font-size:10px;"> (${exclReasons})</span>` : ''}`;
                 return `
                 <tr data-id="${log.id}" data-type="upload" onclick="handleAdminRowClick(event, 'upload', ${log.id})">
                     <td title="${escapeHtml(log.filename || '')}">${escapeHtml((log.filename || 'unnamed').slice(0, 20))}${(log.filename || '').length > 20 ? '...' : ''}</td>
@@ -17498,7 +17516,7 @@ ${starredItems.narratives.map(n => {
                     <td>${kmC(log.vehicle_km, '#3b82f6')}</td>
                     <td>${kmC(log.aircraft_km, '#a78bfa')}</td>
                     <td>${kmC(log.boundary_km, '#f59e0b')}</td>
-                    <td>${kmC(log.excluded_km, '#ef4444')}</td>
+                    <td>${exclHtml}</td>
                     <td>${safeDateStr(log.upload_time)}</td>
                 </tr>
             `;
@@ -17994,7 +18012,7 @@ ${starredItems.narratives.map(n => {
                         <span style="color:#22c55e;">Patrol: ${(data.patrol_km||0).toFixed(2)} km</span>
                         <span style="color:#888;">Road: ${(data.road_km||0).toFixed(2)} km</span>
                         <span style="color:#888;">Boundary: ${(data.boundary_km||0).toFixed(2)} km</span>
-                        <span style="color:#ef4444;">Excluded: ${(data.excluded_km||0).toFixed(2)} km</span>
+                        <span style="color:#ef4444;">Excluded: ${(data.excluded_km||0).toFixed(2)} km</span>${(() => { const r = buildExcludedReasons(data); return r ? `<span style="color:#888;font-size:11px;"> (${r})</span>` : ''; })()}
                     </div>
                     
                     <div style="display:flex;gap:16px;margin-bottom:10px;font-size:12px;">
