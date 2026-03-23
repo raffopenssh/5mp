@@ -197,7 +197,9 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 				classification.ActivityType = "patrol"
 			} else {
 				classification.MovementType = "aircraft"
-				classification.ActivityType = "logistics"
+				// 2-point segments are too short to be meaningful transport;
+				// they're inter-segment fragments or GPS artifacts.
+				classification.ActivityType = "patrol"
 			}
 		}
 

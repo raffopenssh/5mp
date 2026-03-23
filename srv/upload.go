@@ -1292,11 +1292,25 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 	totalEffortKm := validationResult.PatrolKm + validationResult.MovementStats.AircraftKm
 	slog.Info("upload validation", "isValid", validationResult.IsValid, "patrolKm", validationResult.PatrolKm, "aircraftKm", validationResult.MovementStats.AircraftKm, "segments", len(segments))
 	if validationResult.IsValid && totalEffortKm > 0 {
-		// Use the raw segments for persistence - they contain the actual GPS points.
-		// The validation result classifies the GPX track segments, but Points are not
-		// stored in ClassifiedSegment (json:"-"), so we use the original segments.
-		patrolOnlySegments := segments
-		slog.Info("persisting patrol segments", "count", len(patrolOnlySegments))
+		// Apply validation classifier's movement types to the raw segments.
+		// The processor-level classifier (speed-only) may disagree with the
+		// validation classifier (multi-signal scoring), e.g. classifying
+		// 80-120 km/h aircraft as vehicle. Also filter out non-effort segments
+		// (logistics, road, auto_generated, static).
+		var patrolOnlySegments []gpx.Segment
+		for i, seg := range segments {
+			if i < len(validationResult.ClassifiedSegments) {
+				cs := validationResult.ClassifiedSegments[i]
+				if !cs.IncludeInEffort {
+					continue // skip logistics, road, auto_generated, static
+				}
+				if cs.MovementType != "" {
+					seg.MovementType = cs.MovementType
+				}
+			}
+			patrolOnlySegments = append(patrolOnlySegments, seg)
+		}
+		slog.Info("persisting patrol segments", "count", len(patrolOnlySegments), "filtered_from", len(segments))
 		
 		if len(patrolOnlySegments) > 0 {
 			persistID, err := s.persistUpload(ctx, userID, userEmail, filename, fileHash, patrolOnlySegments)
