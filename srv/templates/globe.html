@@ -3836,6 +3836,8 @@
                 if (types.length < 3 && types.length > 0) {
                     params.push('type=' + types.join(','));
                 }
+                // Cache-buster to ensure fresh data after uploads
+                params.push('t=' + Date.now());
                 if (params.length > 0) url += '?' + params.join('&');
                 
                 const res = await fetchRetry(url);

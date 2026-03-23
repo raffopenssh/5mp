@@ -873,6 +873,155 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 	return nil
 }
 
+// rebuildAllEffortData truncates effort_data and rebuilds it from all remaining
+// completed uploads using their distance breakdowns and track_points grid cells.
+// This is called asynchronously after an upload is deleted.
+func (s *Server) rebuildAllEffortData() {
+	ctx := context.Background()
+	q := dbgen.New(s.DB)
+
+	slog.Info("starting effort_data rebuild after upload deletion")
+
+	// Truncate effort_data
+	if _, err := s.DB.ExecContext(ctx, "DELETE FROM effort_data"); err != nil {
+		slog.Error("rebuildAllEffortData: failed to truncate effort_data", "error", err)
+		return
+	}
+
+	// Get all completed upload logs with distance breakdown and linked upload_id
+	rows, err := s.DB.QueryContext(ctx, `
+		SELECT l.id, l.upload_id, l.foot_km, l.vehicle_km, l.aircraft_km, l.upload_time
+		FROM gpx_upload_logs l
+		WHERE l.processing_status = 'completed'
+		  AND l.upload_id IS NOT NULL
+		ORDER BY l.id
+	`)
+	if err != nil {
+		slog.Error("rebuildAllEffortData: failed to list uploads", "error", err)
+		return
+	}
+	defer rows.Close()
+
+	type uploadInfo struct {
+		logID      int64
+		uploadID   int64
+		footKm     float64
+		vehicleKm  float64
+		aircraftKm float64
+		uploadTime string
+	}
+	var uploads []uploadInfo
+	for rows.Next() {
+		var u uploadInfo
+		if err := rows.Scan(&u.logID, &u.uploadID, &u.footKm, &u.vehicleKm, &u.aircraftKm, &u.uploadTime); err != nil {
+			slog.Warn("rebuildAllEffortData: scan error", "error", err)
+			continue
+		}
+		uploads = append(uploads, u)
+	}
+	rows.Close()
+
+	var rebuilt int
+	for _, u := range uploads {
+		// Get grid cell distribution from track_points
+		cellRows, err := s.DB.QueryContext(ctx, `
+			SELECT grid_cell_id, COUNT(*) as pts
+			FROM track_points
+			WHERE upload_id = ? AND grid_cell_id IS NOT NULL
+			GROUP BY grid_cell_id
+		`, u.uploadID)
+		if err != nil {
+			slog.Warn("rebuildAllEffortData: failed to get grid cells", "logID", u.logID, "error", err)
+			continue
+		}
+
+		type cellInfo struct {
+			id  string
+			pts int64
+		}
+		var cells []cellInfo
+		var totalPts int64
+		for cellRows.Next() {
+			var c cellInfo
+			if err := cellRows.Scan(&c.id, &c.pts); err != nil {
+				continue
+			}
+			cells = append(cells, c)
+			totalPts += c.pts
+		}
+		cellRows.Close()
+
+		if len(cells) == 0 || totalPts == 0 {
+			continue
+		}
+
+		// Determine year/month from upload_time (Go format: "2006-01-02 15:04:05...")
+		year := int64(time.Now().Year())
+		month := int64(time.Now().Month())
+		if len(u.uploadTime) >= 10 {
+			if t, err := time.Parse("2006-01-02", u.uploadTime[:10]); err == nil {
+				year = int64(t.Year())
+				month = int64(t.Month())
+			}
+		}
+
+		// Distribute distance proportionally across grid cells by point count
+		totalKm := u.footKm + u.vehicleKm + u.aircraftKm
+		if totalKm <= 0 {
+			continue
+		}
+		for _, cell := range cells {
+			fraction := float64(cell.pts) / float64(totalPts)
+
+			// Movement-type-specific effort
+			for _, mt := range []struct {
+				name string
+				km   float64
+			}{
+				{"foot", u.footKm},
+				{"vehicle", u.vehicleKm},
+				{"aircraft", u.aircraftKm},
+			} {
+				if mt.km <= 0 {
+					continue
+				}
+				err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
+					GridCellID:      cell.id,
+					Year:            year,
+					Month:           month,
+					Day:             nil,
+					MovementType:    mt.name,
+					TotalDistanceKm: mt.km * fraction,
+					TotalPoints:     int64(float64(cell.pts) * (mt.km / totalKm)),
+					UniqueUploads:   1,
+				})
+				if err != nil {
+					slog.Warn("rebuildAllEffortData: upsert error", "cell", cell.id, "error", err)
+				}
+			}
+
+			// "all" aggregate
+			err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
+				GridCellID:      cell.id,
+				Year:            year,
+				Month:           month,
+				Day:             nil,
+				MovementType:    "all",
+				TotalDistanceKm: totalKm * fraction,
+				TotalPoints:     cell.pts,
+				UniqueUploads:   1,
+			})
+			if err != nil {
+				slog.Warn("rebuildAllEffortData: upsert all error", "cell", cell.id, "error", err)
+			}
+		}
+
+		rebuilt++
+	}
+
+	slog.Info("effort_data rebuild complete", "uploads_processed", rebuilt)
+}
+
 // haversineDistanceKm calculates the great-circle distance in kilometers.
 func haversineDistanceKm(lat1, lon1, lat2, lon2 float64) float64 {
 	const earthRadiusKm = 6371.0

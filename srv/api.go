@@ -870,11 +870,11 @@ func (s *Server) HandleAPILogout(w http.ResponseWriter, r *http.Request) {
 func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	// Parse date range
+	// Parse date range and movement type filter
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
 	bboxStr := r.URL.Query().Get("bbox")
-	// Note: type filter not yet implemented for stats - would need movement type aggregation
+	typeStr := r.URL.Query().Get("type")
 
 	// Parse bbox if provided (minLng,minLat,maxLng,maxLat)
 	var bbox []float64
@@ -903,10 +903,24 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Parse movement types
+	var movementTypes []string
+	if typeStr != "" {
+		for _, t := range strings.Split(typeStr, ",") {
+			t = strings.TrimSpace(t)
+			if t == "aerial" {
+				t = "aircraft"
+			}
+			if t == "foot" || t == "vehicle" || t == "aircraft" {
+				movementTypes = append(movementTypes, t)
+			}
+		}
+	}
+
 	// Aggregate stats across requested years
 	var activePixels, totalUploads int64
 	var totalDistanceKm float64
-	// Build patrol stats query with optional bbox filter
+	// Build patrol stats query with optional bbox and movement type filter
 	statsQuery := `
 		SELECT 
 			COUNT(DISTINCT e.grid_cell_id) as active_pixels,
@@ -916,9 +930,20 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 		JOIN grid_cells g ON e.grid_cell_id = g.id
 		WHERE e.year BETWEEN ? AND ?
 		  AND e.day IS NULL
-		  AND e.movement_type = 'all'
 	`
 	args := []interface{}{fromYear, toYear}
+
+	// Movement type filter
+	if len(movementTypes) > 0 && len(movementTypes) < 3 {
+		placeholders := make([]string, len(movementTypes))
+		for i, t := range movementTypes {
+			placeholders[i] = "?"
+			args = append(args, t)
+		}
+		statsQuery += fmt.Sprintf(" AND e.movement_type IN (%s)", strings.Join(placeholders, ","))
+	} else {
+		statsQuery += " AND e.movement_type = 'all'"
+	}
 
 	if len(bbox) == 4 {
 		statsQuery += ` AND g.lat_center >= ? AND g.lat_center <= ?
@@ -1035,7 +1060,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "public, max-age=30")
+	w.Header().Set("Cache-Control", "no-cache")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"active_pixels":       activePixels,
 		"total_distance_km":   totalDistanceKm,
@@ -2849,7 +2874,7 @@ func (s *Server) HandleAPIBulkReject(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]int{"rejected": rejected})
 }
 
-// HandleAPIDeleteUpload deletes a GPX upload and its logs
+// HandleAPIDeleteUpload deletes a GPX upload and its logs, then rebuilds effort_data.
 // POST /api/admin/delete-upload
 func (s *Server) HandleAPIDeleteUpload(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -2863,12 +2888,28 @@ func (s *Server) HandleAPIDeleteUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Delete from gpx_upload_logs and related tables
+	// Look up the upload_id from the log so we can clean up related tables
+	var uploadID sql.NullInt64
+	_ = s.DB.QueryRowContext(ctx, "SELECT upload_id FROM gpx_upload_logs WHERE id = ?", req.ID).Scan(&uploadID)
+
+	// Delete from gpx_upload_logs
 	_, err := s.DB.ExecContext(ctx, "DELETE FROM gpx_upload_logs WHERE id = ?", req.ID)
 	if err != nil {
 		http.Error(w, "Failed to delete upload", http.StatusInternalServerError)
 		return
 	}
+
+	// Clean up related tables if there was an associated gpx_uploads record
+	if uploadID.Valid {
+		_, _ = s.DB.ExecContext(ctx, "DELETE FROM track_points WHERE upload_id = ?", uploadID.Int64)
+		_, _ = s.DB.ExecContext(ctx, "DELETE FROM gpx_uploads WHERE id = ?", uploadID.Int64)
+	}
+
+	// Clean up associated notification
+	_, _ = s.DB.ExecContext(ctx, "DELETE FROM notifications WHERE notification_type = 'new_upload' AND reference_id = ?", fmt.Sprintf("%d", req.ID))
+
+	// Trigger async effort_data rebuild from remaining uploads
+	go s.rebuildAllEffortData()
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "deleted"})
