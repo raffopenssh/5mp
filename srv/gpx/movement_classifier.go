@@ -239,13 +239,24 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 	return metrics
 }
 
-// ClassifyMovementFull provides complete classification with movement type and activity type
+// ClassifyMovementFull provides complete classification with movement type and activity type.
+// For hint-aware classification from EarthRanger data, use ClassifyMovementFullWithHint.
 func ClassifyMovementFull(points []Point) MovementClassification {
+	return ClassifyMovementFullWithHint(points, MovementHint{})
+}
+
+// ClassifyMovementFullWithHint provides classification using both trajectory analysis
+// and external movement hints (e.g., from EarthRanger device metadata).
+func ClassifyMovementFullWithHint(points []Point, hint MovementHint) MovementClassification {
 	if len(points) < 3 {
+		mvType := "foot"
+		if hint.Type != "" && hint.Confidence >= 0.9 {
+			mvType = hint.Type
+		}
 		return MovementClassification{
-			MovementType: "foot",
+			MovementType: mvType,
 			ActivityType: "patrol",
-			Confidence:   0.5,
+			Confidence:   hint.Confidence,
 		}
 	}
 	
@@ -256,8 +267,43 @@ func ClassifyMovementFull(points []Point) MovementClassification {
 	smooth := metrics.SmoothnessFactor
 	bearingVar := metrics.BearingVariance
 	linear := metrics.LinearityScore
+
+	// === AUTHORITATIVE HINT (confidence 1.0) ===
+	// EarthRanger device metadata: GPS tracker physically mounted on vehicle/aircraft.
+	// Trust completely — a truck GPS says "vehicle" even when parked at 0 km/h.
+	if hint.Type != "" && hint.Confidence >= 1.0 {
+		result.MovementType = hint.Type
+		result.Confidence = 1.0
+		// Still classify activity type from trajectory analysis
+		result.ActivityType = classifyActivityType(result.MovementType, speed, smooth, bearingVar, linear, metrics)
+		return result
+	}
+
+	// === STRONG HINT (confidence >= 0.9) ===
+	// ER ranger subtype, strong Locus tags. Trust with light sanity check.
+	if hint.Type != "" && hint.Confidence >= 0.9 {
+		switch hint.Type {
+		case "aircraft":
+			result.MovementType = "aircraft"
+			result.Confidence = 0.95
+		case "vehicle":
+			result.MovementType = "vehicle"
+			result.Confidence = 0.95
+		case "foot":
+			if speed > 20 {
+				// Ranger going >20 km/h = probably in a vehicle
+				result.MovementType = "vehicle"
+				result.Confidence = 0.8
+			} else {
+				result.MovementType = "foot"
+				result.Confidence = 0.95
+			}
+		}
+		result.ActivityType = classifyActivityType(result.MovementType, speed, smooth, bearingVar, linear, metrics)
+		return result
+	}
 	
-	// === MOVEMENT TYPE CLASSIFICATION ===
+	// === SPEED-BASED CLASSIFICATION (with moderate hint nudging) ===
 	isAircraft := false
 	
 	// Check for takeoff/landing patterns
@@ -284,6 +330,11 @@ func ClassifyMovementFull(points []Point) MovementClassification {
 			isAircraft = true
 			result.Confidence = 0.8
 		}
+		// Moderate hint: aircraft in 80-100 zone
+		if hint.Type == "aircraft" && hint.Confidence >= 0.5 {
+			isAircraft = true
+			result.Confidence = 0.85
+		}
 	}
 	
 	// Slow but very smooth and linear = likely aircraft (ULM, helicopter)
@@ -299,52 +350,70 @@ func ClassifyMovementFull(points []Point) MovementClassification {
 		if result.Confidence == 0 {
 			result.Confidence = 0.9
 		}
+		// Moderate hint can override foot/vehicle in ambiguous zone
+		if speed >= 5 && hint.Type == "vehicle" && hint.Confidence >= 0.5 {
+			result.MovementType = "vehicle"
+			result.Confidence = 0.7
+		}
 	} else {
 		result.MovementType = "vehicle"
 		if result.Confidence == 0 {
 			result.Confidence = 0.85
 		}
+		// Very slow vehicle (7-12) with foot hint = probably foot
+		if speed < 12 && hint.Type == "foot" && hint.Confidence >= 0.5 {
+			result.MovementType = "foot"
+			result.Confidence = 0.7
+		}
 	}
 	
 	// === ACTIVITY TYPE CLASSIFICATION ===
-	switch result.MovementType {
+	result.ActivityType = classifyActivityType(result.MovementType, speed, smooth, bearingVar, linear, metrics)
+	
+	return result
+}
+
+// classifyActivityType determines the activity type from trajectory metrics.
+func classifyActivityType(movementType string, speed, smooth, bearingVar, linear float64, metrics MovementMetrics) string {
+	switch movementType {
 	case "foot":
 		if speed >= 0.5 && speed <= 4 {
-			result.ActivityType = "reconnaissance"
-		} else {
-			result.ActivityType = "patrol"
+			return "reconnaissance"
 		}
 		if metrics.StopFrequency > 0.3 || bearingVar > 0.5 {
-			result.ActivityType = "reconnaissance"
+			return "reconnaissance"
 		}
+		return "patrol"
 		
 	case "vehicle":
 		if speed > 60 && smooth > 0.6 {
-			result.ActivityType = "transit"
-		} else if speed > 40 && smooth > 0.7 && linear > 0.8 {
-			result.ActivityType = "transit"
-		} else if smooth < 0.4 || bearingVar > 0.3 {
-			result.ActivityType = "patrol"
-		} else {
-			result.ActivityType = "patrol"
+			return "transit"
 		}
+		if speed > 40 && smooth > 0.7 && linear > 0.8 {
+			return "transit"
+		}
+		return "patrol"
 		
 	case "aircraft":
 		if linear > 0.8 && smooth > 0.7 {
-			result.ActivityType = "logistics"
-		} else if bearingVar > 0.2 || metrics.StopFrequency > 0.1 {
-			result.ActivityType = "patrol"
-		} else {
-			result.ActivityType = "logistics"
+			return "logistics"
 		}
+		if bearingVar > 0.2 || metrics.StopFrequency > 0.1 {
+			return "patrol"
+		}
+		return "logistics"
 	}
-	
-	return result
+	return "patrol"
 }
 
 // ClassifyMovementAdvanced returns just the movement type (for backward compatibility)
 func ClassifyMovementAdvanced(points []Point) string {
 	return ClassifyMovementFull(points).MovementType
+}
+
+// ClassifyMovementAdvancedWithHint returns movement type using hints.
+func ClassifyMovementAdvancedWithHint(points []Point, hint MovementHint) string {
+	return ClassifyMovementFullWithHint(points, hint).MovementType
 }
 
 // calculateBearing returns the bearing in degrees from point 1 to point 2

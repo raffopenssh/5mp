@@ -25,6 +25,7 @@ type Segment struct {
 	DistanceKm   float64
 	AvgSpeedKmh  float64
 	MovementType string
+	Hint         MovementHint // External classification hint (from ER metadata, Locus, etc.)
 }
 
 // Track represents a GPX track containing multiple segments.
@@ -32,6 +33,11 @@ type Track struct {
 	Name     string
 	Segments [][]Point
 	Activity string // Locus activity hint (e.g., "transport_airplane")
+
+	// EarthRanger metadata (from autofetch GPX extensions)
+	ERSubjectType    string // e.g., "vehicle", "aircraft", "person"
+	ERSubjectSubtype string // e.g., "truck", "plane", "helicopter", "er_mobile", "ranger"
+	ERPatrolType     string // e.g., "plane_patrol_operations", "vehicle_patrol"
 }
 
 // GPXData represents the parsed GPX file data.
@@ -114,6 +120,88 @@ func mergeTrackActivityHint(base MovementHint, activity string) MovementHint {
 	return base
 }
 
+// mergeERSubjectHint creates a MovementHint from EarthRanger subject metadata.
+// This is the most authoritative source: the ER system knows whether a tracked device
+// is mounted on a truck, plane, helicopter, or carried by a ranger.
+//
+// Subject types: person, vehicle, aircraft
+// Subject subtypes: er_mobile, ranger, truck, car, plane, helicopter
+// Patrol types: plane_patrol_operations, helicopter_patrol_law_enforcement, vehicle_patrol, etc.
+func mergeERSubjectHint(base MovementHint, subjectType, subjectSubtype, patrolType string) MovementHint {
+	subjectType = strings.ToLower(subjectType)
+	subjectSubtype = strings.ToLower(subjectSubtype)
+	patrolType = strings.ToLower(patrolType)
+
+	if subjectType == "" {
+		return base
+	}
+
+	// Patrol type is the most specific signal — it overrides subject type.
+	// A person/er_mobile leading a heli_patrol is effectively aircraft.
+	if patrolType != "" {
+		switch {
+		case strings.Contains(patrolType, "plane") || strings.Contains(patrolType, "heli"):
+			base.IsAircraft = true
+			base.Type = "aircraft"
+			base.Confidence = 1.0 // Authoritative: ER patrol definition
+			return base
+		case strings.Contains(patrolType, "vehicle") || strings.Contains(patrolType, "car") ||
+			strings.Contains(patrolType, "truck"):
+			base.IsVehicle = true
+			base.Type = "vehicle"
+			base.Confidence = 1.0
+			return base
+		case strings.Contains(patrolType, "foot") || strings.Contains(patrolType, "walk") ||
+			strings.Contains(patrolType, "ranger"):
+			base.IsFoot = true
+			base.Type = "foot"
+			base.Confidence = 1.0
+			return base
+		case strings.Contains(patrolType, "boat") || strings.Contains(patrolType, "marine"):
+			// Boat patrols are closest to "vehicle" in our taxonomy
+			base.IsVehicle = true
+			base.Type = "vehicle"
+			base.Confidence = 1.0
+			return base
+		}
+	}
+
+	// Subject type: device-level classification
+	switch subjectType {
+	case "aircraft":
+		// Device is physically mounted on an aircraft — definitive
+		base.IsAircraft = true
+		base.Type = "aircraft"
+		base.Confidence = 1.0
+	case "vehicle":
+		// Device is physically mounted on a vehicle — definitive
+		base.IsVehicle = true
+		base.Type = "vehicle"
+		base.Confidence = 1.0
+	case "person":
+		// Person-carried devices need subtype disambiguation:
+		// - "ranger" (InReach) = almost always foot patrol
+		// - "er_mobile" (phone app) = ambiguous — could be in vehicle/aircraft
+		switch subjectSubtype {
+		case "ranger":
+			base.IsFoot = true
+			base.Type = "foot"
+			base.Confidence = 0.9 // Very likely foot, but ranger could be in vehicle
+		case "er_mobile":
+			// Mobile phones travel with the person — they could be driving or flying.
+			// Set moderate confidence; let speed-based classifier refine.
+			base.IsFoot = true
+			base.Type = "foot"
+			base.Confidence = 0.5 // Low: phone users often drive
+		default:
+			base.IsFoot = true
+			base.Type = "foot"
+			base.Confidence = 0.6
+		}
+	}
+	return base
+}
+
 type gpxFile struct {
 	XMLName   xml.Name      `xml:"gpx"`
 	Metadata  gpxMeta       `xml:"metadata"`
@@ -135,7 +223,10 @@ type gpxMeta struct {
 }
 
 type gpxTrackExtensions struct {
-	LocusActivity string `xml:"activity"`
+	LocusActivity    string `xml:"activity"`
+	ERSubjectType    string `xml:"subject_type"`
+	ERSubjectSubtype string `xml:"subject_subtype"`
+	ERPatrolType     string `xml:"patrol_type"`
 }
 
 type gpxTrack struct {
@@ -191,9 +282,12 @@ func ParseGPX(r io.Reader) (*GPXData, error) {
 
 	for _, trk := range gpx.Tracks {
 		track := Track{
-			Name:     trk.Name,
-			Segments: make([][]Point, 0, len(trk.Segments)),
-			Activity: trk.Extensions.LocusActivity,
+			Name:             trk.Name,
+			Segments:         make([][]Point, 0, len(trk.Segments)),
+			Activity:         trk.Extensions.LocusActivity,
+			ERSubjectType:    trk.Extensions.ERSubjectType,
+			ERSubjectSubtype: trk.Extensions.ERSubjectSubtype,
+			ERPatrolType:     trk.Extensions.ERPatrolType,
 		}
 
 		for _, seg := range trk.Segments {
@@ -238,8 +332,14 @@ func SplitIntoSegments(data *GPXData, maxDuration time.Duration) []Segment {
 	var segments []Segment
 
 	for _, track := range data.Tracks {
-		// Merge track-level activity hint (e.g., Locus "transport_airplane")
-		trackHint := mergeTrackActivityHint(hint, track.Activity)
+		// Build movement hint from all available sources, in order of authority:
+		// 1. EarthRanger subject metadata (highest — device is physically on aircraft/vehicle)
+		// 2. EarthRanger patrol type (operational context)
+		// 3. Locus activity hint (app-level tag)
+		// 4. Waypoint text analysis (lowest)
+		trackHint := hint
+		trackHint = mergeTrackActivityHint(trackHint, track.Activity)
+		trackHint = mergeERSubjectHint(trackHint, track.ERSubjectType, track.ERSubjectSubtype, track.ERPatrolType)
 
 		for _, trackSeg := range track.Segments {
 			if len(trackSeg) == 0 {
@@ -319,6 +419,7 @@ func buildSegment(points []Point) Segment {
 func buildSegmentWithHint(points []Point, hint MovementHint) Segment {
 	seg := Segment{
 		Points: points,
+		Hint:   hint,
 	}
 
 	// Find start and end times
@@ -352,30 +453,68 @@ func ClassifyMovementType(segment Segment) string {
 	return ClassifyMovementTypeWithHint(segment, MovementHint{})
 }
 
-// ClassifyMovementTypeWithHint determines movement type using speed and optional message hints.
-// Message hints from Garmin InReach waypoints can improve classification confidence,
-// especially in ambiguous speed ranges (e.g., slow vehicle vs fast walking).
+// ClassifyMovementTypeWithHint determines movement type using speed and optional movement hints.
+//
+// Confidence levels and their meaning:
+//   - 1.0: Authoritative (EarthRanger device metadata — GPS tracker is physically on the aircraft/vehicle)
+//          Always trusted. A truck GPS says "vehicle" even when parked (speed=0).
+//   - 0.95: Strong (Locus activity tag, ER patrol type)
+//          Trusted but sanity-checked against speed.
+//   - 0.8-0.9: Good (waypoint text, ER ranger subtype)
+//          Used for ambiguous speed ranges.
+//   - 0.5-0.6: Weak (ER mobile phone — could be anywhere)
+//          Only nudges classification in truly ambiguous zones.
 func ClassifyMovementTypeWithHint(segment Segment, hint MovementHint) string {
 	speed := segment.AvgSpeedKmh
 
-	// If we have a high-confidence hint, use it for ambiguous speeds
-	if hint.Type != "" && hint.Confidence >= 0.8 {
-		// Aircraft hint with speed > 50 km/h
-		if hint.Type == "aircraft" && speed > 50 {
+	// Authoritative hints (confidence 1.0): EarthRanger device-level metadata.
+	// A GPS tracker mounted on a truck IS a vehicle track, even at 0 km/h.
+	// A GPS tracker on a plane IS an aircraft track, even when taxiing at 5 km/h.
+	if hint.Type != "" && hint.Confidence >= 1.0 {
+		return hint.Type
+	}
+
+	// Strong hints (0.9-0.99): Locus activity, ER patrol type, ER ranger subtype.
+	// Trust with mild sanity checks.
+	if hint.Type != "" && hint.Confidence >= 0.9 {
+		switch hint.Type {
+		case "aircraft":
+			if speed > 5 { // taxiing or flying
+				return "aircraft"
+			}
+			// Parked aircraft with strong hint — still aircraft
 			return "aircraft"
-		}
-		// Vehicle hint in reasonable vehicle speed range
-		if hint.Type == "vehicle" && speed >= 5 && speed <= 150 {
+		case "vehicle":
 			return "vehicle"
-		}
-		// Foot hint with speed < 15 km/h (fast running)
-		if hint.Type == "foot" && speed < 15 {
-			return "foot"
+		case "foot":
+			if speed < 20 { // running max ~20 km/h
+				return "foot"
+			}
+			// Ranger going >20 km/h = probably in vehicle
+			return "vehicle"
 		}
 	}
 
-	// For moderate confidence hints, use them in ambiguous ranges
-	if hint.Type != "" && hint.Confidence >= 0.6 {
+	// Good hints (0.7-0.89): waypoint text hints.
+	if hint.Type != "" && hint.Confidence >= 0.7 {
+		switch hint.Type {
+		case "aircraft":
+			if speed > 50 {
+				return "aircraft"
+			}
+		case "vehicle":
+			if speed >= 5 && speed <= 150 {
+				return "vehicle"
+			}
+		case "foot":
+			if speed < 15 {
+				return "foot"
+			}
+		}
+	}
+
+	// Weak hints (0.5-0.69): ER mobile phone users — only for ambiguous zones.
+	if hint.Type != "" && hint.Confidence >= 0.5 {
 		// Ambiguous zone: 5-12 km/h could be fast walk or slow vehicle
 		if speed >= 5 && speed <= 12 {
 			if hint.Type == "vehicle" {
@@ -396,7 +535,7 @@ func ClassifyMovementTypeWithHint(segment Segment, hint MovementHint) string {
 		}
 	}
 
-	// Default speed-based classification
+	// Default speed-based classification (no hint or hint didn't match)
 	switch {
 	case speed < 8:
 		return "foot"

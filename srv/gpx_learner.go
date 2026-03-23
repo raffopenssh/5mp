@@ -274,14 +274,12 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	var vehicleSpeeds, footSpeeds []float64
 	var footPoints []gpx.Point // For MCP calculation
 
-	// Process each segment
+	// Process each segment — use MovementType from classifier (which
+	// already incorporates ER hints), falling back to speed inference.
 	for _, seg := range segments {
 		// Collect speeds by movement type
 		if seg.AvgSpeedKmh > 0 {
-			movementType := seg.MovementType
-			if movementType == "" {
-				movementType = inferMovementType(seg.AvgSpeedKmh)
-			}
+			movementType := inferMovementTypeWithHint(seg)
 
 			if movementType == "foot" {
 				footSpeeds = append(footSpeeds, seg.AvgSpeedKmh)
@@ -386,13 +384,19 @@ func inferMovementType(speedKmh float64) string {
 	return "aircraft"
 }
 
+// inferMovementTypeWithHint uses the segment's movement hint if available,
+// falling back to speed-based inference.
+func inferMovementTypeWithHint(seg ClassifiedSegment) string {
+	if seg.MovementType != "" {
+		return seg.MovementType
+	}
+	return inferMovementType(seg.AvgSpeedKmh)
+}
+
 func sumDistances(segments []ClassifiedSegment, movementType string) float64 {
 	var total float64
 	for _, seg := range segments {
-		mt := seg.MovementType
-		if mt == "" {
-			mt = inferMovementType(seg.AvgSpeedKmh)
-		}
+		mt := inferMovementTypeWithHint(seg)
 		if mt == movementType {
 			total += seg.DistanceKm
 		}
@@ -403,10 +407,7 @@ func sumDistances(segments []ClassifiedSegment, movementType string) float64 {
 func sumDurations(segments []ClassifiedSegment, movementType string) float64 {
 	var total float64
 	for _, seg := range segments {
-		mt := seg.MovementType
-		if mt == "" {
-			mt = inferMovementType(seg.AvgSpeedKmh)
-		}
+		mt := inferMovementTypeWithHint(seg)
 		if mt == movementType {
 			total += seg.Duration.Hours()
 		}

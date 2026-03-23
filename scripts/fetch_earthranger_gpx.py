@@ -5,10 +5,10 @@ Designed to be called daily by the Go backend.  READ-ONLY access to the
 EarthRanger API — no writes, no deletes.
 
 Usage:
-    python3 fetch_earthranger_gpx.py \
-        --url https://nyerere.pamdas.org \
-        --user MananeCR \
-        --upload-url http://localhost:8000/api/upload/async?pwd=test2026 \
+    python3 fetch_earthranger_gpx.py \\
+        --url https://nyerere.pamdas.org \\
+        --user MananeCR \\
+        --upload-url http://localhost:8000/api/upload/async?pwd=test2026 \\
         [--days 1] [--dry-run]
 
     Password is read from EARTHRANGER_PASSWORD env var (never passed as arg).
@@ -17,12 +17,24 @@ What it does:
   1. Authenticates via OAuth2 (read-only session)
   2. Lists all subjects (persons, vehicles, aircraft)
   3. Skips any subject_type == 'wildlife' (animal collars)
-  4. For each allowed subject, fetches GPS tracks for the last N days
-  5. Builds ONE anonymised GPX file with all tracks
+  4. Fetches active patrols to identify patrol leaders and their patrol types
+  5. For each allowed subject, fetches GPS tracks for the last N days
+  6. Builds ONE anonymised GPX file with all tracks
      - Subject IDs are kept as opaque track names (no real names)
      - Timestamps are preserved (needed for speed inference)
-  6. Uploads the GPX via the app's async upload endpoint
-  7. Prints a JSON summary to stdout for the Go caller
+     - EarthRanger subject metadata (type, subtype, patrol_type) is embedded
+       in GPX <extensions> under the er: namespace so the Go classifier can
+       use authoritative type info instead of guessing from speed
+  7. Uploads the GPX via the app's async upload endpoint
+  8. Prints a JSON summary to stdout for the Go caller
+
+GPX extension namespace:
+  xmlns:er="http://5mp.globe/earthranger/1"
+
+  Per-track extensions:
+    <er:subject_type>   — person | vehicle | aircraft
+    <er:subject_subtype> — er_mobile | ranger | truck | car | plane | helicopter
+    <er:patrol_type>    — (optional) e.g. heli_patrol_operations, vehicle_patrol
 """
 
 import argparse
@@ -39,12 +51,53 @@ try:
 except ImportError:
     sys.exit("error: 'requests' not installed. Run: pip install requests")
 
-# ── EarthRanger client (read-only) ────────────────────────────────────────────
+# ── Constants ─────────────────────────────────────────────────────────────────
 
 ALLOWED_SUBJECT_TYPES = {'person', 'vehicle', 'aircraft'}
 BLOCKED_SUBJECT_TYPES = {'wildlife', 'animal', 'collar'}  # animal collars
 CLIENT_IDS = ['das_web_client', 'er_mobile_tracker']  # tried in order
 
+# EarthRanger extension namespace — used for subject metadata in GPX
+ER_NS = 'http://5mp.globe/earthranger/1'
+ER_NS_PREFIX = 'er'
+
+# Register the namespace so ElementTree serialises it as "er:" not "ns0:"
+ET.register_namespace(ER_NS_PREFIX, ER_NS)
+
+# ── Type classification ───────────────────────────────────────────────────────
+#
+# For the JSON summary we bucket subjects into three movement categories.
+# subject_type → category mapping (subject_subtype doesn't change the bucket).
+#
+# person/ranger   → foot      (InReach on foot patrols)
+# person/er_mobile → foot     (default — overridden if patrol says otherwise)
+# vehicle/*       → vehicle
+# aircraft/*      → aircraft
+
+TYPE_CATEGORY = {
+    'person':   'foot',
+    'vehicle':  'vehicle',
+    'aircraft': 'aircraft',
+}
+
+# Patrol type strings that indicate the leader is airborne or driving.
+# If a person/er_mobile is leading one of these, their category changes.
+PATROL_TYPE_OVERRIDES = {
+    # aircraft patrols
+    'plane_patrol_operations':              'aircraft',
+    'plane_patrol_law_enforcement':         'aircraft',
+    'helicopter_patrol_operations':         'aircraft',
+    'helicopter_patrol_law_enforcement':    'aircraft',
+    'heli_patrol_operations':               'aircraft',
+    'heli_patrol_law_enforcement':          'aircraft',
+    # vehicle patrols
+    'vehicle_patrol':                       'vehicle',
+    'vehicle_patrol_operations':            'vehicle',
+    'vehicle_patrol_law_enforcement':       'vehicle',
+}
+
+
+# ── EarthRanger client (read-only) ────────────────────────────────────────────
 
 def er_authenticate(session: requests.Session, url: str, user: str, pw: str) -> str:
     """Obtain an OAuth2 bearer token.  Tries common client_ids."""
@@ -91,6 +144,78 @@ def fetch_subjects(session: requests.Session, api: str) -> list:
             continue  # skip unknown types (safe default)
         allowed.append(s)
     return allowed
+
+
+def fetch_patrols(session: requests.Session, api: str,
+                  since: str, until: str) -> dict:
+    """Fetch active patrols and return a map of subject_id → patrol_type.
+
+    Queries /api/v1.0/activity/patrols for the given date range.  For each
+    patrol segment, if there is a leader with a subject id, we record the
+    patrol_type so we can embed it in the GPX track extensions.
+
+    Returns: {subject_id: patrol_type_string}
+    """
+    subject_patrol = {}  # subject_id → patrol_type
+    try:
+        data = er_get(session, api, 'activity/patrols', {
+            'filter': json.dumps({
+                'date_range': {'lower': since, 'upper': until},
+                'status': ['open', 'done'],
+            }),
+            'page_size': 500,
+        })
+    except Exception:
+        # Patrol API may not be accessible — non-fatal
+        return subject_patrol
+
+    # Unwrap response (may be {data: {results: [...]}} or just [...])
+    results = data
+    if isinstance(data, dict):
+        if 'data' in data:
+            inner = data['data']
+            results = inner.get('results', inner) if isinstance(inner, dict) else inner
+        elif 'results' in data:
+            results = data['results']
+    if not isinstance(results, list):
+        return subject_patrol
+
+    for patrol in results:
+        # patrol_type can live at the patrol level OR the segment level.
+        # In many ER installations, patrol-level type is null and only
+        # segments carry the type string.
+        patrol_type = ''
+        pt = patrol.get('patrol_type')
+        if isinstance(pt, str) and pt:
+            patrol_type = pt
+        elif isinstance(pt, dict):
+            patrol_type = pt.get('value', pt.get('id', ''))
+
+        # Each patrol has one or more segments, each with a leader
+        segments = patrol.get('patrol_segments') or []
+        for seg in segments:
+            # Segment-level patrol_type takes precedence over patrol-level
+            seg_pt = seg.get('patrol_type')
+            if isinstance(seg_pt, str) and seg_pt:
+                effective_type = seg_pt
+            elif isinstance(seg_pt, dict):
+                effective_type = seg_pt.get('value', seg_pt.get('id', patrol_type))
+            else:
+                effective_type = patrol_type
+
+            if not effective_type:
+                continue  # Neither patrol nor segment has a type — skip
+
+            leader = seg.get('leader')
+            if not leader:
+                continue
+            # leader may be a dict with 'id' or a bare UUID string
+            leader_id = leader.get('id') if isinstance(leader, dict) else str(leader)
+            if leader_id:
+                # Keep the most specific patrol type (last wins if multiple)
+                subject_patrol[leader_id] = effective_type
+
+    return subject_patrol
 
 
 def fetch_sources(session: requests.Session, api: str, subject_id: str) -> list:
@@ -147,11 +272,29 @@ def normalise_timestamp(t: str) -> str:
 
 # ── GPX builder ───────────────────────────────────────────────────────────────
 
-def build_gpx(tracks: dict) -> tuple:
-    """Build a GPX 1.1 XML string from {track_id: [(lon, lat, time), ...]}.
+def build_gpx(tracks: dict, subject_meta: dict) -> tuple:
+    """Build a GPX 1.1 XML string with EarthRanger subject extensions.
 
-    Returns (xml_string, total_points).
+    Args:
+        tracks:       {subject_id: [(lon, lat, time), ...]}
+        subject_meta: {subject_id: {'subject_type': ..., 'subject_subtype': ...,
+                                     'patrol_type': ... (optional)}}
+
+    Returns:
+        (xml_string, total_points)
+
+    Each <trk> gets an <extensions> block like:
+        <extensions>
+            <er:subject_type>vehicle</er:subject_type>
+            <er:subject_subtype>truck</er:subject_subtype>
+            <er:patrol_type>vehicle_patrol</er:patrol_type>   <!-- if known -->
+        </extensions>
     """
+    # Note: ET.register_namespace('er', ER_NS) at module level ensures the
+    # namespace serialises with the 'er:' prefix.  ElementTree auto-adds the
+    # xmlns:er declaration on the root element when it encounters child
+    # elements in that namespace.  We do NOT add xmlns:er as an explicit
+    # attribute — that would cause a duplicate declaration.
     gpx = ET.Element('gpx', {
         'version': '1.1',
         'creator': '5mp-autofetch',
@@ -171,6 +314,22 @@ def build_gpx(tracks: dict) -> tuple:
 
         trk = ET.SubElement(gpx, 'trk')
         ET.SubElement(trk, 'name').text = track_id  # opaque subject ID
+
+        # ── Subject metadata extensions ───────────────────────────────
+        meta = subject_meta.get(track_id, {})
+        stype = meta.get('subject_type', '')
+        ssubtype = meta.get('subject_subtype', '')
+        patrol_type = meta.get('patrol_type', '')
+
+        if stype or ssubtype or patrol_type:
+            ext = ET.SubElement(trk, 'extensions')
+            if stype:
+                ET.SubElement(ext, f'{{{ER_NS}}}subject_type').text = stype
+            if ssubtype:
+                ET.SubElement(ext, f'{{{ER_NS}}}subject_subtype').text = ssubtype
+            if patrol_type:
+                ET.SubElement(ext, f'{{{ER_NS}}}patrol_type').text = patrol_type
+
         trkseg = ET.SubElement(trk, 'trkseg')
 
         for lon, lat, t in points:
@@ -180,6 +339,24 @@ def build_gpx(tracks: dict) -> tuple:
 
     ET.indent(gpx)
     return ET.tostring(gpx, encoding='unicode', xml_declaration=True), total_pts
+
+
+def classify_subject(meta: dict) -> str:
+    """Return the movement category for a subject: 'foot', 'vehicle', or 'aircraft'.
+
+    Uses patrol_type to override the default category when a person/er_mobile
+    is leading a vehicle or aircraft patrol.
+    """
+    stype = meta.get('subject_type', '')
+    patrol_type = meta.get('patrol_type', '')
+
+    # Check if patrol type overrides the default (e.g. er_mobile in helicopter)
+    if patrol_type:
+        override = PATROL_TYPE_OVERRIDES.get(patrol_type)
+        if override:
+            return override
+
+    return TYPE_CATEGORY.get(stype, 'foot')
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -219,8 +396,27 @@ def main():
     # 2. Get subjects (excluding wildlife/animal collars)
     subjects = fetch_subjects(session, api)
 
-    # 3. Fetch tracks per subject
-    tracks = {}  # subject_id -> [(lon, lat, time), ...]
+    # 3. Fetch patrol context — maps subject_id → patrol_type string
+    #    This tells us when a person/er_mobile is actually in a vehicle or aircraft.
+    patrol_map = fetch_patrols(session, api, since, until)
+
+    # 4. Build subject metadata lookup (subject_id → {type, subtype, patrol_type})
+    subject_meta = {}  # subject_id → {subject_type, subject_subtype, patrol_type}
+    for s in subjects:
+        sid = s['id']
+        stype = (s.get('subject_type') or '').lower()
+        ssubtype = (s.get('subject_subtype') or '').lower()
+        meta = {
+            'subject_type': stype,
+            'subject_subtype': ssubtype,
+        }
+        # Attach patrol type if this subject is a patrol leader
+        if sid in patrol_map:
+            meta['patrol_type'] = patrol_map[sid]
+        subject_meta[sid] = meta
+
+    # 5. Fetch tracks per subject
+    tracks = {}  # subject_id → [(lon, lat, time), ...]
     subject_count = 0
     skipped_no_source = 0
 
@@ -243,20 +439,28 @@ def main():
             tracks[sid] = all_points
             subject_count += 1
 
-    # 4. Build GPX
+    # 6. Build GPX
     if not tracks:
         print(json.dumps({'ok': True, 'subjects': 0, 'points': 0, 'uploaded': False,
+                          'types': {'foot': 0, 'vehicle': 0, 'aircraft': 0},
                           'message': 'No GPS data found for the period'}))
         sys.exit(0)
 
-    gpx_xml, total_pts = build_gpx(tracks)
+    gpx_xml, total_pts = build_gpx(tracks, subject_meta)
 
-    # 5. Upload
+    # 7. Compute type breakdown for the summary
+    type_counts = {'foot': 0, 'vehicle': 0, 'aircraft': 0}
+    for sid in tracks:
+        meta = subject_meta.get(sid, {})
+        category = classify_subject(meta)
+        type_counts[category] = type_counts.get(category, 0) + 1
+
+    # 8. Upload
     if args.dry_run:
         # Write to stdout for inspection
         sys.stderr.write(gpx_xml[:2000] + '\n...\n')
         print(json.dumps({'ok': True, 'subjects': subject_count, 'points': total_pts,
-                          'uploaded': False, 'dry_run': True}))
+                          'types': type_counts, 'uploaded': False, 'dry_run': True}))
         sys.exit(0)
 
     try:
@@ -270,13 +474,15 @@ def main():
         upload_result = resp.json()
     except Exception as e:
         print(json.dumps({'ok': False, 'error': f'Upload failed: {e}',
-                          'subjects': subject_count, 'points': total_pts}))
+                          'subjects': subject_count, 'points': total_pts,
+                          'types': type_counts}))
         sys.exit(1)
 
     print(json.dumps({
         'ok': True,
         'subjects': subject_count,
         'points': total_pts,
+        'types': type_counts,
         'uploaded': True,
         'queue_id': upload_result.get('queue_id'),
     }))

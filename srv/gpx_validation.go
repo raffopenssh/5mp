@@ -177,13 +177,19 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 		}
 
 		// Use full movement classification (movement type + activity type)
+		// Pass through any movement hints from EarthRanger metadata, Locus, etc.
+		hint := timeSeg.Hint
 		var classification gpx.MovementClassification
 		if len(seg) >= 3 {
-			classification = gpx.ClassifyMovementFull(seg)
+			classification = gpx.ClassifyMovementFullWithHint(seg, hint)
 		} else if len(seg) >= 2 {
 			avgSpeed := gpx.CalculateSpeed(seg)
 			classification.Metrics.AvgSpeedKmh = avgSpeed
-			if avgSpeed < 7 {
+			// Use hint for small segments too
+			if hint.Type != "" && hint.Confidence >= 0.9 {
+				classification.MovementType = hint.Type
+				classification.ActivityType = "patrol"
+			} else if avgSpeed < 7 {
 				classification.MovementType = "foot"
 				classification.ActivityType = "patrol"
 			} else if avgSpeed < 100 {
