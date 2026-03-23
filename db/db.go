@@ -95,7 +95,7 @@ func RunMigrations(db *sql.DB) error {
 		if executed[n] {
 			continue
 		}
-		if err := executeMigration(db, m); err != nil {
+		if err := executeMigration(db, m, n); err != nil {
 			return fmt.Errorf("execute %s: %w", m, err)
 		}
 		slog.Info("db: applied migration", "file", m, "number", n)
@@ -103,7 +103,7 @@ func RunMigrations(db *sql.DB) error {
 	return nil
 }
 
-func executeMigration(db *sql.DB, filename string) error {
+func executeMigration(db *sql.DB, filename string, migrationNum int) error {
 	content, err := migrationFS.ReadFile("migrations/" + filename)
 	if err != nil {
 		return fmt.Errorf("read %s: %w", filename, err)
@@ -111,5 +111,11 @@ func executeMigration(db *sql.DB, filename string) error {
 	if _, err := db.Exec(string(content)); err != nil {
 		return fmt.Errorf("exec %s: %w", filename, err)
 	}
+	// Record successful migration (ignore errors if migrations table
+	// was just created by this very migration, e.g. 001-base).
+	_, _ = db.Exec(
+		"INSERT OR IGNORE INTO migrations (migration_number, migration_name) VALUES (?, ?)",
+		migrationNum, filename,
+	)
 	return nil
 }

@@ -149,17 +149,18 @@ func (q *Queries) CreateSettlementVisit(ctx context.Context, arg CreateSettlemen
 }
 
 const createTrackPoint = `-- name: CreateTrackPoint :exec
-INSERT INTO track_points (upload_id, lat, lon, elevation, timestamp, grid_cell_id)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO track_points (upload_id, lat, lon, elevation, timestamp, grid_cell_id, movement_type)
+VALUES (?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateTrackPointParams struct {
-	UploadID   int64      `json:"upload_id"`
-	Lat        float64    `json:"lat"`
-	Lon        float64    `json:"lon"`
-	Elevation  *float64   `json:"elevation"`
-	Timestamp  *time.Time `json:"timestamp"`
-	GridCellID *string    `json:"grid_cell_id"`
+	UploadID     int64      `json:"upload_id"`
+	Lat          float64    `json:"lat"`
+	Lon          float64    `json:"lon"`
+	Elevation    *float64   `json:"elevation"`
+	Timestamp    *time.Time `json:"timestamp"`
+	GridCellID   *string    `json:"grid_cell_id"`
+	MovementType *string    `json:"movement_type"`
 }
 
 func (q *Queries) CreateTrackPoint(ctx context.Context, arg CreateTrackPointParams) error {
@@ -170,6 +171,7 @@ func (q *Queries) CreateTrackPoint(ctx context.Context, arg CreateTrackPointPara
 		arg.Elevation,
 		arg.Timestamp,
 		arg.GridCellID,
+		arg.MovementType,
 	)
 	return err
 }
@@ -1316,7 +1318,7 @@ func (q *Queries) GetTotalDistanceByYear(ctx context.Context, year int64) (inter
 }
 
 const getTrackPointsByUpload = `-- name: GetTrackPointsByUpload :many
-SELECT id, upload_id, lat, lon, elevation, timestamp, grid_cell_id FROM track_points WHERE upload_id = ? ORDER BY timestamp
+SELECT id, upload_id, lat, lon, elevation, timestamp, grid_cell_id, movement_type FROM track_points WHERE upload_id = ? ORDER BY timestamp
 `
 
 func (q *Queries) GetTrackPointsByUpload(ctx context.Context, uploadID int64) ([]TrackPoint, error) {
@@ -1336,6 +1338,7 @@ func (q *Queries) GetTrackPointsByUpload(ctx context.Context, uploadID int64) ([
 			&i.Elevation,
 			&i.Timestamp,
 			&i.GridCellID,
+			&i.MovementType,
 		); err != nil {
 			return nil, err
 		}

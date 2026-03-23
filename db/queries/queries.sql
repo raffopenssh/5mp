@@ -89,8 +89,8 @@ FROM effort_data e
 WHERE e.year = ? AND e.day IS NULL AND e.movement_type = 'all';
 
 -- name: CreateTrackPoint :exec
-INSERT INTO track_points (upload_id, lat, lon, elevation, timestamp, grid_cell_id)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO track_points (upload_id, lat, lon, elevation, timestamp, grid_cell_id, movement_type)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 -- name: GetTrackPointsByUpload :many
 SELECT * FROM track_points WHERE upload_id = ? ORDER BY timestamp;

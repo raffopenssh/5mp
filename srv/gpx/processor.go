@@ -607,7 +607,15 @@ func buildSegmentWithHint(points []Point, hint MovementHint) Segment {
 	// Calculate distance and speed
 	seg.DistanceKm = CalculateDistance(points)
 	seg.AvgSpeedKmh = CalculateSpeed(points)
-	seg.MovementType = ClassifyMovementTypeWithHint(seg, hint)
+
+	// Use the full multi-signal classifier when we have enough points,
+	// falling back to speed-only for very short segments.
+	if len(points) >= 3 {
+		classification := ClassifyMovementFullWithHint(points, hint)
+		seg.MovementType = classification.MovementType
+	} else {
+		seg.MovementType = ClassifyMovementTypeWithHint(seg, hint)
+	}
 
 	return seg
 }

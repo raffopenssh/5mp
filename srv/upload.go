@@ -447,17 +447,19 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		return 0, fmt.Errorf("create gpx upload: %w", err)
 	}
 
-	// Collect all points from all segments
-	var allPoints []gpx.Point
+	// Collect all points with their segment's movement type
+	var typedPoints []pointWithType
 	for _, seg := range segments {
-		allPoints = append(allPoints, seg.Points...)
+		for _, pt := range seg.Points {
+			typedPoints = append(typedPoints, pointWithType{pt, seg.MovementType})
+		}
 	}
 
 	// Sample points if needed (keep max N points)
-	sampledPoints := samplePoints(allPoints, maxTrackPointsPerUpload)
+	sampledTyped := sampleTypedPoints(typedPoints, maxTrackPointsPerUpload)
 
-	// Store sampled track points
-	for _, pt := range sampledPoints {
+	// Store sampled track points with movement type
+	for _, pt := range sampledTyped {
 		gridCellID := gridCellIDForPoint(pt.Lat, pt.Lon)
 
 		// Ensure grid cell exists
@@ -477,13 +479,19 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		}
 
 		gridCellIDPtr := &gridCellID
+		movementType := pt.MovementType
+		var movementTypePtr *string
+		if movementType != "" {
+			movementTypePtr = &movementType
+		}
 		err = q.CreateTrackPoint(ctx, dbgen.CreateTrackPointParams{
-			UploadID:   uploadID,
-			Lat:        pt.Lat,
-			Lon:        pt.Lon,
-			Elevation:  pt.Elevation,
-			Timestamp:  pt.Time,
-			GridCellID: gridCellIDPtr,
+			UploadID:     uploadID,
+			Lat:          pt.Lat,
+			Lon:          pt.Lon,
+			Elevation:    pt.Elevation,
+			Timestamp:    pt.Time,
+			GridCellID:   gridCellIDPtr,
+			MovementType: movementTypePtr,
 		})
 		if err != nil {
 			return 0, fmt.Errorf("create track point: %w", err)
@@ -710,6 +718,32 @@ func samplePoints(points []gpx.Point, maxPoints int) []gpx.Point {
 	return result
 }
 
+// pointWithType pairs a GPX point with its segment's movement classification.
+type pointWithType struct {
+	gpx.Point
+	MovementType string
+}
+
+// sampleTypedPoints returns a subset of typed points, evenly distributed across the input.
+func sampleTypedPoints(points []pointWithType, maxPoints int) []pointWithType {
+	if len(points) <= maxPoints {
+		return points
+	}
+
+	result := make([]pointWithType, 0, maxPoints)
+	step := float64(len(points)-1) / float64(maxPoints-1)
+
+	for i := 0; i < maxPoints; i++ {
+		idx := int(math.Round(float64(i) * step))
+		if idx >= len(points) {
+			idx = len(points) - 1
+		}
+		result = append(result, points[idx])
+	}
+
+	return result
+}
+
 // gridCellIDForPoint returns the grid cell ID for a lat/lon coordinate.
 // Format: "lat_lon" with 1 decimal place (e.g., "-2.3_34.8").
 func gridCellIDForPoint(lat, lon float64) string {
@@ -923,28 +957,35 @@ func (s *Server) rebuildAllEffortData() {
 
 	var rebuilt int
 	for _, u := range uploads {
-		// Get grid cell distribution from track_points
+		// Get grid cell distribution from track_points, grouped by movement type.
+		// Points with movement_type set use their actual type; NULL falls back
+		// to proportional distribution from the upload log.
 		cellRows, err := s.DB.QueryContext(ctx, `
-			SELECT grid_cell_id, COUNT(*) as pts
+			SELECT grid_cell_id, COALESCE(movement_type, '') as mt, COUNT(*) as pts
 			FROM track_points
 			WHERE upload_id = ? AND grid_cell_id IS NOT NULL
-			GROUP BY grid_cell_id
+			GROUP BY grid_cell_id, mt
 		`, u.uploadID)
 		if err != nil {
 			slog.Warn("rebuildAllEffortData: failed to get grid cells", "logID", u.logID, "error", err)
 			continue
 		}
 
-		type cellInfo struct {
-			id  string
-			pts int64
+		type cellMTInfo struct {
+			id           string
+			movementType string // "" means legacy (no per-point type)
+			pts          int64
 		}
-		var cells []cellInfo
+		var cells []cellMTInfo
 		var totalPts int64
+		var hasTypedPoints bool
 		for cellRows.Next() {
-			var c cellInfo
-			if err := cellRows.Scan(&c.id, &c.pts); err != nil {
+			var c cellMTInfo
+			if err := cellRows.Scan(&c.id, &c.movementType, &c.pts); err != nil {
 				continue
+			}
+			if c.movementType != "" {
+				hasTypedPoints = true
 			}
 			cells = append(cells, c)
 			totalPts += c.pts
@@ -965,54 +1006,133 @@ func (s *Server) rebuildAllEffortData() {
 			}
 		}
 
-		// Distribute distance proportionally across grid cells by point count
 		totalKm := u.footKm + u.vehicleKm + u.aircraftKm
 		if totalKm <= 0 {
 			continue
 		}
-		for _, cell := range cells {
-			fraction := float64(cell.pts) / float64(totalPts)
 
-			// Movement-type-specific effort
-			for _, mt := range []struct {
-				name string
-				km   float64
-			}{
-				{"foot", u.footKm},
-				{"vehicle", u.vehicleKm},
-				{"aircraft", u.aircraftKm},
-			} {
-				if mt.km <= 0 {
+		if hasTypedPoints {
+			// New path: use per-point movement types for accurate per-cell effort.
+			// Aggregate total distance per movement type from the upload log,
+			// then distribute each type's distance across cells proportionally
+			// to the number of points of that type in each cell.
+			mtKm := map[string]float64{
+				"foot":     u.footKm,
+				"vehicle":  u.vehicleKm,
+				"aircraft": u.aircraftKm,
+			}
+
+			// Count total points per movement type across all cells
+			mtTotalPts := make(map[string]int64)
+			for _, c := range cells {
+				mt := c.movementType
+				if mt == "" {
+					mt = "foot" // fallback for legacy untyped points
+				}
+				mtTotalPts[mt] += c.pts
+			}
+
+			// Per-cell, per-movement-type effort
+			cellAllPts := make(map[string]int64)    // cell -> total pts (for "all" aggregate)
+			cellAllKm := make(map[string]float64)   // cell -> total km (for "all" aggregate)
+			for _, c := range cells {
+				mt := c.movementType
+				if mt == "" {
+					mt = "foot"
+				}
+				km := mtKm[mt]
+				if km <= 0 || mtTotalPts[mt] == 0 {
+					cellAllPts[c.id] += c.pts
 					continue
 				}
+				fraction := float64(c.pts) / float64(mtTotalPts[mt])
+				cellKm := km * fraction
+				cellAllPts[c.id] += c.pts
+				cellAllKm[c.id] += cellKm
+
 				err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
-					GridCellID:      cell.id,
+					GridCellID:      c.id,
 					Year:            year,
 					Month:           month,
 					Day:             nil,
-					MovementType:    mt.name,
-					TotalDistanceKm: mt.km * fraction,
-					TotalPoints:     int64(float64(cell.pts) * (mt.km / totalKm)),
+					MovementType:    mt,
+					TotalDistanceKm: cellKm,
+					TotalPoints:     c.pts,
 					UniqueUploads:   1,
 				})
 				if err != nil {
-					slog.Warn("rebuildAllEffortData: upsert error", "cell", cell.id, "error", err)
+					slog.Warn("rebuildAllEffortData: upsert error", "cell", c.id, "mt", mt, "error", err)
 				}
 			}
 
-			// "all" aggregate
-			err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
-				GridCellID:      cell.id,
-				Year:            year,
-				Month:           month,
-				Day:             nil,
-				MovementType:    "all",
-				TotalDistanceKm: totalKm * fraction,
-				TotalPoints:     cell.pts,
-				UniqueUploads:   1,
-			})
-			if err != nil {
-				slog.Warn("rebuildAllEffortData: upsert all error", "cell", cell.id, "error", err)
+			// "all" aggregates per cell
+			for cellID, pts := range cellAllPts {
+				err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
+					GridCellID:      cellID,
+					Year:            year,
+					Month:           month,
+					Day:             nil,
+					MovementType:    "all",
+					TotalDistanceKm: cellAllKm[cellID],
+					TotalPoints:     pts,
+					UniqueUploads:   1,
+				})
+				if err != nil {
+					slog.Warn("rebuildAllEffortData: upsert all error", "cell", cellID, "error", err)
+				}
+			}
+		} else {
+			// Legacy path: no per-point movement types, use proportional distribution.
+			// Collapse cells (movement_type is all empty) to just grid_cell_id -> pts.
+			cellPts := make(map[string]int64)
+			for _, c := range cells {
+				cellPts[c.id] += c.pts
+			}
+
+			for cellID, pts := range cellPts {
+				fraction := float64(pts) / float64(totalPts)
+
+				// Movement-type-specific effort
+				for _, mt := range []struct {
+					name string
+					km   float64
+				}{
+					{"foot", u.footKm},
+					{"vehicle", u.vehicleKm},
+					{"aircraft", u.aircraftKm},
+				} {
+					if mt.km <= 0 {
+						continue
+					}
+					err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
+						GridCellID:      cellID,
+						Year:            year,
+						Month:           month,
+						Day:             nil,
+						MovementType:    mt.name,
+						TotalDistanceKm: mt.km * fraction,
+						TotalPoints:     int64(float64(pts) * (mt.km / totalKm)),
+						UniqueUploads:   1,
+					})
+					if err != nil {
+						slog.Warn("rebuildAllEffortData: upsert error", "cell", cellID, "error", err)
+					}
+				}
+
+				// "all" aggregate
+				err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
+					GridCellID:      cellID,
+					Year:            year,
+					Month:           month,
+					Day:             nil,
+					MovementType:    "all",
+					TotalDistanceKm: totalKm * fraction,
+					TotalPoints:     pts,
+					UniqueUploads:   1,
+				})
+				if err != nil {
+					slog.Warn("rebuildAllEffortData: upsert all error", "cell", cellID, "error", err)
+				}
 			}
 		}
 

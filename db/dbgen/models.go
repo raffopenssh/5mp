@@ -535,13 +535,14 @@ type SubcellVisit struct {
 }
 
 type TrackPoint struct {
-	ID         int64      `json:"id"`
-	UploadID   int64      `json:"upload_id"`
-	Lat        float64    `json:"lat"`
-	Lon        float64    `json:"lon"`
-	Elevation  *float64   `json:"elevation"`
-	Timestamp  *time.Time `json:"timestamp"`
-	GridCellID *string    `json:"grid_cell_id"`
+	ID           int64      `json:"id"`
+	UploadID     int64      `json:"upload_id"`
+	Lat          float64    `json:"lat"`
+	Lon          float64    `json:"lon"`
+	Elevation    *float64   `json:"elevation"`
+	Timestamp    *time.Time `json:"timestamp"`
+	GridCellID   *string    `json:"grid_cell_id"`
+	MovementType *string    `json:"movement_type"`
 }
 
 type UploadQueue struct {

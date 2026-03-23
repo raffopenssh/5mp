@@ -2910,6 +2910,19 @@ func (s *Server) HandleAPIDeleteUpload(w http.ResponseWriter, r *http.Request) {
 		_, _ = s.DB.ExecContext(ctx, "DELETE FROM gpx_uploads WHERE id = ?", uploadID.Int64)
 	}
 
+	// Clean up orphan gpx_uploads — records not referenced by any log entry.
+	// These can accumulate when uploads are re-processed or logs deleted.
+	_, _ = s.DB.ExecContext(ctx, `
+		DELETE FROM track_points WHERE upload_id IN (
+			SELECT u.id FROM gpx_uploads u
+			LEFT JOIN gpx_upload_logs l ON l.upload_id = u.id
+			WHERE l.id IS NULL
+		)`)
+	_, _ = s.DB.ExecContext(ctx, `
+		DELETE FROM gpx_uploads WHERE id NOT IN (
+			SELECT upload_id FROM gpx_upload_logs WHERE upload_id IS NOT NULL
+		)`)
+
 	// Clean up associated notification
 	_, _ = s.DB.ExecContext(ctx, "DELETE FROM notifications WHERE notification_type = 'new_upload' AND reference_id = ?", fmt.Sprintf("%d", req.ID))
 
