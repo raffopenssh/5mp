@@ -3,11 +3,20 @@ package gpx
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 	"math"
+	"regexp"
 	"strings"
 	"time"
 )
+
+// runwayPatterns matches runway length in waypoint names.
+// Examples: "Boma 900m", "Juba 3000m", "Bor 1.3 km", "Duk Fadiat 1200 m"
+var runwayPatterns = []*regexp.Regexp{
+	regexp.MustCompile(`(\d+(?:\.\d+)?)\s*(km)\b`),
+	regexp.MustCompile(`(\d+(?:\.\d+)?)\s*(m)\b`),
+}
 
 // Point represents a single GPS point with coordinates, elevation, and time.
 type Point struct {
@@ -64,6 +73,117 @@ type MovementHint struct {
 	IsFoot      bool
 	Type        string  // "vehicle", "aircraft", "foot", or ""
 	Confidence  float64 // 0.0 to 1.0
+}
+
+// AirstripWaypoint represents a waypoint identified as an airstrip,
+// typically from GPX files where waypoints have runway length info (e.g., "Kapoeta 1200m").
+type AirstripWaypoint struct {
+	Lat      float64
+	Lon      float64
+	Name     string
+	RunwayM  float64 // Runway length in meters (0 if unknown)
+}
+
+// ExtractAirstrips parses waypoints to find airstrip locations.
+// Airstrips are identified by waypoint names containing runway lengths (e.g., "Boma 900m",
+// "Juba 3000m", "Duk Fadiat 1.2 km"). These are common in conservation aviation GPX files
+// from East/Central Africa.
+func ExtractAirstrips(waypoints []Waypoint) []AirstripWaypoint {
+	var airstrips []AirstripWaypoint
+	for _, wp := range waypoints {
+		name := wp.Name
+		if name == "" {
+			name = wp.Desc
+		}
+		if name == "" {
+			continue
+		}
+
+		// Match patterns like "1200m", "1.2 km", "900 m", "1.3km"
+		runwayM := parseRunwayLength(name)
+		if runwayM > 0 {
+			airstrips = append(airstrips, AirstripWaypoint{
+				Lat:     wp.Lat,
+				Lon:     wp.Lon,
+				Name:    name,
+				RunwayM: runwayM,
+			})
+			continue
+		}
+
+		// Also match names containing "airstrip", "runway", "airfield", "aerodrome"
+		lower := strings.ToLower(name)
+		if strings.Contains(lower, "airstrip") || strings.Contains(lower, "runway") ||
+			strings.Contains(lower, "airfield") || strings.Contains(lower, "aerodrome") ||
+			strings.Contains(lower, "landing strip") {
+			airstrips = append(airstrips, AirstripWaypoint{
+				Lat:  wp.Lat,
+				Lon:  wp.Lon,
+				Name: name,
+			})
+		}
+	}
+	return airstrips
+}
+
+// parseRunwayLength extracts runway length in meters from a waypoint name.
+// Handles: "Boma 900m", "Juba 3000m", "Bor 1.3 km", "Duk Fadiat 1200 m".
+func parseRunwayLength(name string) float64 {
+	// Pattern: number followed by "m" or "km" (with optional space)
+	// Must be a plausible runway: 200m - 5000m
+	for _, re := range runwayPatterns {
+		matches := re.FindStringSubmatch(name)
+		if len(matches) >= 3 {
+			var val float64
+			_, err := fmt.Sscanf(matches[1], "%f", &val)
+			if err != nil {
+				continue
+			}
+			unit := strings.ToLower(strings.TrimSpace(matches[2]))
+			if unit == "km" {
+				val *= 1000
+			}
+			// Plausible runway: 100m to 5000m
+			if val >= 100 && val <= 5000 {
+				return val
+			}
+		}
+	}
+	return 0
+}
+
+// isTrackNearAirstrip checks if a track's start or end point is within radiusKm of any airstrip.
+// Returns true and the closest airstrip if found.
+func isTrackNearAirstrip(points []Point, airstrips []AirstripWaypoint, radiusKm float64) (bool, *AirstripWaypoint) {
+	if len(points) == 0 || len(airstrips) == 0 {
+		return false, nil
+	}
+
+	start := points[0]
+	end := points[len(points)-1]
+
+	var closest *AirstripWaypoint
+	minDist := radiusKm + 1
+
+	for i := range airstrips {
+		a := &airstrips[i]
+		dStart := haversineDistance(start, Point{Lat: a.Lat, Lon: a.Lon})
+		dEnd := haversineDistance(end, Point{Lat: a.Lat, Lon: a.Lon})
+
+		d := dStart
+		if dEnd < d {
+			d = dEnd
+		}
+		if d < minDist {
+			minDist = d
+			closest = a
+		}
+	}
+
+	if minDist <= radiusKm {
+		return true, closest
+	}
+	return false, nil
 }
 
 // ExtractMovementHintsFromWaypoints analyzes waypoint descriptions for movement hints.
@@ -329,6 +449,11 @@ func SplitIntoSegments(data *GPXData, maxDuration time.Duration) []Segment {
 	// Extract movement hints from waypoints (InReach messages, etc.)
 	hint := ExtractMovementHintsFromWaypoints(data.Waypoints)
 
+	// Extract airstrip locations from waypoints.
+	// Waypoints like "Kapoeta 1200m" or "Boma 900m" mark airstrips with runway lengths.
+	// Tracks that start or end near these are likely aircraft.
+	airstrips := ExtractAirstrips(data.Waypoints)
+
 	var segments []Segment
 
 	for _, track := range data.Tracks {
@@ -336,10 +461,29 @@ func SplitIntoSegments(data *GPXData, maxDuration time.Duration) []Segment {
 		// 1. EarthRanger subject metadata (highest — device is physically on aircraft/vehicle)
 		// 2. EarthRanger patrol type (operational context)
 		// 3. Locus activity hint (app-level tag)
-		// 4. Waypoint text analysis (lowest)
+		// 4. Airstrip proximity (track starts/ends near known airstrip waypoint)
+		// 5. Waypoint text analysis (lowest)
 		trackHint := hint
 		trackHint = mergeTrackActivityHint(trackHint, track.Activity)
 		trackHint = mergeERSubjectHint(trackHint, track.ERSubjectType, track.ERSubjectSubtype, track.ERPatrolType)
+
+		// If no strong hint yet, check airstrip proximity.
+		// Only apply if the track's speed profile is consistent with aircraft (>30 km/h avg).
+		// This prevents slow foot patrols near an airstrip from being tagged aircraft.
+		if trackHint.Confidence < 0.8 && len(airstrips) > 0 {
+			// Collect all points across all segments of this track
+			var allPoints []Point
+			for _, seg := range track.Segments {
+				allPoints = append(allPoints, seg...)
+			}
+			if near, _ := isTrackNearAirstrip(allPoints, airstrips, 5.0); near {
+				// Only boost if speed is plausible for aircraft (>30 km/h)
+				trackSpeed := CalculateSpeed(allPoints)
+				if trackSpeed > 30 {
+					trackHint = mergeAirstripHint(trackHint, trackSpeed)
+				}
+			}
+		}
 
 		for _, trackSeg := range track.Segments {
 			if len(trackSeg) == 0 {
@@ -353,6 +497,30 @@ func SplitIntoSegments(data *GPXData, maxDuration time.Duration) []Segment {
 	}
 
 	return segments
+}
+
+// mergeAirstripHint boosts the aircraft confidence for tracks near airstrips.
+// Confidence scales with speed: 30-60 km/h = 0.6, 60-100 = 0.7, >100 = 0.85.
+// This is lower than ER hints (1.0) because airstrip proximity alone isn't definitive —
+// vehicles also use airstrips for logistics.
+func mergeAirstripHint(base MovementHint, trackSpeedKmh float64) MovementHint {
+	var conf float64
+	switch {
+	case trackSpeedKmh > 100:
+		conf = 0.85
+	case trackSpeedKmh > 60:
+		conf = 0.75
+	default:
+		conf = 0.6
+	}
+
+	// Only upgrade if our new confidence is higher than existing
+	if conf > base.Confidence {
+		base.IsAircraft = true
+		base.Type = "aircraft"
+		base.Confidence = conf
+	}
+	return base
 }
 
 // splitByDuration splits a slice of points into segments based on time duration.

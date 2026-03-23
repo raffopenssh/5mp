@@ -2,6 +2,7 @@ package gpx
 
 import (
 	"math"
+	"sort"
 )
 
 // MovementMetrics captures trajectory characteristics for movement classification
@@ -26,6 +27,21 @@ type MovementMetrics struct {
 	LinearityScore    float64 // 0-1, how linear the trajectory is
 	HasLandingPattern bool    // Decelerating to stop (aircraft landing)
 	HasTakeoffPattern bool    // Accelerating from stop (aircraft takeoff)
+
+	// Sampling rate metrics
+	MedianIntervalSec    float64 // Median time between consecutive points (seconds)
+	IntervalConsistency  float64 // Coefficient of variation of intervals (0=constant, 1=irregular)
+
+	// Elevation metrics
+	HasElevation        bool    // Whether >50% of points have elevation data
+	ElevationRangeM     float64 // Max elevation minus min elevation
+	MaxElevationM       float64 // Maximum elevation
+	AvgElevationM       float64 // Average elevation
+	ElevationChangeRate float64 // Meters of elevation change per km of horizontal travel
+
+	// Speed percentiles
+	P90SpeedKmh float64 // 90th percentile speed
+	P10SpeedKmh float64 // 10th percentile speed (lowest non-zero)
 }
 
 // MovementClassification contains both movement type and activity type
@@ -46,12 +62,19 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 	var bearings []float64
 	var bearingChanges []float64
 	var accelerations []float64
+	var intervals []float64 // time intervals in seconds between consecutive points
 	var stopCount int
 	
 	// For bounding box and centroid
 	minLat, maxLat := points[0].Lat, points[0].Lat
 	minLon, maxLon := points[0].Lon, points[0].Lon
 	var sumLat, sumLon float64
+	
+	// For elevation metrics
+	var elevations []float64
+	var elevCount int
+	var totalElevChange float64
+	var prevElevation *float64
 	
 	prevSpeed := 0.0
 	prevBearing := 0.0
@@ -66,6 +89,16 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 		sumLat += pt.Lat
 		sumLon += pt.Lon
 		
+		// Track elevation
+		if pt.Elevation != nil {
+			elevations = append(elevations, *pt.Elevation)
+			elevCount++
+			if prevElevation != nil {
+				totalElevChange += math.Abs(*pt.Elevation - *prevElevation)
+			}
+			prevElevation = pt.Elevation
+		}
+		
 		if i == 0 {
 			continue
 		}
@@ -77,6 +110,10 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 		var duration float64
 		if points[i-1].Time != nil && pt.Time != nil {
 			duration = pt.Time.Sub(*points[i-1].Time).Hours()
+			intervalSec := pt.Time.Sub(*points[i-1].Time).Seconds()
+			if intervalSec > 0 {
+				intervals = append(intervals, intervalSec)
+			}
 		}
 		
 		speed := 0.0
@@ -236,6 +273,81 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 		}
 	}
 	
+	// Sampling rate metrics
+	if len(intervals) > 0 {
+		sortedIntervals := make([]float64, len(intervals))
+		copy(sortedIntervals, intervals)
+		sort.Float64s(sortedIntervals)
+		
+		// Median interval
+		mid := len(sortedIntervals) / 2
+		if len(sortedIntervals)%2 == 0 {
+			metrics.MedianIntervalSec = (sortedIntervals[mid-1] + sortedIntervals[mid]) / 2
+		} else {
+			metrics.MedianIntervalSec = sortedIntervals[mid]
+		}
+		
+		// Coefficient of variation of intervals
+		var sumIv float64
+		for _, iv := range intervals {
+			sumIv += iv
+		}
+		meanIv := sumIv / float64(len(intervals))
+		if meanIv > 0 {
+			var varianceIv float64
+			for _, iv := range intervals {
+				diff := iv - meanIv
+				varianceIv += diff * diff
+			}
+			varianceIv /= float64(len(intervals))
+			metrics.IntervalConsistency = math.Sqrt(varianceIv) / meanIv
+			if metrics.IntervalConsistency > 1 {
+				metrics.IntervalConsistency = 1
+			}
+		}
+	}
+	
+	// Elevation metrics
+	if elevCount > 0 && float64(elevCount)/n > 0.5 {
+		metrics.HasElevation = true
+		
+		var minElev, maxElev, sumElev float64
+		minElev = elevations[0]
+		maxElev = elevations[0]
+		for _, e := range elevations {
+			sumElev += e
+			if e < minElev { minElev = e }
+			if e > maxElev { maxElev = e }
+		}
+		metrics.ElevationRangeM = maxElev - minElev
+		metrics.MaxElevationM = maxElev
+		metrics.AvgElevationM = sumElev / float64(len(elevations))
+		
+		// Elevation change rate: meters per km of horizontal travel
+		if totalDist > 0 {
+			metrics.ElevationChangeRate = totalElevChange / totalDist
+		}
+	}
+	
+	// Speed percentiles
+	if len(speeds) > 0 {
+		sortedSpeeds := make([]float64, len(speeds))
+		copy(sortedSpeeds, speeds)
+		sort.Float64s(sortedSpeeds)
+		
+		// P90
+		p90idx := int(math.Ceil(float64(len(sortedSpeeds))*0.9)) - 1
+		if p90idx < 0 { p90idx = 0 }
+		if p90idx >= len(sortedSpeeds) { p90idx = len(sortedSpeeds) - 1 }
+		metrics.P90SpeedKmh = sortedSpeeds[p90idx]
+		
+		// P10
+		p10idx := int(math.Ceil(float64(len(sortedSpeeds))*0.1)) - 1
+		if p10idx < 0 { p10idx = 0 }
+		if p10idx >= len(sortedSpeeds) { p10idx = len(sortedSpeeds) - 1 }
+		metrics.P10SpeedKmh = sortedSpeeds[p10idx]
+	}
+	
 	return metrics
 }
 
@@ -303,67 +415,140 @@ func ClassifyMovementFullWithHint(points []Point, hint MovementHint) MovementCla
 		return result
 	}
 	
-	// === SPEED-BASED CLASSIFICATION (with moderate hint nudging) ===
-	isAircraft := false
+	// === MULTI-SIGNAL SCORING CLASSIFICATION (with moderate hint nudging) ===
+	var aircraftScore, vehicleScore, footScore float64
+	p90 := metrics.P90SpeedKmh
 	
-	// Check for takeoff/landing patterns
+	// --- Aircraft evidence ---
+	
+	// P90 speed > 120 km/h (strong)
+	if p90 > 120 {
+		aircraftScore += 3.0
+	}
+	// Average speed > 100 km/h (strong)
+	if speed > 100 {
+		aircraftScore += 3.0
+	}
+	// Elevation range > 500m (strong indicator of altitude changes = flight)
+	if metrics.HasElevation && metrics.ElevationRangeM > 500 {
+		aircraftScore += 3.0
+	}
+	// Max elevation > 2000m (moderate — useful in Africa where terrain typically <1500m)
+	if metrics.HasElevation && metrics.MaxElevationM > 2000 {
+		aircraftScore += 2.0
+	}
+	// Landing/takeoff pattern (moderate)
 	if metrics.HasLandingPattern || metrics.HasTakeoffPattern {
-		isAircraft = true
-		result.Confidence = 0.95
+		aircraftScore += 2.0
 	}
-	
-	// Very high speed (>150 km/h) = definitely aircraft
+	// Speed 40-100, very smooth, very linear (weak — slow aircraft like ULM/helicopter)
+	if speed >= 40 && speed <= 100 && smooth > 0.85 && linear > 0.9 && bearingVar < 0.05 {
+		aircraftScore += 1.0
+	}
+	// Regular 120s interval AND speed > 80 (weak — GPS tracker on aircraft)
+	if metrics.MedianIntervalSec > 100 && metrics.MedianIntervalSec < 140 &&
+		metrics.IntervalConsistency < 0.15 && speed > 80 {
+		aircraftScore += 1.0
+	}
+	// Very high speed unmistakable
 	if speed > 150 {
-		isAircraft = true
-		result.Confidence = 0.99
+		aircraftScore += 4.0
+	}
+	// 80-100 km/h smooth and linear
+	if speed >= 80 && speed < 100 && smooth > 0.7 && bearingVar < 0.1 {
+		aircraftScore += 1.5
 	}
 	
-	// High speed (100-150 km/h) with smooth trajectory = aircraft
-	if speed >= 100 && smooth > 0.5 {
-		isAircraft = true
-		result.Confidence = 0.9
+	// --- Vehicle evidence ---
+	
+	// P90 speed 20-120 km/h AND avg speed 8-100 (strong)
+	if p90 >= 20 && p90 <= 120 && speed >= 8 && speed <= 100 {
+		vehicleScore += 3.0
+	}
+	// Speed 8-12 km/h AND high smoothness AND low bearing variance (moderate — slow vehicle)
+	if speed >= 8 && speed <= 12 && smooth > 0.7 && bearingVar < 0.3 {
+		vehicleScore += 2.0
+	}
+	// Speed 8-12 km/h AND high linearity (moderate)
+	if speed >= 8 && speed <= 12 && linear > 0.85 {
+		vehicleScore += 2.0
+	}
+	// Regular 120s interval with speed 10-80 (weak — GPS tracker on vehicle)
+	if metrics.MedianIntervalSec > 100 && metrics.MedianIntervalSec < 140 &&
+		metrics.IntervalConsistency < 0.15 && speed >= 10 && speed <= 80 {
+		vehicleScore += 1.0
+	}
+	// Speed clearly in vehicle range but not aircraft
+	if speed >= 12 && speed < 80 {
+		vehicleScore += 2.0
 	}
 	
-	// 80-100 km/h - could be highway or aircraft
-	if speed >= 80 && speed < 100 {
-		if smooth > 0.7 && bearingVar < 0.1 {
-			isAircraft = true
-			result.Confidence = 0.8
+	// --- Foot evidence ---
+	
+	// P90 speed < 10 km/h (strong)
+	if p90 < 10 {
+		footScore += 3.0
+	}
+	// Average speed < 5 km/h (strong)
+	if speed < 5 {
+		footScore += 3.0
+	}
+	// Speed 5-8 km/h AND high bearing variance — erratic exploring on foot (moderate)
+	if speed >= 5 && speed <= 8 && bearingVar > 0.5 {
+		footScore += 2.0
+	}
+	// Speed 5-8 km/h AND low smoothness (moderate)
+	if speed >= 5 && speed <= 8 && smooth < 0.4 {
+		footScore += 2.0
+	}
+	// Sampling interval 600s+ with speed < 8 (weak — InReach = usually foot)
+	if metrics.MedianIntervalSec >= 600 && speed < 8 {
+		footScore += 1.0
+	}
+	// Very slow speed
+	if speed < 7 {
+		footScore += 1.5
+	}
+	
+	// --- Moderate hint nudging ---
+	if hint.Type != "" && hint.Confidence >= 0.5 {
+		switch hint.Type {
+		case "aircraft":
+			aircraftScore += 1.5
+		case "vehicle":
+			vehicleScore += 1.5
+		case "foot":
+			footScore += 1.5
 		}
-		// Moderate hint: aircraft in 80-100 zone
-		if hint.Type == "aircraft" && hint.Confidence >= 0.5 {
-			isAircraft = true
-			result.Confidence = 0.85
-		}
 	}
 	
-	// Slow but very smooth and linear = likely aircraft (ULM, helicopter)
-	if speed >= 40 && smooth > 0.85 && linear > 0.9 && bearingVar < 0.05 {
-		isAircraft = true
-		result.Confidence = 0.75
+	// --- Pick winner ---
+	type scored struct {
+		label string
+		score float64
 	}
+	scores := []scored{
+		{"aircraft", aircraftScore},
+		{"vehicle", vehicleScore},
+		{"foot", footScore},
+	}
+	sort.Slice(scores, func(i, j int) bool { return scores[i].score > scores[j].score })
 	
-	if isAircraft {
-		result.MovementType = "aircraft"
-	} else if speed < 7 {
+	result.MovementType = scores[0].label
+	
+	// Confidence based on margin between top two scores
+	topScore := scores[0].score
+	runnerUp := scores[1].score
+	if topScore == 0 {
+		// No evidence at all — default to foot with low confidence
 		result.MovementType = "foot"
-		if result.Confidence == 0 {
-			result.Confidence = 0.9
-		}
-		// Moderate hint can override foot/vehicle in ambiguous zone
-		if speed >= 5 && hint.Type == "vehicle" && hint.Confidence >= 0.5 {
-			result.MovementType = "vehicle"
-			result.Confidence = 0.7
-		}
+		result.Confidence = 0.5
 	} else {
-		result.MovementType = "vehicle"
-		if result.Confidence == 0 {
-			result.Confidence = 0.85
-		}
-		// Very slow vehicle (7-12) with foot hint = probably foot
-		if speed < 12 && hint.Type == "foot" && hint.Confidence >= 0.5 {
-			result.MovementType = "foot"
-			result.Confidence = 0.7
+		margin := (topScore - runnerUp) / topScore
+		// Map margin to confidence: margin 0 -> 0.5, margin 1 -> 0.99
+		result.Confidence = 0.5 + margin*0.49
+		if result.Confidence > 0.99 {
+			result.Confidence = 0.99
 		}
 	}
 	
