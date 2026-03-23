@@ -240,6 +240,15 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 			}
 		}
 
+		// Filter out idle/stationary segments: a GPS tracker pinging while
+		// parked (0 km/h, <10m total distance) is not patrol effort.
+		// These create phantom grid pixels without meaningful coverage.
+		const minEffortDistanceKm = 0.01 // 10 meters
+		if distanceKm < minEffortDistanceKm {
+			includeInEffort = false
+			classType = "idle"
+		}
+
 		classified := ClassifiedSegment{
 			Classification:  classType,
 			MovementType:    movementType,
@@ -268,8 +277,15 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 		// Update stats
 		if includeInEffort {
 			result.PatrolKm += distanceKm
-		} else {
+		} else if classType != "idle" {
+			// Don't count idle segments as "excluded" — they're just noise
 			result.ExcludedKm += distanceKm
+		}
+
+		// Skip idle segments from movement stats entirely
+		if classType == "idle" {
+			result.StaticSegments++
+			continue
 		}
 
 		// Update movement stats
