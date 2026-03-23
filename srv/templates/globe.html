@@ -7659,6 +7659,7 @@
                         return {
                             date: n.created_at ? new Date(n.created_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : '',
                             full_date: n.created_at ? n.created_at.slice(0, 10) : '',
+                            created_at: n.created_at || '',
                             date_from: refData.date_from || null,
                             date_to: refData.date_to || null,
                             location: n.title ? n.title.replace('New Patrol Data: ', '') : 'Unknown',
@@ -8232,7 +8233,7 @@
             const lon = item.lon;
             const gridCells = JSON.stringify(item.grid_cells || []);
             const distance = item.distance ? item.distance.toFixed(1) : '0';
-            const time = formatNotificationTime(item.full_date || item.date);
+            const time = formatNotificationTime(item.created_at || item.full_date || item.date);
             
             return `
                 <div class="notification-item clickable" data-type="upload" data-action="view_upload" data-lat="${lat}" data-lon="${lon}" data-grid-cells='${escapeHtml(gridCells)}'>
@@ -17765,17 +17766,41 @@ ${starredItems.narratives.map(n => {
                 const statusColor = !s.enabled ? '#666' : s.last_status === 'ok' ? '#22c55e' : s.last_status && s.last_status.startsWith('error') ? '#ef4444' : '#888';
                 const statusText = !s.enabled ? 'Disabled' : s.last_status || 'Pending';
                 const lastRun = s.last_run_at ? safeDateStr(s.last_run_at) : 'Never';
-                const added = safeDateStr(s.created_at);
                 const actions = s.enabled
                     ? `<button onclick="autofetchDisable(${s.id})" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;" title="Disable (clears password)">Disable</button>`
                       + `<button onclick="autofetchRunNow(${s.id})" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;" title="Fetch now">Run</button>`
                     : `<button onclick="autofetchEnable(${s.id})" style="background:rgba(59,130,246,0.15);color:#3b82f6;border:1px solid rgba(59,130,246,0.3);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;" title="Re-enable (requires password)">Enable</button>`;
                 const deleteBtn = `<button onclick="autofetchDelete(${s.id})" style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.2);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;" title="Delete source and credentials">&times;</button>`;
+                // Compute next run display
+                let nextRunText = '';
+                if (s.enabled && s.next_run_at) {
+                    if (s.next_run_at === 'soon') {
+                        nextRunText = '<span style="color:#f59e0b;">soon</span>';
+                    } else {
+                        const nextDate = new Date(s.next_run_at + 'Z');
+                        const nowMs = Date.now();
+                        const diffMs = nextDate.getTime() - nowMs;
+                        if (diffMs <= 0) {
+                            nextRunText = '<span style="color:#f59e0b;">due now</span>';
+                        } else {
+                            const diffH = Math.floor(diffMs / 3600000);
+                            const diffM = Math.floor((diffMs % 3600000) / 60000);
+                            nextRunText = diffH > 0 
+                                ? `<span style="color:#3b82f6;">in ${diffH}h ${diffM}m</span>`
+                                : `<span style="color:#3b82f6;">in ${diffM}m</span>`;
+                        }
+                    }
+                }
+                // Parks list
+                const parksList = (s.park_names || '').split(',').filter(Boolean).map(p => p.trim());
+                const parksHtml = parksList.length > 0 
+                    ? parksList.map(p => `<span style="display:inline-block;background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.2);border-radius:4px;padding:1px 6px;margin:1px 2px;font-size:10px;white-space:nowrap;">${escapeHtml(p)}</span>`).join('')
+                    : '<span style="color:#666;">—</span>';
                 return `<tr>
-                    <td style="color:#fff;font-weight:500;">${escapeHtml(s.park_names || '—')}</td>
-                    <td style="color:#888;font-size:11px;">${escapeHtml(s.service_url)}<br><span style="color:#666;">${escapeHtml(s.api_type)} · ${s.username} · every ${s.interval_h}h</span></td>
-                    <td style="color:#888;font-size:11px;">${added}</td>
+                    <td style="max-width:180px;">${parksHtml}</td>
+                    <td style="color:#888;font-size:11px;">${escapeHtml(s.service_url)}<br><span style="color:#666;">${escapeHtml(s.api_type)} · every ${s.interval_h}h</span></td>
                     <td style="color:#888;font-size:11px;">${lastRun}</td>
+                    <td style="font-size:11px;">${nextRunText || '<span style="color:#666;">—</span>'}</td>
                     <td style="color:#22c55e;text-align:right;">${s.last_points > 0 ? s.last_points.toLocaleString() : '—'}</td>
                     <td><span style="color:${statusColor};font-size:11px;">${escapeHtml(statusText)}</span></td>
                     <td style="text-align:right;white-space:nowrap;">${actions}${deleteBtn}</td>
@@ -18812,8 +18837,8 @@ ${starredItems.narratives.map(n => {
                                 <thead><tr>
                                     <th>Parks</th>
                                     <th>Service</th>
-                                    <th>Added</th>
                                     <th>Last Run</th>
+                                    <th>Next Run</th>
                                     <th>Points</th>
                                     <th>Status</th>
                                     <th style="text-align:right;">Actions</th>

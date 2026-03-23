@@ -25,7 +25,7 @@ type autofetchSource struct {
 	ID         int64  `json:"id"`
 	APIType    string `json:"api_type"`
 	ServiceURL string `json:"service_url"`
-	Username   string `json:"username"`
+	Username   string `json:"-"`
 	Enabled    bool   `json:"enabled"`
 	IntervalH  int    `json:"interval_h"`
 	ParkNames  string `json:"park_names"`
@@ -33,6 +33,7 @@ type autofetchSource struct {
 	LastRunAt  string `json:"last_run_at,omitempty"`
 	LastStatus string `json:"last_status,omitempty"`
 	LastPoints int    `json:"last_points"`
+	NextRunAt  string `json:"next_run_at,omitempty"`
 }
 
 // ── Credential encryption ────────────────────────────────────────────────────
@@ -145,6 +146,21 @@ func (s *Server) HandleAPIAutofetchList(w http.ResponseWriter, r *http.Request) 
 		}
 		if lastStatus.Valid {
 			src.LastStatus = lastStatus.String
+		}
+		// Compute next run time
+		if src.Enabled {
+			if !lastRun.Valid {
+				src.NextRunAt = "soon" // never run yet, will run on next tick
+			} else {
+				parsed, err := time.Parse("2006-01-02 15:04:05", lastRun.String)
+				if err != nil {
+					parsed, err = time.Parse(time.RFC3339, lastRun.String)
+				}
+				if err == nil {
+					nextRun := parsed.Add(time.Duration(src.IntervalH) * time.Hour)
+					src.NextRunAt = nextRun.UTC().Format("2006-01-02 15:04:05")
+				}
+			}
 		}
 		sources = append(sources, src)
 	}
