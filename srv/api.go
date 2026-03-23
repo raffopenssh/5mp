@@ -608,7 +608,10 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse movement types
-	if typeStr != "" {
+	if typeStr == "none" {
+		// Explicit "none" means no types selected → return empty results
+		params.MovementTypes = []string{"__none__"}
+	} else if typeStr != "" {
 		for _, t := range strings.Split(typeStr, ",") {
 			t = strings.TrimSpace(t)
 			// Map 'aerial' to 'aircraft' (database uses 'aircraft')
@@ -905,7 +908,9 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 
 	// Parse movement types
 	var movementTypes []string
-	if typeStr != "" {
+	if typeStr == "none" {
+		movementTypes = []string{"__none__"}
+	} else if typeStr != "" {
 		for _, t := range strings.Split(typeStr, ",") {
 			t = strings.TrimSpace(t)
 			if t == "aerial" {

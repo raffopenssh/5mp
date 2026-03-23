@@ -3833,7 +3833,9 @@
                 
                 // Add movement type filter
                 var types = getActiveMovementTypes();
-                if (types.length < 3 && types.length > 0) {
+                if (types.length === 0) {
+                    params.push('type=none');
+                } else if (types.length < 3) {
                     params.push('type=' + types.join(','));
                 }
                 // Cache-buster to ensure fresh data after uploads
@@ -6762,7 +6764,9 @@
             }
             // Add movement type filter
             var types = getActiveMovementTypes();
-            if (types.length < 3 && types.length > 0) {
+            if (types.length === 0) {
+                url += '&type=none';
+            } else if (types.length < 3) {
                 url += '&type=' + types.join(',');
             }
             
@@ -18223,7 +18227,9 @@ ${starredItems.narratives.map(n => {
         document.querySelectorAll('.movement-toggle.active').forEach(el => {
             activeTypes.push(el.textContent.trim().toLowerCase());
         });
-        if (activeTypes.length > 0 && activeTypes.length < 3) {
+        if (activeTypes.length === 0) {
+            params.set('types', 'none');
+        } else if (activeTypes.length < 3) {
             params.set('types', activeTypes.join(','));
         }
         
@@ -18410,7 +18416,7 @@ ${starredItems.narratives.map(n => {
         // Restore movement types
         const types = params.get('types');
         if (types) {
-            const activeTypes = types.split(',');
+            const activeTypes = types === 'none' ? [] : types.split(',');
             document.querySelectorAll('.movement-toggle').forEach(el => {
                 const type = el.textContent.trim().toLowerCase();
                 if (activeTypes.includes(type)) {
