@@ -1184,7 +1184,8 @@ func subcellIDForPoint(lat, lon float64) string {
 }
 
 // trackSubcellVisits records which subcells within each grid cell have been visited
-// Uses the actual point timestamps for day-level granularity
+// Uses the actual point timestamps for day-level granularity.
+// Aircraft segments are excluded — overflight does not equal ground patrol presence.
 func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segments []gpx.Segment, defaultYear, defaultMonth int64) error {
 	// Track visited subcells per grid cell per day
 	// Key: "gridCellID:subcellID:date" -> {lat, lon}
@@ -1196,6 +1197,10 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 	defaultDate := time.Date(int(defaultYear), time.Month(defaultMonth), 1, 0, 0, 0, 0, time.UTC)
 	
 	for _, seg := range segments {
+		// Skip aircraft segments — aerial overflight is not ground coverage
+		if seg.MovementType == "aircraft" {
+			continue
+		}
 		for _, pt := range seg.Points {
 			gridCellID := gridCellIDForPoint(pt.Lat, pt.Lon)
 			subcellID := subcellIDForPoint(pt.Lat, pt.Lon)

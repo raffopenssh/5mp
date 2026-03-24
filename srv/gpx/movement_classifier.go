@@ -413,11 +413,22 @@ func ClassifyMovementFullWithHint(points []Point, hint MovementHint) MovementCla
 			result.MovementType = "aircraft"
 			result.Confidence = 0.95
 		case "vehicle":
-			result.MovementType = "vehicle"
-			result.Confidence = 0.95
+			if speed > 120 {
+				// Vehicle GPS but speed says aircraft (GPS on a plane?)
+				result.MovementType = "aircraft"
+				result.Confidence = 0.7
+			} else {
+				result.MovementType = "vehicle"
+				result.Confidence = 0.95
+			}
 		case "foot":
-			if speed > 20 {
-				// Ranger going >20 km/h = probably in a vehicle
+			if speed > 80 {
+				// Ranger phone in an aircraft
+				result.MovementType = "aircraft"
+				result.Confidence = 0.8
+			} else if speed > 10 {
+				// Ranger going >10 km/h = in a vehicle (sustained 10 km/h on foot
+				// is competitive running pace, not realistic for patrol)
 				result.MovementType = "vehicle"
 				result.Confidence = 0.8
 			} else {

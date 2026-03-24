@@ -35,6 +35,9 @@ func run() error {
 	dataDir := *flagDataDir
 	if store, err := areas.LoadKeystones(dataDir); err == nil {
 		server.AreaStore = store
+		if server.GPXLearner != nil {
+			server.GPXLearner.SetAreaStore(store)
+		}
 		slog.Info("loaded protected areas", "count", len(store.Areas))
 	} else {
 		slog.Warn("failed to load areas", "error", err)

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"srv.exe.dev/db/dbgen"
+	"srv.exe.dev/srv/areas"
 	"srv.exe.dev/srv/gpx"
 )
 
@@ -34,11 +35,12 @@ func ptrString(v string) *string    { return &v }
 
 // GPXLearner processes uploaded GPX data to learn roads, places, and patterns
 type GPXLearner struct {
-	db      *sql.DB
-	queries *dbgen.Queries
-	mu      sync.Mutex
-	running bool
-	stopCh  chan struct{}
+	db        *sql.DB
+	queries   *dbgen.Queries
+	areaStore interface{ FindArea(lat, lon float64) *areas.ProtectedArea }
+	mu        sync.Mutex
+	running   bool
+	stopCh    chan struct{}
 }
 
 // NewGPXLearner creates a new learner instance
@@ -48,6 +50,11 @@ func NewGPXLearner(db *sql.DB) *GPXLearner {
 		queries: dbgen.New(db),
 		stopCh:  make(chan struct{}),
 	}
+}
+
+// SetAreaStore sets the area store used for filtering points by park.
+func (l *GPXLearner) SetAreaStore(as interface{ FindArea(lat, lon float64) *areas.ProtectedArea }) {
+	l.areaStore = as
 }
 
 // Start begins background processing of the learning queue
@@ -254,6 +261,25 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	}
 
 	slog.Info("learner loaded segments", "total", len(segments), "with_points", countSegmentsWithPoints(segments))
+
+	// Filter segments to only those within (or near) the target park.
+	// Multi-subject ER uploads span multiple parks; without filtering,
+	// every park gets identical learner results.
+	if l.areaStore != nil && parkID != "" {
+		var filtered []ClassifiedSegment
+		for _, seg := range segments {
+			if segmentBelongsToPark(seg, parkID, l.areaStore) {
+				filtered = append(filtered, seg)
+			}
+		}
+		slog.Info("learner filtered segments for park", "park", parkID, "before", len(segments), "after", len(filtered))
+		segments = filtered
+		if len(segments) == 0 {
+			slog.Info("learner: no segments in park, skipping", "park", parkID)
+			// Mark as completed with empty result
+			return nil
+		}
+	}
 
 	result := &LearningResult{
 		UploadID:   uploadID,
@@ -2079,6 +2105,31 @@ func countSegmentsWithPoints(segments []ClassifiedSegment) int {
 		}
 	}
 	return count
+}
+
+// segmentBelongsToPark checks if a segment's median point (or any sampled point)
+// falls within the specified park. Uses a generous check: the median point plus
+// first/last points are tested.
+func segmentBelongsToPark(seg ClassifiedSegment, parkID string, areaStore interface{ FindArea(lat, lon float64) *areas.ProtectedArea }) bool {
+	if len(seg.Points) == 0 {
+		return false
+	}
+	// Check median point (most representative)
+	mid := seg.Points[len(seg.Points)/2]
+	if area := areaStore.FindArea(mid.Lat, mid.Lon); area != nil && area.ID == parkID {
+		return true
+	}
+	// Check first point
+	first := seg.Points[0]
+	if area := areaStore.FindArea(first.Lat, first.Lon); area != nil && area.ID == parkID {
+		return true
+	}
+	// Check last point
+	last := seg.Points[len(seg.Points)-1]
+	if area := areaStore.FindArea(last.Lat, last.Lon); area != nil && area.ID == parkID {
+		return true
+	}
+	return false
 }
 
 // enrichWithContext adds nearby rivers, roads, places, and settlements to the result

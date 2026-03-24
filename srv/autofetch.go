@@ -379,10 +379,11 @@ func (s *Server) runAutofetchDue(ctx context.Context) {
 func (s *Server) runAutofetchSource(ctx context.Context, id int64) {
 	var apiType, serviceURL, username, encryptedPw string
 	var intervalH int
+	var lastRunAt sql.NullString
 	err := s.DB.QueryRowContext(ctx,
-		`SELECT api_type, service_url, username, password, interval_h
+		`SELECT api_type, service_url, username, password, interval_h, last_run_at
 		 FROM autofetch_sources WHERE id = ? AND enabled = 1 AND password != ''`, id,
-	).Scan(&apiType, &serviceURL, &username, &encryptedPw, &intervalH)
+	).Scan(&apiType, &serviceURL, &username, &encryptedPw, &intervalH, &lastRunAt)
 	if err != nil {
 		slog.Error("autofetch: source not found or disabled", "id", id, "error", err)
 		return
@@ -397,16 +398,38 @@ func (s *Server) runAutofetchSource(ctx context.Context, id int64) {
 		return
 	}
 
-	slog.Info("autofetch: running", "id", id, "url", serviceURL)
+	// Calculate --since timestamp from last_run_at.
+	// If we have a previous run time, fetch only data since then (with 30min overlap for safety).
+	// This avoids refetching the full --days window on manual "Run Now".
+	var sinceArg string
+	if lastRunAt.Valid && lastRunAt.String != "" {
+		parsed, parseErr := time.Parse("2006-01-02 15:04:05", lastRunAt.String)
+		if parseErr != nil {
+			parsed, parseErr = time.Parse(time.RFC3339, lastRunAt.String)
+		}
+		if parseErr == nil {
+			// Overlap by 30 minutes to catch any edge-case data
+			sinceTime := parsed.Add(-30 * time.Minute)
+			sinceArg = sinceTime.UTC().Format(time.RFC3339)
+		}
+	}
+
+	slog.Info("autofetch: running", "id", id, "url", serviceURL, "since", sinceArg)
 
 	uploadURL := fmt.Sprintf("http://localhost:%s/api/upload/async?pwd=test2026", s.listenPort())
 
-	cmd := exec.CommandContext(ctx, "python3", "scripts/fetch_earthranger_gpx.py",
+	args := []string{"scripts/fetch_earthranger_gpx.py",
 		"--url", serviceURL,
 		"--user", username,
 		"--upload-url", uploadURL,
-		"--days", strconv.Itoa(max(intervalH/24, 1)),
-	)
+	}
+	if sinceArg != "" {
+		args = append(args, "--since", sinceArg)
+	} else {
+		args = append(args, "--days", strconv.Itoa(max(intervalH/24, 1)))
+	}
+
+	cmd := exec.CommandContext(ctx, "python3", args...)
 	// Pass password via environment variable — not command-line args
 	cmd.Env = append(os.Environ(), "EARTHRANGER_PASSWORD="+password)
 

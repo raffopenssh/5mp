@@ -371,7 +371,9 @@ def main():
     ap.add_argument('--url', required=True, help='PAMDAS server URL')
     ap.add_argument('--user', required=True, help='Username')
     ap.add_argument('--upload-url', required=True, help='App async upload URL')
-    ap.add_argument('--days', type=int, default=1, help='Days of history (default: 1)')
+    ap.add_argument('--days', type=int, default=1, help='Days of history (default: 1, used if --since not set)')
+    ap.add_argument('--since', type=str, default=None,
+                    help='ISO-8601 timestamp: only fetch data after this time (overrides --days)')
     ap.add_argument('--dry-run', action='store_true', help='Build GPX but do not upload')
     args = ap.parse_args()
 
@@ -395,7 +397,10 @@ def main():
     api = f"{args.url.rstrip('/')}/api/v1.0"
 
     now = datetime.now(timezone.utc)
-    since = (now - timedelta(days=args.days)).isoformat()
+    if args.since:
+        since = args.since
+    else:
+        since = (now - timedelta(days=args.days)).isoformat()
     until = now.isoformat()
 
     # 2. Get subjects (excluding wildlife/animal collars)
