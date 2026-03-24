@@ -776,99 +776,118 @@ type gridCellStats struct {
 
 // updateEffortData computes which grid cells each segment passes through
 // and updates the effort_data table with aggregated statistics.
+// Effort is bucketed by year/month from actual point timestamps so multi-day
+// or multi-month uploads are attributed to the correct time periods.
 func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segments []gpx.Segment, uploadID int64) error {
-	// Determine the time period for effort data (use upload time if no timestamps)
+	// Fallback year/month if points have no timestamps
 	now := time.Now()
-	year := int64(now.Year())
-	month := int64(now.Month())
-
-	// Find earliest segment time to use for year/month
+	fallbackYear := int64(now.Year())
+	fallbackMonth := int64(now.Month())
 	for _, seg := range segments {
 		if seg.StartTime != nil {
-			year = int64(seg.StartTime.Year())
-			month = int64(seg.StartTime.Month())
+			fallbackYear = int64(seg.StartTime.Year())
+			fallbackMonth = int64(seg.StartTime.Month())
 			break
 		}
 	}
 
-	// Aggregate stats by grid cell and movement type
-	cellStats := make(map[string]*gridCellStats) // key: "cellID:movementType"
+	// yearMonth encodes year+month as a single int for map keys
+	type yearMonth struct {
+		year  int64
+		month int64
+	}
+
+	// Aggregate stats by grid cell, movement type, AND year-month
+	// key: "cellID:movementType" → per year-month stats
+	type cellYMKey struct {
+		cellID       string
+		movementType string
+		ym           yearMonth
+	}
+	cellStats := make(map[cellYMKey]*gridCellStats)
 
 	for _, seg := range segments {
 		if len(seg.Points) < 2 {
 			continue
 		}
 
-		// Walk through points, attributing distance and count to grid cells
 		for i := 1; i < len(seg.Points); i++ {
 			p1 := seg.Points[i-1]
 			p2 := seg.Points[i]
 
-			// Calculate segment distance
 			segDist := haversineDistanceKm(p1.Lat, p1.Lon, p2.Lat, p2.Lon)
 
-			// Attribute to the grid cell of the midpoint
 			midLat := (p1.Lat + p2.Lat) / 2
 			midLon := (p1.Lon + p2.Lon) / 2
 			cellID := gridCellIDForPoint(midLat, midLon)
 
-			key := cellID + ":" + seg.MovementType
+			// Determine year/month from point timestamp
+			ym := yearMonth{year: fallbackYear, month: fallbackMonth}
+			if p2.Time != nil {
+				ym = yearMonth{year: int64(p2.Time.Year()), month: int64(p2.Time.Month())}
+			} else if p1.Time != nil {
+				ym = yearMonth{year: int64(p1.Time.Year()), month: int64(p1.Time.Month())}
+			}
+
+			key := cellYMKey{cellID: cellID, movementType: seg.MovementType, ym: ym}
 			if cellStats[key] == nil {
-				cellStats[key] = &gridCellStats{
-					MovementType: seg.MovementType,
-				}
+				cellStats[key] = &gridCellStats{MovementType: seg.MovementType}
 			}
 			cellStats[key].DistanceKm += segDist
 			cellStats[key].PointCount++
 		}
 	}
 
-	// Also aggregate "all" movement type for easier querying
-	allCellStats := make(map[string]*gridCellStats) // key: cellID
+	// Also aggregate "all" movement type per year-month
+	type cellYMAll struct {
+		cellID string
+		ym     yearMonth
+	}
+	allCellStats := make(map[cellYMAll]*gridCellStats)
 	for key, stats := range cellStats {
-		cellID := strings.Split(key, ":")[0]
-		if allCellStats[cellID] == nil {
-			allCellStats[cellID] = &gridCellStats{MovementType: "all"}
+		ak := cellYMAll{cellID: key.cellID, ym: key.ym}
+		if allCellStats[ak] == nil {
+			allCellStats[ak] = &gridCellStats{MovementType: "all"}
 		}
-		allCellStats[cellID].DistanceKm += stats.DistanceKm
-		allCellStats[cellID].PointCount += stats.PointCount
+		allCellStats[ak].DistanceKm += stats.DistanceKm
+		allCellStats[ak].PointCount += stats.PointCount
 	}
 
-	// Ensure grid cells exist and update effort data
+	// Ensure grid cells exist and upsert effort data per year-month bucket
+	ensuredCells := make(map[string]bool)
 	for key, stats := range cellStats {
-		keyParts := strings.Split(key, ":")
-		cellID := keyParts[0]
+		cellID := key.cellID
 
-		// Parse lat/lon from cellID
-		coordParts := strings.Split(cellID, "_")
-		if len(coordParts) != 2 {
-			continue
+		if !ensuredCells[cellID] {
+			coordParts := strings.Split(cellID, "_")
+			if len(coordParts) != 2 {
+				continue
+			}
+			lat, _ := strconv.ParseFloat(coordParts[0], 64)
+			lon, _ := strconv.ParseFloat(coordParts[1], 64)
+
+			latCenter, lonCenter := gridCellCenter(lat, lon)
+			latMin, latMax, lonMin, lonMax := gridCellBounds(lat, lon)
+
+			_, err := q.GetOrCreateGridCell(ctx, dbgen.GetOrCreateGridCellParams{
+				ID:        cellID,
+				LatCenter: latCenter,
+				LonCenter: lonCenter,
+				LatMin:    latMin,
+				LatMax:    latMax,
+				LonMin:    lonMin,
+				LonMax:    lonMax,
+			})
+			if err != nil {
+				return fmt.Errorf("get or create grid cell %s: %w", cellID, err)
+			}
+			ensuredCells[cellID] = true
 		}
-		lat, _ := strconv.ParseFloat(coordParts[0], 64)
-		lon, _ := strconv.ParseFloat(coordParts[1], 64)
 
-		// Ensure grid cell exists
-		latCenter, lonCenter := gridCellCenter(lat, lon)
-		latMin, latMax, lonMin, lonMax := gridCellBounds(lat, lon)
-
-		_, err := q.GetOrCreateGridCell(ctx, dbgen.GetOrCreateGridCellParams{
-			ID:        cellID,
-			LatCenter: latCenter,
-			LonCenter: lonCenter,
-			LatMin:    latMin,
-			LatMax:    latMax,
-			LonMin:    lonMin,
-			LonMax:    lonMax,
-		})
-		if err != nil {
-			return fmt.Errorf("get or create grid cell %s: %w", cellID, err)
-		}
-
-		// Upsert effort data for this specific movement type
-		err = q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
+		err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
 			GridCellID:       cellID,
-			Year:             year,
-			Month:            month,
+			Year:             key.ym.year,
+			Month:            key.ym.month,
 			Day:              nil, // monthly aggregate
 			MovementType:     stats.MovementType,
 			TotalDistanceKm:  stats.DistanceKm,
@@ -877,16 +896,16 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 			ProtectedAreaIds: nil,
 		})
 		if err != nil {
-			return fmt.Errorf("upsert effort data for %s: %w", key, err)
+			return fmt.Errorf("upsert effort data for %s/%d-%02d: %w", cellID, key.ym.year, key.ym.month, err)
 		}
 	}
 
-	// Also upsert "all" movement type aggregates
-	for cellID, stats := range allCellStats {
+	// Upsert "all" movement type aggregates per year-month
+	for ak, stats := range allCellStats {
 		err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
-			GridCellID:       cellID,
-			Year:             year,
-			Month:            month,
+			GridCellID:       ak.cellID,
+			Year:             ak.ym.year,
+			Month:            ak.ym.month,
 			Day:              nil,
 			MovementType:     "all",
 			TotalDistanceKm:  stats.DistanceKm,
@@ -895,12 +914,12 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 			ProtectedAreaIds: nil,
 		})
 		if err != nil {
-			return fmt.Errorf("upsert effort data (all) for %s: %w", cellID, err)
+			return fmt.Errorf("upsert effort data (all) for %s/%d-%02d: %w", ak.cellID, ak.ym.year, ak.ym.month, err)
 		}
 	}
 
 	// Track subcell visits for spatial coverage calculation
-	if err := s.trackSubcellVisits(ctx, q, segments, year, month); err != nil {
+	if err := s.trackSubcellVisits(ctx, q, segments, fallbackYear, fallbackMonth); err != nil {
 		return fmt.Errorf("track subcell visits: %w", err)
 	}
 
@@ -908,7 +927,7 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 }
 
 // rebuildAllEffortData truncates effort_data and rebuilds it from all remaining
-// completed uploads using their distance breakdowns and track_points grid cells.
+// completed uploads using their track_points with actual timestamps.
 // This is called asynchronously after an upload is deleted.
 func (s *Server) rebuildAllEffortData() {
 	ctx := context.Background()
@@ -957,38 +976,50 @@ func (s *Server) rebuildAllEffortData() {
 
 	var rebuilt int
 	for _, u := range uploads {
-		// Get grid cell distribution from track_points, grouped by movement type.
-		// Points with movement_type set use their actual type; NULL falls back
-		// to proportional distribution from the upload log.
+		// Query track_points grouped by grid_cell, movement_type, AND year-month
+		// from actual point timestamps. This ensures multi-day uploads get
+		// effort attributed to the correct time periods.
 		cellRows, err := s.DB.QueryContext(ctx, `
-			SELECT grid_cell_id, COALESCE(movement_type, '') as mt, COUNT(*) as pts
+			SELECT grid_cell_id,
+			       COALESCE(movement_type, '') as mt,
+			       CASE WHEN timestamp IS NOT NULL AND length(timestamp) >= 10
+			            THEN CAST(substr(timestamp, 1, 4) AS INTEGER)
+			            ELSE 0 END as yr,
+			       CASE WHEN timestamp IS NOT NULL AND length(timestamp) >= 10
+			            THEN CAST(substr(timestamp, 6, 2) AS INTEGER)
+			            ELSE 0 END as mo,
+			       COUNT(*) as pts
 			FROM track_points
 			WHERE upload_id = ? AND grid_cell_id IS NOT NULL
-			GROUP BY grid_cell_id, mt
+			GROUP BY grid_cell_id, mt, yr, mo
 		`, u.uploadID)
 		if err != nil {
 			slog.Warn("rebuildAllEffortData: failed to get grid cells", "logID", u.logID, "error", err)
 			continue
 		}
 
-		type cellMTInfo struct {
+		type cellKey struct {
 			id           string
-			movementType string // "" means legacy (no per-point type)
-			pts          int64
+			movementType string
+			year         int64
+			month        int64
 		}
-		var cells []cellMTInfo
+		var cells []cellKey
+		cellPts := make(map[cellKey]int64)
 		var totalPts int64
 		var hasTypedPoints bool
 		for cellRows.Next() {
-			var c cellMTInfo
-			if err := cellRows.Scan(&c.id, &c.movementType, &c.pts); err != nil {
+			var c cellKey
+			var pts int64
+			if err := cellRows.Scan(&c.id, &c.movementType, &c.year, &c.month, &pts); err != nil {
 				continue
 			}
 			if c.movementType != "" {
 				hasTypedPoints = true
 			}
 			cells = append(cells, c)
-			totalPts += c.pts
+			cellPts[c] = pts
+			totalPts += pts
 		}
 		cellRows.Close()
 
@@ -996,13 +1027,13 @@ func (s *Server) rebuildAllEffortData() {
 			continue
 		}
 
-		// Determine year/month from upload_time (Go format: "2006-01-02 15:04:05...")
-		year := int64(time.Now().Year())
-		month := int64(time.Now().Month())
+		// Fallback year/month from upload_time for points without timestamps
+		fallbackYear := int64(time.Now().Year())
+		fallbackMonth := int64(time.Now().Month())
 		if len(u.uploadTime) >= 10 {
 			if t, err := time.Parse("2006-01-02", u.uploadTime[:10]); err == nil {
-				year = int64(t.Year())
-				month = int64(t.Month())
+				fallbackYear = int64(t.Year())
+				fallbackMonth = int64(t.Month())
 			}
 		}
 
@@ -1011,53 +1042,66 @@ func (s *Server) rebuildAllEffortData() {
 			continue
 		}
 
+		// Resolve year/month for each cell (use fallback if timestamp was NULL)
+		resolveYM := func(c cellKey) (int64, int64) {
+			if c.year > 0 && c.month > 0 {
+				return c.year, c.month
+			}
+			return fallbackYear, fallbackMonth
+		}
+
 		if hasTypedPoints {
-			// New path: use per-point movement types for accurate per-cell effort.
-			// Aggregate total distance per movement type from the upload log,
-			// then distribute each type's distance across cells proportionally
-			// to the number of points of that type in each cell.
 			mtKm := map[string]float64{
 				"foot":     u.footKm,
 				"vehicle":  u.vehicleKm,
 				"aircraft": u.aircraftKm,
 			}
 
-			// Count total points per movement type across all cells
+			// Count total points per movement type (for proportional km distribution)
 			mtTotalPts := make(map[string]int64)
-			for _, c := range cells {
-				mt := c.movementType
-				if mt == "" {
-					mt = "foot" // fallback for legacy untyped points
-				}
-				mtTotalPts[mt] += c.pts
-			}
-
-			// Per-cell, per-movement-type effort
-			cellAllPts := make(map[string]int64)    // cell -> total pts (for "all" aggregate)
-			cellAllKm := make(map[string]float64)   // cell -> total km (for "all" aggregate)
 			for _, c := range cells {
 				mt := c.movementType
 				if mt == "" {
 					mt = "foot"
 				}
+				mtTotalPts[mt] += cellPts[c]
+			}
+
+			// Per-cell, per-year-month, per-movement-type effort
+			type ymCellKey struct {
+				cellID string
+				year   int64
+				month  int64
+			}
+			allPts := make(map[ymCellKey]int64)
+			allKm := make(map[ymCellKey]float64)
+
+			for _, c := range cells {
+				mt := c.movementType
+				if mt == "" {
+					mt = "foot"
+				}
+				pts := cellPts[c]
+				yr, mo := resolveYM(c)
+				ak := ymCellKey{cellID: c.id, year: yr, month: mo}
+				allPts[ak] += pts
+
 				km := mtKm[mt]
 				if km <= 0 || mtTotalPts[mt] == 0 {
-					cellAllPts[c.id] += c.pts
 					continue
 				}
-				fraction := float64(c.pts) / float64(mtTotalPts[mt])
+				fraction := float64(pts) / float64(mtTotalPts[mt])
 				cellKm := km * fraction
-				cellAllPts[c.id] += c.pts
-				cellAllKm[c.id] += cellKm
+				allKm[ak] += cellKm
 
 				err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
 					GridCellID:      c.id,
-					Year:            year,
-					Month:           month,
+					Year:            yr,
+					Month:           mo,
 					Day:             nil,
 					MovementType:    mt,
 					TotalDistanceKm: cellKm,
-					TotalPoints:     c.pts,
+					TotalPoints:     pts,
 					UniqueUploads:   1,
 				})
 				if err != nil {
@@ -1065,34 +1109,39 @@ func (s *Server) rebuildAllEffortData() {
 				}
 			}
 
-			// "all" aggregates per cell
-			for cellID, pts := range cellAllPts {
+			// "all" aggregates per cell per year-month
+			for ak, pts := range allPts {
 				err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
-					GridCellID:      cellID,
-					Year:            year,
-					Month:           month,
+					GridCellID:      ak.cellID,
+					Year:            ak.year,
+					Month:           ak.month,
 					Day:             nil,
 					MovementType:    "all",
-					TotalDistanceKm: cellAllKm[cellID],
+					TotalDistanceKm: allKm[ak],
 					TotalPoints:     pts,
 					UniqueUploads:   1,
 				})
 				if err != nil {
-					slog.Warn("rebuildAllEffortData: upsert all error", "cell", cellID, "error", err)
+					slog.Warn("rebuildAllEffortData: upsert all error", "cell", ak.cellID, "error", err)
 				}
 			}
 		} else {
 			// Legacy path: no per-point movement types, use proportional distribution.
-			// Collapse cells (movement_type is all empty) to just grid_cell_id -> pts.
-			cellPts := make(map[string]int64)
+			type ymCellKey struct {
+				cellID string
+				year   int64
+				month  int64
+			}
+			ymPts := make(map[ymCellKey]int64)
 			for _, c := range cells {
-				cellPts[c.id] += c.pts
+				yr, mo := resolveYM(c)
+				ak := ymCellKey{cellID: c.id, year: yr, month: mo}
+				ymPts[ak] += cellPts[c]
 			}
 
-			for cellID, pts := range cellPts {
+			for ak, pts := range ymPts {
 				fraction := float64(pts) / float64(totalPts)
 
-				// Movement-type-specific effort
 				for _, mt := range []struct {
 					name string
 					km   float64
@@ -1105,9 +1154,9 @@ func (s *Server) rebuildAllEffortData() {
 						continue
 					}
 					err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
-						GridCellID:      cellID,
-						Year:            year,
-						Month:           month,
+						GridCellID:      ak.cellID,
+						Year:            ak.year,
+						Month:           ak.month,
 						Day:             nil,
 						MovementType:    mt.name,
 						TotalDistanceKm: mt.km * fraction,
@@ -1115,15 +1164,14 @@ func (s *Server) rebuildAllEffortData() {
 						UniqueUploads:   1,
 					})
 					if err != nil {
-						slog.Warn("rebuildAllEffortData: upsert error", "cell", cellID, "error", err)
+						slog.Warn("rebuildAllEffortData: upsert error", "cell", ak.cellID, "error", err)
 					}
 				}
 
-				// "all" aggregate
 				err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
-					GridCellID:      cellID,
-					Year:            year,
-					Month:           month,
+					GridCellID:      ak.cellID,
+					Year:            ak.year,
+					Month:           ak.month,
 					Day:             nil,
 					MovementType:    "all",
 					TotalDistanceKm: totalKm * fraction,
@@ -1131,7 +1179,7 @@ func (s *Server) rebuildAllEffortData() {
 					UniqueUploads:   1,
 				})
 				if err != nil {
-					slog.Warn("rebuildAllEffortData: upsert all error", "cell", cellID, "error", err)
+					slog.Warn("rebuildAllEffortData: upsert all error", "cell", ak.cellID, "error", err)
 				}
 			}
 		}
@@ -1664,4 +1712,10 @@ func (s *Server) isNearBase(ctx context.Context, lat, lon, threshold float64) bo
 		return false
 	}
 	return count > 0
+}
+
+// HandleAPIRebuildEffort triggers a full rebuild of effort_data from track_points.
+func (s *Server) HandleAPIRebuildEffort(w http.ResponseWriter, r *http.Request) {
+	go s.rebuildAllEffortData()
+	writeJSON(w, 200, map[string]string{"ok": "rebuild started"})
 }

@@ -236,6 +236,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/admin/autofetch/enable", s.HandleAPIAutofetchEnable)
 	mux.HandleFunc("POST /api/admin/autofetch/delete", s.HandleAPIAutofetchDelete)
 	mux.HandleFunc("POST /api/admin/autofetch/run", s.HandleAPIAutofetchRunNow)
+	mux.HandleFunc("POST /api/admin/rebuild-effort", s.HandleAPIRebuildEffort)
 	mux.HandleFunc("GET /api/admin/autofetch/script", s.HandleAPIAutofetchScript)
 
 	// RSS Feed for starred items
