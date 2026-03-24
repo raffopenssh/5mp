@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"os"
 	"path/filepath"
 	"runtime"
 
@@ -177,12 +178,12 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/parks/{id}/export.kml", s.HandleAPIParkKML)
 	mux.HandleFunc("GET /api/export/merged.kml", s.HandleAPIMergedKML)
 	
-	// MBTiles generation endpoints
-	mux.HandleFunc("POST /api/parks/{id}/mbtiles", s.HandleAPIMBTilesCreate)
-	mux.HandleFunc("GET /api/parks/{id}/mbtiles/estimate", s.HandleAPIMBTilesEstimate)
-	mux.HandleFunc("GET /api/mbtiles/{id}/status", s.HandleAPIMBTilesStatus)
-	mux.HandleFunc("GET /api/mbtiles/{id}/download", s.HandleAPIMBTilesDownload)
-	mux.HandleFunc("GET /api/mbtiles", s.HandleAPIMBTilesList)
+	// MBTiles generation endpoints (Zenodo-backed, with legacy fallback)
+	mux.HandleFunc("POST /api/parks/{id}/mbtiles", s.HandleAPIZenodoMBTilesCreate)
+	mux.HandleFunc("GET /api/parks/{id}/mbtiles/estimate", s.HandleAPIZenodoMBTilesEstimate)
+	mux.HandleFunc("GET /api/mbtiles/{id}/status", s.HandleAPIZenodoMBTilesStatus)
+	mux.HandleFunc("GET /api/mbtiles/{id}/download", s.HandleAPIZenodoMBTilesDownload)
+	mux.HandleFunc("GET /api/mbtiles", s.HandleAPIZenodoMBTilesList)
 	mux.HandleFunc("GET /api/parks/{id}/climate", s.HandleAPIParkClimate)
 	mux.HandleFunc("GET /api/parks/{id}/infrastructure", s.HandleAPIParkInfrastructure)
 	mux.HandleFunc("GET /api/parks/{id}/species", s.HandleAPIParkSpecies)
@@ -251,8 +252,17 @@ func (s *Server) Serve(addr string) error {
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
 	
-	// Initialize MBTiles queue
+	// Initialize MBTiles queue (legacy disk-based, as fallback)
 	InitMBTilesQueue("data/mbtiles_output", s.DB)
+
+	// Initialize Zenodo-backed MBTiles queue (preferred)
+	if token := os.Getenv("ZENODO_TOKEN"); token != "" {
+		if err := InitZenodoMBTilesQueue(token, s.DB); err != nil {
+			slog.Warn("Failed to init Zenodo MBTiles queue", "error", err)
+		}
+	} else {
+		slog.Info("ZENODO_TOKEN not set, MBTiles will use disk storage only")
+	}
 	
 	slog.Info("starting server", "addr", addr)
 	

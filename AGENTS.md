@@ -57,8 +57,15 @@ Use the data flow maps to find the specific files you need to modify.
 
 ## How to Run
 
+The server runs as a **systemd service** (`5mp.service`):
+
 ```bash
-make build && ./server
+# Build and restart
+make build && sudo systemctl restart 5mp
+
+# Check status / logs
+systemctl status 5mp
+sudo journalctl -u 5mp -f
 ```
 
 **Build details:**
@@ -68,13 +75,22 @@ make build && ./server
 
 Access: http://localhost:8000/?pwd=test2026
 
+### Systemd Service (`5mp.service`)
+
+The service auto-restarts on crash. Environment variables (e.g. `ZENODO_TOKEN`) are
+configured in `/etc/systemd/system/5mp.service`. After editing, run:
+
+```bash
+sudo systemctl daemon-reload && sudo systemctl restart 5mp
+```
+
 ### ⚠️ IMPORTANT: Keeping Version Up-to-Date
 
 **ALWAYS rebuild after making changes to show the correct version:**
 
 ```bash
 # After any code changes or git commits:
-make build && pkill -f "./server" && ./server > /tmp/server.log 2>&1 &
+make build && sudo systemctl restart 5mp
 ```
 
 **Why this matters:**
@@ -91,7 +107,7 @@ curl -s "http://localhost:8000/api/version?pwd=test2026" | jq -r '.version'
 git rev-parse --short HEAD
 
 # If they don't match, rebuild:
-make build && pkill -f "./server" && ./server > /tmp/server.log 2>&1 &
+make build && sudo systemctl restart 5mp
 ```
 
 ---

@@ -3319,7 +3319,7 @@
         
         function updateZoomLevel(value) {
             const intVal = parseInt(value);
-            mbtilesMaxZoom = Math.min(intVal, 17);
+            mbtilesMaxZoom = Math.min(intVal, 19);
             const label = document.getElementById('mbtiles-zoom-label');
             label.textContent = `1-${mbtilesMaxZoom}`;
             fetchMBTilesEstimate();
@@ -3338,17 +3338,16 @@
                     ? `${(data.estimated_size_mb / 1024).toFixed(1)} GB` 
                     : `${data.estimated_size_mb} MB`;
                 
-                estimateEl.innerHTML = `~${sizeStr} &middot; ~${mins} min`;
+                const storageLabel = data.storage === 'zenodo' ? ' · Zenodo' : '';
+                estimateEl.innerHTML = `~${sizeStr} &middot; ~${mins} min${storageLabel}`;
                 
-                // Check for sufficient storage space
+                // Check for sufficient space (RAM for Zenodo, disk for legacy)
                 if (!data.sufficient_space) {
-                    const availMB = data.available_space_mb || 0;
-                    const requiredMB = data.required_space_mb || 0;
-                    const availStr = availMB >= 1024 ? `${(availMB / 1024).toFixed(1)} GB` : `${availMB} MB`;
-                    const reqStr = requiredMB >= 1024 ? `${(requiredMB / 1024).toFixed(1)} GB` : `${requiredMB} MB`;
-                    estimateEl.innerHTML = `<span style="color: #ef4444;">Insufficient disk space</span><br><span style="font-size: 10px; color: #888;">Need ${reqStr} free (incl. 2GB buffer), have ${availStr}</span>`;
+                    const ramMB = data.ram_needed_mb || 0;
+                    const ramStr = ramMB >= 1024 ? `${(ramMB / 1024).toFixed(1)} GB RAM` : `${ramMB} MB RAM`;
+                    estimateEl.innerHTML = `<span style="color: #ef4444;">File too large for in-memory build</span><br><span style="font-size: 10px; color: #888;">Needs ~${ramStr}. Reduce zoom level.</span>`;
                     actionBtn.disabled = true;
-                    actionBtn.title = 'Insufficient storage space - reduce zoom level or free up disk space';
+                    actionBtn.title = 'Reduce zoom level to fit in available memory';
                 } else {
                     actionBtn.disabled = mbtilesState === 'generating';
                     actionBtn.title = '';
@@ -3436,9 +3435,16 @@
                 const resp = await fetch(`/api/mbtiles/${currentMBTilesJobId}/status?pwd=${encodeURIComponent(getPwd())}`);
                 const job = await resp.json();
                 
-                // Update progress in button
+                // Update progress in button with phase info
                 btnProgress.style.width = job.progress + '%';
-                btnText.textContent = `${Math.round(job.progress)}%`;
+                const pct = Math.round(job.progress);
+                if (job.phase === 'upload') {
+                    btnText.textContent = `Uploading… ${pct}%`;
+                } else if (job.status === 'uploading') {
+                    btnText.textContent = `Uploading… ${pct}%`;
+                } else {
+                    btnText.textContent = `${pct}%`;
+                }
                 
                 if (job.status === 'completed') {
                     clearInterval(mbtilesPollingInterval);
@@ -19172,7 +19178,7 @@ ${starredItems.narratives.map(n => {
             <!-- Zoom level slider -->
             <div style="color: #666; font-size: 10px; margin-bottom: 6px;">Zoom levels: <span id="mbtiles-zoom-label">1-17</span></div>
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                <input type="range" id="mbtiles-zoom-slider" min="10" max="17" value="17" 
+                <input type="range" id="mbtiles-zoom-slider" min="10" max="19" value="17" 
                     style="flex: 1; accent-color: #3b82f6;" oninput="updateZoomLevel(this.value)">
                 <div style="display: flex; font-size: 9px; color: #444;">
                     <span id="zoom-markers"></span>
@@ -19189,7 +19195,7 @@ ${starredItems.narratives.map(n => {
             </button>
             
             <!-- Info about expiration -->
-            <div style="font-size: 10px; color: #666; margin-top: 10px; text-align: center;">One-time download. Files deleted after download or 2 hours (whichever comes first)</div>
+            <div style="font-size: 10px; color: #666; margin-top: 10px; text-align: center;">Tiles built in-memory and stored on Zenodo. No local disk needed.</div>
             
             <!-- Hidden status for polling -->
             <div id="mbtiles-status" style="display: none;"></div>
