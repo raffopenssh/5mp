@@ -551,14 +551,25 @@ func estimateTileBytes(nTiles int) int64 {
 	return int64(nTiles) * 10 * 1024 // 10 KB/tile
 }
 
-// estimateRAMRequired estimates the sustained RAM needed for the MBTiles build.
-// The brief Serialize() peak (~2×) is transient — we GC immediately after.
-// The sustained hold is: serialized bytes (= ~DB size) + server overhead.
+// estimateRAMRequired estimates peak RAM for the in-memory MBTiles build.
+//
+// Memory breakdown:
+//   - In-memory SQLite holds tiles in B-tree pages with ~50% overhead
+//     over raw tile data (page headers, free space, indexes).
+//   - Serialize() allocates a full copy of the DB as []byte.
+//   - Peak = SQLite DB size + serialized copy ≈ 3× raw tile data.
+//   - Plus ~500 MB baseline for server + OS.
+//
+// Validated: Nyerere z16 (366K tiles, ~3.6 GB raw) OOM'd at 56% on 7.4 GB VM,
+// confirming that actual memory usage is ~3× raw tile estimate.
 func estimateRAMRequired(bbox [4]float64, minZoom, maxZoom int) int64 {
 	tiles := calculateTiles(bbox, minZoom, maxZoom)
-	dbSize := estimateTileBytes(len(tiles))
-	// Sustained: serialized copy + ~20% SQLite/Go overhead during download phase
-	return int64(float64(dbSize) * 1.2)
+	rawSize := estimateTileBytes(len(tiles))
+	// Peak: ~1.5× for SQLite in-memory overhead, ×2 for Serialize() copy = 3×
+	peak := int64(float64(rawSize) * 3.0)
+	// Add baseline server + OS overhead
+	const baselineOverhead = 500 * 1024 * 1024 // 500 MB
+	return peak + baselineOverhead
 }
 
 // ─── HTTP Handlers ───────────────────────────────────────────────────────────
@@ -610,13 +621,15 @@ func (s *Server) HandleAPIZenodoMBTilesCreate(w http.ResponseWriter, r *http.Req
 	estimatedSize := estimateTileBytes(len(tiles))
 	ramNeeded := estimateRAMRequired(bbox, 1, maxZoom)
 
-	// Check RAM limit (leave 2GB headroom for OS + server)
-	const maxRAM = 6 * 1024 * 1024 * 1024 // 6GB peak RAM (leaves ~1GB for OS+server)
+	// Check RAM limit — total VM is 7.4 GB
+	const maxRAM = 7 * 1024 * 1024 * 1024 // 7 GB hard ceiling
 	if ramNeeded > maxRAM {
+		maxFileMB := (maxRAM - 500*1024*1024) / 3 / (1024 * 1024) // inverse of estimate formula
 		http.Error(w, fmt.Sprintf(
-			"Estimated size too large for in-memory build: ~%.1f GB (max ~%.1f GB). Reduce zoom level.",
-			float64(estimatedSize)/(1024*1024*1024),
-			float64(maxRAM)/2.1/(1024*1024*1024),
+			"Estimated peak RAM ~%.1f GB exceeds available ~%.1f GB. Max file size ~%d MB. Reduce zoom level.",
+			float64(ramNeeded)/(1024*1024*1024),
+			float64(maxRAM)/(1024*1024*1024),
+			maxFileMB,
 		), http.StatusRequestEntityTooLarge)
 		return
 	}
@@ -678,7 +691,7 @@ func (s *Server) HandleAPIZenodoMBTilesEstimate(w http.ResponseWriter, r *http.R
 	ramNeeded := estimateRAMRequired(bbox, 1, maxZoom)
 	estSeconds := len(tiles) / 100
 
-	const maxRAM = 6 * 1024 * 1024 * 1024
+	const maxRAM = 7 * 1024 * 1024 * 1024 // 7 GB hard ceiling
 	sufficient := ramNeeded <= maxRAM
 
 	// Check if already uploaded to Zenodo
