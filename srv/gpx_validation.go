@@ -381,133 +381,147 @@ func mergeAdjacentSegments(segs []ClassifiedSegment) []ClassifiedSegment {
 		return segs
 	}
 
-	// Pass 1: Absorb orphan segments between same-type neighbors.
-	// An orphan is a small segment (< 5 actual points, < 200m distance)
-	// sandwiched between two segments of the same movement type.
-	// Only absorb patrol/aircraft/idle classifications — not road/boundary/auto_generated.
+	mergeableType := func(cs *ClassifiedSegment) bool {
+		return cs.Classification == "patrol" || cs.Classification == "aircraft" || cs.Classification == "idle"
+	}
+
+	// absorbable: small segment that can be absorbed into a neighbor.
 	absorbable := func(cs *ClassifiedSegment) bool {
-		if cs.Classification == "road" || cs.Classification == "boundary" || cs.Classification == "auto_generated" {
+		if !mergeableType(cs) {
 			return false
 		}
 		nPts := cs.EndIndex - cs.StartIndex + 1
 		return nPts < 5 && cs.DistanceKm < 0.2
 	}
 
-	mergeableType := func(cs *ClassifiedSegment) bool {
-		return cs.Classification == "patrol" || cs.Classification == "aircraft" || cs.Classification == "idle"
+	// mergeInto absorbs src into dst.
+	mergeInto := func(dst, src *ClassifiedSegment) {
+		dst.DistanceKm += src.DistanceKm
+		dst.Points = append(dst.Points, src.Points...)
+		dst.EndIndex += src.EndIndex - src.StartIndex + 1
+		dst.OriginalIndices = append(dst.OriginalIndices, src.OriginalIndices...)
+		dst.IncludeInEffort = dst.IncludeInEffort || src.IncludeInEffort
+		if len(dst.Points) > 1 {
+			dst.AvgSpeedKmh = gpx.CalculateSpeed(dst.Points)
+		}
+		if len(dst.Points) > 0 {
+			first := dst.Points[0]
+			last := dst.Points[len(dst.Points)-1]
+			if first.Time != nil && last.Time != nil {
+				dst.Duration = last.Time.Sub(*first.Time)
+				dst.DurationStr = formatDuration(dst.Duration)
+			}
+		}
 	}
 
-	absorbed := make([]bool, len(segs))
-	for i := 1; i < len(segs)-1; i++ {
-		if !absorbable(&segs[i]) || !mergeableType(&segs[i]) {
-			continue
+	// updateReason sets the reason string for a merged segment.
+	updateReason := func(cs *ClassifiedSegment) {
+		if len(cs.OriginalIndices) <= 1 {
+			return
 		}
-		// Find previous non-absorbed segment
-		prev := -1
-		for p := i - 1; p >= 0; p-- {
-			if !absorbed[p] {
-				prev = p
-				break
+		switch cs.MovementType {
+		case "aircraft":
+			cs.Reason = fmt.Sprintf("Aircraft %s (avg %.0f km/h, %.1f km merged from %d segments)",
+				cs.ActivityType, cs.AvgSpeedKmh, cs.DistanceKm, len(cs.OriginalIndices))
+		case "vehicle":
+			cs.Reason = fmt.Sprintf("Vehicle %s (avg %.0f km/h, %.1f km merged from %d segments)",
+				cs.ActivityType, cs.AvgSpeedKmh, cs.DistanceKm, len(cs.OriginalIndices))
+		case "foot":
+			cs.Reason = fmt.Sprintf("Foot %s (avg %.1f km/h, %.1f km merged from %d segments)",
+				cs.ActivityType, cs.AvgSpeedKmh, cs.DistanceKm, len(cs.OriginalIndices))
+		}
+	}
+
+	// Pass 1: Merge consecutive segments of the same movement type + classification.
+	// This collapses chains like [foot, foot, foot] into one segment FIRST,
+	// so the orphan pass can then see the merged result between its neighbors.
+	consecMerge := func(input []ClassifiedSegment) []ClassifiedSegment {
+		if len(input) < 2 {
+			return input
+		}
+		var out []ClassifiedSegment
+		current := input[0]
+		for i := 1; i < len(input); i++ {
+			nxt := input[i]
+			if mergeableType(&current) && mergeableType(&nxt) &&
+				current.MovementType == nxt.MovementType &&
+				current.Classification == nxt.Classification {
+				mergeInto(&current, &nxt)
+				updateReason(&current)
+			} else {
+				out = append(out, current)
+				current = nxt
 			}
 		}
-		if prev < 0 {
-			continue
-		}
-		// Find next non-absorbed segment
-		next := -1
-		for n := i + 1; n < len(segs); n++ {
-			if !absorbed[n] {
-				next = n
-				break
-			}
-		}
-		if next < 0 {
-			continue
-		}
-		// Both neighbors must be mergeable and same movement type
-		if !mergeableType(&segs[prev]) || !mergeableType(&segs[next]) {
-			continue
-		}
-		if segs[prev].MovementType == segs[next].MovementType {
-			// Absorb into previous segment
-			segs[prev].DistanceKm += segs[i].DistanceKm
-			segs[prev].Points = append(segs[prev].Points, segs[i].Points...)
-			segs[prev].EndIndex += segs[i].EndIndex - segs[i].StartIndex + 1
-			segs[prev].OriginalIndices = append(segs[prev].OriginalIndices, segs[i].OriginalIndices...)
-			// Update duration
-			if len(segs[prev].Points) > 0 && len(segs[i].Points) > 0 {
-				first := segs[prev].Points[0]
-				last := segs[prev].Points[len(segs[prev].Points)-1]
-				if first.Time != nil && last.Time != nil {
-					segs[prev].Duration = last.Time.Sub(*first.Time)
-					segs[prev].DurationStr = formatDuration(segs[prev].Duration)
+		out = append(out, current)
+		return out
+	}
+
+	// Pass 2: Absorb orphan segments between same-type neighbors.
+	// Iterate until stable — absorbing one orphan may expose another.
+	orphanAbsorb := func(input []ClassifiedSegment) []ClassifiedSegment {
+		for iter := 0; iter < 5; iter++ { // max 5 rounds to avoid infinite loop
+			changed := false
+			absorbed := make([]bool, len(input))
+			for i := 1; i < len(input)-1; i++ {
+				if absorbed[i] || !absorbable(&input[i]) {
+					continue
+				}
+				// Find previous non-absorbed
+				prev := -1
+				for p := i - 1; p >= 0; p-- {
+					if !absorbed[p] {
+						prev = p
+						break
+					}
+				}
+				if prev < 0 || !mergeableType(&input[prev]) {
+					continue
+				}
+				// Find next non-absorbed
+				next := -1
+				for n := i + 1; n < len(input); n++ {
+					if !absorbed[n] {
+						next = n
+						break
+					}
+				}
+				if next < 0 || !mergeableType(&input[next]) {
+					continue
+				}
+				if input[prev].MovementType == input[next].MovementType {
+					mergeInto(&input[prev], &input[i])
+					absorbed[i] = true
+					changed = true
 				}
 			}
-			// Inherit the stronger classification (aircraft > patrol)
-			segs[prev].IncludeInEffort = segs[prev].IncludeInEffort || segs[i].IncludeInEffort
-			absorbed[i] = true
-		}
-	}
-
-	// Build list without absorbed segments
-	var pass1 []ClassifiedSegment
-	for i, s := range segs {
-		if !absorbed[i] {
-			pass1 = append(pass1, s)
-		}
-	}
-
-	// Pass 2: Merge consecutive segments of the same movement type + classification.
-	if len(pass1) < 2 {
-		return pass1
-	}
-	var merged []ClassifiedSegment
-	current := pass1[0]
-	for i := 1; i < len(pass1); i++ {
-		nxt := pass1[i]
-		// Merge if same movement type, same classification, both mergeable
-		if mergeableType(&current) && mergeableType(&nxt) &&
-			current.MovementType == nxt.MovementType &&
-			current.Classification == nxt.Classification {
-			// Merge nxt into current
-			current.DistanceKm += nxt.DistanceKm
-			current.Points = append(current.Points, nxt.Points...)
-			current.EndIndex += nxt.EndIndex - nxt.StartIndex + 1
-			current.OriginalIndices = append(current.OriginalIndices, nxt.OriginalIndices...)
-			current.IncludeInEffort = current.IncludeInEffort || nxt.IncludeInEffort
-			// Recompute avg speed from merged points
-			if len(current.Points) > 1 {
-				current.AvgSpeedKmh = gpx.CalculateSpeed(current.Points)
+			if !changed {
+				break
 			}
-			// Update duration
-			if len(current.Points) > 0 {
-				first := current.Points[0]
-				last := current.Points[len(current.Points)-1]
-				if first.Time != nil && last.Time != nil {
-					current.Duration = last.Time.Sub(*first.Time)
-					current.DurationStr = formatDuration(current.Duration)
+			// Rebuild without absorbed
+			var next []ClassifiedSegment
+			for i, s := range input {
+				if !absorbed[i] {
+					next = append(next, s)
 				}
 			}
-			// Update reason with combined stats
-			switch current.MovementType {
-			case "aircraft":
-				current.Reason = fmt.Sprintf("Aircraft %s (avg %.0f km/h, %.1f km merged from %d segments)",
-					current.ActivityType, current.AvgSpeedKmh, current.DistanceKm, len(current.OriginalIndices))
-			case "vehicle":
-				current.Reason = fmt.Sprintf("Vehicle %s (avg %.0f km/h, %.1f km merged from %d segments)",
-					current.ActivityType, current.AvgSpeedKmh, current.DistanceKm, len(current.OriginalIndices))
-			case "foot":
-				current.Reason = fmt.Sprintf("Foot %s (avg %.1f km/h, %.1f km merged from %d segments)",
-					current.ActivityType, current.AvgSpeedKmh, current.DistanceKm, len(current.OriginalIndices))
-			}
-		} else {
-			merged = append(merged, current)
-			current = nxt
+			input = next
 		}
+		return input
 	}
-	merged = append(merged, current)
 
-	return merged
+	// Run: consecutive merge → orphan absorb → consecutive merge again
+	// (absorption can create new consecutive same-type pairs)
+	result := consecMerge(segs)
+	result = orphanAbsorb(result)
+	result = consecMerge(result)
+
+	// Final: update reasons on merged segments
+	for i := range result {
+		updateReason(&result[i])
+	}
+
+	return result
 }
 
 // recomputeStatsFromSegments recalculates all stats from the (potentially merged)
