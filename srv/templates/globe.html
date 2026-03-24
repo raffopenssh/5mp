@@ -7767,7 +7767,7 @@
                 showNotificationBadge();
                 
                 // Auto-refresh logic
-                const hasActiveJobs = mbtilesJobs.some(j => j.status === 'processing');
+                const hasActiveJobs = mbtilesJobs.some(j => ['processing','pending','downloading','uploading'].includes(j.status));
                 const dropdownOpen = document.getElementById('notification-dropdown')?.classList.contains('open');
                 
                 if (hasActiveJobs) {
@@ -7848,7 +7848,7 @@
                     _index: i, 
                     _source: 'mbtiles',
                     _sortTime: new Date(job.created_at).getTime(),
-                    _priority: job.status === 'processing' ? -2 : (job.status === 'completed' ? -1 : 3)  // Active highest, completed very high, failed low
+                    _priority: ['processing','pending','downloading','uploading'].includes(job.status) ? -2 : (job.status === 'completed' ? -1 : 3)  // Active highest, completed very high, failed low
                 });
             });
             
@@ -8010,7 +8010,7 @@
         }
         
         function renderMBTilesNotification(job) {
-            const isProcessing = job.status === 'processing';
+            const isProcessing = ['processing','pending','downloading','uploading'].includes(job.status);
             const isComplete = job.status === 'completed';
             const isFailed = job.status === 'failed';
             
@@ -8021,10 +8021,12 @@
             let subtitle = '';
             if (isProcessing) {
                 const pct = Math.round(job.progress || 0);
-                subtitle = `${job.tiles_generated || job.downloaded_tiles || 0}/${job.total_tiles || 0} tiles • ${pct}%`;
+                const phase = job.phase === 'upload' || job.status === 'uploading' ? 'Uploading to Zenodo' : 'Downloading tiles';
+                subtitle = `${phase} • ${job.downloaded_tiles || 0}/${job.total_tiles || 0} tiles • ${pct}%`;
             } else if (isComplete) {
-                const sizeMB = job.file_size ? (job.file_size / 1024 / 1024).toFixed(1) : (job.estimated_size_bytes ? Math.round(job.estimated_size_bytes / 1024 / 1024) : '?');
-                subtitle = `Ready to download • ${sizeMB} MB`;
+                const sizeMB = job.file_size_bytes ? (job.file_size_bytes / 1024 / 1024).toFixed(1) : (job.file_size ? (job.file_size / 1024 / 1024).toFixed(1) : (job.estimated_size_bytes ? Math.round(job.estimated_size_bytes / 1024 / 1024) : '?'));
+                const zenodoLabel = job.zenodo_depo_id ? ' • Zenodo' : '';
+                subtitle = `Ready to download • ${sizeMB} MB${zenodoLabel}`;
             } else if (isFailed) {
                 subtitle = job.error_message || job.error || 'Export failed';
             }
