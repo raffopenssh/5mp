@@ -3830,7 +3830,7 @@
                 
                 // Use explicit bbox if set, otherwise use visible map bounds
                 var bboxToUse = currentBbox;
-                if (!bboxToUse && typeof map !== 'undefined' && map.loaded()) {
+                if (!bboxToUse && typeof map !== 'undefined') {
                     var bounds = map.getBounds();
                     // Only use map bounds if zoomed in enough (zoom > 4)
                     if (map.getZoom() > 4) {
@@ -18772,11 +18772,18 @@ ${starredItems.narratives.map(n => {
         }
         
         // Restore pinned layers from URL param (in addition to restorePinnedFromURL)
-        // Reload data with restored filters
-        setTimeout(() => {
-            reloadGridData();
-            loadStats();
-        }, 500);
+        // Wait for map to settle at the URL-restored position before loading grid/stats
+        function loadGridAfterMapSettled() {
+            if (typeof map !== 'undefined' && map.loaded() && !map.isMoving()) {
+                reloadGridData();
+            } else {
+                // Map is still moving (e.g. restoring URL position), wait for it
+                map.once('idle', function() {
+                    reloadGridData();
+                });
+            }
+        }
+        setTimeout(loadGridAfterMapSettled, 600);
         
         // Restore pinned layers from URL
         setTimeout(restorePinnedFromURL, 1500);

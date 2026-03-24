@@ -987,71 +987,84 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	var totalDeforestation, prevDeforestation float64
 	var totalSettlements int
 
-	// Fire stats from park_fire_weekly (recent activity) and fire_group_alerts
-	// Since fire_detections table is empty, we use summary tables
-	
-	// Get recent fire activity from park_fire_weekly
-	if fromStr != "" && toStr != "" {
-		// Use weekly data within the date range
-		s.DB.QueryRow(`
-			SELECT COALESCE(SUM(fire_count), 0) FROM park_fire_weekly 
-			WHERE week_start >= ? AND week_start <= ?
-		`, fromStr, toStr).Scan(&totalFires)
-		
-		// If no weekly data, fall back to fire_group_alerts count
-		if totalFires == 0 {
-			s.DB.QueryRow(`
-				SELECT COUNT(*) FROM fire_group_alerts 
-				WHERE alert_type IN ('active_inside', 'entered', 'cooling')
-			`).Scan(&totalFires)
+	// Fire stats from feature_geometries (fire_trajectory) with bbox + date filtering
+	// Uses precomputed stat_value column (= fires_total) for fast aggregation
+	{
+		fireQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
+			WHERE feature_type = 'fire_trajectory'`
+		var fireArgs []interface{}
+		if fromStr != "" {
+			fireQuery += " AND start_date >= ?"
+			fireArgs = append(fireArgs, fromStr)
 		}
-		
-		// Get previous period for trend
-		fromTime, _ := time.Parse("2006-01-02", fromStr)
-		toTime, _ := time.Parse("2006-01-02", toStr)
-		duration := toTime.Sub(fromTime)
-		prevFrom := fromTime.Add(-duration).Format("2006-01-02")
-		prevTo := fromTime.Add(-24 * time.Hour).Format("2006-01-02")
-		s.DB.QueryRow(`
-			SELECT COALESCE(SUM(fire_count), 0) FROM park_fire_weekly 
-			WHERE week_start >= ? AND week_start <= ?
-		`, prevFrom, prevTo).Scan(&prevFires)
-	} else {
-		// Default: count active fire groups from alerts table (last 14 days)
-		s.DB.QueryRow(`
-			SELECT COUNT(*) FROM fire_group_alerts 
-			WHERE alert_type IN ('active_inside', 'entered', 'cooling')
-		`).Scan(&totalFires)
-		// No trend data available without date range
+		if toStr != "" {
+			fireQuery += " AND start_date <= ?"
+			fireArgs = append(fireArgs, toStr)
+		}
+		if len(bbox) == 4 {
+			fireQuery += " AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?"
+			fireArgs = append(fireArgs, bbox[0], bbox[2], bbox[1], bbox[3])
+		}
+		var totalFiresF float64
+		s.DB.QueryRow(fireQuery, fireArgs...).Scan(&totalFiresF)
+		totalFires = int(totalFiresF)
+
+		// Previous period for trend
+		if fromStr != "" && toStr != "" {
+			fromTime, _ := time.Parse("2006-01-02", fromStr)
+			toTime, _ := time.Parse("2006-01-02", toStr)
+			duration := toTime.Sub(fromTime)
+			prevFrom := fromTime.Add(-duration).Format("2006-01-02")
+			prevTo := fromTime.Add(-24 * time.Hour).Format("2006-01-02")
+			prevQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
+				WHERE feature_type = 'fire_trajectory' AND start_date >= ? AND start_date <= ?`
+			prevArgs := []interface{}{prevFrom, prevTo}
+			if len(bbox) == 4 {
+				prevQuery += " AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?"
+				prevArgs = append(prevArgs, bbox[0], bbox[2], bbox[1], bbox[3])
+			}
+			var prevFiresF float64
+			s.DB.QueryRow(prevQuery, prevArgs...).Scan(&prevFiresF)
+			prevFires = int(prevFiresF)
+		}
 	}
 
-	// Deforestation totals in selected years (with optional bbox filter)
-	if len(bbox) == 4 {
-		s.DB.QueryRow(`
-			SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
-			WHERE year >= ? AND year <= ?
-			AND lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?
-		`, fromYear, toYear, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&totalDeforestation)
-	} else {
-		s.DB.QueryRow(`
-			SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
-			WHERE year >= ? AND year <= ?
-		`, fromYear, toYear).Scan(&totalDeforestation)
-	}
+	// Deforestation stats from feature_geometries with bbox + date filtering
+	// Uses precomputed stat_value column (= area_km2) for fast aggregation
+	{
+		deforestQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
+			WHERE feature_type = 'deforestation'`
+		var deforestArgs []interface{}
+		if fromStr != "" {
+			deforestQuery += " AND start_date >= ?"
+			deforestArgs = append(deforestArgs, fromStr)
+		}
+		if toStr != "" {
+			deforestQuery += " AND start_date <= ?"
+			deforestArgs = append(deforestArgs, toStr)
+		}
+		if len(bbox) == 4 {
+			deforestQuery += " AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?"
+			deforestArgs = append(deforestArgs, bbox[0], bbox[2], bbox[1], bbox[3])
+		}
+		s.DB.QueryRow(deforestQuery, deforestArgs...).Scan(&totalDeforestation)
 
-	// Previous period deforestation for trend
-	yearSpan := toYear - fromYear + 1
-	if len(bbox) == 4 {
-		s.DB.QueryRow(`
-			SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
-			WHERE year >= ? AND year < ?
-			AND lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?
-		`, fromYear-yearSpan, fromYear, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&prevDeforestation)
-	} else {
-		s.DB.QueryRow(`
-			SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
-			WHERE year >= ? AND year < ?
-		`, fromYear-yearSpan, fromYear).Scan(&prevDeforestation)
+		// Previous period for trend
+		if fromStr != "" && toStr != "" {
+			fromTime, _ := time.Parse("2006-01-02", fromStr)
+			toTime, _ := time.Parse("2006-01-02", toStr)
+			duration := toTime.Sub(fromTime)
+			prevFrom := fromTime.Add(-duration).Format("2006-01-02")
+			prevTo := fromTime.Add(-24 * time.Hour).Format("2006-01-02")
+			prevQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
+				WHERE feature_type = 'deforestation' AND start_date >= ? AND start_date <= ?`
+			prevArgs := []interface{}{prevFrom, prevTo}
+			if len(bbox) == 4 {
+				prevQuery += " AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?"
+				prevArgs = append(prevArgs, bbox[0], bbox[2], bbox[1], bbox[3])
+			}
+			s.DB.QueryRow(prevQuery, prevArgs...).Scan(&prevDeforestation)
+		}
 	}
 
 	// Total settlements (with optional bbox filter)
