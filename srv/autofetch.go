@@ -172,11 +172,12 @@ func (s *Server) HandleAPIAutofetchList(w http.ResponseWriter, r *http.Request) 
 // HandleAPIAutofetchAdd validates credentials, discovers parks, encrypts password, and stores.
 func (s *Server) HandleAPIAutofetchAdd(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		APIType    string `json:"api_type"`
-		ServiceURL string `json:"service_url"`
-		Username   string `json:"username"`
-		Password   string `json:"password"`
-		IntervalH  int    `json:"interval_h"`
+		APIType       string `json:"api_type"`
+		ServiceURL    string `json:"service_url"`
+		Username      string `json:"username"`
+		Password      string `json:"password"`
+		IntervalH     int    `json:"interval_h"`
+		BackfillSince string `json:"backfill_since"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeJSON(w, 400, map[string]string{"error": "invalid JSON"})
@@ -214,6 +215,16 @@ func (s *Server) HandleAPIAutofetchAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id, _ := result.LastInsertId()
+
+	// If backfill_since is set, update last_run_at so the first run fetches from that date.
+	if req.BackfillSince != "" {
+		_, err = s.DB.ExecContext(r.Context(),
+			`UPDATE autofetch_sources SET last_run_at = ? WHERE id = ?`,
+			req.BackfillSince+" 00:00:00", id)
+		if err != nil {
+			slog.Warn("failed to set backfill_since", "id", id, "err", err)
+		}
+	}
 
 	slog.Info("autofetch source added", "id", id, "url", req.ServiceURL, "parks", parkNames)
 	writeJSON(w, 200, map[string]interface{}{"id": id, "park_names": parkNames})
