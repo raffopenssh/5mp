@@ -12142,53 +12142,53 @@
         
         // Expose function to set time slider range programmatically (for upload highlight & URL restore)
         window.setTimeSliderRange = function(startDate, endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            
-            // Move slider handles to nearest month
-            let newStart = monthsBetween(SLIDER_START_DATE, start);
-            let newEnd = monthsBetween(SLIDER_START_DATE, end);
-            newStart = Math.max(0, Math.min(newStart, TOTAL_MONTHS - 1));
-            newEnd = Math.max(newStart + 1, Math.min(newEnd + 1, TOTAL_MONTHS));
-            if (newEnd <= newStart) newEnd = newStart + 1;
-            
-            sliderStartValue = newStart;
-            sliderEndValue = newEnd;
-            updateSliderDisplay();
-            
-            // Preserve precise dates (don't round to month via updateDateFilter)
-            const startISO = typeof startDate === 'string' ? startDate : formatDateISO(start);
-            const endISO = typeof endDate === 'string' ? endDate : formatDateISO(end);
-            dateFrom = startISO;
-            dateTo = endISO;
-            currentPreset = 'custom';
-            
-            // Check if dates are precise (not 1st of month) and show accordingly
-            const startEl = document.getElementById('time-slider-date-start');
-            const endEl = document.getElementById('time-slider-date-end');
-            if (start.getDate() !== 1) {
-                if (startEl) { startEl.textContent = formatPreciseDate(start); startEl._precise = true; }
-            }
-            if (end.getDate() !== 1) {
-                if (endEl) { endEl.textContent = formatPreciseDate(end); endEl._precise = true; }
-            }
-            
-            // Update filter panel display
-            if (typeof updateTimeFilterDisplay === 'function') {
-                updateTimeFilterDisplay(dateFrom, dateTo);
-            }
-            
-            reloadGridData();
-            if (typeof refreshPopupData === 'function') refreshPopupData();
+            const startISO = typeof startDate === 'string' ? startDate : formatDateISO(new Date(startDate));
+            const endISO = typeof endDate === 'string' ? endDate : formatDateISO(new Date(endDate));
+            applyPreciseDateFilter(startISO, endISO);
         };
         
+        // Apply precise date filter — single codepath for editSliderDate, setTimeSliderRange, and URL restore.
+        // Moves slider handles, updates labels, reloads all data (same as dragging the slider).
+        function applyPreciseDateFilter(newFrom, newTo) {
+            // Validate
+            if (!newFrom || !newTo) return;
+            if (newFrom > newTo) { var tmp = newFrom; newFrom = newTo; newTo = tmp; }
+
+            // Set global filter dates
+            dateFrom = newFrom;
+            dateTo = newTo;
+            currentPreset = 'custom';
+
+            // Move slider handles to nearest months
+            const startD = new Date(newFrom + 'T00:00:00');
+            const endD = new Date(newTo + 'T00:00:00');
+            sliderStartValue = Math.max(0, Math.min(monthsBetween(SLIDER_START_DATE, startD), TOTAL_MONTHS - 1));
+            sliderEndValue = Math.max(sliderStartValue + 1, Math.min(monthsBetween(SLIDER_START_DATE, endD) + 1, TOTAL_MONTHS));
+
+            // Update slider bar + handle positions
+            updateSliderDisplay();
+
+            // Show precise date labels
+            const startEl = document.getElementById('time-slider-date-start');
+            const endEl = document.getElementById('time-slider-date-end');
+            if (startEl) { startEl.textContent = formatPreciseDate(startD); startEl._precise = true; }
+            if (endEl)   { endEl.textContent = formatPreciseDate(endD);     endEl._precise = true; }
+
+            // Filter panel display
+            if (typeof updateTimeFilterDisplay === 'function') updateTimeFilterDisplay(dateFrom, dateTo);
+
+            // Reload everything — identical to what dragging the slider does
+            reloadGridData();
+            if (typeof refreshPopupData === 'function') refreshPopupData();
+            if (typeof refreshPinnedLayers === 'function') refreshPinnedLayers();
+        }
+
         // Inline date editor for precise filtering (expert mode)
         window.editSliderDate = function(which) {
             const spanId = 'time-slider-date-' + which;
             const span = document.getElementById(spanId);
             if (!span || span._editing) return;
             span._editing = true;
-            span._committed = false;
 
             // Current value — use actual filter date, not month-rounded slider
             const isoVal = which === 'start'
@@ -12213,73 +12213,46 @@
             span.appendChild(input);
             input.focus();
 
-            function commit(val) {
-                if (span._committed) return;
-                span._committed = true;
-                const d = new Date(val + 'T00:00:00');
-                if (!isNaN(d.getTime())) {
-                    // Set precise date filter
-                    if (which === 'start') {
-                        dateFrom = val;
-                        // Clamp: if start > end, pull end forward
-                        if (dateTo && val > dateTo) dateTo = val;
-                    } else {
-                        dateTo = val;
-                        // Clamp: if end < start, pull start back
-                        if (dateFrom && val < dateFrom) dateFrom = val;
+            let done = false;
+            function finish(val) {
+                if (done) return;
+                done = true;
+                // Remove the input
+                if (input.parentNode === span) span.removeChild(input);
+
+                if (val) {
+                    const d = new Date(val + 'T00:00:00');
+                    if (!isNaN(d.getTime())) {
+                        const newFrom = which === 'start' ? val : dateFrom;
+                        const newTo   = which === 'end'   ? val : dateTo;
+                        span._editing = false;
+                        applyPreciseDateFilter(newFrom, newTo);
+                        return;
                     }
-
-                    // Move slider handles to match (like setTimeSliderRange)
-                    const startD = new Date(dateFrom + 'T00:00:00');
-                    const endD = new Date(dateTo + 'T00:00:00');
-                    sliderStartValue = Math.max(0, Math.min(monthsBetween(SLIDER_START_DATE, startD), TOTAL_MONTHS - 1));
-                    const endMonths = monthsBetween(SLIDER_START_DATE, endD);
-                    sliderEndValue = Math.max(sliderStartValue, Math.min(endMonths + 1, TOTAL_MONTHS));
-                    // Same-date edge case: ensure handles don't overlap completely
-                    if (sliderEndValue <= sliderStartValue) sliderEndValue = sliderStartValue + 1;
-
-                    updateSliderDisplay();
-
-                    // Show precise dates in both spans (other side may have been clamped)
-                    const startEl = document.getElementById('time-slider-date-start');
-                    const endEl = document.getElementById('time-slider-date-end');
-                    if (startEl && !startEl._editing) {
-                        startEl.textContent = formatPreciseDate(new Date(dateFrom + 'T00:00:00'));
-                        startEl._precise = true;
-                    }
-                    if (endEl && !endEl._editing) {
-                        endEl.textContent = formatPreciseDate(new Date(dateTo + 'T00:00:00'));
-                        endEl._precise = true;
-                    }
-                    // Also mark the just-edited span
-                    span.textContent = formatPreciseDate(d);
-                    span._precise = true;
-
-                    // Reload data with precise filter
-                    currentPreset = 'custom';
-                    reloadGridData();
-                    if (typeof refreshPopupData === 'function') refreshPopupData();
-                    if (typeof updatePinnedLayers === 'function') updatePinnedLayers();
-                } else {
-                    span.textContent = origText;
                 }
-                span._editing = false;
-            }
-
-            function cancel() {
-                if (span._committed) return;
-                span._committed = true;
+                // Cancel — restore original text
                 span.textContent = origText;
                 span._editing = false;
             }
 
-            input.addEventListener('change', function() { commit(input.value); });
+            input.addEventListener('change', function() { finish(input.value); });
             input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') { e.preventDefault(); commit(input.value); }
-                if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+                if (e.key === 'Enter') { e.preventDefault(); finish(input.value); }
+                if (e.key === 'Escape') { e.preventDefault(); finish(null); }
             });
+            // On blur: commit the current value (user clicked away or native picker closed)
             input.addEventListener('blur', function() {
-                setTimeout(function() { if (!span._committed) cancel(); }, 120);
+                // Short delay so change event fires first if both happen
+                setTimeout(function() {
+                    if (!done) {
+                        // If value changed from original, commit it; otherwise cancel
+                        if (input.value && input.value !== isoVal) {
+                            finish(input.value);
+                        } else {
+                            finish(null);
+                        }
+                    }
+                }, 80);
             });
         };
 
