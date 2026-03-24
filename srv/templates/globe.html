@@ -432,7 +432,13 @@
         /* Time Slider - Google Timelapse Style */
         .time-slider-container { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.9) 70%, transparent 100%); z-index: 400; padding: 8px 20px 12px; display: flex; flex-direction: column; }
         .time-slider-header { margin-bottom: 6px; }
-        .time-slider-date { font-size: 14px; font-weight: 600; color: #22c55e; }
+        .time-slider-date { font-size: 14px; font-weight: 600; color: #22c55e; display: flex; align-items: center; gap: 0; user-select: none; }
+        .time-slider-date-part { cursor: pointer; padding: 1px 4px; border-radius: 4px; transition: background 0.15s, color 0.15s; position: relative; }
+        .time-slider-date-part:hover { background: rgba(34,197,94,0.15); }
+        .time-slider-date-sep { padding: 0 2px; pointer-events: none; }
+        .time-slider-date-input { font-size: 14px; font-weight: 600; color: #22c55e; background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.4); border-radius: 4px; padding: 1px 4px; font-family: inherit; outline: none; width: auto; }
+        .time-slider-date-input:focus { border-color: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.3); }
+        .time-slider-date-input::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         .time-slider-track-wrapper { position: relative; flex: 1; padding: 0 8px; }
         .time-slider-track { position: relative; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer; }
         .time-slider-range { position: absolute; height: 100%; background: linear-gradient(90deg, rgba(34,197,94,0.6), #22c55e); border-radius: 3px; pointer-events: none; }
@@ -454,6 +460,7 @@
         @media (max-width: 768px) {
             .time-slider-container { height: 60px; padding: 6px 12px 10px; }
             .time-slider-date { font-size: 12px; }
+            .time-slider-date-input { font-size: 12px; }
             #map { bottom: 60px !important; }
             /* Larger touch targets for slider handles */
             .time-slider-handle { width: 20px; height: 20px; }
@@ -1399,7 +1406,7 @@
     <!-- Time Slider -->
     <div class="time-slider-container" id="time-slider-container">
         <div class="time-slider-header">
-            <div class="time-slider-date" id="time-slider-date">Jan 2020 - Dec 2024</div>
+            <div class="time-slider-date" id="time-slider-date"><span class="time-slider-date-part" id="time-slider-date-start" onclick="editSliderDate('start')" title="Click to set start date">Jan 2020</span><span class="time-slider-date-sep"> - </span><span class="time-slider-date-part" id="time-slider-date-end" onclick="editSliderDate('end')" title="Click to set end date">Dec 2024</span></div>
         </div>
         <div class="time-slider-track-wrapper">
             <div class="time-slider-track" id="time-slider-track">
@@ -11962,9 +11969,11 @@
             const startDate = valueToDate(sliderStartValue);
             const endDate = valueToDate(sliderEndValue);
             
-            // Update date label
-            document.getElementById('time-slider-date').textContent = 
-                formatMonthYear(startDate) + ' - ' + formatMonthYear(endDate);
+            // Update date label (clickable start/end spans)
+            const startEl = document.getElementById('time-slider-date-start');
+            const endEl = document.getElementById('time-slider-date-end');
+            if (startEl && !startEl._editing && !startEl._precise) startEl.textContent = formatMonthYear(startDate);
+            if (endEl && !endEl._editing && !endEl._precise) endEl.textContent = formatMonthYear(endDate);
             
             // Update handle positions
             const track = document.getElementById('time-slider-track');
@@ -11981,6 +11990,12 @@
         function updateDateFilter() {
             const startDate = valueToDate(sliderStartValue);
             const endDate = valueToDate(sliderEndValue);
+            
+            // Clear precise mode when slider is dragged
+            const startEl = document.getElementById('time-slider-date-start');
+            const endEl = document.getElementById('time-slider-date-end');
+            if (startEl) { startEl._precise = false; startEl.textContent = formatMonthYear(startDate); }
+            if (endEl) { endEl._precise = false; endEl.textContent = formatMonthYear(endDate); }
             
             // Update global date variables (used by existing code)
             dateFrom = formatDateISO(startDate);
@@ -12140,6 +12155,92 @@
             updateDateFilter();
         };
         
+        // Inline date editor for precise filtering (expert mode)
+        window.editSliderDate = function(which) {
+            const spanId = 'time-slider-date-' + which;
+            const span = document.getElementById(spanId);
+            if (!span || span._editing) return;
+            span._editing = true;
+
+            // Current value as ISO date
+            const curDate = which === 'start' ? valueToDate(sliderStartValue) : valueToDate(sliderEndValue);
+            const isoVal = formatDateISO(curDate);
+
+            // Min/max bounds
+            const minDate = formatDateISO(SLIDER_START_DATE);
+            const maxDate = formatDateISO(SLIDER_END_DATE);
+
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.className = 'time-slider-date-input';
+            input.value = isoVal;
+            input.min = minDate;
+            input.max = maxDate;
+
+            // Save original text
+            const origText = span.textContent;
+            span.textContent = '';
+            span.appendChild(input);
+            input.focus();
+
+            function commit(val) {
+                if (span._committed) return;
+                span._committed = true;
+                const d = new Date(val + 'T00:00:00');
+                if (!isNaN(d.getTime())) {
+                    // Move slider handle to nearest month
+                    const months = monthsBetween(SLIDER_START_DATE, d);
+                    if (which === 'start') {
+                        sliderStartValue = Math.max(0, Math.min(months, sliderEndValue - 1));
+                    } else {
+                        sliderEndValue = Math.max(sliderStartValue + 1, Math.min(months + 1, TOTAL_MONTHS));
+                    }
+                    updateSliderDisplay();
+
+                    // Set precise date filter (overrides month-rounded slider)
+                    if (which === 'start') {
+                        dateFrom = val;
+                    } else {
+                        dateTo = val;
+                    }
+                    // Show precise date in the span
+                    span.textContent = formatPreciseDate(d);
+                    span._precise = true;
+
+                    // Reload data with the precise filter
+                    reloadGridData();
+                    if (typeof refreshPopupData === 'function') refreshPopupData();
+                    if (typeof updatePinnedLayers === 'function') updatePinnedLayers();
+                } else {
+                    span.textContent = origText;
+                }
+                span._editing = false;
+            }
+
+            function cancel() {
+                if (span._committed) return;
+                span._committed = true;
+                span.textContent = origText;
+                span._editing = false;
+            }
+
+            input.addEventListener('change', function() { commit(input.value); });
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); commit(input.value); }
+                if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+            });
+            input.addEventListener('blur', function() {
+                // Small delay to allow change event to fire first
+                setTimeout(function() { if (!span._committed) cancel(); }, 120);
+            });
+        };
+
+        // Format date as "15 Jan 2023" for precise display
+        function formatPreciseDate(date) {
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+        }
+
         // Wait for DOM and map to be ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initTimeSlider);
