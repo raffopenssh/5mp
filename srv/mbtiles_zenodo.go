@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -239,6 +240,11 @@ func (q *ZenodoMBTilesQueue) executeJob(job *ZenodoMBTilesJob) {
 
 // buildMBTilesInMemory downloads tiles and builds a complete MBTiles SQLite
 // database in memory, then serializes it to []byte.
+//
+// Memory lifecycle:
+//   1. Tiles downloaded → inserted into in-memory SQLite (peak: ~DB size)
+//   2. Serialize() allocates a []byte copy (brief peak: ~2× DB size)
+//   3. DB closed + GC forced immediately → back to ~1× (the serialized bytes)
 func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte, error) {
 	source, ok := TileSources[job.Source]
 	if !ok {
@@ -250,7 +256,7 @@ func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte
 	if err != nil {
 		return nil, fmt.Errorf("open memory db: %w", err)
 	}
-	defer db.Close()
+	// NOT using defer db.Close() — we close explicitly after Serialize
 
 	// Keep a single connection (required for Serialize)
 	db.SetMaxOpenConns(1)
@@ -264,6 +270,7 @@ func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte
 		MaxZoom:  job.MaxZoom,
 	}
 	if err := initMBTilesSchema(db, mbJob, source); err != nil {
+		db.Close()
 		return nil, fmt.Errorf("init schema: %w", err)
 	}
 
@@ -276,9 +283,9 @@ func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte
 	// Prepare insert
 	insertStmt, err := db.Prepare("INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?, ?, ?, ?)")
 	if err != nil {
+		db.Close()
 		return nil, fmt.Errorf("prepare insert: %w", err)
 	}
-	defer insertStmt.Close()
 
 	// Download tiles with concurrency
 	semaphore := make(chan struct{}, q.maxCPU)
@@ -290,6 +297,8 @@ func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte
 	for _, tile := range tiles {
 		select {
 		case <-q.ctx.Done():
+			insertStmt.Close()
+			db.Close()
 			return nil, fmt.Errorf("cancelled")
 		default:
 		}
@@ -320,8 +329,10 @@ func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte
 	}
 
 	wg.Wait()
+	insertStmt.Close()
 
 	if errors.Load() > job.TotalTiles/2 {
+		db.Close()
 		return nil, fmt.Errorf("too many errors: %d/%d failed", errors.Load(), job.TotalTiles)
 	}
 
@@ -330,9 +341,9 @@ func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte
 
 	conn, err := db.Conn(context.Background())
 	if err != nil {
+		db.Close()
 		return nil, fmt.Errorf("get conn: %w", err)
 	}
-	defer conn.Close()
 
 	var serialized []byte
 	err = conn.Raw(func(driverConn interface{}) error {
@@ -347,6 +358,12 @@ func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte
 		serialized, serErr = s.Serialize()
 		return serErr
 	})
+
+	// Free the in-memory DB immediately — we only need the serialized bytes now
+	conn.Close()
+	db.Close()
+	runtime.GC() // Reclaim SQLite memory before upload
+
 	if err != nil {
 		return nil, fmt.Errorf("serialize: %w", err)
 	}
@@ -534,13 +551,14 @@ func estimateTileBytes(nTiles int) int64 {
 	return int64(nTiles) * 10 * 1024 // 10 KB/tile
 }
 
-// estimateRAMRequired estimates peak RAM for in-memory MBTiles build.
-// Peak = SQLite DB in memory + Serialize() copy (briefly held simultaneously).
+// estimateRAMRequired estimates the sustained RAM needed for the MBTiles build.
+// The brief Serialize() peak (~2×) is transient — we GC immediately after.
+// The sustained hold is: serialized bytes (= ~DB size) + server overhead.
 func estimateRAMRequired(bbox [4]float64, minZoom, maxZoom int) int64 {
 	tiles := calculateTiles(bbox, minZoom, maxZoom)
 	dbSize := estimateTileBytes(len(tiles))
-	// Serialize() briefly doubles the memory, plus ~10% SQLite overhead
-	return int64(float64(dbSize) * 2.1)
+	// Sustained: serialized copy + ~20% SQLite/Go overhead during download phase
+	return int64(float64(dbSize) * 1.2)
 }
 
 // ─── HTTP Handlers ───────────────────────────────────────────────────────────
