@@ -11999,7 +11999,10 @@
             
             // Update global date variables (used by existing code)
             dateFrom = formatDateISO(startDate);
-            dateTo = formatDateISO(endDate);
+            // End date: use last day of the month (or today if current/future month)
+            const endLast = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0); // last day of month
+            const today = new Date(); today.setHours(0,0,0,0);
+            dateTo = formatDateISO(endLast > today ? today : endLast);
             currentPreset = 'custom';
             
             // Update filter panel display
@@ -12162,9 +12165,8 @@
             if (!span || span._editing) return;
             span._editing = true;
 
-            // Current value as ISO date
-            const curDate = which === 'start' ? valueToDate(sliderStartValue) : valueToDate(sliderEndValue);
-            const isoVal = formatDateISO(curDate);
+            // Current value as ISO date — use actual filter date, not month-rounded slider
+            const isoVal = which === 'start' ? (dateFrom || formatDateISO(valueToDate(sliderStartValue))) : (dateTo || formatDateISO(valueToDate(sliderEndValue)));
 
             // Min/max bounds
             const minDate = formatDateISO(SLIDER_START_DATE);
