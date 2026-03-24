@@ -783,26 +783,29 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 	now := time.Now()
 	fallbackYear := int64(now.Year())
 	fallbackMonth := int64(now.Month())
+	fallbackDay := int64(now.Day())
 	for _, seg := range segments {
 		if seg.StartTime != nil {
 			fallbackYear = int64(seg.StartTime.Year())
 			fallbackMonth = int64(seg.StartTime.Month())
+			fallbackDay = int64(seg.StartTime.Day())
 			break
 		}
 	}
 
-	// yearMonth encodes year+month as a single int for map keys
-	type yearMonth struct {
+	// yearMonthDay encodes year+month+day for map keys
+	type yearMonthDay struct {
 		year  int64
 		month int64
+		day   int64
 	}
 
-	// Aggregate stats by grid cell, movement type, AND year-month
-	// key: "cellID:movementType" → per year-month stats
+	// Aggregate stats by grid cell, movement type, AND year-month-day
+	// key: "cellID:movementType" → per year-month-day stats
 	type cellYMKey struct {
 		cellID       string
 		movementType string
-		ym           yearMonth
+		ymd          yearMonthDay
 	}
 	cellStats := make(map[cellYMKey]*gridCellStats)
 
@@ -821,15 +824,15 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 			midLon := (p1.Lon + p2.Lon) / 2
 			cellID := gridCellIDForPoint(midLat, midLon)
 
-			// Determine year/month from point timestamp
-			ym := yearMonth{year: fallbackYear, month: fallbackMonth}
+			// Determine year/month/day from point timestamp
+			ymd := yearMonthDay{year: fallbackYear, month: fallbackMonth, day: fallbackDay}
 			if p2.Time != nil {
-				ym = yearMonth{year: int64(p2.Time.Year()), month: int64(p2.Time.Month())}
+				ymd = yearMonthDay{year: int64(p2.Time.Year()), month: int64(p2.Time.Month()), day: int64(p2.Time.Day())}
 			} else if p1.Time != nil {
-				ym = yearMonth{year: int64(p1.Time.Year()), month: int64(p1.Time.Month())}
+				ymd = yearMonthDay{year: int64(p1.Time.Year()), month: int64(p1.Time.Month()), day: int64(p1.Time.Day())}
 			}
 
-			key := cellYMKey{cellID: cellID, movementType: seg.MovementType, ym: ym}
+			key := cellYMKey{cellID: cellID, movementType: seg.MovementType, ymd: ymd}
 			if cellStats[key] == nil {
 				cellStats[key] = &gridCellStats{MovementType: seg.MovementType}
 			}
@@ -838,14 +841,14 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 		}
 	}
 
-	// Also aggregate "all" movement type per year-month
+	// Also aggregate "all" movement type per year-month-day
 	type cellYMAll struct {
 		cellID string
-		ym     yearMonth
+		ymd    yearMonthDay
 	}
 	allCellStats := make(map[cellYMAll]*gridCellStats)
 	for key, stats := range cellStats {
-		ak := cellYMAll{cellID: key.cellID, ym: key.ym}
+		ak := cellYMAll{cellID: key.cellID, ymd: key.ymd}
 		if allCellStats[ak] == nil {
 			allCellStats[ak] = &gridCellStats{MovementType: "all"}
 		}
@@ -884,11 +887,12 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 			ensuredCells[cellID] = true
 		}
 
+		dayVal := key.ymd.day
 		err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
 			GridCellID:       cellID,
-			Year:             key.ym.year,
-			Month:            key.ym.month,
-			Day:              nil, // monthly aggregate
+			Year:             key.ymd.year,
+			Month:            key.ymd.month,
+			Day:              &dayVal,
 			MovementType:     stats.MovementType,
 			TotalDistanceKm:  stats.DistanceKm,
 			TotalPoints:      int64(stats.PointCount),
@@ -896,17 +900,18 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 			ProtectedAreaIds: nil,
 		})
 		if err != nil {
-			return fmt.Errorf("upsert effort data for %s/%d-%02d: %w", cellID, key.ym.year, key.ym.month, err)
+			return fmt.Errorf("upsert effort data for %s/%d-%02d-%02d: %w", cellID, key.ymd.year, key.ymd.month, key.ymd.day, err)
 		}
 	}
 
-	// Upsert "all" movement type aggregates per year-month
+	// Upsert "all" movement type aggregates per year-month-day
 	for ak, stats := range allCellStats {
+		dayVal := ak.ymd.day
 		err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
 			GridCellID:       ak.cellID,
-			Year:             ak.ym.year,
-			Month:            ak.ym.month,
-			Day:              nil,
+			Year:             ak.ymd.year,
+			Month:            ak.ymd.month,
+			Day:              &dayVal,
 			MovementType:     "all",
 			TotalDistanceKm:  stats.DistanceKm,
 			TotalPoints:      int64(stats.PointCount),
@@ -914,7 +919,7 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 			ProtectedAreaIds: nil,
 		})
 		if err != nil {
-			return fmt.Errorf("upsert effort data (all) for %s/%d-%02d: %w", ak.cellID, ak.ym.year, ak.ym.month, err)
+			return fmt.Errorf("upsert effort data (all) for %s/%d-%02d-%02d: %w", ak.cellID, ak.ymd.year, ak.ymd.month, ak.ymd.day, err)
 		}
 	}
 
@@ -976,7 +981,7 @@ func (s *Server) rebuildAllEffortData() {
 
 	var rebuilt int
 	for _, u := range uploads {
-		// Query track_points grouped by grid_cell, movement_type, AND year-month
+		// Query track_points grouped by grid_cell, movement_type, AND year-month-day
 		// from actual point timestamps. This ensures multi-day uploads get
 		// effort attributed to the correct time periods.
 		cellRows, err := s.DB.QueryContext(ctx, `
@@ -988,10 +993,13 @@ func (s *Server) rebuildAllEffortData() {
 			       CASE WHEN timestamp IS NOT NULL AND length(timestamp) >= 10
 			            THEN CAST(substr(timestamp, 6, 2) AS INTEGER)
 			            ELSE 0 END as mo,
+			       CASE WHEN timestamp IS NOT NULL AND length(timestamp) >= 10
+			            THEN CAST(substr(timestamp, 9, 2) AS INTEGER)
+			            ELSE 0 END as dy,
 			       COUNT(*) as pts
 			FROM track_points
 			WHERE upload_id = ? AND grid_cell_id IS NOT NULL
-			GROUP BY grid_cell_id, mt, yr, mo
+			GROUP BY grid_cell_id, mt, yr, mo, dy
 		`, u.uploadID)
 		if err != nil {
 			slog.Warn("rebuildAllEffortData: failed to get grid cells", "logID", u.logID, "error", err)
@@ -1003,6 +1011,7 @@ func (s *Server) rebuildAllEffortData() {
 			movementType string
 			year         int64
 			month        int64
+			day          int64
 		}
 		var cells []cellKey
 		cellPts := make(map[cellKey]int64)
@@ -1011,7 +1020,7 @@ func (s *Server) rebuildAllEffortData() {
 		for cellRows.Next() {
 			var c cellKey
 			var pts int64
-			if err := cellRows.Scan(&c.id, &c.movementType, &c.year, &c.month, &pts); err != nil {
+			if err := cellRows.Scan(&c.id, &c.movementType, &c.year, &c.month, &c.day, &pts); err != nil {
 				continue
 			}
 			if c.movementType != "" {
@@ -1027,13 +1036,15 @@ func (s *Server) rebuildAllEffortData() {
 			continue
 		}
 
-		// Fallback year/month from upload_time for points without timestamps
+		// Fallback year/month/day from upload_time for points without timestamps
 		fallbackYear := int64(time.Now().Year())
 		fallbackMonth := int64(time.Now().Month())
+		fallbackDay := int64(time.Now().Day())
 		if len(u.uploadTime) >= 10 {
 			if t, err := time.Parse("2006-01-02", u.uploadTime[:10]); err == nil {
 				fallbackYear = int64(t.Year())
 				fallbackMonth = int64(t.Month())
+				fallbackDay = int64(t.Day())
 			}
 		}
 
@@ -1042,12 +1053,12 @@ func (s *Server) rebuildAllEffortData() {
 			continue
 		}
 
-		// Resolve year/month for each cell (use fallback if timestamp was NULL)
-		resolveYM := func(c cellKey) (int64, int64) {
-			if c.year > 0 && c.month > 0 {
-				return c.year, c.month
+		// Resolve year/month/day for each cell (use fallback if timestamp was NULL)
+		resolveYMD := func(c cellKey) (int64, int64, int64) {
+			if c.year > 0 && c.month > 0 && c.day > 0 {
+				return c.year, c.month, c.day
 			}
-			return fallbackYear, fallbackMonth
+			return fallbackYear, fallbackMonth, fallbackDay
 		}
 
 		if hasTypedPoints {
@@ -1067,14 +1078,15 @@ func (s *Server) rebuildAllEffortData() {
 				mtTotalPts[mt] += cellPts[c]
 			}
 
-			// Per-cell, per-year-month, per-movement-type effort
-			type ymCellKey struct {
+			// Per-cell, per-year-month-day, per-movement-type effort
+			type ymdCellKey struct {
 				cellID string
 				year   int64
 				month  int64
+				day    int64
 			}
-			allPts := make(map[ymCellKey]int64)
-			allKm := make(map[ymCellKey]float64)
+			allPts := make(map[ymdCellKey]int64)
+			allKm := make(map[ymdCellKey]float64)
 
 			for _, c := range cells {
 				mt := c.movementType
@@ -1082,8 +1094,8 @@ func (s *Server) rebuildAllEffortData() {
 					mt = "foot"
 				}
 				pts := cellPts[c]
-				yr, mo := resolveYM(c)
-				ak := ymCellKey{cellID: c.id, year: yr, month: mo}
+				yr, mo, dy := resolveYMD(c)
+				ak := ymdCellKey{cellID: c.id, year: yr, month: mo, day: dy}
 				allPts[ak] += pts
 
 				km := mtKm[mt]
@@ -1094,11 +1106,12 @@ func (s *Server) rebuildAllEffortData() {
 				cellKm := km * fraction
 				allKm[ak] += cellKm
 
+				dayVal := dy
 				err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
 					GridCellID:      c.id,
 					Year:            yr,
 					Month:           mo,
-					Day:             nil,
+					Day:             &dayVal,
 					MovementType:    mt,
 					TotalDistanceKm: cellKm,
 					TotalPoints:     pts,
@@ -1109,13 +1122,14 @@ func (s *Server) rebuildAllEffortData() {
 				}
 			}
 
-			// "all" aggregates per cell per year-month
+			// "all" aggregates per cell per year-month-day
 			for ak, pts := range allPts {
+				dayVal := ak.day
 				err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
 					GridCellID:      ak.cellID,
 					Year:            ak.year,
 					Month:           ak.month,
-					Day:             nil,
+					Day:             &dayVal,
 					MovementType:    "all",
 					TotalDistanceKm: allKm[ak],
 					TotalPoints:     pts,
@@ -1127,19 +1141,20 @@ func (s *Server) rebuildAllEffortData() {
 			}
 		} else {
 			// Legacy path: no per-point movement types, use proportional distribution.
-			type ymCellKey struct {
+			type ymdCellKey struct {
 				cellID string
 				year   int64
 				month  int64
+				day    int64
 			}
-			ymPts := make(map[ymCellKey]int64)
+			ymdPts := make(map[ymdCellKey]int64)
 			for _, c := range cells {
-				yr, mo := resolveYM(c)
-				ak := ymCellKey{cellID: c.id, year: yr, month: mo}
-				ymPts[ak] += cellPts[c]
+				yr, mo, dy := resolveYMD(c)
+				ak := ymdCellKey{cellID: c.id, year: yr, month: mo, day: dy}
+				ymdPts[ak] += cellPts[c]
 			}
 
-			for ak, pts := range ymPts {
+			for ak, pts := range ymdPts {
 				fraction := float64(pts) / float64(totalPts)
 
 				for _, mt := range []struct {
@@ -1153,11 +1168,12 @@ func (s *Server) rebuildAllEffortData() {
 					if mt.km <= 0 {
 						continue
 					}
+					dayVal := ak.day
 					err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
 						GridCellID:      ak.cellID,
 						Year:            ak.year,
 						Month:           ak.month,
-						Day:             nil,
+						Day:             &dayVal,
 						MovementType:    mt.name,
 						TotalDistanceKm: mt.km * fraction,
 						TotalPoints:     int64(float64(pts) * (mt.km / totalKm)),
@@ -1168,11 +1184,12 @@ func (s *Server) rebuildAllEffortData() {
 					}
 				}
 
+				dayVal := ak.day
 				err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
 					GridCellID:      ak.cellID,
 					Year:            ak.year,
 					Month:           ak.month,
-					Day:             nil,
+					Day:             &dayVal,
 					MovementType:    "all",
 					TotalDistanceKm: totalKm * fraction,
 					TotalPoints:     pts,

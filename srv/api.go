@@ -292,7 +292,7 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			continue
 		}
 		
-		// Query patrol effort data for monthly details
+		// Query patrol effort data for monthly details (aggregated from day-level records)
 		query := `
 			SELECT 
 				e.grid_cell_id,
@@ -301,11 +301,10 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 				g.lat_center,
 				g.lon_center,
 				e.movement_type,
-				e.total_distance_km
+				SUM(e.total_distance_km) as total_distance_km
 			FROM effort_data e
 			JOIN grid_cells g ON e.grid_cell_id = g.id
-			WHERE e.day IS NULL
-			  AND e.movement_type IN ('foot', 'vehicle', 'aircraft')
+			WHERE e.movement_type IN ('foot', 'vehicle', 'aircraft')
 			  AND g.lat_center BETWEEN ? AND ?
 			  AND g.lon_center BETWEEN ? AND ?
 		`
@@ -324,6 +323,7 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			}
 		}
 		
+		query += " GROUP BY e.grid_cell_id, e.year, e.month, g.lat_center, g.lon_center, e.movement_type"
 		query += " ORDER BY e.year DESC, e.month DESC LIMIT 5000"
 		
 		rows, err := s.DB.Query(query, args...)
@@ -429,17 +429,16 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
 	
-	// Build query for monthly effort data
+	// Build query for monthly effort data (aggregated from day-level records)
 	query := `
 		SELECT 
 			e.year,
 			e.month,
 			e.movement_type,
-			e.total_distance_km,
-			e.total_points
+			SUM(e.total_distance_km) as total_distance_km,
+			SUM(e.total_points) as total_points
 		FROM effort_data e
 		WHERE e.grid_cell_id = ?
-		  AND e.day IS NULL
 		  AND e.movement_type IN ('foot', 'vehicle', 'aircraft')
 	`
 	args := []interface{}{gridCellID}
@@ -457,6 +456,7 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 		}
 	}
 	
+	query += " GROUP BY e.year, e.month, e.movement_type"
 	query += " ORDER BY e.year DESC, e.month DESC LIMIT 500"
 	
 	rows, err := s.DB.Query(query, args...)
@@ -578,7 +578,7 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	params := GridQueryParams{}
 	now := time.Now()
 
-	// Determine date range (year + month precision)
+	// Determine date range (year + month + day precision)
 	if fromStr != "" || toStr != "" {
 		params.FromYear = int64(now.Year() - 1)
 		params.ToYear = int64(now.Year())
@@ -586,12 +586,14 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
 				params.FromYear = int64(t.Year())
 				params.FromMonth = int64(t.Month())
+				params.FromDay = int64(t.Day())
 			}
 		}
 		if toStr != "" {
 			if t, err := time.Parse("2006-01-02", toStr); err == nil {
 				params.ToYear = int64(t.Year())
 				params.ToMonth = int64(t.Month())
+				params.ToDay = int64(t.Day())
 			}
 		}
 	} else if yearStr != "" {
@@ -899,17 +901,19 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	fromYear := int64(now.Year())
 	toYear := int64(now.Year())
-	var fromMonth, toMonth int64
+	var fromMonth, toMonth, fromDay, toDay int64
 	if fromStr != "" {
 		if t, err := time.Parse("2006-01-02", fromStr); err == nil {
 			fromYear = int64(t.Year())
 			fromMonth = int64(t.Month())
+			fromDay = int64(t.Day())
 		}
 	}
 	if toStr != "" {
 		if t, err := time.Parse("2006-01-02", toStr); err == nil {
 			toYear = int64(t.Year())
 			toMonth = int64(t.Month())
+			toDay = int64(t.Day())
 		}
 	}
 
@@ -940,11 +944,14 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 			COALESCE(SUM(e.unique_uploads), 0) as total_uploads
 		FROM effort_data e
 		JOIN grid_cells g ON e.grid_cell_id = g.id
-		WHERE e.day IS NULL
+		WHERE 1=1
 	`
 	var args []interface{}
-	// Month-level filtering when from/to months are available
-	if fromMonth > 0 && toMonth > 0 {
+	// Day-level filtering when day precision is available
+	if fromDay > 0 && toDay > 0 && fromMonth > 0 && toMonth > 0 {
+		statsQuery += " AND ((e.day IS NOT NULL AND (e.year * 10000 + e.month * 100 + e.day) BETWEEN ? AND ?) OR (e.day IS NULL AND (e.year * 100 + e.month) BETWEEN ? AND ?))"
+		args = append(args, fromYear*10000+fromMonth*100+fromDay, toYear*10000+toMonth*100+toDay, fromYear*100+fromMonth, toYear*100+toMonth)
+	} else if fromMonth > 0 && toMonth > 0 {
 		statsQuery += " AND (e.year * 100 + e.month) BETWEEN ? AND ?"
 		args = append(args, fromYear*100+fromMonth, toYear*100+toMonth)
 	} else {
@@ -4458,14 +4465,13 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 				e.year, 
 				e.month, 
 				e.movement_type,
-				e.total_distance_km,
-				e.total_points,
+				SUM(e.total_distance_km) as total_distance_km,
+				SUM(e.total_points) as total_points,
 				g.lat_center,
 				g.lon_center
 			FROM effort_data e
 			JOIN grid_cells g ON e.grid_cell_id = g.id
-			WHERE e.day IS NULL 
-				AND e.movement_type = 'all'
+			WHERE e.movement_type = 'all'
 				AND g.lat_center BETWEEN ? AND ?
 				AND g.lon_center BETWEEN ? AND ?
 		`
@@ -4484,6 +4490,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		
+		patrolQuery += " GROUP BY e.grid_cell_id, e.year, e.month, e.movement_type, g.lat_center, g.lon_center"
 		patrolQuery += " ORDER BY e.year DESC, e.month DESC LIMIT 1000"
 		
 		patrolRows, _ := s.DB.Query(patrolQuery, patrolArgs...)

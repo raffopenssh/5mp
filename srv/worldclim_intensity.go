@@ -13,8 +13,7 @@ func (s *Server) QueryGridDataWithWorldClim(ctx context.Context, params GridQuer
 		SELECT DISTINCT g.id, g.lat_center, g.lon_center
 		FROM grid_cells g
 		JOIN effort_data e ON e.grid_cell_id = g.id
-		WHERE e.day IS NULL
-		  AND e.movement_type = 'all'
+		WHERE e.movement_type = 'all'
 		  AND e.year BETWEEN ? AND ?
 	`
 	args := []interface{}{params.FromYear, params.ToYear}
@@ -53,7 +52,6 @@ func (s *Server) QueryGridDataWithWorldClim(ctx context.Context, params GridQuer
 				COUNT(DISTINCT CASE WHEN e.month IN %s THEN e.year || '-' || e.month END) as rainy_count
 			FROM effort_data e
 			WHERE e.grid_cell_id = ?
-			  AND e.day IS NULL
 			  AND e.movement_type = 'all'
 			  AND e.year BETWEEN ? AND ?
 		`, dryMonthsSQL, rainyMonthsSQL)
