@@ -11934,8 +11934,8 @@
     <script>
     (function() {
         // Time slider configuration
-        const SLIDER_START_DATE = new Date('2020-01-01');
-        const SLIDER_END_DATE = new Date(); // Today
+        const SLIDER_START_DATE = new Date(2020, 0, 1); // Jan 1 2020 local
+        const SLIDER_END_DATE = new Date(); // Today local
         const TOTAL_MONTHS = monthsBetween(SLIDER_START_DATE, SLIDER_END_DATE);
         
         // Default: Jan 2023 to today (36 months from Jan 2020 = Jan 2023)
@@ -11958,7 +11958,10 @@
         }
         
         function formatDateISO(date) {
-            return date.toISOString().split('T')[0];
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + d;
         }
         
         function valueToDate(value) {
@@ -12164,22 +12167,26 @@
             const span = document.getElementById(spanId);
             if (!span || span._editing) return;
             span._editing = true;
+            span._committed = false;
 
-            // Current value as ISO date — use actual filter date, not month-rounded slider
-            const isoVal = which === 'start' ? (dateFrom || formatDateISO(valueToDate(sliderStartValue))) : (dateTo || formatDateISO(valueToDate(sliderEndValue)));
+            // Current value — use actual filter date, not month-rounded slider
+            const isoVal = which === 'start'
+                ? (dateFrom || formatDateISO(valueToDate(sliderStartValue)))
+                : (dateTo || formatDateISO(valueToDate(sliderEndValue)));
 
-            // Min/max bounds
-            const minDate = formatDateISO(SLIDER_START_DATE);
-            const maxDate = formatDateISO(SLIDER_END_DATE);
+            // Bounds: start can't go past current end, end can't go before current start
+            const absMin = formatDateISO(SLIDER_START_DATE);
+            const absMax = formatDateISO(SLIDER_END_DATE);
+            const inputMin = which === 'start' ? absMin : (dateFrom || absMin);
+            const inputMax = which === 'end'   ? absMax : (dateTo   || absMax);
 
             const input = document.createElement('input');
             input.type = 'date';
             input.className = 'time-slider-date-input';
             input.value = isoVal;
-            input.min = minDate;
-            input.max = maxDate;
+            input.min = inputMin;
+            input.max = inputMax;
 
-            // Save original text
             const origText = span.textContent;
             span.textContent = '';
             span.appendChild(input);
@@ -12190,26 +12197,45 @@
                 span._committed = true;
                 const d = new Date(val + 'T00:00:00');
                 if (!isNaN(d.getTime())) {
-                    // Move slider handle to nearest month
-                    const months = monthsBetween(SLIDER_START_DATE, d);
-                    if (which === 'start') {
-                        sliderStartValue = Math.max(0, Math.min(months, sliderEndValue - 1));
-                    } else {
-                        sliderEndValue = Math.max(sliderStartValue + 1, Math.min(months + 1, TOTAL_MONTHS));
-                    }
-                    updateSliderDisplay();
-
-                    // Set precise date filter (overrides month-rounded slider)
+                    // Set precise date filter
                     if (which === 'start') {
                         dateFrom = val;
+                        // Clamp: if start > end, pull end forward
+                        if (dateTo && val > dateTo) dateTo = val;
                     } else {
                         dateTo = val;
+                        // Clamp: if end < start, pull start back
+                        if (dateFrom && val < dateFrom) dateFrom = val;
                     }
-                    // Show precise date in the span
+
+                    // Move slider handles to match (like setTimeSliderRange)
+                    const startD = new Date(dateFrom + 'T00:00:00');
+                    const endD = new Date(dateTo + 'T00:00:00');
+                    sliderStartValue = Math.max(0, Math.min(monthsBetween(SLIDER_START_DATE, startD), TOTAL_MONTHS - 1));
+                    const endMonths = monthsBetween(SLIDER_START_DATE, endD);
+                    sliderEndValue = Math.max(sliderStartValue, Math.min(endMonths + 1, TOTAL_MONTHS));
+                    // Same-date edge case: ensure handles don't overlap completely
+                    if (sliderEndValue <= sliderStartValue) sliderEndValue = sliderStartValue + 1;
+
+                    updateSliderDisplay();
+
+                    // Show precise dates in both spans (other side may have been clamped)
+                    const startEl = document.getElementById('time-slider-date-start');
+                    const endEl = document.getElementById('time-slider-date-end');
+                    if (startEl && !startEl._editing) {
+                        startEl.textContent = formatPreciseDate(new Date(dateFrom + 'T00:00:00'));
+                        startEl._precise = true;
+                    }
+                    if (endEl && !endEl._editing) {
+                        endEl.textContent = formatPreciseDate(new Date(dateTo + 'T00:00:00'));
+                        endEl._precise = true;
+                    }
+                    // Also mark the just-edited span
                     span.textContent = formatPreciseDate(d);
                     span._precise = true;
 
-                    // Reload data with the precise filter
+                    // Reload data with precise filter
+                    currentPreset = 'custom';
                     reloadGridData();
                     if (typeof refreshPopupData === 'function') refreshPopupData();
                     if (typeof updatePinnedLayers === 'function') updatePinnedLayers();
@@ -12232,7 +12258,6 @@
                 if (e.key === 'Escape') { e.preventDefault(); cancel(); }
             });
             input.addEventListener('blur', function() {
-                // Small delay to allow change event to fire first
                 setTimeout(function() { if (!span._committed) cancel(); }, 120);
             });
         };
