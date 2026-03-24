@@ -12140,25 +12140,46 @@
             updateDateFilter();
         }
         
-        // Expose function to set time slider range programmatically (for upload highlight)
+        // Expose function to set time slider range programmatically (for upload highlight & URL restore)
         window.setTimeSliderRange = function(startDate, endDate) {
-            // Convert dates to slider values (months from SLIDER_START_DATE)
             const start = new Date(startDate);
             const end = new Date(endDate);
             
-            // Clamp to valid range
+            // Move slider handles to nearest month
             let newStart = monthsBetween(SLIDER_START_DATE, start);
             let newEnd = monthsBetween(SLIDER_START_DATE, end);
-            
-            // Ensure values are within bounds
             newStart = Math.max(0, Math.min(newStart, TOTAL_MONTHS - 1));
-            newEnd = Math.max(newStart + 1, Math.min(newEnd + 1, TOTAL_MONTHS)); // +1 to include end month
+            newEnd = Math.max(newStart + 1, Math.min(newEnd + 1, TOTAL_MONTHS));
+            if (newEnd <= newStart) newEnd = newStart + 1;
             
             sliderStartValue = newStart;
             sliderEndValue = newEnd;
-            
             updateSliderDisplay();
-            updateDateFilter();
+            
+            // Preserve precise dates (don't round to month via updateDateFilter)
+            const startISO = typeof startDate === 'string' ? startDate : formatDateISO(start);
+            const endISO = typeof endDate === 'string' ? endDate : formatDateISO(end);
+            dateFrom = startISO;
+            dateTo = endISO;
+            currentPreset = 'custom';
+            
+            // Check if dates are precise (not 1st of month) and show accordingly
+            const startEl = document.getElementById('time-slider-date-start');
+            const endEl = document.getElementById('time-slider-date-end');
+            if (start.getDate() !== 1) {
+                if (startEl) { startEl.textContent = formatPreciseDate(start); startEl._precise = true; }
+            }
+            if (end.getDate() !== 1) {
+                if (endEl) { endEl.textContent = formatPreciseDate(end); endEl._precise = true; }
+            }
+            
+            // Update filter panel display
+            if (typeof updateTimeFilterDisplay === 'function') {
+                updateTimeFilterDisplay(dateFrom, dateTo);
+            }
+            
+            reloadGridData();
+            if (typeof refreshPopupData === 'function') refreshPopupData();
         };
         
         // Inline date editor for precise filtering (expert mode)
