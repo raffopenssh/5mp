@@ -528,13 +528,19 @@ func md5hex(data []byte) string {
 	return hex.EncodeToString(h[:])
 }
 
+// estimateTileBytes returns estimated MBTiles file size.
+// Real-world average: ~10 KB/tile for satellite imagery (measured from actual uploads).
+func estimateTileBytes(nTiles int) int64 {
+	return int64(nTiles) * 10 * 1024 // 10 KB/tile
+}
+
 // estimateRAMRequired estimates peak RAM for in-memory MBTiles build.
-// Peak = SQLite DB (tiles) + serialized copy.
+// Peak = SQLite DB in memory + Serialize() copy (briefly held simultaneously).
 func estimateRAMRequired(bbox [4]float64, minZoom, maxZoom int) int64 {
 	tiles := calculateTiles(bbox, minZoom, maxZoom)
-	tileBytes := int64(len(tiles)) * 15 * 1024 // ~15KB/tile average
-	// Peak RAM: DB in memory + serialized copy + overhead
-	return int64(float64(tileBytes) * 2.2)
+	dbSize := estimateTileBytes(len(tiles))
+	// Serialize() briefly doubles the memory, plus ~10% SQLite overhead
+	return int64(float64(dbSize) * 2.1)
 }
 
 // ─── HTTP Handlers ───────────────────────────────────────────────────────────
@@ -583,16 +589,16 @@ func (s *Server) HandleAPIZenodoMBTilesCreate(w http.ResponseWriter, r *http.Req
 	bufferKm := 5.0
 	bbox := calculateBufferedBBox(area, bufferKm)
 	tiles := calculateTiles(bbox, 1, maxZoom)
-	estimatedSize := int64(len(tiles)) * 15 * 1024
+	estimatedSize := estimateTileBytes(len(tiles))
 	ramNeeded := estimateRAMRequired(bbox, 1, maxZoom)
 
-	// Check RAM limit (leave 2GB headroom)
-	const maxRAM = 5 * 1024 * 1024 * 1024 // 5GB max in-memory
+	// Check RAM limit (leave 2GB headroom for OS + server)
+	const maxRAM = 6 * 1024 * 1024 * 1024 // 6GB peak RAM (leaves ~1GB for OS+server)
 	if ramNeeded > maxRAM {
 		http.Error(w, fmt.Sprintf(
 			"Estimated size too large for in-memory build: ~%.1f GB (max ~%.1f GB). Reduce zoom level.",
 			float64(estimatedSize)/(1024*1024*1024),
-			float64(maxRAM/2.2)/(1024*1024*1024),
+			float64(maxRAM)/2.1/(1024*1024*1024),
 		), http.StatusRequestEntityTooLarge)
 		return
 	}
@@ -650,11 +656,11 @@ func (s *Server) HandleAPIZenodoMBTilesEstimate(w http.ResponseWriter, r *http.R
 
 	bbox := calculateBufferedBBox(area, 5.0)
 	tiles := calculateTiles(bbox, 1, maxZoom)
-	estimatedSize := int64(len(tiles)) * 15 * 1024
+	estimatedSize := estimateTileBytes(len(tiles))
 	ramNeeded := estimateRAMRequired(bbox, 1, maxZoom)
 	estSeconds := len(tiles) / 100
 
-	const maxRAM = 5 * 1024 * 1024 * 1024
+	const maxRAM = 6 * 1024 * 1024 * 1024
 	sufficient := ramNeeded <= maxRAM
 
 	// Check if already uploaded to Zenodo
