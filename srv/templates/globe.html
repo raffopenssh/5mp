@@ -12135,9 +12135,22 @@
         function initTimeSlider() {
             initTicks();
             initSliderDrag();
-            updateSliderDisplay();
-            // Set initial date filter to match slider
-            updateDateFilter();
+            
+            // Check URL params for from/to before first grid load
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlFrom = urlParams.get('from');
+            const urlTo = urlParams.get('to');
+            if (urlFrom && urlTo) {
+                // Apply precise dates from URL — skip default month-rounded load
+                applyPreciseDateFilter(urlFrom, urlTo);
+            } else if (urlFrom) {
+                applyPreciseDateFilter(urlFrom, formatDateISO(SLIDER_END_DATE));
+            } else if (urlTo) {
+                applyPreciseDateFilter(formatDateISO(valueToDate(sliderStartValue)), urlTo);
+            } else {
+                updateSliderDisplay();
+                updateDateFilter();
+            }
         }
         
         // Expose function to set time slider range programmatically (for upload highlight & URL restore)
@@ -18518,11 +18531,14 @@ ${starredItems.narratives.map(n => {
             if (!isNaN(zoom)) map.setZoom(zoom);
         }
         
-        // Restore time range
+        // Restore time range (skip if initTimeSlider already applied URL dates)
         const from = params.get('from');
         const to = params.get('to');
         if (from && to && typeof setTimeSliderRange === 'function') {
-            setTimeSliderRange(from, to);
+            // Only re-apply if dates don't match (initTimeSlider handles this early)
+            if (dateFrom !== from || dateTo !== to) {
+                setTimeSliderRange(from, to);
+            }
         }
         
         // Restore bounding box

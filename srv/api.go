@@ -277,11 +277,13 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 		if fromStr != "" {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
 				gridParams.FromYear = int64(t.Year())
+				gridParams.FromMonth = int64(t.Month())
 			}
 		}
 		if toStr != "" {
 			if t, err := time.Parse("2006-01-02", toStr); err == nil {
 				gridParams.ToYear = int64(t.Year())
+				gridParams.ToMonth = int64(t.Month())
 			}
 		}
 		
@@ -576,18 +578,20 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	params := GridQueryParams{}
 	now := time.Now()
 
-	// Determine year range
+	// Determine date range (year + month precision)
 	if fromStr != "" || toStr != "" {
 		params.FromYear = int64(now.Year() - 1)
 		params.ToYear = int64(now.Year())
 		if fromStr != "" {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
 				params.FromYear = int64(t.Year())
+				params.FromMonth = int64(t.Month())
 			}
 		}
 		if toStr != "" {
 			if t, err := time.Parse("2006-01-02", toStr); err == nil {
 				params.ToYear = int64(t.Year())
+				params.ToMonth = int64(t.Month())
 			}
 		}
 	} else if yearStr != "" {
@@ -895,14 +899,17 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	fromYear := int64(now.Year())
 	toYear := int64(now.Year())
+	var fromMonth, toMonth int64
 	if fromStr != "" {
 		if t, err := time.Parse("2006-01-02", fromStr); err == nil {
 			fromYear = int64(t.Year())
+			fromMonth = int64(t.Month())
 		}
 	}
 	if toStr != "" {
 		if t, err := time.Parse("2006-01-02", toStr); err == nil {
 			toYear = int64(t.Year())
+			toMonth = int64(t.Month())
 		}
 	}
 
@@ -933,10 +940,17 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 			COALESCE(SUM(e.unique_uploads), 0) as total_uploads
 		FROM effort_data e
 		JOIN grid_cells g ON e.grid_cell_id = g.id
-		WHERE e.year BETWEEN ? AND ?
-		  AND e.day IS NULL
+		WHERE e.day IS NULL
 	`
-	args := []interface{}{fromYear, toYear}
+	var args []interface{}
+	// Month-level filtering when from/to months are available
+	if fromMonth > 0 && toMonth > 0 {
+		statsQuery += " AND (e.year * 100 + e.month) BETWEEN ? AND ?"
+		args = append(args, fromYear*100+fromMonth, toYear*100+toMonth)
+	} else {
+		statsQuery += " AND e.year BETWEEN ? AND ?"
+		args = append(args, fromYear, toYear)
+	}
 
 	// Movement type filter
 	if len(movementTypes) > 0 && len(movementTypes) < 3 {

@@ -11,8 +11,10 @@ import (
 type GridQueryParams struct {
 	FromYear      int64
 	ToYear        int64
-	Month         *int64    // Optional: filter by specific month
-	MovementTypes []string  // Optional: filter by movement types (foot, vehicle, aircraft)
+	FromMonth     int64       // 0 = no month filter on start
+	ToMonth       int64       // 0 = no month filter on end
+	Month         *int64      // Optional: filter by specific month
+	MovementTypes []string    // Optional: filter by movement types (foot, vehicle, aircraft)
 	BBox          *[4]float64 // Optional: [minLng, minLat, maxLng, maxLat]
 }
 
@@ -51,11 +53,17 @@ func (s *Server) QueryGridData(ctx context.Context, params GridQueryParams) ([]G
 		WHERE e.day IS NULL
 	`
 
-	// Year range filter
-	conditions = append(conditions, "e.year BETWEEN ? AND ?")
-	args = append(args, params.FromYear, params.ToYear)
+	// Date range filter (year+month precision)
+	if params.FromMonth > 0 && params.ToMonth > 0 {
+		// Use (year*100+month) for range comparison — works across year boundaries
+		conditions = append(conditions, "(e.year * 100 + e.month) BETWEEN ? AND ?")
+		args = append(args, params.FromYear*100+params.FromMonth, params.ToYear*100+params.ToMonth)
+	} else {
+		conditions = append(conditions, "e.year BETWEEN ? AND ?")
+		args = append(args, params.FromYear, params.ToYear)
+	}
 
-	// Month filter
+	// Month filter (single month override)
 	if params.Month != nil {
 		conditions = append(conditions, "e.month = ?")
 		args = append(args, *params.Month)
