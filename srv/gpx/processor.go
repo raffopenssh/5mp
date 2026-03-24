@@ -814,11 +814,18 @@ func RemoveStraightLineGaps(segments []Segment) []Segment {
 	return result
 }
 
-// removeGapsFromSegment finds and splits a segment at gap points
+// removeGapsFromSegment finds and splits a segment at gap points.
+// The original segment's movement hint is preserved in all sub-segments.
 func removeGapsFromSegment(seg Segment) []Segment {
 	if len(seg.Points) < 3 {
 		return []Segment{seg}
 	}
+
+	// For aircraft/vehicle segments with authoritative hints, use relaxed gap
+	// thresholds.  An aircraft covering 2 km in 15 seconds is normal flight,
+	// not a "gap".  The tight default thresholds (0.5 km + 2 min) were designed
+	// for foot patrol data and shred aircraft tracks into unusable fragments.
+	isHighSpeed := seg.Hint.Type == "aircraft" || seg.Hint.Type == "vehicle"
 
 	var result []Segment
 	var currentPoints []Point
@@ -847,37 +854,45 @@ func removeGapsFromSegment(seg Segment) []Segment {
 				speed = dist / hours
 			}
 
-			// Multiple detection criteria (any one triggers gap detection):
+			if isHighSpeed {
+				// Relaxed criteria for aircraft/vehicle:
+				// Only split on truly implausible gaps.
 
-			// 1. Long time gap with unrealistic speed (>200 km/h)
-			//    e.g., GPS signal loss, teleportation
-			if timeGap > 5*time.Minute && speed > 200 {
-				isGap = true
-			}
+				// 1. Teleportation: huge distance with unrealistic speed
+				if timeGap > 5*time.Minute && speed > 500 {
+					isGap = true
+				}
+				// 2. Very large jump (>50 km) with significant gap
+				if dist > 50 && timeGap > 5*time.Minute {
+					isGap = true
+				}
+			} else {
+				// Default criteria for foot patrol / unknown:
 
-			// 2. Large distance jump (>10km) with significant time gap
-			//    e.g., long transit between locations
-			if dist > 10 && timeGap > 1*time.Minute {
-				isGap = true
-			}
-
-			// 3. Medium distance jump (>0.5km) with long time gap (>2 minutes)
-			//    e.g., car/train transit, GPS turned off during transport
-			if dist > 0.5 && timeGap > 2*time.Minute {
-				isGap = true
-			}
-
-			// 4. Fast movement (>50 km/h) over short distance (>0.3km)
-			//    e.g., car/train segment that should be excluded from foot patrol
-			if dist > 0.3 && speed > 50 {
-				isGap = true
+				// 1. Long time gap with unrealistic speed (>200 km/h)
+				if timeGap > 5*time.Minute && speed > 200 {
+					isGap = true
+				}
+				// 2. Large distance jump (>10km) with significant time gap
+				if dist > 10 && timeGap > 1*time.Minute {
+					isGap = true
+				}
+				// 3. Medium distance jump (>0.5km) with long time gap (>2 minutes)
+				if dist > 0.5 && timeGap > 2*time.Minute {
+					isGap = true
+				}
+				// 4. Fast movement (>50 km/h) over short distance (>0.3km)
+				if dist > 0.3 && speed > 50 {
+					isGap = true
+				}
 			}
 		}
 
 		if isGap {
-			// End current segment and start new one
+			// End current segment and start new one, preserving hint
 			if len(currentPoints) >= 2 {
-				result = append(result, buildSegment(currentPoints))
+				sub := buildSegmentWithHint(currentPoints, seg.Hint)
+				result = append(result, sub)
 			}
 			currentPoints = []Point{pt}
 		} else {
@@ -885,9 +900,10 @@ func removeGapsFromSegment(seg Segment) []Segment {
 		}
 	}
 
-	// Don't forget the last segment
+	// Don't forget the last segment, preserving hint
 	if len(currentPoints) >= 2 {
-		result = append(result, buildSegment(currentPoints))
+		sub := buildSegmentWithHint(currentPoints, seg.Hint)
+		result = append(result, sub)
 	}
 
 	if len(result) == 0 {

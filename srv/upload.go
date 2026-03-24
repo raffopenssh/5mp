@@ -1420,7 +1420,7 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		var patrolOnlySegments []gpx.Segment
 		for _, cs := range validationResult.ClassifiedSegments {
 			if !cs.IncludeInEffort {
-				continue // skip logistics, road, auto_generated, static, idle
+				continue // skip road, auto_generated, static, idle
 			}
 			// Collect original segments covered by this classified segment
 			for _, origIdx := range cs.OriginalIndices {

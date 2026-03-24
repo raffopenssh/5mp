@@ -17614,16 +17614,12 @@ ${starredItems.narratives.map(n => {
     }
 
     function buildExcludedReasons(log) {
-        // excluded_km = aircraft logistics + auto_generated + static segments
-        // (road_km and boundary_km are tracked separately)
+        // excluded_km = auto_generated + static segments
+        // (road_km and boundary_km are tracked separately;
+        //  aircraft logistics and vehicle transit are now included in effort)
         const parts = [];
-        const lk = log.logistics_km || 0;
-        const ls = log.logistics_segments || 0;
-        if (lk >= 0.05) parts.push(`${ls}× flight logistics ${lk.toFixed(1)}km`);
-        // Remaining excluded = auto-generated, static, or other non-effort
         const excl = log.excluded_km || 0;
-        const remainder = excl - lk;
-        if (remainder >= 0.05) parts.push(`other ${remainder.toFixed(1)}km`);
+        if (excl >= 0.05) parts.push(`other ${excl.toFixed(1)}km`);
         return parts.join(', ');
     }
 

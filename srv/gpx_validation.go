@@ -147,8 +147,9 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 			}
 		}
 
-		// Check for boundary traces
-		if isBoundaryTrace(seg) {
+		// Check for boundary traces (skip for aircraft/vehicle — a circular
+		// survey flight is not a park boundary digitization)
+		if isBoundaryTrace(seg) && timeSeg.Hint.Type != "aircraft" && timeSeg.Hint.Type != "vehicle" {
 			classified := ClassifiedSegment{
 				Classification:  "boundary",
 				StartIndex:      0,
@@ -164,8 +165,9 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 			continue
 		}
 
-		// Check for road traces
-		if isRoadTrace(seg) {
+		// Check for road traces (skip for aircraft/vehicle — straight survey transects
+		// and highway driving are not road digitizations)
+		if isRoadTrace(seg) && timeSeg.Hint.Type != "aircraft" && timeSeg.Hint.Type != "vehicle" {
 			classified := ClassifiedSegment{
 				Classification:  "road",
 				StartIndex:      0,
@@ -238,11 +240,8 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 		includeInEffort := true
 		if movementType == "aircraft" {
 			classType = "aircraft"
-			// Aircraft patrol/reconnaissance (aerial surveys) count as effort;
-			// only logistics (point-to-point transport) is excluded
-			if activityType == "logistics" {
-				includeInEffort = false
-			}
+			// Include ALL aircraft segments in effort until the logistics/survey
+			// classifier is reliable enough to distinguish them.
 		}
 
 		// Filter out idle/stationary segments: a GPS tracker pinging while

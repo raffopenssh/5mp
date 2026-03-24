@@ -239,7 +239,8 @@ func TestValidateAndClassifyGPX_RealisticDistances(t *testing.T) {
 }
 
 // TestValidateAndClassifyGPX_AircraftSeparation ensures aircraft movements
-// are separated from patrol distances (they shouldn't count toward patrol effort)
+// are classified as aircraft and included in patrol effort.
+// Until the logistics/survey classifier is reliable, all aircraft effort counts.
 func TestValidateAndClassifyGPX_AircraftSeparation(t *testing.T) {
 	baseTime := time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC)
 	
@@ -269,15 +270,9 @@ func TestValidateAndClassifyGPX_AircraftSeparation(t *testing.T) {
 		t.Errorf("Expected valid GPX, got invalid: %v", result.ValidationErrors)
 	}
 	
-	// Patrol km should be 0 or very low (aircraft shouldn't count)
-	if result.PatrolKm > 10 {
-		t.Errorf("Patrol km %.2f is too high - aircraft should not count as patrol", result.PatrolKm)
-	}
-	
-	// Excluded km should include the aircraft distance
-	// Flight distance should be in excluded (at least 300km)
-	if result.ExcludedKm < 300 {
-		t.Errorf("Excluded km %.2f is too low - aircraft distance should be excluded", result.ExcludedKm)
+	// All aircraft effort should now be included in patrol km
+	if result.PatrolKm < 300 {
+		t.Errorf("Patrol km %.2f is too low - aircraft effort should be included", result.PatrolKm)
 	}
 	
 	// Check we have an aircraft segment
