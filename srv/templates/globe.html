@@ -12450,11 +12450,15 @@
 
             span._editing = true;
 
-            // Show date preset tags when editing starts
-            if (!activePresetTag) showDateTags();
-
-            // Clear any active date preset
-            clearPresetTag();
+            // Show all date preset tags when editing starts
+            showDateTags();
+            // If a preset was active, keep it highlighted among the expanded tags
+            if (activePresetTag) {
+                setTimeout(function() {
+                    var el = document.querySelector('[data-preset="' + activePresetTag + '"]');
+                    if (el) el.classList.add('active');
+                }, 10);
+            }
 
             // Current value — use actual filter date, not month-rounded slider
             const isoVal = which === 'start'
@@ -12496,17 +12500,22 @@
                         const newFrom = which === 'start' ? val : (dateFrom || formatDateISO(valueToDate(sliderStartValue)));
                         const newTo   = which === 'end'   ? val : (dateTo   || formatDateISO(valueToDate(sliderEndValue)));
                         span._editing = false;
+                        // Manual date edit clears any preset
+                        if (activePresetTag) { activePresetTag = null; updateShareURLPreset(null); }
                         applyPreciseDateFilter(newFrom, newTo);
-                        // Hide tags after edit completes (no preset, no other editor open)
-                        if (!activePresetTag && !_activeEditor) hideDateTags();
+                        // Collapse tags when done
+                        if (!_activeEditor) hideDateTags();
                         return;
                     }
                 }
                 // Cancel — restore original text
                 span.textContent = origText;
                 span._editing = false;
-                // Hide tags if no editor open and no preset active
-                if (!activePresetTag && !_activeEditor) hideDateTags();
+                // Collapse: show only active preset, or hide all
+                if (!_activeEditor) {
+                    if (activePresetTag) showOnlyActiveTag(activePresetTag);
+                    else hideDateTags();
+                }
             }
 
             // Register as active editor so the other date can cancel us
