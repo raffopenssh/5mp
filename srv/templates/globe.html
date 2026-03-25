@@ -439,6 +439,10 @@
         .time-slider-date-input { font-size: 14px; font-weight: 600; color: #22c55e; background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.4); border-radius: 4px; padding: 1px 4px; font-family: inherit; outline: none; width: auto; }
         .time-slider-date-input:focus { border-color: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.3); }
         .time-slider-date-input::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+        .time-slider-date-tags { display: inline-flex; gap: 3px; margin-left: 8px; align-items: center; }
+        .time-slider-date-tag { font-size: 9px; font-weight: 600; color: #22c55e; background: rgba(34,197,94,0.10); border: 1px solid rgba(34,197,94,0.25); border-radius: 3px; padding: 1px 4px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.3px; line-height: 1.3; white-space: nowrap; user-select: none; }
+        .time-slider-date-tag:hover { background: rgba(34,197,94,0.22); border-color: rgba(34,197,94,0.5); color: #4ade80; }
+        .time-slider-date-tag.active { background: rgba(34,197,94,0.25); border-color: #22c55e; color: #fff; }
         .time-slider-track-wrapper { position: relative; flex: 1; padding: 0 8px; }
         .time-slider-track { position: relative; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer; }
         .time-slider-range { position: absolute; height: 100%; background: linear-gradient(90deg, rgba(34,197,94,0.6), #22c55e); border-radius: 3px; pointer-events: none; }
@@ -461,6 +465,8 @@
             .time-slider-container { height: 60px; padding: 6px 12px 10px; }
             .time-slider-date { font-size: 12px; }
             .time-slider-date-input { font-size: 12px; }
+            .time-slider-date-tags { gap: 2px; margin-left: 4px; }
+            .time-slider-date-tag { font-size: 8px; padding: 1px 3px; min-height: 18px; display: inline-flex; align-items: center; }
             #map { bottom: 60px !important; }
             /* Larger touch targets for slider handles */
             .time-slider-handle { width: 20px; height: 20px; }
@@ -1406,7 +1412,7 @@
     <!-- Time Slider -->
     <div class="time-slider-container" id="time-slider-container">
         <div class="time-slider-header">
-            <div class="time-slider-date" id="time-slider-date"><span class="time-slider-date-part" id="time-slider-date-start" onclick="editSliderDate('start')" title="Click to set start date">Jan 2020</span><span class="time-slider-date-sep"> - </span><span class="time-slider-date-part" id="time-slider-date-end" onclick="editSliderDate('end')" title="Click to set end date">Dec 2024</span></div>
+            <div class="time-slider-date" id="time-slider-date"><span class="time-slider-date-part" id="time-slider-date-start" onclick="editSliderDate('start')" title="Click to set start date">Jan 2020</span><span class="time-slider-date-sep"> - </span><span class="time-slider-date-part" id="time-slider-date-end" onclick="editSliderDate('end')" title="Click to set end date">Dec 2024</span><span class="time-slider-date-tags" id="time-slider-date-tags"><span class="time-slider-date-tag" data-preset="td" onclick="applyDatePreset('td')" title="Today (since midnight)">td</span><span class="time-slider-date-tag" data-preset="3d" onclick="applyDatePreset('3d')" title="Last 3 days">3d</span><span class="time-slider-date-tag" data-preset="cmo" onclick="applyDatePreset('cmo')" title="Current month">cmo</span><span class="time-slider-date-tag" data-preset="90d" onclick="applyDatePreset('90d')" title="Last 90 days">90d</span></span></div>
         </div>
         <div class="time-slider-track-wrapper">
             <div class="time-slider-track" id="time-slider-track">
@@ -12067,6 +12073,9 @@
             if (startEl) { startEl._precise = false; startEl.textContent = formatMonthYear(startDate); }
             if (endEl) { endEl._precise = false; endEl.textContent = formatMonthYear(endDate); }
             
+            // Clear any active date preset tag
+            clearPresetTag();
+            
             // Update global date variables (used by existing code)
             dateFrom = formatDateISO(startDate);
             // End date: use last day of the month (or today if current/future month)
@@ -12198,16 +12207,100 @@
             });
         }
         
+        // Date preset tags — compute date ranges dynamically
+        var activePresetTag = null;
+        window.applyDatePreset = function(preset) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayISO = formatDateISO(today);
+            const minISO = formatDateISO(SLIDER_START_DATE);
+            let fromISO, toISO;
+
+            switch (preset) {
+                case 'td': // Today since midnight
+                    fromISO = todayISO;
+                    toISO = todayISO;
+                    break;
+                case '3d': // Last 3 days (today + 2 prior)
+                    const d3 = new Date(today);
+                    d3.setDate(d3.getDate() - 2);
+                    fromISO = formatDateISO(d3 < SLIDER_START_DATE ? SLIDER_START_DATE : d3);
+                    toISO = todayISO;
+                    break;
+                case 'cmo': // Current month
+                    fromISO = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-01';
+                    if (fromISO < minISO) fromISO = minISO;
+                    toISO = todayISO;
+                    break;
+                case '90d': // Last 90 days
+                    const d90 = new Date(today);
+                    d90.setDate(d90.getDate() - 89);
+                    fromISO = formatDateISO(d90 < SLIDER_START_DATE ? SLIDER_START_DATE : d90);
+                    toISO = todayISO;
+                    break;
+                default: return;
+            }
+
+            // Toggle off if same preset clicked again
+            if (activePresetTag === preset) {
+                activePresetTag = null;
+                // Reset to full range
+                sliderStartValue = 36; // Jan 2023 default
+                sliderEndValue = TOTAL_MONTHS;
+                updateSliderDisplay();
+                updateDateFilter();
+                updatePresetTagUI(null);
+                updateShareURLPreset(null);
+                return;
+            }
+
+            activePresetTag = preset;
+            applyPreciseDateFilter(fromISO, toISO);
+            updatePresetTagUI(preset);
+            updateShareURLPreset(preset);
+        };
+
+        function updatePresetTagUI(preset) {
+            document.querySelectorAll('.time-slider-date-tag').forEach(function(tag) {
+                tag.classList.toggle('active', tag.dataset.preset === preset);
+            });
+        }
+
+        function updateShareURLPreset(preset) {
+            try {
+                const url = new URL(window.location);
+                if (preset) {
+                    url.searchParams.set('date_preset', preset);
+                } else {
+                    url.searchParams.delete('date_preset');
+                }
+                window.history.replaceState({}, '', url);
+            } catch (e) {}
+        }
+
+        // Clear preset tag when user manually drags slider or edits date
+        function clearPresetTag() {
+            if (activePresetTag) {
+                activePresetTag = null;
+                updatePresetTagUI(null);
+                updateShareURLPreset(null);
+            }
+        }
+
         // Initialize slider
         function initTimeSlider() {
             initTicks();
             initSliderDrag();
             
-            // Check URL params for from/to before first grid load
+            // Check URL params for from/to or date_preset before first grid load
             const urlParams = new URLSearchParams(window.location.search);
+            const urlPreset = urlParams.get('date_preset');
             const urlFrom = urlParams.get('from');
             const urlTo = urlParams.get('to');
-            if (urlFrom && urlTo) {
+            if (urlPreset && ['td', '3d', 'cmo', '90d'].indexOf(urlPreset) !== -1) {
+                // Apply date preset from share link
+                applyDatePreset(urlPreset);
+            } else if (urlFrom && urlTo) {
                 // Apply precise dates from URL — skip default month-rounded load
                 applyPreciseDateFilter(urlFrom, urlTo);
             } else if (urlFrom) {
@@ -12233,6 +12326,13 @@
             // Validate
             if (!newFrom || !newTo) return;
             if (newFrom > newTo) { var tmp = newFrom; newFrom = newTo; newTo = tmp; }
+
+            // Clamp to valid range: 2020-01-01 to today
+            const minISO = formatDateISO(SLIDER_START_DATE);
+            const maxISO = formatDateISO(SLIDER_END_DATE);
+            if (newFrom < minISO) newFrom = minISO;
+            if (newTo > maxISO) newTo = maxISO;
+            if (newFrom > newTo) newFrom = newTo;
 
             // Set global filter dates
             dateFrom = newFrom;
@@ -12264,18 +12364,32 @@
         }
 
         // Inline date editor for precise filtering (expert mode)
+        // Track active editor so clicking the other date properly cancels the first
+        var _activeEditor = null;
         window.editSliderDate = function(which) {
             const spanId = 'time-slider-date-' + which;
             const span = document.getElementById(spanId);
-            if (!span || span._editing) return;
+            if (!span) return;
+
+            // If this span is already being edited, ignore
+            if (span._editing) return;
+
+            // If the OTHER date is being edited, close it first (commit if changed)
+            if (_activeEditor && _activeEditor.which !== which) {
+                _activeEditor.finish(_activeEditor.input.value !== _activeEditor.origISO ? _activeEditor.input.value : null);
+            }
+
             span._editing = true;
+
+            // Clear any active date preset
+            clearPresetTag();
 
             // Current value — use actual filter date, not month-rounded slider
             const isoVal = which === 'start'
                 ? (dateFrom || formatDateISO(valueToDate(sliderStartValue)))
                 : (dateTo || formatDateISO(valueToDate(sliderEndValue)));
 
-            // Bounds: start can't go past current end, end can't go before current start
+            // Enforce min 2020-01-01, max today
             const absMin = formatDateISO(SLIDER_START_DATE);
             const absMax = formatDateISO(SLIDER_END_DATE);
             const inputMin = which === 'start' ? absMin : (dateFrom || absMin);
@@ -12291,20 +12405,23 @@
             const origText = span.textContent;
             span.textContent = '';
             span.appendChild(input);
-            input.focus();
 
             let done = false;
             function finish(val) {
                 if (done) return;
                 done = true;
+                if (_activeEditor && _activeEditor.which === which) _activeEditor = null;
                 // Remove the input
                 if (input.parentNode === span) span.removeChild(input);
 
                 if (val) {
+                    // Clamp to valid range
+                    if (val < absMin) val = absMin;
+                    if (val > absMax) val = absMax;
                     const d = new Date(val + 'T00:00:00');
                     if (!isNaN(d.getTime())) {
-                        const newFrom = which === 'start' ? val : dateFrom;
-                        const newTo   = which === 'end'   ? val : dateTo;
+                        const newFrom = which === 'start' ? val : (dateFrom || formatDateISO(valueToDate(sliderStartValue)));
+                        const newTo   = which === 'end'   ? val : (dateTo   || formatDateISO(valueToDate(sliderEndValue)));
                         span._editing = false;
                         applyPreciseDateFilter(newFrom, newTo);
                         return;
@@ -12315,6 +12432,9 @@
                 span._editing = false;
             }
 
+            // Register as active editor so the other date can cancel us
+            _activeEditor = { which: which, input: input, finish: finish, origISO: isoVal };
+
             input.addEventListener('change', function() { finish(input.value); });
             input.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') { e.preventDefault(); finish(input.value); }
@@ -12322,7 +12442,7 @@
             });
             // On blur: commit the current value (user clicked away or native picker closed)
             input.addEventListener('blur', function() {
-                // Short delay so change event fires first if both happen
+                // Short delay so change/click events on the other date fire first
                 setTimeout(function() {
                     if (!done) {
                         // If value changed from original, commit it; otherwise cancel
@@ -12332,8 +12452,11 @@
                             finish(null);
                         }
                     }
-                }, 80);
+                }, 120);
             });
+
+            // Focus after a tick to avoid the click event propagating weirdly
+            setTimeout(function() { input.focus(); }, 10);
         };
 
         // Format date as "15 Jan 2023" for precise display
@@ -18427,9 +18550,13 @@ ${starredItems.narratives.map(n => {
             params.set('basemap', currentBasemap);
         }
         
-        // Add time range
-        if (dateFrom) params.set('from', dateFrom);
-        if (dateTo) params.set('to', dateTo);
+        // Add time range (use preset if active, otherwise explicit dates)
+        if (typeof activePresetTag !== 'undefined' && activePresetTag) {
+            params.set('date_preset', activePresetTag);
+        } else {
+            if (dateFrom) params.set('from', dateFrom);
+            if (dateTo) params.set('to', dateTo);
+        }
         
         // Add bounding box if set
         if (currentBbox && currentBbox.length === 4) {
