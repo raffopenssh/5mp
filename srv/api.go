@@ -708,11 +708,20 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 		}
 	} else {
 		// Short-to-medium window (1-180 days).
-		// Distance threshold scales logarithmically with window size:
-		//   1d → 60km, 3d → 120km, 7d → 180km, 14d → 234km,
-		//   28d → 293km, 90d → 390km, 180d → 449km
-		distThreshold := 60.0 * math.Log2(1.0+float64(windowDays))
-		distFactor := row.TotalDistanceKm / distThreshold
+		// Weight distance by movement type: foot patrols count most per km,
+		// aircraft next, vehicle least.
+		//   foot: 0.40/km, aircraft: 0.35/km, vehicle: 0.25/km
+		weightedDist := row.FootKm*0.40 + row.AircraftKm*0.35 + row.VehicleKm*0.25
+		// Fall back to total if per-type breakdown unavailable (legacy data)
+		if weightedDist == 0 && row.TotalDistanceKm > 0 {
+			weightedDist = row.TotalDistanceKm * 0.33
+		}
+
+		// Threshold scales logarithmically with window size:
+		//   1d → 24km, 3d → 48km, 7d → 72km, 14d → 94km,
+		//   28d → 117km, 90d → 156km, 180d → 180km
+		distThreshold := 24.0 * math.Log2(1.0+float64(windowDays))
+		distFactor := weightedDist / distThreshold
 		if distFactor > 1.0 {
 			distFactor = 1.0
 		}

@@ -756,14 +756,14 @@ func gridCellIDForPoint(lat, lon float64) string {
 // gridCellTracker assigns points to grid cells with hysteresis to prevent
 // boundary-straddling tracks from creating 2-wide pixel bands.
 // Once a point is assigned to a cell, subsequent points stay in that cell
-// unless they move >20% (0.02°) into the adjacent cell.
+// unless they move >35% (0.035°) into the adjacent cell.
 type gridCellTracker struct {
 	currentCell string
 	currentLat  float64 // cell floor lat
 	currentLon  float64 // cell floor lon
 }
 
-const gridHysteresis = 0.02 // 20% of cell size — ~2km buffer
+const gridHysteresis = 0.035 // 35% of cell size — ~3.5km buffer
 
 // Assign returns the grid cell ID for a point, applying hysteresis
 // relative to the current cell. First call always sets the current cell.
