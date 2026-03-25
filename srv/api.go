@@ -711,18 +711,18 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 		// so all cells look the same. Use distance + subcell coverage to
 		// differentiate instead.
 		//
-		// Distance-based: 50km in a cell is thorough, 1km is a drive-through
-		distFactor := row.TotalDistanceKm / 50.0
+		// Distance-based: 40km in a cell is thorough, 1km is a drive-through
+		distFactor := row.TotalDistanceKm / 40.0
 		if distFactor > 1.0 {
 			distFactor = 1.0
 		}
-		// Subcell spatial coverage (already 0-100)
-		subFactor := float64(row.SubcellCount) / 30.0 // 30 subcells in a short window = thorough
-		if subFactor > 1.0 {
-			subFactor = 1.0
+		// Subcell spatial coverage as bonus (0-100 subcells)
+		subBonus := float64(row.SubcellCount) / 50.0 // 50 subcells = full bonus
+		if subBonus > 0.3 {
+			subBonus = 0.3
 		}
-		// Blend: distance 60%, subcell 40% (distance always available, subcells may be 0)
-		intensity = distFactor*0.6 + subFactor*0.4
+		// Distance is primary, subcell adds up to 0.3 bonus
+		intensity = distFactor + subBonus
 	} else {
 		// Medium window (4-180 days): visit-day frequency relative to the span.
 		// A cell visited every 3 days = 1.0.
