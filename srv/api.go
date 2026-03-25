@@ -668,18 +668,7 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, row := range rows {
-		feature := buildGridFeature(
-			row.GridCellID,
-			row.LatCenter,
-			row.LonCenter,
-			row.TotalDistanceKm,
-			row.TotalPoints,
-			row.UniqueUploads,
-			movementTypeStr,
-			row.CoveragePercent,
-			row.DryMonths,
-			row.RainyMonths,
-		)
+		feature := buildGridFeature(row, movementTypeStr, params)
 		features = append(features, feature)
 	}
 
@@ -695,56 +684,83 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 
 // buildGridFeature creates a GeoJSON feature for a grid cell.
 // Returns a Point at the center of the cell for circle visualization.
-// dryMonths and rainyMonths are the count of distinct months visited in each season.
-// For full patrol coverage, rangers need to visit each cell monthly during dry season.
-func buildGridFeature(gridCellID string, latCenter, lonCenter, totalDistanceKm float64, totalPoints, uniqueUploads int64, movementType string, coveragePercent *float64, dryMonths, rainyMonths int64) GeoJSONFeature {
-	// Calculate intensity based on TEMPORAL FREQUENCY of visits
-	// 
-	// For effective poacher/herder detection:
-	// - Dry season (Nov-Apr = 6 months): Need monthly visits, weight = 1.0 per month
-	// - Rainy season (May-Oct = 6 months): Limited access, weight = 0.3 per month
-	// 
-	// Full intensity (1.0) = visited all dry season months + some rainy months
-	// Expected weighted visits = 6 * 1.0 (dry) + 6 * 0.3 (rainy) = 7.8
-	// But for practical purposes, we use 6 dry months as the baseline (ignoring rainy)
-	
+//
+// Intensity model (time-window-aware):
+//   - For full-year views (>180 days): uses dry/rainy month weighting (original model)
+//   - For short windows (<= 180 days): uses visit-day frequency relative to span
+//   - Subcell coverage drives inner fill independently
+//   - Recency drives halo/glow opacity decay
+func buildGridFeature(row GridRow, movementType string, params GridQueryParams) GeoJSONFeature {
+	windowDays := computeWindowSpanDays(params)
+
 	var intensity float64
-	
-	// Primary calculation: temporal frequency (monthly visits)
-	if dryMonths > 0 || rainyMonths > 0 {
-		// Weight: dry months count fully, rainy months count 30%
-		actualWeight := float64(dryMonths) + float64(rainyMonths)*0.3
-		// Expected: 6 dry months = full coverage for a year
-		expectedWeight := 6.0
-		intensity = actualWeight / expectedWeight
-	} else if coveragePercent != nil && *coveragePercent > 0 {
-		// Fallback: spatial coverage (legacy behavior)
-		intensity = *coveragePercent / 80.0
+
+	if windowDays > 180 {
+		// Long window: use the seasonal month-frequency model
+		if row.DryMonths > 0 || row.RainyMonths > 0 {
+			actualWeight := float64(row.DryMonths) + float64(row.RainyMonths)*0.3
+			expectedWeight := 6.0
+			intensity = actualWeight / expectedWeight
+		} else if row.CoveragePercent != nil && *row.CoveragePercent > 0 {
+			intensity = *row.CoveragePercent / 80.0
+		} else {
+			intensity = row.TotalDistanceKm / 80.0
+		}
 	} else {
-		// Last fallback: estimate from distance
-		// ~80km patrol in a year = ~1 full coverage (very rough)
-		intensity = totalDistanceKm / 80.0
-	}
-	
-	if intensity > 1.5 {
-		intensity = 1.5 // Cap for overglow effect
+		// Short window: visit-day frequency relative to the span.
+		// A cell visited every day = 1.0. Visited 1 day out of 30 = 0.033.
+		// We use a generous expected cadence: visiting once per 3 days = 1.0.
+		expectedVisitDays := float64(windowDays) / 3.0
+		if expectedVisitDays < 1 {
+			expectedVisitDays = 1
+		}
+		intensity = float64(row.VisitDays) / expectedVisitDays
+
+		// Blend in distance as a secondary signal (cells with many km but few days
+		// still show higher than cells with a single drive-through)
+		if row.TotalDistanceKm > 0 {
+			// ~300km in a short window is thorough patrol
+			distBoost := row.TotalDistanceKm / 300.0
+			if distBoost > 0.5 {
+				distBoost = 0.5
+			}
+			intensity = intensity*0.7 + (intensity+distBoost)*0.3
+		}
 	}
 
-	// Return Point at center of cell (GeoJSON uses [lon, lat] order)
+	if intensity > 1.5 {
+		intensity = 1.5
+	}
+
+	// Subcell spatial coverage: fraction of 100 possible subcells visited
+	subcellCoverage := float64(row.SubcellCount) / 100.0
+	if subcellCoverage > 1.0 {
+		subcellCoverage = 1.0
+	}
+
+	// Recency: how fresh is the last visit relative to window end?
+	recency := computeRecency(row.LastVisitDay, params)
+
 	return GeoJSONFeature{
 		Type: "Feature",
 		Geometry: GeoJSONGeometry{
 			Type:        "Point",
-			Coordinates: []float64{lonCenter, latCenter},
+			Coordinates: []float64{row.LonCenter, row.LatCenter},
 		},
 		Properties: map[string]interface{}{
-			"id":                gridCellID,
-			"total_distance_km": totalDistanceKm,
-			"total_points":      totalPoints,
-			"unique_uploads":    uniqueUploads,
+			"id":                row.GridCellID,
+			"total_distance_km": row.TotalDistanceKm,
+			"total_points":      row.TotalPoints,
+			"unique_uploads":    row.UniqueUploads,
 			"movement_type":     movementType,
 			"intensity":         intensity,
-			"coverage_percent":  coveragePercent,
+			"coverage_percent":  row.CoveragePercent,
+			"subcell_coverage":  subcellCoverage,
+			"recency":           recency,
+			"visit_days":        row.VisitDays,
+			"foot_km":           row.FootKm,
+			"vehicle_km":        row.VehicleKm,
+			"aircraft_km":       row.AircraftKm,
 		},
 	}
 }

@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"math"
 	"strings"
+	"time"
 )
 
 // GridQueryParams holds all filter parameters for grid data queries.
@@ -31,6 +33,12 @@ type GridRow struct {
 	CoveragePercent *float64
 	DryMonths       int64
 	RainyMonths     int64
+	VisitDays       int64   // distinct days with effort within the window
+	LastVisitDay    int64   // YYYYMMDD code of most recent effort day (0 if unknown)
+	SubcellCount    int64   // distinct subcells visited (from subcell_visits, 0-100)
+	FootKm          float64 // distance by movement type
+	VehicleKm       float64
+	AircraftKm      float64
 }
 
 // QueryGridData executes a flexible query for grid data with optional filters.
@@ -52,7 +60,9 @@ func (s *Server) QueryGridData(ctx context.Context, params GridQueryParams) ([]G
 			COALESCE(MAX(e.unique_uploads), 0) as unique_uploads,
 			MAX(e.coverage_percent) as coverage_percent,
 			COUNT(DISTINCT CASE WHEN e.month IN (11, 12, 1, 2, 3, 4) THEN e.year * 100 + e.month END) as dry_months,
-			COUNT(DISTINCT CASE WHEN e.month IN (5, 6, 7, 8, 9, 10) THEN e.year * 100 + e.month END) as rainy_months
+			COUNT(DISTINCT CASE WHEN e.month IN (5, 6, 7, 8, 9, 10) THEN e.year * 100 + e.month END) as rainy_months,
+			COUNT(DISTINCT CASE WHEN e.day IS NOT NULL THEN e.year * 10000 + e.month * 100 + e.day END) as visit_days,
+			COALESCE(MAX(CASE WHEN e.day IS NOT NULL THEN e.year * 10000 + e.month * 100 + e.day END), 0) as last_visit_day
 		FROM grid_cells g
 		JOIN effort_data e ON e.grid_cell_id = g.id
 		WHERE 1=1
@@ -136,6 +146,8 @@ func (s *Server) QueryGridData(ctx context.Context, params GridQueryParams) ([]G
 			&coveragePercent,
 			&row.DryMonths,
 			&row.RainyMonths,
+			&row.VisitDays,
+			&row.LastVisitDay,
 		); err != nil {
 			return nil, fmt.Errorf("scan grid row: %w", err)
 		}
@@ -151,5 +163,235 @@ func (s *Server) QueryGridData(ctx context.Context, params GridQueryParams) ([]G
 		return nil, fmt.Errorf("iterate grid rows: %w", err)
 	}
 
+	// Enrich with subcell coverage from subcell_visits table.
+	// We batch this as a second query to avoid complicating the main JOIN.
+	if len(results) > 0 {
+		if err := s.enrichSubcellCoverage(ctx, params, results); err != nil {
+			// Non-fatal: subcell data is supplementary
+			for i := range results {
+				results[i].SubcellCount = 0
+			}
+		}
+	}
+
+	// Enrich with per-movement-type distance breakdown.
+	if len(results) > 0 {
+		if err := s.enrichMovementTypes(ctx, params, results); err != nil {
+			// Non-fatal
+		}
+	}
+
 	return results, nil
+}
+
+// enrichSubcellCoverage looks up distinct subcell counts for each grid cell
+// within the requested date range.
+func (s *Server) enrichSubcellCoverage(ctx context.Context, params GridQueryParams, rows []GridRow) error {
+	// Build cell ID list
+	idSet := make(map[string]int, len(rows)) // cellID -> index in rows
+	for i, r := range rows {
+		idSet[r.GridCellID] = i
+	}
+
+	// Build date conditions for subcell_visits
+	var dateCondition string
+	var dateArgs []interface{}
+	if params.FromDay > 0 && params.ToDay > 0 && params.FromMonth > 0 && params.ToMonth > 0 {
+		fromDate := fmt.Sprintf("%04d-%02d-%02d", params.FromYear, params.FromMonth, params.FromDay)
+		toDate := fmt.Sprintf("%04d-%02d-%02d", params.ToYear, params.ToMonth, params.ToDay)
+		dateCondition = "AND sv.visit_date BETWEEN ? AND ?"
+		dateArgs = append(dateArgs, fromDate, toDate)
+	}
+
+	// Query in batches of ~500 to avoid huge IN clauses
+	cellIDs := make([]string, 0, len(idSet))
+	for id := range idSet {
+		cellIDs = append(cellIDs, id)
+	}
+
+	const batchSize = 500
+	for start := 0; start < len(cellIDs); start += batchSize {
+		end := start + batchSize
+		if end > len(cellIDs) {
+			end = len(cellIDs)
+		}
+		batch := cellIDs[start:end]
+
+		placeholders := make([]string, len(batch))
+		qargs := make([]interface{}, 0, len(batch)+len(dateArgs))
+		for i, id := range batch {
+			placeholders[i] = "?"
+			qargs = append(qargs, id)
+		}
+		qargs = append(qargs, dateArgs...)
+
+		q := fmt.Sprintf(`
+			SELECT grid_cell_id, COUNT(DISTINCT subcell_id)
+			FROM subcell_visits sv
+			WHERE sv.grid_cell_id IN (%s) %s
+			GROUP BY sv.grid_cell_id
+		`, strings.Join(placeholders, ","), dateCondition)
+
+		srows, err := s.DB.QueryContext(ctx, q, qargs...)
+		if err != nil {
+			return fmt.Errorf("query subcell coverage: %w", err)
+		}
+		for srows.Next() {
+			var cellID string
+			var cnt int64
+			if err := srows.Scan(&cellID, &cnt); err != nil {
+				srows.Close()
+				return err
+			}
+			if idx, ok := idSet[cellID]; ok {
+				rows[idx].SubcellCount = cnt
+			}
+		}
+		srows.Close()
+	}
+
+	return nil
+}
+
+// enrichMovementTypes looks up per-movement-type distance for each grid cell.
+func (s *Server) enrichMovementTypes(ctx context.Context, params GridQueryParams, rows []GridRow) error {
+	idSet := make(map[string]int, len(rows))
+	for i, r := range rows {
+		idSet[r.GridCellID] = i
+	}
+
+	cellIDs := make([]string, 0, len(idSet))
+	for id := range idSet {
+		cellIDs = append(cellIDs, id)
+	}
+
+	// Build date condition
+	var dateCondition string
+	var dateArgs []interface{}
+	if params.FromDay > 0 && params.ToDay > 0 && params.FromMonth > 0 && params.ToMonth > 0 {
+		dateCondition = "AND ((e.day IS NOT NULL AND (e.year * 10000 + e.month * 100 + e.day) BETWEEN ? AND ?) OR (e.day IS NULL AND (e.year * 100 + e.month) BETWEEN ? AND ?))"
+		dateArgs = append(dateArgs,
+			params.FromYear*10000+params.FromMonth*100+params.FromDay,
+			params.ToYear*10000+params.ToMonth*100+params.ToDay,
+			params.FromYear*100+params.FromMonth,
+			params.ToYear*100+params.ToMonth)
+	} else if params.FromMonth > 0 && params.ToMonth > 0 {
+		dateCondition = "AND (e.year * 100 + e.month) BETWEEN ? AND ?"
+		dateArgs = append(dateArgs, params.FromYear*100+params.FromMonth, params.ToYear*100+params.ToMonth)
+	} else {
+		dateCondition = "AND e.year BETWEEN ? AND ?"
+		dateArgs = append(dateArgs, params.FromYear, params.ToYear)
+	}
+
+	const batchSize = 500
+	for start := 0; start < len(cellIDs); start += batchSize {
+		end := start + batchSize
+		if end > len(cellIDs) {
+			end = len(cellIDs)
+		}
+		batch := cellIDs[start:end]
+
+		placeholders := make([]string, len(batch))
+		qargs := make([]interface{}, 0, len(batch)+len(dateArgs))
+		for i, id := range batch {
+			placeholders[i] = "?"
+			qargs = append(qargs, id)
+		}
+		qargs = append(qargs, dateArgs...)
+
+		q := fmt.Sprintf(`
+			SELECT e.grid_cell_id, e.movement_type, COALESCE(SUM(e.total_distance_km), 0)
+			FROM effort_data e
+			WHERE e.grid_cell_id IN (%s)
+			  AND e.movement_type IN ('foot','vehicle','aircraft')
+			  %s
+			GROUP BY e.grid_cell_id, e.movement_type
+		`, strings.Join(placeholders, ","), dateCondition)
+
+		srows, err := s.DB.QueryContext(ctx, q, qargs...)
+		if err != nil {
+			return fmt.Errorf("query movement types: %w", err)
+		}
+		for srows.Next() {
+			var cellID, mtype string
+			var km float64
+			if err := srows.Scan(&cellID, &mtype, &km); err != nil {
+				srows.Close()
+				return err
+			}
+			if idx, ok := idSet[cellID]; ok {
+				switch mtype {
+				case "foot":
+					rows[idx].FootKm = km
+				case "vehicle":
+					rows[idx].VehicleKm = km
+				case "aircraft":
+					rows[idx].AircraftKm = km
+				}
+			}
+		}
+		srows.Close()
+	}
+
+	return nil
+}
+
+// computeWindowSpanDays returns the number of days in the selected time window.
+// Returns 365 when no day-level filtering is applied (full-year view).
+func computeWindowSpanDays(params GridQueryParams) int {
+	if params.FromDay > 0 && params.ToDay > 0 && params.FromMonth > 0 && params.ToMonth > 0 {
+		from := time.Date(int(params.FromYear), time.Month(params.FromMonth), int(params.FromDay), 0, 0, 0, 0, time.UTC)
+		to := time.Date(int(params.ToYear), time.Month(params.ToMonth), int(params.ToDay), 0, 0, 0, 0, time.UTC)
+		days := int(to.Sub(from).Hours()/24) + 1
+		if days < 1 {
+			days = 1
+		}
+		return days
+	}
+	// Full-year or multi-year
+	years := int(params.ToYear-params.FromYear) + 1
+	if years < 1 {
+		years = 1
+	}
+	return years * 365
+}
+
+// computeRecency returns a 0-1 value: 1.0 = last visit is at the end of the window,
+// 0.0 = last visit is at the start. Decays as a square root curve so recent visits
+// stay bright longer.
+func computeRecency(lastVisitDay int64, params GridQueryParams) float64 {
+	if lastVisitDay == 0 {
+		return 0
+	}
+	// Parse last visit date
+	lvYear := lastVisitDay / 10000
+	lvMonth := (lastVisitDay % 10000) / 100
+	lvDay := lastVisitDay % 100
+	lastDate := time.Date(int(lvYear), time.Month(lvMonth), int(lvDay), 0, 0, 0, 0, time.UTC)
+
+	// Window end date
+	var endDate time.Time
+	if params.ToDay > 0 && params.ToMonth > 0 {
+		endDate = time.Date(int(params.ToYear), time.Month(params.ToMonth), int(params.ToDay), 0, 0, 0, 0, time.UTC)
+	} else {
+		endDate = time.Now().UTC().Truncate(24 * time.Hour)
+	}
+
+	windowDays := float64(computeWindowSpanDays(params))
+	if windowDays < 1 {
+		windowDays = 1
+	}
+
+	daysSinceLast := endDate.Sub(lastDate).Hours() / 24
+	if daysSinceLast < 0 {
+		daysSinceLast = 0
+	}
+
+	// Fraction of window remaining since last visit
+	frac := 1.0 - (daysSinceLast / windowDays)
+	if frac < 0 {
+		frac = 0
+	}
+	// Square-root curve: recent visits stay bright, old ones fade
+	return math.Sqrt(frac)
 }
