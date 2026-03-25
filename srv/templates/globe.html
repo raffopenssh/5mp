@@ -2975,6 +2975,7 @@
             ];
 
             // Outer glow halo - visible at all intensities, fades when not recently visited
+            // Radius scales with zoom (relative to cell size) so it doesn't blob at low zoom
             map.addLayer({
                 id: 'grid-halo',
                 type: 'circle',
@@ -2983,11 +2984,13 @@
                 paint: {
                     'circle-color': '#22c55e',
                     'circle-radius': [
-                        'interpolate', ['linear'], gridIntensity,
-                        0, 10,
-                        0.5, 14,
-                        1.0, 20,
-                        1.5, 28
+                        'interpolate', ['exponential', 2], ['zoom'],
+                        // At each zoom level, multiply base by intensity factor
+                        4, ['*', 1.2, ['interpolate', ['linear'], gridIntensity, 0, 1, 0.5, 1.2, 1.0, 1.5, 1.5, 2.0]],
+                        6, ['*', 4.5, ['interpolate', ['linear'], gridIntensity, 0, 1, 0.5, 1.2, 1.0, 1.5, 1.5, 2.0]],
+                        8, ['*', 16, ['interpolate', ['linear'], gridIntensity, 0, 1, 0.5, 1.2, 1.0, 1.5, 1.5, 2.0]],
+                        10, ['*', 55, ['interpolate', ['linear'], gridIntensity, 0, 1, 0.5, 1.2, 1.0, 1.5, 1.5, 2.0]],
+                        12, ['*', 200, ['interpolate', ['linear'], gridIntensity, 0, 1, 0.5, 1.2, 1.0, 1.5, 1.5, 2.0]]
                     ],
                     'circle-blur': 1.0,
                     // Opacity scales with intensity AND recency: stale cells fade out
