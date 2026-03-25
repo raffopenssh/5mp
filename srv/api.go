@@ -706,40 +706,38 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 		} else {
 			intensity = row.TotalDistanceKm / 80.0
 		}
-	} else if windowDays <= 3 {
-		// Very short window (today / 3 days): visit-days can only be 1-3,
-		// so all cells look the same. Use distance + subcell coverage to
-		// differentiate instead.
-		//
-		// Distance-based: 60km in a cell is thorough, 1km is a drive-through
-		distFactor := row.TotalDistanceKm / 60.0
+	} else {
+		// Short-to-medium window (1-180 days).
+		// Distance threshold scales logarithmically with window size:
+		//   1d → 60km, 3d → 120km, 7d → 180km, 14d → 234km,
+		//   28d → 293km, 90d → 390km, 180d → 449km
+		distThreshold := 60.0 * math.Log2(1.0+float64(windowDays))
+		distFactor := row.TotalDistanceKm / distThreshold
 		if distFactor > 1.0 {
 			distFactor = 1.0
 		}
+
 		// Subcell spatial coverage as bonus (0-100 subcells)
-		subBonus := float64(row.SubcellCount) / 50.0 // 50 subcells = full bonus
+		subBonus := float64(row.SubcellCount) / 50.0
 		if subBonus > 0.3 {
 			subBonus = 0.3
 		}
-		// Distance is primary, subcell adds up to 0.3 bonus
-		intensity = distFactor + subBonus
-	} else {
-		// Medium window (4-180 days): visit-day frequency relative to the span.
-		// A cell visited every 3 days = 1.0.
-		expectedVisitDays := float64(windowDays) / 3.0
-		if expectedVisitDays < 2 {
-			expectedVisitDays = 2
-		}
-		intensity = float64(row.VisitDays) / expectedVisitDays
 
-		// Blend in distance as a secondary signal
-		if row.TotalDistanceKm > 0 {
-			distBoost := row.TotalDistanceKm / 300.0
-			if distBoost > 0.5 {
-				distBoost = 0.5
-			}
-			intensity = intensity*0.7 + (intensity+distBoost)*0.3
+		// Visit-day frequency (saturates at visit every 3 days)
+		expectedVisitDays := float64(windowDays) / 3.0
+		if expectedVisitDays < 1 {
+			expectedVisitDays = 1
 		}
+		visitFactor := float64(row.VisitDays) / expectedVisitDays
+		if visitFactor > 1.0 {
+			visitFactor = 1.0
+		}
+
+		// Blend: distance dominates short windows, visit-days grow with longer ones
+		// distWeight: 1.0 at 1d → 0.5 at ~180d
+		distWeight := 1.0 / (1.0 + math.Log2(float64(windowDays)))
+		visitWeight := 1.0 - distWeight
+		intensity = distFactor*distWeight + visitFactor*visitWeight + subBonus
 	}
 
 	if intensity > 1.5 {
