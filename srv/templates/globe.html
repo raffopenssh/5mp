@@ -12219,6 +12219,7 @@
         
         // Date preset tags — compute date ranges dynamically
         var activePresetTag = null;
+        window._activePresetTag = function() { return activePresetTag; };
         window.applyDatePreset = function(preset) {
             // Close any active date editor first
             if (_activeEditor) {
@@ -18640,8 +18641,9 @@ ${starredItems.narratives.map(n => {
         }
         
         // Add time range (use preset if active, otherwise explicit dates)
-        if (typeof activePresetTag !== 'undefined' && activePresetTag) {
-            params.set('date_preset', activePresetTag);
+        var _preset = typeof window._activePresetTag === 'function' ? window._activePresetTag() : null;
+        if (_preset) {
+            params.set('date_preset', _preset);
         } else {
             if (dateFrom) params.set('from', dateFrom);
             if (dateTo) params.set('to', dateTo);
