@@ -430,7 +430,7 @@
         }
 
         /* Time Slider - Google Timelapse Style */
-        .time-slider-container { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.9) 70%, transparent 100%); z-index: 400; padding: 8px 20px 12px; display: flex; flex-direction: column; }
+        .time-slider-container { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.9) 70%, transparent 100%); z-index: 400; padding: 8px 20px 12px; display: flex; flex-direction: column; overflow: visible; }
         .time-slider-header { margin-bottom: 6px; }
         .time-slider-date { font-size: 14px; font-weight: 600; color: #22c55e; display: flex; align-items: center; gap: 0; user-select: none; }
         .time-slider-date-part { cursor: pointer; padding: 1px 4px; border-radius: 4px; transition: background 0.15s, color 0.15s; position: relative; }
@@ -439,10 +439,16 @@
         .time-slider-date-input { font-size: 14px; font-weight: 600; color: #22c55e; background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.4); border-radius: 4px; padding: 1px 4px; font-family: inherit; outline: none; width: auto; }
         .time-slider-date-input:focus { border-color: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.3); }
         .time-slider-date-input::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-        .time-slider-date-tags { display: inline-flex; gap: 3px; margin-left: 8px; align-items: center; }
-        .time-slider-date-tag { font-size: 9px; font-weight: 600; color: #22c55e; background: rgba(34,197,94,0.10); border: 1px solid rgba(34,197,94,0.25); border-radius: 3px; padding: 1px 4px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.3px; line-height: 1.3; white-space: nowrap; user-select: none; }
-        .time-slider-date-tag:hover { background: rgba(34,197,94,0.22); border-color: rgba(34,197,94,0.5); color: #4ade80; }
-        .time-slider-date-tag.active { background: rgba(34,197,94,0.25); border-color: #22c55e; color: #fff; }
+        .time-slider-date-tags { display: inline-flex; gap: 0; margin-left: 0; align-items: center; }
+        .time-slider-date-tag { font-size: 9px; font-weight: 600; color: #888; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 3px; padding: 0 0; cursor: pointer; letter-spacing: 0.3px; line-height: 1.3; white-space: nowrap; user-select: none; max-width: 0; opacity: 0; margin-left: 0; overflow: hidden; position: relative; transition: max-width 0.25s cubic-bezier(.4,0,.2,1), opacity 0.2s ease, padding 0.25s cubic-bezier(.4,0,.2,1), margin-left 0.25s cubic-bezier(.4,0,.2,1), background 0.15s, border-color 0.15s, color 0.15s; }
+        .time-slider-date-tag.visible { max-width: 36px; opacity: 1; padding: 1px 4px; margin-left: 3px; overflow: visible; }
+        .time-slider-date-tag.visible:first-child { margin-left: 8px; }
+        .time-slider-date-tag:hover { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.35); color: #aaa; }
+        .time-slider-date-tag.active { background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.5); color: #ccc; }
+        .time-slider-date-tag.dimmed { max-width: 0; opacity: 0; padding: 0; margin-left: 0; pointer-events: none; overflow: hidden; }
+        .time-slider-date-tag .tag-hint { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: rgba(15,15,15,0.95); color: #aaa; font-size: 10px; font-weight: 400; padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s; letter-spacing: 0; z-index: 10; }
+        .time-slider-date-tag .tag-hint::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 4px solid transparent; border-top-color: rgba(255,255,255,0.1); }
+        .time-slider-date-tag:hover .tag-hint { opacity: 1; }
         .time-slider-track-wrapper { position: relative; flex: 1; padding: 0 8px; }
         .time-slider-track { position: relative; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer; }
         .time-slider-range { position: absolute; height: 100%; background: linear-gradient(90deg, rgba(34,197,94,0.6), #22c55e); border-radius: 3px; pointer-events: none; }
@@ -465,8 +471,9 @@
             .time-slider-container { height: 60px; padding: 6px 12px 10px; }
             .time-slider-date { font-size: 12px; }
             .time-slider-date-input { font-size: 12px; }
-            .time-slider-date-tags { gap: 2px; margin-left: 4px; }
-            .time-slider-date-tag { font-size: 8px; padding: 1px 3px; min-height: 18px; display: inline-flex; align-items: center; }
+            .time-slider-date-tag.visible { font-size: 8px; max-width: 32px; margin-left: 2px; }
+            .time-slider-date-tag.visible:first-child { margin-left: 4px; }
+            .time-slider-date-tag .tag-hint { display: none; }
             #map { bottom: 60px !important; }
             /* Larger touch targets for slider handles */
             .time-slider-handle { width: 20px; height: 20px; }
@@ -1412,7 +1419,7 @@
     <!-- Time Slider -->
     <div class="time-slider-container" id="time-slider-container">
         <div class="time-slider-header">
-            <div class="time-slider-date" id="time-slider-date"><span class="time-slider-date-part" id="time-slider-date-start" onclick="editSliderDate('start')" title="Click to set start date">Jan 2020</span><span class="time-slider-date-sep"> - </span><span class="time-slider-date-part" id="time-slider-date-end" onclick="editSliderDate('end')" title="Click to set end date">Dec 2024</span><span class="time-slider-date-tags" id="time-slider-date-tags"><span class="time-slider-date-tag" data-preset="td" onclick="applyDatePreset('td')" title="Today (since midnight)">td</span><span class="time-slider-date-tag" data-preset="3d" onclick="applyDatePreset('3d')" title="Last 3 days">3d</span><span class="time-slider-date-tag" data-preset="cmo" onclick="applyDatePreset('cmo')" title="Current month">cmo</span><span class="time-slider-date-tag" data-preset="90d" onclick="applyDatePreset('90d')" title="Last 90 days">90d</span></span></div>
+            <div class="time-slider-date" id="time-slider-date"><span class="time-slider-date-part" id="time-slider-date-start" onclick="editSliderDate('start')" title="Click to set start date">Jan 2020</span><span class="time-slider-date-sep"> - </span><span class="time-slider-date-part" id="time-slider-date-end" onclick="editSliderDate('end')" title="Click to set end date">Dec 2024</span><span class="time-slider-date-tags" id="time-slider-date-tags"><span class="time-slider-date-tag" data-preset="td" onclick="applyDatePreset('td')">td<span class="tag-hint">Today</span></span><span class="time-slider-date-tag" data-preset="3d" onclick="applyDatePreset('3d')">3d<span class="tag-hint">Last 3 days</span></span><span class="time-slider-date-tag" data-preset="7d" onclick="applyDatePreset('7d')">7d<span class="tag-hint">Last 7 days</span></span><span class="time-slider-date-tag" data-preset="14d" onclick="applyDatePreset('14d')">14d<span class="tag-hint">Last 14 days</span></span><span class="time-slider-date-tag" data-preset="30d" onclick="applyDatePreset('30d')">30d<span class="tag-hint">Last 30 days</span></span><span class="time-slider-date-tag" data-preset="90d" onclick="applyDatePreset('90d')">90d<span class="tag-hint">Last 90 days</span></span><span class="time-slider-date-tag" data-preset="cmo" onclick="applyDatePreset('cmo')">cmo<span class="tag-hint">Current month</span></span></span></div>
         </div>
         <div class="time-slider-track-wrapper">
             <div class="time-slider-track" id="time-slider-track">
@@ -12210,6 +12217,11 @@
         // Date preset tags — compute date ranges dynamically
         var activePresetTag = null;
         window.applyDatePreset = function(preset) {
+            // Close any active date editor first
+            if (_activeEditor) {
+                _activeEditor.finish(null);
+            }
+
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const todayISO = formatDateISO(today);
@@ -12221,21 +12233,17 @@
                     fromISO = todayISO;
                     toISO = todayISO;
                     break;
-                case '3d': // Last 3 days (today + 2 prior)
-                    const d3 = new Date(today);
-                    d3.setDate(d3.getDate() - 2);
-                    fromISO = formatDateISO(d3 < SLIDER_START_DATE ? SLIDER_START_DATE : d3);
+                case '3d': case '7d': case '14d': case '30d': case '90d': {
+                    var n = parseInt(preset);
+                    var dn = new Date(today);
+                    dn.setDate(dn.getDate() - (n - 1));
+                    fromISO = formatDateISO(dn < SLIDER_START_DATE ? SLIDER_START_DATE : dn);
                     toISO = todayISO;
                     break;
+                }
                 case 'cmo': // Current month
                     fromISO = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-01';
                     if (fromISO < minISO) fromISO = minISO;
-                    toISO = todayISO;
-                    break;
-                case '90d': // Last 90 days
-                    const d90 = new Date(today);
-                    d90.setDate(d90.getDate() - 89);
-                    fromISO = formatDateISO(d90 < SLIDER_START_DATE ? SLIDER_START_DATE : d90);
                     toISO = todayISO;
                     break;
                 default: return;
@@ -12249,7 +12257,8 @@
                 sliderEndValue = TOTAL_MONTHS;
                 updateSliderDisplay();
                 updateDateFilter();
-                updatePresetTagUI(null);
+                // updateDateFilter calls clearPresetTag which handles hiding
+                hideDateTags();
                 updateShareURLPreset(null);
                 return;
             }
@@ -12260,10 +12269,62 @@
             updateShareURLPreset(preset);
         };
 
-        function updatePresetTagUI(preset) {
-            document.querySelectorAll('.time-slider-date-tag').forEach(function(tag) {
-                tag.classList.toggle('active', tag.dataset.preset === preset);
+        // Pending animation timers
+        var _tagTimers = [];
+        function cancelTagTimers() {
+            _tagTimers.forEach(clearTimeout);
+            _tagTimers = [];
+        }
+
+        // Show all tags with staggered entrance animation
+        function showDateTags() {
+            cancelTagTimers();
+            var tags = document.querySelectorAll('.time-slider-date-tag');
+            tags.forEach(function(tag, i) {
+                tag.classList.remove('dimmed');
+                _tagTimers.push(setTimeout(function() { tag.classList.add('visible'); }, i * 50));
             });
+        }
+
+        // Hide all tags (reverse stagger)
+        function hideDateTags() {
+            cancelTagTimers();
+            var tags = Array.from(document.querySelectorAll('.time-slider-date-tag'));
+            tags.slice().reverse().forEach(function(tag, i) {
+                _tagTimers.push(setTimeout(function() {
+                    tag.classList.remove('visible', 'active', 'dimmed');
+                }, i * 35));
+            });
+        }
+
+        // Show only the active preset tag, dim/hide the rest
+        function showOnlyActiveTag(preset) {
+            cancelTagTimers();
+            document.querySelectorAll('.time-slider-date-tag').forEach(function(tag) {
+                if (tag.dataset.preset === preset) {
+                    tag.classList.add('visible', 'active');
+                    tag.classList.remove('dimmed');
+                } else {
+                    tag.classList.add('dimmed');
+                    tag.classList.remove('active');
+                }
+            });
+        }
+
+        function updatePresetTagUI(preset) {
+            if (preset) {
+                showOnlyActiveTag(preset);
+            } else {
+                // If an editor is still active, re-show all tags
+                if (_activeEditor) {
+                    document.querySelectorAll('.time-slider-date-tag').forEach(function(tag) {
+                        tag.classList.remove('active', 'dimmed');
+                        tag.classList.add('visible');
+                    });
+                } else {
+                    hideDateTags();
+                }
+            }
         }
 
         function updateShareURLPreset(preset) {
@@ -12282,8 +12343,16 @@
         function clearPresetTag() {
             if (activePresetTag) {
                 activePresetTag = null;
-                updatePresetTagUI(null);
                 updateShareURLPreset(null);
+                // Don't hide tags if editor is open — just remove active styling
+                if (_activeEditor) {
+                    document.querySelectorAll('.time-slider-date-tag').forEach(function(tag) {
+                        tag.classList.remove('active', 'dimmed');
+                        tag.classList.add('visible');
+                    });
+                } else {
+                    hideDateTags();
+                }
             }
         }
 
@@ -12297,7 +12366,7 @@
             const urlPreset = urlParams.get('date_preset');
             const urlFrom = urlParams.get('from');
             const urlTo = urlParams.get('to');
-            if (urlPreset && ['td', '3d', 'cmo', '90d'].indexOf(urlPreset) !== -1) {
+            if (urlPreset && ['td', '3d', '7d', '14d', '30d', '90d', 'cmo'].indexOf(urlPreset) !== -1) {
                 // Apply date preset from share link
                 applyDatePreset(urlPreset);
             } else if (urlFrom && urlTo) {
@@ -12381,6 +12450,9 @@
 
             span._editing = true;
 
+            // Show date preset tags when editing starts
+            if (!activePresetTag) showDateTags();
+
             // Clear any active date preset
             clearPresetTag();
 
@@ -12410,7 +12482,8 @@
             function finish(val) {
                 if (done) return;
                 done = true;
-                if (_activeEditor && _activeEditor.which === which) _activeEditor = null;
+                var wasLastEditor = (_activeEditor && _activeEditor.which === which);
+                if (wasLastEditor) _activeEditor = null;
                 // Remove the input
                 if (input.parentNode === span) span.removeChild(input);
 
@@ -12424,12 +12497,16 @@
                         const newTo   = which === 'end'   ? val : (dateTo   || formatDateISO(valueToDate(sliderEndValue)));
                         span._editing = false;
                         applyPreciseDateFilter(newFrom, newTo);
+                        // Hide tags after edit completes (no preset, no other editor open)
+                        if (!activePresetTag && !_activeEditor) hideDateTags();
                         return;
                     }
                 }
                 // Cancel — restore original text
                 span.textContent = origText;
                 span._editing = false;
+                // Hide tags if no editor open and no preset active
+                if (!activePresetTag && !_activeEditor) hideDateTags();
             }
 
             // Register as active editor so the other date can cancel us
