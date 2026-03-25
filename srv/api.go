@@ -711,8 +711,8 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 		// so all cells look the same. Use distance + subcell coverage to
 		// differentiate instead.
 		//
-		// Distance-based: 40km in a cell is thorough, 1km is a drive-through
-		distFactor := row.TotalDistanceKm / 40.0
+		// Distance-based: 60km in a cell is thorough, 1km is a drive-through
+		distFactor := row.TotalDistanceKm / 60.0
 		if distFactor > 1.0 {
 			distFactor = 1.0
 		}
