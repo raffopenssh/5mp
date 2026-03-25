@@ -706,20 +706,34 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 		} else {
 			intensity = row.TotalDistanceKm / 80.0
 		}
+	} else if windowDays <= 3 {
+		// Very short window (today / 3 days): visit-days can only be 1-3,
+		// so all cells look the same. Use distance + subcell coverage to
+		// differentiate instead.
+		//
+		// Distance-based: 50km in a cell is thorough, 1km is a drive-through
+		distFactor := row.TotalDistanceKm / 50.0
+		if distFactor > 1.0 {
+			distFactor = 1.0
+		}
+		// Subcell spatial coverage (already 0-100)
+		subFactor := float64(row.SubcellCount) / 30.0 // 30 subcells in a short window = thorough
+		if subFactor > 1.0 {
+			subFactor = 1.0
+		}
+		// Blend: distance 60%, subcell 40% (distance always available, subcells may be 0)
+		intensity = distFactor*0.6 + subFactor*0.4
 	} else {
-		// Short window: visit-day frequency relative to the span.
-		// A cell visited every day = 1.0. Visited 1 day out of 30 = 0.033.
-		// We use a generous expected cadence: visiting once per 3 days = 1.0.
+		// Medium window (4-180 days): visit-day frequency relative to the span.
+		// A cell visited every 3 days = 1.0.
 		expectedVisitDays := float64(windowDays) / 3.0
-		if expectedVisitDays < 1 {
-			expectedVisitDays = 1
+		if expectedVisitDays < 2 {
+			expectedVisitDays = 2
 		}
 		intensity = float64(row.VisitDays) / expectedVisitDays
 
-		// Blend in distance as a secondary signal (cells with many km but few days
-		// still show higher than cells with a single drive-through)
+		// Blend in distance as a secondary signal
 		if row.TotalDistanceKm > 0 {
-			// ~300km in a short window is thorough patrol
 			distBoost := row.TotalDistanceKm / 300.0
 			if distBoost > 0.5 {
 				distBoost = 0.5

@@ -753,6 +753,73 @@ func gridCellIDForPoint(lat, lon float64) string {
 	return fmt.Sprintf("%.1f_%.1f", latGrid, lonGrid)
 }
 
+// gridCellTracker assigns points to grid cells with hysteresis to prevent
+// boundary-straddling tracks from creating 2-wide pixel bands.
+// Once a point is assigned to a cell, subsequent points stay in that cell
+// unless they move >20% (0.02°) into the adjacent cell.
+type gridCellTracker struct {
+	currentCell string
+	currentLat  float64 // cell floor lat
+	currentLon  float64 // cell floor lon
+}
+
+const gridHysteresis = 0.02 // 20% of cell size — ~2km buffer
+
+// Assign returns the grid cell ID for a point, applying hysteresis
+// relative to the current cell. First call always sets the current cell.
+func (t *gridCellTracker) Assign(lat, lon float64) string {
+	newLatGrid := math.Floor(lat/gridCellSize) * gridCellSize
+	newLonGrid := math.Floor(lon/gridCellSize) * gridCellSize
+	newCell := fmt.Sprintf("%.1f_%.1f", newLatGrid, newLonGrid)
+
+	if t.currentCell == "" {
+		// First point — just assign
+		t.currentCell = newCell
+		t.currentLat = newLatGrid
+		t.currentLon = newLonGrid
+		return newCell
+	}
+
+	if newCell == t.currentCell {
+		return t.currentCell
+	}
+
+	// Point is in a different cell — check if it's clearly inside (past hysteresis)
+	// Distance from the boundary INTO the new cell must exceed threshold
+	latOK := true
+	lonOK := true
+
+	if newLatGrid != t.currentLat {
+		// Crossed a lat boundary. How far past the boundary?
+		if newLatGrid > t.currentLat {
+			// Moved north: new cell starts at newLatGrid, point should be > newLatGrid + hysteresis
+			latOK = lat >= newLatGrid+gridHysteresis
+		} else {
+			// Moved south: new cell ends at newLatGrid + gridCellSize, point should be < that - hysteresis
+			latOK = lat <= newLatGrid+gridCellSize-gridHysteresis
+		}
+	}
+
+	if newLonGrid != t.currentLon {
+		if newLonGrid > t.currentLon {
+			lonOK = lon >= newLonGrid+gridHysteresis
+		} else {
+			lonOK = lon <= newLonGrid+gridCellSize-gridHysteresis
+		}
+	}
+
+	if latOK && lonOK {
+		// Clearly in the new cell — switch
+		t.currentCell = newCell
+		t.currentLat = newLatGrid
+		t.currentLon = newLonGrid
+		return newCell
+	}
+
+	// Still near the boundary — stay in current cell
+	return t.currentCell
+}
+
 // gridCellCenter returns the center lat/lon for a grid cell.
 func gridCellCenter(lat, lon float64) (latCenter, lonCenter float64) {
 	latGrid := math.Floor(lat/gridCellSize) * gridCellSize
@@ -814,6 +881,10 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 			continue
 		}
 
+		// Use hysteresis tracker per segment to avoid boundary-straddling
+		// tracks creating 2-wide pixel bands
+		var tracker gridCellTracker
+
 		for i := 1; i < len(seg.Points); i++ {
 			p1 := seg.Points[i-1]
 			p2 := seg.Points[i]
@@ -822,7 +893,7 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 
 			midLat := (p1.Lat + p2.Lat) / 2
 			midLon := (p1.Lon + p2.Lon) / 2
-			cellID := gridCellIDForPoint(midLat, midLon)
+			cellID := tracker.Assign(midLat, midLon)
 
 			// Determine year/month/day from point timestamp
 			ymd := yearMonthDay{year: fallbackYear, month: fallbackMonth, day: fallbackDay}
@@ -1248,6 +1319,28 @@ func subcellIDForPoint(lat, lon float64) string {
 	return fmt.Sprintf("%d_%d", row, col)
 }
 
+// subcellIDForCell returns the subcell ID relative to a specific grid cell.
+// Used when hysteresis assigns a point to a cell that differs from the raw floor.
+// The point may be slightly outside the cell; clamp to edge subcells (0 or 9).
+func subcellIDForCell(cellID string, lat, lon float64) string {
+	// Parse cell ID to get the floor lat/lon
+	var cellLat, cellLon float64
+	fmt.Sscanf(cellID, "%f_%f", &cellLat, &cellLon)
+	
+	latPos := (lat - cellLat) / gridCellSize
+	lonPos := (lon - cellLon) / gridCellSize
+	
+	row := int(latPos * 10)
+	col := int(lonPos * 10)
+	
+	if row < 0 { row = 0 }
+	if row > 9 { row = 9 }
+	if col < 0 { col = 0 }
+	if col > 9 { col = 9 }
+	
+	return fmt.Sprintf("%d_%d", row, col)
+}
+
 // trackSubcellVisits records which subcells within each grid cell have been visited
 // Uses the actual point timestamps for day-level granularity.
 // Aircraft segments are excluded — overflight does not equal ground patrol presence.
@@ -1266,9 +1359,10 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 		if seg.MovementType == "aircraft" {
 			continue
 		}
+		var tracker gridCellTracker
 		for _, pt := range seg.Points {
-			gridCellID := gridCellIDForPoint(pt.Lat, pt.Lon)
-			subcellID := subcellIDForPoint(pt.Lat, pt.Lon)
+			gridCellID := tracker.Assign(pt.Lat, pt.Lon)
+			subcellID := subcellIDForCell(gridCellID, pt.Lat, pt.Lon)
 			
 			// Use point timestamp if available, otherwise default date
 			visitDate := defaultDate
