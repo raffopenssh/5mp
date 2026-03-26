@@ -8819,7 +8819,7 @@
             const downloadParam = params.get('notif_download');
             if (downloadParam) {
                 setTimeout(() => {
-                    handleMBTilesDownload(jobId);
+                    handleMBTilesDownload(downloadParam);
                 }, 1000);
                 return;
             }
@@ -18888,9 +18888,31 @@ ${starredItems.narratives.map(n => {
         
         // Restore country filter
         const country = params.get('country');
-        if (country && typeof selectCountry === 'function') {
+        if (country) {
             currentCountryFilter = country;
-            selectCountry(country);
+            // selectCountry depends on countryBboxCache which is populated on
+            // sourcedata, so it may be empty here. Set the filter state and
+            // defer fly-to until source is ready.
+            if (typeof applyCountryFilter === 'function') applyCountryFilter();
+            // Retry the full selectCountry once areas source is loaded
+            function _retryCountry() {
+                if (countryBboxCache && countryBboxCache[country]) {
+                    selectCountry(country);
+                    return true;
+                }
+                return false;
+            }
+            if (!_retryCountry()) {
+                var _countryRetries = 0;
+                function _onCountrySrc(e) {
+                    if ((e.sourceId === 'areas' && e.isSourceLoaded) || ++_countryRetries > 30) {
+                        map.off('sourcedata', _onCountrySrc);
+                        _retryCountry();
+                    }
+                }
+                map.on('sourcedata', _onCountrySrc);
+                setTimeout(function() { map.off('sourcedata', _onCountrySrc); _retryCountry(); }, 8000);
+            }
         }
         
         // Restore selected parks — populate both selectedPAIds AND selectedParks array
@@ -18966,6 +18988,12 @@ ${starredItems.narratives.map(n => {
         if (searchQuery) {
             const searchInput = document.getElementById('search-input');
             if (searchInput) {
+                // Open the search bar first
+                const searchBar = document.getElementById('search-bar');
+                const searchBtn = document.getElementById('toolbar-search');
+                if (searchBar) searchBar.classList.add('open');
+                if (searchBtn) searchBtn.classList.add('active');
+                searchOpen = true;
                 searchInput.value = searchQuery;
                 // Trigger search
                 setTimeout(() => {
@@ -18978,10 +19006,12 @@ ${starredItems.narratives.map(n => {
         
         // Restore keystones toggle
         const keystonesParam = params.get('keystones');
-        if (keystonesParam === '0' && typeof toggleKeystonesBtn === 'function') {
+        if (keystonesParam === '0') {
             keystonesEnabled = false;
             const btn = document.getElementById('keystones-toggle-btn');
             if (btn) btn.classList.remove('active');
+            // Update map styling (grey out areas when keystones disabled)
+            updatePAHighlighting();
         }
         
         // Restore notification panel
@@ -18993,98 +19023,92 @@ ${starredItems.narratives.map(n => {
             }, 1000);
         }
         
-        // Restore popup (delayed to ensure data is loaded)
+        // Restore popup (with retry for source data availability)
         const popupPaId = params.get('popup');
         const sectionsToOpen = params.get('sections')?.split(',') || [];
         if (popupPaId) {
             console.log(`URL popup param: ${popupPaId}, sections: ${sectionsToOpen.join(',')}`);
-            setTimeout(() => {
-                // Find the PA and show popup
+
+            // Section name mappings (URL param → section element ID prefix)
+            const _sectionIdMap = {
+                'fire': 'fire', 'settlement': 'ghsl', 'ghsl': 'ghsl',
+                'deforestation': 'deforest', 'deforest': 'deforest',
+                'road': 'road', 'roads': 'road',
+                'species': 'species', 'climate': 'climate',
+                'legal': 'legal', 'research': 'research'
+            };
+
+            function _openSectionsAndPin() {
+                if (sectionsToOpen.length === 0) return;
+                // Open accordion sections
+                setTimeout(() => {
+                    sectionsToOpen.forEach(secType => {
+                        const sectionId = _sectionIdMap[secType] || secType;
+                        const section = document.getElementById(`${sectionId}-section-${popupPaId}`);
+                        if (section && !section.classList.contains('open')) {
+                            section.click();
+                        }
+                    });
+                }, 500);
+                // Auto-pin layers
+                setTimeout(async () => {
+                    const park = (window.keystoneAreas || []).find(p => p.id === popupPaId);
+                    const parkName = park ? park.name : popupPaId;
+                    const layerTypeMap = {
+                        'fire': 'fire_trajectory', 'settlement': 'settlement',
+                        'ghsl': 'settlement', 'deforestation': 'deforestation',
+                        'deforest': 'deforestation', 'roads': 'road',
+                        'places': 'place', 'infrastructure': 'infrastructure'
+                    };
+                    for (const secType of sectionsToOpen) {
+                        const layerType = layerTypeMap[secType] || secType;
+                        const pinKey = getPinKey(popupPaId, layerType);
+                        if (!pinnedLayers[pinKey]) {
+                            try {
+                                await addPinnedLayer(popupPaId, parkName, layerType);
+                                // Use mapped sectionId for the icon selector
+                                const sectionId = _sectionIdMap[secType] || secType;
+                                const icon = document.querySelector(`#${sectionId}-section-${popupPaId} .pa-popup-section-icon`);
+                                if (icon) icon.classList.add('pinned');
+                            } catch (e) {
+                                console.log(`No data for ${layerType}, skipping auto-pin`);
+                            }
+                        }
+                    }
+                    updatePinnedIndicator();
+                    savePinnedToURL();
+                }, 1000);
+            }
+
+            function _tryRestorePopup() {
                 const features = map.querySourceFeatures('areas', {
                     filter: ['==', ['get', 'id'], popupPaId]
                 });
-                console.log(`Found ${features.length} features for ${popupPaId}`);
                 if (features.length > 0) {
                     const props = features[0].properties;
-                    const center = features[0].properties.center;
+                    const center = props.center;
                     if (center) {
                         const coords = JSON.parse(center);
                         showPAPopup(props, { lng: coords[0], lat: coords[1] });
-                        
-                        // Open specified accordion sections after popup loads
-                        if (sectionsToOpen.length > 0) {
-                            setTimeout(() => {
-                                sectionsToOpen.forEach(secType => {
-                                    // Map URL section names to actual section IDs
-                                    const sectionIdMap = {
-                                        'fire': 'fire',
-                                        'settlement': 'ghsl',
-                                        'ghsl': 'ghsl',
-                                        'deforestation': 'deforest',
-                                        'deforest': 'deforest',
-                                        'road': 'road',
-                                        'roads': 'road',
-                                        'species': 'species',
-                                        'climate': 'climate',
-                                        'legal': 'legal',
-                                        'research': 'research'
-                                    };
-                                    
-                                    const sectionId = sectionIdMap[secType] || secType;
-                                    const section = document.getElementById(`${sectionId}-section-${popupPaId}`);
-                                    if (section) {
-                                        // Click the section to open it and trigger data load
-                                        if (!section.classList.contains('open')) {
-                                            section.click();
-                                        }
-                                    }
-                                });
-                            }, 500);
-                            
-                            // Auto-pin layers from sections parameter
-                            setTimeout(async () => {
-                                const park = (window.keystoneAreas || []).find(p => p.id === popupPaId);
-                                const parkName = park ? park.name : popupPaId;
-                                
-                                for (const secType of sectionsToOpen) {
-                                    // Map section types to layer types
-                                    const layerTypeMap = {
-                                        'fire': 'fire_trajectory',
-                                        'settlement': 'settlement',
-                                        'ghsl': 'settlement',  // Alias for settlements
-                                        'deforestation': 'deforestation',
-                                        'deforest': 'deforestation',  // Alias
-                                        'roads': 'road',
-                                        'places': 'place',
-                                        'infrastructure': 'infrastructure'
-                                    };
-                                    
-                                    const layerType = layerTypeMap[secType] || secType;
-                                    const pinKey = getPinKey(popupPaId, layerType);
-                                    
-                                    // Only pin if not already pinned
-                                    if (!pinnedLayers[pinKey]) {
-                                        try {
-                                            console.log(`Auto-pinning ${layerType} for ${popupPaId} from sections param`);
-                                            await addPinnedLayer(popupPaId, parkName, layerType);
-                                            
-                                            // Update the icon state
-                                            const icon = document.querySelector(`#${secType}-section-${popupPaId} .pa-popup-section-icon`);
-                                            if (icon) {
-                                                icon.classList.add('pinned');
-                                            }
-                                        } catch (e) {
-                                            // Silently skip if no data for this layer type
-                                            console.log(`No data for ${layerType}, skipping auto-pin`);
-                                        }
-                                    }
-                                }
-                                
-                                updatePinnedIndicator();
-                                savePinnedToURL();
-                            }, 1000);
+                        _openSectionsAndPin();
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            // Try at 2s, retry on sourcedata if needed
+            setTimeout(() => {
+                if (!_tryRestorePopup()) {
+                    console.log(`Popup restore: retrying on sourcedata for ${popupPaId}`);
+                    var _popupRetry = 0;
+                    function _onPopupSrc(e) {
+                        if (e.sourceId === 'areas' && _tryRestorePopup() || ++_popupRetry > 20) {
+                            map.off('sourcedata', _onPopupSrc);
                         }
                     }
+                    map.on('sourcedata', _onPopupSrc);
+                    setTimeout(function() { map.off('sourcedata', _onPopupSrc); }, 8000);
                 }
             }, 2000);
         }
