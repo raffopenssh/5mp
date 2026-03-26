@@ -135,6 +135,7 @@ func (s *Server) Serve(addr string) error {
 	// API routes
 	mux.HandleFunc("GET /api/version", s.HandleAPIVersion)
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)
+	mux.HandleFunc("GET /api/nearby-places", s.HandleAPINearbyPlaces)
 	mux.HandleFunc("GET /api/grid/{id}/effort", s.HandleAPIGridCellEffort)
 	mux.HandleFunc("GET /api/worldclim/test", s.HandleWorldClimTest)
 	mux.HandleFunc("GET /api/areas", s.HandleAPIAreas)

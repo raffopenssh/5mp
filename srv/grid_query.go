@@ -39,6 +39,8 @@ type GridRow struct {
 	FootKm          float64 // distance by movement type
 	VehicleKm       float64
 	AircraftKm      float64
+	AvgSpeedKmh     *float64 // distance-weighted avg speed (aircraft cells)
+	AvgAltitudeM    *float64 // distance-weighted avg altitude (aircraft cells)
 }
 
 // QueryGridData executes a flexible query for grid data with optional filters.
@@ -62,7 +64,15 @@ func (s *Server) QueryGridData(ctx context.Context, params GridQueryParams) ([]G
 			COUNT(DISTINCT CASE WHEN e.month IN (11, 12, 1, 2, 3, 4) THEN e.year * 100 + e.month END) as dry_months,
 			COUNT(DISTINCT CASE WHEN e.month IN (5, 6, 7, 8, 9, 10) THEN e.year * 100 + e.month END) as rainy_months,
 			COUNT(DISTINCT CASE WHEN e.day IS NOT NULL THEN e.year * 10000 + e.month * 100 + e.day END) as visit_days,
-			COALESCE(MAX(CASE WHEN e.day IS NOT NULL THEN e.year * 10000 + e.month * 100 + e.day END), 0) as last_visit_day
+			COALESCE(MAX(CASE WHEN e.day IS NOT NULL THEN e.year * 10000 + e.month * 100 + e.day END), 0) as last_visit_day,
+			CASE WHEN SUM(CASE WHEN e.avg_speed_kmh IS NOT NULL THEN e.total_distance_km ELSE 0 END) > 0
+				THEN SUM(CASE WHEN e.avg_speed_kmh IS NOT NULL THEN e.avg_speed_kmh * e.total_distance_km ELSE 0 END)
+				   / SUM(CASE WHEN e.avg_speed_kmh IS NOT NULL THEN e.total_distance_km ELSE 0 END)
+				ELSE NULL END as avg_speed_kmh,
+			CASE WHEN SUM(CASE WHEN e.avg_altitude_m IS NOT NULL THEN e.total_distance_km ELSE 0 END) > 0
+				THEN SUM(CASE WHEN e.avg_altitude_m IS NOT NULL THEN e.avg_altitude_m * e.total_distance_km ELSE 0 END)
+				   / SUM(CASE WHEN e.avg_altitude_m IS NOT NULL THEN e.total_distance_km ELSE 0 END)
+				ELSE NULL END as avg_altitude_m
 		FROM grid_cells g
 		JOIN effort_data e ON e.grid_cell_id = g.id
 		WHERE 1=1
@@ -136,6 +146,7 @@ func (s *Server) QueryGridData(ctx context.Context, params GridQueryParams) ([]G
 		var row GridRow
 		var coveragePercent sql.NullFloat64
 
+		var avgSpeed, avgAlt sql.NullFloat64
 		if err := rows.Scan(
 			&row.GridCellID,
 			&row.LatCenter,
@@ -148,12 +159,20 @@ func (s *Server) QueryGridData(ctx context.Context, params GridQueryParams) ([]G
 			&row.RainyMonths,
 			&row.VisitDays,
 			&row.LastVisitDay,
+			&avgSpeed,
+			&avgAlt,
 		); err != nil {
 			return nil, fmt.Errorf("scan grid row: %w", err)
 		}
 
 		if coveragePercent.Valid {
 			row.CoveragePercent = &coveragePercent.Float64
+		}
+		if avgSpeed.Valid {
+			row.AvgSpeedKmh = &avgSpeed.Float64
+		}
+		if avgAlt.Valid {
+			row.AvgAltitudeM = &avgAlt.Float64
 		}
 
 		results = append(results, row)

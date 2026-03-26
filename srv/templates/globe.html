@@ -3153,18 +3153,47 @@
                     if (parseFloat(aircraftKm) > 0) movParts.push(`${icon('plane','neutral','sm')} ${aircraftKm}`);
                     const movLine = movParts.length > 0 ? movParts.join(' · ') + ' km' : '';
                     const multiType = movParts.length >= 2 ? `<span style="background:#22c55e22;color:#22c55e;padding:1px 6px;border-radius:3px;font-size:10px;margin-left:4px">${movParts.length} types</span>` : '';
-                    new maplibregl.Popup()
+                    // Speed & altitude info for aircraft cells
+                    const avgSpeed = props.avg_speed_kmh;
+                    const avgAlt = props.avg_altitude_m;
+                    let speedAltLine = '';
+                    if (parseFloat(aircraftKm) > 0 && (avgSpeed || avgAlt)) {
+                        const parts = [];
+                        if (avgSpeed) parts.push(`${icon('gauge','neutral','sm')} ${avgSpeed.toFixed(0)} km/h`);
+                        if (avgAlt) parts.push(`${icon('mountain','neutral','sm')} ${avgAlt.toFixed(0)} m`);
+                        speedAltLine = `<span style="font-size: 11px; color: #aaa">${parts.join(' · ')}</span><br>`;
+                    }
+                    // Unique popup ID for lazy place name loading
+                    const popupId = 'pp-' + pixelId.replace(/[^a-z0-9_-]/gi, '');
+                    const popup = new maplibregl.Popup()
                         .setLngLat(e.lngLat)
                         .setHTML(`
                             <strong>Effort Pixel</strong>${multiType}<br>
-                            <span style="color: #888; font-size: 11px;">ID: ${pixelId}</span><br>
+                            <span style="color: #888; font-size: 11px;">ID: ${pixelId}</span>
+                            <span id="${popupId}" style="font-size: 11px; color: #8b8;"></span><br>
                             Distance: <strong>${distance} km</strong> · Days: <strong>${visitDays}</strong><br>
                             ${movLine ? `<span style="font-size: 12px;">${movLine}</span><br>` : ''}
+                            ${speedAltLine}
                             Subcell coverage: <strong>${subcellPct}%</strong> of 100<br>
                             Intensity: <strong>${intensity}</strong> · Freshness: <strong>${recency}</strong><br>
                             <span style="color: #666; font-size: 10px;">100 km² (~10km × 10km)</span>
                         `)
                         .addTo(map);
+                    // Lazy-load nearby place names
+                    const plat = e.lngLat.lat, plng = e.lngLat.lng;
+                    fetch(`/api/nearby-places?pwd=${encodeURIComponent(getPwd())}&lat=${plat.toFixed(4)}&lon=${plng.toFixed(4)}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            const el = document.getElementById(popupId);
+                            if (el && data.places && data.places.length > 0) {
+                                const names = data.places.slice(0, 3).map(p => {
+                                    const typeIcon = {'city':'building-2','town':'building-2','village':'home','hamlet':'home',
+                                        'mountain':'mountain','hill':'mountain','lake':'droplets','river':'waves','stream':'waves'}[p.type] || 'map-pin';
+                                    return `${icon(typeIcon,'neutral','sm')} ${p.name} <span style="color:#666">${p.distance_km}km</span>`;
+                                });
+                                el.innerHTML = '<br>' + names.join(' · ');
+                            }
+                        }).catch(() => {});
                 }
             });
 

@@ -706,6 +706,31 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 		numTypes++
 	}
 
+	// Aircraft effective weight modulated by speed and altitude.
+	// Low speed (circling/surveying) = more valuable than high speed (transit).
+	// Low altitude = better observation than high altitude.
+	aircraftWeight := 0.01
+	if row.AircraftKm > 0 {
+		if row.AvgSpeedKmh != nil && *row.AvgSpeedKmh > 0 {
+			speed := *row.AvgSpeedKmh
+			if speed < 50 {
+				aircraftWeight *= 3.0
+			} else if speed < 200 {
+				aircraftWeight *= 3.0 - 2.0*(speed-50)/150.0
+			}
+		}
+		if row.AvgAltitudeM != nil && *row.AvgAltitudeM > 0 {
+			alt := *row.AvgAltitudeM
+			if alt < 300 {
+				aircraftWeight *= 1.5
+			} else if alt < 1500 {
+				aircraftWeight *= 1.5 - 1.0*(alt-300)/1200.0
+			} else {
+				aircraftWeight *= 0.5
+			}
+		}
+	}
+
 	var intensity float64
 
 	if windowDays > 180 {
@@ -725,7 +750,7 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 		// Distance differentiator: weighted by movement type.
 		// Gives extra credit to cells with high ground effort.
 		// Saturates at ~200 effective km (e.g. 200km foot or 1300km vehicle).
-		wDist := row.FootKm*1.0 + row.VehicleKm*0.15 + row.AircraftKm*0.01
+		wDist := row.FootKm*1.0 + row.VehicleKm*0.15 + row.AircraftKm*aircraftWeight
 		distBonus := math.Log2(1.0+wDist) / math.Log2(1.0+200.0)
 		if distBonus > 1.0 {
 			distBonus = 1.0
@@ -749,7 +774,7 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 		//
 		// A 50km flight = 1.0 effective km (presence detected, not patrolled)
 		// A 5km foot patrol = 5.0 effective km (thorough ground coverage)
-		weightedDist := row.FootKm*1.0 + row.VehicleKm*0.15 + row.AircraftKm*0.01
+		weightedDist := row.FootKm*1.0 + row.VehicleKm*0.15 + row.AircraftKm*aircraftWeight
 		// Fall back to total if per-type breakdown unavailable (legacy data)
 		if weightedDist == 0 && row.TotalDistanceKm > 0 {
 			weightedDist = row.TotalDistanceKm * 0.33
@@ -838,6 +863,8 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 			"foot_km":           row.FootKm,
 			"vehicle_km":        row.VehicleKm,
 			"aircraft_km":       row.AircraftKm,
+			"avg_speed_kmh":     row.AvgSpeedKmh,
+			"avg_altitude_m":    row.AvgAltitudeM,
 		},
 	}
 }
@@ -5549,4 +5576,97 @@ func makeCircleKML(centerLon, centerLat, radiusDeg float64) string {
 		coords = append(coords, fmt.Sprintf("%f,%f,0", lon, lat))
 	}
 	return fmt.Sprintf("<Polygon><outerBoundaryIs><LinearRing><coordinates>%s</coordinates></LinearRing></outerBoundaryIs></Polygon>", strings.Join(coords, " "))
+}
+
+// HandleAPINearbyPlaces returns place names near a given lat/lon from osm_places.
+func (s *Server) HandleAPINearbyPlaces(w http.ResponseWriter, r *http.Request) {
+	latStr := r.URL.Query().Get("lat")
+	lonStr := r.URL.Query().Get("lon")
+
+	lat, err1 := strconv.ParseFloat(latStr, 64)
+	lon, err2 := strconv.ParseFloat(lonStr, 64)
+	if err1 != nil || err2 != nil {
+		http.Error(w, "lat and lon required", http.StatusBadRequest)
+		return
+	}
+
+	type placeResult struct {
+		Name     string  `json:"name"`
+		Type     string  `json:"type"`
+		Distance float64 `json:"distance_km"`
+	}
+
+	// Priority order for place types
+	typePriority := map[string]int{
+		"city": 0, "town": 1, "village": 2, "hamlet": 3,
+		"mountain": 4, "hill": 5, "lake": 6, "river": 7, "stream": 8,
+	}
+
+	// Search within ~5km (0.05°), expand to ~15km if nothing found
+	var places []placeResult
+	for _, radius := range []float64{0.05, 0.15} {
+		rows, err := s.DB.QueryContext(r.Context(), `
+			SELECT DISTINCT name, place_type, lat, lon
+			FROM osm_places
+			WHERE lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?
+			LIMIT 100
+		`, lat-radius, lat+radius, lon-radius, lon+radius)
+		if err != nil {
+			break
+		}
+
+		seen := make(map[string]bool)
+		var candidates []placeResult
+		for rows.Next() {
+			var name, ptype string
+			var plat, plon float64
+			if err := rows.Scan(&name, &ptype, &plat, &plon); err != nil {
+				continue
+			}
+			if seen[name+":"+ptype] {
+				continue
+			}
+			seen[name+":"+ptype] = true
+
+			// Approximate distance in km
+			dlat := (plat - lat) * 111.0
+			dlon := (plon - lon) * 111.0 * math.Cos(lat*math.Pi/180)
+			dist := math.Sqrt(dlat*dlat + dlon*dlon)
+
+			candidates = append(candidates, placeResult{
+				Name:     name,
+				Type:     ptype,
+				Distance: math.Round(dist*10) / 10,
+			})
+		}
+		rows.Close()
+
+		if len(candidates) > 0 {
+			// Sort by priority then distance
+			sort.Slice(candidates, func(i, j int) bool {
+				pi := typePriority[candidates[i].Type]
+				pj := typePriority[candidates[j].Type]
+				if pi != pj {
+					return pi < pj
+				}
+				return candidates[i].Distance < candidates[j].Distance
+			})
+			// Dedupe by name, keep best type
+			nameSeen := make(map[string]bool)
+			for _, c := range candidates {
+				if nameSeen[c.Name] {
+					continue
+				}
+				nameSeen[c.Name] = true
+				places = append(places, c)
+				if len(places) >= 5 {
+					break
+				}
+			}
+			break
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"places": places})
 }

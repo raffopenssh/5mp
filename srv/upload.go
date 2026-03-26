@@ -839,6 +839,28 @@ type gridCellStats struct {
 	DistanceKm   float64
 	PointCount   int
 	MovementType string
+	SpeedSum     float64 // sum of per-segment speeds weighted by distance
+	SpeedDistKm  float64 // total distance with valid speed data
+	AltSum       float64 // sum of altitudes weighted by distance
+	AltDistKm    float64 // total distance with valid altitude data
+}
+
+// avgSpeed returns the distance-weighted average speed, or nil if no data.
+func (s *gridCellStats) avgSpeed() *float64 {
+	if s.SpeedDistKm > 0.001 {
+		v := s.SpeedSum / s.SpeedDistKm
+		return &v
+	}
+	return nil
+}
+
+// avgAlt returns the distance-weighted average altitude, or nil if no data.
+func (s *gridCellStats) avgAlt() *float64 {
+	if s.AltDistKm > 0.001 {
+		v := s.AltSum / s.AltDistKm
+		return &v
+	}
+	return nil
 }
 
 // updateEffortData computes which grid cells each segment passes through
@@ -909,6 +931,24 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 			}
 			cellStats[key].DistanceKm += segDist
 			cellStats[key].PointCount++
+
+			// Track speed (distance-weighted) from timestamps
+			if segDist > 0.001 && p1.Time != nil && p2.Time != nil {
+				dt := p2.Time.Sub(*p1.Time).Hours()
+				if dt > 0 {
+					speed := segDist / dt // km/h
+					if speed < 500 {     // sanity: ignore GPS glitches
+						cellStats[key].SpeedSum += speed * segDist
+						cellStats[key].SpeedDistKm += segDist
+					}
+				}
+			}
+
+			// Track altitude (distance-weighted) from elevation data
+			if segDist > 0.001 && p2.Elevation != nil && *p2.Elevation > 0 {
+				cellStats[key].AltSum += *p2.Elevation * segDist
+				cellStats[key].AltDistKm += segDist
+			}
 		}
 	}
 
@@ -925,6 +965,10 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 		}
 		allCellStats[ak].DistanceKm += stats.DistanceKm
 		allCellStats[ak].PointCount += stats.PointCount
+		allCellStats[ak].SpeedSum += stats.SpeedSum
+		allCellStats[ak].SpeedDistKm += stats.SpeedDistKm
+		allCellStats[ak].AltSum += stats.AltSum
+		allCellStats[ak].AltDistKm += stats.AltDistKm
 	}
 
 	// Ensure grid cells exist and upsert effort data per year-month bucket
@@ -969,6 +1013,8 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 			TotalPoints:      int64(stats.PointCount),
 			UniqueUploads:    1,
 			ProtectedAreaIds: nil,
+			AvgSpeedKmh:      stats.avgSpeed(),
+			AvgAltitudeM:     stats.avgAlt(),
 		})
 		if err != nil {
 			return fmt.Errorf("upsert effort data for %s/%d-%02d-%02d: %w", cellID, key.ymd.year, key.ymd.month, key.ymd.day, err)
@@ -988,6 +1034,8 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 			TotalPoints:      int64(stats.PointCount),
 			UniqueUploads:    1,
 			ProtectedAreaIds: nil,
+			AvgSpeedKmh:      stats.avgSpeed(),
+			AvgAltitudeM:     stats.avgAlt(),
 		})
 		if err != nil {
 			return fmt.Errorf("upsert effort data (all) for %s/%d-%02d-%02d: %w", ak.cellID, ak.ymd.year, ak.ymd.month, ak.ymd.day, err)

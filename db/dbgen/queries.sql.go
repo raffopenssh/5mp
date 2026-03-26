@@ -1998,24 +1998,38 @@ func (q *Queries) UpsertChecklistItem(ctx context.Context, arg UpsertChecklistIt
 }
 
 const upsertEffortData = `-- name: UpsertEffortData :exec
-INSERT INTO effort_data (grid_cell_id, year, month, day, movement_type, total_distance_km, total_points, unique_uploads, protected_area_ids)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO effort_data (grid_cell_id, year, month, day, movement_type, total_distance_km, total_points, unique_uploads, protected_area_ids, avg_speed_kmh, avg_altitude_m)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(grid_cell_id, year, month, day, movement_type) DO UPDATE SET
     total_distance_km = effort_data.total_distance_km + excluded.total_distance_km,
     total_points = effort_data.total_points + excluded.total_points,
-    unique_uploads = effort_data.unique_uploads + excluded.unique_uploads
+    unique_uploads = effort_data.unique_uploads + excluded.unique_uploads,
+    avg_speed_kmh = CASE
+        WHEN effort_data.avg_speed_kmh IS NULL THEN excluded.avg_speed_kmh
+        WHEN excluded.avg_speed_kmh IS NULL THEN effort_data.avg_speed_kmh
+        ELSE (effort_data.avg_speed_kmh * effort_data.total_distance_km + excluded.avg_speed_kmh * excluded.total_distance_km)
+             / (effort_data.total_distance_km + excluded.total_distance_km)
+        END,
+    avg_altitude_m = CASE
+        WHEN effort_data.avg_altitude_m IS NULL THEN excluded.avg_altitude_m
+        WHEN excluded.avg_altitude_m IS NULL THEN effort_data.avg_altitude_m
+        ELSE (effort_data.avg_altitude_m * effort_data.total_distance_km + excluded.avg_altitude_m * excluded.total_distance_km)
+             / (effort_data.total_distance_km + excluded.total_distance_km)
+        END
 `
 
 type UpsertEffortDataParams struct {
-	GridCellID       string  `json:"grid_cell_id"`
-	Year             int64   `json:"year"`
-	Month            int64   `json:"month"`
-	Day              *int64  `json:"day"`
-	MovementType     string  `json:"movement_type"`
-	TotalDistanceKm  float64 `json:"total_distance_km"`
-	TotalPoints      int64   `json:"total_points"`
-	UniqueUploads    int64   `json:"unique_uploads"`
-	ProtectedAreaIds *string `json:"protected_area_ids"`
+	GridCellID       string   `json:"grid_cell_id"`
+	Year             int64    `json:"year"`
+	Month            int64    `json:"month"`
+	Day              *int64   `json:"day"`
+	MovementType     string   `json:"movement_type"`
+	TotalDistanceKm  float64  `json:"total_distance_km"`
+	TotalPoints      int64    `json:"total_points"`
+	UniqueUploads    int64    `json:"unique_uploads"`
+	ProtectedAreaIds *string  `json:"protected_area_ids"`
+	AvgSpeedKmh      *float64 `json:"avg_speed_kmh"`
+	AvgAltitudeM     *float64 `json:"avg_altitude_m"`
 }
 
 func (q *Queries) UpsertEffortData(ctx context.Context, arg UpsertEffortDataParams) error {
@@ -2029,6 +2043,8 @@ func (q *Queries) UpsertEffortData(ctx context.Context, arg UpsertEffortDataPara
 		arg.TotalPoints,
 		arg.UniqueUploads,
 		arg.ProtectedAreaIds,
+		arg.AvgSpeedKmh,
+		arg.AvgAltitudeM,
 	)
 	return err
 }
