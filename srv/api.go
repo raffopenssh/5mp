@@ -709,16 +709,36 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 	var intensity float64
 
 	if windowDays > 180 {
-		// Long window: use the seasonal month-frequency model
+		// Long window: seasonal month-frequency as base, with distance
+		// and subcell coverage as differentiators.
+		var monthBase float64
 		if row.DryMonths > 0 || row.RainyMonths > 0 {
 			actualWeight := float64(row.DryMonths) + float64(row.RainyMonths)*0.3
 			expectedWeight := 6.0
-			intensity = actualWeight / expectedWeight
+			monthBase = actualWeight / expectedWeight
 		} else if row.CoveragePercent != nil && *row.CoveragePercent > 0 {
-			intensity = *row.CoveragePercent / 80.0
+			monthBase = *row.CoveragePercent / 80.0
 		} else {
-			intensity = row.TotalDistanceKm / 80.0
+			monthBase = row.TotalDistanceKm / 80.0
 		}
+
+		// Distance differentiator: weighted by movement type.
+		// Gives extra credit to cells with high ground effort.
+		// Saturates at ~200 effective km (e.g. 200km foot or 1300km vehicle).
+		wDist := row.FootKm*1.0 + row.VehicleKm*0.15 + row.AircraftKm*0.01
+		distBonus := math.Log2(1.0+wDist) / math.Log2(1.0+200.0)
+		if distBonus > 1.0 {
+			distBonus = 1.0
+		}
+
+		// Subcell differentiator: more spatial coverage = more thorough
+		subBonus := float64(row.SubcellCount) / 60.0
+		if subBonus > 1.0 {
+			subBonus = 1.0
+		}
+
+		// Blend: months 55%, distance 25%, subcell 20%
+		intensity = monthBase*0.55 + distBonus*0.25 + subBonus*0.20
 	} else {
 		// Short-to-medium window (1-180 days).
 		//
@@ -729,7 +749,7 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 		//
 		// A 50km flight = 1.0 effective km (presence detected, not patrolled)
 		// A 5km foot patrol = 5.0 effective km (thorough ground coverage)
-		weightedDist := row.FootKm*1.0 + row.VehicleKm*0.15 + row.AircraftKm*0.02
+		weightedDist := row.FootKm*1.0 + row.VehicleKm*0.15 + row.AircraftKm*0.01
 		// Fall back to total if per-type breakdown unavailable (legacy data)
 		if weightedDist == 0 && row.TotalDistanceKm > 0 {
 			weightedDist = row.TotalDistanceKm * 0.33
