@@ -2087,9 +2087,9 @@ ON CONFLICT(grid_cell_id, subcell_id, visit_date) DO UPDATE SET
 `
 
 type UpsertSubcellVisitParams struct {
-	GridCellID string    `json:"grid_cell_id"`
-	SubcellID  string    `json:"subcell_id"`
-	VisitDate  time.Time `json:"visit_date"`
+	GridCellID string `json:"grid_cell_id"`
+	SubcellID  string `json:"subcell_id"`
+	VisitDate  string `json:"visit_date"`
 }
 
 // Subcell visits tracking for spatial coverage (day granularity)

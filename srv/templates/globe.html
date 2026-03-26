@@ -3152,10 +3152,11 @@
                     if (parseFloat(vehicleKm) > 0) movParts.push(`${icon('car','neutral','sm')} ${vehicleKm}`);
                     if (parseFloat(aircraftKm) > 0) movParts.push(`${icon('plane','neutral','sm')} ${aircraftKm}`);
                     const movLine = movParts.length > 0 ? movParts.join(' · ') + ' km' : '';
+                    const multiType = movParts.length >= 2 ? `<span style="background:#22c55e22;color:#22c55e;padding:1px 6px;border-radius:3px;font-size:10px;margin-left:4px">${movParts.length} types</span>` : '';
                     new maplibregl.Popup()
                         .setLngLat(e.lngLat)
                         .setHTML(`
-                            <strong>Effort Pixel</strong><br>
+                            <strong>Effort Pixel</strong>${multiType}<br>
                             <span style="color: #888; font-size: 11px;">ID: ${pixelId}</span><br>
                             Distance: <strong>${distance} km</strong> · Days: <strong>${visitDays}</strong><br>
                             ${movLine ? `<span style="font-size: 12px;">${movLine}</span><br>` : ''}

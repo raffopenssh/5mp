@@ -686,12 +686,25 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 // Returns a Point at the center of the cell for circle visualization.
 //
 // Intensity model (time-window-aware):
-//   - For full-year views (>180 days): uses dry/rainy month weighting (original model)
-//   - For short windows (<= 180 days): uses visit-day frequency relative to span
-//   - Subcell coverage drives inner fill independently
+//   - Distance weighted heavily by movement type: foot >> vehicle >> aircraft
+//   - Subcell coverage is a primary factor (spatial thoroughness)
+//   - Multi-type bonus: cells visited by multiple movement types score higher
+//   - Visit-day frequency matters for longer windows
 //   - Recency drives halo/glow opacity decay
 func buildGridFeature(row GridRow, movementType string, params GridQueryParams) GeoJSONFeature {
 	windowDays := computeWindowSpanDays(params)
+
+	// Count distinct movement types present
+	numTypes := 0
+	if row.FootKm > 0 {
+		numTypes++
+	}
+	if row.VehicleKm > 0 {
+		numTypes++
+	}
+	if row.AircraftKm > 0 {
+		numTypes++
+	}
 
 	var intensity float64
 
@@ -708,28 +721,42 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 		}
 	} else {
 		// Short-to-medium window (1-180 days).
-		// Weight distance by movement type: foot patrols count most per km,
-		// aircraft next, vehicle least.
-		//   foot: 0.40/km, aircraft: 0.35/km, vehicle: 0.25/km
-		weightedDist := row.FootKm*0.40 + row.AircraftKm*0.35 + row.VehicleKm*0.25
+		//
+		// Distance weighted by movement type effort per km:
+		//   foot: 1.0/km  - highest effort, most valuable
+		//   vehicle: 0.15/km - moderate effort
+		//   aircraft: 0.02/km - minimal per-km effort; value is in coverage breadth
+		//
+		// A 50km flight = 1.0 effective km (presence detected, not patrolled)
+		// A 5km foot patrol = 5.0 effective km (thorough ground coverage)
+		weightedDist := row.FootKm*1.0 + row.VehicleKm*0.15 + row.AircraftKm*0.02
 		// Fall back to total if per-type breakdown unavailable (legacy data)
 		if weightedDist == 0 && row.TotalDistanceKm > 0 {
 			weightedDist = row.TotalDistanceKm * 0.33
 		}
 
 		// Threshold scales logarithmically with window size:
-		//   1d → 24km, 3d → 48km, 7d → 72km, 14d → 94km,
-		//   28d → 117km, 90d → 156km, 180d → 180km
-		distThreshold := 24.0 * math.Log2(1.0+float64(windowDays))
+		//   1d → 8km, 3d → 16km, 7d → 24km, 14d → 31km,
+		//   28d → 39km, 90d → 52km, 180d → 60km
+		distThreshold := 8.0 * math.Log2(1.0+float64(windowDays))
 		distFactor := weightedDist / distThreshold
 		if distFactor > 1.0 {
 			distFactor = 1.0
 		}
 
-		// Subcell spatial coverage as bonus (0-100 subcells)
-		subBonus := float64(row.SubcellCount) / 50.0
-		if subBonus > 0.3 {
-			subBonus = 0.3
+		// Subcell spatial coverage: primary factor (0-100 subcells).
+		// 30 subcells visited = full score. This represents 30% area coverage
+		// of the 10x10 grid, which is excellent for a single time window.
+		subcellFactor := float64(row.SubcellCount) / 30.0
+		if subcellFactor > 1.0 {
+			subcellFactor = 1.0
+		}
+
+		// Multi-type bonus: visiting with different movement types means
+		// more comprehensive surveillance (ground + air = better).
+		multiTypeBonus := 0.0
+		if numTypes >= 2 {
+			multiTypeBonus = 0.15 * float64(numTypes-1) // +0.15 for 2 types, +0.30 for 3
 		}
 
 		// Visit-day frequency (saturates at visit every 3 days)
@@ -742,11 +769,20 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 			visitFactor = 1.0
 		}
 
-		// Blend: distance dominates short windows, visit-days grow with longer ones
-		// distWeight: 1.0 at 1d → 0.5 at ~180d
-		distWeight := 1.0 / (1.0 + math.Log2(float64(windowDays)))
-		visitWeight := 1.0 - distWeight
-		intensity = distFactor*distWeight + visitFactor*visitWeight + subBonus
+		// Blend: subcell coverage and distance are primary, visit-days grow
+		// with longer windows. Multi-type bonus stacks on top.
+		//
+		// For short windows (1d):
+		//   distWeight=0.35, subcellWeight=0.35, visitWeight=0.30
+		// For medium windows (30d):
+		//   distWeight=0.25, subcellWeight=0.35, visitWeight=0.40
+		// For long windows (180d):
+		//   distWeight=0.15, subcellWeight=0.35, visitWeight=0.50
+		visitWeight := 0.30 + 0.20*(1.0-1.0/(1.0+math.Log2(float64(windowDays))))
+		distWeight := (1.0 - 0.35 - visitWeight)
+		subcellWeight := 0.35
+
+		intensity = distFactor*distWeight + subcellFactor*subcellWeight + visitFactor*visitWeight + multiTypeBonus
 	}
 
 	if intensity > 1.5 {

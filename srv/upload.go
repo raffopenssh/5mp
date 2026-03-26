@@ -1409,17 +1409,17 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 		}
 		gridCellID := parts[0]
 		subcellID := parts[1]
-		visitDateStr := parts[2]
+		visitDateStr := parts[2] // already "YYYY-MM-DD" format
 		
-		visitDate, err := time.Parse("2006-01-02", visitDateStr)
-		if err != nil {
+		// Validate date format
+		if _, err := time.Parse("2006-01-02", visitDateStr); err != nil {
 			continue
 		}
 		
-		err = q.UpsertSubcellVisit(ctx, dbgen.UpsertSubcellVisitParams{
+		err := q.UpsertSubcellVisit(ctx, dbgen.UpsertSubcellVisitParams{
 			GridCellID: gridCellID,
 			SubcellID:  subcellID,
-			VisitDate:  visitDate,
+			VisitDate:  visitDateStr,
 		})
 		if err != nil {
 			return fmt.Errorf("upsert subcell visit: %w", err)

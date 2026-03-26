@@ -193,14 +193,17 @@ func (s *Server) enrichSubcellCoverage(ctx context.Context, params GridQueryPara
 		idSet[r.GridCellID] = i
 	}
 
-	// Build date conditions for subcell_visits
+	// Build date conditions for subcell_visits.
+	// visit_date may be stored as "YYYY-MM-DD" or Go's "YYYY-MM-DD 00:00:00 +0000 UTC".
+	// Use >= fromDate AND < dayAfterTo to handle both formats correctly.
 	var dateCondition string
 	var dateArgs []interface{}
 	if params.FromDay > 0 && params.ToDay > 0 && params.FromMonth > 0 && params.ToMonth > 0 {
 		fromDate := fmt.Sprintf("%04d-%02d-%02d", params.FromYear, params.FromMonth, params.FromDay)
-		toDate := fmt.Sprintf("%04d-%02d-%02d", params.ToYear, params.ToMonth, params.ToDay)
-		dateCondition = "AND sv.visit_date BETWEEN ? AND ?"
-		dateArgs = append(dateArgs, fromDate, toDate)
+		toTime := time.Date(int(params.ToYear), time.Month(params.ToMonth), int(params.ToDay), 0, 0, 0, 0, time.UTC)
+		dayAfterTo := toTime.AddDate(0, 0, 1).Format("2006-01-02")
+		dateCondition = "AND sv.visit_date >= ? AND sv.visit_date < ?"
+		dateArgs = append(dateArgs, fromDate, dayAfterTo)
 	}
 
 	// Query in batches of ~500 to avoid huge IN clauses
