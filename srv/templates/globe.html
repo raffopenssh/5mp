@@ -18840,17 +18840,47 @@ ${starredItems.narratives.map(n => {
             }
         }
         
-        // Restore bounding box
+        // Restore bounding box — use same UI setup as setBbox()
         const bbox = params.get('bbox');
         if (bbox) {
             const coords = bbox.split(',').map(parseFloat);
             if (coords.length === 4 && coords.every(c => !isNaN(c))) {
                 currentBbox = coords;
-                // Update bbox UI
-                const bboxFilter = document.getElementById('active-filter-bbox');
-                const activeFilters = document.getElementById('active-filters');
-                if (bboxFilter) bboxFilter.style.display = 'flex';
-                if (activeFilters) activeFilters.style.display = 'block';
+
+                // Disable keystones (same as setBbox)
+                keystonesEnabled = false;
+                var _ksCb = document.getElementById('keystones-toggle');
+                if (_ksCb) _ksCb.checked = false;
+                var _ksBtn = document.getElementById('keystones-toggle-btn');
+                if (_ksBtn) _ksBtn.classList.remove('active');
+
+                // Show clear/star buttons, update label (same as setBbox)
+                var _clearBtn = document.getElementById('bbox-clear-btn');
+                if (_clearBtn) _clearBtn.classList.add('visible');
+                var _starBtn = document.getElementById('bbox-star-btn');
+                if (_starBtn) {
+                    _starBtn.classList.add('visible');
+                    if (typeof updateBboxStarButton === 'function') updateBboxStarButton();
+                }
+                var _bboxLabel = document.getElementById('bbox-btn-label');
+                if (_bboxLabel) _bboxLabel.textContent = 'Redraw';
+
+                // Show active filters UI
+                var _activeFilters = document.getElementById('active-filters');
+                if (_activeFilters) _activeFilters.style.display = 'block';
+                var _filterArea = document.getElementById('filter-area');
+                var _filterAreaValue = document.getElementById('filter-area-value');
+                if (_filterArea && _filterAreaValue) {
+                    _filterArea.style.display = 'flex';
+                    var _latDiff = Math.abs(coords[3] - coords[1]);
+                    var _lngDiff = Math.abs(coords[2] - coords[0]);
+                    var _approxKm = Math.round(_latDiff * 111 * _lngDiff * 111 * Math.cos((coords[1] + coords[3]) / 2 * Math.PI / 180));
+                    _filterAreaValue.textContent = formatNumber(_approxKm) + ' km² region';
+                }
+
+                // Draw bbox rectangle on map
+                if (typeof drawBboxOnMap === 'function') drawBboxOnMap();
+
                 // Fit map to bbox
                 map.fitBounds([[coords[0], coords[1]], [coords[2], coords[3]]], { padding: 50 });
             }
@@ -18863,14 +18893,56 @@ ${starredItems.narratives.map(n => {
             selectCountry(country);
         }
         
-        // Restore selected parks
+        // Restore selected parks — populate both selectedPAIds AND selectedParks array
         const parks = params.get('parks');
         if (parks) {
-            const parkIds = parks.split(',');
-            parkIds.forEach(id => {
-                if (id) selectedPAIds.add(id);
-            });
+            const parkIds = parks.split(',').filter(Boolean);
+            parkIds.forEach(id => selectedPAIds.add(id));
             updatePAHighlighting();
+
+            // Populate selectedParks array from map source features
+            // Must wait for source data to be available
+            function populateSelectedParksFromSource() {
+                if (!map.getSource('areas')) return false;
+                const features = map.querySourceFeatures('areas');
+                if (features.length === 0) return false;
+
+                const seenIds = new Set();
+                selectedParks = [];
+                features.forEach(function(f) {
+                    var props = f.properties;
+                    var paId = props.id || props.wdpa_id;
+                    if (!paId || seenIds.has(paId) || !selectedPAIds.has(paId)) return;
+                    seenIds.add(paId);
+                    var geom = f.geometry;
+                    var featureBounds = geom && geom.coordinates ? getGeometryBounds(geom) : null;
+                    selectedParks.push({
+                        id: paId,
+                        name: props.name || 'Unknown',
+                        country: props.country || '',
+                        bbox: featureBounds,
+                        center: featureBounds ? [(featureBounds[0]+featureBounds[2])/2, (featureBounds[1]+featureBounds[3])/2] : null
+                    });
+                });
+                // Update UI
+                var countEl = document.getElementById('keystones-count');
+                if (countEl && selectedParks.length > 0) countEl.textContent = selectedParks.length;
+                updateSelectedParksDisplay();
+                return selectedParks.length > 0;
+            }
+
+            // Try immediately, then retry on sourcedata events
+            if (!populateSelectedParksFromSource()) {
+                var _srcRetry = 0;
+                function _onSourceData() {
+                    if (populateSelectedParksFromSource() || ++_srcRetry > 20) {
+                        map.off('sourcedata', _onSourceData);
+                    }
+                }
+                map.on('sourcedata', _onSourceData);
+                // Safety timeout
+                setTimeout(function() { map.off('sourcedata', _onSourceData); populateSelectedParksFromSource(); }, 5000);
+            }
         }
         
         // Restore movement types
