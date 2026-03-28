@@ -620,11 +620,12 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	} else if typeStr != "" {
 		for _, t := range strings.Split(typeStr, ",") {
 			t = strings.TrimSpace(t)
-			// Map 'aerial' to 'aircraft' (database uses 'aircraft')
+			// Map 'aerial' to fixed_wing + rotor_wing (backward compat)
 			if t == "aerial" {
-				t = "aircraft"
+				params.MovementTypes = append(params.MovementTypes, "fixed_wing", "rotor_wing")
+				continue
 			}
-			if t == "foot" || t == "vehicle" || t == "aircraft" {
+			if t == "foot" || t == "vehicle" || t == "boat" || t == "fixed_wing" || t == "rotor_wing" {
 				params.MovementTypes = append(params.MovementTypes, t)
 			}
 		}
@@ -1059,10 +1060,12 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	} else if typeStr != "" {
 		for _, t := range strings.Split(typeStr, ",") {
 			t = strings.TrimSpace(t)
+			// Map 'aerial' to fixed_wing + rotor_wing (backward compat)
 			if t == "aerial" {
-				t = "aircraft"
+				movementTypes = append(movementTypes, "fixed_wing", "rotor_wing")
+				continue
 			}
-			if t == "foot" || t == "vehicle" || t == "aircraft" {
+			if t == "foot" || t == "vehicle" || t == "boat" || t == "fixed_wing" || t == "rotor_wing" {
 				movementTypes = append(movementTypes, t)
 			}
 		}
@@ -1095,7 +1098,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Movement type filter
-	if len(movementTypes) > 0 && len(movementTypes) < 3 {
+	if len(movementTypes) > 0 && len(movementTypes) < 5 {
 		placeholders := make([]string, len(movementTypes))
 		for i, t := range movementTypes {
 			placeholders[i] = "?"

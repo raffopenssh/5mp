@@ -18,7 +18,7 @@ type GridQueryParams struct {
 	FromDay       int64       // 0 = no day filter on start
 	ToDay         int64       // 0 = no day filter on end
 	Month         *int64      // Optional: filter by specific month
-	MovementTypes []string    // Optional: filter by movement types (foot, vehicle, aircraft)
+	MovementTypes []string    // Optional: filter by movement types (foot, vehicle, boat, fixed_wing, rotor_wing)
 	BBox          *[4]float64 // Optional: [minLng, minLat, maxLng, maxLat]
 }
 
@@ -122,19 +122,17 @@ func (s *Server) QueryGridData(ctx context.Context, params GridQueryParams) ([]G
 	}
 
 	// Movement type filter
-	if len(params.MovementTypes) > 0 && len(params.MovementTypes) < 6 {
-		// Filter by specific movement types (aggregate them)
-		// Expand subtypes: if user selects "vehicle", include "boat" too;
-		// if "aircraft", include "fixed_wing" and "rotor_wing".
+	if len(params.MovementTypes) > 0 && len(params.MovementTypes) < 5 {
+		// Filter by specific movement types (DB-native subtypes).
+		// Expand "aircraft" to fixed_wing + rotor_wing for backward compat.
 		expanded := make(map[string]bool)
 		for _, t := range params.MovementTypes {
-			expanded[t] = true
 			switch t {
-			case "vehicle":
-				expanded["boat"] = true
 			case "aircraft":
 				expanded["fixed_wing"] = true
 				expanded["rotor_wing"] = true
+			default:
+				expanded[t] = true
 			}
 		}
 		placeholders := make([]string, 0, len(expanded))
@@ -490,6 +488,15 @@ func computeRecency(lastVisitDay int64, params GridQueryParams) float64 {
 	windowDays := float64(computeWindowSpanDays(params))
 	if windowDays < 1 {
 		windowDays = 1
+	}
+
+	// Cap the effective decay window at 120 days so recency always
+	// produces meaningful visual differentiation. Without this cap,
+	// a multi-year window (e.g. 1100 days) makes all recent visits
+	// look identical (recency ~0.97-1.0).
+	const maxDecayDays = 120.0
+	if windowDays > maxDecayDays {
+		windowDays = maxDecayDays
 	}
 
 	daysSinceLast := endDate.Sub(lastDate).Hours() / 24
