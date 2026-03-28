@@ -3222,7 +3222,7 @@
 
                     // Unique popup ID for lazy place name loading
                     const popupId = 'pp-' + pixelId.replace(/[^a-z0-9_-]/gi, '');
-                    const popup = new maplibregl.Popup()
+                    const popup = new maplibregl.Popup({ maxWidth: '380px' })
                         .setLngLat(lngLat)
                         .setHTML(`
                             <div style="padding:10px 12px">
@@ -12505,8 +12505,8 @@
             } else if (urlTo) {
                 applyPreciseDateFilter(formatDateISO(valueToDate(sliderStartValue)), urlTo);
             } else {
-                updateSliderDisplay();
-                updateDateFilter();
+                // Default to 90d for good visual differentiation
+                applyDatePreset('90d');
             }
         }
         
