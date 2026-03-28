@@ -50,6 +50,12 @@ type GridRow struct {
 	BoatSpeedKmh      *float64
 	FixedWingSpeedKmh *float64
 	RotorWingSpeedKmh *float64
+	FootAltitudeM     *float64 // per-type distance-weighted avg altitude
+	VehicleAltitudeM  *float64
+	AircraftAltitudeM *float64
+	BoatAltitudeM      *float64
+	FixedWingAltitudeM *float64
+	RotorWingAltitudeM *float64
 }
 
 // QueryGridData executes a flexible query for grid data with optional filters.
@@ -349,6 +355,10 @@ func (s *Server) enrichMovementTypes(ctx context.Context, params GridQueryParams
 			       CASE WHEN SUM(CASE WHEN e.avg_speed_kmh IS NOT NULL THEN e.total_distance_km ELSE 0 END) > 0
 			            THEN SUM(CASE WHEN e.avg_speed_kmh IS NOT NULL THEN e.avg_speed_kmh * e.total_distance_km ELSE 0 END)
 			               / SUM(CASE WHEN e.avg_speed_kmh IS NOT NULL THEN e.total_distance_km ELSE 0 END)
+			            ELSE NULL END,
+			       CASE WHEN SUM(CASE WHEN e.avg_altitude_m IS NOT NULL THEN e.total_distance_km ELSE 0 END) > 0
+			            THEN SUM(CASE WHEN e.avg_altitude_m IS NOT NULL THEN e.avg_altitude_m * e.total_distance_km ELSE 0 END)
+			               / SUM(CASE WHEN e.avg_altitude_m IS NOT NULL THEN e.total_distance_km ELSE 0 END)
 			            ELSE NULL END
 			FROM effort_data e
 			WHERE e.grid_cell_id IN (%s)
@@ -365,7 +375,8 @@ func (s *Server) enrichMovementTypes(ctx context.Context, params GridQueryParams
 			var cellID, mtype string
 			var km float64
 			var avgSpeed sql.NullFloat64
-			if err := srows.Scan(&cellID, &mtype, &km, &avgSpeed); err != nil {
+			var avgAlt sql.NullFloat64
+			if err := srows.Scan(&cellID, &mtype, &km, &avgSpeed, &avgAlt); err != nil {
 				srows.Close()
 				return err
 			}
@@ -376,21 +387,33 @@ func (s *Server) enrichMovementTypes(ctx context.Context, params GridQueryParams
 					if avgSpeed.Valid {
 						rows[idx].FootSpeedKmh = &avgSpeed.Float64
 					}
+					if avgAlt.Valid {
+						rows[idx].FootAltitudeM = &avgAlt.Float64
+					}
 				case "vehicle":
 					rows[idx].VehicleKm += km
 					if avgSpeed.Valid {
 						rows[idx].VehicleSpeedKmh = &avgSpeed.Float64
+					}
+					if avgAlt.Valid {
+						rows[idx].VehicleAltitudeM = &avgAlt.Float64
 					}
 				case "aircraft":
 					rows[idx].AircraftKm += km
 					if avgSpeed.Valid {
 						rows[idx].AircraftSpeedKmh = &avgSpeed.Float64
 					}
+					if avgAlt.Valid {
+						rows[idx].AircraftAltitudeM = &avgAlt.Float64
+					}
 				case "boat":
 					rows[idx].BoatKm += km
 					rows[idx].VehicleKm += km // boat counts toward vehicle total
 					if avgSpeed.Valid {
 						rows[idx].BoatSpeedKmh = &avgSpeed.Float64
+					}
+					if avgAlt.Valid {
+						rows[idx].BoatAltitudeM = &avgAlt.Float64
 					}
 				case "fixed_wing":
 					rows[idx].FixedWingKm += km
@@ -399,12 +422,20 @@ func (s *Server) enrichMovementTypes(ctx context.Context, params GridQueryParams
 						rows[idx].FixedWingSpeedKmh = &avgSpeed.Float64
 						rows[idx].AircraftSpeedKmh = &avgSpeed.Float64
 					}
+					if avgAlt.Valid {
+						rows[idx].FixedWingAltitudeM = &avgAlt.Float64
+						rows[idx].AircraftAltitudeM = &avgAlt.Float64
+					}
 				case "rotor_wing":
 					rows[idx].RotorWingKm += km
 					rows[idx].AircraftKm += km
 					if avgSpeed.Valid {
 						rows[idx].RotorWingSpeedKmh = &avgSpeed.Float64
 						rows[idx].AircraftSpeedKmh = &avgSpeed.Float64
+					}
+					if avgAlt.Valid {
+						rows[idx].RotorWingAltitudeM = &avgAlt.Float64
+						rows[idx].AircraftAltitudeM = &avgAlt.Float64
 					}
 				}
 			}

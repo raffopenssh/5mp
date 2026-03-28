@@ -874,6 +874,12 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 			"boat_speed_kmh":       row.BoatSpeedKmh,
 			"fixed_wing_speed_kmh": row.FixedWingSpeedKmh,
 			"rotor_wing_speed_kmh": row.RotorWingSpeedKmh,
+			"foot_altitude_m":       row.FootAltitudeM,
+			"vehicle_altitude_m":    row.VehicleAltitudeM,
+			"aircraft_altitude_m":   row.AircraftAltitudeM,
+			"boat_altitude_m":       row.BoatAltitudeM,
+			"fixed_wing_altitude_m": row.FixedWingAltitudeM,
+			"rotor_wing_altitude_m": row.RotorWingAltitudeM,
 		},
 	}
 }

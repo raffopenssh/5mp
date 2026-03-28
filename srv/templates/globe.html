@@ -927,7 +927,16 @@
         .parks-selector { display: flex; gap: 4px; }
 
         /* PA Popup Tooltip (map popup style) */
-        .maplibregl-popup-content { background: rgba(18,18,18,0.95) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 8px !important; padding: 0 !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; min-width: 220px; max-width: 280px; }
+        .maplibregl-popup-content { background: rgba(18,18,18,0.95) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 8px !important; padding: 0 !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; min-width: 220px; max-width: 320px; }
+        /* Effort pixel table */
+        .ept { width: 100%; border-collapse: collapse; margin: 6px 0 4px; font-size: 11px; }
+        .ept th { color: #666; font-weight: 500; text-align: right; padding: 2px 6px 2px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .ept th:first-child { text-align: left; }
+        .ept td { padding: 3px 6px 3px 0; text-align: right; color: #ccc; white-space: nowrap; }
+        .ept td:first-child { text-align: left; color: #aaa; }
+        .ept tr.ept-total td { border-top: 1px solid rgba(255,255,255,0.12); font-weight: 600; color: #fff; padding-top: 4px; }
+        .ept .ept-dim { color: #555; }
+        .ept .ept-icon { display: inline-flex; align-items: center; gap: 3px; }
         .maplibregl-popup-tip { border-top-color: rgba(18,18,18,0.95) !important; }
         .maplibregl-popup-close-button { color: #666 !important; font-size: 18px !important; padding: 4px 8px !important; }
         .maplibregl-popup-close-button:hover { color: #fff !important; background: transparent !important; }
@@ -1072,6 +1081,9 @@
             
             /* Popups - constrain width */
             .maplibregl-popup-content { min-width: 180px; max-width: calc(100vw - 40px) !important; }
+            .ept { font-size: 10px; }
+            .ept th { font-size: 9px; padding: 2px 4px 2px 0; }
+            .ept td { padding: 2px 4px 2px 0; }
             .pa-popup { padding: 10px; }
             .pa-popup-name { font-size: 13px; }
             .pa-popup-stats { gap: 6px; }
@@ -3119,23 +3131,14 @@
             
             // Flag to prevent PA handler from firing when grid pixel was clicked
             window._gridPixelClicked = false;
+            // Track currently open pixel popup for share links
+            window._currentPixelPopup = null;
+            window._currentPixelId = null;
 
-            map.on('click', 'grid-cells', function(e) {
-                // At low zoom (<7), PA click wins over grid cells.
-                // At zoom >=7, grid cells win — pixels are individually visible
-                // and tappable (critical for mobile where PA areas cover everything).
-                if (map.getZoom() < 7) {
-                    const paFeatures = map.queryRenderedFeatures(e.point, { layers: ['areas-fill'] });
-                    if (paFeatures.length > 0) {
-                        return; // Let PA click through
-                    }
-                }
-                
-                window._gridPixelClicked = true;
-                setTimeout(() => { window._gridPixelClicked = false; }, 50);
-                e.originalEvent.stopPropagation();
-                if (e.features.length > 0) {
-                    const props = e.features[0].properties;
+            // Reusable function to open an effort pixel popup
+            window.openPixelPopup = function(props, lngLat) {
+                    // Close any existing pixel popup
+                    if (window._currentPixelPopup) { window._currentPixelPopup.remove(); }
                     const pixelId = props.id || 'Unknown';
                     const distance = props.total_distance_km ? props.total_distance_km.toFixed(1) : '0';
                     const visits = props.unique_uploads || 0;
@@ -3153,47 +3156,97 @@
                     const groundVehicleKm = Math.max(0, parseFloat(vehicleKm) - parseFloat(boatKm)).toFixed(1);
                     const unclassifiedAirKm = Math.max(0, parseFloat(aircraftKm) - parseFloat(fixedWingKm) - parseFloat(rotorWingKm)).toFixed(1);
 
-                    const fmtSpd = (v) => v ? ` <span style="color:#666;font-size:10px">${v.toFixed(0)} km/h</span>` : '';
-                    const movParts = [];
-                    if (parseFloat(footKm) > 0)
-                        movParts.push(`${icon('footprints','neutral','sm')} ${footKm}${fmtSpd(props.foot_speed_kmh)}`);
-                    if (parseFloat(groundVehicleKm) > 0)
-                        movParts.push(`${icon('car','neutral','sm')} ${groundVehicleKm}${fmtSpd(props.vehicle_speed_kmh)}`);
-                    if (parseFloat(boatKm) > 0)
-                        movParts.push(`${icon('ship','info','sm')} ${boatKm}${fmtSpd(props.boat_speed_kmh)}`);
-                    if (parseFloat(fixedWingKm) > 0)
-                        movParts.push(`${icon('plane','neutral','sm')} ${fixedWingKm}${fmtSpd(props.fixed_wing_speed_kmh)}`);
-                    if (parseFloat(rotorWingKm) > 0)
-                        movParts.push(`${icon('helicopter','neutral','sm')} ${rotorWingKm}${fmtSpd(props.rotor_wing_speed_kmh)}`);
-                    if (parseFloat(unclassifiedAirKm) > 0)
-                        movParts.push(`${icon('plane','neutral','sm')} ${unclassifiedAirKm}${fmtSpd(props.aircraft_speed_kmh)}`);
+                    // Build movement type rows for tabular display
+                    const fmtDur = (km, spdKmh) => {
+                        if (!spdKmh || spdKmh <= 0 || km <= 0) return '—';
+                        const hrs = km / spdKmh;
+                        const h = Math.floor(hrs);
+                        const m = Math.round((hrs - h) * 60);
+                        return `${h}:${String(m).padStart(2,'0')}`;
+                    };
+                    const fmtKm = (v) => parseFloat(v) > 0 ? parseFloat(v).toFixed(1) : '—';
+                    const fmtSpd2 = (v) => v && v > 0 ? v.toFixed(0) : '—';
+                    const fmtAlt = (v) => v && v > 0 ? v.toFixed(0) : '';
 
-                    const movLine = movParts.length > 0 ? movParts.join(' &middot; ') + ' km' : '';
-                    const multiType = movParts.length >= 2 ? `<span style="background:#22c55e22;color:#22c55e;padding:1px 6px;border-radius:3px;font-size:10px;margin-left:4px">${movParts.length} types</span>` : '';
-                    // Altitude info for aircraft cells
-                    const avgAlt = props.avg_altitude_m;
-                    let speedAltLine = '';
-                    if (parseFloat(aircraftKm) > 0 && avgAlt) {
-                        speedAltLine = `<span style="font-size:11px;color:#666">${icon('mountain','neutral','sm')} ${avgAlt.toFixed(0)} m alt</span><br>`;
+                    // Collect movement rows: [icon, label, km, speed, duration, altStr]
+                    const movRows = [];
+                    let totalKm = 0, totalHrs = 0, typeCount = 0;
+                    const addRow = (iconName, iconColor, label, km, spdKmh, alt) => {
+                        const k = parseFloat(km);
+                        if (k <= 0) return;
+                        typeCount++;
+                        totalKm += k;
+                        const hrs = (spdKmh && spdKmh > 0) ? k / spdKmh : 0;
+                        totalHrs += hrs;
+                        movRows.push({
+                            icon: icon(iconName, iconColor, 'sm'),
+                            label, km: k, spd: spdKmh, dur: fmtDur(k, spdKmh),
+                            alt: alt || ''
+                        });
+                    };
+                    addRow('footprints','neutral','Foot', footKm, props.foot_speed_kmh, fmtAlt(props.foot_altitude_m));
+                    addRow('car','neutral','Vehicle', groundVehicleKm, props.vehicle_speed_kmh, fmtAlt(props.vehicle_altitude_m));
+                    addRow('ship','info','Boat', boatKm, props.boat_speed_kmh, fmtAlt(props.boat_altitude_m));
+                    addRow('plane','neutral','Fixed-wing', fixedWingKm, props.fixed_wing_speed_kmh, fmtAlt(props.fixed_wing_altitude_m));
+                    addRow('settings-2','neutral','Rotor', rotorWingKm, props.rotor_wing_speed_kmh, fmtAlt(props.rotor_wing_altitude_m));
+                    if (parseFloat(unclassifiedAirKm) > 0)
+                        addRow('plane','neutral','Aircraft', unclassifiedAirKm, props.aircraft_speed_kmh, fmtAlt(props.aircraft_altitude_m));
+
+                    const multiType = typeCount >= 2 ? `<span style="background:#22c55e22;color:#22c55e;padding:1px 6px;border-radius:3px;font-size:10px;margin-left:4px">${typeCount} types</span>` : '';
+
+                    // Has altitude?
+                    const hasAlt = movRows.some(r => r.alt !== '');
+
+                    // Build table HTML
+                    let tableHTML = '';
+                    if (movRows.length > 0) {
+                        const thAlt = hasAlt ? '<th>Alt</th>' : '';
+                        tableHTML = `<table class="ept"><thead><tr><th>Type</th><th>hh:mm</th><th>km/h</th><th>km</th>${thAlt}</tr></thead><tbody>`;
+                        for (const r of movRows) {
+                            const cls = (v) => v === '—' ? ' class="ept-dim"' : '';
+                            const tdAlt = hasAlt ? `<td${cls(r.alt || '—')}>${r.alt || '—'}</td>` : '';
+                            tableHTML += `<tr><td><span class="ept-icon">${r.icon} ${r.label}</span></td><td${cls(r.dur)}>${r.dur}</td><td${cls(fmtSpd2(r.spd))}>${fmtSpd2(r.spd)}</td><td>${r.km.toFixed(1)}</td>${tdAlt}</tr>`;
+                        }
+                        // Total row
+                        if (movRows.length > 1) {
+                            const tH = Math.floor(totalHrs);
+                            const tM = Math.round((totalHrs - tH) * 60);
+                            const totalDur = totalHrs > 0 ? `${tH}:${String(tM).padStart(2,'0')}` : '—';
+                            const avgSpd = totalHrs > 0 ? (totalKm / totalHrs).toFixed(0) : '—';
+                            const tdAlt = hasAlt ? '<td></td>' : '';
+                            tableHTML += `<tr class="ept-total"><td>Total</td><td>${totalDur}</td><td>${avgSpd}</td><td>${totalKm.toFixed(1)}</td>${tdAlt}</tr>`;
+                        }
+                        tableHTML += '</tbody></table>';
                     }
+
                     // Unique popup ID for lazy place name loading
                     const popupId = 'pp-' + pixelId.replace(/[^a-z0-9_-]/gi, '');
                     const popup = new maplibregl.Popup()
-                        .setLngLat(e.lngLat)
+                        .setLngLat(lngLat)
                         .setHTML(`
-                            <strong>Effort Pixel</strong>${multiType}<br>
-                            <span style="color: #888; font-size: 11px;">ID: ${pixelId}</span>
-                            <span id="${popupId}" style="font-size: 11px; color: #8b8;"></span><br>
-                            Distance: <strong>${distance} km</strong> · Days: <strong>${visitDays}</strong><br>
-                            ${movLine ? `<span style="font-size: 12px;">${movLine}</span><br>` : ''}
-                            ${speedAltLine}
-                            Subcell coverage: <strong>${subcellPct}%</strong> of 100<br>
-                            Intensity: <strong>${intensity}</strong> · Freshness: <strong>${recency}</strong><br>
-                            <span style="color: #666; font-size: 10px;">100 km² (~10km × 10km)</span>
+                            <div style="padding:10px 12px">
+                            <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px"><strong>Effort Pixel</strong>${multiType}</div>
+                            <span style="color:#888;font-size:11px">ID: ${pixelId}</span>
+                            <span id="${popupId}" style="font-size:11px;color:#8b8"></span>
+                            <div style="display:flex;gap:12px;margin:6px 0 2px;font-size:12px">
+                                <span>${icon('route','neutral','sm')} <strong>${distance}</strong> <span style="color:#666">km</span></span>
+                                <span>${icon('calendar','neutral','sm')} <strong>${visitDays}</strong> <span style="color:#666">days</span></span>
+                            </div>
+                            ${tableHTML}
+                            <div style="display:flex;gap:10px;font-size:11px;margin-top:4px;color:#aaa">
+                                <span>Coverage <strong style="color:#ccc">${subcellPct}%</strong></span>
+                                <span>Intensity <strong style="color:#ccc">${intensity}</strong></span>
+                                <span>Fresh <strong style="color:#ccc">${recency}</strong></span>
+                            </div>
+                            <div style="color:#555;font-size:9px;margin-top:3px">100 km² (~10km × 10km)</div>
+                            </div>
                         `)
                         .addTo(map);
+                    window._currentPixelPopup = popup;
+                    window._currentPixelId = pixelId;
+                    popup.on('close', () => { window._currentPixelPopup = null; window._currentPixelId = null; });
                     // Lazy-load nearby place names
-                    const plat = e.lngLat.lat, plng = e.lngLat.lng;
+                    const plat = lngLat.lat, plng = lngLat.lng;
                     fetch(`/api/nearby-places?pwd=${encodeURIComponent(getPwd())}&lat=${plat.toFixed(4)}&lon=${plng.toFixed(4)}`)
                         .then(r => r.json())
                         .then(data => {
@@ -3207,6 +3260,19 @@
                                 el.innerHTML = '<br>' + names.join(' · ');
                             }
                         }).catch(() => {});
+            };
+
+            map.on('click', 'grid-cells', function(e) {
+                // At low zoom (<7), PA click wins over grid cells.
+                if (map.getZoom() < 7) {
+                    const paFeatures = map.queryRenderedFeatures(e.point, { layers: ['areas-fill'] });
+                    if (paFeatures.length > 0) return;
+                }
+                window._gridPixelClicked = true;
+                setTimeout(() => { window._gridPixelClicked = false; }, 50);
+                e.originalEvent.stopPropagation();
+                if (e.features.length > 0) {
+                    window.openPixelPopup(e.features[0].properties, e.lngLat);
                 }
             });
 
@@ -18765,6 +18831,11 @@ ${starredItems.narratives.map(n => {
             }
         }
         
+        // Add pixel popup if open
+        if (window._currentPixelPopup && window._currentPixelId) {
+            params.set('pixel', window._currentPixelId);
+        }
+        
         // Add pinned layers (category pins - all features of a type)
         const pinnedKeys = Object.keys(pinnedLayers || {});
         if (pinnedKeys.length > 0) {
@@ -19064,6 +19135,53 @@ ${starredItems.narratives.map(n => {
                 const dropdown = document.getElementById('notification-dropdown');
                 if (dropdown) dropdown.classList.add('open');
             }, 1000);
+        }
+        
+        // Restore pixel popup from share link
+        const pixelParam = params.get('pixel');
+        if (pixelParam) {
+            console.log('[URL Restore] pixel popup:', pixelParam);
+            // Parse pixel ID like "-8.6_37.2" → lat=-8.6, lon=37.2
+            const parts = pixelParam.split('_');
+            if (parts.length === 2) {
+                const pxLat = parseFloat(parts[0]);
+                const pxLon = parseFloat(parts[1]);
+                if (!isNaN(pxLat) && !isNaN(pxLon)) {
+                    let pixelRetries = 0;
+                    const tryOpenPixel = () => {
+                        // Try queryRenderedFeatures first
+                        const screenPt = map.project([pxLon, pxLat]);
+                        let match = null;
+                        try {
+                            const feats = map.queryRenderedFeatures(
+                                [[screenPt.x - 20, screenPt.y - 20], [screenPt.x + 20, screenPt.y + 20]],
+                                {layers: ['grid-cells']}
+                            );
+                            match = feats.find(f => f.properties.id === pixelParam);
+                        } catch(e) {}
+                        // Fallback: try querySourceFeatures (source name is 'grid')
+                        if (!match) {
+                            try {
+                                const srcFeats = map.querySourceFeatures('grid', {sourceLayer: ''});
+                                match = srcFeats.find(f => f.properties.id === pixelParam);
+                            } catch(e) {}
+                        }
+                        if (match) {
+                            // Use actual geometry coords for accurate popup placement
+                            const coords = match.geometry && match.geometry.coordinates;
+                            const popupLngLat = coords ? {lng: coords[0], lat: coords[1]} : {lng: pxLon, lat: pxLat};
+                            window.openPixelPopup(match.properties, popupLngLat);
+                            console.log('[URL Restore] pixel popup opened:', pixelParam);
+                        } else if (pixelRetries < 30) {
+                            pixelRetries++;
+                            setTimeout(tryOpenPixel, 500);
+                        } else {
+                            console.warn('[URL Restore] pixel not found after retries:', pixelParam);
+                        }
+                    };
+                    setTimeout(tryOpenPixel, 2000);
+                }
+            }
         }
         
         // Restore popup (with retry for source data availability)
