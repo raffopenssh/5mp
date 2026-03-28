@@ -28,13 +28,14 @@ type Point struct {
 
 // Segment represents a continuous track segment with computed statistics.
 type Segment struct {
-	Points       []Point
-	StartTime    *time.Time
-	EndTime      *time.Time
-	DistanceKm   float64
-	AvgSpeedKmh  float64
-	MovementType string
-	Hint         MovementHint // External classification hint (from ER metadata, Locus, etc.)
+	Points          []Point
+	StartTime       *time.Time
+	EndTime         *time.Time
+	DistanceKm      float64
+	AvgSpeedKmh     float64
+	MovementType    string
+	MovementSubtype string       // "boat", "fixed_wing", "rotor_wing", or ""
+	Hint            MovementHint // External classification hint (from ER metadata, Locus, etc.)
 }
 
 // Track represents a GPX track containing multiple segments.
@@ -73,6 +74,11 @@ type MovementHint struct {
 	IsFoot      bool
 	Type        string  // "vehicle", "aircraft", "foot", or ""
 	Confidence  float64 // 0.0 to 1.0
+
+	// SubtypeHint provides finer-grained classification from ER metadata.
+	// Values: "boat", "helicopter", "fixed_wing", or "" (unknown).
+	// Does NOT affect base Type classification; used only by ClassifyMovementSubtype.
+	SubtypeHint string
 }
 
 // AirstripWaypoint represents a waypoint identified as an airstrip,
@@ -197,11 +203,21 @@ func ExtractMovementHintsFromWaypoints(waypoints []Waypoint) MovementHint {
 			hint.Type = "vehicle"
 			hint.Confidence = 0.8
 		}
+		// Check for boat/marine indicators
+		if strings.Contains(desc, "boat") || strings.Contains(desc, "marine") || strings.Contains(desc, "river patrol") || strings.Contains(desc, "lake patrol") {
+			hint.IsVehicle = true
+			hint.Type = "vehicle"
+			hint.SubtypeHint = "boat"
+			hint.Confidence = 0.8
+		}
 		// Check for aircraft indicators
 		if strings.Contains(desc, "flight") || strings.Contains(desc, "plane") || strings.Contains(desc, "aircraft") || strings.Contains(desc, "helicopter") || strings.Contains(desc, "flying") {
 			hint.IsAircraft = true
 			hint.Type = "aircraft"
 			hint.Confidence = 0.9
+			if strings.Contains(desc, "helicopter") || strings.Contains(desc, "heli") {
+				hint.SubtypeHint = "helicopter"
+			}
 		}
 		// Check for foot patrol indicators
 		if strings.Contains(desc, "patrol") || strings.Contains(desc, "walking") || strings.Contains(desc, "foot") || strings.Contains(desc, "hiking") || strings.Contains(desc, "ranger") {
@@ -215,6 +231,48 @@ func ExtractMovementHintsFromWaypoints(waypoints []Waypoint) MovementHint {
 
 // mergeTrackActivityHint merges a Locus/GPX track-level activity string into a movement hint.
 // Common Locus activities: transport_airplane, transport_car, run, walk, bike.
+// mergeTrackNameHint extracts subtype hints from GPX track names.
+// Users often name tracks like "boat 83F_Pilot..." or "helicopter patrol".
+// These are weak signals (confidence boost, not authoritative) but useful
+// when combined with trajectory analysis.
+// mergeTrackNameHint extracts movement type AND subtype hints from GPX track names.
+// Users often name tracks like "boat 83F_Pilot..." or "helicopter patrol".
+// Track names are user-provided labels — more trustworthy than Locus auto-classification
+// (which e.g. misclassifies boats as "transport_airplane"). So track name hints for
+// movement TYPE override Locus activity hints when they conflict.
+func mergeTrackNameHint(base MovementHint, trackName string) MovementHint {
+	if trackName == "" {
+		return base
+	}
+	name := strings.ToLower(trackName)
+
+	switch {
+	case strings.Contains(name, "boat") || strings.Contains(name, "marine") ||
+		strings.Contains(name, "canoe") || strings.Contains(name, "kayak") ||
+		strings.Contains(name, "pirogue"):
+		// Boat: override movement type to vehicle (Locus often says "airplane")
+		base.IsVehicle = true
+		base.IsAircraft = false
+		base.Type = "vehicle"
+		base.Confidence = 0.95 // User-named = high confidence
+		base.SubtypeHint = "boat_name_hint"
+	case strings.Contains(name, "helicopter") || strings.Contains(name, "heli") ||
+		strings.Contains(name, "chopper") || strings.Contains(name, "rotor"):
+		base.IsAircraft = true
+		base.Type = "aircraft"
+		base.Confidence = 0.95
+		base.SubtypeHint = "helicopter_name_hint"
+	case strings.Contains(name, "fixed wing") || strings.Contains(name, "fixed-wing") ||
+		strings.Contains(name, "cessna") || strings.Contains(name, "caravan") ||
+		strings.Contains(name, "bush plane"):
+		base.IsAircraft = true
+		base.Type = "aircraft"
+		base.Confidence = 0.95
+		base.SubtypeHint = "fixed_wing_name_hint"
+	}
+	return base
+}
+
 func mergeTrackActivityHint(base MovementHint, activity string) MovementHint {
 	if activity == "" {
 		return base
@@ -226,6 +284,11 @@ func mergeTrackActivityHint(base MovementHint, activity string) MovementHint {
 		base.IsAircraft = true
 		base.Type = "aircraft"
 		base.Confidence = 0.95 // Explicit app tag is very reliable
+		if strings.Contains(activity, "helicopter") {
+			base.SubtypeHint = "helicopter"
+		} else if strings.Contains(activity, "airplane") {
+			base.SubtypeHint = "fixed_wing"
+		}
 	case strings.Contains(activity, "car") || strings.Contains(activity, "vehicle") ||
 		strings.Contains(activity, "motor") || strings.Contains(activity, "drive"):
 		base.IsVehicle = true
@@ -264,6 +327,11 @@ func mergeERSubjectHint(base MovementHint, subjectType, subjectSubtype, patrolTy
 			base.IsAircraft = true
 			base.Type = "aircraft"
 			base.Confidence = 1.0 // Authoritative: ER patrol definition
+			if strings.Contains(patrolType, "heli") {
+				base.SubtypeHint = "helicopter"
+			} else {
+				base.SubtypeHint = "fixed_wing"
+			}
 			return base
 		case strings.Contains(patrolType, "vehicle") || strings.Contains(patrolType, "car") ||
 			strings.Contains(patrolType, "truck"):
@@ -282,6 +350,7 @@ func mergeERSubjectHint(base MovementHint, subjectType, subjectSubtype, patrolTy
 			base.IsVehicle = true
 			base.Type = "vehicle"
 			base.Confidence = 1.0
+			base.SubtypeHint = "boat"
 			return base
 		}
 	}
@@ -293,6 +362,13 @@ func mergeERSubjectHint(base MovementHint, subjectType, subjectSubtype, patrolTy
 		base.IsAircraft = true
 		base.Type = "aircraft"
 		base.Confidence = 1.0
+		// Set subtype hint from subject_subtype
+		switch subjectSubtype {
+		case "helicopter", "heli":
+			base.SubtypeHint = "helicopter"
+		case "plane", "fixed_wing":
+			base.SubtypeHint = "fixed_wing"
+		}
 	case "vehicle":
 		// Device is physically mounted on a vehicle — definitive
 		base.IsVehicle = true
@@ -465,7 +541,8 @@ func SplitIntoSegments(data *GPXData, maxDuration time.Duration) []Segment {
 		// 5. Waypoint text analysis (lowest)
 		trackHint := hint
 		trackHint = mergeTrackActivityHint(trackHint, track.Activity)
-		trackHint = mergeERSubjectHint(trackHint, track.ERSubjectType, track.ERSubjectSubtype, track.ERPatrolType)
+		trackHint = mergeTrackNameHint(trackHint, track.Name) // After Locus: user names override Locus auto-classification
+		trackHint = mergeERSubjectHint(trackHint, track.ERSubjectType, track.ERSubjectSubtype, track.ERPatrolType) // ER metadata is most authoritative
 
 		// If no strong hint yet, check airstrip proximity.
 		// Only apply if the track's speed profile is consistent with aircraft (>30 km/h avg).
@@ -613,8 +690,14 @@ func buildSegmentWithHint(points []Point, hint MovementHint) Segment {
 	if len(points) >= 3 {
 		classification := ClassifyMovementFullWithHint(points, hint)
 		seg.MovementType = classification.MovementType
+		seg.MovementSubtype = classification.MovementSubtype
 	} else {
 		seg.MovementType = ClassifyMovementTypeWithHint(seg, hint)
+		// For short segments, still try subtype from hints alone
+		if hint.SubtypeHint != "" {
+			metrics := AnalyzeTrajectory(points)
+			seg.MovementSubtype, _ = ClassifyMovementSubtype(seg.MovementType, metrics, hint)
+		}
 	}
 
 	return seg

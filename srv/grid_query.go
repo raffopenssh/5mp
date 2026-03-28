@@ -36,11 +36,20 @@ type GridRow struct {
 	VisitDays       int64   // distinct days with effort within the window
 	LastVisitDay    int64   // YYYYMMDD code of most recent effort day (0 if unknown)
 	SubcellCount    int64   // distinct subcells visited (from subcell_visits, 0-100)
-	FootKm          float64 // distance by movement type
-	VehicleKm       float64
-	AircraftKm      float64
-	AvgSpeedKmh     *float64 // distance-weighted avg speed (aircraft cells)
-	AvgAltitudeM    *float64 // distance-weighted avg altitude (aircraft cells)
+	FootKm           float64 // distance by movement type
+	VehicleKm        float64 // ground vehicles (excludes boat)
+	AircraftKm       float64 // all aircraft (sum of fixed+rotor+unclassified)
+	BoatKm           float64 // boat subtype of vehicle
+	FixedWingKm      float64 // fixed-wing subtype of aircraft
+	RotorWingKm      float64 // rotor-wing (helicopter) subtype of aircraft
+	AvgSpeedKmh      *float64 // distance-weighted avg speed (all types combined)
+	AvgAltitudeM     *float64 // distance-weighted avg altitude (aircraft cells)
+	FootSpeedKmh     *float64 // per-type distance-weighted avg speed
+	VehicleSpeedKmh  *float64
+	AircraftSpeedKmh *float64
+	BoatSpeedKmh      *float64
+	FixedWingSpeedKmh *float64
+	RotorWingSpeedKmh *float64
 }
 
 // QueryGridData executes a flexible query for grid data with optional filters.
@@ -107,11 +116,24 @@ func (s *Server) QueryGridData(ctx context.Context, params GridQueryParams) ([]G
 	}
 
 	// Movement type filter
-	if len(params.MovementTypes) > 0 && len(params.MovementTypes) < 3 {
+	if len(params.MovementTypes) > 0 && len(params.MovementTypes) < 6 {
 		// Filter by specific movement types (aggregate them)
-		placeholders := make([]string, len(params.MovementTypes))
-		for i, t := range params.MovementTypes {
-			placeholders[i] = "?"
+		// Expand subtypes: if user selects "vehicle", include "boat" too;
+		// if "aircraft", include "fixed_wing" and "rotor_wing".
+		expanded := make(map[string]bool)
+		for _, t := range params.MovementTypes {
+			expanded[t] = true
+			switch t {
+			case "vehicle":
+				expanded["boat"] = true
+			case "aircraft":
+				expanded["fixed_wing"] = true
+				expanded["rotor_wing"] = true
+			}
+		}
+		placeholders := make([]string, 0, len(expanded))
+		for t := range expanded {
+			placeholders = append(placeholders, "?")
 			args = append(args, t)
 		}
 		conditions = append(conditions, fmt.Sprintf("e.movement_type IN (%s)", strings.Join(placeholders, ",")))
@@ -322,10 +344,15 @@ func (s *Server) enrichMovementTypes(ctx context.Context, params GridQueryParams
 		qargs = append(qargs, dateArgs...)
 
 		q := fmt.Sprintf(`
-			SELECT e.grid_cell_id, e.movement_type, COALESCE(SUM(e.total_distance_km), 0)
+			SELECT e.grid_cell_id, e.movement_type,
+			       COALESCE(SUM(e.total_distance_km), 0),
+			       CASE WHEN SUM(CASE WHEN e.avg_speed_kmh IS NOT NULL THEN e.total_distance_km ELSE 0 END) > 0
+			            THEN SUM(CASE WHEN e.avg_speed_kmh IS NOT NULL THEN e.avg_speed_kmh * e.total_distance_km ELSE 0 END)
+			               / SUM(CASE WHEN e.avg_speed_kmh IS NOT NULL THEN e.total_distance_km ELSE 0 END)
+			            ELSE NULL END
 			FROM effort_data e
 			WHERE e.grid_cell_id IN (%s)
-			  AND e.movement_type IN ('foot','vehicle','aircraft')
+			  AND e.movement_type IN ('foot','vehicle','aircraft','boat','fixed_wing','rotor_wing')
 			  %s
 			GROUP BY e.grid_cell_id, e.movement_type
 		`, strings.Join(placeholders, ","), dateCondition)
@@ -337,18 +364,48 @@ func (s *Server) enrichMovementTypes(ctx context.Context, params GridQueryParams
 		for srows.Next() {
 			var cellID, mtype string
 			var km float64
-			if err := srows.Scan(&cellID, &mtype, &km); err != nil {
+			var avgSpeed sql.NullFloat64
+			if err := srows.Scan(&cellID, &mtype, &km, &avgSpeed); err != nil {
 				srows.Close()
 				return err
 			}
 			if idx, ok := idSet[cellID]; ok {
 				switch mtype {
 				case "foot":
-					rows[idx].FootKm = km
+					rows[idx].FootKm += km
+					if avgSpeed.Valid {
+						rows[idx].FootSpeedKmh = &avgSpeed.Float64
+					}
 				case "vehicle":
-					rows[idx].VehicleKm = km
+					rows[idx].VehicleKm += km
+					if avgSpeed.Valid {
+						rows[idx].VehicleSpeedKmh = &avgSpeed.Float64
+					}
 				case "aircraft":
-					rows[idx].AircraftKm = km
+					rows[idx].AircraftKm += km
+					if avgSpeed.Valid {
+						rows[idx].AircraftSpeedKmh = &avgSpeed.Float64
+					}
+				case "boat":
+					rows[idx].BoatKm += km
+					rows[idx].VehicleKm += km // boat counts toward vehicle total
+					if avgSpeed.Valid {
+						rows[idx].BoatSpeedKmh = &avgSpeed.Float64
+					}
+				case "fixed_wing":
+					rows[idx].FixedWingKm += km
+					rows[idx].AircraftKm += km
+					if avgSpeed.Valid {
+						rows[idx].FixedWingSpeedKmh = &avgSpeed.Float64
+						rows[idx].AircraftSpeedKmh = &avgSpeed.Float64
+					}
+				case "rotor_wing":
+					rows[idx].RotorWingKm += km
+					rows[idx].AircraftKm += km
+					if avgSpeed.Valid {
+						rows[idx].RotorWingSpeedKmh = &avgSpeed.Float64
+						rows[idx].AircraftSpeedKmh = &avgSpeed.Float64
+					}
 				}
 			}
 		}

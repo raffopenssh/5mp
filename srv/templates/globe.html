@@ -1616,7 +1616,7 @@
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li>Upload GPX tracks from GPS devices or apps</li>
                     <li>Tracks split into 10×10 km grid cells</li>
-                    <li>Movement classified: foot (<7 km/h), vehicle (7-80), aircraft (>80)</li>
+                    <li>Movement classified: foot (<7 km/h), vehicle (7-80), aircraft (>80) with subtypes: boat, fixed-wing, rotor-wing from trajectory analysis</li>
                     <li>Intensity = % of 1km subcells visited in each grid cell</li>
                 </ul>
 
@@ -3146,22 +3146,35 @@
                     const footKm = props.foot_km ? props.foot_km.toFixed(1) : '0';
                     const vehicleKm = props.vehicle_km ? props.vehicle_km.toFixed(1) : '0';
                     const aircraftKm = props.aircraft_km ? props.aircraft_km.toFixed(1) : '0';
-                    // Build movement breakdown line (only show types with >0 km)
+                    // Build movement breakdown — show subtypes when available
+                    const boatKm = props.boat_km ? props.boat_km.toFixed(1) : '0';
+                    const fixedWingKm = props.fixed_wing_km ? props.fixed_wing_km.toFixed(1) : '0';
+                    const rotorWingKm = props.rotor_wing_km ? props.rotor_wing_km.toFixed(1) : '0';
+                    const groundVehicleKm = Math.max(0, parseFloat(vehicleKm) - parseFloat(boatKm)).toFixed(1);
+                    const unclassifiedAirKm = Math.max(0, parseFloat(aircraftKm) - parseFloat(fixedWingKm) - parseFloat(rotorWingKm)).toFixed(1);
+
+                    const fmtSpd = (v) => v ? ` <span style="color:#666;font-size:10px">${v.toFixed(0)} km/h</span>` : '';
                     const movParts = [];
-                    if (parseFloat(footKm) > 0) movParts.push(`${icon('footprints','neutral','sm')} ${footKm}`);
-                    if (parseFloat(vehicleKm) > 0) movParts.push(`${icon('car','neutral','sm')} ${vehicleKm}`);
-                    if (parseFloat(aircraftKm) > 0) movParts.push(`${icon('plane','neutral','sm')} ${aircraftKm}`);
-                    const movLine = movParts.length > 0 ? movParts.join(' · ') + ' km' : '';
+                    if (parseFloat(footKm) > 0)
+                        movParts.push(`${icon('footprints','neutral','sm')} ${footKm}${fmtSpd(props.foot_speed_kmh)}`);
+                    if (parseFloat(groundVehicleKm) > 0)
+                        movParts.push(`${icon('car','neutral','sm')} ${groundVehicleKm}${fmtSpd(props.vehicle_speed_kmh)}`);
+                    if (parseFloat(boatKm) > 0)
+                        movParts.push(`${icon('ship','info','sm')} ${boatKm}${fmtSpd(props.boat_speed_kmh)}`);
+                    if (parseFloat(fixedWingKm) > 0)
+                        movParts.push(`${icon('plane','neutral','sm')} ${fixedWingKm}${fmtSpd(props.fixed_wing_speed_kmh)}`);
+                    if (parseFloat(rotorWingKm) > 0)
+                        movParts.push(`${icon('helicopter','neutral','sm')} ${rotorWingKm}${fmtSpd(props.rotor_wing_speed_kmh)}`);
+                    if (parseFloat(unclassifiedAirKm) > 0)
+                        movParts.push(`${icon('plane','neutral','sm')} ${unclassifiedAirKm}${fmtSpd(props.aircraft_speed_kmh)}`);
+
+                    const movLine = movParts.length > 0 ? movParts.join(' &middot; ') + ' km' : '';
                     const multiType = movParts.length >= 2 ? `<span style="background:#22c55e22;color:#22c55e;padding:1px 6px;border-radius:3px;font-size:10px;margin-left:4px">${movParts.length} types</span>` : '';
-                    // Speed & altitude info for aircraft cells
-                    const avgSpeed = props.avg_speed_kmh;
+                    // Altitude info for aircraft cells
                     const avgAlt = props.avg_altitude_m;
                     let speedAltLine = '';
-                    if (parseFloat(aircraftKm) > 0 && (avgSpeed || avgAlt)) {
-                        const parts = [];
-                        if (avgSpeed) parts.push(`${icon('gauge','neutral','sm')} ${avgSpeed.toFixed(0)} km/h`);
-                        if (avgAlt) parts.push(`${icon('mountain','neutral','sm')} ${avgAlt.toFixed(0)} m`);
-                        speedAltLine = `<span style="font-size: 11px; color: #aaa">${parts.join(' · ')}</span><br>`;
+                    if (parseFloat(aircraftKm) > 0 && avgAlt) {
+                        speedAltLine = `<span style="font-size:11px;color:#666">${icon('mountain','neutral','sm')} ${avgAlt.toFixed(0)} m alt</span><br>`;
                     }
                     // Unique popup ID for lazy place name loading
                     const popupId = 'pp-' + pixelId.replace(/[^a-z0-9_-]/gi, '');

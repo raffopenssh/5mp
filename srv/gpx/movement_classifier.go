@@ -48,14 +48,33 @@ type MovementMetrics struct {
 
 	// Duration in minutes
 	DurationMinutes float64
+
+	// Subtype classification metrics
+	MeanTurnAngleDeg  float64 // Average bearing change between segments (degrees)
+	SharpTurnRatio    float64 // Proportion of turns > 45 degrees
+	HoverRatio        float64 // Proportion of points with speed < 2 km/h (for aircraft: hover detection)
+	SpeedCV           float64 // Coefficient of variation of speed (stddev/mean), uncapped
+	ElevationStdDevM  float64 // Standard deviation of elevation (meters)
+	MaxClimbRateMps   float64 // Maximum climb/descent rate (meters per second)
+	AvgClimbRateMps   float64 // Average absolute climb/descent rate (meters per second)
+
+	// Takeoff/landing roll distance (meters) and acceleration.
+	// Fixed-wing: gradual acceleration over 300-1500m of runway, many GPS intervals.
+	// Helicopter: near-vertical liftoff, 0→flight speed in 1-2 GPS intervals (<100m).
+	TakeoffRollM      float64 // Distance from <10 km/h to >80 km/h at track start
+	LandingRollM      float64 // Distance from >80 km/h to <10 km/h at track end
+	TakeoffAccelKmhs  float64 // Peak acceleration during takeoff (km/h per second)
+	LandingDecelKmhs  float64 // Peak deceleration during landing (km/h per second)
 }
 
 // MovementClassification contains both movement type and activity type
 type MovementClassification struct {
-	MovementType string  // "foot", "vehicle", "aircraft"
-	ActivityType string  // "patrol", "reconnaissance", "transit", "logistics"
-	Confidence   float64 // 0-1 confidence in classification
-	Metrics      MovementMetrics
+	MovementType     string  // "foot", "vehicle", "aircraft"
+	MovementSubtype  string  // "boat", "fixed_wing", "rotor_wing", or "" (no subtype)
+	ActivityType     string  // "patrol", "reconnaissance", "transit", "logistics"
+	Confidence       float64 // 0-1 confidence in classification
+	SubtypeConfidence float64 // 0-1 confidence in subtype classification
+	Metrics          MovementMetrics
 }
 
 // AnalyzeTrajectory computes movement metrics for a set of points
@@ -69,6 +88,7 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 	var bearingChanges []float64
 	var accelerations []float64
 	var intervals []float64 // time intervals in seconds between consecutive points
+	var climbRates []float64 // vertical speed in m/s (positive=up, absolute value used for stats)
 	var stopCount int
 	
 	// For bounding box and centroid
@@ -100,7 +120,15 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 			elevations = append(elevations, *pt.Elevation)
 			elevCount++
 			if prevElevation != nil {
-				totalElevChange += math.Abs(*pt.Elevation - *prevElevation)
+				elevDiff := math.Abs(*pt.Elevation - *prevElevation)
+				totalElevChange += elevDiff
+				// Compute climb rate if we have time data
+				if i > 0 && points[i-1].Time != nil && pt.Time != nil {
+					dtSec := pt.Time.Sub(*points[i-1].Time).Seconds()
+					if dtSec > 0 {
+						climbRates = append(climbRates, elevDiff/dtSec)
+					}
+				}
 			}
 			prevElevation = pt.Elevation
 		}
@@ -201,24 +229,46 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 		}
 		variance /= float64(len(speeds))
 		if metrics.AvgSpeedKmh > 0 {
-			metrics.SpeedVariance = math.Sqrt(variance) / metrics.AvgSpeedKmh
+			cv := math.Sqrt(variance) / metrics.AvgSpeedKmh
+			metrics.SpeedCV = cv // uncapped for subtype classification
+			metrics.SpeedVariance = cv
 			if metrics.SpeedVariance > 1 {
 				metrics.SpeedVariance = 1
 			}
 		}
+
+		// Hover ratio: proportion of ALL speed samples (including stops) near zero
+		// Used for rotor-wing detection (hovering)
+		var hoverCount int
+		totalSpeedSamples := len(speeds) + stopCount
+		for _, s := range speeds {
+			if s < 2 {
+				hoverCount++
+			}
+		}
+		hoverCount += stopCount // stops are also "hovering" for aircraft
+		if totalSpeedSamples > 0 {
+			metrics.HoverRatio = float64(hoverCount) / float64(totalSpeedSamples)
+		}
 	}
 	
-	// Bearing variance
+	// Bearing variance and turn angle metrics
 	if len(bearingChanges) > 0 {
 		var sum float64
+		var sharpCount int
 		for _, bc := range bearingChanges {
 			sum += bc
+			if bc > 45 {
+				sharpCount++
+			}
 		}
 		avgBearingChange := sum / float64(len(bearingChanges))
 		metrics.BearingVariance = avgBearingChange / 90.0
 		if metrics.BearingVariance > 1 {
 			metrics.BearingVariance = 1
 		}
+		metrics.MeanTurnAngleDeg = avgBearingChange
+		metrics.SharpTurnRatio = float64(sharpCount) / float64(len(bearingChanges))
 	}
 	
 	// Linearity score
@@ -258,23 +308,89 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 		}
 	}
 	
-	// Detect landing/takeoff patterns
-	if len(speeds) >= 6 {
-		lastThird := speeds[len(speeds)*2/3:]
-		if len(lastThird) >= 2 {
-			firstSpeed := lastThird[0]
-			lastSpeed := lastThird[len(lastThird)-1]
-			if firstSpeed > 30 && lastSpeed < 10 && metrics.SmoothnessFactor > 0.6 {
-				metrics.HasLandingPattern = true
+	// Detect landing/takeoff patterns, measure roll distance and acceleration.
+	// Helicopter: 0→flight speed in 1-2 GPS intervals, high acceleration (>5 km/h/s).
+	// Fixed-wing: gradual acceleration over many intervals, lower peak accel.
+	if len(points) >= 6 {
+		// Takeoff: scan from start, find transition from <10 to >80 km/h
+		var takeoffDist float64
+		var inTakeoff bool
+		var prevTakeoffSpeed float64
+		var peakAccel float64
+		for i := 1; i < len(points) && i < len(points)/2; i++ {
+			dist := haversineDistance(points[i-1], points[i])
+			var spd float64
+			var dtSec float64
+			if points[i-1].Time != nil && points[i].Time != nil {
+				dtSec = points[i].Time.Sub(*points[i-1].Time).Seconds()
+				if dtSec > 0 {
+					spd = dist / (dtSec / 3600) // km/h
+				}
+			}
+			if !inTakeoff && spd < 10 {
+				prevTakeoffSpeed = spd
+				continue // still on ground
+			}
+			if !inTakeoff && spd >= 10 {
+				inTakeoff = true
+			}
+			if inTakeoff {
+				takeoffDist += dist
+				// Track peak acceleration
+				if dtSec > 0 {
+					accel := (spd - prevTakeoffSpeed) / dtSec // km/h per second
+					if accel > peakAccel {
+						peakAccel = accel
+					}
+				}
+				prevTakeoffSpeed = spd
+				if spd > 80 {
+					metrics.HasTakeoffPattern = true
+					metrics.TakeoffRollM = takeoffDist * 1000
+					metrics.TakeoffAccelKmhs = peakAccel
+					break
+				}
 			}
 		}
-		
-		firstThird := speeds[:len(speeds)/3]
-		if len(firstThird) >= 2 {
-			firstSpeed := firstThird[0]
-			lastSpeed := firstThird[len(firstThird)-1]
-			if firstSpeed < 10 && lastSpeed > 30 && metrics.SmoothnessFactor > 0.6 {
-				metrics.HasTakeoffPattern = true
+
+		// Landing: scan from end, find transition from >80 to <10 km/h
+		var landingDist float64
+		var inLanding bool
+		var prevLandSpeed float64
+		var peakDecel float64
+		for i := len(points) - 1; i > len(points)/2; i-- {
+			dist := haversineDistance(points[i-1], points[i])
+			var spd float64
+			var dtSec float64
+			if points[i-1].Time != nil && points[i].Time != nil {
+				dtSec = points[i].Time.Sub(*points[i-1].Time).Seconds()
+				if dtSec > 0 {
+					spd = dist / (dtSec / 3600)
+				}
+			}
+			if !inLanding && spd < 10 {
+				prevLandSpeed = spd
+				continue
+			}
+			if !inLanding && spd >= 10 && spd <= 80 {
+				inLanding = true
+				prevLandSpeed = spd
+			}
+			if inLanding {
+				landingDist += dist
+				if dtSec > 0 {
+					decel := (spd - prevLandSpeed) / dtSec
+					if decel > peakDecel {
+						peakDecel = decel
+					}
+				}
+				prevLandSpeed = spd
+				if spd > 80 {
+					metrics.HasLandingPattern = true
+					metrics.LandingRollM = landingDist * 1000
+					metrics.LandingDecelKmhs = peakDecel
+					break
+				}
 			}
 		}
 	}
@@ -332,6 +448,30 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 		// Elevation change rate: meters per km of horizontal travel
 		if totalDist > 0 {
 			metrics.ElevationChangeRate = totalElevChange / totalDist
+		}
+
+		// Elevation standard deviation
+		if len(elevations) > 1 {
+			var elevVar float64
+			for _, e := range elevations {
+				diff := e - metrics.AvgElevationM
+				elevVar += diff * diff
+			}
+			elevVar /= float64(len(elevations))
+			metrics.ElevationStdDevM = math.Sqrt(elevVar)
+		}
+
+		// Climb rate statistics
+		if len(climbRates) > 0 {
+			var sumCR, maxCR float64
+			for _, cr := range climbRates {
+				sumCR += cr
+				if cr > maxCR {
+					maxCR = cr
+				}
+			}
+			metrics.AvgClimbRateMps = sumCR / float64(len(climbRates))
+			metrics.MaxClimbRateMps = maxCR
 		}
 	}
 	
@@ -402,6 +542,7 @@ func ClassifyMovementFullWithHint(points []Point, hint MovementHint) MovementCla
 		result.Confidence = 1.0
 		// Still classify activity type from trajectory analysis
 		result.ActivityType = classifyActivityType(result.MovementType, speed, smooth, bearingVar, linear, metrics)
+		result.MovementSubtype, result.SubtypeConfidence = ClassifyMovementSubtype(result.MovementType, metrics, hint)
 		return result
 	}
 
@@ -437,6 +578,7 @@ func ClassifyMovementFullWithHint(points []Point, hint MovementHint) MovementCla
 			}
 		}
 		result.ActivityType = classifyActivityType(result.MovementType, speed, smooth, bearingVar, linear, metrics)
+		result.MovementSubtype, result.SubtypeConfidence = ClassifyMovementSubtype(result.MovementType, metrics, hint)
 		return result
 	}
 	
@@ -579,8 +721,222 @@ func ClassifyMovementFullWithHint(points []Point, hint MovementHint) MovementCla
 	
 	// === ACTIVITY TYPE CLASSIFICATION ===
 	result.ActivityType = classifyActivityType(result.MovementType, speed, smooth, bearingVar, linear, metrics)
+	result.MovementSubtype, result.SubtypeConfidence = ClassifyMovementSubtype(result.MovementType, metrics, hint)
 	
 	return result
+}
+
+// ClassifyMovementSubtype determines a finer-grained movement subtype from metrics and hints.
+// Returns: "boat", "fixed_wing", "rotor_wing", or "" (no subtype determined).
+// The confidence return value indicates how certain the subtype classification is.
+//
+// Decision rules:
+//   Boat vs vehicle: boats have capped speed (typically <50 km/h), very steady speed
+//   (low CV), smooth turns, and no sharp acceleration. Works without elevation data.
+//   Fixed-wing vs rotor-wing: rotor-wing can hover, has more speed variance, more
+//   turns, and (with elevation data) dramatic climb/descent rates. Fixed-wing is
+//   faster, more linear, steadier speed.
+func ClassifyMovementSubtype(movementType string, metrics MovementMetrics, hint MovementHint) (string, float64) {
+	switch movementType {
+	case "vehicle":
+		return classifyVehicleSubtype(metrics, hint)
+	case "aircraft":
+		return classifyAircraftSubtype(metrics, hint)
+	default:
+		return "", 0
+	}
+}
+
+// classifyVehicleSubtype distinguishes boats from ground vehicles.
+func classifyVehicleSubtype(metrics MovementMetrics, hint MovementHint) (string, float64) {
+	// Authoritative ER hint: device is on a boat
+	if hint.SubtypeHint == "boat" {
+		return "boat", 1.0
+	}
+
+	speed := metrics.AvgSpeedKmh
+	p90 := metrics.P90SpeedKmh
+
+	// Boats: 10-50 km/h, very steady cruising speed, smooth turns, gentle accel.
+	var boatScore float64
+
+	// Speed range: boats rarely exceed 50 km/h
+	if speed >= 10 && speed <= 45 && p90 < 55 {
+		boatScore += 2.0
+	} else if speed > 45 || p90 > 60 {
+		return "", 0 // too fast for a patrol boat
+	}
+
+	// Very steady speed (low coefficient of variation)
+	if metrics.SpeedCV < 0.25 {
+		boatScore += 2.0
+	} else if metrics.SpeedCV < 0.35 {
+		boatScore += 1.0
+	} else if metrics.SpeedCV > 0.50 {
+		boatScore -= 1.0
+	}
+
+	// Smooth turns: boats make gentle, sweeping turns
+	if metrics.MeanTurnAngleDeg < 6 && metrics.SharpTurnRatio < 0.02 {
+		boatScore += 2.0
+	} else if metrics.MeanTurnAngleDeg < 10 && metrics.SharpTurnRatio < 0.05 {
+		boatScore += 1.0
+	}
+
+	// Low acceleration (gentle speed changes)
+	if metrics.AccelerationScore < 0.15 {
+		boatScore += 1.0
+	}
+
+	// Elevation evidence (if available): boats at constant altitude (~water level)
+	if metrics.HasElevation {
+		if metrics.ElevationStdDevM < 10 && metrics.ElevationRangeM < 50 {
+			boatScore += 1.5
+		} else if metrics.ElevationRangeM > 100 {
+			boatScore -= 2.0 // significant altitude changes = not a boat
+		}
+	}
+
+	// Track name hint
+	if hint.SubtypeHint == "boat_name_hint" {
+		boatScore += 2.0
+	}
+
+	// Require strong evidence
+	if boatScore >= 5.0 {
+		return "boat", 0.9
+	} else if boatScore >= 4.0 {
+		return "boat", 0.7
+	}
+
+	return "", 0
+}
+
+// classifyAircraftSubtype distinguishes fixed-wing from rotor-wing (helicopter).
+//
+// The strongest signal is takeoff/landing roll distance:
+//   - Fixed-wing needs 300-1500m of runway to accelerate to flight speed.
+//   - Helicopter lifts off vertically: 0→flight speed in <100m.
+// This works even without elevation data.
+func classifyAircraftSubtype(metrics MovementMetrics, hint MovementHint) (string, float64) {
+	// Authoritative ER hints
+	switch hint.SubtypeHint {
+	case "helicopter":
+		return "rotor_wing", 1.0
+	case "fixed_wing":
+		return "fixed_wing", 1.0
+	}
+
+	speed := metrics.AvgSpeedKmh
+	p90 := metrics.P90SpeedKmh
+
+	var fixedScore, rotorScore float64
+
+	// === STRONGEST SIGNAL: Takeoff/landing acceleration ===
+	// Helicopter: explosive acceleration >5 km/h/s (0→100 in ~20s).
+	// Fixed-wing: gradual acceleration <3 km/h/s (needs long runway roll).
+	// Also check roll distance, but acceleration is more reliable since
+	// helicopter ground track during rapid climb can still be 200-400m.
+	rollDetected := false
+	if metrics.HasTakeoffPattern {
+		if metrics.TakeoffAccelKmhs > 5.0 {
+			rotorScore += 4.0 // explosive accel = rotor-wing
+			rollDetected = true
+		} else if metrics.TakeoffAccelKmhs < 2.5 && metrics.TakeoffRollM > 400 {
+			fixedScore += 4.0 // slow accel + long roll = fixed-wing
+			rollDetected = true
+		}
+	}
+	if metrics.HasLandingPattern {
+		if metrics.LandingDecelKmhs > 5.0 {
+			rotorScore += 4.0 // rapid decel = rotor-wing
+			rollDetected = true
+		} else if metrics.LandingDecelKmhs < 2.5 && metrics.LandingRollM > 400 {
+			fixedScore += 4.0
+			rollDetected = true
+		}
+	}
+
+	// === Speed signals ===
+	// Fixed-wing typically >100 km/h, rotor-wing 40-200 km/h
+	if speed > 150 {
+		fixedScore += 2.0
+	} else if speed > 100 && p90 > 150 {
+		fixedScore += 1.5
+	} else if speed >= 40 && speed <= 120 {
+		rotorScore += 1.0
+	}
+
+	// Speed variability: rotor-wing much more variable (hover, accel, decel)
+	if metrics.SpeedCV > 0.45 {
+		rotorScore += 2.0
+	} else if metrics.SpeedCV > 0.30 {
+		rotorScore += 1.0
+	} else if metrics.SpeedCV < 0.20 {
+		fixedScore += 1.5
+	}
+
+	// Hover detection: only rotor-wing can hover in place
+	if metrics.HoverRatio > 0.05 {
+		rotorScore += 2.0
+	} else if metrics.HoverRatio > 0.02 {
+		rotorScore += 1.0
+	}
+
+	// === Turn patterns ===
+	// Rotor-wing is more maneuverable
+	if metrics.SharpTurnRatio > 0.05 {
+		rotorScore += 1.5
+	} else if metrics.SharpTurnRatio > 0.02 {
+		rotorScore += 0.5
+	}
+	if metrics.MeanTurnAngleDeg > 10 {
+		rotorScore += 1.0
+	} else if metrics.MeanTurnAngleDeg < 5 {
+		fixedScore += 1.0
+	}
+
+	// Linearity: fixed-wing flies straighter
+	if metrics.LinearityScore > 0.7 {
+		fixedScore += 1.0
+	} else if metrics.LinearityScore < 0.5 {
+		rotorScore += 1.0
+	}
+
+	// === Elevation evidence (if available) ===
+	if metrics.HasElevation {
+		// Rotor-wing has dramatic climb/descent rates
+		if metrics.MaxClimbRateMps > 2.0 {
+			rotorScore += 1.5
+		}
+		if metrics.AvgClimbRateMps > 0.5 {
+			rotorScore += 1.0
+		}
+	}
+
+	// === Track name hints ===
+	switch hint.SubtypeHint {
+	case "helicopter_name_hint":
+		rotorScore += 2.0
+	case "fixed_wing_name_hint":
+		fixedScore += 2.0
+	}
+
+	// Pick winner — lower threshold if roll distance was decisive
+	minScore := 3.0
+	if rollDetected {
+		minScore = 2.0 // roll alone is sufficient
+	}
+
+	if fixedScore > rotorScore && fixedScore >= minScore {
+		conf := 0.6 + math.Min((fixedScore-rotorScore)/fixedScore, 1.0)*0.3
+		return "fixed_wing", conf
+	} else if rotorScore > fixedScore && rotorScore >= minScore {
+		conf := 0.6 + math.Min((rotorScore-fixedScore)/rotorScore, 1.0)*0.3
+		return "rotor_wing", conf
+	}
+
+	return "", 0
 }
 
 // classifyActivityType determines the activity type from trajectory metrics.
@@ -661,6 +1017,19 @@ func classifyActivityType(movementType string, speed, smooth, bearingVar, linear
 	return "patrol"
 }
 
+// calculateBearing returns the bearing in degrees from point 1 to point 2
+func calculateBearing(lat1, lon1, lat2, lon2 float64) float64 {
+	lat1Rad := lat1 * math.Pi / 180
+	lat2Rad := lat2 * math.Pi / 180
+	lonDiff := (lon2 - lon1) * math.Pi / 180
+
+	x := math.Sin(lonDiff) * math.Cos(lat2Rad)
+	y := math.Cos(lat1Rad)*math.Sin(lat2Rad) - math.Sin(lat1Rad)*math.Cos(lat2Rad)*math.Cos(lonDiff)
+
+	bearing := math.Atan2(x, y) * 180 / math.Pi
+	return math.Mod(bearing+360, 360)
+}
+
 // ClassifyMovementAdvanced returns just the movement type (for backward compatibility)
 func ClassifyMovementAdvanced(points []Point) string {
 	return ClassifyMovementFull(points).MovementType
@@ -669,17 +1038,4 @@ func ClassifyMovementAdvanced(points []Point) string {
 // ClassifyMovementAdvancedWithHint returns movement type using hints.
 func ClassifyMovementAdvancedWithHint(points []Point, hint MovementHint) string {
 	return ClassifyMovementFullWithHint(points, hint).MovementType
-}
-
-// calculateBearing returns the bearing in degrees from point 1 to point 2
-func calculateBearing(lat1, lon1, lat2, lon2 float64) float64 {
-	lat1Rad := lat1 * math.Pi / 180
-	lat2Rad := lat2 * math.Pi / 180
-	lonDiff := (lon2 - lon1) * math.Pi / 180
-	
-	x := math.Sin(lonDiff) * math.Cos(lat2Rad)
-	y := math.Cos(lat1Rad)*math.Sin(lat2Rad) - math.Sin(lat1Rad)*math.Cos(lat2Rad)*math.Cos(lonDiff)
-	
-	bearing := math.Atan2(x, y) * 180 / math.Pi
-	return math.Mod(bearing+360, 360)
 }

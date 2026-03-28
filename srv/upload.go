@@ -51,13 +51,14 @@ type UploadValidationSummary struct {
 
 // SegmentSummary represents a processed segment in the upload response.
 type SegmentSummary struct {
-	StartTime    *time.Time `json:"start_time,omitempty"`
-	EndTime      *time.Time `json:"end_time,omitempty"`
-	MovementType string     `json:"movement_type,omitempty"`
-	DistanceKm   float64    `json:"distance_km"`
-	Points       int        `json:"points"`
-	Area         string     `json:"area"`
-	GridCellIDs  []string   `json:"grid_cells,omitempty"`
+	StartTime       *time.Time `json:"start_time,omitempty"`
+	EndTime         *time.Time `json:"end_time,omitempty"`
+	MovementType    string     `json:"movement_type,omitempty"`
+	MovementSubtype string     `json:"movement_subtype,omitempty"` // boat, fixed_wing, rotor_wing
+	DistanceKm      float64    `json:"distance_km"`
+	Points          int        `json:"points"`
+	Area            string     `json:"area"`
+	GridCellIDs     []string   `json:"grid_cells,omitempty"`
 	Analysis     *GPXAnalysis `json:"analysis,omitempty"`
 }
 
@@ -223,14 +224,15 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 			}
 
 			allSegments = append(allSegments, SegmentSummary{
-				StartTime:    seg.StartTime,
-				EndTime:      seg.EndTime,
-				MovementType: movementType,
-				DistanceKm:   seg.DistanceKm,
-				Points:       len(seg.Points),
-				Area:         areaName,
-				GridCellIDs:  gridCells,
-				Analysis:     &analysis,
+				StartTime:       seg.StartTime,
+				EndTime:         seg.EndTime,
+				MovementType:    movementType,
+				MovementSubtype: seg.MovementSubtype,
+				DistanceKm:      seg.DistanceKm,
+				Points:          len(seg.Points),
+				Area:            areaName,
+				GridCellIDs:     gridCells,
+				Analysis:        &analysis,
 			})
 		}
 
@@ -925,9 +927,15 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 				ymd = yearMonthDay{year: int64(p1.Time.Year()), month: int64(p1.Time.Month()), day: int64(p1.Time.Day())}
 			}
 
-			key := cellYMKey{cellID: cellID, movementType: seg.MovementType, ymd: ymd}
+			// Use the finest-grained type: subtype (boat, fixed_wing, rotor_wing)
+			// when available, otherwise the base type (foot, vehicle, aircraft).
+			effType := seg.MovementType
+			if seg.MovementSubtype != "" {
+				effType = seg.MovementSubtype
+			}
+			key := cellYMKey{cellID: cellID, movementType: effType, ymd: ymd}
 			if cellStats[key] == nil {
-				cellStats[key] = &gridCellStats{MovementType: seg.MovementType}
+				cellStats[key] = &gridCellStats{MovementType: effType}
 			}
 			cellStats[key].DistanceKm += segDist
 			cellStats[key].PointCount++

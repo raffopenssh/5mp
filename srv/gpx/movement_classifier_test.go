@@ -725,5 +725,226 @@ func TestClassifyActivityType_AircraftShortStraightLeg(t *testing.T) {
 	}
 }
 
+// --- Subtype classification tests ---
+
+func TestSubtype_BoatFromTrajectory(t *testing.T) {
+	// Boat: 30 km/h, very steady speed (CV ~0.10), smooth turns, flat elevation
+	base := time.Date(2024, 6, 15, 8, 0, 0, 0, time.UTC)
+	points := make([]Point, 60)
+	for i := 0; i < 60; i++ {
+		tm := makeTime(base, float64(i)*10) // 10s intervals, 10 min
+		// ~30 km/h heading roughly north with gentle curves
+		// 30 km/h = 0.0833 km per 10s = 0.000751 degrees lat
+		angle := float64(i) * 0.02 // very gentle turn
+		points[i] = Point{
+			Lat:       -8.0 + float64(i)*0.000751*math.Cos(angle),
+			Lon:       37.0 + float64(i)*0.000751*math.Sin(angle),
+			Time:      tm,
+			Elevation: makeElev(220 + math.Sin(float64(i)*0.5)*3), // water surface noise: ±3m
+		}
+	}
+
+	c := ClassifyMovementFull(points)
+	if c.MovementType != "vehicle" {
+		t.Fatalf("expected vehicle, got %s (avg=%.1f, p90=%.1f)", c.MovementType, c.Metrics.AvgSpeedKmh, c.Metrics.P90SpeedKmh)
+	}
+	if c.MovementSubtype != "boat" {
+		t.Errorf("expected boat subtype, got %q (CV=%.2f, turnMean=%.1f, sharp=%.2f, elevStd=%.1f)",
+			c.MovementSubtype, c.Metrics.SpeedCV, c.Metrics.MeanTurnAngleDeg,
+			c.Metrics.SharpTurnRatio, c.Metrics.ElevationStdDevM)
+	}
+}
+
+func TestSubtype_BoatNoElevation(t *testing.T) {
+	// Boat without elevation data (ER API scenario): 28 km/h, very steady, smooth
+	base := time.Date(2024, 6, 15, 8, 0, 0, 0, time.UTC)
+	points := make([]Point, 80)
+	for i := 0; i < 80; i++ {
+		tm := makeTime(base, float64(i)*12) // 12s intervals
+		// ~28 km/h with gentle sweeping course
+		angle := float64(i) * 0.015
+		points[i] = Point{
+			Lat:  -8.5 + float64(i)*0.000686*math.Cos(angle),
+			Lon:  36.5 + float64(i)*0.000686*math.Sin(angle),
+			Time: tm,
+			// NO elevation
+		}
+	}
+
+	c := ClassifyMovementFull(points)
+	if c.MovementType != "vehicle" {
+		t.Fatalf("expected vehicle, got %s", c.MovementType)
+	}
+	if c.MovementSubtype != "boat" {
+		t.Errorf("expected boat subtype without elevation, got %q (CV=%.2f, turn=%.1f)",
+			c.MovementSubtype, c.Metrics.SpeedCV, c.Metrics.MeanTurnAngleDeg)
+	}
+}
+
+func TestSubtype_GroundVehicleNotBoat(t *testing.T) {
+	// Ground vehicle at 50 km/h with moderate turns — should NOT be classified as boat
+	base := time.Date(2024, 6, 15, 8, 0, 0, 0, time.UTC)
+	points := make([]Point, 40)
+	for i := 0; i < 40; i++ {
+		tm := makeTime(base, float64(i)*30)
+		// 50 km/h with some turns (road following)
+		points[i] = Point{
+			Lat:  -2.0 + float64(i)*(50.0*30.0/3600.0/111.0),
+			Lon:  35.0 + math.Sin(float64(i)*0.3)*0.005,
+			Time: tm,
+		}
+	}
+
+	c := ClassifyMovementFull(points)
+	if c.MovementSubtype == "boat" {
+		t.Errorf("ground vehicle at 50 km/h should NOT be boat (p90=%.1f, CV=%.2f)",
+			c.Metrics.P90SpeedKmh, c.Metrics.SpeedCV)
+	}
+}
+
+func TestSubtype_HelicopterFromTrajectory(t *testing.T) {
+	// Helicopter: hover at start, explosive takeoff (0→100+ in 10s),
+	// variable speed flight with turns, decelerate at end.
+	base := time.Date(2024, 6, 15, 8, 0, 0, 0, time.UTC)
+	var points []Point
+	cumSec := 0.0
+	lat, lon := -8.0, 37.0
+
+	// Phase 1: hovering (5 points, near-zero speed)
+	for i := 0; i < 5; i++ {
+		points = append(points, Point{
+			Lat: lat + float64(i)*0.000001, Lon: lon, Time: makeTime(base, cumSec),
+		})
+		cumSec += 10
+	}
+
+	// Phase 2: explosive takeoff — 0→120 km/h in 10s (rotor-wing signature)
+	// 120 km/h = 0.0333 km in 10s = 0.0003 degrees
+	points = append(points, Point{Lat: lat + 0.0003, Lon: lon, Time: makeTime(base, cumSec)})
+	cumSec += 10
+	lat += 0.0003
+
+	// Phase 3: fast maneuvering flight with heading changes (150 km/h avg)
+	for i := 0; i < 80; i++ {
+		speed := 120.0 + 50.0*math.Sin(float64(i)*0.2) // 70-170 km/h
+		deg := speed * 10 / 3600 / 111
+		heading := float64(i)*0.1 + math.Sin(float64(i)*0.25)*0.8 // erratic turns
+		lat += deg * math.Cos(heading)
+		lon += deg * math.Sin(heading)
+		cumSec += 10
+		points = append(points, Point{Lat: lat, Lon: lon, Time: makeTime(base, cumSec)})
+	}
+
+	// Phase 4: rapid deceleration (rotor-wing landing)
+	for i := 0; i < 5; i++ {
+		speed := 100.0 - float64(i)*25 // 100,75,50,25,0
+		deg := speed * 10 / 3600 / 111
+		lat += deg * 0.001
+		cumSec += 10
+		points = append(points, Point{Lat: lat, Lon: lon, Time: makeTime(base, cumSec)})
+	}
+
+	c := ClassifyMovementFull(points)
+	if c.MovementType != "aircraft" {
+		t.Fatalf("expected aircraft for helicopter, got %s (avg=%.1f, p90=%.1f)",
+			c.MovementType, c.Metrics.AvgSpeedKmh, c.Metrics.P90SpeedKmh)
+	}
+	if c.MovementSubtype != "rotor_wing" {
+		t.Errorf("expected rotor_wing subtype, got %q (CV=%.2f, hover=%.2f, sharp=%.2f%%, turn=%.1f\u00b0, takeoffAccel=%.1f, rollM=%.0f)",
+			c.MovementSubtype, c.Metrics.SpeedCV, c.Metrics.HoverRatio,
+			c.Metrics.SharpTurnRatio*100, c.Metrics.MeanTurnAngleDeg,
+			c.Metrics.TakeoffAccelKmhs, c.Metrics.TakeoffRollM)
+	}
+}
+
+func TestSubtype_FixedWingFromTrajectory(t *testing.T) {
+	// Fixed-wing: 180 km/h, very steady speed, linear, smooth
+	points := generateLinearTrack(-8, 35, 180, 30, 60, nil)
+
+	c := ClassifyMovementFull(points)
+	if c.MovementType != "aircraft" {
+		t.Fatalf("expected aircraft, got %s", c.MovementType)
+	}
+	if c.MovementSubtype != "fixed_wing" {
+		t.Errorf("expected fixed_wing subtype for fast linear flight, got %q (CV=%.2f, turn=%.1f, linear=%.2f)",
+			c.MovementSubtype, c.Metrics.SpeedCV, c.Metrics.MeanTurnAngleDeg, c.Metrics.LinearityScore)
+	}
+}
+
+func TestSubtype_ERHelicopterHint(t *testing.T) {
+	// ER helicopter device: hint should produce rotor_wing regardless of trajectory
+	points := generateLinearTrack(-8, 35, 150, 30, 40, nil) // fast & linear (looks like fixed-wing)
+	hint := MovementHint{Type: "aircraft", Confidence: 1.0, IsAircraft: true, SubtypeHint: "helicopter"}
+
+	c := ClassifyMovementFullWithHint(points, hint)
+	if c.MovementSubtype != "rotor_wing" {
+		t.Errorf("ER helicopter hint should override trajectory, got %q", c.MovementSubtype)
+	}
+}
+
+func TestSubtype_ERPlaneHint(t *testing.T) {
+	// ER plane device hint
+	points := generateLinearTrack(-8, 35, 120, 30, 40, nil)
+	hint := MovementHint{Type: "aircraft", Confidence: 1.0, IsAircraft: true, SubtypeHint: "fixed_wing"}
+
+	c := ClassifyMovementFullWithHint(points, hint)
+	if c.MovementSubtype != "fixed_wing" {
+		t.Errorf("ER plane hint should produce fixed_wing, got %q", c.MovementSubtype)
+	}
+}
+
+func TestSubtype_ERBoatPatrolHint(t *testing.T) {
+	// ER boat patrol type
+	points := generateLinearTrack(-8, 35, 25, 60, 30, nil)
+	hint := MovementHint{Type: "vehicle", Confidence: 1.0, IsVehicle: true, SubtypeHint: "boat"}
+
+	c := ClassifyMovementFullWithHint(points, hint)
+	if c.MovementSubtype != "boat" {
+		t.Errorf("ER boat hint should produce boat, got %q", c.MovementSubtype)
+	}
+}
+
+func TestSubtype_TrackNameBoat(t *testing.T) {
+	// Track named "boat" should override Locus airplane classification
+	data := &GPXData{
+		Tracks: []Track{{
+			Name:     "boat patrol 2026-03-27",
+			Activity: "transport_airplane", // Locus misclassification
+			Segments: [][]Point{generateLinearTrack(-8, 36, 30, 10, 100, nil)},
+		}},
+	}
+
+	segments := SplitIntoSegments(data, 30*time.Minute)
+	for _, seg := range segments {
+		if seg.MovementType != "vehicle" {
+			t.Errorf("boat track name should override Locus airplane to vehicle, got %s", seg.MovementType)
+		}
+		if seg.MovementSubtype != "boat" {
+			t.Errorf("boat track name should produce boat subtype, got %q", seg.MovementSubtype)
+		}
+	}
+}
+
+func TestSubtype_TrackNameHelicopter(t *testing.T) {
+	// Track named "helicopter" should set rotor_wing
+	data := &GPXData{
+		Tracks: []Track{{
+			Name:     "helicopter 83F 2026",
+			Activity: "transport_airplane",
+			Segments: [][]Point{generateLinearTrack(-8, 36, 150, 10, 80, nil)},
+		}},
+	}
+
+	segments := SplitIntoSegments(data, 30*time.Minute)
+	for _, seg := range segments {
+		if seg.MovementType != "aircraft" {
+			t.Errorf("helicopter track should be aircraft, got %s", seg.MovementType)
+		}
+		if seg.MovementSubtype != "rotor_wing" {
+			t.Errorf("helicopter track name should produce rotor_wing, got %q", seg.MovementSubtype)
+		}
+	}
+}
+
 // Ensure unused import doesn't cause issues
 var _ = math.Abs
