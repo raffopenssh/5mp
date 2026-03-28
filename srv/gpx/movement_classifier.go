@@ -551,8 +551,19 @@ func ClassifyMovementFullWithHint(points []Point, hint MovementHint) MovementCla
 	if hint.Type != "" && hint.Confidence >= 0.9 {
 		switch hint.Type {
 		case "aircraft":
-			result.MovementType = "aircraft"
-			result.Confidence = 0.95
+			if speed < 8 {
+				// Locus tags "transport_airplane" on a pilot's phone even when
+				// walking on the ground. Override to foot at walking speed.
+				result.MovementType = "foot"
+				result.Confidence = 0.7
+			} else if speed < 30 {
+				// Slow movement — likely vehicle (taxi, ground transport)
+				result.MovementType = "vehicle"
+				result.Confidence = 0.6
+			} else {
+				result.MovementType = "aircraft"
+				result.Confidence = 0.95
+			}
 		case "vehicle":
 			if speed > 120 {
 				// Vehicle GPS but speed says aircraft (GPS on a plane?)
@@ -628,9 +639,14 @@ func ClassifyMovementFullWithHint(points []Point, hint MovementHint) MovementCla
 	
 	// --- Vehicle evidence ---
 	
-	// P90 speed 20-120 km/h AND avg speed 8-100 (strong)
-	if p90 >= 20 && p90 <= 120 && speed >= 8 && speed <= 100 {
+	// P90 speed 20-80 km/h AND avg speed 8-80 (strong)
+	// In African conservation context, vehicles rarely exceed 80 km/h on unpaved roads.
+	if p90 >= 20 && p90 <= 80 && speed >= 8 && speed <= 80 {
 		vehicleScore += 3.0
+	}
+	// P90 80-120 AND speed 60-100 (weaker — could be fast vehicle on paved road)
+	if p90 > 80 && p90 <= 120 && speed >= 60 && speed <= 100 {
+		vehicleScore += 1.0
 	}
 	// Speed 8-12 km/h AND high smoothness AND low bearing variance (moderate — slow vehicle)
 	if speed >= 8 && speed <= 12 && smooth > 0.7 && bearingVar < 0.3 {

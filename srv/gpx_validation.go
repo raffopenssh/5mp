@@ -70,6 +70,7 @@ type MovementStats struct {
 type ClassifiedSegment struct {
 	Classification  string        `json:"classification"` // patrol, boundary, road, poi, static, auto_generated, aircraft
 	MovementType    string        `json:"movement_type,omitempty"` // foot, vehicle, aircraft
+	MovementSubtype string        `json:"movement_subtype,omitempty"` // boat, fixed_wing, rotor_wing
 	ActivityType    string        `json:"activity_type,omitempty"` // patrol, reconnaissance, transit, logistics
 	StartIndex      int           `json:"start_index"`
 	EndIndex        int           `json:"end_index"`
@@ -256,6 +257,7 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 		classified := ClassifiedSegment{
 			Classification:  classType,
 			MovementType:    movementType,
+			MovementSubtype: classification.MovementSubtype,
 			ActivityType:    activityType,
 			StartIndex:      0,
 			EndIndex:        len(seg) - 1,
@@ -400,6 +402,10 @@ func mergeAdjacentSegments(segs []ClassifiedSegment) []ClassifiedSegment {
 		dst.EndIndex += src.EndIndex - src.StartIndex + 1
 		dst.OriginalIndices = append(dst.OriginalIndices, src.OriginalIndices...)
 		dst.IncludeInEffort = dst.IncludeInEffort || src.IncludeInEffort
+		// Preserve subtype from whichever segment has it
+		if dst.MovementSubtype == "" {
+			dst.MovementSubtype = src.MovementSubtype
+		}
 		if len(dst.Points) > 1 {
 			dst.AvgSpeedKmh = gpx.CalculateSpeed(dst.Points)
 		}

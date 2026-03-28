@@ -927,7 +927,7 @@
         .parks-selector { display: flex; gap: 4px; }
 
         /* PA Popup Tooltip (map popup style) */
-        .maplibregl-popup-content { background: rgba(18,18,18,0.95) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 8px !important; padding: 0 !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; min-width: 220px; max-width: 320px; }
+        .maplibregl-popup-content { background: rgba(18,18,18,0.95) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 8px !important; padding: 0 !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; min-width: 220px; max-width: 360px; }
         /* Effort pixel table */
         .ept { width: 100%; border-collapse: collapse; margin: 6px 0 4px; font-size: 11px; }
         .ept th { color: #666; font-weight: 500; text-align: right; padding: 2px 6px 2px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; }
@@ -3188,8 +3188,8 @@
                     addRow('car','neutral','Vehicle', groundVehicleKm, props.vehicle_speed_kmh, fmtAlt(props.vehicle_altitude_m));
                     addRow('ship','info','Boat', boatKm, props.boat_speed_kmh, fmtAlt(props.boat_altitude_m));
                     addRow('plane','neutral','Fixed-wing', fixedWingKm, props.fixed_wing_speed_kmh, fmtAlt(props.fixed_wing_altitude_m));
-                    addRow('settings-2','neutral','Rotor', rotorWingKm, props.rotor_wing_speed_kmh, fmtAlt(props.rotor_wing_altitude_m));
-                    if (parseFloat(unclassifiedAirKm) > 0)
+                    addRow('helicopter','neutral','Helicopter', rotorWingKm, props.rotor_wing_speed_kmh, fmtAlt(props.rotor_wing_altitude_m));
+                    if (parseFloat(unclassifiedAirKm) >= 1.0)
                         addRow('plane','neutral','Aircraft', unclassifiedAirKm, props.aircraft_speed_kmh, fmtAlt(props.aircraft_altitude_m));
 
                     const multiType = typeCount >= 2 ? `<span style="background:#22c55e22;color:#22c55e;padding:1px 6px;border-radius:3px;font-size:10px;margin-left:4px">${typeCount} types</span>` : '';
@@ -3207,14 +3207,15 @@
                             const tdAlt = hasAlt ? `<td${cls(r.alt || '—')}>${r.alt || '—'}</td>` : '';
                             tableHTML += `<tr><td><span class="ept-icon">${r.icon} ${r.label}</span></td><td${cls(r.dur)}>${r.dur}</td><td${cls(fmtSpd2(r.spd))}>${fmtSpd2(r.spd)}</td><td>${r.km.toFixed(1)}</td>${tdAlt}</tr>`;
                         }
-                        // Total row
+                        // Total row — use header distance (includes hidden subtypes)
                         if (movRows.length > 1) {
+                            const headerKm = parseFloat(distance);
                             const tH = Math.floor(totalHrs);
                             const tM = Math.round((totalHrs - tH) * 60);
                             const totalDur = totalHrs > 0 ? `${tH}:${String(tM).padStart(2,'0')}` : '—';
-                            const avgSpd = totalHrs > 0 ? (totalKm / totalHrs).toFixed(0) : '—';
+                            const avgSpd = totalHrs > 0 ? (headerKm / totalHrs).toFixed(0) : '—';
                             const tdAlt = hasAlt ? '<td></td>' : '';
-                            tableHTML += `<tr class="ept-total"><td>Total</td><td>${totalDur}</td><td>${avgSpd}</td><td>${totalKm.toFixed(1)}</td>${tdAlt}</tr>`;
+                            tableHTML += `<tr class="ept-total"><td>Total</td><td>${totalDur}</td><td>${avgSpd}</td><td>${headerKm.toFixed(1)}</td>${tdAlt}</tr>`;
                         }
                         tableHTML += '</tbody></table>';
                     }

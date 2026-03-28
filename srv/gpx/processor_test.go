@@ -166,8 +166,8 @@ func TestClassifyMovementType(t *testing.T) {
 		{7.9, "foot"},
 		{8, "vehicle"},
 		{50, "vehicle"},
-		{120, "vehicle"},
-		{121, "aircraft"},
+		{80, "vehicle"},
+		{81, "aircraft"},
 		{500, "aircraft"},
 	}
 
@@ -403,8 +403,8 @@ func TestMergeTrackActivityHint(t *testing.T) {
 		if hint.Type != tt.wantType {
 			t.Errorf("activity %q: want type %q, got %q", tt.activity, tt.wantType, hint.Type)
 		}
-		if tt.wantType != "" && hint.Confidence < 0.9 {
-			t.Errorf("activity %q: want high confidence, got %.2f", tt.activity, hint.Confidence)
+		if tt.wantType != "" && hint.Confidence < 0.7 {
+			t.Errorf("activity %q: want moderate confidence, got %.2f", tt.activity, hint.Confidence)
 		}
 	}
 }

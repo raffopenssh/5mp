@@ -283,22 +283,22 @@ func mergeTrackActivityHint(base MovementHint, activity string) MovementHint {
 		strings.Contains(activity, "helicopter") || strings.Contains(activity, "flight"):
 		base.IsAircraft = true
 		base.Type = "aircraft"
-		base.Confidence = 0.95 // Explicit app tag is very reliable
+		base.Confidence = 0.8 // Locus auto-detection is unreliable (tags boats/walking as airplane)
 		if strings.Contains(activity, "helicopter") {
 			base.SubtypeHint = "helicopter"
-		} else if strings.Contains(activity, "airplane") {
-			base.SubtypeHint = "fixed_wing"
 		}
+		// NOTE: Locus "transport_airplane" is generic — does NOT imply fixed-wing.
+		// Let trajectory analysis determine subtype (fixed_wing vs rotor_wing).
 	case strings.Contains(activity, "car") || strings.Contains(activity, "vehicle") ||
 		strings.Contains(activity, "motor") || strings.Contains(activity, "drive"):
 		base.IsVehicle = true
 		base.Type = "vehicle"
-		base.Confidence = 0.95
+		base.Confidence = 0.8 // Locus auto-detection
 	case strings.Contains(activity, "walk") || strings.Contains(activity, "run") ||
 		strings.Contains(activity, "hike") || strings.Contains(activity, "foot"):
 		base.IsFoot = true
 		base.Type = "foot"
-		base.Confidence = 0.95
+		base.Confidence = 0.8 // Locus auto-detection
 	}
 	return base
 }
@@ -738,11 +738,15 @@ func ClassifyMovementTypeWithHint(segment Segment, hint MovementHint) string {
 	if hint.Type != "" && hint.Confidence >= 0.9 {
 		switch hint.Type {
 		case "aircraft":
-			if speed > 5 { // taxiing or flying
+			if speed >= 30 {
 				return "aircraft"
 			}
-			// Parked aircraft with strong hint — still aircraft
-			return "aircraft"
+			if speed >= 8 {
+				// Slow for aircraft — likely ground vehicle (taxi to runway, etc.)
+				return "vehicle"
+			}
+			// Walking speed — pilot on ground despite Locus airplane tag
+			return "foot"
 		case "vehicle":
 			return "vehicle"
 		case "foot":
@@ -783,8 +787,8 @@ func ClassifyMovementTypeWithHint(segment Segment, hint MovementHint) string {
 				return "foot"
 			}
 		}
-		// Ambiguous zone: 80-150 km/h could be fast vehicle or slow aircraft
-		if speed >= 80 && speed <= 150 {
+		// Ambiguous zone: 60-120 km/h could be fast vehicle or slow aircraft
+		if speed >= 60 && speed <= 120 {
 			if hint.Type == "aircraft" {
 				return "aircraft"
 			}
@@ -795,10 +799,12 @@ func ClassifyMovementTypeWithHint(segment Segment, hint MovementHint) string {
 	}
 
 	// Default speed-based classification (no hint or hint didn't match)
+	// In African conservation, vehicles rarely exceed 80 km/h on unpaved roads.
+	// Aircraft (even slow bush planes) typically cruise above 80 km/h.
 	switch {
 	case speed < 8:
 		return "foot"
-	case speed <= 120:
+	case speed <= 80:
 		return "vehicle"
 	default:
 		return "aircraft"
