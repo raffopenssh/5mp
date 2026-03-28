@@ -21,10 +21,13 @@ INSERT INTO gpx_upload_logs (
     foot_segments, foot_km, foot_minutes,
     vehicle_segments, vehicle_km, vehicle_minutes,
     aircraft_segments, aircraft_km, aircraft_minutes,
+    boat_segments, boat_km, boat_minutes,
+    fixed_wing_segments, fixed_wing_km, fixed_wing_minutes,
+    rotor_wing_segments, rotor_wing_km, rotor_wing_minutes,
     recon_segments, recon_km, recon_minutes,
     fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes,
     transit_segments, transit_km, logistics_segments, logistics_km
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 RETURNING id
 `
 
@@ -60,6 +63,15 @@ type CreateGPXUploadLogParams struct {
 	AircraftSegments       *int64    `json:"aircraft_segments"`
 	AircraftKm             *float64  `json:"aircraft_km"`
 	AircraftMinutes        *float64  `json:"aircraft_minutes"`
+	BoatSegments           *int64    `json:"boat_segments"`
+	BoatKm                 *float64  `json:"boat_km"`
+	BoatMinutes            *float64  `json:"boat_minutes"`
+	FixedWingSegments      *int64    `json:"fixed_wing_segments"`
+	FixedWingKm            *float64  `json:"fixed_wing_km"`
+	FixedWingMinutes       *float64  `json:"fixed_wing_minutes"`
+	RotorWingSegments      *int64    `json:"rotor_wing_segments"`
+	RotorWingKm            *float64  `json:"rotor_wing_km"`
+	RotorWingMinutes       *float64  `json:"rotor_wing_minutes"`
 	ReconSegments          *int64    `json:"recon_segments"`
 	ReconKm                *float64  `json:"recon_km"`
 	ReconMinutes           *float64  `json:"recon_minutes"`
@@ -105,6 +117,15 @@ func (q *Queries) CreateGPXUploadLog(ctx context.Context, arg CreateGPXUploadLog
 		arg.AircraftSegments,
 		arg.AircraftKm,
 		arg.AircraftMinutes,
+		arg.BoatSegments,
+		arg.BoatKm,
+		arg.BoatMinutes,
+		arg.FixedWingSegments,
+		arg.FixedWingKm,
+		arg.FixedWingMinutes,
+		arg.RotorWingSegments,
+		arg.RotorWingKm,
+		arg.RotorWingMinutes,
 		arg.ReconSegments,
 		arg.ReconKm,
 		arg.ReconMinutes,
@@ -122,7 +143,7 @@ func (q *Queries) CreateGPXUploadLog(ctx context.Context, arg CreateGPXUploadLog
 }
 
 const getGPXUploadLog = `-- name: GetGPXUploadLog :one
-SELECT id, upload_id, user_id, user_email, filename, upload_time, is_valid, total_points, validation_errors, validation_warnings, protected_area_id, protected_area_name, patrol_km, road_km, boundary_km, excluded_km, total_segments, patrol_segments, static_segments, excluded_segments, foot_segments, foot_km, foot_minutes, vehicle_segments, vehicle_km, vehicle_minutes, aircraft_segments, aircraft_km, aircraft_minutes, recon_segments, recon_km, recon_minutes, fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes, transit_segments, transit_km, logistics_segments, logistics_km, classified_segments_json, processing_status, rejection_reason FROM gpx_upload_logs WHERE id = ?
+SELECT id, upload_id, user_id, user_email, filename, upload_time, is_valid, total_points, validation_errors, validation_warnings, protected_area_id, protected_area_name, patrol_km, road_km, boundary_km, excluded_km, total_segments, patrol_segments, static_segments, excluded_segments, foot_segments, foot_km, foot_minutes, vehicle_segments, vehicle_km, vehicle_minutes, aircraft_segments, aircraft_km, aircraft_minutes, boat_segments, boat_km, boat_minutes, fixed_wing_segments, fixed_wing_km, fixed_wing_minutes, rotor_wing_segments, rotor_wing_km, rotor_wing_minutes, recon_segments, recon_km, recon_minutes, fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes, transit_segments, transit_km, logistics_segments, logistics_km, classified_segments_json, processing_status, rejection_reason FROM gpx_upload_logs WHERE id = ?
 `
 
 func (q *Queries) GetGPXUploadLog(ctx context.Context, id int64) (GpxUploadLog, error) {
@@ -158,6 +179,15 @@ func (q *Queries) GetGPXUploadLog(ctx context.Context, id int64) (GpxUploadLog, 
 		&i.AircraftSegments,
 		&i.AircraftKm,
 		&i.AircraftMinutes,
+		&i.BoatSegments,
+		&i.BoatKm,
+		&i.BoatMinutes,
+		&i.FixedWingSegments,
+		&i.FixedWingKm,
+		&i.FixedWingMinutes,
+		&i.RotorWingSegments,
+		&i.RotorWingKm,
+		&i.RotorWingMinutes,
 		&i.ReconSegments,
 		&i.ReconKm,
 		&i.ReconMinutes,
@@ -188,34 +218,46 @@ SELECT
     SUM(foot_km) as total_foot_km,
     SUM(vehicle_km) as total_vehicle_km,
     SUM(aircraft_km) as total_aircraft_km,
+    SUM(boat_km) as total_boat_km,
+    SUM(fixed_wing_km) as total_fixed_wing_km,
+    SUM(rotor_wing_km) as total_rotor_wing_km,
     SUM(recon_km) as total_recon_km,
     SUM(fast_vehicle_km) as total_fast_vehicle_km,
     SUM(foot_minutes) as total_foot_minutes,
     SUM(vehicle_minutes) as total_vehicle_minutes,
     SUM(aircraft_minutes) as total_aircraft_minutes,
+    SUM(boat_minutes) as total_boat_minutes,
+    SUM(fixed_wing_minutes) as total_fixed_wing_minutes,
+    SUM(rotor_wing_minutes) as total_rotor_wing_minutes,
     SUM(recon_minutes) as total_recon_minutes
 FROM gpx_upload_logs
 WHERE upload_time >= ?
 `
 
 type GetGPXUploadLogStatsRow struct {
-	TotalUploads         int64    `json:"total_uploads"`
-	ValidUploads         *float64 `json:"valid_uploads"`
-	RejectedUploads      *float64 `json:"rejected_uploads"`
-	TotalPatrolKm        *float64 `json:"total_patrol_km"`
-	TotalRoadKm          *float64 `json:"total_road_km"`
-	TotalBoundaryKm      *float64 `json:"total_boundary_km"`
-	TotalExcludedKm      *float64 `json:"total_excluded_km"`
-	TotalPoints          *float64 `json:"total_points"`
-	TotalFootKm          *float64 `json:"total_foot_km"`
-	TotalVehicleKm       *float64 `json:"total_vehicle_km"`
-	TotalAircraftKm      *float64 `json:"total_aircraft_km"`
-	TotalReconKm         *float64 `json:"total_recon_km"`
-	TotalFastVehicleKm   *float64 `json:"total_fast_vehicle_km"`
-	TotalFootMinutes     *float64 `json:"total_foot_minutes"`
-	TotalVehicleMinutes  *float64 `json:"total_vehicle_minutes"`
-	TotalAircraftMinutes *float64 `json:"total_aircraft_minutes"`
-	TotalReconMinutes    *float64 `json:"total_recon_minutes"`
+	TotalUploads            int64    `json:"total_uploads"`
+	ValidUploads            *float64 `json:"valid_uploads"`
+	RejectedUploads         *float64 `json:"rejected_uploads"`
+	TotalPatrolKm           *float64 `json:"total_patrol_km"`
+	TotalRoadKm             *float64 `json:"total_road_km"`
+	TotalBoundaryKm         *float64 `json:"total_boundary_km"`
+	TotalExcludedKm         *float64 `json:"total_excluded_km"`
+	TotalPoints             *float64 `json:"total_points"`
+	TotalFootKm             *float64 `json:"total_foot_km"`
+	TotalVehicleKm          *float64 `json:"total_vehicle_km"`
+	TotalAircraftKm         *float64 `json:"total_aircraft_km"`
+	TotalBoatKm             *float64 `json:"total_boat_km"`
+	TotalFixedWingKm        *float64 `json:"total_fixed_wing_km"`
+	TotalRotorWingKm        *float64 `json:"total_rotor_wing_km"`
+	TotalReconKm            *float64 `json:"total_recon_km"`
+	TotalFastVehicleKm      *float64 `json:"total_fast_vehicle_km"`
+	TotalFootMinutes        *float64 `json:"total_foot_minutes"`
+	TotalVehicleMinutes     *float64 `json:"total_vehicle_minutes"`
+	TotalAircraftMinutes    *float64 `json:"total_aircraft_minutes"`
+	TotalBoatMinutes        *float64 `json:"total_boat_minutes"`
+	TotalFixedWingMinutes   *float64 `json:"total_fixed_wing_minutes"`
+	TotalRotorWingMinutes   *float64 `json:"total_rotor_wing_minutes"`
+	TotalReconMinutes       *float64 `json:"total_recon_minutes"`
 }
 
 func (q *Queries) GetGPXUploadLogStats(ctx context.Context, uploadTime time.Time) (GetGPXUploadLogStatsRow, error) {
@@ -233,11 +275,17 @@ func (q *Queries) GetGPXUploadLogStats(ctx context.Context, uploadTime time.Time
 		&i.TotalFootKm,
 		&i.TotalVehicleKm,
 		&i.TotalAircraftKm,
+		&i.TotalBoatKm,
+		&i.TotalFixedWingKm,
+		&i.TotalRotorWingKm,
 		&i.TotalReconKm,
 		&i.TotalFastVehicleKm,
 		&i.TotalFootMinutes,
 		&i.TotalVehicleMinutes,
 		&i.TotalAircraftMinutes,
+		&i.TotalBoatMinutes,
+		&i.TotalFixedWingMinutes,
+		&i.TotalRotorWingMinutes,
 		&i.TotalReconMinutes,
 	)
 	return i, err
@@ -254,6 +302,9 @@ SELECT
     foot_segments, foot_km, foot_minutes,
     vehicle_segments, vehicle_km, vehicle_minutes,
     aircraft_segments, aircraft_km, aircraft_minutes,
+    boat_segments, boat_km, boat_minutes,
+    fixed_wing_segments, fixed_wing_km, fixed_wing_minutes,
+    rotor_wing_segments, rotor_wing_km, rotor_wing_minutes,
     recon_segments, recon_km, recon_minutes,
     fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes,
     transit_segments, transit_km, logistics_segments, logistics_km
@@ -299,6 +350,15 @@ type ListGPXUploadLogsRow struct {
 	AircraftSegments    *int64    `json:"aircraft_segments"`
 	AircraftKm          *float64  `json:"aircraft_km"`
 	AircraftMinutes     *float64  `json:"aircraft_minutes"`
+	BoatSegments        *int64    `json:"boat_segments"`
+	BoatKm              *float64  `json:"boat_km"`
+	BoatMinutes         *float64  `json:"boat_minutes"`
+	FixedWingSegments   *int64    `json:"fixed_wing_segments"`
+	FixedWingKm         *float64  `json:"fixed_wing_km"`
+	FixedWingMinutes    *float64  `json:"fixed_wing_minutes"`
+	RotorWingSegments   *int64    `json:"rotor_wing_segments"`
+	RotorWingKm         *float64  `json:"rotor_wing_km"`
+	RotorWingMinutes    *float64  `json:"rotor_wing_minutes"`
 	ReconSegments       *int64    `json:"recon_segments"`
 	ReconKm             *float64  `json:"recon_km"`
 	ReconMinutes        *float64  `json:"recon_minutes"`
@@ -352,6 +412,15 @@ func (q *Queries) ListGPXUploadLogs(ctx context.Context, arg ListGPXUploadLogsPa
 			&i.AircraftSegments,
 			&i.AircraftKm,
 			&i.AircraftMinutes,
+			&i.BoatSegments,
+			&i.BoatKm,
+			&i.BoatMinutes,
+			&i.FixedWingSegments,
+			&i.FixedWingKm,
+			&i.FixedWingMinutes,
+			&i.RotorWingSegments,
+			&i.RotorWingKm,
+			&i.RotorWingMinutes,
 			&i.ReconSegments,
 			&i.ReconKm,
 			&i.ReconMinutes,
@@ -383,7 +452,16 @@ SELECT
     protected_area_id, protected_area_name,
     patrol_km, road_km, boundary_km, excluded_km,
     total_segments, patrol_segments, static_segments, excluded_segments,
-    processing_status, rejection_reason
+    processing_status, rejection_reason,
+    foot_segments, foot_km, foot_minutes,
+    vehicle_segments, vehicle_km, vehicle_minutes,
+    aircraft_segments, aircraft_km, aircraft_minutes,
+    boat_segments, boat_km, boat_minutes,
+    fixed_wing_segments, fixed_wing_km, fixed_wing_minutes,
+    rotor_wing_segments, rotor_wing_km, rotor_wing_minutes,
+    recon_segments, recon_km, recon_minutes,
+    fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes,
+    transit_segments, transit_km, logistics_segments, logistics_km
 FROM gpx_upload_logs
 WHERE protected_area_id = ?
 ORDER BY upload_time DESC
@@ -396,30 +474,8 @@ type ListGPXUploadLogsByParkParams struct {
 	Offset          int64   `json:"offset"`
 }
 
-type ListGPXUploadLogsByParkRow struct {
-	ID                 int64     `json:"id"`
-	UploadID           *int64    `json:"upload_id"`
-	UserID             string    `json:"user_id"`
-	UserEmail          *string   `json:"user_email"`
-	Filename           string    `json:"filename"`
-	UploadTime         time.Time `json:"upload_time"`
-	IsValid            bool      `json:"is_valid"`
-	TotalPoints        int64     `json:"total_points"`
-	ValidationErrors   *string   `json:"validation_errors"`
-	ValidationWarnings *string   `json:"validation_warnings"`
-	ProtectedAreaID    *string   `json:"protected_area_id"`
-	ProtectedAreaName  *string   `json:"protected_area_name"`
-	PatrolKm           float64   `json:"patrol_km"`
-	RoadKm             float64   `json:"road_km"`
-	BoundaryKm         float64   `json:"boundary_km"`
-	ExcludedKm         float64   `json:"excluded_km"`
-	TotalSegments      int64     `json:"total_segments"`
-	PatrolSegments     int64     `json:"patrol_segments"`
-	StaticSegments     int64     `json:"static_segments"`
-	ExcludedSegments   int64     `json:"excluded_segments"`
-	ProcessingStatus   *string   `json:"processing_status"`
-	RejectionReason    *string   `json:"rejection_reason"`
-}
+// ListGPXUploadLogsByParkRow is now identical to ListGPXUploadLogsRow
+type ListGPXUploadLogsByParkRow = ListGPXUploadLogsRow
 
 func (q *Queries) ListGPXUploadLogsByPark(ctx context.Context, arg ListGPXUploadLogsByParkParams) ([]ListGPXUploadLogsByParkRow, error) {
 	rows, err := q.db.QueryContext(ctx, listGPXUploadLogsByPark, arg.ProtectedAreaID, arg.Limit, arg.Offset)
@@ -453,6 +509,34 @@ func (q *Queries) ListGPXUploadLogsByPark(ctx context.Context, arg ListGPXUpload
 			&i.ExcludedSegments,
 			&i.ProcessingStatus,
 			&i.RejectionReason,
+			&i.FootSegments,
+			&i.FootKm,
+			&i.FootMinutes,
+			&i.VehicleSegments,
+			&i.VehicleKm,
+			&i.VehicleMinutes,
+			&i.AircraftSegments,
+			&i.AircraftKm,
+			&i.AircraftMinutes,
+			&i.BoatSegments,
+			&i.BoatKm,
+			&i.BoatMinutes,
+			&i.FixedWingSegments,
+			&i.FixedWingKm,
+			&i.FixedWingMinutes,
+			&i.RotorWingSegments,
+			&i.RotorWingKm,
+			&i.RotorWingMinutes,
+			&i.ReconSegments,
+			&i.ReconKm,
+			&i.ReconMinutes,
+			&i.FastVehicleSegments,
+			&i.FastVehicleKm,
+			&i.FastVehicleMinutes,
+			&i.TransitSegments,
+			&i.TransitKm,
+			&i.LogisticsSegments,
+			&i.LogisticsKm,
 		); err != nil {
 			return nil, err
 		}

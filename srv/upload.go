@@ -1603,6 +1603,16 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		AircraftSegments:      ptrInt64(int64(ms.AircraftSegments)),
 		AircraftKm:            ptrFloat64(ms.AircraftKm),
 		AircraftMinutes:       ptrFloat64(ms.AircraftMinutes),
+		// Movement subtypes
+		BoatSegments:          ptrInt64(int64(ms.BoatSegments)),
+		BoatKm:                ptrFloat64(ms.BoatKm),
+		BoatMinutes:           ptrFloat64(ms.BoatMinutes),
+		FixedWingSegments:     ptrInt64(int64(ms.FixedWingSegments)),
+		FixedWingKm:           ptrFloat64(ms.FixedWingKm),
+		FixedWingMinutes:      ptrFloat64(ms.FixedWingMinutes),
+		RotorWingSegments:     ptrInt64(int64(ms.RotorWingSegments)),
+		RotorWingKm:           ptrFloat64(ms.RotorWingKm),
+		RotorWingMinutes:      ptrFloat64(ms.RotorWingMinutes),
 		// Special categories
 		ReconSegments:         ptrInt64(int64(ms.ReconSegments)),
 		ReconKm:               ptrFloat64(ms.ReconKm),

@@ -18024,7 +18024,7 @@ ${starredItems.narratives.map(n => {
     async function loadUploadLogs() {
         const tbody = document.getElementById('uploads-table-body');
         if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;">Loading...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;">Loading...</td></tr>';
         
         try {
             const res = await fetch('/api/admin/gpx-logs?limit=50');
@@ -18035,11 +18035,13 @@ ${starredItems.narratives.map(n => {
                 el('stat-total-uploads', data.stats.total_uploads || 0);
                 el('stat-foot-km', (data.stats.total_foot_km || 0).toFixed(1));
                 el('stat-vehicle-km', (data.stats.total_vehicle_km || 0).toFixed(1));
-                el('stat-aircraft-km', (data.stats.total_aircraft_km || 0).toFixed(1));
+                el('stat-boat-km', (data.stats.total_boat_km || 0).toFixed(1));
+                el('stat-fixed-wing-km', (data.stats.total_fixed_wing_km || 0).toFixed(1));
+                el('stat-rotor-wing-km', (data.stats.total_rotor_wing_km || 0).toFixed(1));
             }
             
             if (!data.logs || data.logs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#888;">No upload logs found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:#888;">No upload logs found</td></tr>';
                 return;
             }
             
@@ -18057,7 +18059,9 @@ ${starredItems.narratives.map(n => {
                     <td>${escapeHtml(parkDisplay)}</td>
                     <td>${kmC(log.foot_km, '#22c55e')}</td>
                     <td>${kmC(log.vehicle_km, '#3b82f6')}</td>
-                    <td>${kmC(log.aircraft_km, '#a78bfa')}</td>
+                    <td>${kmC(log.boat_km, '#60a5fa')}</td>
+                    <td>${kmC(log.fixed_wing_km, '#a78bfa')}</td>
+                    <td>${kmC(log.rotor_wing_km, '#c084fc')}</td>
                     <td>${kmC(log.boundary_km, '#f59e0b')}</td>
                     <td>${exclHtml}</td>
                     <td>${safeDateStr(log.upload_time)}</td>
@@ -18065,7 +18069,7 @@ ${starredItems.narratives.map(n => {
             `;
             }).join('');
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#f87171;">${err.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#f87171;">${err.message}</td></tr>`;
         }
     }
     
@@ -19452,14 +19456,16 @@ ${starredItems.narratives.map(n => {
                 <div class="admin-tab-content active" id="tab-uploads">
                     <div class="admin-stats-row" id="uploads-stats">
                         <div class="admin-stat-card"><div class="admin-stat-label">Uploads</div><div class="admin-stat-value" id="stat-total-uploads">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-footprints icon-color-success"></i> Foot km</div><div class="admin-stat-value" style="color:#22c55e" id="stat-foot-km">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-car icon-color-info"></i> Vehicle km</div><div class="admin-stat-value" style="color:#3b82f6" id="stat-vehicle-km">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-plane icon-color-neutral"></i> Aviation km</div><div class="admin-stat-value" style="color:#a78bfa" id="stat-aircraft-km">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-footprints icon-color-success"></i> Foot</div><div class="admin-stat-value" style="color:#22c55e" id="stat-foot-km">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-car icon-color-info"></i> Vehicle</div><div class="admin-stat-value" style="color:#3b82f6" id="stat-vehicle-km">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-ship icon-color-info"></i> Boat</div><div class="admin-stat-value" style="color:#60a5fa" id="stat-boat-km">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-plane icon-color-neutral"></i> Fixed-wing</div><div class="admin-stat-value" style="color:#a78bfa" id="stat-fixed-wing-km">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-helicopter icon-color-neutral"></i> Helicopter</div><div class="admin-stat-value" style="color:#c084fc" id="stat-rotor-wing-km">-</div></div>
                     </div>
                     <div class="admin-table-container">
                         <table class="admin-table">
-                            <thead><tr><th>File</th><th>Park</th><th>Ft km</th><th>Vhl km</th><th>Aviation km</th><th>Boundary</th><th>Excluded</th><th>Date</th></tr></thead>
-                            <tbody id="uploads-table-body"><tr><td colspan="8" style="text-align:center;color:#666;">Loading...</td></tr></tbody>
+                            <thead><tr><th>File</th><th>Park</th><th>Foot</th><th>Vhl</th><th>Boat</th><th>F-Wing</th><th>Heli</th><th>Bdy</th><th>Excl</th><th>Date</th></tr></thead>
+                            <tbody id="uploads-table-body"><tr><td colspan="10" style="text-align:center;color:#666;">Loading...</td></tr></tbody>
                         </table>
                     </div>
                 </div>

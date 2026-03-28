@@ -217,6 +217,15 @@ type GpxUploadLog struct {
 	AircraftSegments       *int64    `json:"aircraft_segments"`
 	AircraftKm             *float64  `json:"aircraft_km"`
 	AircraftMinutes        *float64  `json:"aircraft_minutes"`
+	BoatSegments           *int64    `json:"boat_segments"`
+	BoatKm                 *float64  `json:"boat_km"`
+	BoatMinutes            *float64  `json:"boat_minutes"`
+	FixedWingSegments      *int64    `json:"fixed_wing_segments"`
+	FixedWingKm            *float64  `json:"fixed_wing_km"`
+	FixedWingMinutes       *float64  `json:"fixed_wing_minutes"`
+	RotorWingSegments      *int64    `json:"rotor_wing_segments"`
+	RotorWingKm            *float64  `json:"rotor_wing_km"`
+	RotorWingMinutes       *float64  `json:"rotor_wing_minutes"`
 	ReconSegments          *int64    `json:"recon_segments"`
 	ReconKm                *float64  `json:"recon_km"`
 	ReconMinutes           *float64  `json:"recon_minutes"`

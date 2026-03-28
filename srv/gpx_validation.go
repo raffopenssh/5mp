@@ -49,6 +49,17 @@ type MovementStats struct {
 	AircraftKm       float64 `json:"aircraft_km"`
 	AircraftMinutes  float64 `json:"aircraft_minutes"`
 
+	// Movement subtypes
+	BoatSegments      int     `json:"boat_segments"`       // Boat (subtype of vehicle)
+	BoatKm            float64 `json:"boat_km"`
+	BoatMinutes       float64 `json:"boat_minutes"`
+	FixedWingSegments int     `json:"fixed_wing_segments"` // Fixed-wing (subtype of aircraft)
+	FixedWingKm       float64 `json:"fixed_wing_km"`
+	FixedWingMinutes  float64 `json:"fixed_wing_minutes"`
+	RotorWingSegments int     `json:"rotor_wing_segments"` // Helicopter (subtype of aircraft)
+	RotorWingKm       float64 `json:"rotor_wing_km"`
+	RotorWingMinutes  float64 `json:"rotor_wing_minutes"`
+
 	// Special categories for admin insights
 	ReconSegments       int     `json:"recon_segments"`       // Foot 0.5-4 km/h (reconnaissance)
 	ReconKm             float64 `json:"recon_km"`
@@ -321,6 +332,22 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 			result.MovementStats.AircraftSegments++
 			result.MovementStats.AircraftKm += distanceKm
 			result.MovementStats.AircraftMinutes += durationMin
+		}
+
+		// Update movement subtype stats
+		switch classification.MovementSubtype {
+		case "boat":
+			result.MovementStats.BoatSegments++
+			result.MovementStats.BoatKm += distanceKm
+			result.MovementStats.BoatMinutes += durationMin
+		case "fixed_wing":
+			result.MovementStats.FixedWingSegments++
+			result.MovementStats.FixedWingKm += distanceKm
+			result.MovementStats.FixedWingMinutes += durationMin
+		case "rotor_wing":
+			result.MovementStats.RotorWingSegments++
+			result.MovementStats.RotorWingKm += distanceKm
+			result.MovementStats.RotorWingMinutes += durationMin
 		}
 
 		// Update activity stats
