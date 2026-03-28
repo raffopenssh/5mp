@@ -3048,6 +3048,60 @@ func (s *Server) HandleAPIBulkReject(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]int{"rejected": rejected})
 }
 
+// HandleAPIBulkDeleteUploads deletes multiple GPX uploads at once.
+// POST /api/admin/bulk-delete-uploads
+func (s *Server) HandleAPIBulkDeleteUploads(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var req struct {
+		IDs []int64 `json:"ids"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	if len(req.IDs) == 0 {
+		http.Error(w, "No IDs provided", http.StatusBadRequest)
+		return
+	}
+
+	deleted := 0
+	for _, id := range req.IDs {
+		var uploadID sql.NullInt64
+		_ = s.DB.QueryRowContext(ctx, "SELECT upload_id FROM gpx_upload_logs WHERE id = ?", id).Scan(&uploadID)
+
+		_, err := s.DB.ExecContext(ctx, "DELETE FROM gpx_upload_logs WHERE id = ?", id)
+		if err != nil {
+			continue
+		}
+		deleted++
+
+		if uploadID.Valid {
+			_, _ = s.DB.ExecContext(ctx, "DELETE FROM track_points WHERE upload_id = ?", uploadID.Int64)
+			_, _ = s.DB.ExecContext(ctx, "DELETE FROM gpx_uploads WHERE id = ?", uploadID.Int64)
+		}
+
+		_, _ = s.DB.ExecContext(ctx, "DELETE FROM notifications WHERE notification_type = 'new_upload' AND reference_id = ?", fmt.Sprintf("%d", id))
+	}
+
+	// Clean up orphans
+	_, _ = s.DB.ExecContext(ctx, `
+		DELETE FROM track_points WHERE upload_id IN (
+			SELECT u.id FROM gpx_uploads u
+			LEFT JOIN gpx_upload_logs l ON l.upload_id = u.id
+			WHERE l.id IS NULL
+		)`)
+	_, _ = s.DB.ExecContext(ctx, `
+		DELETE FROM gpx_uploads WHERE id NOT IN (
+			SELECT upload_id FROM gpx_upload_logs WHERE upload_id IS NOT NULL
+		)`)
+
+	go s.rebuildAllEffortData()
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]int{"deleted": deleted})
+}
+
 // HandleAPIDeleteUpload deletes a GPX upload and its logs, then rebuilds effort_data.
 // POST /api/admin/delete-upload
 func (s *Server) HandleAPIDeleteUpload(w http.ResponseWriter, r *http.Request) {
