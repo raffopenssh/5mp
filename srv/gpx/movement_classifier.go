@@ -764,6 +764,14 @@ func ClassifyMovementSubtype(movementType string, metrics MovementMetrics, hint 
 }
 
 // classifyVehicleSubtype distinguishes boats from ground vehicles.
+//
+// The key challenge: a vehicle cruising steadily on a smooth road looks
+// very similar to a boat. We use multiple signals to separate them:
+//   - Boats NEVER stop mid-journey (no intersections on water)
+//   - Boats have extremely steady speed (CV < 0.20)
+//   - Boats maintain minimum speed (P10 > 15 km/h)
+//   - Vehicles have stop-start acceleration bursts
+//   - Elevation changes indicate terrain (not water)
 func classifyVehicleSubtype(metrics MovementMetrics, hint MovementHint) (string, float64) {
 	// Authoritative ER hint: device is on a boat
 	if hint.SubtypeHint == "boat" {
@@ -772,44 +780,75 @@ func classifyVehicleSubtype(metrics MovementMetrics, hint MovementHint) (string,
 
 	speed := metrics.AvgSpeedKmh
 	p90 := metrics.P90SpeedKmh
+	p10 := metrics.P10SpeedKmh
 
 	// Boats: 10-50 km/h, very steady cruising speed, smooth turns, gentle accel.
 	var boatScore float64
 
 	// Speed range: boats rarely exceed 50 km/h
 	if speed >= 10 && speed <= 45 && p90 < 55 {
-		boatScore += 2.0
+		boatScore += 1.5
 	} else if speed > 45 || p90 > 60 {
 		return "", 0 // too fast for a patrol boat
 	}
 
-	// Very steady speed (low coefficient of variation)
-	if metrics.SpeedCV < 0.25 {
-		boatScore += 2.0
-	} else if metrics.SpeedCV < 0.35 {
+	// === STRONGEST SIGNAL: no stops ===
+	// Boats cruise continuously — zero or near-zero stops.
+	// Vehicles stop at gates, intersections, to observe, etc.
+	if metrics.StopFrequency < 0.01 {
+		boatScore += 2.0 // essentially no stops — strong boat signal
+	} else if metrics.StopFrequency < 0.03 {
 		boatScore += 1.0
-	} else if metrics.SpeedCV > 0.50 {
+	} else if metrics.StopFrequency > 0.05 {
+		boatScore -= 2.0 // vehicles stop frequently
+	}
+
+	// === P10 speed: boats maintain minimum cruising speed ===
+	// A boat at 25 km/h avg rarely dips below 15 km/h.
+	// A vehicle at 25 km/h avg frequently dips to 5-10 km/h (slowing for turns, terrain).
+	if p10 > 15 {
+		boatScore += 2.0 // never slows down — very boat-like
+	} else if p10 > 10 {
+		boatScore += 1.0
+	} else if p10 < 5 {
+		boatScore -= 1.5 // dips to near-stop = vehicle behavior
+	}
+
+	// Very steady speed (low coefficient of variation)
+	// Boats: CV typically 0.10-0.18. Vehicles on smooth road: 0.20-0.40.
+	if metrics.SpeedCV < 0.15 {
+		boatScore += 2.0
+	} else if metrics.SpeedCV < 0.22 {
+		boatScore += 1.0
+	} else if metrics.SpeedCV > 0.35 {
 		boatScore -= 1.0
 	}
 
 	// Smooth turns: boats make gentle, sweeping turns
-	if metrics.MeanTurnAngleDeg < 6 && metrics.SharpTurnRatio < 0.02 {
-		boatScore += 2.0
-	} else if metrics.MeanTurnAngleDeg < 10 && metrics.SharpTurnRatio < 0.05 {
-		boatScore += 1.0
+	if metrics.MeanTurnAngleDeg < 4 && metrics.SharpTurnRatio < 0.01 {
+		boatScore += 1.5
+	} else if metrics.MeanTurnAngleDeg < 6 && metrics.SharpTurnRatio < 0.02 {
+		boatScore += 0.5
 	}
 
-	// Low acceleration (gentle speed changes)
-	if metrics.AccelerationScore < 0.15 {
+	// Acceleration pattern: boats have gentle, gradual speed changes.
+	// Vehicles have sharper acceleration/braking from stop-go.
+	if metrics.AccelerationScore < 0.10 {
 		boatScore += 1.0
+	} else if metrics.AccelerationScore > 0.25 {
+		boatScore -= 1.0 // sharp accel/decel = vehicle stop-go
 	}
 
 	// Elevation evidence (if available): boats at constant altitude (~water level)
 	if metrics.HasElevation {
-		if metrics.ElevationStdDevM < 10 && metrics.ElevationRangeM < 50 {
-			boatScore += 1.5
-		} else if metrics.ElevationRangeM > 100 {
-			boatScore -= 2.0 // significant altitude changes = not a boat
+		if metrics.ElevationStdDevM < 5 && metrics.ElevationRangeM < 30 {
+			boatScore += 1.5 // very flat = water surface
+		} else if metrics.ElevationStdDevM < 10 && metrics.ElevationRangeM < 50 {
+			boatScore += 0.5
+		} else if metrics.ElevationRangeM > 80 {
+			boatScore -= 2.0 // significant altitude changes = terrain = not water
+		} else if metrics.ElevationRangeM > 50 {
+			boatScore -= 1.0
 		}
 	}
 
@@ -818,10 +857,11 @@ func classifyVehicleSubtype(metrics MovementMetrics, hint MovementHint) (string,
 		boatScore += 2.0
 	}
 
-	// Require strong evidence
-	if boatScore >= 5.0 {
+	// Require strong evidence — threshold raised to reduce false positives
+	// from vehicles on smooth roads
+	if boatScore >= 6.0 {
 		return "boat", 0.9
-	} else if boatScore >= 4.0 {
+	} else if boatScore >= 5.0 {
 		return "boat", 0.7
 	}
 
