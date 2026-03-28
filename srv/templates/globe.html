@@ -187,8 +187,8 @@
         .page-views { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10px; color: #555; text-align: center; }
 
         /* Movement type toggles (in filter panel) */
-        .movement-toggles { display: flex; gap: 3px; }
-        .movement-toggle { flex: 1; min-width: 0; padding: 5px 2px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; font-size: 10px; cursor: pointer; transition: all 0.2s; text-align: center; display: flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; overflow: hidden; }
+        .movement-toggles { display: flex; flex-wrap: wrap; gap: 4px; }
+        .movement-toggle { flex: 1 1 calc(33.33% - 4px); padding: 6px 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; font-size: 12px; cursor: pointer; transition: all 0.2s; text-align: center; display: flex; align-items: center; justify-content: center; gap: 3px; white-space: nowrap; }
         .movement-toggle:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
         .movement-toggle.active { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #22c55e; }
         .movement-toggle-label { font-size: 9px; display: block; margin-top: 2px; color: inherit; opacity: 0.8; }
@@ -1396,7 +1396,7 @@
                 <div class="filter-section-label">Movement Type</div>
                 <div class="movement-toggles">
                     <button class="movement-toggle active" id="toggle-foot" data-type="foot" onclick="toggleMovementType('foot')" title="Foot patrols"><i class="icon-footprints"></i> FOOT</button>
-                    <button class="movement-toggle active" id="toggle-vehicle" data-type="vehicle" onclick="toggleMovementType('vehicle')" title="Vehicle patrols"><i class="icon-car"></i> VHL</button>
+                    <button class="movement-toggle active" id="toggle-vehicle" data-type="vehicle" onclick="toggleMovementType('vehicle')" title="Vehicle patrols"><i class="icon-motorbike"></i><i class="icon-car"></i> VHL</button>
                     <button class="movement-toggle active" id="toggle-boat" data-type="boat" onclick="toggleMovementType('boat')" title="Boat patrols"><i class="icon-ship"></i> BOAT</button>
                     <button class="movement-toggle active" id="toggle-fixed_wing" data-type="fixed_wing" onclick="toggleMovementType('fixed_wing')" title="Fixed-wing aircraft"><i class="icon-plane"></i> PLANE</button>
                     <button class="movement-toggle active" id="toggle-rotor_wing" data-type="rotor_wing" onclick="toggleMovementType('rotor_wing')" title="Helicopter patrols"><i class="icon-helicopter"></i> HELI</button>
