@@ -4053,7 +4053,7 @@
                 var types = getActiveMovementTypes();
                 if (types.length === 0) {
                     params.push('type=none');
-                } else if (types.length < 3) {
+                } else if (types.length < 5) {
                     params.push('type=' + types.join(','));
                 }
                 // Cache-buster to ensure fresh data after uploads
@@ -6984,7 +6984,7 @@
             var types = getActiveMovementTypes();
             if (types.length === 0) {
                 url += '&type=none';
-            } else if (types.length < 3) {
+            } else if (types.length < 5) {
                 url += '&type=' + types.join(',');
             }
             
