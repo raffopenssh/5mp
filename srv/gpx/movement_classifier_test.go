@@ -729,13 +729,15 @@ func TestClassifyActivityType_AircraftShortStraightLeg(t *testing.T) {
 
 func TestSubtype_BoatFromTrajectory(t *testing.T) {
 	// Boat: 30 km/h, very steady speed (CV ~0.10), smooth turns, flat elevation
+	// 150 points at 10s intervals = 25 minutes (realistic boat patrol segment)
 	base := time.Date(2024, 6, 15, 8, 0, 0, 0, time.UTC)
-	points := make([]Point, 60)
-	for i := 0; i < 60; i++ {
-		tm := makeTime(base, float64(i)*10) // 10s intervals, 10 min
+	nPts := 150
+	points := make([]Point, nPts)
+	for i := 0; i < nPts; i++ {
+		tm := makeTime(base, float64(i)*10) // 10s intervals
 		// ~30 km/h heading roughly north with gentle curves
 		// 30 km/h = 0.0833 km per 10s = 0.000751 degrees lat
-		angle := float64(i) * 0.02 // very gentle turn
+		angle := float64(i) * 0.008 // very gentle turn
 		points[i] = Point{
 			Lat:       -8.0 + float64(i)*0.000751*math.Cos(angle),
 			Lon:       37.0 + float64(i)*0.000751*math.Sin(angle),
@@ -757,12 +759,14 @@ func TestSubtype_BoatFromTrajectory(t *testing.T) {
 
 func TestSubtype_BoatNoElevation(t *testing.T) {
 	// Boat without elevation data (ER API scenario): 28 km/h, very steady, smooth
+	// 120 points at 12s intervals = 24 minutes (realistic boat patrol segment)
 	base := time.Date(2024, 6, 15, 8, 0, 0, 0, time.UTC)
-	points := make([]Point, 80)
-	for i := 0; i < 80; i++ {
+	nPts := 120
+	points := make([]Point, nPts)
+	for i := 0; i < nPts; i++ {
 		tm := makeTime(base, float64(i)*12) // 12s intervals
 		// ~28 km/h with gentle sweeping course
-		angle := float64(i) * 0.015
+		angle := float64(i) * 0.01
 		points[i] = Point{
 			Lat:  -8.5 + float64(i)*0.000686*math.Cos(angle),
 			Lon:  36.5 + float64(i)*0.000686*math.Sin(angle),
@@ -799,6 +803,49 @@ func TestSubtype_GroundVehicleNotBoat(t *testing.T) {
 	if c.MovementSubtype == "boat" {
 		t.Errorf("ground vehicle at 50 km/h should NOT be boat (p90=%.1f, CV=%.2f)",
 			c.Metrics.P90SpeedKmh, c.Metrics.SpeedCV)
+	}
+}
+
+func TestSubtype_SparseERTruckNotBoat(t *testing.T) {
+	// ER vehicle tracker at 120s intervals producing 5 points of steady 30 km/h.
+	// This is the exact false-positive pattern: few points, no stops, low CV.
+	// Should NOT be classified as boat — too few points and too short.
+	base := time.Date(2024, 6, 15, 8, 0, 0, 0, time.UTC)
+	points := make([]Point, 5)
+	for i := 0; i < 5; i++ {
+		tm := makeTime(base, float64(i)*120) // 120s intervals (ER default)
+		points[i] = Point{
+			Lat:  -8.2 + float64(i)*0.009, // ~30 km/h northward
+			Lon:  37.0,
+			Time: tm,
+		}
+	}
+	hint := MovementHint{Type: "vehicle", Confidence: 1.0, IsVehicle: true}
+	c := ClassifyMovementFullWithHint(points, hint)
+	if c.MovementSubtype == "boat" {
+		t.Errorf("sparse ER truck (5 pts, 120s interval) should NOT be boat, got subtype=%q", c.MovementSubtype)
+	}
+}
+
+func TestSubtype_ERTruckSteadyDriveNotBoat(t *testing.T) {
+	// ER truck driving steadily at 35 km/h for 30 min (15 pts at 120s).
+	// Enough points and duration but should still not be boat because
+	// the track starts/ends in motion (vehicle between two stops).
+	base := time.Date(2024, 6, 15, 8, 0, 0, 0, time.UTC)
+	points := make([]Point, 15)
+	for i := 0; i < 15; i++ {
+		tm := makeTime(base, float64(i)*120)
+		points[i] = Point{
+			Lat:  -8.2 + float64(i)*0.0105, // ~35 km/h
+			Lon:  37.0,
+			Time: tm,
+		}
+	}
+	hint := MovementHint{Type: "vehicle", Confidence: 1.0, IsVehicle: true}
+	c := ClassifyMovementFullWithHint(points, hint)
+	if c.MovementSubtype == "boat" {
+		t.Errorf("ER truck steady 35km/h drive should NOT be boat (pts=%d, dur=%.0fmin, CV=%.3f, stops=%.3f)",
+			c.Metrics.NumPoints, c.Metrics.DurationMinutes, c.Metrics.SpeedCV, c.Metrics.StopFrequency)
 	}
 }
 
@@ -905,12 +952,13 @@ func TestSubtype_ERBoatPatrolHint(t *testing.T) {
 }
 
 func TestSubtype_TrackNameBoat(t *testing.T) {
-	// Track named "boat" should override Locus airplane classification
+	// Track named "boat" should override Locus airplane classification.
+	// Uses 150 points at 10s intervals = 25 min (realistic boat patrol segment).
 	data := &GPXData{
 		Tracks: []Track{{
 			Name:     "boat patrol 2026-03-27",
 			Activity: "transport_airplane", // Locus misclassification
-			Segments: [][]Point{generateLinearTrack(-8, 36, 30, 10, 100, nil)},
+			Segments: [][]Point{generateLinearTrack(-8, 36, 30, 10, 150, nil)},
 		}},
 	}
 
