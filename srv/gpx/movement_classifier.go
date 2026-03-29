@@ -49,15 +49,6 @@ type MovementMetrics struct {
 	// Duration in minutes
 	DurationMinutes float64
 
-	// Number of input points (useful for confidence thresholds)
-	NumPoints int
-
-	// Start/end segment speeds (km/h) — first/last segment speed.
-	// Vehicles typically start from ~0 (accelerating) and end at ~0 (braking).
-	// Boats maintain cruising speed throughout.
-	StartSpeedKmh float64
-	EndSpeedKmh   float64
-
 	// Subtype classification metrics
 	MeanTurnAngleDeg  float64 // Average bearing change between segments (degrees)
 	SharpTurnRatio    float64 // Proportion of turns > 45 degrees
@@ -506,31 +497,9 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 	// Total distance along the track
 	metrics.TotalDistanceKm = totalDist
 
-	// Number of input points
-	metrics.NumPoints = len(points)
-
 	// Duration from first to last point
 	if len(points) >= 2 && points[0].Time != nil && points[len(points)-1].Time != nil {
 		metrics.DurationMinutes = points[len(points)-1].Time.Sub(*points[0].Time).Minutes()
-	}
-
-	// Start and end segment speeds
-	if len(points) >= 2 {
-		if points[0].Time != nil && points[1].Time != nil {
-			dt := points[1].Time.Sub(*points[0].Time).Hours()
-			if dt > 0 {
-				d := haversineDistance(points[0], points[1])
-				metrics.StartSpeedKmh = d / dt
-			}
-		}
-		last := len(points) - 1
-		if points[last-1].Time != nil && points[last].Time != nil {
-			dt := points[last].Time.Sub(*points[last-1].Time).Hours()
-			if dt > 0 {
-				d := haversineDistance(points[last-1], points[last])
-				metrics.EndSpeedKmh = d / dt
-			}
-		}
 	}
 
 	return metrics
@@ -797,20 +766,11 @@ func ClassifyMovementSubtype(movementType string, metrics MovementMetrics, hint 
 // classifyVehicleSubtype distinguishes boats from ground vehicles.
 //
 // The key challenge: a vehicle cruising steadily on a smooth road looks
-// very similar to a boat — especially with sparse GPS data (120s intervals
-// from EarthRanger trackers) where short driving segments between stops
-// appear artificially smooth with zero stop frequency.
-//
-// Critical insight: with only 3-6 points, "no stops" and "low CV" are
-// meaningless — there aren't enough samples to distinguish anything.
-// Real boat tracks have 50+ points over 30+ minutes of continuous travel.
-//
-// Signals used:
-//   - Boats NEVER stop mid-journey (no intersections on water) — but only
-//     meaningful with enough data points (≥20)
-//   - Boats maintain steady cruising speed (low CV) — requires ≥15 speed samples
-//   - Boats maintain minimum speed (P10 > 15 km/h) — requires ≥15 speed samples
-//   - Vehicles start/end at rest (0 km/h) — boats maintain speed at track edges
+// very similar to a boat. We use multiple signals to separate them:
+//   - Boats NEVER stop mid-journey (no intersections on water)
+//   - Boats have extremely steady speed (CV < 0.20)
+//   - Boats maintain minimum speed (P10 > 15 km/h)
+//   - Vehicles have stop-start acceleration bursts
 //   - Elevation changes indicate terrain (not water)
 func classifyVehicleSubtype(metrics MovementMetrics, hint MovementHint) (string, float64) {
 	// Authoritative ER hint: device is on a boat
@@ -821,112 +781,60 @@ func classifyVehicleSubtype(metrics MovementMetrics, hint MovementHint) (string,
 	speed := metrics.AvgSpeedKmh
 	p90 := metrics.P90SpeedKmh
 	p10 := metrics.P10SpeedKmh
-	nPts := metrics.NumPoints
 
-	// === HARD GATE: minimum data requirements ===
-	// With <15 points (typical for sparse ER vehicle trackers at 120s intervals),
-	// we cannot reliably distinguish boat from vehicle. Metrics like stop frequency,
-	// speed CV, and P10 are statistically meaningless with so few samples.
-	if nPts < 15 {
-		return "", 0
-	}
-
-	// === HARD GATE: minimum duration ===
-	// Boats operate for extended periods. A 5-minute drive segment is not a boat.
-	if metrics.DurationMinutes < 20.0 {
-		return "", 0
-	}
-
-	// === HARD GATE: speed range ===
-	// Boats rarely exceed 50 km/h on patrol.
-	if speed > 45 || p90 > 60 {
-		return "", 0
-	}
-	if speed < 10 {
-		return "", 0 // too slow — drifting or idling, not powered boat travel
-	}
-
-	// Boats: 10-45 km/h, very steady cruising speed, smooth turns, gentle accel.
+	// Boats: 10-50 km/h, very steady cruising speed, smooth turns, gentle accel.
 	var boatScore float64
 
-	// Speed in typical boat range
+	// Speed range: boats rarely exceed 50 km/h
 	if speed >= 10 && speed <= 45 && p90 < 55 {
+		boatScore += 1.5
+	} else if speed > 45 || p90 > 60 {
+		return "", 0 // too fast for a patrol boat
+	}
+
+	// === STRONGEST SIGNAL: no stops ===
+	// Boats cruise continuously — zero or near-zero stops.
+	// Vehicles stop at gates, intersections, to observe, etc.
+	if metrics.StopFrequency < 0.01 {
+		boatScore += 2.0 // essentially no stops — strong boat signal
+	} else if metrics.StopFrequency < 0.03 {
 		boatScore += 1.0
-	}
-
-	// === START/END SPEED ANALYSIS (strongest new signal) ===
-	// Vehicles start from rest (gate, camp, junction) and end at rest.
-	// Between two stops, a vehicle GPS segment starts at >0 because the
-	// 120s tracker missed the acceleration — but the FIRST point is slower.
-	// Boats maintain full cruising speed at both ends of the track.
-	startSlow := metrics.StartSpeedKmh < 5.0 // started from near-stop
-	endSlow := metrics.EndSpeedKmh < 5.0     // ended at near-stop
-
-	if startSlow || endSlow {
-		// Vehicle behavior: starting from or ending at rest.
-		boatScore -= 3.0
-	} else if metrics.StartSpeedKmh > 10 && metrics.EndSpeedKmh > 10 {
-		// Both ends at cruising speed — consistent with boat
-		boatScore += 1.0
-	}
-
-	// === NO STOPS (requires enough data) ===
-	// With ≥20 points, zero stops is meaningful.
-	// Scale the signal by point count — more points = more trust.
-	if nPts >= 20 {
-		if metrics.StopFrequency < 0.01 {
-			boatScore += 2.0
-		} else if metrics.StopFrequency < 0.03 {
-			boatScore += 1.0
-		}
-	} else {
-		// 15-19 points: reduced signal
-		if metrics.StopFrequency < 0.01 {
-			boatScore += 0.5
-		}
-	}
-	if metrics.StopFrequency > 0.05 {
+	} else if metrics.StopFrequency > 0.05 {
 		boatScore -= 2.0 // vehicles stop frequently
 	}
 
 	// === P10 speed: boats maintain minimum cruising speed ===
-	// Only meaningful with enough speed samples.
-	if nPts >= 20 {
-		if p10 > 15 {
-			boatScore += 1.5
-		} else if p10 > 10 {
-			boatScore += 0.5
-		}
-	}
-	if p10 < 5 {
+	// A boat at 25 km/h avg rarely dips below 15 km/h.
+	// A vehicle at 25 km/h avg frequently dips to 5-10 km/h (slowing for turns, terrain).
+	if p10 > 15 {
+		boatScore += 2.0 // never slows down — very boat-like
+	} else if p10 > 10 {
+		boatScore += 1.0
+	} else if p10 < 5 {
 		boatScore -= 1.5 // dips to near-stop = vehicle behavior
 	}
 
-	// === Speed CV: steady cruising ===
-	// Only reliable with enough samples. With 3 points you always get low CV.
-	if nPts >= 20 {
-		if metrics.SpeedCV < 0.15 {
-			boatScore += 1.5
-		} else if metrics.SpeedCV < 0.22 {
-			boatScore += 0.5
-		}
-	}
-	if metrics.SpeedCV > 0.35 {
+	// Very steady speed (low coefficient of variation)
+	// Boats: CV typically 0.10-0.18. Vehicles on smooth road: 0.20-0.40.
+	if metrics.SpeedCV < 0.15 {
+		boatScore += 2.0
+	} else if metrics.SpeedCV < 0.22 {
+		boatScore += 1.0
+	} else if metrics.SpeedCV > 0.35 {
 		boatScore -= 1.0
 	}
 
 	// Smooth turns: boats make gentle, sweeping turns
 	if metrics.MeanTurnAngleDeg < 4 && metrics.SharpTurnRatio < 0.01 {
-		boatScore += 1.0
-	}
-	// Sharp turns = not a boat (intersections, parking maneuvers)
-	if metrics.SharpTurnRatio > 0.10 {
-		boatScore -= 1.0
+		boatScore += 1.5
+	} else if metrics.MeanTurnAngleDeg < 6 && metrics.SharpTurnRatio < 0.02 {
+		boatScore += 0.5
 	}
 
 	// Acceleration pattern: boats have gentle, gradual speed changes.
+	// Vehicles have sharper acceleration/braking from stop-go.
 	if metrics.AccelerationScore < 0.10 {
-		boatScore += 0.5
+		boatScore += 1.0
 	} else if metrics.AccelerationScore > 0.25 {
 		boatScore -= 1.0 // sharp accel/decel = vehicle stop-go
 	}
@@ -944,12 +852,13 @@ func classifyVehicleSubtype(metrics MovementMetrics, hint MovementHint) (string,
 		}
 	}
 
-	// Track name hint (weak — ER tracks have UUID names, not descriptive)
+	// Track name hint
 	if hint.SubtypeHint == "boat_name_hint" {
-		boatScore += 1.0
+		boatScore += 2.0
 	}
 
-	// Require strong evidence
+	// Require strong evidence — threshold raised to reduce false positives
+	// from vehicles on smooth roads
 	if boatScore >= 6.0 {
 		return "boat", 0.9
 	} else if boatScore >= 5.0 {
