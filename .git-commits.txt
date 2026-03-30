@@ -1,20 +1,20 @@
-a3e97cab 2026-03-05 15:50:59 Add WorldClim test endpoint for verifying on-demand lookups
-c16742d3 2026-03-05 15:50:00 Pre-generate WorldClim data for all Africa + on-demand lookup for rest
-dbde3e3d 2026-03-05 15:22:19 Fix WorldClim script to read directly from ZIP without extraction
-c761cec7 2026-03-05 15:11:35 Fix settlement icon not showing as pinned when loaded from URL
-866f1519 2026-03-05 15:07:17 Fix 'No ghsl features found' error when opening sections without data
-87cf1066 2026-03-05 15:01:18 Fix settlement/deforestation filter issues: preserve pinned state, update counts, add URL params
-6862b4c6 2026-03-05 13:14:43 Make filters affect pinned map layers
-54a5c279 2026-03-05 13:06:39 Fix filter dropdown styling and preserve accordion state
-3afc9823 2026-03-05 13:01:24 Add real-world examples and use cases for priority ranking
-c37d638a 2026-03-05 13:00:12 Add comprehensive priority ranking documentation
-36445e0f 2026-03-05 12:59:13 Add priority-based ranking and type tags for deforestation/settlement narratives
-e1aa2fdc 2026-03-05 12:51:27 Add final Lucide icons implementation summary
-86d87e64 2026-03-05 12:50:17 Add icon system documentation to AGENTS.md
-dbcf53b0 2026-03-05 12:48:38 Complete emoji replacement with Lucide icons
-a2ef85c5 2026-03-05 12:43:10 Add Lucide Icons implementation documentation
-abc7380c 2026-03-05 12:42:16 Replace emojis with Lucide icon font
-e8b97ebe 2026-03-05 12:19:24 Integrate WorldClim 2.1 precipitation data for accurate patrol intensity
-7ae30ef2 2026-03-05 12:05:05 Use actual WorldClim climate data for patrol intensity calculation
-bfac01d9 2026-03-05 11:58:56 Fix patrol pixel intensity to match map visualization exactly
-c605123d 2026-03-05 11:48:49 Fix patrol pixel intensity calculation and remove patrol_summary sheet
+164c54bc 2026-03-30 04:29:19 Fix publication data inconsistency: migrate WDPA IDs to park IDs
+05d985e6 2026-03-30 04:18:43 Fix research notification click and +N more publications in popup
+cc93aa9a 2026-03-29 14:21:29 Fix movement type filter not applied when 3+ types active
+58eddbee 2026-03-29 06:37:20 Revert "Fix boat false positives from sparse ER vehicle GPS data"
+cfb5e2ee 2026-03-29 05:56:38 Fix boat false positives from sparse ER vehicle GPS data
+82bc0c1a 2026-03-28 20:08:30 Fix pixel tooltip to respect movement type filter; make fire notifications clickable with real timestamps
+a79a3c21 2026-03-28 19:39:09 Tighten boat classifier to reduce false positives from smooth vehicle drives
+6916c56e 2026-03-28 19:28:29 Filter panel: restore original button padding, dual icons for VHL
+3c750b12 2026-03-28 19:25:54 Filter panel: 5 movement subtypes in single row with Lucide icons
+9e7e8471 2026-03-28 18:35:48 Add Cmd+A multi-select, bulk delete for uploads, fix inline detail colspan
+54fce54e 2026-03-28 18:26:33 Add movement subtypes (boat, fixed-wing, helicopter) to GPX upload logs
+a9f5233f 2026-03-28 17:00:46 Default to 90d date preset for grid, widen pixel popup to 380px
+2fa18d42 2026-03-28 16:51:09 Fix movement classification: helicopter detection, Locus hint sanity checks, pixel total match
+8f63ec2c 2026-03-28 12:29:36 Effort pixel popup: tabular layout with per-type stats + share link support
+0ae18b34 2026-03-28 12:11:19 Add movement subtype classification: boat, fixed-wing, rotor-wing
+f93b2982 2026-03-26 19:10:28 Add speed/altitude tracking, nearby place names in pixel popup
+783979fe 2026-03-26 18:32:45 Tune intensity: reduce aircraft flyover slightly, add distance differentiation to long view
+80f993b1 2026-03-26 18:21:10 Fix subcell coverage query and rebalance intensity model for movement types
+7452ad0c 2026-03-26 05:49:16 Fix 6 more share link restore bugs
+4b77d0a6 2026-03-26 05:34:19 Fix share link restore: bbox visual, park tags, keystones count

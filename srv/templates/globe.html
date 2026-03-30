@@ -19037,6 +19037,12 @@ ${starredItems.narratives.map(n => {
             params.set('panel', 'upload');
         }
         
+        // Add about modal state
+        const manifestModal = document.getElementById('modal-manifest');
+        if (manifestModal && manifestModal.classList.contains('active')) {
+            params.set('modal', 'about');
+        }
+        
         const url = window.location.origin + window.location.pathname + '?' + params.toString();
         
         // Copy to clipboard
@@ -19497,6 +19503,12 @@ ${starredItems.narratives.map(n => {
                         break;
                 }
             }, 1000);
+        }
+        
+        // Restore modal state (about/manifest)
+        const modalParam = params.get('modal');
+        if (modalParam === 'about') {
+            setTimeout(() => showModal('manifest'), 500);
         }
     }
     
