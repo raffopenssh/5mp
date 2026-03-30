@@ -8394,11 +8394,15 @@
         }
         
         function renderPublicationNotification(pub) {
-            // Publication notification - single action
+            // Publication notification - navigate to park, open research section, highlight pub
             const time = formatNotificationTime(pub.created_at);
+            // Extract title from message format "Author (Year) Title..."
+            const msg = pub.message || '';
+            const titleMatch = msg.match(/^[^(]+\(\d{4}\)\s*(.+)$/);
+            const pubTitle = titleMatch ? titleMatch[1].trim() : msg;
             
             return `
-                <div class="notification-item clickable" data-type="publication" data-action="view_publication" data-park-id="${pub.park_id}">
+                <div class="notification-item clickable" data-type="publication" data-action="view_publication" data-park-id="${pub.park_id}" data-pub-title="${escapeHtml(pubTitle)}">
                     <div class="notification-icon" style="background: rgba(168,85,247,0.15); color: #a855f7;">${icon('book-open', 'info')}</div>
                     <div class="notification-content">
                         <div class="notification-location">${escapeHtml(pub.title || 'New Research')}</div>
@@ -8669,45 +8673,82 @@
             closeNotificationDropdown();
         }
         
-        function handlePublicationClick(parkId, event) {
-            event.stopPropagation();
+        function handlePublicationClick(parkId, pubTitle) {
             closeNotificationDropdown();
             
-            // Find the park
-            const park = parksData?.features?.find(f => f.properties.id === parkId);
-            if (!park) return;
+            // Find the park from map source (same approach as share link restore)
+            const features = map.querySourceFeatures('areas', {
+                filter: ['==', ['get', 'id'], parkId]
+            });
+            if (features.length === 0) return;
             
-            const parkName = park.properties.name || parkId;
-            const bbox = park.properties.bbox;
+            const props = features[0].properties;
+            const center = props.center ? JSON.parse(props.center) : null;
+            if (!center) return;
             
-            if (bbox && bbox.length === 4) {
-                const lat = (bbox[1] + bbox[3]) / 2;
-                const lon = (bbox[0] + bbox[2]) / 2;
+            const lon = center[0], lat = center[1];
+            
+            // Zoom to park
+            map.flyTo({ center: [lon, lat], zoom: 9, duration: 2000 });
+            
+            // Open popup after fly completes
+            setTimeout(() => {
+                showPAPopup(props, { lng: lon, lat: lat });
                 
-                // Zoom to park
-                map.flyTo({ center: [lon, lat], zoom: 9, duration: 2000 });
-                
-                // Wait for map to settle, then open tooltip with research section
+                // After popup renders, expand research section and highlight
                 setTimeout(() => {
-                    // Simulate click on park to open tooltip
-                    const features = map.queryRenderedFeatures(map.project([lon, lat]), {
-                        layers: ['areas-fill']
-                    });
-                    
-                    if (features.length > 0) {
-                        const feature = features[0];
-                        handlePAClick(feature.properties, [lon, lat]);
-                        
-                        // After tooltip opens, expand research section
-                        setTimeout(() => {
-                            const researchSection = document.getElementById(`research-section-${parkId}`);
-                            if (researchSection && !researchSection.classList.contains('open')) {
-                                researchSection.querySelector('.pa-popup-section-header')?.click();
-                            }
-                        }, 300);
+                    const researchSection = document.getElementById(`research-section-${parkId}`);
+                    if (researchSection && !researchSection.classList.contains('open')) {
+                        researchSection.querySelector('.pa-popup-section-header')?.click();
                     }
-                }, 2100);
-            }
+                    if (pubTitle) {
+                        highlightPublicationEntry(parkId, pubTitle);
+                    }
+                }, 300);
+            }, 2100);
+        }
+        
+        function highlightPublicationEntry(parkId, pubTitle) {
+            // Wait for research data to load, then highlight and scroll to matching entry by title
+            const maxRetries = 15;
+            let attempt = 0;
+            const needle = pubTitle.toLowerCase().slice(0, 40);
+            const tryHighlight = () => {
+                attempt++;
+                const container = document.getElementById(`research-content-${parkId}`);
+                if (!container) { if (attempt < maxRetries) setTimeout(tryHighlight, 500); return; }
+                
+                // Find link whose text starts with the same title prefix
+                const links = container.querySelectorAll('a');
+                let matched = null;
+                links.forEach(link => {
+                    if (link.textContent.toLowerCase().startsWith(needle)) {
+                        matched = link;
+                    }
+                });
+                
+                if (!matched && attempt < maxRetries) { setTimeout(tryHighlight, 500); return; }
+                if (!matched) return;
+                
+                // Expand "+N more" if the matched entry is inside a hidden div
+                const hiddenParent = matched.closest('[id^="research-hidden-"]');
+                if (hiddenParent && hiddenParent.style.display === 'none') {
+                    hiddenParent.style.display = 'block';
+                    const moreBtn = container.querySelector('[id^="research-more-"]');
+                    if (moreBtn) moreBtn.style.display = 'none';
+                }
+                
+                // Highlight the entry
+                const entry = matched.closest('div[style*="padding"]');
+                if (entry) {
+                    entry.style.background = 'rgba(168,85,247,0.2)';
+                    entry.style.borderRadius = '4px';
+                    entry.style.transition = 'background 2s';
+                    entry.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    setTimeout(() => { entry.style.background = ''; }, 4000);
+                }
+            };
+            tryHighlight();
         }
         
         function handleUploadNotificationClick(index) {
@@ -8796,10 +8837,11 @@
                     return;
                 }
                 
-                // Handle publication click
+                // Handle publication click — navigate to park, open research, highlight entry
                 if (action === 'view_publication') {
                     const parkId = item.dataset.parkId;
-                    handlePublicationClick(parkId);
+                    const pubTitle = item.dataset.pubTitle || '';
+                    handlePublicationClick(parkId, pubTitle);
                     closeNotificationDropdown();
                     return;
                 }
@@ -11026,6 +11068,29 @@
             }
         }
         
+        function renderPubEntry(pub) {
+            const authors = pub.authors || [];
+            let firstAuthor = 'Unknown';
+            if (authors[0]) {
+                const authorsPart = authors[0].split(',')[0].trim();
+                const nameParts = authorsPart.split(' ');
+                firstAuthor = nameParts.length > 0 ? nameParts[nameParts.length - 1] : authorsPart;
+            }
+            const year = pub.year || '';
+            const title = pub.title || 'Untitled';
+            const shortTitle = title.length > 80 ? title.slice(0, 77) + '...' : title;
+            const url = pub.url || (pub.doi ? `https://doi.org/${pub.doi}` : null);
+            let h = `<div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 11px; line-height: 1.4;">`;
+            h += `<div style="color: #888;">${escapeHtml(firstAuthor)}${year ? ` (${year})` : ''}</div>`;
+            if (url) {
+                h += `<a href="${escapeHtml(url)}" target="_blank" style="color: #a855f7; text-decoration: none;" onclick="event.stopPropagation();">${escapeHtml(shortTitle)}</a>`;
+            } else {
+                h += `<span style="color: #ccc;">${escapeHtml(shortTitle)}</span>`;
+            }
+            h += '</div>';
+            return h;
+        }
+
         async function fetchPopupResearchData(paId, paName) {
             const el = document.getElementById(`research-content-${paId}`);
             if (!el) return;
@@ -11033,36 +11098,17 @@
                 const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/publications?pwd=${encodeURIComponent(getPwd())}`);
                 const pubs = await resp.json();
                 if (pubs && pubs.length > 0) {
+                    const INITIAL = 10;
                     let html = `<div style="font-size: 10px; color: #888; margin-bottom: 6px;">${pubs.length} publication${pubs.length > 1 ? 's' : ''}</div>`;
-                    html += '<div style="max-height: 200px; overflow-y: auto;">';
-                    pubs.slice(0, 10).forEach(pub => {
-                        const authors = pub.authors || [];
-                        // Extract first author's last name from full string like "Eric Djomo Nana, ..."
-                        let firstAuthor = 'Unknown';
-                        if (authors[0]) {
-                            // If comma exists, get first author before comma
-                            const authorsPart = authors[0].split(',')[0].trim();
-                            // Get last name (last word before comma)
-                            const nameParts = authorsPart.split(' ');
-                            firstAuthor = nameParts.length > 0 ? nameParts[nameParts.length - 1] : authorsPart;
-                        }
-                        const authorStr = firstAuthor;
-                        const year = pub.year || '';
-                        const title = pub.title || 'Untitled';
-                        const shortTitle = title.length > 80 ? title.slice(0, 77) + '...' : title;
-                        const url = pub.url || (pub.doi ? `https://doi.org/${pub.doi}` : null);
-                        
-                        html += `<div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 11px; line-height: 1.4;">`;
-                        html += `<div style="color: #888;">${escapeHtml(authorStr)}${year ? ` (${year})` : ''}</div>`;
-                        if (url) {
-                            html += `<a href="${escapeHtml(url)}" target="_blank" style="color: #a855f7; text-decoration: none;" onclick="event.stopPropagation();">${escapeHtml(shortTitle)}</a>`;
-                        } else {
-                            html += `<span style="color: #ccc;">${escapeHtml(shortTitle)}</span>`;
-                        }
-                        html += '</div>';
-                    });
-                    if (pubs.length > 10) {
-                        html += `<div style="padding: 6px 0; font-size: 10px; color: #666;">+ ${pubs.length - 10} more</div>`;
+                    html += `<div style="max-height: 300px; overflow-y: auto;" id="research-list-${paId}">`;
+                    pubs.slice(0, INITIAL).forEach(pub => { html += renderPubEntry(pub); });
+                    if (pubs.length > INITIAL) {
+                        const moreId = `research-more-${paId}`;
+                        const hiddenId = `research-hidden-${paId}`;
+                        let hiddenHtml = '';
+                        pubs.slice(INITIAL).forEach(pub => { hiddenHtml += renderPubEntry(pub); });
+                        html += `<div id="${hiddenId}" style="display:none;">${hiddenHtml}</div>`;
+                        html += `<div class="section-more-btn" id="${moreId}" onclick="event.stopPropagation();document.getElementById('${hiddenId}').style.display='block';this.style.display='none';" style="padding: 6px 0; font-size: 10px; color: #a855f7; cursor: pointer;">+ ${pubs.length - INITIAL} more publications</div>`;
                     }
                     html += '</div>';
                     el.innerHTML = html;
