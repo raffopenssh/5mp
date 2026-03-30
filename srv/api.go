@@ -1554,32 +1554,13 @@ func (s *Server) HandleAPIPublications(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Look up park to get WDPA ID
-	area := s.AreaStore.GetByID(parkID)
-	if area == nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]string{"error": "park not found"})
-		return
-	}
-
-	// Use WDPA ID if available, otherwise fall back to park ID
-	paID := parkID
-	if area.WDPAID != "" {
-		paID = area.WDPAID
-	}
-
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
-	// Try looking up by WDPA ID first, then fall back to park ID
-	pubs, err := q.GetPublicationsByPA(ctx, paID)
-	if err == nil && len(pubs) == 0 && paID != parkID {
-		// No results with WDPA ID, try park ID
-		pubs, err = q.GetPublicationsByPA(ctx, parkID)
-	}
+	// All publications are now stored with park ID (e.g., COD_Salonga)
+	pubs, err := q.GetPublicationsByPA(ctx, parkID)
 	if err != nil {
-		slog.Error("failed to get publications", "pa_id", paID, "error", err)
+		slog.Error("failed to get publications", "pa_id", parkID, "error", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": "database error"})
@@ -1636,17 +1617,11 @@ func (s *Server) HandleAPIPublicationCount(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Look up park to get WDPA ID
-	area := s.AreaStore.GetByID(parkID)
-	paID := parkID
-	if area != nil && area.WDPAID != "" {
-		paID = area.WDPAID
-	}
-
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
-	count, err := q.GetPublicationCountByPA(ctx, paID)
+	// All publications are now stored with park ID (e.g., COD_Salonga)
+	count, err := q.GetPublicationCountByPA(ctx, parkID)
 	if err != nil {
 		count = 0
 	}
