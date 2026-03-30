@@ -1,3 +1,4 @@
+75ba2d0f 2026-03-30 17:21:09 Preserve URL query params through login form
 17990a86 2026-03-30 17:16:13 Add REDACTED_PWD to accepted passwords
 0a7ae32b 2026-03-30 17:05:03 Add About modal to share link system (modal=about param)
 164c54bc 2026-03-30 04:29:19 Fix publication data inconsistency: migrate WDPA IDs to park IDs
@@ -17,4 +18,3 @@ a9f5233f 2026-03-28 17:00:46 Default to 90d date preset for grid, widen pixel po
 0ae18b34 2026-03-28 12:11:19 Add movement subtype classification: boat, fixed-wing, rotor-wing
 f93b2982 2026-03-26 19:10:28 Add speed/altitude tracking, nearby place names in pixel popup
 783979fe 2026-03-26 18:32:45 Tune intensity: reduce aircraft flyover slightly, add distance differentiation to long view
-80f993b1 2026-03-26 18:21:10 Fix subcell coverage query and rebalance intensity model for movement types

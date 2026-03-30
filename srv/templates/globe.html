@@ -19508,7 +19508,15 @@ ${starredItems.narratives.map(n => {
         // Restore modal state (about/manifest)
         const modalParam = params.get('modal');
         if (modalParam === 'about') {
-            setTimeout(() => showModal('manifest'), 500);
+            setTimeout(() => {
+                showModal('manifest');
+                // Clean modal param from URL (one-shot)
+                try {
+                    const cleanUrl = new URL(window.location);
+                    cleanUrl.searchParams.delete('modal');
+                    window.history.replaceState({}, '', cleanUrl);
+                } catch(e) {}
+            }, 500);
         }
     }
     
