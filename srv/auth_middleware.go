@@ -7,7 +7,7 @@ import (
 )
 
 // Valid passwords for testing access
-var validPasswords = []string{"test2026", "REDACTED_PWD", "REDACTED_PWD"}
+var validPasswords = []string{"test2026", "REDACTED_PWD", "REDACTED_PWD", "REDACTED_PWD"}
 
 // PasswordMiddleware checks for valid password in cookie or query param
 func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
