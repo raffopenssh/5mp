@@ -1,3 +1,5 @@
+17990a86 2026-03-30 17:16:13 Add REDACTED_PWD to accepted passwords
+0a7ae32b 2026-03-30 17:05:03 Add About modal to share link system (modal=about param)
 164c54bc 2026-03-30 04:29:19 Fix publication data inconsistency: migrate WDPA IDs to park IDs
 05d985e6 2026-03-30 04:18:43 Fix research notification click and +N more publications in popup
 cc93aa9a 2026-03-29 14:21:29 Fix movement type filter not applied when 3+ types active
@@ -16,5 +18,3 @@ a9f5233f 2026-03-28 17:00:46 Default to 90d date preset for grid, widen pixel po
 f93b2982 2026-03-26 19:10:28 Add speed/altitude tracking, nearby place names in pixel popup
 783979fe 2026-03-26 18:32:45 Tune intensity: reduce aircraft flyover slightly, add distance differentiation to long view
 80f993b1 2026-03-26 18:21:10 Fix subcell coverage query and rebalance intensity model for movement types
-7452ad0c 2026-03-26 05:49:16 Fix 6 more share link restore bugs
-4b77d0a6 2026-03-26 05:34:19 Fix share link restore: bbox visual, park tags, keystones count
