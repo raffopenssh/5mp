@@ -251,21 +251,25 @@ TEST.getEntryCount('fire')               // Count entries
 
 See `BACKUP_INFO.md` for full details and restore instructions.
 
-### Latest: Zenodo (April 1, 2026)
+### Latest: Zenodo Draft (April 1, 2026)
 
 | Field | Value |
 |-------|-------|
-| **Deposit ID** | `19363593` |
-| **DOI** | `10.5281/zenodo.19363593` |
-| **Record URL** | https://zenodo.org/records/19363593 |
+| **Deposition ID** | `19363779` |
+| **State** | Draft (unsubmitted, no public DOI) |
+| **Draft URL** | https://zenodo.org/deposit/19363779 |
 | **File** | `5mp_db_backup_20260401.sqlite3` (1.2 GB) |
 | **MD5** | `d17ef446b03f58b5fdd1cb527dcd3088` |
-| **Access** | Restricted (requires `$ZENODO_TOKEN`) |
+| **Manifest** | `data/db_backup_zenodo_manifest.json` |
 
 ```bash
+# Download (requires ZENODO_TOKEN - draft is not public)
 curl -H "Authorization: Bearer $ZENODO_TOKEN" \
-  "https://zenodo.org/api/records/19363593/draft/files/5mp_db_backup_20260401.sqlite3/content" \
+  "https://zenodo.org/api/files/4bd66ea4-80b9-45f9-af7b-4237c268844a/5mp_db_backup_20260401.sqlite3" \
   -o 5mp_db_backup_20260401.sqlite3
+
+# Create new backup:
+ZENODO_TOKEN=... go run ./cmd/backup-zenodo/
 ```
 
 ### Previous: exe-dev-monitor-peer01 (March 2, 2026)

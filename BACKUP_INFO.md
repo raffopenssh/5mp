@@ -1,44 +1,60 @@
 # Database Backups
 
-## Latest Backup — April 1, 2026 (Zenodo)
+## Latest Backup — April 1, 2026 (Zenodo Draft)
 
 | Field | Value |
 |-------|-------|
-| **Location** | Zenodo (restricted access) |
-| **Deposit ID** | `19363593` |
-| **DOI** | `10.5281/zenodo.19363593` |
-| **Record URL** | https://zenodo.org/records/19363593 |
-| **Download URL** | https://zenodo.org/api/records/19363593/draft/files/5mp_db_backup_20260401.sqlite3/content |
+| **Location** | Zenodo (draft, not published) |
+| **Deposition ID** | `19363779` |
+| **State** | Draft (unsubmitted) — no public DOI |
+| **Draft URL** | https://zenodo.org/deposit/19363779 |
+| **Bucket URL** | `https://zenodo.org/api/files/4bd66ea4-80b9-45f9-af7b-4237c268844a` |
 | **File** | `5mp_db_backup_20260401.sqlite3` |
 | **Size** | 1,262,694,400 bytes (~1.2 GB) |
 | **MD5** | `d17ef446b03f58b5fdd1cb527dcd3088` |
-| **Created** | April 1, 2026 04:02 UTC |
+| **Created** | April 1, 2026 04:42 UTC |
 | **Method** | SQLite `.backup` command (atomic copy) |
-| **Access** | Restricted |
+| **Manifest** | `data/db_backup_zenodo_manifest.json` |
 
 ### Verification
 
 - ✅ PRAGMA integrity_check: **ok**
 - ✅ MD5: `d17ef446b03f58b5fdd1cb527dcd3088`
-- ✅ Record counts verified:
-  - fire_detections: 565,789
-  - feature_geometries: 436,841
-  - fire_narrative_cache: 162
-  - park_settlements: 9,933
-  - park_species: 39,489
+- ✅ Zenodo HEAD check: HTTP 200
+- ✅ State: unsubmitted (draft, not public)
 
 ### Download from Zenodo
 
 ```bash
-# Requires Zenodo API token with access to this restricted deposit
+# Requires ZENODO_TOKEN (draft deposits are not publicly accessible)
 curl -H "Authorization: Bearer $ZENODO_TOKEN" \
-  "https://zenodo.org/api/records/19363593/draft/files/5mp_db_backup_20260401.sqlite3/content" \
+  "https://zenodo.org/api/files/4bd66ea4-80b9-45f9-af7b-4237c268844a/5mp_db_backup_20260401.sqlite3" \
   -o 5mp_db_backup_20260401.sqlite3
+```
+
+### Using the backup tool
+
+```bash
+# Create a new backup and upload as Zenodo draft
+ZENODO_TOKEN=... go run ./cmd/backup-zenodo/
+
+# This will:
+# 1. Create SQLite backup via .backup command
+# 2. Verify integrity
+# 3. Upload to Zenodo as draft (NOT published)
+# 4. Verify upload via HEAD request
+# 5. Remove local backup file
+# 6. Update manifest at data/db_backup_zenodo_manifest.json
 ```
 
 ### Restore Instructions
 
 ```bash
+# Download backup
+curl -H "Authorization: Bearer $ZENODO_TOKEN" \
+  "https://zenodo.org/api/files/4bd66ea4-80b9-45f9-af7b-4237c268844a/5mp_db_backup_20260401.sqlite3" \
+  -o 5mp_db_backup_20260401.sqlite3
+
 # Stop the server
 sudo systemctl stop 5mp
 
@@ -74,9 +90,15 @@ curl -H "Authorization: Bearer REDACTED_TOKEN" \
   -o 5mp_db_backup_20260302.sqlite3
 ```
 
-### Verify peer01 backup
+---
 
-```bash
-curl -X POST -H "Authorization: Bearer REDACTED_TOKEN" \
-  https://exe-dev-monitor-peer01.exe.xyz:8000/api/verify/c8de734b-ad0e-4c25-b5bb-6e4ddef3f847
-```
+## Deprecated: Published Zenodo Deposit 19363593
+
+> ⚠️ This deposit was published accidentally and should not be used.
+> It was superseded by the draft deposit 19363779 above.
+
+| Field | Value |
+|-------|-------|
+| **Deposit ID** | `19363593` |
+| **DOI** | `10.5281/zenodo.19363593` |
+| **Status** | Published (cannot be deleted) |
