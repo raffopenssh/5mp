@@ -233,9 +233,11 @@
             <div class="filter-section">
                 <div class="filter-section-label">Movement Type</div>
                 <div class="movement-toggles">
-                    <button class="movement-toggle active" id="toggle-foot" onclick="toggleMovementType('foot')" title="Foot patrols" aria-label="Toggle foot patrols" aria-pressed="true">Foot</button>
-                    <button class="movement-toggle active" id="toggle-vehicle" onclick="toggleMovementType('vehicle')" title="Vehicle patrols" aria-label="Toggle vehicle patrols" aria-pressed="true">Vehicle</button>
-                    <button class="movement-toggle active" id="toggle-aerial" onclick="toggleMovementType('aerial')" title="Aerial patrols" aria-label="Toggle aerial patrols" aria-pressed="true">Aerial</button>
+                    <button class="movement-toggle active" id="toggle-foot" data-type="foot" onclick="toggleMovementType('foot')" title="Foot patrols" aria-label="Toggle foot patrols" aria-pressed="true"><i class="icon-footprints"></i> FOOT</button>
+                    <button class="movement-toggle active" id="toggle-vehicle" data-type="vehicle" onclick="toggleMovementType('vehicle')" title="Vehicle patrols" aria-label="Toggle vehicle patrols" aria-pressed="true"><i class="icon-motorbike"></i><i class="icon-car"></i> VHL</button>
+                    <button class="movement-toggle active" id="toggle-boat" data-type="boat" onclick="toggleMovementType('boat')" title="Boat patrols" aria-label="Toggle boat patrols" aria-pressed="true"><i class="icon-ship"></i> BOAT</button>
+                    <button class="movement-toggle active" id="toggle-fixed_wing" data-type="fixed_wing" onclick="toggleMovementType('fixed_wing')" title="Fixed-wing aircraft" aria-label="Toggle fixed-wing aircraft" aria-pressed="true"><i class="icon-plane"></i> PLANE</button>
+                    <button class="movement-toggle active" id="toggle-rotor_wing" data-type="rotor_wing" onclick="toggleMovementType('rotor_wing')" title="Helicopter patrols" aria-label="Toggle helicopter patrols" aria-pressed="true"><i class="icon-helicopter"></i> HELI</button>
                 </div>
             </div>
             
@@ -278,7 +280,7 @@
     <!-- Time Slider -->
     <div class="time-slider-container" id="time-slider-container">
         <div class="time-slider-header">
-            <div class="time-slider-date" id="time-slider-date">Jan 2020 - Dec 2024</div>
+            <div class="time-slider-date" id="time-slider-date"><span class="time-slider-date-part" id="time-slider-date-start" onclick="editSliderDate('start')" title="Click to set start date">Jan 2020</span><span class="time-slider-date-sep"> - </span><span class="time-slider-date-part" id="time-slider-date-end" onclick="editSliderDate('end')" title="Click to set end date">Dec 2024</span><span class="time-slider-date-tags" id="time-slider-date-tags"><span class="time-slider-date-tag" data-preset="td" onclick="applyDatePreset('td')">td<span class="tag-hint">Today</span></span><span class="time-slider-date-tag" data-preset="3d" onclick="applyDatePreset('3d')">3d<span class="tag-hint">Last 3 days</span></span><span class="time-slider-date-tag" data-preset="7d" onclick="applyDatePreset('7d')">7d<span class="tag-hint">Last 7 days</span></span><span class="time-slider-date-tag" data-preset="14d" onclick="applyDatePreset('14d')">14d<span class="tag-hint">Last 14 days</span></span><span class="time-slider-date-tag" data-preset="30d" onclick="applyDatePreset('30d')">30d<span class="tag-hint">Last 30 days</span></span><span class="time-slider-date-tag" data-preset="90d" onclick="applyDatePreset('90d')">90d<span class="tag-hint">Last 90 days</span></span><span class="time-slider-date-tag" data-preset="cmo" onclick="applyDatePreset('cmo')">cmo<span class="tag-hint">Current month</span></span></span></div>
         </div>
         <div class="time-slider-track-wrapper">
             <div class="time-slider-track" id="time-slider-track">
@@ -475,7 +477,7 @@
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li>Upload GPX tracks from GPS devices or apps</li>
                     <li>Tracks split into 10×10 km grid cells</li>
-                    <li>Movement classified: foot (<7 km/h), vehicle (7-80), aircraft (>80)</li>
+                    <li>Movement classified: foot (<7 km/h), vehicle (7-80), aircraft (>80) with subtypes: boat, fixed-wing, rotor-wing from trajectory analysis</li>
                     <li>Intensity = % of 1km subcells visited in each grid cell</li>
                 </ul>
 
@@ -574,6 +576,30 @@
         // Get current password from URL
         function getPwd() {
             return new URLSearchParams(window.location.search).get('pwd') || '';
+        }
+
+        // Fetch with retry for 503 errors (proxy timeout on slow connections)
+        async function fetchRetry(url, opts, retries = 3, delay = 2000) {
+            for (let i = 0; i <= retries; i++) {
+                try {
+                    const res = await fetch(url, opts);
+                    if (res.status === 503 && i < retries) {
+                        console.warn(`[fetchRetry] 503 on ${url.split('?')[0]}, retry ${i+1}/${retries} in ${delay}ms`);
+                        await new Promise(r => setTimeout(r, delay));
+                        delay *= 1.5;
+                        continue;
+                    }
+                    return res;
+                } catch (err) {
+                    if (i < retries) {
+                        console.warn(`[fetchRetry] Error on ${url.split('?')[0]}, retry ${i+1}/${retries}`);
+                        await new Promise(r => setTimeout(r, delay));
+                        delay *= 1.5;
+                        continue;
+                    }
+                    throw err;
+                }
+            }
         }
         
         // Icon helper function - generates Lucide icon HTML
@@ -1758,11 +1784,33 @@
             });
 
             
-            // Grid pixel rendering - uniform outline with radial fill that overflows at high intensity
-            // Intensity is based on coverage: 1.0 = 80%+ of 100km² cell covered
-            
-            // Outer glow halo - visible at all intensities, stronger at high intensity
-            // Intensity: 0 = no visits, 1.0 = monthly visits, >1.0 = more frequent (overglow)
+            // Grid pixel rendering - 4-layer system with recency decay & subcell-driven fill
+            //
+            // Properties from API:
+            //   intensity (0-1.5): visit frequency relative to time window
+            //   subcell_coverage (0-1): fraction of 100 subcells visited (spatial thoroughness)
+            //   recency (0-1): freshness of last visit (1=recent, 0=stale)
+            //
+            // Layer stack (bottom to top):
+            //   grid-halo: outer glow - size from intensity, opacity fades with low recency
+            //   grid-glow: soft inner glow - size from intensity, opacity from recency
+            //   grid-fill: inner fill - size from subcell_coverage (grows faster than intensity), opacity from intensity
+            //   grid-cells: outer ring outline - stroke fades with low recency
+
+            // Helper expressions used across layers
+            const gridIntensity = ['coalesce', ['get', 'intensity'], 0];
+            const gridRecency = ['coalesce', ['get', 'recency'], 1];
+            const gridSubcell = ['coalesce', ['get', 'subcell_coverage'], 0];
+            // Combined fill metric: max of subcell_coverage and intensity-derived fill.
+            // subcell_coverage grows faster (direct spatial measurement), while intensity
+            // provides a baseline so cells without subcell data still render.
+            const gridFillMetric = ['max',
+                gridSubcell,
+                ['interpolate', ['linear'], gridIntensity, 0, 0, 0.3, 0.3, 0.7, 0.6, 1, 0.8, 1.5, 1]
+            ];
+
+            // Outer glow halo - visible at all intensities, fades when not recently visited
+            // Radius scales with zoom (relative to cell size) so it doesn't blob at low zoom
             map.addLayer({
                 id: 'grid-halo',
                 type: 'circle',
@@ -1771,30 +1819,34 @@
                 paint: {
                     'circle-color': '#22c55e',
                     'circle-radius': [
-                        'interpolate', ['linear'],
-                        ['coalesce', ['get', 'intensity'], 0],
-                        0, 10,      // Reduced base glow
-                        0.5, 14,    // Moderate visits
-                        1.0, 20,    // Monthly visits
-                        1.5, 28     // Max glow
+                        'interpolate', ['exponential', 2], ['zoom'],
+                        // At each zoom level, multiply base by intensity factor
+                        4, ['*', 1.2, ['interpolate', ['linear'], gridIntensity, 0, 1, 0.5, 1.2, 1.0, 1.5, 1.5, 2.0]],
+                        6, ['*', 4.5, ['interpolate', ['linear'], gridIntensity, 0, 1, 0.5, 1.2, 1.0, 1.5, 1.5, 2.0]],
+                        8, ['*', 16, ['interpolate', ['linear'], gridIntensity, 0, 1, 0.5, 1.2, 1.0, 1.5, 1.5, 2.0]],
+                        10, ['*', 55, ['interpolate', ['linear'], gridIntensity, 0, 1, 0.5, 1.2, 1.0, 1.5, 1.5, 2.0]],
+                        12, ['*', 200, ['interpolate', ['linear'], gridIntensity, 0, 1, 0.5, 1.2, 1.0, 1.5, 1.5, 2.0]]
                     ],
                     'circle-blur': 1.0,
-                    'circle-opacity': [
-                        'interpolate', ['linear'],
-                        ['coalesce', ['get', 'intensity'], 0],
-                        0, 0.1,     // Subtle base
-                        0.5, 0.2,
-                        1.0, 0.35,
-                        1.5, 0.5    // Reduced max
+                    // Opacity scales with intensity AND recency: stale cells fade out
+                    'circle-opacity': ['*',
+                        ['interpolate', ['linear'], gridIntensity,
+                            0, 0.1,
+                            0.5, 0.2,
+                            1.0, 0.35,
+                            1.5, 0.5
+                        ],
+                        // Recency multiplier: 1.0 keeps full opacity, 0.3 is the floor
+                        ['interpolate', ['linear'], gridRecency,
+                            0, 0.3,
+                            0.5, 0.6,
+                            1.0, 1.0
+                        ]
                     ]
                 }
             });
 
             // Grid cells represent 0.1° x 0.1° (~11km x 11km at equator)
-            // MapLibre: at zoom 0, 1 degree ≈ 0.71 pixels at equator
-            // 0.1 degree = 0.071 pixels at zoom 0, doubles each zoom level
-            // Formula: radius = 0.071 * 2^zoom / 2 (divide by 2 for radius vs diameter)
-            // z5: 1.1px, z7: 4.5px, z9: 18px, z11: 72px
             const gridCellRadius = [
                 'interpolate', ['exponential', 2], ['zoom'],
                 4, 0.6,
@@ -1804,7 +1856,7 @@
                 12, 144
             ];
 
-            // Soft inner glow layer - slight overflow for high intensity
+            // Soft inner glow layer - slight overflow for high intensity, fades with low recency
             map.addLayer({
                 id: 'grid-glow',
                 type: 'circle',
@@ -1814,24 +1866,32 @@
                     'circle-color': '#22c55e',
                     'circle-radius': [
                         'interpolate', ['exponential', 2], ['zoom'],
-                        4, ['*', 0.8, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 1, 1, 1.3]],
-                        6, ['*', 3, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 1, 1, 1.3]],
-                        8, ['*', 12, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 1, 1, 1.3]],
-                        10, ['*', 45, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 1, 1, 1.3]],
-                        12, ['*', 180, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 1, 1, 1.3]]
+                        4, ['*', 0.8, ['interpolate', ['linear'], gridIntensity, 0, 1, 1, 1.3]],
+                        6, ['*', 3, ['interpolate', ['linear'], gridIntensity, 0, 1, 1, 1.3]],
+                        8, ['*', 12, ['interpolate', ['linear'], gridIntensity, 0, 1, 1, 1.3]],
+                        10, ['*', 45, ['interpolate', ['linear'], gridIntensity, 0, 1, 1, 1.3]],
+                        12, ['*', 180, ['interpolate', ['linear'], gridIntensity, 0, 1, 1, 1.3]]
                     ],
                     'circle-blur': 0.7,
-                    'circle-opacity': [
-                        'interpolate', ['linear'],
-                        ['coalesce', ['get', 'intensity'], 0],
-                        0, 0.1,
-                        0.5, 0.25,
-                        1.0, 0.4
+                    // Glow opacity: intensity × recency
+                    'circle-opacity': ['*',
+                        ['interpolate', ['linear'], gridIntensity,
+                            0, 0.1,
+                            0.5, 0.25,
+                            1.0, 0.4
+                        ],
+                        ['interpolate', ['linear'], gridRecency,
+                            0, 0.25,
+                            0.5, 0.55,
+                            1.0, 1.0
+                        ]
                     ]
                 }
             });
 
-            // Inner fill - size based on intensity (0 = no fill, 1 = fills cell)
+            // Inner fill - size driven by subcell_coverage (spatial thoroughness)
+            // This grows FASTER than the glow because subcell_coverage responds to
+            // actual ground coverage, not just visit frequency.
             map.addLayer({
                 id: 'grid-fill',
                 type: 'circle',
@@ -1841,25 +1901,25 @@
                     'circle-color': '#4ade80',
                     'circle-radius': [
                         'interpolate', ['exponential', 2], ['zoom'],
-                        4, ['*', 0.5, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0, 0.3, 0.4, 0.7, 0.8, 1, 1]],
-                        6, ['*', 2, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0, 0.3, 0.4, 0.7, 0.8, 1, 1]],
-                        8, ['*', 8, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0, 0.3, 0.4, 0.7, 0.8, 1, 1]],
-                        10, ['*', 32, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0, 0.3, 0.4, 0.7, 0.8, 1, 1]],
-                        12, ['*', 128, ['interpolate', ['linear'], ['coalesce', ['get', 'intensity'], 0], 0, 0, 0.3, 0.4, 0.7, 0.8, 1, 1]]
+                        4,  ['*', 0.5, gridFillMetric],
+                        6,  ['*', 2, gridFillMetric],
+                        8,  ['*', 8, gridFillMetric],
+                        10, ['*', 32, gridFillMetric],
+                        12, ['*', 128, gridFillMetric]
                     ],
                     'circle-blur': 0.1,
                     'circle-opacity': [
-                        'interpolate', ['linear'],
-                        ['coalesce', ['get', 'intensity'], 0],
+                        'interpolate', ['linear'], gridIntensity,
                         0, 0,
-                        0.2, 0.4,
-                        0.5, 0.65,
+                        0.1, 0.35,
+                        0.3, 0.55,
+                        0.7, 0.75,
                         1.0, 0.9
                     ]
                 }
             });
 
-            // Outer ring/outline - uniform relative to cell size, scales with zoom
+            // Outer ring/outline - stroke opacity fades with low recency
             map.addLayer({
                 id: 'grid-cells',
                 type: 'circle',
@@ -1875,6 +1935,12 @@
                         7, 1.5,
                         11, 3
                     ],
+                    // Ring opacity: full for recently visited, fades for stale
+                    'circle-stroke-opacity': ['interpolate', ['linear'], gridRecency,
+                        0, 0.3,
+                        0.5, 0.6,
+                        1.0, 1.0
+                    ],
                     'circle-opacity': 1
                 }
             });
@@ -1886,29 +1952,158 @@
             // to show the enhanced popup with collapsible sections
 
             
-            map.on('click', 'grid-cells', function(e) {
-                // Check if there's a PA under the grid cell - if so, let PA click handler win
-                const paFeatures = map.queryRenderedFeatures(e.point, { layers: ['areas-fill'] });
-                if (paFeatures.length > 0) {
-                    return; // Let PA click through
-                }
-                
-                e.originalEvent.stopPropagation();
-                if (e.features.length > 0) {
-                    const props = e.features[0].properties;
+            // Flag to prevent PA handler from firing when grid pixel was clicked
+            window._gridPixelClicked = false;
+            // Track currently open pixel popup for share links
+            window._currentPixelPopup = null;
+            window._currentPixelId = null;
+
+            // Reusable function to open an effort pixel popup
+            window.openPixelPopup = function(props, lngLat) {
+                    // Close any existing pixel popup
+                    if (window._currentPixelPopup) { window._currentPixelPopup.remove(); }
                     const pixelId = props.id || 'Unknown';
                     const distance = props.total_distance_km ? props.total_distance_km.toFixed(1) : '0';
                     const visits = props.unique_uploads || 0;
-                    new maplibregl.Popup()
-                        .setLngLat(e.lngLat)
+                    const visitDays = props.visit_days || 0;
+                    const subcellPct = props.subcell_coverage ? (props.subcell_coverage * 100).toFixed(0) : '0';
+                    const recency = props.recency ? props.recency.toFixed(2) : '—';
+                    const intensity = props.intensity ? props.intensity.toFixed(2) : '0';
+                    const footKm = props.foot_km ? props.foot_km.toFixed(1) : '0';
+                    const vehicleKm = props.vehicle_km ? props.vehicle_km.toFixed(1) : '0';
+                    const aircraftKm = props.aircraft_km ? props.aircraft_km.toFixed(1) : '0';
+                    // Build movement breakdown — show subtypes when available
+                    const boatKm = props.boat_km ? props.boat_km.toFixed(1) : '0';
+                    const fixedWingKm = props.fixed_wing_km ? props.fixed_wing_km.toFixed(1) : '0';
+                    const rotorWingKm = props.rotor_wing_km ? props.rotor_wing_km.toFixed(1) : '0';
+                    const groundVehicleKm = Math.max(0, parseFloat(vehicleKm) - parseFloat(boatKm)).toFixed(1);
+                    const unclassifiedAirKm = Math.max(0, parseFloat(aircraftKm) - parseFloat(fixedWingKm) - parseFloat(rotorWingKm)).toFixed(1);
+
+                    // Build movement type rows for tabular display
+                    const fmtDur = (km, spdKmh) => {
+                        if (!spdKmh || spdKmh <= 0 || km <= 0) return '—';
+                        const hrs = km / spdKmh;
+                        const h = Math.floor(hrs);
+                        const m = Math.round((hrs - h) * 60);
+                        return `${h}:${String(m).padStart(2,'0')}`;
+                    };
+                    const fmtKm = (v) => parseFloat(v) > 0 ? parseFloat(v).toFixed(1) : '—';
+                    const fmtSpd2 = (v) => v && v > 0 ? v.toFixed(0) : '—';
+                    const fmtAlt = (v) => v && v > 0 ? v.toFixed(0) : '';
+
+                    // Collect movement rows: [icon, label, km, speed, duration, altStr]
+                    const movRows = [];
+                    let totalKm = 0, totalHrs = 0, typeCount = 0;
+                    const addRow = (iconName, iconColor, label, km, spdKmh, alt) => {
+                        const k = parseFloat(km);
+                        if (k <= 0) return;
+                        typeCount++;
+                        totalKm += k;
+                        const hrs = (spdKmh && spdKmh > 0) ? k / spdKmh : 0;
+                        totalHrs += hrs;
+                        movRows.push({
+                            icon: icon(iconName, iconColor, 'sm'),
+                            label, km: k, spd: spdKmh, dur: fmtDur(k, spdKmh),
+                            alt: alt || ''
+                        });
+                    };
+                    // Respect movement type filter — only show rows for active types
+                    if (movementTypes.foot)
+                        addRow('footprints','neutral','Foot', footKm, props.foot_speed_kmh, fmtAlt(props.foot_altitude_m));
+                    if (movementTypes.vehicle)
+                        addRow('car','neutral','Vehicle', groundVehicleKm, props.vehicle_speed_kmh, fmtAlt(props.vehicle_altitude_m));
+                    if (movementTypes.boat)
+                        addRow('ship','info','Boat', boatKm, props.boat_speed_kmh, fmtAlt(props.boat_altitude_m));
+                    if (movementTypes.fixed_wing)
+                        addRow('plane','neutral','Plane', fixedWingKm, props.fixed_wing_speed_kmh, fmtAlt(props.fixed_wing_altitude_m));
+                    if (movementTypes.rotor_wing)
+                        addRow('helicopter','neutral','Helicopter', rotorWingKm, props.rotor_wing_speed_kmh, fmtAlt(props.rotor_wing_altitude_m));
+                    if (parseFloat(unclassifiedAirKm) >= 1.0 && (movementTypes.fixed_wing || movementTypes.rotor_wing))
+                        addRow('plane','neutral','Aircraft', unclassifiedAirKm, props.aircraft_speed_kmh, fmtAlt(props.aircraft_altitude_m));
+
+                    // Use filtered total for display when filters are active
+                    const filteredDistance = totalKm > 0 ? totalKm.toFixed(1) : distance;
+                    const multiType = typeCount >= 2 ? `<span style="background:#22c55e22;color:#22c55e;padding:1px 6px;border-radius:3px;font-size:10px;margin-left:4px">${typeCount} types</span>` : '';
+
+                    // Has altitude?
+                    const hasAlt = movRows.some(r => r.alt !== '');
+
+                    // Build table HTML
+                    let tableHTML = '';
+                    if (movRows.length > 0) {
+                        const thAlt = hasAlt ? '<th>Alt</th>' : '';
+                        tableHTML = `<table class="ept"><thead><tr><th>Type</th><th>hh:mm</th><th>km/h</th><th>km</th>${thAlt}</tr></thead><tbody>`;
+                        for (const r of movRows) {
+                            const cls = (v) => v === '—' ? ' class="ept-dim"' : '';
+                            const tdAlt = hasAlt ? `<td${cls(r.alt || '—')}>${r.alt || '—'}</td>` : '';
+                            tableHTML += `<tr><td><span class="ept-icon">${r.icon} ${r.label}</span></td><td${cls(r.dur)}>${r.dur}</td><td${cls(fmtSpd2(r.spd))}>${fmtSpd2(r.spd)}</td><td>${r.km.toFixed(1)}</td>${tdAlt}</tr>`;
+                        }
+                        // Total row
+                        if (movRows.length > 1) {
+                            const tH = Math.floor(totalHrs);
+                            const tM = Math.round((totalHrs - tH) * 60);
+                            const totalDur = totalHrs > 0 ? `${tH}:${String(tM).padStart(2,'0')}` : '—';
+                            const avgSpd = totalHrs > 0 ? (totalKm / totalHrs).toFixed(0) : '—';
+                            const tdAlt = hasAlt ? '<td></td>' : '';
+                            tableHTML += `<tr class="ept-total"><td>Total</td><td>${totalDur}</td><td>${avgSpd}</td><td>${totalKm.toFixed(1)}</td>${tdAlt}</tr>`;
+                        }
+                        tableHTML += '</tbody></table>';
+                    }
+
+                    // Unique popup ID for lazy place name loading
+                    const popupId = 'pp-' + pixelId.replace(/[^a-z0-9_-]/gi, '');
+                    const popup = new maplibregl.Popup({ maxWidth: '380px' })
+                        .setLngLat(lngLat)
                         .setHTML(`
-                            <strong>Effort Pixel</strong><br>
-                            <span style="color: #888; font-size: 11px;">ID: ${pixelId}</span><br>
-                            Total Distance: <strong>${distance} km</strong><br>
-                            Total Visits: <strong>${visits}</strong><br>
-                            <span style="color: #666; font-size: 10px;">100 km² (~10km × 10km)</span>
+                            <div style="padding:10px 12px">
+                            <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px"><strong>Effort Pixel</strong>${multiType}</div>
+                            <span style="color:#888;font-size:11px">ID: ${pixelId}</span>
+                            <span id="${popupId}" style="font-size:11px;color:#8b8"></span>
+                            <div style="display:flex;gap:12px;margin:6px 0 2px;font-size:12px">
+                                <span>${icon('route','neutral','sm')} <strong>${filteredDistance}</strong> <span style="color:#666">km</span></span>
+                                <span>${icon('calendar','neutral','sm')} <strong>${visitDays}</strong> <span style="color:#666">days</span></span>
+                            </div>
+                            ${tableHTML}
+                            <div style="display:flex;gap:10px;font-size:11px;margin-top:4px;color:#aaa">
+                                <span>Coverage <strong style="color:#ccc">${subcellPct}%</strong></span>
+                                <span>Intensity <strong style="color:#ccc">${intensity}</strong></span>
+                                <span>Fresh <strong style="color:#ccc">${recency}</strong></span>
+                            </div>
+                            <div style="color:#555;font-size:9px;margin-top:3px">100 km² (~10km × 10km)</div>
+                            </div>
                         `)
                         .addTo(map);
+                    window._currentPixelPopup = popup;
+                    window._currentPixelId = pixelId;
+                    popup.on('close', () => { window._currentPixelPopup = null; window._currentPixelId = null; });
+                    // Lazy-load nearby place names
+                    const plat = lngLat.lat, plng = lngLat.lng;
+                    fetch(`/api/nearby-places?pwd=${encodeURIComponent(getPwd())}&lat=${plat.toFixed(4)}&lon=${plng.toFixed(4)}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            const el = document.getElementById(popupId);
+                            if (el && data.places && data.places.length > 0) {
+                                const names = data.places.slice(0, 3).map(p => {
+                                    const typeIcon = {'city':'building-2','town':'building-2','village':'home','hamlet':'home',
+                                        'mountain':'mountain','hill':'mountain','lake':'droplets','river':'waves','stream':'waves'}[p.type] || 'map-pin';
+                                    return `${icon(typeIcon,'neutral','sm')} ${p.name} <span style="color:#666">${p.distance_km}km</span>`;
+                                });
+                                el.innerHTML = '<br>' + names.join(' · ');
+                            }
+                        }).catch(() => {});
+            };
+
+            map.on('click', 'grid-cells', function(e) {
+                // At low zoom (<7), PA click wins over grid cells.
+                if (map.getZoom() < 7) {
+                    const paFeatures = map.queryRenderedFeatures(e.point, { layers: ['areas-fill'] });
+                    if (paFeatures.length > 0) return;
+                }
+                window._gridPixelClicked = true;
+                setTimeout(() => { window._gridPixelClicked = false; }, 50);
+                e.originalEvent.stopPropagation();
+                if (e.features.length > 0) {
+                    window.openPixelPopup(e.features[0].properties, e.lngLat);
                 }
             });
 
@@ -2120,7 +2315,7 @@
         
         function updateZoomLevel(value) {
             const intVal = parseInt(value);
-            mbtilesMaxZoom = Math.min(intVal, 17);
+            mbtilesMaxZoom = Math.min(intVal, 19);
             const label = document.getElementById('mbtiles-zoom-label');
             label.textContent = `1-${mbtilesMaxZoom}`;
             fetchMBTilesEstimate();
@@ -2139,17 +2334,16 @@
                     ? `${(data.estimated_size_mb / 1024).toFixed(1)} GB` 
                     : `${data.estimated_size_mb} MB`;
                 
-                estimateEl.innerHTML = `~${sizeStr} &middot; ~${mins} min`;
+                const storageLabel = data.storage === 'zenodo' ? ' · Zenodo' : '';
+                estimateEl.innerHTML = `~${sizeStr} &middot; ~${mins} min${storageLabel}`;
                 
-                // Check for sufficient storage space
+                // Check for sufficient space (RAM for Zenodo, disk for legacy)
                 if (!data.sufficient_space) {
-                    const availMB = data.available_space_mb || 0;
-                    const requiredMB = data.required_space_mb || 0;
-                    const availStr = availMB >= 1024 ? `${(availMB / 1024).toFixed(1)} GB` : `${availMB} MB`;
-                    const reqStr = requiredMB >= 1024 ? `${(requiredMB / 1024).toFixed(1)} GB` : `${requiredMB} MB`;
-                    estimateEl.innerHTML = `<span style="color: #ef4444;">Insufficient disk space</span><br><span style="font-size: 10px; color: #888;">Need ${reqStr} free (incl. 2GB buffer), have ${availStr}</span>`;
+                    const ramMB = data.ram_needed_mb || 0;
+                    const ramStr = ramMB >= 1024 ? `${(ramMB / 1024).toFixed(1)} GB RAM` : `${ramMB} MB RAM`;
+                    estimateEl.innerHTML = `<span style="color: #ef4444;">File too large for in-memory build</span><br><span style="font-size: 10px; color: #888;">Needs ~${ramStr}. Reduce zoom level.</span>`;
                     actionBtn.disabled = true;
-                    actionBtn.title = 'Insufficient storage space - reduce zoom level or free up disk space';
+                    actionBtn.title = 'Reduce zoom level to fit in available memory';
                 } else {
                     actionBtn.disabled = mbtilesState === 'generating';
                     actionBtn.title = '';
@@ -2237,9 +2431,16 @@
                 const resp = await fetch(`/api/mbtiles/${currentMBTilesJobId}/status?pwd=${encodeURIComponent(getPwd())}`);
                 const job = await resp.json();
                 
-                // Update progress in button
+                // Update progress in button with phase info
                 btnProgress.style.width = job.progress + '%';
-                btnText.textContent = `${Math.round(job.progress)}%`;
+                const pct = Math.round(job.progress);
+                if (job.phase === 'upload') {
+                    btnText.textContent = `Uploading… ${pct}%`;
+                } else if (job.status === 'uploading') {
+                    btnText.textContent = `Uploading… ${pct}%`;
+                } else {
+                    btnText.textContent = `${pct}%`;
+                }
                 
                 if (job.status === 'completed') {
                     clearInterval(mbtilesPollingInterval);
@@ -2624,7 +2825,7 @@
                 
                 // Use explicit bbox if set, otherwise use visible map bounds
                 var bboxToUse = currentBbox;
-                if (!bboxToUse && typeof map !== 'undefined' && map.loaded()) {
+                if (!bboxToUse && typeof map !== 'undefined') {
                     var bounds = map.getBounds();
                     // Only use map bounds if zoomed in enough (zoom > 4)
                     if (map.getZoom() > 4) {
@@ -2640,12 +2841,16 @@
                 
                 // Add movement type filter
                 var types = getActiveMovementTypes();
-                if (types.length < 3 && types.length > 0) {
+                if (types.length === 0) {
+                    params.push('type=none');
+                } else if (types.length < 5) {
                     params.push('type=' + types.join(','));
                 }
+                // Cache-buster to ensure fresh data after uploads
+                params.push('t=' + Date.now());
                 if (params.length > 0) url += '?' + params.join('&');
                 
-                const res = await fetch(url);
+                const res = await fetchRetry(url);
                 if (res.ok) {
                     const stats = await res.json();
                     const setIfExists = (id, value) => {
@@ -2694,7 +2899,7 @@
         let bboxStartPoint = null;
         
         // Movement type filter state (all on by default)
-        var movementTypes = { foot: true, vehicle: true, aerial: true };
+        var movementTypes = { foot: true, vehicle: true, boat: true, fixed_wing: true, rotor_wing: true };
         var currentCountryFilter = ''; // Country filter state
         
         // Initial stats load will happen after initDateRange sets dates
@@ -2725,6 +2930,7 @@
                 toggle.classList.remove('active');
             }
         }
+
 
         
         // Helper function to escape CSV values
@@ -3101,7 +3307,7 @@
             if (!bounds) return null;
             
             // Fetch grid data for this park's bbox
-            let url = `/api/grid?pwd=${window.accessPwd || ''}`;
+            let url = `/api/grid?pwd=${window.getPwd() || ''}`;
             if (fromDate) url += `&from=${fromDate}`;
             if (toDate) url += `&to=${toDate}`;
             if (Array.isArray(bounds)) {
@@ -3631,9 +3837,25 @@
         
         map.on('load', function() {
             mapLoaded = true;
+            // Wait for areas source to load before fetching grid data
+            // This prevents concurrent requests that overwhelm slow connections
+            function onAreasLoaded(e) {
+                if (e.sourceId === 'areas' && e.isSourceLoaded) {
+                    map.off('sourcedata', onAreasLoaded);
+                    if (pendingGridReload) {
+                        pendingGridReload = false;
+                        reloadGridData();
+                    }
+                }
+            }
             if (pendingGridReload) {
-                pendingGridReload = false;
-                reloadGridData();
+                // Check if areas already loaded (fast connection)
+                if (map.isSourceLoaded('areas')) {
+                    pendingGridReload = false;
+                    reloadGridData();
+                } else {
+                    map.on('sourcedata', onAreasLoaded);
+                }
             }
         });
         
@@ -3652,14 +3874,16 @@
             }
             // Add movement type filter
             var types = getActiveMovementTypes();
-            if (types.length < 3 && types.length > 0) {
+            if (types.length === 0) {
+                url += '&type=none';
+            } else if (types.length < 5) {
                 url += '&type=' + types.join(',');
             }
             
             console.log('Reloading grid data: from=' + dateFrom + ', to=' + dateTo + ', bbox=' + (currentBbox ? currentBbox.join(',') : 'none') + ', types=' + types.join(','));
             
-            // Fetch data and set it
-            fetch(url)
+            // Fetch data and set it (with retry for 503 proxy timeouts)
+            fetchRetry(url)
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     var gridSource = map.getSource('grid');
@@ -4252,7 +4476,9 @@
             var types = [];
             if (movementTypes.foot) types.push('foot');
             if (movementTypes.vehicle) types.push('vehicle');
-            if (movementTypes.aerial) types.push('aerial');
+            if (movementTypes.boat) types.push('boat');
+            if (movementTypes.fixed_wing) types.push('fixed_wing');
+            if (movementTypes.rotor_wing) types.push('rotor_wing');
             return types;
         }
 
@@ -4506,14 +4732,16 @@
         
         async function loadNotifications() {
             try {
-                // Fetch all notification types, MBTiles jobs, and fire alerts
-                const [uploadRes, mbtilesRes, pubRes, fireAlertsRes, fireNotifRes, fireDownloadRes] = await Promise.all([
-                    fetch('/api/notifications?type=new_upload&limit=10'),
-                    fetch(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
-                    fetch('/api/notifications?type=new_publication&limit=10'),
-                    fetch('/api/fire-alerts?limit=100'),  // Fire group alerts (for map display)
-                    fetch('/api/notifications?type=fire_alert&active=1&limit=500'),  // Fire notifications (for bell) - only active ones
-                    fetch('/api/notifications?type=fire_download_success&limit=5')  // Fire download notifications
+                // Load critical notifications first (fire alerts for map), then others sequentially
+                // This avoids overwhelming slow connections with 6+ concurrent requests
+                const fireAlertsRes = await fetchRetry('/api/fire-alerts?limit=100');
+                const fireNotifRes = await fetchRetry('/api/notifications?type=fire_alert&active=1&limit=500');
+                // Non-critical: load in parallel batch (fewer concurrent)
+                const [uploadRes, mbtilesRes, pubRes, fireDownloadRes] = await Promise.all([
+                    fetchRetry('/api/notifications?type=new_upload&limit=10'),
+                    fetchRetry(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
+                    fetchRetry('/api/notifications?type=new_publication&limit=10'),
+                    fetchRetry('/api/notifications?type=fire_download_success&limit=5')
                 ]);
                 
                 // Process upload notifications
@@ -4525,6 +4753,7 @@
                         return {
                             date: n.created_at ? new Date(n.created_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : '',
                             full_date: n.created_at ? n.created_at.slice(0, 10) : '',
+                            created_at: n.created_at || '',
                             date_from: refData.date_from || null,
                             date_to: refData.date_to || null,
                             location: n.title ? n.title.replace('New Patrol Data: ', '') : 'Unknown',
@@ -4558,7 +4787,7 @@
                     }));
                 }
                 
-                // Process fire group alerts (for map display)
+                // Process fire group alerts (for map display + fire-active parks layer)
                 if (fireAlertsRes.ok) {
                     fireAlerts = await fireAlertsRes.json();
                     fireAlerts = fireAlerts.map(a => ({
@@ -4567,6 +4796,16 @@
                         lat: a.latest_lat || a.centroid_lat,
                         lon: a.latest_lon || a.centroid_lon
                     }));
+                    // Update fire-active parks (eliminates duplicate /api/fire-alerts call)
+                    fireActiveParks.clear();
+                    fireAlerts.forEach(a => {
+                        if ((a.alert_type === 'active_inside' || a.alert_type === 'entered') && a.park_id) {
+                            fireActiveParks.add(a.park_id);
+                        }
+                    });
+                    if (map && map.getLayer && map.getLayer('areas-fire-glow')) {
+                        map.setFilter('areas-fire-glow', ['in', ['get', 'id'], ['literal', Array.from(fireActiveParks)]]);
+                    }
                 }
                 
                 // Process fire alert notifications (for bell dropdown)
@@ -4605,7 +4844,7 @@
                 showNotificationBadge();
                 
                 // Auto-refresh logic
-                const hasActiveJobs = mbtilesJobs.some(j => j.status === 'processing');
+                const hasActiveJobs = mbtilesJobs.some(j => ['processing','pending','downloading','uploading'].includes(j.status));
                 const dropdownOpen = document.getElementById('notification-dropdown')?.classList.contains('open');
                 
                 if (hasActiveJobs) {
@@ -4686,7 +4925,7 @@
                     _index: i, 
                     _source: 'mbtiles',
                     _sortTime: new Date(job.created_at).getTime(),
-                    _priority: job.status === 'processing' ? -2 : (job.status === 'completed' ? -1 : 3)  // Active highest, completed very high, failed low
+                    _priority: ['processing','pending','downloading','uploading'].includes(job.status) ? -2 : (job.status === 'completed' ? -1 : 3)  // Active highest, completed very high, failed low
                 });
             });
             
@@ -4701,15 +4940,15 @@
                 });
             });
             
-            // Add fire alerts (sorted by urgency) - for backward compatibility, limited to prevent overwhelming
+            // Add fire alerts (sorted by urgency) - real-time fire group alerts
             const sortOrder = { 'active_inside': 0, 'entered': 1, 'active': 0, 'left': 2 };
-            fireAlerts.slice(0, 5).forEach((alert, i) => {  // Only show top 5 fire group alerts
+            fireAlerts.slice(0, 20).forEach((alert, i) => {
                 allItems.push({ 
                     ...alert, 
                     _index: i, 
                     _source: 'fire',
-                    _sortTime: Date.now(),  // Fire alerts are always "now"
-                    _priority: 3  // Fire group alerts lower priority (after fire_notification)
+                    _sortTime: new Date(alert.last_updated_at || alert.first_detected_at || Date.now()).getTime(),
+                    _priority: 3
                 });
             });
             
@@ -4848,7 +5087,7 @@
         }
         
         function renderMBTilesNotification(job) {
-            const isProcessing = job.status === 'processing';
+            const isProcessing = ['processing','pending','downloading','uploading'].includes(job.status);
             const isComplete = job.status === 'completed';
             const isFailed = job.status === 'failed';
             
@@ -4859,10 +5098,12 @@
             let subtitle = '';
             if (isProcessing) {
                 const pct = Math.round(job.progress || 0);
-                subtitle = `${job.tiles_generated || job.downloaded_tiles || 0}/${job.total_tiles || 0} tiles • ${pct}%`;
+                const phase = job.phase === 'upload' || job.status === 'uploading' ? 'Uploading to Zenodo' : 'Downloading tiles';
+                subtitle = `${phase} • ${job.downloaded_tiles || 0}/${job.total_tiles || 0} tiles • ${pct}%`;
             } else if (isComplete) {
-                const sizeMB = job.file_size ? (job.file_size / 1024 / 1024).toFixed(1) : (job.estimated_size_bytes ? Math.round(job.estimated_size_bytes / 1024 / 1024) : '?');
-                subtitle = `Ready to download • ${sizeMB} MB`;
+                const sizeMB = job.file_size_bytes ? (job.file_size_bytes / 1024 / 1024).toFixed(1) : (job.file_size ? (job.file_size / 1024 / 1024).toFixed(1) : (job.estimated_size_bytes ? Math.round(job.estimated_size_bytes / 1024 / 1024) : '?'));
+                const zenodoLabel = job.zenodo_depo_id ? ' • Zenodo' : '';
+                subtitle = `Ready to download • ${sizeMB} MB${zenodoLabel}`;
             } else if (isFailed) {
                 subtitle = job.error_message || job.error || 'Export failed';
             }
@@ -4992,7 +5233,7 @@
         }
 
         function renderFireNotification(item) {
-            // Old fire_group_alerts format (for backward compatibility)
+            // Fire group alerts from /api/fire-alerts
             const isActive = item.alert_type === 'active_inside' || item.alert_type === 'entered';
             const iconBg = isActive ? 'rgba(239,68,68,0.15)' : 'rgba(251,146,60,0.15)';
             const iconColor = isActive ? '#ef4444' : '#fb923c';
@@ -5004,24 +5245,34 @@
                 if (park) parkName = park.properties.name;
             }
             
+            const time = formatNotificationTime(item.last_updated_at || item.first_detected_at);
+            const featureId = item.group_name || '';
+            const fc = item.fire_count || '?';
+            const da = item.days_active || '?';
+            const subtitle = `${fc} fire${fc !== 1 ? 's' : ''} • ${da} day${da !== 1 ? 's' : ''} active`;
+            
             return `
-                <div class="notification-item" onclick="handleFireAlertClick(${item._index})">
-                    <div class="notification-icon" style="background:${iconBg};color:${iconColor};">${icon('activity', 'fire')}</div>
+                <div class="notification-item clickable" data-type="fire_alert" data-action="view_fire" data-park-id="${item.park_id}" data-park-name="${escapeHtml(parkName)}" data-feature-id="${escapeHtml(featureId)}" data-group-name="${escapeHtml(featureId)}">
+                    <div class="notification-icon" style="background:${iconBg};color:${iconColor};">${icon('flame', 'fire')}</div>
                     <div class="notification-content">
                         <div class="notification-location">${escapeHtml(parkName)}</div>
-                        <div class="notification-subtitle">${escapeHtml(item.message || formatFireAlertMessage(item))}</div>
-                        <div class="notification-time">Now</div>
+                        <div class="notification-subtitle">${subtitle}</div>
+                        <div class="notification-time">${time}</div>
                     </div>
                 </div>
             `;
         }
         
         function renderPublicationNotification(pub) {
-            // Publication notification - single action
+            // Publication notification - navigate to park, open research section, highlight pub
             const time = formatNotificationTime(pub.created_at);
+            // Extract title from message format "Author (Year) Title..."
+            const msg = pub.message || '';
+            const titleMatch = msg.match(/^[^(]+\(\d{4}\)\s*(.+)$/);
+            const pubTitle = titleMatch ? titleMatch[1].trim() : msg;
             
             return `
-                <div class="notification-item clickable" data-type="publication" data-action="view_publication" data-park-id="${pub.park_id}">
+                <div class="notification-item clickable" data-type="publication" data-action="view_publication" data-park-id="${pub.park_id}" data-pub-title="${escapeHtml(pubTitle)}">
                     <div class="notification-icon" style="background: rgba(168,85,247,0.15); color: #a855f7;">${icon('book-open', 'info')}</div>
                     <div class="notification-content">
                         <div class="notification-location">${escapeHtml(pub.title || 'New Research')}</div>
@@ -5088,7 +5339,7 @@
             const lon = item.lon;
             const gridCells = JSON.stringify(item.grid_cells || []);
             const distance = item.distance ? item.distance.toFixed(1) : '0';
-            const time = formatNotificationTime(item.full_date || item.date);
+            const time = formatNotificationTime(item.created_at || item.full_date || item.date);
             
             return `
                 <div class="notification-item clickable" data-type="upload" data-action="view_upload" data-lat="${lat}" data-lon="${lon}" data-grid-cells='${escapeHtml(gridCells)}'>
@@ -5278,45 +5529,82 @@
         }
 
         
-        function handlePublicationClick(parkId, event) {
-            event.stopPropagation();
+        function handlePublicationClick(parkId, pubTitle) {
             closeNotificationDropdown();
             
-            // Find the park
-            const park = parksData?.features?.find(f => f.properties.id === parkId);
-            if (!park) return;
+            // Find the park from map source (same approach as share link restore)
+            const features = map.querySourceFeatures('areas', {
+                filter: ['==', ['get', 'id'], parkId]
+            });
+            if (features.length === 0) return;
             
-            const parkName = park.properties.name || parkId;
-            const bbox = park.properties.bbox;
+            const props = features[0].properties;
+            const center = props.center ? JSON.parse(props.center) : null;
+            if (!center) return;
             
-            if (bbox && bbox.length === 4) {
-                const lat = (bbox[1] + bbox[3]) / 2;
-                const lon = (bbox[0] + bbox[2]) / 2;
+            const lon = center[0], lat = center[1];
+            
+            // Zoom to park
+            map.flyTo({ center: [lon, lat], zoom: 9, duration: 2000 });
+            
+            // Open popup after fly completes
+            setTimeout(() => {
+                showPAPopup(props, { lng: lon, lat: lat });
                 
-                // Zoom to park
-                map.flyTo({ center: [lon, lat], zoom: 9, duration: 2000 });
-                
-                // Wait for map to settle, then open tooltip with research section
+                // After popup renders, expand research section and highlight
                 setTimeout(() => {
-                    // Simulate click on park to open tooltip
-                    const features = map.queryRenderedFeatures(map.project([lon, lat]), {
-                        layers: ['areas-fill']
-                    });
-                    
-                    if (features.length > 0) {
-                        const feature = features[0];
-                        handlePAClick(feature.properties, [lon, lat]);
-                        
-                        // After tooltip opens, expand research section
-                        setTimeout(() => {
-                            const researchSection = document.getElementById(`research-section-${parkId}`);
-                            if (researchSection && !researchSection.classList.contains('open')) {
-                                researchSection.querySelector('.pa-popup-section-header')?.click();
-                            }
-                        }, 300);
+                    const researchSection = document.getElementById(`research-section-${parkId}`);
+                    if (researchSection && !researchSection.classList.contains('open')) {
+                        researchSection.querySelector('.pa-popup-section-header')?.click();
                     }
-                }, 2100);
-            }
+                    if (pubTitle) {
+                        highlightPublicationEntry(parkId, pubTitle);
+                    }
+                }, 300);
+            }, 2100);
+        }
+        
+        function highlightPublicationEntry(parkId, pubTitle) {
+            // Wait for research data to load, then highlight and scroll to matching entry by title
+            const maxRetries = 15;
+            let attempt = 0;
+            const needle = pubTitle.toLowerCase().slice(0, 40);
+            const tryHighlight = () => {
+                attempt++;
+                const container = document.getElementById(`research-content-${parkId}`);
+                if (!container) { if (attempt < maxRetries) setTimeout(tryHighlight, 500); return; }
+                
+                // Find link whose text starts with the same title prefix
+                const links = container.querySelectorAll('a');
+                let matched = null;
+                links.forEach(link => {
+                    if (link.textContent.toLowerCase().startsWith(needle)) {
+                        matched = link;
+                    }
+                });
+                
+                if (!matched && attempt < maxRetries) { setTimeout(tryHighlight, 500); return; }
+                if (!matched) return;
+                
+                // Expand "+N more" if the matched entry is inside a hidden div
+                const hiddenParent = matched.closest('[id^="research-hidden-"]');
+                if (hiddenParent && hiddenParent.style.display === 'none') {
+                    hiddenParent.style.display = 'block';
+                    const moreBtn = container.querySelector('[id^="research-more-"]');
+                    if (moreBtn) moreBtn.style.display = 'none';
+                }
+                
+                // Highlight the entry
+                const entry = matched.closest('div[style*="padding"]');
+                if (entry) {
+                    entry.style.background = 'rgba(168,85,247,0.2)';
+                    entry.style.borderRadius = '4px';
+                    entry.style.transition = 'background 2s';
+                    entry.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    setTimeout(() => { entry.style.background = ''; }, 4000);
+                }
+            };
+            tryHighlight();
         }
         
         function handleUploadNotificationClick(index) {
@@ -5398,10 +5686,11 @@
                     return;
                 }
                 
-                // Handle publication click
+                // Handle publication click — navigate to park, open research, highlight entry
                 if (action === 'view_publication') {
                     const parkId = item.dataset.parkId;
-                    handlePublicationClick(parkId);
+                    const pubTitle = item.dataset.pubTitle || '';
+                    handlePublicationClick(parkId, pubTitle);
                     closeNotificationDropdown();
                     return;
                 }
@@ -5559,7 +5848,7 @@
             const downloadParam = params.get('notif_download');
             if (downloadParam) {
                 setTimeout(() => {
-                    handleMBTilesDownload(jobId);
+                    handleMBTilesDownload(downloadParam);
                 }, 1000);
                 return;
             }
@@ -5786,8 +6075,9 @@
         map.on('load', function() {
             // Small delay to let other things initialize
             initNotificationTypeFilters();
-            setTimeout(loadNotifications, 1000);
-            setTimeout(loadFireActiveParks, 1500);
+            // Delay notifications further to avoid competing with areas+grid on slow connections
+            setTimeout(loadNotifications, 3000);
+            // loadFireActiveParks is now integrated into loadNotifications
             
             // Periodically check for new notifications (every 30 seconds, paused when tab hidden)
             setInterval(() => { if (!document.hidden) checkForNewNotifications(); }, 30000);
@@ -5815,7 +6105,13 @@
         }
 
         
-        initDateRange();
+        // Set initial date range to match time slider defaults (Jan 2023 → today)
+        // The time slider (initTimeSlider on DOMContentLoaded) will take over later.
+        (function() {
+            const now = new Date();
+            dateFrom = '2023-01-01';
+            dateTo = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-01';
+        })();
 
         
         var searchTimeout = null;
@@ -7614,6 +7910,29 @@
             }
         }
         
+        function renderPubEntry(pub) {
+            const authors = pub.authors || [];
+            let firstAuthor = 'Unknown';
+            if (authors[0]) {
+                const authorsPart = authors[0].split(',')[0].trim();
+                const nameParts = authorsPart.split(' ');
+                firstAuthor = nameParts.length > 0 ? nameParts[nameParts.length - 1] : authorsPart;
+            }
+            const year = pub.year || '';
+            const title = pub.title || 'Untitled';
+            const shortTitle = title.length > 80 ? title.slice(0, 77) + '...' : title;
+            const url = pub.url || (pub.doi ? `https://doi.org/${pub.doi}` : null);
+            let h = `<div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 11px; line-height: 1.4;">`;
+            h += `<div style="color: #888;">${escapeHtml(firstAuthor)}${year ? ` (${year})` : ''}</div>`;
+            if (url) {
+                h += `<a href="${escapeHtml(url)}" target="_blank" style="color: #a855f7; text-decoration: none;" onclick="event.stopPropagation();">${escapeHtml(shortTitle)}</a>`;
+            } else {
+                h += `<span style="color: #ccc;">${escapeHtml(shortTitle)}</span>`;
+            }
+            h += '</div>';
+            return h;
+        }
+
         async function fetchPopupResearchData(paId, paName) {
             const el = document.getElementById(`research-content-${paId}`);
             if (!el) return;
@@ -7621,36 +7940,17 @@
                 const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/publications?pwd=${encodeURIComponent(getPwd())}`);
                 const pubs = await resp.json();
                 if (pubs && pubs.length > 0) {
+                    const INITIAL = 10;
                     let html = `<div style="font-size: 10px; color: #888; margin-bottom: 6px;">${pubs.length} publication${pubs.length > 1 ? 's' : ''}</div>`;
-                    html += '<div style="max-height: 200px; overflow-y: auto;">';
-                    pubs.slice(0, 10).forEach(pub => {
-                        const authors = pub.authors || [];
-                        // Extract first author's last name from full string like "Eric Djomo Nana, ..."
-                        let firstAuthor = 'Unknown';
-                        if (authors[0]) {
-                            // If comma exists, get first author before comma
-                            const authorsPart = authors[0].split(',')[0].trim();
-                            // Get last name (last word before comma)
-                            const nameParts = authorsPart.split(' ');
-                            firstAuthor = nameParts.length > 0 ? nameParts[nameParts.length - 1] : authorsPart;
-                        }
-                        const authorStr = firstAuthor;
-                        const year = pub.year || '';
-                        const title = pub.title || 'Untitled';
-                        const shortTitle = title.length > 80 ? title.slice(0, 77) + '...' : title;
-                        const url = pub.url || (pub.doi ? `https://doi.org/${pub.doi}` : null);
-                        
-                        html += `<div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 11px; line-height: 1.4;">`;
-                        html += `<div style="color: #888;">${escapeHtml(authorStr)}${year ? ` (${year})` : ''}</div>`;
-                        if (url) {
-                            html += `<a href="${escapeHtml(url)}" target="_blank" style="color: #a855f7; text-decoration: none;" onclick="event.stopPropagation();">${escapeHtml(shortTitle)}</a>`;
-                        } else {
-                            html += `<span style="color: #ccc;">${escapeHtml(shortTitle)}</span>`;
-                        }
-                        html += '</div>';
-                    });
-                    if (pubs.length > 10) {
-                        html += `<div style="padding: 6px 0; font-size: 10px; color: #666;">+ ${pubs.length - 10} more</div>`;
+                    html += `<div style="max-height: 300px; overflow-y: auto;" id="research-list-${paId}">`;
+                    pubs.slice(0, INITIAL).forEach(pub => { html += renderPubEntry(pub); });
+                    if (pubs.length > INITIAL) {
+                        const moreId = `research-more-${paId}`;
+                        const hiddenId = `research-hidden-${paId}`;
+                        let hiddenHtml = '';
+                        pubs.slice(INITIAL).forEach(pub => { hiddenHtml += renderPubEntry(pub); });
+                        html += `<div id="${hiddenId}" style="display:none;">${hiddenHtml}</div>`;
+                        html += `<div class="section-more-btn" id="${moreId}" onclick="event.stopPropagation();document.getElementById('${hiddenId}').style.display='block';this.style.display='none';" style="padding: 6px 0; font-size: 10px; color: #a855f7; cursor: pointer;">+ ${pubs.length - INITIAL} more publications</div>`;
                     }
                     html += '</div>';
                     el.innerHTML = html;
@@ -7701,7 +8001,7 @@
                 
                 // FAOLEX documents (new data source)
                 try {
-                    const faolexResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/legal?pwd=${window.accessPwd || ''}`);
+                    const faolexResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/legal?pwd=${window.getPwd() || ''}`);
                     if (faolexResp.ok) {
                         const faolexData = await faolexResp.json();
                         if (faolexData.documents && faolexData.documents.length > 0) {
@@ -8128,6 +8428,11 @@
         function setupPAClickHandler() {
             // Helper to handle PA feature interaction at a point
             function handlePAInteraction(point, lngLat, originalEvent) {
+                // Skip if a grid pixel was just clicked (at zoom >=7 pixels win)
+                if (window._gridPixelClicked) {
+                    return false;
+                }
+
                 // Skip if in bbox draw mode
                 if (document.getElementById('bbox-draw-overlay')?.classList.contains('active')) {
                     return false;
@@ -8466,14 +8771,21 @@
                 map.setPaintProperty('grid-cells', 'circle-stroke-width', 1.5);
             }
             
-            // Reset glow layer
+            // Reset glow layer to recency-aware opacity
             if (map.getLayer('grid-glow')) {
-                map.setPaintProperty('grid-glow', 'circle-opacity', [
-                    'interpolate', ['linear'],
-                    ['coalesce', ['get', 'intensity'], 0.3],
-                    0, 0.15,
-                    0.5, 0.25,
-                    1, 0.4
+                map.setPaintProperty('grid-glow', 'circle-opacity', ['*',
+                    ['interpolate', ['linear'],
+                        ['coalesce', ['get', 'intensity'], 0],
+                        0, 0.1,
+                        0.5, 0.25,
+                        1.0, 0.4
+                    ],
+                    ['interpolate', ['linear'],
+                        ['coalesce', ['get', 'recency'], 1],
+                        0, 0.25,
+                        0.5, 0.55,
+                        1.0, 1.0
+                    ]
                 ]);
             }
             
@@ -8514,8 +8826,8 @@
     <script>
     (function() {
         // Time slider configuration
-        const SLIDER_START_DATE = new Date('2020-01-01');
-        const SLIDER_END_DATE = new Date(); // Today
+        const SLIDER_START_DATE = new Date(2020, 0, 1); // Jan 1 2020 local
+        const SLIDER_END_DATE = new Date(); // Today local
         const TOTAL_MONTHS = monthsBetween(SLIDER_START_DATE, SLIDER_END_DATE);
         
         // Default: Jan 2023 to today (36 months from Jan 2020 = Jan 2023)
@@ -8538,7 +8850,10 @@
         }
         
         function formatDateISO(date) {
-            return date.toISOString().split('T')[0];
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + d;
         }
         
         function valueToDate(value) {
@@ -8549,9 +8864,11 @@
             const startDate = valueToDate(sliderStartValue);
             const endDate = valueToDate(sliderEndValue);
             
-            // Update date label
-            document.getElementById('time-slider-date').textContent = 
-                formatMonthYear(startDate) + ' - ' + formatMonthYear(endDate);
+            // Update date label (clickable start/end spans)
+            const startEl = document.getElementById('time-slider-date-start');
+            const endEl = document.getElementById('time-slider-date-end');
+            if (startEl && !startEl._editing && !startEl._precise) startEl.textContent = formatMonthYear(startDate);
+            if (endEl && !endEl._editing && !endEl._precise) endEl.textContent = formatMonthYear(endDate);
             
             // Update handle positions
             const track = document.getElementById('time-slider-track');
@@ -8569,9 +8886,21 @@
             const startDate = valueToDate(sliderStartValue);
             const endDate = valueToDate(sliderEndValue);
             
+            // Clear precise mode when slider is dragged
+            const startEl = document.getElementById('time-slider-date-start');
+            const endEl = document.getElementById('time-slider-date-end');
+            if (startEl) { startEl._precise = false; startEl.textContent = formatMonthYear(startDate); }
+            if (endEl) { endEl._precise = false; endEl.textContent = formatMonthYear(endDate); }
+            
+            // Clear any active date preset tag
+            clearPresetTag();
+            
             // Update global date variables (used by existing code)
             dateFrom = formatDateISO(startDate);
-            dateTo = formatDateISO(endDate);
+            // End date: use last day of the month (or today if current/future month)
+            const endLast = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0); // last day of month
+            const today = new Date(); today.setHours(0,0,0,0);
+            dateTo = formatDateISO(endLast > today ? today : endLast);
             currentPreset = 'custom';
             
             // Update filter panel display
@@ -8697,36 +9026,344 @@
             });
         }
         
+        // Date preset tags — compute date ranges dynamically
+        var activePresetTag = null;
+        window._activePresetTag = function() { return activePresetTag; };
+        window.applyDatePreset = function(preset) {
+            // Close any active date editor first
+            if (_activeEditor) {
+                _activeEditor.finish(null);
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayISO = formatDateISO(today);
+            const minISO = formatDateISO(SLIDER_START_DATE);
+            let fromISO, toISO;
+
+            switch (preset) {
+                case 'td': // Today since midnight
+                    fromISO = todayISO;
+                    toISO = todayISO;
+                    break;
+                case '3d': case '7d': case '14d': case '30d': case '90d': {
+                    var n = parseInt(preset);
+                    var dn = new Date(today);
+                    dn.setDate(dn.getDate() - (n - 1));
+                    fromISO = formatDateISO(dn < SLIDER_START_DATE ? SLIDER_START_DATE : dn);
+                    toISO = todayISO;
+                    break;
+                }
+                case 'cmo': // Current month
+                    fromISO = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-01';
+                    if (fromISO < minISO) fromISO = minISO;
+                    toISO = todayISO;
+                    break;
+                default: return;
+            }
+
+            // Toggle off if same preset clicked again
+            if (activePresetTag === preset) {
+                activePresetTag = null;
+                // Reset to full range
+                sliderStartValue = 36; // Jan 2023 default
+                sliderEndValue = TOTAL_MONTHS;
+                updateSliderDisplay();
+                updateDateFilter();
+                // updateDateFilter calls clearPresetTag which handles hiding
+                hideDateTags();
+                updateShareURLPreset(null);
+                return;
+            }
+
+            activePresetTag = preset;
+            applyPreciseDateFilter(fromISO, toISO);
+            updatePresetTagUI(preset);
+            updateShareURLPreset(preset);
+        };
+
+        // Pending animation timers
+        var _tagTimers = [];
+        function cancelTagTimers() {
+            _tagTimers.forEach(clearTimeout);
+            _tagTimers = [];
+        }
+
+        // Show all tags with staggered entrance animation
+        function showDateTags() {
+            cancelTagTimers();
+            var tags = document.querySelectorAll('.time-slider-date-tag');
+            tags.forEach(function(tag, i) {
+                tag.classList.remove('dimmed');
+                _tagTimers.push(setTimeout(function() { tag.classList.add('visible'); }, i * 50));
+            });
+        }
+
+        // Hide all tags (reverse stagger)
+        function hideDateTags() {
+            cancelTagTimers();
+            var tags = Array.from(document.querySelectorAll('.time-slider-date-tag'));
+            tags.slice().reverse().forEach(function(tag, i) {
+                _tagTimers.push(setTimeout(function() {
+                    tag.classList.remove('visible', 'active', 'dimmed');
+                }, i * 35));
+            });
+        }
+
+        // Show only the active preset tag, dim/hide the rest
+        function showOnlyActiveTag(preset) {
+            cancelTagTimers();
+            document.querySelectorAll('.time-slider-date-tag').forEach(function(tag) {
+                if (tag.dataset.preset === preset) {
+                    tag.classList.add('visible', 'active');
+                    tag.classList.remove('dimmed');
+                } else {
+                    tag.classList.add('dimmed');
+                    tag.classList.remove('active');
+                }
+            });
+        }
+
+        function updatePresetTagUI(preset) {
+            if (preset) {
+                showOnlyActiveTag(preset);
+            } else {
+                // If an editor is still active, re-show all tags
+                if (_activeEditor) {
+                    document.querySelectorAll('.time-slider-date-tag').forEach(function(tag) {
+                        tag.classList.remove('active', 'dimmed');
+                        tag.classList.add('visible');
+                    });
+                } else {
+                    hideDateTags();
+                }
+            }
+        }
+
+        function updateShareURLPreset(preset) {
+            try {
+                const url = new URL(window.location);
+                if (preset) {
+                    url.searchParams.set('date_preset', preset);
+                } else {
+                    url.searchParams.delete('date_preset');
+                }
+                window.history.replaceState({}, '', url);
+            } catch (e) {}
+        }
+
+        // Clear preset tag when user manually drags slider or edits date
+        function clearPresetTag() {
+            if (activePresetTag) {
+                activePresetTag = null;
+                updateShareURLPreset(null);
+                // Don't hide tags if editor is open — just remove active styling
+                if (_activeEditor) {
+                    document.querySelectorAll('.time-slider-date-tag').forEach(function(tag) {
+                        tag.classList.remove('active', 'dimmed');
+                        tag.classList.add('visible');
+                    });
+                } else {
+                    hideDateTags();
+                }
+            }
+        }
+
         // Initialize slider
         function initTimeSlider() {
             initTicks();
             initSliderDrag();
-            updateSliderDisplay();
-            // Set initial date filter to match slider
-            updateDateFilter();
+            
+            // Check URL params for from/to or date_preset before first grid load
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlPreset = urlParams.get('date_preset');
+            const urlFrom = urlParams.get('from');
+            const urlTo = urlParams.get('to');
+            if (urlPreset && ['td', '3d', '7d', '14d', '30d', '90d', 'cmo'].indexOf(urlPreset) !== -1) {
+                // Apply date preset from share link
+                applyDatePreset(urlPreset);
+            } else if (urlFrom && urlTo) {
+                // Apply precise dates from URL — skip default month-rounded load
+                applyPreciseDateFilter(urlFrom, urlTo);
+            } else if (urlFrom) {
+                applyPreciseDateFilter(urlFrom, formatDateISO(SLIDER_END_DATE));
+            } else if (urlTo) {
+                applyPreciseDateFilter(formatDateISO(valueToDate(sliderStartValue)), urlTo);
+            } else {
+                // Default to 90d for good visual differentiation
+                applyDatePreset('90d');
+            }
         }
         
-        // Expose function to set time slider range programmatically (for upload highlight)
+        // Expose function to set time slider range programmatically (for upload highlight & URL restore)
         window.setTimeSliderRange = function(startDate, endDate) {
-            // Convert dates to slider values (months from SLIDER_START_DATE)
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            
-            // Clamp to valid range
-            let newStart = monthsBetween(SLIDER_START_DATE, start);
-            let newEnd = monthsBetween(SLIDER_START_DATE, end);
-            
-            // Ensure values are within bounds
-            newStart = Math.max(0, Math.min(newStart, TOTAL_MONTHS - 1));
-            newEnd = Math.max(newStart + 1, Math.min(newEnd + 1, TOTAL_MONTHS)); // +1 to include end month
-            
-            sliderStartValue = newStart;
-            sliderEndValue = newEnd;
-            
-            updateSliderDisplay();
-            updateDateFilter();
+            const startISO = typeof startDate === 'string' ? startDate : formatDateISO(new Date(startDate));
+            const endISO = typeof endDate === 'string' ? endDate : formatDateISO(new Date(endDate));
+            applyPreciseDateFilter(startISO, endISO);
         };
         
+        // Apply precise date filter — single codepath for editSliderDate, setTimeSliderRange, and URL restore.
+        // Moves slider handles, updates labels, reloads all data (same as dragging the slider).
+        function applyPreciseDateFilter(newFrom, newTo) {
+            // Validate
+            if (!newFrom || !newTo) return;
+            if (newFrom > newTo) { var tmp = newFrom; newFrom = newTo; newTo = tmp; }
+
+            // Clamp to valid range: 2020-01-01 to today
+            const minISO = formatDateISO(SLIDER_START_DATE);
+            const maxISO = formatDateISO(SLIDER_END_DATE);
+            if (newFrom < minISO) newFrom = minISO;
+            if (newTo > maxISO) newTo = maxISO;
+            if (newFrom > newTo) newFrom = newTo;
+
+            // Set global filter dates
+            dateFrom = newFrom;
+            dateTo = newTo;
+            currentPreset = 'custom';
+
+            // Move slider handles to nearest months
+            const startD = new Date(newFrom + 'T00:00:00');
+            const endD = new Date(newTo + 'T00:00:00');
+            sliderStartValue = Math.max(0, Math.min(monthsBetween(SLIDER_START_DATE, startD), TOTAL_MONTHS - 1));
+            sliderEndValue = Math.max(sliderStartValue + 1, Math.min(monthsBetween(SLIDER_START_DATE, endD) + 1, TOTAL_MONTHS));
+
+            // Update slider bar + handle positions
+            updateSliderDisplay();
+
+            // Show precise date labels
+            const startEl = document.getElementById('time-slider-date-start');
+            const endEl = document.getElementById('time-slider-date-end');
+            if (startEl) { startEl.textContent = formatPreciseDate(startD); startEl._precise = true; }
+            if (endEl)   { endEl.textContent = formatPreciseDate(endD);     endEl._precise = true; }
+
+            // Filter panel display
+            if (typeof updateTimeFilterDisplay === 'function') updateTimeFilterDisplay(dateFrom, dateTo);
+
+            // Reload everything — identical to what dragging the slider does
+            reloadGridData();
+            if (typeof refreshPopupData === 'function') refreshPopupData();
+            if (typeof refreshPinnedLayers === 'function') refreshPinnedLayers();
+        }
+
+        // Inline date editor for precise filtering (expert mode)
+        // Track active editor so clicking the other date properly cancels the first
+        var _activeEditor = null;
+        window.editSliderDate = function(which) {
+            const spanId = 'time-slider-date-' + which;
+            const span = document.getElementById(spanId);
+            if (!span) return;
+
+            // If this span is already being edited, ignore
+            if (span._editing) return;
+
+            // If the OTHER date is being edited, close it first (commit if changed)
+            if (_activeEditor && _activeEditor.which !== which) {
+                _activeEditor.finish(_activeEditor.input.value !== _activeEditor.origISO ? _activeEditor.input.value : null);
+            }
+
+            span._editing = true;
+
+            // Show all date preset tags when editing starts
+            showDateTags();
+            // If a preset was active, keep it highlighted among the expanded tags
+            if (activePresetTag) {
+                setTimeout(function() {
+                    var el = document.querySelector('[data-preset="' + activePresetTag + '"]');
+                    if (el) el.classList.add('active');
+                }, 10);
+            }
+
+            // Current value — use actual filter date, not month-rounded slider
+            const isoVal = which === 'start'
+                ? (dateFrom || formatDateISO(valueToDate(sliderStartValue)))
+                : (dateTo || formatDateISO(valueToDate(sliderEndValue)));
+
+            // Enforce min 2020-01-01, max today
+            const absMin = formatDateISO(SLIDER_START_DATE);
+            const absMax = formatDateISO(SLIDER_END_DATE);
+            const inputMin = which === 'start' ? absMin : (dateFrom || absMin);
+            const inputMax = which === 'end'   ? absMax : (dateTo   || absMax);
+
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.className = 'time-slider-date-input';
+            input.value = isoVal;
+            input.min = inputMin;
+            input.max = inputMax;
+
+            const origText = span.textContent;
+            span.textContent = '';
+            span.appendChild(input);
+
+            let done = false;
+            function finish(val) {
+                if (done) return;
+                done = true;
+                var wasLastEditor = (_activeEditor && _activeEditor.which === which);
+                if (wasLastEditor) _activeEditor = null;
+                // Remove the input
+                if (input.parentNode === span) span.removeChild(input);
+
+                if (val) {
+                    // Clamp to valid range
+                    if (val < absMin) val = absMin;
+                    if (val > absMax) val = absMax;
+                    const d = new Date(val + 'T00:00:00');
+                    if (!isNaN(d.getTime())) {
+                        const newFrom = which === 'start' ? val : (dateFrom || formatDateISO(valueToDate(sliderStartValue)));
+                        const newTo   = which === 'end'   ? val : (dateTo   || formatDateISO(valueToDate(sliderEndValue)));
+                        span._editing = false;
+                        // Manual date edit clears any preset
+                        if (activePresetTag) { activePresetTag = null; updateShareURLPreset(null); }
+                        applyPreciseDateFilter(newFrom, newTo);
+                        // Collapse tags when done
+                        if (!_activeEditor) hideDateTags();
+                        return;
+                    }
+                }
+                // Cancel — restore original text
+                span.textContent = origText;
+                span._editing = false;
+                // Collapse: show only active preset, or hide all
+                if (!_activeEditor) {
+                    if (activePresetTag) showOnlyActiveTag(activePresetTag);
+                    else hideDateTags();
+                }
+            }
+
+            // Register as active editor so the other date can cancel us
+            _activeEditor = { which: which, input: input, finish: finish, origISO: isoVal };
+
+            input.addEventListener('change', function() { finish(input.value); });
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); finish(input.value); }
+                if (e.key === 'Escape') { e.preventDefault(); finish(null); }
+            });
+            // On blur: commit the current value (user clicked away or native picker closed)
+            input.addEventListener('blur', function() {
+                // Short delay so change/click events on the other date fire first
+                setTimeout(function() {
+                    if (!done) {
+                        // If value changed from original, commit it; otherwise cancel
+                        if (input.value && input.value !== isoVal) {
+                            finish(input.value);
+                        } else {
+                            finish(null);
+                        }
+                    }
+                }, 120);
+            });
+
+            // Focus after a tick to avoid the click event propagating weirdly
+            setTimeout(function() { input.focus(); }, 10);
+        };
+
+        // Format date as "15 Jan 2023" for precise display
+        function formatPreciseDate(date) {
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+        }
+
         // Wait for DOM and map to be ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initTimeSlider);
@@ -12174,7 +12811,7 @@ ${starredItems.narratives.map(n => {
             const featureType = type === 'fire' ? 'fire_trajectory' : type;
             
             // First try to fetch the specific feature by ID (efficient)
-            let response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&feature_id=${encodeURIComponent(featureId)}&pwd=${window.accessPwd || ''}`);
+            let response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&feature_id=${encodeURIComponent(featureId)}&pwd=${window.getPwd() || ''}`);
             let allFeatures = response.ok ? await response.json() : { features: [] };
             
             // Find the specific feature(s)
@@ -12183,7 +12820,7 @@ ${starredItems.narratives.map(n => {
             // If found by direct ID query, we're done
             // If not found, fall back to searching in all features
             if (features.length === 0) {
-                response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&limit=5000&pwd=${window.accessPwd || ''}`);
+                response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&limit=5000&pwd=${window.getPwd() || ''}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 allFeatures = await response.json();
                 
@@ -12732,7 +13369,7 @@ ${starredItems.narratives.map(n => {
             
             // Infrastructure comes from learned features endpoint
             if (type === 'infrastructure') {
-                const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&pwd=${window.accessPwd || ''}`);
+                const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&pwd=${window.getPwd() || ''}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 const learned = await response.json();
                 
@@ -12758,7 +13395,7 @@ ${starredItems.narratives.map(n => {
                 });
                 geojson = { type: 'FeatureCollection', features };
             } else {
-                const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.accessPwd || ''}`);
+                const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.getPwd() || ''}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 geojson = await response.json();
             }
@@ -13332,7 +13969,7 @@ ${starredItems.narratives.map(n => {
                 }
                 
                 // Fetch updated data
-                const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.accessPwd || ''}`);
+                const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.getPwd() || ''}`);
                 if (!response.ok) continue;
                 
                 const geojson = await response.json();
@@ -13808,12 +14445,40 @@ ${starredItems.narratives.map(n => {
         else if (tabName === 'pending') loadPendingApprovals();
         else if (tabName === 'learning') loadLearningResults();
         else if (tabName === 'features') loadLearnedFeatures();
+        else if (tabName === 'autofetch') {
+            loadAutofetchSources(); initAfSourceViewer();
+            // Default backfill date to 30 days ago
+            const bfEl = document.getElementById('af-backfill');
+            if (bfEl && !bfEl.value) {
+                const d = new Date(); d.setDate(d.getDate() - 30);
+                bfEl.value = d.toISOString().split('T')[0];
+            }
+        }
     }
     
+    function safeDateStr(ts) {
+        if (!ts) return '-';
+        try {
+            // Truncate nanosecond timestamps to ms (Safari compat)
+            const s = ts.replace(/(\.[0-9]{3})[0-9]*Z$/, '$1Z');
+            return new Date(s).toLocaleDateString();
+        } catch(e) { return ts.slice(0, 10); }
+    }
+
+    function buildExcludedReasons(log) {
+        // excluded_km = auto_generated + static segments
+        // (road_km and boundary_km are tracked separately;
+        //  aircraft logistics and vehicle transit are now included in effort)
+        const parts = [];
+        const excl = log.excluded_km || 0;
+        if (excl >= 0.05) parts.push(`other ${excl.toFixed(1)}km`);
+        return parts.join(', ');
+    }
+
     async function loadUploadLogs() {
         const tbody = document.getElementById('uploads-table-body');
         if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Loading...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;">Loading...</td></tr>';
         
         try {
             const res = await fetch('/api/admin/gpx-logs?limit=50');
@@ -13822,59 +14487,81 @@ ${starredItems.narratives.map(n => {
             if (data.stats) {
                 const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
                 el('stat-total-uploads', data.stats.total_uploads || 0);
-                el('stat-patrol-km', (data.stats.total_patrol_km || 0).toFixed(1));
-                el('stat-boundary-km', (data.stats.total_boundary_km || 0).toFixed(1));
-                el('stat-excluded-km', (data.stats.total_excluded_km || 0).toFixed(1));
+                el('stat-foot-km', (data.stats.total_foot_km || 0).toFixed(1));
+                el('stat-vehicle-km', (data.stats.total_vehicle_km || 0).toFixed(1));
+                el('stat-boat-km', (data.stats.total_boat_km || 0).toFixed(1));
+                el('stat-fixed-wing-km', (data.stats.total_fixed_wing_km || 0).toFixed(1));
+                el('stat-rotor-wing-km', (data.stats.total_rotor_wing_km || 0).toFixed(1));
             }
             
             if (!data.logs || data.logs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#888;">No upload logs found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:#888;">No upload logs found</td></tr>';
                 return;
             }
             
+            const km = v => { const n = v || 0; return n < 0.05 ? '-' : n.toFixed(1); };
+            const kmC = (v, c) => { const s = km(v); return s === '-' ? '<span style="color:#444">-</span>' : `<span style="color:${c}">${s}</span>`; };
             tbody.innerHTML = data.logs.map(log => {
-                const uploadTime = log.upload_time ? new Date(log.upload_time).toLocaleDateString() : '-';
                 const parkDisplay = log.protected_area_name || log.park_name || '-';
-                const patrolKm = (log.patrol_km || 0).toFixed(1);
-                const boundaryKm = (log.boundary_km || 0).toFixed(1);
-                const excludedKm = (log.excluded_km || 0).toFixed(1);
+                const exclReasons = buildExcludedReasons(log);
+                const exclHtml = (log.excluded_km || 0) < 0.05
+                    ? '<span style="color:#444">-</span>'
+                    : `<span style="color:#ef4444">${km(log.excluded_km)}</span>${exclReasons ? `<span style="color:#888;font-size:10px;"> (${exclReasons})</span>` : ''}`;
                 return `
                 <tr data-id="${log.id}" data-type="upload" onclick="handleAdminRowClick(event, 'upload', ${log.id})">
                     <td title="${escapeHtml(log.filename || '')}">${escapeHtml((log.filename || 'unnamed').slice(0, 20))}${(log.filename || '').length > 20 ? '...' : ''}</td>
                     <td>${escapeHtml(parkDisplay)}</td>
-                    <td class="km-patrol">${patrolKm}</td>
-                    <td class="km-boundary">${boundaryKm}</td>
-                    <td class="km-excluded">${excludedKm}</td>
-                    <td>${uploadTime}</td>
+                    <td>${kmC(log.foot_km, '#22c55e')}</td>
+                    <td>${kmC(log.vehicle_km, '#3b82f6')}</td>
+                    <td>${kmC(log.boat_km, '#60a5fa')}</td>
+                    <td>${kmC(log.fixed_wing_km, '#a78bfa')}</td>
+                    <td>${kmC(log.rotor_wing_km, '#c084fc')}</td>
+                    <td>${kmC(log.boundary_km, '#f59e0b')}</td>
+                    <td>${exclHtml}</td>
+                    <td>${safeDateStr(log.upload_time)}</td>
                 </tr>
             `;
             }).join('');
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#f87171;">${escapeHtml(err.message)}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#f87171;">${escapeHtml(err.message)}</td></tr>`;
         }
     }
     
     async function loadPendingApprovals() {
         const tbody = document.getElementById('pending-table-body');
         if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Loading...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Loading...</td></tr>';
         
         try {
             const res = await fetch('/api/admin/pending-approvals');
             const data = await res.json();
             
             if (!data.features || data.features.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#888;">No pending features</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#888;">No pending features</td></tr>';
                 return;
             }
             
+            // Update stats
+            const stats = data.stats || {};
+            const el = id => document.getElementById(id);
+            if (el('stat-pending-roads')) el('stat-pending-roads').textContent = stats.pending_roads || 0;
+            if (el('stat-pending-places')) el('stat-pending-places').textContent = stats.pending_places || 0;
+            if (el('stat-pending-airstrips')) el('stat-pending-airstrips').textContent = stats.pending_airstrips || 0;
+            if (el('stat-high-confidence')) el('stat-high-confidence').textContent = stats.high_confidence || 0;
+            
             tbody.innerHTML = data.features.map(f => {
                 const confidence = f.confidence_pct || f.confidence || 0;
+                const hasCoords = f.lat != null && f.lon != null;
+                const coordStr = hasCoords ? `${f.lat.toFixed(4)}, ${f.lon.toFixed(4)}` : '-';
+                const flyBtn = hasCoords
+                    ? `<a href="#" onclick="event.stopPropagation();event.preventDefault();flyToApproval(${f.lat},${f.lon},'${f.type}')" style="color:#3b82f6;font-size:11px;text-decoration:none;white-space:nowrap;" title="Fly to location on map"><i class='icon-map-pin icon-color-info' style='font-size:10px;'></i> ${coordStr}</a>`
+                    : `<span style="color:#555;font-size:11px;">${coordStr}</span>`;
                 return `
                 <tr data-id="${f.id}" data-type="${f.type}" onclick="handleAdminRowClick(event, '${f.type}', ${f.id})">
                     <td>${escapeHtml(f.park_id || f.park_name || 'Unknown')}</td>
                     <td><span class="feature-type-badge type-${f.type}">${f.type}</span></td>
                     <td style="font-size:11px;">${escapeHtml(f.details || f.name || 'Unnamed')}</td>
+                    <td>${flyBtn}</td>
                     <td>
                         <div class="confidence-bar">
                             <div class="confidence-fill" style="width:${confidence}%;background:${getConfidenceColor(confidence)}"></div>
@@ -13889,7 +14576,17 @@ ${starredItems.narratives.map(n => {
                 </tr>`;
             }).join('');
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#f87171;">${escapeHtml(err.message)}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#f87171;">${escapeHtml(err.message)}</td></tr>`;
+        }
+    }
+    
+    function flyToApproval(lat, lon, type) {
+        // Close admin panel and fly to location
+        if (window.viewer) {
+            window.viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(lon, lat, type === 'road' ? 30000 : 8000),
+                duration: 1.5
+            });
         }
     }
     
@@ -14074,6 +14771,274 @@ ${starredItems.narratives.map(n => {
         const modal = document.getElementById('feature-modal');
         if (modal) modal.classList.remove('active');
     }
+
+    // ── Automated Fetch (EarthRanger/PAMDAS GPS sync) ──────────────────────
+
+    async function loadAutofetchSources() {
+        const tbody = document.getElementById('autofetch-table-body');
+        if (!tbody) return;
+        try {
+            const res = await fetch('/api/admin/autofetch?pwd=' + getPwd());
+            const data = await res.json();
+            const sources = data.sources || [];
+            if (sources.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#666;padding:24px;">No sources configured. Add one above to start fetching GPS tracks automatically.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = sources.map(s => {
+                const statusColor = !s.enabled ? '#666' : s.last_status === 'ok' ? '#22c55e' : s.last_status && s.last_status.startsWith('error') ? '#ef4444' : '#888';
+                const statusText = !s.enabled ? 'Disabled' : s.last_status || 'Pending';
+                const lastRun = s.last_run_at ? safeDateStr(s.last_run_at) : 'Never';
+                const actions = s.enabled
+                    ? `<button onclick="autofetchDisable(${s.id})" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;" title="Disable (clears password)">Disable</button>`
+                      + `<button onclick="autofetchRunNow(${s.id})" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;" title="Fetch now">Run</button>`
+                    : `<button onclick="autofetchEnable(${s.id})" style="background:rgba(59,130,246,0.15);color:#3b82f6;border:1px solid rgba(59,130,246,0.3);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;" title="Re-enable (requires password)">Enable</button>`;
+                const deleteBtn = `<button onclick="autofetchDelete(${s.id})" style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.2);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;" title="Delete source and credentials">&times;</button>`;
+                // Compute next run display
+                let nextRunText = '';
+                if (s.enabled && s.next_run_at) {
+                    if (s.next_run_at === 'soon') {
+                        nextRunText = '<span style="color:#f59e0b;">soon</span>';
+                    } else {
+                        const nextDate = new Date(s.next_run_at + 'Z');
+                        const nowMs = Date.now();
+                        const diffMs = nextDate.getTime() - nowMs;
+                        if (diffMs <= 0) {
+                            nextRunText = '<span style="color:#f59e0b;">due now</span>';
+                        } else {
+                            const diffH = Math.floor(diffMs / 3600000);
+                            const diffM = Math.floor((diffMs % 3600000) / 60000);
+                            nextRunText = diffH > 0 
+                                ? `<span style="color:#3b82f6;">in ${diffH}h ${diffM}m</span>`
+                                : `<span style="color:#3b82f6;">in ${diffM}m</span>`;
+                        }
+                    }
+                }
+                // Parks list
+                const parksList = (s.park_names || '').split(',').filter(Boolean).map(p => p.trim());
+                const parksHtml = parksList.length > 0 
+                    ? parksList.map(p => `<span style="display:inline-block;background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.2);border-radius:4px;padding:1px 6px;margin:1px 2px;font-size:10px;white-space:nowrap;">${escapeHtml(p)}</span>`).join('')
+                    : '<span style="color:#666;">—</span>';
+                return `<tr>
+                    <td style="max-width:180px;">${parksHtml}</td>
+                    <td style="color:#888;font-size:11px;">${escapeHtml(s.service_url)}<br><span style="color:#666;">${escapeHtml(s.api_type)} · every ${s.interval_h}h</span></td>
+                    <td style="color:#888;font-size:11px;">${lastRun}</td>
+                    <td style="font-size:11px;">${nextRunText || '<span style="color:#666;">—</span>'}</td>
+                    <td style="color:#22c55e;text-align:right;">${s.last_points > 0 ? s.last_points.toLocaleString() : '—'}</td>
+                    <td><span style="color:${statusColor};font-size:11px;">${escapeHtml(statusText)}</span></td>
+                    <td style="text-align:right;white-space:nowrap;">${actions}${deleteBtn}</td>
+                </tr>`;
+            }).join('');
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="7" style="color:#ef4444;text-align:center;">${err.message}</td></tr>`;
+        }
+    }
+
+    async function addAutofetchSource() {
+        const apiType = document.getElementById('af-api-type').value;
+        const url = document.getElementById('af-url').value.trim();
+        const user = document.getElementById('af-user').value.trim();
+        const pass = document.getElementById('af-pass').value;
+        const interval = parseInt(document.getElementById('af-interval').value) || 24;
+        const backfill = document.getElementById('af-backfill').value;
+        const status = document.getElementById('af-add-status');
+
+        if (!url || !user || !pass) {
+            status.style.display = 'block';
+            status.style.color = '#ef4444';
+            status.textContent = 'All fields are required.';
+            return;
+        }
+
+        status.style.display = 'block';
+        status.style.color = '#888';
+        status.textContent = 'Connecting and validating credentials...';
+
+        try {
+            const res = await fetch('/api/admin/autofetch/add?pwd=' + getPwd(), {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({api_type: apiType, service_url: url, username: user, password: pass, interval_h: interval, backfill_since: backfill})
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed');
+
+            status.style.color = '#22c55e';
+            status.textContent = `Connected! Parks: ${data.park_names}`;
+            // Clear form
+            document.getElementById('af-url').value = '';
+            document.getElementById('af-user').value = '';
+            document.getElementById('af-pass').value = '';
+            loadAutofetchSources();
+            setTimeout(() => { status.style.display = 'none'; }, 5000);
+        } catch (err) {
+            status.style.color = '#ef4444';
+            status.textContent = err.message;
+        }
+    }
+
+    async function autofetchDisable(id) {
+        if (!confirm('Disable this source? The password will be cleared.')) return;
+        try {
+            const res = await fetch(`/api/admin/autofetch/disable?pwd=${getPwd()}&id=${id}`, {method: 'POST'});
+            if (!res.ok) throw new Error((await res.json()).error);
+            showToast('Source disabled', 'info');
+            loadAutofetchSources();
+        } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    async function autofetchEnable(id) {
+        const pw = prompt('Enter password to re-enable this source:');
+        if (!pw) return;
+        try {
+            const res = await fetch(`/api/admin/autofetch/enable?pwd=${getPwd()}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id, password: pw})
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            showToast('Source re-enabled', 'success');
+            loadAutofetchSources();
+        } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    async function autofetchDelete(id) {
+        if (!confirm('Delete this source? All credentials will be permanently removed.')) return;
+        try {
+            const res = await fetch(`/api/admin/autofetch/delete?pwd=${getPwd()}&id=${id}`, {method: 'POST'});
+            if (!res.ok) throw new Error((await res.json()).error);
+            showToast('Source deleted', 'info');
+            loadAutofetchSources();
+        } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    async function autofetchRunNow(id) {
+        try {
+            const res = await fetch(`/api/admin/autofetch/run?pwd=${getPwd()}&id=${id}`, {method: 'POST'});
+            if (!res.ok) throw new Error((await res.json()).error);
+            showToast('Fetch started in background', 'success');
+            // Refresh after a short delay to show updated status
+            setTimeout(loadAutofetchSources, 3000);
+        } catch (err) { showToast(err.message, 'error'); }
+    }
+    
+    // Lazy-load fetch script source code on first expand
+    let _afSourceLoaded = false;
+    function initAfSourceViewer() {
+        if (_afSourceLoaded) return;
+        const details = document.getElementById('af-source-details');
+        if (!details || details.dataset.listening) return;
+        details.dataset.listening = '1';
+        details.addEventListener('toggle', async () => {
+            if (!details.open || _afSourceLoaded) return;
+            _afSourceLoaded = true;
+            try {
+                const res = await fetch('/api/admin/autofetch/script?pwd=' + getPwd());
+                if (!res.ok) throw new Error('Failed to load script');
+                const text = await res.text();
+                const codeEl = document.getElementById('af-source-text');
+                if (codeEl) codeEl.textContent = text;
+            } catch (err) {
+                const codeEl = document.getElementById('af-source-text');
+                if (codeEl) codeEl.textContent = 'Error loading script: ' + err.message;
+            }
+        });
+    }
+    
+    async function showUploadDetail(id) {
+        // Toggle inline detail row below the clicked upload row
+        const existingDetail = document.getElementById(`upload-detail-${id}`);
+        if (existingDetail) {
+            existingDetail.remove();
+            return;
+        }
+        
+        // Remove any other open detail rows
+        document.querySelectorAll('.upload-detail-row').forEach(r => r.remove());
+        
+        const row = document.querySelector(`tr[data-id="${id}"][data-type="upload"]`);
+        if (!row) return;
+        
+        // Insert loading row
+        const detailRow = document.createElement('tr');
+        detailRow.id = `upload-detail-${id}`;
+        detailRow.className = 'upload-detail-row';
+        detailRow.innerHTML = `<td colspan="10" style="padding:12px 16px;background:#111;border-left:3px solid #3b82f6;"><div style="text-align:center;color:#888;">Loading...</div></td>`;
+        row.after(detailRow);
+        
+        try {
+            const res = await fetch(`/api/admin/upload-detail?id=${id}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            
+            // Parse classified segments
+            let segments = [];
+            if (data.classified_segments_json) {
+                try { segments = JSON.parse(data.classified_segments_json); } catch(e) {}
+            }
+            
+            // Parse validation
+            const errors = data.validation_errors ? (() => { try { return JSON.parse(data.validation_errors); } catch(e) { return []; } })() : [];
+            const warnings = data.validation_warnings ? (() => { try { return JSON.parse(data.validation_warnings); } catch(e) { return []; } })() : [];
+            
+            // Status color
+            const statusColor = data.processing_status === 'completed' ? '#22c55e' : data.processing_status === 'partial' ? '#f59e0b' : '#ef4444';
+            
+            // Build segments HTML
+            const segsHTML = segments.length > 0 ? segments.map((seg, idx) => {
+                const c = seg.include_in_effort ? '#22c55e' : '#ef4444';
+                const bg = seg.include_in_effort ? '#1a2b1a' : '#2b1a1a';
+                return `<div style="background:${bg};border-left:3px solid ${c};padding:6px 8px;margin-bottom:4px;border-radius:3px;font-size:11px;">
+                    <span style="color:${c};font-weight:bold;">Seg ${idx+1}: ${seg.classification}</span>
+                    <span style="color:#aaa;"> · ${seg.movement_type || '?'}${seg.activity_type ? ' ('+seg.activity_type+')' : ''} · ${(seg.distance_km||0).toFixed(2)} km · ${(seg.avg_speed_kmh||0).toFixed(1)} km/h${seg.duration ? ' · '+seg.duration : ''}</span>
+                    ${seg.reason ? `<div style="color:#666;font-style:italic;margin-top:2px;">${seg.reason}</div>` : ''}
+                </div>`;
+            }).join('') : '<div style="color:#666;font-size:11px;">No classified segments</div>';
+            
+            // Build validation HTML
+            let valHTML = '';
+            if (errors.length > 0) valHTML += errors.map(e => `<div style="color:#f87171;font-size:11px;">✗ ${escapeHtml(e)}</div>`).join('');
+            if (warnings.length > 0) valHTML += warnings.map(w => `<div style="color:#fbbf24;font-size:11px;">⚠ ${escapeHtml(w)}</div>`).join('');
+            
+            detailRow.innerHTML = `<td colspan="10" style="padding:0;background:#111;border-left:3px solid #3b82f6;">
+                <div style="padding:12px 16px;">
+                    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:10px;">
+                        <div><strong style="color:#888;">Status:</strong> <span style="color:${statusColor};font-weight:bold;">${data.processing_status || 'unknown'}</span></div>
+                        <div><strong style="color:#888;">Points:</strong> <span style="color:#ddd;">${data.total_points || 0}</span></div>
+                        <div><strong style="color:#888;">Uploaded:</strong> <span style="color:#ddd;">${safeDateStr(data.upload_time)}</span></div>
+                        ${data.protected_area_name ? `<div><strong style="color:#888;">Park:</strong> <span style="color:#ddd;">${escapeHtml(data.protected_area_name)}</span></div>` : ''}
+                    </div>
+                    
+                    <div style="display:flex;gap:16px;margin-bottom:10px;font-size:12px;">
+                        <span style="color:#22c55e;">Patrol: ${(data.patrol_km||0).toFixed(2)} km</span>
+                        <span style="color:#888;">Road: ${(data.road_km||0).toFixed(2)} km</span>
+                        <span style="color:#888;">Boundary: ${(data.boundary_km||0).toFixed(2)} km</span>
+                        <span style="color:#ef4444;">Excluded: ${(data.excluded_km||0).toFixed(2)} km</span>${(() => { const r = buildExcludedReasons(data); return r ? `<span style="color:#888;font-size:11px;"> (${r})</span>` : ''; })()}
+                    </div>
+                    
+                    <div style="display:flex;gap:16px;margin-bottom:10px;font-size:12px;">
+                        ${data.foot_segments > 0 ? `<span style="color:#ddd;">🚶 ${data.foot_segments}× ${(data.foot_km||0).toFixed(1)} km / ${Math.round(data.foot_minutes||0)} min</span>` : ''}
+                        ${data.vehicle_segments > 0 ? `<span style="color:#ddd;">🚗 ${data.vehicle_segments}× ${(data.vehicle_km||0).toFixed(1)} km / ${Math.round(data.vehicle_minutes||0)} min</span>` : ''}
+                        ${data.aircraft_segments > 0 ? `<span style="color:#ddd;">✈ ${data.aircraft_segments}× ${(data.aircraft_km||0).toFixed(1)} km / ${Math.round(data.aircraft_minutes||0)} min</span>` : ''}
+                    </div>
+                    
+                    ${valHTML ? `<div style="margin-bottom:10px;">${valHTML}</div>` : ''}
+                    
+                    <details style="margin-top:4px;">
+                        <summary style="cursor:pointer;color:#3b82f6;font-size:12px;user-select:none;">Segments (${segments.length})</summary>
+                        <div style="margin-top:6px;max-height:200px;overflow-y:auto;">${segsHTML}</div>
+                    </details>
+                    
+                    <div style="margin-top:10px;text-align:right;">
+                        <button class="admin-btn admin-btn-danger" style="font-size:11px;padding:4px 10px;" onclick="event.stopPropagation();deleteUpload(${data.id});">Delete</button>
+                    </div>
+                </div>
+            </td>`;
+        } catch (err) {
+            detailRow.innerHTML = `<td colspan="10" style="padding:12px 16px;background:#111;border-left:3px solid #ef4444;color:#f87171;font-size:12px;">Error loading details: ${err.message}</td>`;
+        }
+    }
     
     async function approveAllHighConfidence() {
         if (!confirm('Approve all features with >75% confidence?')) return;
@@ -14142,29 +15107,68 @@ ${starredItems.narratives.map(n => {
                 row.classList.add('selected');
             }
         } else {
-            document.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
-            adminSelectedItems = [{ type, id }];
-            event.currentTarget.classList.add('selected');
+            // Single click without modifiers - show detail modal
+            if (type === 'upload') {
+                showUploadDetail(id);
+            } else {
+                showFeatureDetail(type, id);
+            }
+            return;
         }
         updateBulkActionBar();
     }
     
+    // Ctrl+A / Cmd+A to select all rows in current admin tab
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+            const adminPanel = document.getElementById('admin-panel');
+            if (!adminPanel || adminPanel.style.display === 'none') return;
+            e.preventDefault();
+            
+            // Find visible table body
+            let tbody;
+            if (adminCurrentTab === 'uploads') tbody = document.getElementById('uploads-table-body');
+            else if (adminCurrentTab === 'pending') tbody = document.getElementById('pending-table-body');
+            else if (adminCurrentTab === 'features') tbody = document.getElementById('features-table-body');
+            if (!tbody) return;
+            
+            const rows = tbody.querySelectorAll('tr[data-id]');
+            if (rows.length === 0) return;
+            
+            // If all already selected, deselect all
+            const allSelected = adminSelectedItems.length === rows.length;
+            if (allSelected) {
+                clearSelection();
+                return;
+            }
+            
+            adminSelectedItems = [];
+            rows.forEach(r => {
+                r.classList.add('selected');
+                adminSelectedItems.push({ type: r.dataset.type, id: parseInt(r.dataset.id) });
+            });
+            updateBulkActionBar();
+        }
+    });
+
     function updateBulkActionBar() {
         let bar = document.getElementById('admin-bulk-bar');
-        if (adminSelectedItems.length > 1) {
+        const hasUploads = adminSelectedItems.some(s => s.type === 'upload');
+        const hasFeatures = adminSelectedItems.some(s => s.type !== 'upload');
+        if (adminSelectedItems.length > 0) {
             if (!bar) {
                 bar = document.createElement('div');
                 bar.id = 'admin-bulk-bar';
                 bar.className = 'admin-bulk-bar';
-                bar.innerHTML = `
-                    <span class="bulk-count"></span>
-                    <button class="admin-btn admin-btn-success" onclick="bulkApprove()">Approve Selected</button>
-                    <button class="admin-btn admin-btn-danger" onclick="bulkReject()">Reject Selected</button>
-                    <button class="admin-btn" onclick="clearSelection()">Clear</button>
-                `;
                 document.getElementById('admin-panel').appendChild(bar);
             }
-            bar.querySelector('.bulk-count').textContent = `${adminSelectedItems.length} items selected`;
+            bar.innerHTML = `
+                <span class="bulk-count">${adminSelectedItems.length} selected</span>
+                ${hasFeatures ? '<button class="admin-btn admin-btn-success" onclick="bulkApprove()">Approve</button>' : ''}
+                ${hasFeatures ? '<button class="admin-btn admin-btn-danger" onclick="bulkReject()">Reject</button>' : ''}
+                ${hasUploads ? '<button class="admin-btn admin-btn-danger" onclick="bulkDeleteUploads()"><i class="icon-trash-2"></i> Delete</button>' : ''}
+                <button class="admin-btn" onclick="clearSelection()">Clear</button>
+            `;
             bar.classList.add('active');
         } else if (bar) {
             bar.classList.remove('active');
@@ -14209,6 +15213,26 @@ ${starredItems.narratives.map(n => {
         }
     }
     
+    async function bulkDeleteUploads() {
+        const uploadItems = adminSelectedItems.filter(s => s.type === 'upload');
+        if (uploadItems.length === 0) return;
+        if (!confirm(`Delete ${uploadItems.length} upload(s)? This cannot be undone.`)) return;
+        try {
+            const res = await fetch('/api/admin/bulk-delete-uploads', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: uploadItems.map(s => s.id) })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed');
+            showToast(`Deleted ${data.deleted} upload(s)`, 'info');
+            clearSelection();
+            loadUploadLogs();
+        } catch (err) {
+            showToast('Error: ' + err.message, 'error');
+        }
+    }
+
     function clearSelection() {
         adminSelectedItems = [];
         document.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
@@ -14238,9 +15262,14 @@ ${starredItems.narratives.map(n => {
             params.set('basemap', currentBasemap);
         }
         
-        // Add time range
-        if (dateFrom) params.set('from', dateFrom);
-        if (dateTo) params.set('to', dateTo);
+        // Add time range (use preset if active, otherwise explicit dates)
+        var _preset = typeof window._activePresetTag === 'function' ? window._activePresetTag() : null;
+        if (_preset) {
+            params.set('date_preset', _preset);
+        } else {
+            if (dateFrom) params.set('from', dateFrom);
+            if (dateTo) params.set('to', dateTo);
+        }
         
         // Add bounding box if set
         if (currentBbox && currentBbox.length === 4) {
@@ -14261,9 +15290,11 @@ ${starredItems.narratives.map(n => {
         // Add movement type filters (only if not all selected)
         const activeTypes = [];
         document.querySelectorAll('.movement-toggle.active').forEach(el => {
-            activeTypes.push(el.textContent.trim().toLowerCase());
+            activeTypes.push(el.dataset.type);
         });
-        if (activeTypes.length > 0 && activeTypes.length < 3) {
+        if (activeTypes.length === 0) {
+            params.set('types', 'none');
+        } else if (activeTypes.length < 5) {
             params.set('types', activeTypes.join(','));
         }
         
@@ -14297,6 +15328,11 @@ ${starredItems.narratives.map(n => {
                     params.set('sections', openSections.join(','));
                 }
             }
+        }
+        
+        // Add pixel popup if open
+        if (window._currentPixelPopup && window._currentPixelId) {
+            params.set('pixel', window._currentPixelId);
         }
         
         // Add pinned layers (category pins - all features of a type)
@@ -14368,6 +15404,12 @@ ${starredItems.narratives.map(n => {
             params.set('panel', 'upload');
         }
         
+        // Add about modal state
+        const manifestModal = document.getElementById('modal-manifest');
+        if (manifestModal && manifestModal.classList.contains('active')) {
+            params.set('modal', 'about');
+        }
+        
         const url = window.location.origin + window.location.pathname + '?' + params.toString();
         
         // Copy to clipboard
@@ -14416,24 +15458,57 @@ ${starredItems.narratives.map(n => {
             if (!isNaN(zoom)) map.setZoom(zoom);
         }
         
-        // Restore time range
+        // Restore time range (skip if initTimeSlider already applied URL dates)
         const from = params.get('from');
         const to = params.get('to');
         if (from && to && typeof setTimeSliderRange === 'function') {
-            setTimeSliderRange(from, to);
+            // Only re-apply if dates don't match (initTimeSlider handles this early)
+            if (dateFrom !== from || dateTo !== to) {
+                setTimeSliderRange(from, to);
+            }
         }
         
-        // Restore bounding box
+        // Restore bounding box — use same UI setup as setBbox()
         const bbox = params.get('bbox');
         if (bbox) {
             const coords = bbox.split(',').map(parseFloat);
             if (coords.length === 4 && coords.every(c => !isNaN(c))) {
                 currentBbox = coords;
-                // Update bbox UI
-                const bboxFilter = document.getElementById('active-filter-bbox');
-                const activeFilters = document.getElementById('active-filters');
-                if (bboxFilter) bboxFilter.style.display = 'flex';
-                if (activeFilters) activeFilters.style.display = 'block';
+
+                // Disable keystones (same as setBbox)
+                keystonesEnabled = false;
+                var _ksCb = document.getElementById('keystones-toggle');
+                if (_ksCb) _ksCb.checked = false;
+                var _ksBtn = document.getElementById('keystones-toggle-btn');
+                if (_ksBtn) _ksBtn.classList.remove('active');
+
+                // Show clear/star buttons, update label (same as setBbox)
+                var _clearBtn = document.getElementById('bbox-clear-btn');
+                if (_clearBtn) _clearBtn.classList.add('visible');
+                var _starBtn = document.getElementById('bbox-star-btn');
+                if (_starBtn) {
+                    _starBtn.classList.add('visible');
+                    if (typeof updateBboxStarButton === 'function') updateBboxStarButton();
+                }
+                var _bboxLabel = document.getElementById('bbox-btn-label');
+                if (_bboxLabel) _bboxLabel.textContent = 'Redraw';
+
+                // Show active filters UI
+                var _activeFilters = document.getElementById('active-filters');
+                if (_activeFilters) _activeFilters.style.display = 'block';
+                var _filterArea = document.getElementById('filter-area');
+                var _filterAreaValue = document.getElementById('filter-area-value');
+                if (_filterArea && _filterAreaValue) {
+                    _filterArea.style.display = 'flex';
+                    var _latDiff = Math.abs(coords[3] - coords[1]);
+                    var _lngDiff = Math.abs(coords[2] - coords[0]);
+                    var _approxKm = Math.round(_latDiff * 111 * _lngDiff * 111 * Math.cos((coords[1] + coords[3]) / 2 * Math.PI / 180));
+                    _filterAreaValue.textContent = formatNumber(_approxKm) + ' km² region';
+                }
+
+                // Draw bbox rectangle on map
+                if (typeof drawBboxOnMap === 'function') drawBboxOnMap();
+
                 // Fit map to bbox
                 map.fitBounds([[coords[0], coords[1]], [coords[2], coords[3]]], { padding: 50 });
             }
@@ -14441,27 +15516,91 @@ ${starredItems.narratives.map(n => {
         
         // Restore country filter
         const country = params.get('country');
-        if (country && typeof selectCountry === 'function') {
+        if (country) {
             currentCountryFilter = country;
-            selectCountry(country);
+            // selectCountry depends on countryBboxCache which is populated on
+            // sourcedata, so it may be empty here. Set the filter state and
+            // defer fly-to until source is ready.
+            if (typeof applyCountryFilter === 'function') applyCountryFilter();
+            // Retry the full selectCountry once areas source is loaded
+            function _retryCountry() {
+                if (countryBboxCache && countryBboxCache[country]) {
+                    selectCountry(country);
+                    return true;
+                }
+                return false;
+            }
+            if (!_retryCountry()) {
+                var _countryRetries = 0;
+                function _onCountrySrc(e) {
+                    if ((e.sourceId === 'areas' && e.isSourceLoaded) || ++_countryRetries > 30) {
+                        map.off('sourcedata', _onCountrySrc);
+                        _retryCountry();
+                    }
+                }
+                map.on('sourcedata', _onCountrySrc);
+                setTimeout(function() { map.off('sourcedata', _onCountrySrc); _retryCountry(); }, 8000);
+            }
         }
         
-        // Restore selected parks
+        // Restore selected parks — populate both selectedPAIds AND selectedParks array
         const parks = params.get('parks');
         if (parks) {
-            const parkIds = parks.split(',');
-            parkIds.forEach(id => {
-                if (id) selectedPAIds.add(id);
-            });
+            const parkIds = parks.split(',').filter(Boolean);
+            parkIds.forEach(id => selectedPAIds.add(id));
             updatePAHighlighting();
+
+            // Populate selectedParks array from map source features
+            // Must wait for source data to be available
+            function populateSelectedParksFromSource() {
+                if (!map.getSource('areas')) return false;
+                const features = map.querySourceFeatures('areas');
+                if (features.length === 0) return false;
+
+                const seenIds = new Set();
+                selectedParks = [];
+                features.forEach(function(f) {
+                    var props = f.properties;
+                    var paId = props.id || props.wdpa_id;
+                    if (!paId || seenIds.has(paId) || !selectedPAIds.has(paId)) return;
+                    seenIds.add(paId);
+                    var geom = f.geometry;
+                    var featureBounds = geom && geom.coordinates ? getGeometryBounds(geom) : null;
+                    selectedParks.push({
+                        id: paId,
+                        name: props.name || 'Unknown',
+                        country: props.country || '',
+                        bbox: featureBounds,
+                        center: featureBounds ? [(featureBounds[0]+featureBounds[2])/2, (featureBounds[1]+featureBounds[3])/2] : null
+                    });
+                });
+                // Update UI
+                var countEl = document.getElementById('keystones-count');
+                if (countEl && selectedParks.length > 0) countEl.textContent = selectedParks.length;
+                updateSelectedParksDisplay();
+                return selectedParks.length > 0;
+            }
+
+            // Try immediately, then retry on sourcedata events
+            if (!populateSelectedParksFromSource()) {
+                var _srcRetry = 0;
+                function _onSourceData() {
+                    if (populateSelectedParksFromSource() || ++_srcRetry > 20) {
+                        map.off('sourcedata', _onSourceData);
+                    }
+                }
+                map.on('sourcedata', _onSourceData);
+                // Safety timeout
+                setTimeout(function() { map.off('sourcedata', _onSourceData); populateSelectedParksFromSource(); }, 5000);
+            }
         }
         
         // Restore movement types
         const types = params.get('types');
         if (types) {
-            const activeTypes = types.split(',');
+            const activeTypes = types === 'none' ? [] : types.split(',');
             document.querySelectorAll('.movement-toggle').forEach(el => {
-                const type = el.textContent.trim().toLowerCase();
+                const type = el.dataset.type;
                 if (activeTypes.includes(type)) {
                     el.classList.add('active');
                     movementTypes[type] = true;
@@ -14481,6 +15620,12 @@ ${starredItems.narratives.map(n => {
             }
             const searchInput = document.getElementById('search-input');
             if (searchInput) {
+                // Open the search bar first
+                const searchBar = document.getElementById('search-bar');
+                const searchBtn = document.getElementById('toolbar-search');
+                if (searchBar) searchBar.classList.add('open');
+                if (searchBtn) searchBtn.classList.add('active');
+                searchOpen = true;
                 searchInput.value = searchQuery;
                 // Trigger search
                 setTimeout(() => {
@@ -14493,10 +15638,12 @@ ${starredItems.narratives.map(n => {
         
         // Restore keystones toggle
         const keystonesParam = params.get('keystones');
-        if (keystonesParam === '0' && typeof toggleKeystonesBtn === 'function') {
+        if (keystonesParam === '0') {
             keystonesEnabled = false;
             const btn = document.getElementById('keystones-toggle-btn');
             if (btn) btn.classList.remove('active');
+            // Update map styling (grey out areas when keystones disabled)
+            updatePAHighlighting();
         }
         
         // Restore notification panel
@@ -14508,98 +15655,139 @@ ${starredItems.narratives.map(n => {
             }, 1000);
         }
         
-        // Restore popup (delayed to ensure data is loaded)
+        // Restore pixel popup from share link
+        const pixelParam = params.get('pixel');
+        if (pixelParam) {
+            console.log('[URL Restore] pixel popup:', pixelParam);
+            // Parse pixel ID like "-8.6_37.2" → lat=-8.6, lon=37.2
+            const parts = pixelParam.split('_');
+            if (parts.length === 2) {
+                const pxLat = parseFloat(parts[0]);
+                const pxLon = parseFloat(parts[1]);
+                if (!isNaN(pxLat) && !isNaN(pxLon)) {
+                    let pixelRetries = 0;
+                    const tryOpenPixel = () => {
+                        // Try queryRenderedFeatures first
+                        const screenPt = map.project([pxLon, pxLat]);
+                        let match = null;
+                        try {
+                            const feats = map.queryRenderedFeatures(
+                                [[screenPt.x - 20, screenPt.y - 20], [screenPt.x + 20, screenPt.y + 20]],
+                                {layers: ['grid-cells']}
+                            );
+                            match = feats.find(f => f.properties.id === pixelParam);
+                        } catch(e) {}
+                        // Fallback: try querySourceFeatures (source name is 'grid')
+                        if (!match) {
+                            try {
+                                const srcFeats = map.querySourceFeatures('grid', {sourceLayer: ''});
+                                match = srcFeats.find(f => f.properties.id === pixelParam);
+                            } catch(e) {}
+                        }
+                        if (match) {
+                            // Use actual geometry coords for accurate popup placement
+                            const coords = match.geometry && match.geometry.coordinates;
+                            const popupLngLat = coords ? {lng: coords[0], lat: coords[1]} : {lng: pxLon, lat: pxLat};
+                            window.openPixelPopup(match.properties, popupLngLat);
+                            console.log('[URL Restore] pixel popup opened:', pixelParam);
+                        } else if (pixelRetries < 30) {
+                            pixelRetries++;
+                            setTimeout(tryOpenPixel, 500);
+                        } else {
+                            console.warn('[URL Restore] pixel not found after retries:', pixelParam);
+                        }
+                    };
+                    setTimeout(tryOpenPixel, 2000);
+                }
+            }
+        }
+        
+        // Restore popup (with retry for source data availability)
         const popupPaId = params.get('popup');
         const sectionsToOpen = params.get('sections')?.split(',') || [];
         if (popupPaId) {
             console.log(`URL popup param: ${popupPaId}, sections: ${sectionsToOpen.join(',')}`);
-            setTimeout(() => {
-                // Find the PA and show popup
+
+            // Section name mappings (URL param → section element ID prefix)
+            const _sectionIdMap = {
+                'fire': 'fire', 'settlement': 'ghsl', 'ghsl': 'ghsl',
+                'deforestation': 'deforest', 'deforest': 'deforest',
+                'road': 'road', 'roads': 'road',
+                'species': 'species', 'climate': 'climate',
+                'legal': 'legal', 'research': 'research'
+            };
+
+            function _openSectionsAndPin() {
+                if (sectionsToOpen.length === 0) return;
+                // Open accordion sections
+                setTimeout(() => {
+                    sectionsToOpen.forEach(secType => {
+                        const sectionId = _sectionIdMap[secType] || secType;
+                        const section = document.getElementById(`${sectionId}-section-${popupPaId}`);
+                        if (section && !section.classList.contains('open')) {
+                            section.click();
+                        }
+                    });
+                }, 500);
+                // Auto-pin layers
+                setTimeout(async () => {
+                    const park = (window.keystoneAreas || []).find(p => p.id === popupPaId);
+                    const parkName = park ? park.name : popupPaId;
+                    const layerTypeMap = {
+                        'fire': 'fire_trajectory', 'settlement': 'settlement',
+                        'ghsl': 'settlement', 'deforestation': 'deforestation',
+                        'deforest': 'deforestation', 'roads': 'road',
+                        'places': 'place', 'infrastructure': 'infrastructure'
+                    };
+                    for (const secType of sectionsToOpen) {
+                        const layerType = layerTypeMap[secType] || secType;
+                        const pinKey = getPinKey(popupPaId, layerType);
+                        if (!pinnedLayers[pinKey]) {
+                            try {
+                                await addPinnedLayer(popupPaId, parkName, layerType);
+                                // Use mapped sectionId for the icon selector
+                                const sectionId = _sectionIdMap[secType] || secType;
+                                const icon = document.querySelector(`#${sectionId}-section-${popupPaId} .pa-popup-section-icon`);
+                                if (icon) icon.classList.add('pinned');
+                            } catch (e) {
+                                console.log(`No data for ${layerType}, skipping auto-pin`);
+                            }
+                        }
+                    }
+                    updatePinnedIndicator();
+                    savePinnedToURL();
+                }, 1000);
+            }
+
+            function _tryRestorePopup() {
                 const features = map.querySourceFeatures('areas', {
                     filter: ['==', ['get', 'id'], popupPaId]
                 });
-                console.log(`Found ${features.length} features for ${popupPaId}`);
                 if (features.length > 0) {
                     const props = features[0].properties;
-                    const center = features[0].properties.center;
+                    const center = props.center;
                     if (center) {
                         const coords = JSON.parse(center);
                         showPAPopup(props, { lng: coords[0], lat: coords[1] });
-                        
-                        // Open specified accordion sections after popup loads
-                        if (sectionsToOpen.length > 0) {
-                            setTimeout(() => {
-                                sectionsToOpen.forEach(secType => {
-                                    // Map URL section names to actual section IDs
-                                    const sectionIdMap = {
-                                        'fire': 'fire',
-                                        'settlement': 'ghsl',
-                                        'ghsl': 'ghsl',
-                                        'deforestation': 'deforest',
-                                        'deforest': 'deforest',
-                                        'road': 'road',
-                                        'roads': 'road',
-                                        'species': 'species',
-                                        'climate': 'climate',
-                                        'legal': 'legal',
-                                        'research': 'research'
-                                    };
-                                    
-                                    const sectionId = sectionIdMap[secType] || secType;
-                                    const section = document.getElementById(`${sectionId}-section-${popupPaId}`);
-                                    if (section) {
-                                        // Click the section to open it and trigger data load
-                                        if (!section.classList.contains('open')) {
-                                            section.click();
-                                        }
-                                    }
-                                });
-                            }, 500);
-                            
-                            // Auto-pin layers from sections parameter
-                            setTimeout(async () => {
-                                const park = (window.keystoneAreas || []).find(p => p.id === popupPaId);
-                                const parkName = park ? park.name : popupPaId;
-                                
-                                for (const secType of sectionsToOpen) {
-                                    // Map section types to layer types
-                                    const layerTypeMap = {
-                                        'fire': 'fire_trajectory',
-                                        'settlement': 'settlement',
-                                        'ghsl': 'settlement',  // Alias for settlements
-                                        'deforestation': 'deforestation',
-                                        'deforest': 'deforestation',  // Alias
-                                        'roads': 'road',
-                                        'places': 'place',
-                                        'infrastructure': 'infrastructure'
-                                    };
-                                    
-                                    const layerType = layerTypeMap[secType] || secType;
-                                    const pinKey = getPinKey(popupPaId, layerType);
-                                    
-                                    // Only pin if not already pinned
-                                    if (!pinnedLayers[pinKey]) {
-                                        try {
-                                            console.log(`Auto-pinning ${layerType} for ${popupPaId} from sections param`);
-                                            await addPinnedLayer(popupPaId, parkName, layerType);
-                                            
-                                            // Update the icon state
-                                            const icon = document.querySelector(`#${secType}-section-${popupPaId} .pa-popup-section-icon`);
-                                            if (icon) {
-                                                icon.classList.add('pinned');
-                                            }
-                                        } catch (e) {
-                                            // Silently skip if no data for this layer type
-                                            console.log(`No data for ${layerType}, skipping auto-pin`);
-                                        }
-                                    }
-                                }
-                                
-                                updatePinnedIndicator();
-                                savePinnedToURL();
-                            }, 1000);
+                        _openSectionsAndPin();
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            // Try at 2s, retry on sourcedata if needed
+            setTimeout(() => {
+                if (!_tryRestorePopup()) {
+                    console.log(`Popup restore: retrying on sourcedata for ${popupPaId}`);
+                    var _popupRetry = 0;
+                    function _onPopupSrc(e) {
+                        if (e.sourceId === 'areas' && _tryRestorePopup() || ++_popupRetry > 20) {
+                            map.off('sourcedata', _onPopupSrc);
                         }
                     }
+                    map.on('sourcedata', _onPopupSrc);
+                    setTimeout(function() { map.off('sourcedata', _onPopupSrc); }, 8000);
                 }
             }, 2000);
         }
@@ -14650,11 +15838,18 @@ ${starredItems.narratives.map(n => {
         }
         
         // Restore pinned layers from URL param (in addition to restorePinnedFromURL)
-        // Reload data with restored filters
-        setTimeout(() => {
-            reloadGridData();
-            loadStats();
-        }, 500);
+        // Wait for map to settle at the URL-restored position before loading grid/stats
+        function loadGridAfterMapSettled() {
+            if (typeof map !== 'undefined' && map.loaded() && !map.isMoving()) {
+                reloadGridData();
+            } else {
+                // Map is still moving (e.g. restoring URL position), wait for it
+                map.once('idle', function() {
+                    reloadGridData();
+                });
+            }
+        }
+        setTimeout(loadGridAfterMapSettled, 600);
         
         // Restore pinned layers from URL
         setTimeout(restorePinnedFromURL, 1500);
@@ -14689,6 +15884,20 @@ ${starredItems.narratives.map(n => {
                         break;
                 }
             }, 1000);
+        }
+        
+        // Restore modal state (about/manifest)
+        const modalParam = params.get('modal');
+        if (modalParam === 'about') {
+            setTimeout(() => {
+                showModal('manifest');
+                // Clean modal param from URL (one-shot)
+                try {
+                    const cleanUrl = new URL(window.location);
+                    cleanUrl.searchParams.delete('modal');
+                    window.history.replaceState({}, '', cleanUrl);
+                } catch(e) {}
+            }, 500);
         }
     }
     
@@ -14761,6 +15970,10 @@ ${starredItems.narratives.map(n => {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
                     Learned Features
                 </button>
+                <button class="admin-tab" data-tab="autofetch" onclick="switchAdminTab('autofetch')" role="tab" aria-selected="false" aria-controls="tab-autofetch">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/></svg>
+                    Automated Fetch
+                </button>
                 <button class="admin-tab" data-tab="map-settings" onclick="switchAdminTab('map-settings')" role="tab" aria-selected="false" aria-controls="tab-map-settings">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m-5-7H1m6 0h6m6 0h6M7 7l-2-2m12 0l2-2M7 17l-2 2m12 0l2 2"/></svg>
                     Map Settings
@@ -14770,15 +15983,17 @@ ${starredItems.narratives.map(n => {
                 <!-- Upload Logs Tab -->
                 <div class="admin-tab-content active" id="tab-uploads" role="tabpanel" aria-labelledby="tab-uploads">
                     <div class="admin-stats-row" id="uploads-stats">
-                        <div class="admin-stat-card"><div class="admin-stat-label">Total Uploads</div><div class="admin-stat-value" id="stat-total-uploads">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label">Patrol km</div><div class="admin-stat-value km-patrol" id="stat-patrol-km">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label">Boundary km</div><div class="admin-stat-value km-boundary" id="stat-boundary-km">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label">Excluded km</div><div class="admin-stat-value km-excluded" id="stat-excluded-km">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label">Uploads</div><div class="admin-stat-value" id="stat-total-uploads">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-footprints icon-color-success"></i> Foot</div><div class="admin-stat-value" style="color:#22c55e" id="stat-foot-km">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-car icon-color-info"></i> Vehicle</div><div class="admin-stat-value" style="color:#3b82f6" id="stat-vehicle-km">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-ship icon-color-info"></i> Boat</div><div class="admin-stat-value" style="color:#60a5fa" id="stat-boat-km">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-plane icon-color-neutral"></i> Fixed-wing</div><div class="admin-stat-value" style="color:#a78bfa" id="stat-fixed-wing-km">-</div></div>
+                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-helicopter icon-color-neutral"></i> Helicopter</div><div class="admin-stat-value" style="color:#c084fc" id="stat-rotor-wing-km">-</div></div>
                     </div>
                     <div class="admin-table-container">
                         <table class="admin-table">
-                            <thead><tr><th>File</th><th>Park</th><th>Patrol</th><th>Boundary</th><th>Excluded</th><th>Date</th></tr></thead>
-                            <tbody id="uploads-table-body"><tr><td colspan="6" style="text-align:center;color:#666;">Loading...</td></tr></tbody>
+                            <thead><tr><th>File</th><th>Park</th><th>Foot</th><th>Vhl</th><th>Boat</th><th>F-Wing</th><th>Heli</th><th>Bdy</th><th>Excl</th><th>Date</th></tr></thead>
+                            <tbody id="uploads-table-body"><tr><td colspan="10" style="text-align:center;color:#666;">Loading...</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -14794,8 +16009,8 @@ ${starredItems.narratives.map(n => {
                     <div style="margin-bottom:12px;"><button class="admin-btn approve" onclick="approveAllHighConfidence()">✓ Approve All &gt;75% Confidence</button></div>
                     <div class="admin-table-container">
                         <table class="admin-table">
-                            <thead><tr><th>Type</th><th>Park</th><th>Confidence</th><th>Details</th><th>Actions</th></tr></thead>
-                            <tbody id="pending-table-body"><tr><td colspan="5" style="text-align:center;color:#666;">Loading...</td></tr></tbody>
+                            <thead><tr><th>Park</th><th>Type</th><th>Details</th><th>Location</th><th>Confidence</th><th>Date</th><th>Actions</th></tr></thead>
+                            <tbody id="pending-table-body"><tr><td colspan="7" style="text-align:center;color:#666;">Loading...</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -14829,6 +16044,95 @@ ${starredItems.narratives.map(n => {
                     </div>
                 </div>
                 
+                <!-- Automated Fetch Tab -->
+                <div class="admin-tab-content" id="tab-autofetch">
+                    <div>
+                        <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.6;">
+                            Connect to external GPS tracking services (e.g. EarthRanger / PAMDAS) to automatically
+                            fetch patrol tracks daily. Tracks are anonymised — no names or personal data are stored.
+                            Only person, vehicle, and aircraft tracks are fetched; animal collar data is excluded.
+                        </p>
+                        <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:11px;line-height:1.6;color:#9ca3af;">
+                            <span style="color:#22c55e;font-weight:600;"><i class="icon-shield icon-color-success" style="font-size:11px;"></i> Credential security</span><br>
+                            Passwords are encrypted with AES-256-GCM before storage — they are never saved in plaintext
+                            and never passed as command-line arguments. The encryption key is stored separately with
+                            restricted file permissions. Disabling a source immediately purges its stored password.
+                        </div>
+
+                        <!-- Add new source form -->
+                        <div id="autofetch-add-form" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px;margin-bottom:20px;">
+                            <h4 style="color:#fff;font-size:13px;font-weight:600;margin-bottom:12px;">Add New Source</h4>
+                            <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:end;">
+                                <div>
+                                    <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">API</label>
+                                    <select id="af-api-type" style="width:100%;background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:8px;font-size:12px;">
+                                        <option value="earthranger">EarthRanger</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Service URL</label>
+                                    <input id="af-url" type="text" placeholder="https://example.pamdas.org" style="width:100%;background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:8px;font-size:12px;box-sizing:border-box;">
+                                </div>
+                                <div>
+                                    <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Username</label>
+                                    <input id="af-user" type="text" style="width:100%;background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:8px;font-size:12px;box-sizing:border-box;">
+                                </div>
+                                <div>
+                                    <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Password</label>
+                                    <input id="af-pass" type="password" style="width:100%;background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:8px;font-size:12px;box-sizing:border-box;">
+                                </div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:auto auto auto;gap:8px;align-items:end;margin-top:8px;justify-content:start;">
+                                <div>
+                                    <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Interval</label>
+                                    <select id="af-interval" style="width:100%;background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:8px;font-size:12px;">
+                                        <option value="24">24h</option>
+                                        <option value="12">12h</option>
+                                        <option value="6">6h</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Backfill from <span style="color:#555;font-weight:normal;">(initial fetch start date)</span></label>
+                                    <input id="af-backfill" type="date" style="width:100%;background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:8px;font-size:12px;box-sizing:border-box;">
+                                </div>
+                                <div>
+                                    <button onclick="addAutofetchSource()" style="background:#22c55e;color:#000;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">Connect</button>
+                                </div>
+                            </div>
+                            <div id="af-add-status" style="margin-top:8px;font-size:12px;color:#888;display:none;"></div>
+                        </div>
+
+                        <!-- Source list -->
+                        <div class="admin-table-container" style="overflow-x:auto;">
+                            <table class="admin-table">
+                                <thead><tr>
+                                    <th>Parks</th>
+                                    <th>Service</th>
+                                    <th>Last Run</th>
+                                    <th>Next Run</th>
+                                    <th>Points</th>
+                                    <th>Status</th>
+                                    <th style="text-align:right;">Actions</th>
+                                </tr></thead>
+                                <tbody id="autofetch-table-body">
+                                    <tr><td colspan="7" style="text-align:center;color:#666;">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Source code viewer -->
+                        <details id="af-source-details" style="margin-top:20px;">
+                            <summary style="cursor:pointer;color:#3b82f6;font-size:12px;font-weight:500;padding:8px 0;user-select:none;">
+                                <i class="icon-code icon-color-info" style="font-size:12px;"></i>
+                                View fetch script source code (fetch_earthranger_gpx.py)
+                            </summary>
+                            <div id="af-source-code" style="margin-top:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:16px;max-height:500px;overflow:auto;">
+                                <pre style="color:#d4d4d4;font-size:11px;line-height:1.5;margin:0;white-space:pre;font-family:'Fira Code',Consolas,Monaco,monospace;"><code id="af-source-text" style="color:#d4d4d4;">Loading...</code></pre>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+
                 <!-- Map Settings Tab -->
                 <div class="admin-tab-content" id="tab-map-settings" role="tabpanel" aria-labelledby="tab-map-settings">
                     <div style="max-width:600px;">
@@ -14966,7 +16270,7 @@ ${starredItems.narratives.map(n => {
             <!-- Zoom level slider -->
             <div style="color: #666; font-size: 10px; margin-bottom: 6px;">Zoom levels: <span id="mbtiles-zoom-label">1-17</span></div>
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                <input type="range" id="mbtiles-zoom-slider" min="10" max="17" value="17" 
+                <input type="range" id="mbtiles-zoom-slider" min="10" max="19" value="17" 
                     style="flex: 1; accent-color: #3b82f6;" oninput="updateZoomLevel(this.value)">
                 <div style="display: flex; font-size: 9px; color: #444;">
                     <span id="zoom-markers"></span>
@@ -14983,7 +16287,7 @@ ${starredItems.narratives.map(n => {
             </button>
             
             <!-- Info about expiration -->
-            <div style="font-size: 10px; color: #666; margin-top: 10px; text-align: center;">One-time download. Files deleted after download or 2 hours (whichever comes first)</div>
+            <div style="font-size: 10px; color: #666; margin-top: 10px; text-align: center;">Tiles built in-memory and stored on Zenodo. No local disk needed.</div>
             
             <!-- Hidden status for polling -->
             <div id="mbtiles-status" style="display: none;"></div>

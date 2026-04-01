@@ -490,7 +490,7 @@ func getAvailableDiskSpace(path string) uint64 {
 func estimateMBTilesSize(bbox [4]float64, minZoom, maxZoom int) int64 {
 	tiles := calculateTiles(bbox, minZoom, maxZoom)
 	// Estimate ~15KB per tile average for satellite imagery
-	estimatedSize := int64(len(tiles)) * 15 * 1024
+	estimatedSize := estimateTileBytes(len(tiles))
 	
 	// Enforce 3GB maximum (MBTiles built in memory)
 	const maxMBTilesSize = 3 * 1024 * 1024 * 1024
@@ -711,7 +711,7 @@ func (s *Server) HandleAPIMBTilesEstimate(w http.ResponseWriter, r *http.Request
 	}
 	
 	tiles := calculateTiles(bbox, minZoom, maxZoom)
-	estimatedSize := int64(len(tiles)) * 15 * 1024
+	estimatedSize := estimateTileBytes(len(tiles))
 	estimatedSeconds := len(tiles) / 100
 	
 	availableSpace := getAvailableDiskSpace(mbtilesQueue.outputDir)

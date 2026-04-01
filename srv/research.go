@@ -184,15 +184,10 @@ func (s *Server) fetchPublicationsForPA(ctx context.Context, paID, name, country
 			workURL = work.DOI
 		}
 
-		// Extract OpenAlex ID (just the ID part)
-		openalexID := work.ID
-		if idx := strings.LastIndex(work.ID, "/"); idx >= 0 {
-			openalexID = work.ID[idx+1:]
-		}
-
+		// Use full OpenAlex URL as ID for consistency
 		err := q.InsertPublication(ctx, dbgen.InsertPublicationParams{
 			PaID:         paID,
-			OpenalexID:   openalexID,
+			OpenalexID:   work.ID,
 			Title:        work.Title,
 			Authors:      ptr(string(authorsJSON)),
 			Year:         ptr(int64(work.PublicationYear)),

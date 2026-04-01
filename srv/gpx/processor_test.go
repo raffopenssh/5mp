@@ -166,8 +166,8 @@ func TestClassifyMovementType(t *testing.T) {
 		{7.9, "foot"},
 		{8, "vehicle"},
 		{50, "vehicle"},
-		{120, "vehicle"},
-		{121, "aircraft"},
+		{80, "vehicle"},
+		{81, "aircraft"},
 		{500, "aircraft"},
 	}
 
@@ -336,5 +336,309 @@ func BenchmarkParseGPX(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		reader := strings.NewReader(testGPX)
 		_, _ = ParseGPX(reader)
+	}
+}
+
+const testLocusGPX = `<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<gpx version="1.1" creator="Locus Map, Android"
+ xmlns="http://www.topografix.com/GPX/1/1"
+ xmlns:locus="http://www.locusmap.eu">
+<trk>
+<name>in to nyerere 2026-03-22 09:23</name>
+	<extensions>
+		<locus:activity>transport_airplane</locus:activity>
+	</extensions>
+<trkseg>
+<trkpt lat="-6.7974583" lon="37.6524417">
+	<ele>519.50</ele>
+	<time>2026-03-22T06:23:35Z</time>
+</trkpt>
+<trkpt lat="-7.1057550" lon="37.2469417">
+	<ele>728.93</ele>
+	<time>2026-03-22T06:44:21Z</time>
+</trkpt>
+<trkpt lat="-8.2036683" lon="36.9564983">
+	<ele>286.86</ele>
+	<time>2026-03-22T08:01:40Z</time>
+</trkpt>
+</trkseg>
+</trk>
+</gpx>`
+
+func TestParseGPXLocusActivity(t *testing.T) {
+	reader := strings.NewReader(testLocusGPX)
+	data, err := ParseGPX(reader)
+	if err != nil {
+		t.Fatalf("ParseGPX error: %v", err)
+	}
+
+	if len(data.Tracks) != 1 {
+		t.Fatalf("expected 1 track, got %d", len(data.Tracks))
+	}
+
+	track := data.Tracks[0]
+	if track.Activity != "transport_airplane" {
+		t.Errorf("expected activity 'transport_airplane', got %q", track.Activity)
+	}
+	if track.Name != "in to nyerere 2026-03-22 09:23" {
+		t.Errorf("expected track name, got %q", track.Name)
+	}
+}
+
+func TestMergeTrackActivityHint(t *testing.T) {
+	tests := []struct {
+		activity string
+		wantType string
+	}{
+		{"transport_airplane", "aircraft"},
+		{"transport_car", "vehicle"},
+		{"walk", "foot"},
+		{"run", "foot"},
+		{"bike", ""},    // bike not mapped
+		{"", ""},         // empty stays empty
+	}
+
+	for _, tt := range tests {
+		hint := mergeTrackActivityHint(MovementHint{}, tt.activity)
+		if hint.Type != tt.wantType {
+			t.Errorf("activity %q: want type %q, got %q", tt.activity, tt.wantType, hint.Type)
+		}
+		if tt.wantType != "" && hint.Confidence < 0.7 {
+			t.Errorf("activity %q: want moderate confidence, got %.2f", tt.activity, hint.Confidence)
+		}
+	}
+}
+
+func TestLocusAircraftClassification(t *testing.T) {
+	// Simulate: Locus says airplane, speed is ~113 km/h (normally classified as vehicle)
+	reader := strings.NewReader(testLocusGPX)
+	data, err := ParseGPX(reader)
+	if err != nil {
+		t.Fatalf("ParseGPX error: %v", err)
+	}
+
+	// Use 2-hour max duration to keep all 3 points in one segment
+	segments := SplitIntoSegments(data, 2*time.Hour)
+	if len(segments) == 0 {
+		t.Fatal("expected at least 1 segment")
+	}
+
+	// With Locus hint, even the avg speed ~113 km/h segment should be classified as aircraft
+	for _, seg := range segments {
+		if seg.MovementType != "aircraft" {
+			t.Errorf("expected aircraft classification, got %q (speed: %.1f km/h)", seg.MovementType, seg.AvgSpeedKmh)
+		}
+	}
+}
+
+// ── EarthRanger extension tests ──────────────────────────────────────────────
+
+const testERGPX = `<?xml version='1.0' encoding='utf-8'?>
+<gpx version="1.1" creator="5mp-autofetch"
+ xmlns="http://www.topografix.com/GPX/1/1"
+ xmlns:er="http://5mp.globe/earthranger/1">
+  <trk>
+    <name>subject-truck-1</name>
+    <extensions>
+      <er:subject_type>vehicle</er:subject_type>
+      <er:subject_subtype>truck</er:subject_subtype>
+    </extensions>
+    <trkseg>
+      <trkpt lat="-8.2" lon="36.9"><time>2026-03-22T06:00:00Z</time></trkpt>
+      <trkpt lat="-8.2001" lon="36.9001"><time>2026-03-22T06:30:00Z</time></trkpt>
+      <trkpt lat="-8.2002" lon="36.9002"><time>2026-03-22T07:00:00Z</time></trkpt>
+    </trkseg>
+  </trk>
+  <trk>
+    <name>subject-plane-1</name>
+    <extensions>
+      <er:subject_type>aircraft</er:subject_type>
+      <er:subject_subtype>plane</er:subject_subtype>
+    </extensions>
+    <trkseg>
+      <trkpt lat="-8.0" lon="36.0"><time>2026-03-22T08:00:00Z</time></trkpt>
+      <trkpt lat="-8.5" lon="36.5"><time>2026-03-22T08:30:00Z</time></trkpt>
+      <trkpt lat="-9.0" lon="37.0"><time>2026-03-22T09:00:00Z</time></trkpt>
+    </trkseg>
+  </trk>
+  <trk>
+    <name>subject-mobile-in-heli</name>
+    <extensions>
+      <er:subject_type>person</er:subject_type>
+      <er:subject_subtype>er_mobile</er:subject_subtype>
+      <er:patrol_type>heli_patrol_operations</er:patrol_type>
+    </extensions>
+    <trkseg>
+      <trkpt lat="-7.0" lon="35.0"><time>2026-03-22T10:00:00Z</time></trkpt>
+      <trkpt lat="-7.5" lon="35.5"><time>2026-03-22T10:30:00Z</time></trkpt>
+      <trkpt lat="-8.0" lon="36.0"><time>2026-03-22T11:00:00Z</time></trkpt>
+    </trkseg>
+  </trk>
+  <trk>
+    <name>subject-ranger</name>
+    <extensions>
+      <er:subject_type>person</er:subject_type>
+      <er:subject_subtype>ranger</er:subject_subtype>
+    </extensions>
+    <trkseg>
+      <trkpt lat="-8.3" lon="36.8"><time>2026-03-22T12:00:00Z</time></trkpt>
+      <trkpt lat="-8.3001" lon="36.8001"><time>2026-03-22T12:30:00Z</time></trkpt>
+      <trkpt lat="-8.3002" lon="36.8002"><time>2026-03-22T13:00:00Z</time></trkpt>
+    </trkseg>
+  </trk>
+</gpx>`
+
+func TestParseERExtensions(t *testing.T) {
+	data, err := ParseGPX(strings.NewReader(testERGPX))
+	if err != nil {
+		t.Fatalf("ParseGPX error: %v", err)
+	}
+
+	if len(data.Tracks) != 4 {
+		t.Fatalf("expected 4 tracks, got %d", len(data.Tracks))
+	}
+
+	// Track 0: vehicle/truck
+	trk := data.Tracks[0]
+	if trk.ERSubjectType != "vehicle" {
+		t.Errorf("track 0: want subject_type=vehicle, got %q", trk.ERSubjectType)
+	}
+	if trk.ERSubjectSubtype != "truck" {
+		t.Errorf("track 0: want subject_subtype=truck, got %q", trk.ERSubjectSubtype)
+	}
+
+	// Track 1: aircraft/plane
+	trk = data.Tracks[1]
+	if trk.ERSubjectType != "aircraft" {
+		t.Errorf("track 1: want subject_type=aircraft, got %q", trk.ERSubjectType)
+	}
+
+	// Track 2: person/er_mobile with heli patrol
+	trk = data.Tracks[2]
+	if trk.ERSubjectType != "person" {
+		t.Errorf("track 2: want subject_type=person, got %q", trk.ERSubjectType)
+	}
+	if trk.ERPatrolType != "heli_patrol_operations" {
+		t.Errorf("track 2: want patrol_type=heli_patrol_operations, got %q", trk.ERPatrolType)
+	}
+
+	// Track 3: person/ranger
+	trk = data.Tracks[3]
+	if trk.ERSubjectSubtype != "ranger" {
+		t.Errorf("track 3: want subject_subtype=ranger, got %q", trk.ERSubjectSubtype)
+	}
+}
+
+func TestERTruckClassifiedAsVehicleEvenWhenParked(t *testing.T) {
+	// The truck track has very slow speed (nearly stationary) but the ER
+	// metadata says vehicle/truck — it should be classified as vehicle, not foot.
+	data, err := ParseGPX(strings.NewReader(testERGPX))
+	if err != nil {
+		t.Fatalf("ParseGPX error: %v", err)
+	}
+
+	segments := SplitIntoSegments(data, 2*time.Hour)
+
+	var truckSeg *Segment
+	for i, seg := range segments {
+		// Find the truck segment (very low speed, ~0.01 km/h)
+		if seg.AvgSpeedKmh < 1 && seg.Hint.Type == "vehicle" {
+			truckSeg = &segments[i]
+			break
+		}
+	}
+
+	if truckSeg == nil {
+		t.Fatal("could not find truck segment")
+	}
+
+	// Key test: even at ~0 km/h, should be classified as vehicle (not foot)
+	if truckSeg.MovementType != "vehicle" {
+		t.Errorf("parked truck: want vehicle, got %q (speed=%.2f km/h, hint=%+v)",
+			truckSeg.MovementType, truckSeg.AvgSpeedKmh, truckSeg.Hint)
+	}
+}
+
+func TestERMobileInHeliClassifiedAsAircraft(t *testing.T) {
+	// A person/er_mobile leading a heli_patrol should be classified as aircraft
+	data, err := ParseGPX(strings.NewReader(testERGPX))
+	if err != nil {
+		t.Fatalf("ParseGPX error: %v", err)
+	}
+
+	segments := SplitIntoSegments(data, 2*time.Hour)
+
+	var heliSeg *Segment
+	for i, seg := range segments {
+		if seg.Hint.Type == "aircraft" && seg.Hint.Confidence >= 1.0 {
+			heliSeg = &segments[i]
+			break
+		}
+	}
+
+	if heliSeg == nil {
+		t.Fatal("could not find helicopter segment")
+	}
+
+	if heliSeg.MovementType != "aircraft" {
+		t.Errorf("mobile in heli: want aircraft, got %q", heliSeg.MovementType)
+	}
+}
+
+func TestERRangerClassifiedAsFoot(t *testing.T) {
+	data, err := ParseGPX(strings.NewReader(testERGPX))
+	if err != nil {
+		t.Fatalf("ParseGPX error: %v", err)
+	}
+
+	segments := SplitIntoSegments(data, 2*time.Hour)
+
+	var rangerSeg *Segment
+	for i, seg := range segments {
+		if seg.Hint.Confidence == 0.9 && seg.Hint.Type == "foot" {
+			rangerSeg = &segments[i]
+			break
+		}
+	}
+
+	if rangerSeg == nil {
+		t.Fatal("could not find ranger segment")
+	}
+
+	if rangerSeg.MovementType != "foot" {
+		t.Errorf("ranger: want foot, got %q", rangerSeg.MovementType)
+	}
+}
+
+func TestMergeERSubjectHint(t *testing.T) {
+	tests := []struct {
+		name           string
+		subjectType    string
+		subjectSubtype string
+		patrolType     string
+		wantType       string
+		wantMinConf    float64
+	}{
+		{"vehicle/truck", "vehicle", "truck", "", "vehicle", 1.0},
+		{"aircraft/plane", "aircraft", "plane", "", "aircraft", 1.0},
+		{"aircraft/helicopter", "aircraft", "helicopter", "", "aircraft", 1.0},
+		{"person/ranger", "person", "ranger", "", "foot", 0.9},
+		{"person/er_mobile", "person", "er_mobile", "", "foot", 0.5},
+		{"person + heli_patrol", "person", "er_mobile", "heli_patrol_operations", "aircraft", 1.0},
+		{"person + vehicle_patrol", "person", "er_mobile", "vehicle_patrol", "vehicle", 1.0},
+		{"person + plane_patrol", "person", "ranger", "plane_patrol_operations", "aircraft", 1.0},
+		{"empty", "", "", "", "", 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hint := mergeERSubjectHint(MovementHint{}, tt.subjectType, tt.subjectSubtype, tt.patrolType)
+			if hint.Type != tt.wantType {
+				t.Errorf("want type %q, got %q", tt.wantType, hint.Type)
+			}
+			if hint.Confidence < tt.wantMinConf {
+				t.Errorf("want confidence >= %.1f, got %.2f", tt.wantMinConf, hint.Confidence)
+			}
+		})
 	}
 }

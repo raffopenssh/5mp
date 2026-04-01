@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"srv.exe.dev/db/dbgen"
+	"srv.exe.dev/srv/areas"
 	"srv.exe.dev/srv/gpx"
 )
 
@@ -34,11 +35,12 @@ func ptrString(v string) *string    { return &v }
 
 // GPXLearner processes uploaded GPX data to learn roads, places, and patterns
 type GPXLearner struct {
-	db      *sql.DB
-	queries *dbgen.Queries
-	mu      sync.Mutex
-	running bool
-	stopCh  chan struct{}
+	db        *sql.DB
+	queries   *dbgen.Queries
+	areaStore interface{ FindArea(lat, lon float64) *areas.ProtectedArea }
+	mu        sync.Mutex
+	running   bool
+	stopCh    chan struct{}
 }
 
 // NewGPXLearner creates a new learner instance
@@ -48,6 +50,11 @@ func NewGPXLearner(db *sql.DB) *GPXLearner {
 		queries: dbgen.New(db),
 		stopCh:  make(chan struct{}),
 	}
+}
+
+// SetAreaStore sets the area store used for filtering points by park.
+func (l *GPXLearner) SetAreaStore(as interface{ FindArea(lat, lon float64) *areas.ProtectedArea }) {
+	l.areaStore = as
 }
 
 // Start begins background processing of the learning queue
@@ -233,21 +240,46 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	if uploadID > 0 {
 		rawPoints := l.loadTrackPoints(ctx, uploadID)
 		if len(rawPoints) > 0 {
-			// Assign raw points to patrol segments that have no GeoJSON
+			// Assign raw points to all segments that have no GeoJSON.
+			// All types need points (patrol for MCP, aircraft for airstrip detection, etc.)
+			// Track_points are stored sequentially across GPX track segments,
+			// but start/end indices are per-segment (reset to 0 for each).
+			// We accumulate a global offset as we assign points.
+			globalOffset := 0
 			for i := range segments {
-				if len(segments[i].Points) == 0 && segments[i].Classification == "patrol" {
-					// Use start/end index to extract points from raw data
-					start := segments[i].StartIndex
-					end := segments[i].EndIndex
+				if len(segments[i].Points) == 0 {
+					start := globalOffset + segments[i].StartIndex
+					end := globalOffset + segments[i].EndIndex
 					if start >= 0 && end < len(rawPoints) && end >= start {
 						segments[i].Points = rawPoints[start : end+1]
 					}
 				}
+				// Advance offset past this segment's points
+				globalOffset += segments[i].EndIndex + 1
 			}
 		}
 	}
 
 	slog.Info("learner loaded segments", "total", len(segments), "with_points", countSegmentsWithPoints(segments))
+
+	// Filter segments to only those within (or near) the target park.
+	// Multi-subject ER uploads span multiple parks; without filtering,
+	// every park gets identical learner results.
+	if l.areaStore != nil && parkID != "" {
+		var filtered []ClassifiedSegment
+		for _, seg := range segments {
+			if segmentBelongsToPark(seg, parkID, l.areaStore) {
+				filtered = append(filtered, seg)
+			}
+		}
+		slog.Info("learner filtered segments for park", "park", parkID, "before", len(segments), "after", len(filtered))
+		segments = filtered
+		if len(segments) == 0 {
+			slog.Info("learner: no segments in park, skipping", "park", parkID)
+			// Mark as completed with empty result
+			return nil
+		}
+	}
 
 	result := &LearningResult{
 		UploadID:   uploadID,
@@ -268,14 +300,12 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	var vehicleSpeeds, footSpeeds []float64
 	var footPoints []gpx.Point // For MCP calculation
 
-	// Process each segment
+	// Process each segment — use MovementType from classifier (which
+	// already incorporates ER hints), falling back to speed inference.
 	for _, seg := range segments {
 		// Collect speeds by movement type
 		if seg.AvgSpeedKmh > 0 {
-			movementType := seg.MovementType
-			if movementType == "" {
-				movementType = inferMovementType(seg.AvgSpeedKmh)
-			}
+			movementType := inferMovementTypeWithHint(seg)
 
 			if movementType == "foot" {
 				footSpeeds = append(footSpeeds, seg.AvgSpeedKmh)
@@ -380,13 +410,19 @@ func inferMovementType(speedKmh float64) string {
 	return "aircraft"
 }
 
+// inferMovementTypeWithHint uses the segment's movement hint if available,
+// falling back to speed-based inference.
+func inferMovementTypeWithHint(seg ClassifiedSegment) string {
+	if seg.MovementType != "" {
+		return seg.MovementType
+	}
+	return inferMovementType(seg.AvgSpeedKmh)
+}
+
 func sumDistances(segments []ClassifiedSegment, movementType string) float64 {
 	var total float64
 	for _, seg := range segments {
-		mt := seg.MovementType
-		if mt == "" {
-			mt = inferMovementType(seg.AvgSpeedKmh)
-		}
+		mt := inferMovementTypeWithHint(seg)
 		if mt == movementType {
 			total += seg.DistanceKm
 		}
@@ -397,10 +433,7 @@ func sumDistances(segments []ClassifiedSegment, movementType string) float64 {
 func sumDurations(segments []ClassifiedSegment, movementType string) float64 {
 	var total float64
 	for _, seg := range segments {
-		mt := seg.MovementType
-		if mt == "" {
-			mt = inferMovementType(seg.AvgSpeedKmh)
-		}
+		mt := inferMovementTypeWithHint(seg)
 		if mt == movementType {
 			total += seg.Duration.Hours()
 		}
@@ -2072,6 +2105,31 @@ func countSegmentsWithPoints(segments []ClassifiedSegment) int {
 		}
 	}
 	return count
+}
+
+// segmentBelongsToPark checks if a segment's median point (or any sampled point)
+// falls within the specified park. Uses a generous check: the median point plus
+// first/last points are tested.
+func segmentBelongsToPark(seg ClassifiedSegment, parkID string, areaStore interface{ FindArea(lat, lon float64) *areas.ProtectedArea }) bool {
+	if len(seg.Points) == 0 {
+		return false
+	}
+	// Check median point (most representative)
+	mid := seg.Points[len(seg.Points)/2]
+	if area := areaStore.FindArea(mid.Lat, mid.Lon); area != nil && area.ID == parkID {
+		return true
+	}
+	// Check first point
+	first := seg.Points[0]
+	if area := areaStore.FindArea(first.Lat, first.Lon); area != nil && area.ID == parkID {
+		return true
+	}
+	// Check last point
+	last := seg.Points[len(seg.Points)-1]
+	if area := areaStore.FindArea(last.Lat, last.Lon); area != nil && area.ID == parkID {
+		return true
+	}
+	return false
 }
 
 // enrichWithContext adds nearby rivers, roads, places, and settlements to the result

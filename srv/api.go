@@ -277,11 +277,13 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 		if fromStr != "" {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
 				gridParams.FromYear = int64(t.Year())
+				gridParams.FromMonth = int64(t.Month())
 			}
 		}
 		if toStr != "" {
 			if t, err := time.Parse("2006-01-02", toStr); err == nil {
 				gridParams.ToYear = int64(t.Year())
+				gridParams.ToMonth = int64(t.Month())
 			}
 		}
 		
@@ -290,7 +292,7 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			continue
 		}
 		
-		// Query patrol effort data for monthly details
+		// Query patrol effort data for monthly details (aggregated from day-level records)
 		query := `
 			SELECT 
 				e.grid_cell_id,
@@ -299,11 +301,10 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 				g.lat_center,
 				g.lon_center,
 				e.movement_type,
-				e.total_distance_km
+				SUM(e.total_distance_km) as total_distance_km
 			FROM effort_data e
 			JOIN grid_cells g ON e.grid_cell_id = g.id
-			WHERE e.day IS NULL
-			  AND e.movement_type IN ('foot', 'vehicle', 'aircraft')
+			WHERE e.movement_type IN ('foot', 'vehicle', 'aircraft')
 			  AND g.lat_center BETWEEN ? AND ?
 			  AND g.lon_center BETWEEN ? AND ?
 		`
@@ -322,6 +323,7 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			}
 		}
 		
+		query += " GROUP BY e.grid_cell_id, e.year, e.month, g.lat_center, g.lon_center, e.movement_type"
 		query += " ORDER BY e.year DESC, e.month DESC LIMIT 5000"
 		
 		rows, err := s.DB.Query(query, args...)
@@ -427,17 +429,16 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
 	
-	// Build query for monthly effort data
+	// Build query for monthly effort data (aggregated from day-level records)
 	query := `
 		SELECT 
 			e.year,
 			e.month,
 			e.movement_type,
-			e.total_distance_km,
-			e.total_points
+			SUM(e.total_distance_km) as total_distance_km,
+			SUM(e.total_points) as total_points
 		FROM effort_data e
 		WHERE e.grid_cell_id = ?
-		  AND e.day IS NULL
 		  AND e.movement_type IN ('foot', 'vehicle', 'aircraft')
 	`
 	args := []interface{}{gridCellID}
@@ -455,6 +456,7 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 		}
 	}
 	
+	query += " GROUP BY e.year, e.month, e.movement_type"
 	query += " ORDER BY e.year DESC, e.month DESC LIMIT 500"
 	
 	rows, err := s.DB.Query(query, args...)
@@ -576,18 +578,22 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	params := GridQueryParams{}
 	now := time.Now()
 
-	// Determine year range
+	// Determine date range (year + month + day precision)
 	if fromStr != "" || toStr != "" {
 		params.FromYear = int64(now.Year() - 1)
 		params.ToYear = int64(now.Year())
 		if fromStr != "" {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
 				params.FromYear = int64(t.Year())
+				params.FromMonth = int64(t.Month())
+				params.FromDay = int64(t.Day())
 			}
 		}
 		if toStr != "" {
 			if t, err := time.Parse("2006-01-02", toStr); err == nil {
 				params.ToYear = int64(t.Year())
+				params.ToMonth = int64(t.Month())
+				params.ToDay = int64(t.Day())
 			}
 		}
 	} else if yearStr != "" {
@@ -608,14 +614,18 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse movement types
-	if typeStr != "" {
+	if typeStr == "none" {
+		// Explicit "none" means no types selected → return empty results
+		params.MovementTypes = []string{"__none__"}
+	} else if typeStr != "" {
 		for _, t := range strings.Split(typeStr, ",") {
 			t = strings.TrimSpace(t)
-			// Map 'aerial' to 'aircraft' (database uses 'aircraft')
+			// Map 'aerial' to fixed_wing + rotor_wing (backward compat)
 			if t == "aerial" {
-				t = "aircraft"
+				params.MovementTypes = append(params.MovementTypes, "fixed_wing", "rotor_wing")
+				continue
 			}
-			if t == "foot" || t == "vehicle" || t == "aircraft" {
+			if t == "foot" || t == "vehicle" || t == "boat" || t == "fixed_wing" || t == "rotor_wing" {
 				params.MovementTypes = append(params.MovementTypes, t)
 			}
 		}
@@ -659,18 +669,7 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, row := range rows {
-		feature := buildGridFeature(
-			row.GridCellID,
-			row.LatCenter,
-			row.LonCenter,
-			row.TotalDistanceKm,
-			row.TotalPoints,
-			row.UniqueUploads,
-			movementTypeStr,
-			row.CoveragePercent,
-			row.DryMonths,
-			row.RainyMonths,
-		)
+		feature := buildGridFeature(row, movementTypeStr, params)
 		features = append(features, feature)
 	}
 
@@ -686,56 +685,202 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 
 // buildGridFeature creates a GeoJSON feature for a grid cell.
 // Returns a Point at the center of the cell for circle visualization.
-// dryMonths and rainyMonths are the count of distinct months visited in each season.
-// For full patrol coverage, rangers need to visit each cell monthly during dry season.
-func buildGridFeature(gridCellID string, latCenter, lonCenter, totalDistanceKm float64, totalPoints, uniqueUploads int64, movementType string, coveragePercent *float64, dryMonths, rainyMonths int64) GeoJSONFeature {
-	// Calculate intensity based on TEMPORAL FREQUENCY of visits
-	// 
-	// For effective poacher/herder detection:
-	// - Dry season (Nov-Apr = 6 months): Need monthly visits, weight = 1.0 per month
-	// - Rainy season (May-Oct = 6 months): Limited access, weight = 0.3 per month
-	// 
-	// Full intensity (1.0) = visited all dry season months + some rainy months
-	// Expected weighted visits = 6 * 1.0 (dry) + 6 * 0.3 (rainy) = 7.8
-	// But for practical purposes, we use 6 dry months as the baseline (ignoring rainy)
-	
-	var intensity float64
-	
-	// Primary calculation: temporal frequency (monthly visits)
-	if dryMonths > 0 || rainyMonths > 0 {
-		// Weight: dry months count fully, rainy months count 30%
-		actualWeight := float64(dryMonths) + float64(rainyMonths)*0.3
-		// Expected: 6 dry months = full coverage for a year
-		expectedWeight := 6.0
-		intensity = actualWeight / expectedWeight
-	} else if coveragePercent != nil && *coveragePercent > 0 {
-		// Fallback: spatial coverage (legacy behavior)
-		intensity = *coveragePercent / 80.0
-	} else {
-		// Last fallback: estimate from distance
-		// ~80km patrol in a year = ~1 full coverage (very rough)
-		intensity = totalDistanceKm / 80.0
+//
+// Intensity model (time-window-aware):
+//   - Distance weighted heavily by movement type: foot >> vehicle >> aircraft
+//   - Subcell coverage is a primary factor (spatial thoroughness)
+//   - Multi-type bonus: cells visited by multiple movement types score higher
+//   - Visit-day frequency matters for longer windows
+//   - Recency drives halo/glow opacity decay
+func buildGridFeature(row GridRow, movementType string, params GridQueryParams) GeoJSONFeature {
+	windowDays := computeWindowSpanDays(params)
+
+	// Count distinct movement types present
+	numTypes := 0
+	if row.FootKm > 0 {
+		numTypes++
 	}
-	
-	if intensity > 1.5 {
-		intensity = 1.5 // Cap for overglow effect
+	if row.VehicleKm > 0 {
+		numTypes++
+	}
+	if row.AircraftKm > 0 {
+		numTypes++
 	}
 
-	// Return Point at center of cell (GeoJSON uses [lon, lat] order)
+	// Aircraft effective weight modulated by speed and altitude.
+	// Low speed (circling/surveying) = more valuable than high speed (transit).
+	// Low altitude = better observation than high altitude.
+	aircraftWeight := 0.01
+	if row.AircraftKm > 0 {
+		if row.AvgSpeedKmh != nil && *row.AvgSpeedKmh > 0 {
+			speed := *row.AvgSpeedKmh
+			if speed < 50 {
+				aircraftWeight *= 3.0
+			} else if speed < 200 {
+				aircraftWeight *= 3.0 - 2.0*(speed-50)/150.0
+			}
+		}
+		if row.AvgAltitudeM != nil && *row.AvgAltitudeM > 0 {
+			alt := *row.AvgAltitudeM
+			if alt < 300 {
+				aircraftWeight *= 1.5
+			} else if alt < 1500 {
+				aircraftWeight *= 1.5 - 1.0*(alt-300)/1200.0
+			} else {
+				aircraftWeight *= 0.5
+			}
+		}
+	}
+
+	var intensity float64
+
+	if windowDays > 180 {
+		// Long window: seasonal month-frequency as base, with distance
+		// and subcell coverage as differentiators.
+		var monthBase float64
+		if row.DryMonths > 0 || row.RainyMonths > 0 {
+			actualWeight := float64(row.DryMonths) + float64(row.RainyMonths)*0.3
+			expectedWeight := 6.0
+			monthBase = actualWeight / expectedWeight
+		} else if row.CoveragePercent != nil && *row.CoveragePercent > 0 {
+			monthBase = *row.CoveragePercent / 80.0
+		} else {
+			monthBase = row.TotalDistanceKm / 80.0
+		}
+
+		// Distance differentiator: weighted by movement type.
+		// Gives extra credit to cells with high ground effort.
+		// Saturates at ~200 effective km (e.g. 200km foot or 1300km vehicle).
+		wDist := row.FootKm*1.0 + row.VehicleKm*0.15 + row.AircraftKm*aircraftWeight
+		distBonus := math.Log2(1.0+wDist) / math.Log2(1.0+200.0)
+		if distBonus > 1.0 {
+			distBonus = 1.0
+		}
+
+		// Subcell differentiator: more spatial coverage = more thorough
+		subBonus := float64(row.SubcellCount) / 60.0
+		if subBonus > 1.0 {
+			subBonus = 1.0
+		}
+
+		// Blend: months 55%, distance 25%, subcell 20%
+		intensity = monthBase*0.55 + distBonus*0.25 + subBonus*0.20
+	} else {
+		// Short-to-medium window (1-180 days).
+		//
+		// Distance weighted by movement type effort per km:
+		//   foot: 1.0/km  - highest effort, most valuable
+		//   vehicle: 0.15/km - moderate effort
+		//   aircraft: 0.02/km - minimal per-km effort; value is in coverage breadth
+		//
+		// A 50km flight = 1.0 effective km (presence detected, not patrolled)
+		// A 5km foot patrol = 5.0 effective km (thorough ground coverage)
+		weightedDist := row.FootKm*1.0 + row.VehicleKm*0.15 + row.AircraftKm*aircraftWeight
+		// Fall back to total if per-type breakdown unavailable (legacy data)
+		if weightedDist == 0 && row.TotalDistanceKm > 0 {
+			weightedDist = row.TotalDistanceKm * 0.33
+		}
+
+		// Threshold scales logarithmically with window size:
+		//   1d → 8km, 3d → 16km, 7d → 24km, 14d → 31km,
+		//   28d → 39km, 90d → 52km, 180d → 60km
+		distThreshold := 8.0 * math.Log2(1.0+float64(windowDays))
+		distFactor := weightedDist / distThreshold
+		if distFactor > 1.0 {
+			distFactor = 1.0
+		}
+
+		// Subcell spatial coverage: primary factor (0-100 subcells).
+		// 30 subcells visited = full score. This represents 30% area coverage
+		// of the 10x10 grid, which is excellent for a single time window.
+		subcellFactor := float64(row.SubcellCount) / 30.0
+		if subcellFactor > 1.0 {
+			subcellFactor = 1.0
+		}
+
+		// Multi-type bonus: visiting with different movement types means
+		// more comprehensive surveillance (ground + air = better).
+		multiTypeBonus := 0.0
+		if numTypes >= 2 {
+			multiTypeBonus = 0.15 * float64(numTypes-1) // +0.15 for 2 types, +0.30 for 3
+		}
+
+		// Visit-day frequency (saturates at visit every 3 days)
+		expectedVisitDays := float64(windowDays) / 3.0
+		if expectedVisitDays < 1 {
+			expectedVisitDays = 1
+		}
+		visitFactor := float64(row.VisitDays) / expectedVisitDays
+		if visitFactor > 1.0 {
+			visitFactor = 1.0
+		}
+
+		// Blend: subcell coverage and distance are primary, visit-days grow
+		// with longer windows. Multi-type bonus stacks on top.
+		//
+		// For short windows (1d):
+		//   distWeight=0.35, subcellWeight=0.35, visitWeight=0.30
+		// For medium windows (30d):
+		//   distWeight=0.25, subcellWeight=0.35, visitWeight=0.40
+		// For long windows (180d):
+		//   distWeight=0.15, subcellWeight=0.35, visitWeight=0.50
+		visitWeight := 0.30 + 0.20*(1.0-1.0/(1.0+math.Log2(float64(windowDays))))
+		distWeight := (1.0 - 0.35 - visitWeight)
+		subcellWeight := 0.35
+
+		intensity = distFactor*distWeight + subcellFactor*subcellWeight + visitFactor*visitWeight + multiTypeBonus
+	}
+
+	if intensity > 1.5 {
+		intensity = 1.5
+	}
+
+	// Subcell spatial coverage: fraction of 100 possible subcells visited
+	subcellCoverage := float64(row.SubcellCount) / 100.0
+	if subcellCoverage > 1.0 {
+		subcellCoverage = 1.0
+	}
+
+	// Recency: how fresh is the last visit relative to window end?
+	recency := computeRecency(row.LastVisitDay, params)
+
 	return GeoJSONFeature{
 		Type: "Feature",
 		Geometry: GeoJSONGeometry{
 			Type:        "Point",
-			Coordinates: []float64{lonCenter, latCenter},
+			Coordinates: []float64{row.LonCenter, row.LatCenter},
 		},
 		Properties: map[string]interface{}{
-			"id":                gridCellID,
-			"total_distance_km": totalDistanceKm,
-			"total_points":      totalPoints,
-			"unique_uploads":    uniqueUploads,
+			"id":                row.GridCellID,
+			"total_distance_km": row.TotalDistanceKm,
+			"total_points":      row.TotalPoints,
+			"unique_uploads":    row.UniqueUploads,
 			"movement_type":     movementType,
 			"intensity":         intensity,
-			"coverage_percent":  coveragePercent,
+			"coverage_percent":  row.CoveragePercent,
+			"subcell_coverage":  subcellCoverage,
+			"recency":           recency,
+			"visit_days":        row.VisitDays,
+			"foot_km":             row.FootKm,
+			"vehicle_km":          row.VehicleKm,
+			"aircraft_km":         row.AircraftKm,
+			"boat_km":             row.BoatKm,
+			"fixed_wing_km":       row.FixedWingKm,
+			"rotor_wing_km":       row.RotorWingKm,
+			"avg_speed_kmh":       row.AvgSpeedKmh,
+			"avg_altitude_m":      row.AvgAltitudeM,
+			"foot_speed_kmh":      row.FootSpeedKmh,
+			"vehicle_speed_kmh":   row.VehicleSpeedKmh,
+			"aircraft_speed_kmh":  row.AircraftSpeedKmh,
+			"boat_speed_kmh":       row.BoatSpeedKmh,
+			"fixed_wing_speed_kmh": row.FixedWingSpeedKmh,
+			"rotor_wing_speed_kmh": row.RotorWingSpeedKmh,
+			"foot_altitude_m":       row.FootAltitudeM,
+			"vehicle_altitude_m":    row.VehicleAltitudeM,
+			"aircraft_altitude_m":   row.AircraftAltitudeM,
+			"boat_altitude_m":       row.BoatAltitudeM,
+			"fixed_wing_altitude_m": row.FixedWingAltitudeM,
+			"rotor_wing_altitude_m": row.RotorWingAltitudeM,
 		},
 	}
 }
@@ -870,11 +1015,11 @@ func (s *Server) HandleAPILogout(w http.ResponseWriter, r *http.Request) {
 func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	// Parse date range
+	// Parse date range and movement type filter
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
 	bboxStr := r.URL.Query().Get("bbox")
-	// Note: type filter not yet implemented for stats - would need movement type aggregation
+	typeStr := r.URL.Query().Get("type")
 
 	// Parse bbox if provided (minLng,minLat,maxLng,maxLat)
 	var bbox []float64
@@ -892,21 +1037,44 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	fromYear := int64(now.Year())
 	toYear := int64(now.Year())
+	var fromMonth, toMonth, fromDay, toDay int64
 	if fromStr != "" {
 		if t, err := time.Parse("2006-01-02", fromStr); err == nil {
 			fromYear = int64(t.Year())
+			fromMonth = int64(t.Month())
+			fromDay = int64(t.Day())
 		}
 	}
 	if toStr != "" {
 		if t, err := time.Parse("2006-01-02", toStr); err == nil {
 			toYear = int64(t.Year())
+			toMonth = int64(t.Month())
+			toDay = int64(t.Day())
+		}
+	}
+
+	// Parse movement types
+	var movementTypes []string
+	if typeStr == "none" {
+		movementTypes = []string{"__none__"}
+	} else if typeStr != "" {
+		for _, t := range strings.Split(typeStr, ",") {
+			t = strings.TrimSpace(t)
+			// Map 'aerial' to fixed_wing + rotor_wing (backward compat)
+			if t == "aerial" {
+				movementTypes = append(movementTypes, "fixed_wing", "rotor_wing")
+				continue
+			}
+			if t == "foot" || t == "vehicle" || t == "boat" || t == "fixed_wing" || t == "rotor_wing" {
+				movementTypes = append(movementTypes, t)
+			}
 		}
 	}
 
 	// Aggregate stats across requested years
 	var activePixels, totalUploads int64
 	var totalDistanceKm float64
-	// Build patrol stats query with optional bbox filter
+	// Build patrol stats query with optional bbox and movement type filter
 	statsQuery := `
 		SELECT 
 			COUNT(DISTINCT e.grid_cell_id) as active_pixels,
@@ -914,11 +1082,32 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 			COALESCE(SUM(e.unique_uploads), 0) as total_uploads
 		FROM effort_data e
 		JOIN grid_cells g ON e.grid_cell_id = g.id
-		WHERE e.year BETWEEN ? AND ?
-		  AND e.day IS NULL
-		  AND e.movement_type = 'all'
+		WHERE 1=1
 	`
-	args := []interface{}{fromYear, toYear}
+	var args []interface{}
+	// Day-level filtering when day precision is available
+	if fromDay > 0 && toDay > 0 && fromMonth > 0 && toMonth > 0 {
+		statsQuery += " AND ((e.day IS NOT NULL AND (e.year * 10000 + e.month * 100 + e.day) BETWEEN ? AND ?) OR (e.day IS NULL AND (e.year * 100 + e.month) BETWEEN ? AND ?))"
+		args = append(args, fromYear*10000+fromMonth*100+fromDay, toYear*10000+toMonth*100+toDay, fromYear*100+fromMonth, toYear*100+toMonth)
+	} else if fromMonth > 0 && toMonth > 0 {
+		statsQuery += " AND (e.year * 100 + e.month) BETWEEN ? AND ?"
+		args = append(args, fromYear*100+fromMonth, toYear*100+toMonth)
+	} else {
+		statsQuery += " AND e.year BETWEEN ? AND ?"
+		args = append(args, fromYear, toYear)
+	}
+
+	// Movement type filter
+	if len(movementTypes) > 0 && len(movementTypes) < 5 {
+		placeholders := make([]string, len(movementTypes))
+		for i, t := range movementTypes {
+			placeholders[i] = "?"
+			args = append(args, t)
+		}
+		statsQuery += fmt.Sprintf(" AND e.movement_type IN (%s)", strings.Join(placeholders, ","))
+	} else {
+		statsQuery += " AND e.movement_type = 'all'"
+	}
 
 	if len(bbox) == 4 {
 		statsQuery += ` AND g.lat_center >= ? AND g.lat_center <= ?
@@ -936,71 +1125,84 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	var totalDeforestation, prevDeforestation float64
 	var totalSettlements int
 
-	// Fire stats from park_fire_weekly (recent activity) and fire_group_alerts
-	// Since fire_detections table is empty, we use summary tables
-	
-	// Get recent fire activity from park_fire_weekly
-	if fromStr != "" && toStr != "" {
-		// Use weekly data within the date range
-		s.DB.QueryRow(`
-			SELECT COALESCE(SUM(fire_count), 0) FROM park_fire_weekly 
-			WHERE week_start >= ? AND week_start <= ?
-		`, fromStr, toStr).Scan(&totalFires)
-		
-		// If no weekly data, fall back to fire_group_alerts count
-		if totalFires == 0 {
-			s.DB.QueryRow(`
-				SELECT COUNT(*) FROM fire_group_alerts 
-				WHERE alert_type IN ('active_inside', 'entered', 'cooling')
-			`).Scan(&totalFires)
+	// Fire stats from feature_geometries (fire_trajectory) with bbox + date filtering
+	// Uses precomputed stat_value column (= fires_total) for fast aggregation
+	{
+		fireQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
+			WHERE feature_type = 'fire_trajectory'`
+		var fireArgs []interface{}
+		if fromStr != "" {
+			fireQuery += " AND start_date >= ?"
+			fireArgs = append(fireArgs, fromStr)
 		}
-		
-		// Get previous period for trend
-		fromTime, _ := time.Parse("2006-01-02", fromStr)
-		toTime, _ := time.Parse("2006-01-02", toStr)
-		duration := toTime.Sub(fromTime)
-		prevFrom := fromTime.Add(-duration).Format("2006-01-02")
-		prevTo := fromTime.Add(-24 * time.Hour).Format("2006-01-02")
-		s.DB.QueryRow(`
-			SELECT COALESCE(SUM(fire_count), 0) FROM park_fire_weekly 
-			WHERE week_start >= ? AND week_start <= ?
-		`, prevFrom, prevTo).Scan(&prevFires)
-	} else {
-		// Default: count active fire groups from alerts table (last 14 days)
-		s.DB.QueryRow(`
-			SELECT COUNT(*) FROM fire_group_alerts 
-			WHERE alert_type IN ('active_inside', 'entered', 'cooling')
-		`).Scan(&totalFires)
-		// No trend data available without date range
+		if toStr != "" {
+			fireQuery += " AND start_date <= ?"
+			fireArgs = append(fireArgs, toStr)
+		}
+		if len(bbox) == 4 {
+			fireQuery += " AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?"
+			fireArgs = append(fireArgs, bbox[0], bbox[2], bbox[1], bbox[3])
+		}
+		var totalFiresF float64
+		s.DB.QueryRow(fireQuery, fireArgs...).Scan(&totalFiresF)
+		totalFires = int(totalFiresF)
+
+		// Previous period for trend
+		if fromStr != "" && toStr != "" {
+			fromTime, _ := time.Parse("2006-01-02", fromStr)
+			toTime, _ := time.Parse("2006-01-02", toStr)
+			duration := toTime.Sub(fromTime)
+			prevFrom := fromTime.Add(-duration).Format("2006-01-02")
+			prevTo := fromTime.Add(-24 * time.Hour).Format("2006-01-02")
+			prevQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
+				WHERE feature_type = 'fire_trajectory' AND start_date >= ? AND start_date <= ?`
+			prevArgs := []interface{}{prevFrom, prevTo}
+			if len(bbox) == 4 {
+				prevQuery += " AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?"
+				prevArgs = append(prevArgs, bbox[0], bbox[2], bbox[1], bbox[3])
+			}
+			var prevFiresF float64
+			s.DB.QueryRow(prevQuery, prevArgs...).Scan(&prevFiresF)
+			prevFires = int(prevFiresF)
+		}
 	}
 
-	// Deforestation totals in selected years (with optional bbox filter)
-	if len(bbox) == 4 {
-		s.DB.QueryRow(`
-			SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
-			WHERE year >= ? AND year <= ?
-			AND lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?
-		`, fromYear, toYear, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&totalDeforestation)
-	} else {
-		s.DB.QueryRow(`
-			SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
-			WHERE year >= ? AND year <= ?
-		`, fromYear, toYear).Scan(&totalDeforestation)
-	}
+	// Deforestation stats from feature_geometries with bbox + date filtering
+	// Uses precomputed stat_value column (= area_km2) for fast aggregation
+	{
+		deforestQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
+			WHERE feature_type = 'deforestation'`
+		var deforestArgs []interface{}
+		if fromStr != "" {
+			deforestQuery += " AND start_date >= ?"
+			deforestArgs = append(deforestArgs, fromStr)
+		}
+		if toStr != "" {
+			deforestQuery += " AND start_date <= ?"
+			deforestArgs = append(deforestArgs, toStr)
+		}
+		if len(bbox) == 4 {
+			deforestQuery += " AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?"
+			deforestArgs = append(deforestArgs, bbox[0], bbox[2], bbox[1], bbox[3])
+		}
+		s.DB.QueryRow(deforestQuery, deforestArgs...).Scan(&totalDeforestation)
 
-	// Previous period deforestation for trend
-	yearSpan := toYear - fromYear + 1
-	if len(bbox) == 4 {
-		s.DB.QueryRow(`
-			SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
-			WHERE year >= ? AND year < ?
-			AND lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?
-		`, fromYear-yearSpan, fromYear, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&prevDeforestation)
-	} else {
-		s.DB.QueryRow(`
-			SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events 
-			WHERE year >= ? AND year < ?
-		`, fromYear-yearSpan, fromYear).Scan(&prevDeforestation)
+		// Previous period for trend
+		if fromStr != "" && toStr != "" {
+			fromTime, _ := time.Parse("2006-01-02", fromStr)
+			toTime, _ := time.Parse("2006-01-02", toStr)
+			duration := toTime.Sub(fromTime)
+			prevFrom := fromTime.Add(-duration).Format("2006-01-02")
+			prevTo := fromTime.Add(-24 * time.Hour).Format("2006-01-02")
+			prevQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
+				WHERE feature_type = 'deforestation' AND start_date >= ? AND start_date <= ?`
+			prevArgs := []interface{}{prevFrom, prevTo}
+			if len(bbox) == 4 {
+				prevQuery += " AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?"
+				prevArgs = append(prevArgs, bbox[0], bbox[2], bbox[1], bbox[3])
+			}
+			s.DB.QueryRow(prevQuery, prevArgs...).Scan(&prevDeforestation)
+		}
 	}
 
 	// Total settlements (with optional bbox filter)
@@ -1035,7 +1237,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "public, max-age=30")
+	w.Header().Set("Cache-Control", "no-cache")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"active_pixels":       activePixels,
 		"total_distance_km":   totalDistanceKm,
@@ -1352,32 +1554,13 @@ func (s *Server) HandleAPIPublications(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Look up park to get WDPA ID
-	area := s.AreaStore.GetByID(parkID)
-	if area == nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]string{"error": "park not found"})
-		return
-	}
-
-	// Use WDPA ID if available, otherwise fall back to park ID
-	paID := parkID
-	if area.WDPAID != "" {
-		paID = area.WDPAID
-	}
-
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
-	// Try looking up by WDPA ID first, then fall back to park ID
-	pubs, err := q.GetPublicationsByPA(ctx, paID)
-	if err == nil && len(pubs) == 0 && paID != parkID {
-		// No results with WDPA ID, try park ID
-		pubs, err = q.GetPublicationsByPA(ctx, parkID)
-	}
+	// All publications are now stored with park ID (e.g., COD_Salonga)
+	pubs, err := q.GetPublicationsByPA(ctx, parkID)
 	if err != nil {
-		slog.Error("failed to get publications", "pa_id", paID, "error", err)
+		slog.Error("failed to get publications", "pa_id", parkID, "error", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": "database error"})
@@ -1434,17 +1617,11 @@ func (s *Server) HandleAPIPublicationCount(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Look up park to get WDPA ID
-	area := s.AreaStore.GetByID(parkID)
-	paID := parkID
-	if area != nil && area.WDPAID != "" {
-		paID = area.WDPAID
-	}
-
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
-	count, err := q.GetPublicationCountByPA(ctx, paID)
+	// All publications are now stored with park ID (e.g., COD_Salonga)
+	count, err := q.GetPublicationCountByPA(ctx, parkID)
 	if err != nil {
 		count = 0
 	}
@@ -2484,6 +2661,8 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 		Type          string   `json:"type"`
 		ID            int64    `json:"id"`
 		ParkID        string   `json:"park_id"`
+		Lat           *float64 `json:"lat"`
+		Lon           *float64 `json:"lon"`
 		ConfidencePct *float64 `json:"confidence_pct"`
 		Details       string   `json:"details"`
 		CreatedAt     string   `json:"created_at"`
@@ -2493,17 +2672,20 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 	
 	// Get pending roads
 	rows, err := s.DB.Query(`
-		SELECT 'road' as type, id, park_id, confidence_pct, 
+		SELECT 'road' as type, id, park_id,
+		       json_extract(geojson, '$.coordinates[0][1]') as lat,
+		       json_extract(geojson, '$.coordinates[0][0]') as lon,
+		       confidence_pct, 
 		       COALESCE(printf('%.1f km, %d matches', length_m/1000.0, match_count), 'Unknown'),
 		       datetime(created_at) as created_at
 		FROM learned_roads WHERE status = 'pending'
 		UNION ALL
-		SELECT 'airstrip' as type, id, park_id, confidence_pct,
+		SELECT 'airstrip' as type, id, park_id, lat, lon, confidence_pct,
 		       COALESCE(printf('%s, %d landings', aircraft_type, landing_count), 'Unknown'),
 		       datetime(created_at) as created_at
 		FROM learned_airstrips WHERE status = 'pending'
 		UNION ALL
-		SELECT 'place' as type, id, park_id, confidence_pct,
+		SELECT 'place' as type, id, park_id, lat, lon, confidence_pct,
 		       COALESCE(printf('%s, %d visits', place_type, visit_count), 'Unknown'),
 		       datetime(created_at) as created_at
 		FROM learned_places WHERE status = 'pending'
@@ -2519,7 +2701,7 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 	
 	for rows.Next() {
 		var f PendingFeature
-		if err := rows.Scan(&f.Type, &f.ID, &f.ParkID, &f.ConfidencePct, &f.Details, &f.CreatedAt); err != nil {
+		if err := rows.Scan(&f.Type, &f.ID, &f.ParkID, &f.Lat, &f.Lon, &f.ConfidencePct, &f.Details, &f.CreatedAt); err != nil {
 			continue
 		}
 		features = append(features, f)
@@ -2844,7 +3026,61 @@ func (s *Server) HandleAPIBulkReject(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]int{"rejected": rejected})
 }
 
-// HandleAPIDeleteUpload deletes a GPX upload and its logs
+// HandleAPIBulkDeleteUploads deletes multiple GPX uploads at once.
+// POST /api/admin/bulk-delete-uploads
+func (s *Server) HandleAPIBulkDeleteUploads(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var req struct {
+		IDs []int64 `json:"ids"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	if len(req.IDs) == 0 {
+		http.Error(w, "No IDs provided", http.StatusBadRequest)
+		return
+	}
+
+	deleted := 0
+	for _, id := range req.IDs {
+		var uploadID sql.NullInt64
+		_ = s.DB.QueryRowContext(ctx, "SELECT upload_id FROM gpx_upload_logs WHERE id = ?", id).Scan(&uploadID)
+
+		_, err := s.DB.ExecContext(ctx, "DELETE FROM gpx_upload_logs WHERE id = ?", id)
+		if err != nil {
+			continue
+		}
+		deleted++
+
+		if uploadID.Valid {
+			_, _ = s.DB.ExecContext(ctx, "DELETE FROM track_points WHERE upload_id = ?", uploadID.Int64)
+			_, _ = s.DB.ExecContext(ctx, "DELETE FROM gpx_uploads WHERE id = ?", uploadID.Int64)
+		}
+
+		_, _ = s.DB.ExecContext(ctx, "DELETE FROM notifications WHERE notification_type = 'new_upload' AND reference_id = ?", fmt.Sprintf("%d", id))
+	}
+
+	// Clean up orphans
+	_, _ = s.DB.ExecContext(ctx, `
+		DELETE FROM track_points WHERE upload_id IN (
+			SELECT u.id FROM gpx_uploads u
+			LEFT JOIN gpx_upload_logs l ON l.upload_id = u.id
+			WHERE l.id IS NULL
+		)`)
+	_, _ = s.DB.ExecContext(ctx, `
+		DELETE FROM gpx_uploads WHERE id NOT IN (
+			SELECT upload_id FROM gpx_upload_logs WHERE upload_id IS NOT NULL
+		)`)
+
+	go s.rebuildAllEffortData()
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]int{"deleted": deleted})
+}
+
+// HandleAPIDeleteUpload deletes a GPX upload and its logs, then rebuilds effort_data.
 // POST /api/admin/delete-upload
 func (s *Server) HandleAPIDeleteUpload(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -2858,15 +3094,150 @@ func (s *Server) HandleAPIDeleteUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Delete from gpx_upload_logs and related tables
+	// Look up the upload_id from the log so we can clean up related tables
+	var uploadID sql.NullInt64
+	_ = s.DB.QueryRowContext(ctx, "SELECT upload_id FROM gpx_upload_logs WHERE id = ?", req.ID).Scan(&uploadID)
+
+	// Delete from gpx_upload_logs
 	_, err := s.DB.ExecContext(ctx, "DELETE FROM gpx_upload_logs WHERE id = ?", req.ID)
 	if err != nil {
 		http.Error(w, "Failed to delete upload", http.StatusInternalServerError)
 		return
 	}
 
+	// Clean up related tables if there was an associated gpx_uploads record
+	if uploadID.Valid {
+		_, _ = s.DB.ExecContext(ctx, "DELETE FROM track_points WHERE upload_id = ?", uploadID.Int64)
+		_, _ = s.DB.ExecContext(ctx, "DELETE FROM gpx_uploads WHERE id = ?", uploadID.Int64)
+	}
+
+	// Clean up orphan gpx_uploads — records not referenced by any log entry.
+	// These can accumulate when uploads are re-processed or logs deleted.
+	_, _ = s.DB.ExecContext(ctx, `
+		DELETE FROM track_points WHERE upload_id IN (
+			SELECT u.id FROM gpx_uploads u
+			LEFT JOIN gpx_upload_logs l ON l.upload_id = u.id
+			WHERE l.id IS NULL
+		)`)
+	_, _ = s.DB.ExecContext(ctx, `
+		DELETE FROM gpx_uploads WHERE id NOT IN (
+			SELECT upload_id FROM gpx_upload_logs WHERE upload_id IS NOT NULL
+		)`)
+
+	// Clean up associated notification
+	_, _ = s.DB.ExecContext(ctx, "DELETE FROM notifications WHERE notification_type = 'new_upload' AND reference_id = ?", fmt.Sprintf("%d", req.ID))
+
+	// Trigger async effort_data rebuild from remaining uploads
+	go s.rebuildAllEffortData()
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "deleted"})
+}
+
+// HandleAPIUploadDetail returns detailed information about a GPX upload
+// GET /api/admin/upload-detail?id=123
+func (s *Server) HandleAPIUploadDetail(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		http.Error(w, "Missing id parameter", http.StatusBadRequest)
+		return
+	}
+
+	uploadID, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	// Get upload log details
+	var result struct {
+		ID                 int64   `json:"id"`
+		Filename           string  `json:"filename"`
+		UploadTime         string  `json:"upload_time"`
+		TotalPoints        int64   `json:"total_points"`
+		ProtectedAreaID    *string `json:"protected_area_id"`
+		ProtectedAreaName  *string `json:"protected_area_name"`
+		ProcessingStatus   string  `json:"processing_status"`
+		RejectionReason    *string `json:"rejection_reason"`
+		ValidationErrors   *string `json:"validation_errors"`
+		ValidationWarnings *string `json:"validation_warnings"`
+
+		// Distance stats
+		PatrolKm   float64 `json:"patrol_km"`
+		RoadKm     float64 `json:"road_km"`
+		BoundaryKm float64 `json:"boundary_km"`
+		ExcludedKm float64 `json:"excluded_km"`
+
+		// Segment counts
+		TotalSegments    int64 `json:"total_segments"`
+		PatrolSegments   int64 `json:"patrol_segments"`
+		StaticSegments   int64 `json:"static_segments"`
+		ExcludedSegments int64 `json:"excluded_segments"`
+
+		// Movement type breakdown
+		FootSegments     int64   `json:"foot_segments"`
+		FootKm           float64 `json:"foot_km"`
+		FootMinutes      float64 `json:"foot_minutes"`
+		VehicleSegments  int64   `json:"vehicle_segments"`
+		VehicleKm        float64 `json:"vehicle_km"`
+		VehicleMinutes   float64 `json:"vehicle_minutes"`
+		AircraftSegments int64   `json:"aircraft_segments"`
+		AircraftKm       float64 `json:"aircraft_km"`
+		AircraftMinutes  float64 `json:"aircraft_minutes"`
+
+		// Activity breakdown
+		LogisticsSegments int64   `json:"logistics_segments"`
+		LogisticsKm       float64 `json:"logistics_km"`
+		TransitSegments   int64   `json:"transit_segments"`
+		TransitKm         float64 `json:"transit_km"`
+
+		// Classified segments JSON
+		ClassifiedSegmentsJSON *string `json:"classified_segments_json"`
+	}
+
+	err = s.DB.QueryRowContext(ctx, `
+		SELECT 
+			id, filename, upload_time, total_points,
+			protected_area_id, protected_area_name,
+			processing_status, rejection_reason,
+			validation_errors, validation_warnings,
+			patrol_km, road_km, boundary_km, excluded_km,
+			total_segments, patrol_segments, static_segments, excluded_segments,
+			foot_segments, foot_km, foot_minutes,
+			vehicle_segments, vehicle_km, vehicle_minutes,
+			aircraft_segments, aircraft_km, aircraft_minutes,
+			COALESCE(logistics_segments, 0), COALESCE(logistics_km, 0),
+			COALESCE(transit_segments, 0), COALESCE(transit_km, 0),
+			classified_segments_json
+		FROM gpx_upload_logs
+		WHERE id = ?
+	`, uploadID).Scan(
+		&result.ID, &result.Filename, &result.UploadTime, &result.TotalPoints,
+		&result.ProtectedAreaID, &result.ProtectedAreaName,
+		&result.ProcessingStatus, &result.RejectionReason,
+		&result.ValidationErrors, &result.ValidationWarnings,
+		&result.PatrolKm, &result.RoadKm, &result.BoundaryKm, &result.ExcludedKm,
+		&result.TotalSegments, &result.PatrolSegments, &result.StaticSegments, &result.ExcludedSegments,
+		&result.FootSegments, &result.FootKm, &result.FootMinutes,
+		&result.VehicleSegments, &result.VehicleKm, &result.VehicleMinutes,
+		&result.AircraftSegments, &result.AircraftKm, &result.AircraftMinutes,
+		&result.LogisticsSegments, &result.LogisticsKm,
+		&result.TransitSegments, &result.TransitKm,
+		&result.ClassifiedSegmentsJSON,
+	)
+	if err == sql.ErrNoRows {
+		http.Error(w, "Upload not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		slog.Error("failed to fetch upload detail", "error", err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
 }
 
 // HandleAPIHideNotification hides a notification
@@ -4274,14 +4645,13 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 				e.year, 
 				e.month, 
 				e.movement_type,
-				e.total_distance_km,
-				e.total_points,
+				SUM(e.total_distance_km) as total_distance_km,
+				SUM(e.total_points) as total_points,
 				g.lat_center,
 				g.lon_center
 			FROM effort_data e
 			JOIN grid_cells g ON e.grid_cell_id = g.id
-			WHERE e.day IS NULL 
-				AND e.movement_type = 'all'
+			WHERE e.movement_type = 'all'
 				AND g.lat_center BETWEEN ? AND ?
 				AND g.lon_center BETWEEN ? AND ?
 		`
@@ -4300,6 +4670,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		
+		patrolQuery += " GROUP BY e.grid_cell_id, e.year, e.month, e.movement_type, g.lat_center, g.lon_center"
 		patrolQuery += " ORDER BY e.year DESC, e.month DESC LIMIT 1000"
 		
 		patrolRows, _ := s.DB.Query(patrolQuery, patrolArgs...)
@@ -5252,4 +5623,97 @@ func makeCircleKML(centerLon, centerLat, radiusDeg float64) string {
 		coords = append(coords, fmt.Sprintf("%f,%f,0", lon, lat))
 	}
 	return fmt.Sprintf("<Polygon><outerBoundaryIs><LinearRing><coordinates>%s</coordinates></LinearRing></outerBoundaryIs></Polygon>", strings.Join(coords, " "))
+}
+
+// HandleAPINearbyPlaces returns place names near a given lat/lon from osm_places.
+func (s *Server) HandleAPINearbyPlaces(w http.ResponseWriter, r *http.Request) {
+	latStr := r.URL.Query().Get("lat")
+	lonStr := r.URL.Query().Get("lon")
+
+	lat, err1 := strconv.ParseFloat(latStr, 64)
+	lon, err2 := strconv.ParseFloat(lonStr, 64)
+	if err1 != nil || err2 != nil {
+		http.Error(w, "lat and lon required", http.StatusBadRequest)
+		return
+	}
+
+	type placeResult struct {
+		Name     string  `json:"name"`
+		Type     string  `json:"type"`
+		Distance float64 `json:"distance_km"`
+	}
+
+	// Priority order for place types
+	typePriority := map[string]int{
+		"city": 0, "town": 1, "village": 2, "hamlet": 3,
+		"mountain": 4, "hill": 5, "lake": 6, "river": 7, "stream": 8,
+	}
+
+	// Search within ~5km (0.05°), expand to ~15km if nothing found
+	var places []placeResult
+	for _, radius := range []float64{0.05, 0.15} {
+		rows, err := s.DB.QueryContext(r.Context(), `
+			SELECT DISTINCT name, place_type, lat, lon
+			FROM osm_places
+			WHERE lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?
+			LIMIT 100
+		`, lat-radius, lat+radius, lon-radius, lon+radius)
+		if err != nil {
+			break
+		}
+
+		seen := make(map[string]bool)
+		var candidates []placeResult
+		for rows.Next() {
+			var name, ptype string
+			var plat, plon float64
+			if err := rows.Scan(&name, &ptype, &plat, &plon); err != nil {
+				continue
+			}
+			if seen[name+":"+ptype] {
+				continue
+			}
+			seen[name+":"+ptype] = true
+
+			// Approximate distance in km
+			dlat := (plat - lat) * 111.0
+			dlon := (plon - lon) * 111.0 * math.Cos(lat*math.Pi/180)
+			dist := math.Sqrt(dlat*dlat + dlon*dlon)
+
+			candidates = append(candidates, placeResult{
+				Name:     name,
+				Type:     ptype,
+				Distance: math.Round(dist*10) / 10,
+			})
+		}
+		rows.Close()
+
+		if len(candidates) > 0 {
+			// Sort by priority then distance
+			sort.Slice(candidates, func(i, j int) bool {
+				pi := typePriority[candidates[i].Type]
+				pj := typePriority[candidates[j].Type]
+				if pi != pj {
+					return pi < pj
+				}
+				return candidates[i].Distance < candidates[j].Distance
+			})
+			// Dedupe by name, keep best type
+			nameSeen := make(map[string]bool)
+			for _, c := range candidates {
+				if nameSeen[c.Name] {
+					continue
+				}
+				nameSeen[c.Name] = true
+				places = append(places, c)
+				if len(places) >= 5 {
+					break
+				}
+			}
+			break
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"places": places})
 }

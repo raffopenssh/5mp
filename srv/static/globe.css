@@ -151,8 +151,8 @@
         .page-views { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10px; color: #888; text-align: center; }
 
         /* Movement type toggles (in filter panel) */
-        .movement-toggles { display: flex; gap: 4px; }
-        .movement-toggle { flex: 1; padding: 6px 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; font-size: 12px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .movement-toggles { display: flex; flex-wrap: wrap; gap: 4px; }
+        .movement-toggle { flex: 1 1 calc(33.33% - 4px); padding: 6px 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; font-size: 12px; cursor: pointer; transition: all 0.2s; text-align: center; display: flex; align-items: center; justify-content: center; gap: 3px; white-space: nowrap; }
         .movement-toggle:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
         .movement-toggle.active { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #22c55e; }
         .movement-toggle-label { font-size: 9px; display: block; margin-top: 2px; color: inherit; opacity: 0.8; }
@@ -1350,3 +1350,436 @@
             }
             h1, h2, h3, p, div, span { color: #222 !important; }
         }
+/* === Production-specific styles (merged from production branch) === */
+
+/* --- admin-btn/bulk --- */
+
+.admin-btn-danger {
+    background: rgba(239,68,68,0.15); color: #ef4444;
+}
+
+.admin-btn-danger:hover {
+    background: rgba(239,68,68,0.3);
+}
+
+.admin-btn-success {
+    background: rgba(34,197,94,0.15); color: #22c55e;
+}
+
+.admin-btn-success:hover {
+    background: rgba(34,197,94,0.3);
+}
+
+.admin-bulk-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 2200; background: rgba(30,30,30,0.95); backdrop-filter: blur(8px); border-bottom: 2px solid #3b82f6; padding: 10px 20px; display: none; align-items: center; justify-content: flex-end; gap: 10px;
+}
+
+.admin-bulk-bar .bulk-count {
+    color: #fff; font-size: 13px; font-weight: 600; margin-right: auto;
+}
+
+.admin-bulk-bar.active {
+    display: flex;
+}
+
+/* --- bbox --- */
+
+.bbox-header {
+    font-size: 16px; font-weight: 600; color: #60a5fa; margin-bottom: 16px;
+}
+
+.bbox-section {
+    background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 20px; margin-bottom: 24px;
+}
+
+/* --- ept --- */
+
+.ept {
+    width: 100%; border-collapse: collapse; margin: 6px 0 4px; font-size: 11px;
+}
+
+.ept .ept-dim {
+    color: #555;
+}
+
+.ept .ept-icon {
+    display: inline-flex; align-items: center; gap: 3px;
+}
+
+.ept td {
+    padding: 3px 6px 3px 0; text-align: right; color: #ccc; white-space: nowrap;
+}
+
+.ept td:first-child {
+    text-align: left; color: #aaa;
+}
+
+.ept th {
+    color: #666; font-weight: 500; text-align: right; padding: 2px 6px 2px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px;
+}
+
+.ept th:first-child {
+    text-align: left;
+}
+
+.ept tr.ept-total td {
+    border-top: 1px solid rgba(255,255,255,0.12); font-weight: 600; color: #fff; padding-top: 4px;
+}
+
+@media (max-width: 768px) {
+.ept {font-size: 10px;}
+}
+
+@media (max-width: 768px) {
+.ept td {padding: 2px 4px 2px 0;}
+}
+
+@media (max-width: 768px) {
+.ept th {font-size: 9px; padding: 2px 4px 2px 0;}
+}
+
+/* --- time-slider-date --- */
+
+.time-slider-date-input {
+    font-size: 14px; font-weight: 600; color: #22c55e; background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.4); border-radius: 4px; padding: 1px 4px; font-family: inherit; outline: none; width: auto;
+}
+
+.time-slider-date-input::-webkit-calendar-picker-indicator {
+    filter: invert(1); cursor: pointer;
+}
+
+.time-slider-date-input:focus {
+    border-color: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.3);
+}
+
+.time-slider-date-part {
+    cursor: pointer; padding: 1px 4px; border-radius: 4px; transition: background 0.15s, color 0.15s; position: relative;
+}
+
+.time-slider-date-part:hover {
+    background: rgba(34,197,94,0.15);
+}
+
+.time-slider-date-sep {
+    padding: 0 2px; pointer-events: none;
+}
+
+.time-slider-date-tag {
+    font-size: 9px; font-weight: 600; color: #888; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 3px; padding: 0 0; cursor: pointer; letter-spacing: 0.3px; line-height: 1.3; white-space: nowrap; user-select: none; max-width: 0; opacity: 0; margin-left: 0; overflow: hidden; position: relative; transition: max-width 0.25s cubic-bezier(.4,0,.2,1), opacity 0.2s ease, padding 0.25s cubic-bezier(.4,0,.2,1), margin-left 0.25s cubic-bezier(.4,0,.2,1), background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.time-slider-date-tag .tag-hint {
+    position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: rgba(15,15,15,0.95); color: #aaa; font-size: 10px; font-weight: 400; padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s; letter-spacing: 0; z-index: 10;
+}
+
+.time-slider-date-tag .tag-hint::after {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 4px solid transparent; border-top-color: rgba(255,255,255,0.1);
+}
+
+.time-slider-date-tag.active {
+    background: #22c55e; border-color: #22c55e; color: #111;
+}
+
+.time-slider-date-tag.dimmed {
+    max-width: 0; opacity: 0; padding: 0; margin-left: 0; pointer-events: none; overflow: hidden;
+}
+
+.time-slider-date-tag.visible {
+    max-width: 36px; opacity: 1; padding: 1px 4px; margin-left: 3px; overflow: visible;
+}
+
+.time-slider-date-tag.visible:first-child {
+    margin-left: 8px;
+}
+
+.time-slider-date-tag:hover {
+    background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.35); color: #aaa;
+}
+
+.time-slider-date-tag:hover .tag-hint {
+    opacity: 1;
+}
+
+.time-slider-date-tags {
+    display: inline-flex; gap: 0; margin-left: 0; align-items: center;
+}
+
+@media (max-width: 768px) {
+.time-slider-date-input {font-size: 12px;}
+}
+
+@media (max-width: 768px) {
+.time-slider-date-tag .tag-hint {display: none;}
+}
+
+@media (max-width: 768px) {
+.time-slider-date-tag.visible {font-size: 8px; max-width: 32px; margin-left: 2px;}
+}
+
+@media (max-width: 768px) {
+.time-slider-date-tag.visible:first-child {margin-left: 4px;}
+}
+
+/* --- narrative/park/section/star --- */
+
+.narrative-section {
+    margin: 16px 0; padding: 12px 16px; background: rgba(0,0,0,0.2); border-radius: 8px; border-left: 3px solid;
+}
+
+.narrative-section.deforestation {
+    border-color: #a855f7;
+}
+
+.narrative-section.fire {
+    border-color: #ef4444;
+}
+
+.narrative-section.patrol {
+    border-color: #22c55e;
+}
+
+.narrative-section.settlements {
+    border-color: #fbbf24;
+}
+
+.narrative-stats {
+    display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #aaa; margin-bottom: 8px;
+}
+
+.narrative-text {
+    font-size: 14px; color: #ccc; line-height: 1.6;
+}
+
+.narrative-title {
+    font-weight: 600; color: #fff; margin-bottom: 8px;
+}
+
+.park-header {
+    margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.park-item {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; page-break-inside: avoid;
+}
+
+.park-meta {
+    font-size: 13px; color: #888;
+}
+
+.park-name {
+    font-size: 18px; font-weight: 600; color: #22c55e; margin-bottom: 4px;
+}
+
+.section {
+    margin-bottom: 30px;
+}
+
+@media print {
+.starred-item-remove, .starred-item-expand, .starred-export-btns,
+                    .spinner, button {
+    display: none !important;
+}
+}
+
+.starred-report-section-stats span {
+    margin-right: 12px;
+}
+
+@media print {
+.narrative-section {background: #f5f5f5 !important;}
+}
+
+@media print {
+.narrative-stats {font-size: 8pt !important;}
+}
+
+@media print {
+.narrative-text {font-size: 9pt !important; line-height: 1.4 !important;}
+}
+
+@media print {
+.section-detail {display: block !important;}
+}
+
+@media print {
+.section-more-btn, button, .starred-export-btns {display: none !important;}
+}
+
+@media print {
+.star-modal,
+    #star-modal,
+    div.star-modal,
+    div#star-modal {display: block !important; 
+        position: static !important; 
+        background: white !important;
+        background-color: white !important;
+        height: auto !important;
+        width: 100% !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        inset: auto !important;
+        z-index: auto !important;}
+}
+
+@media print {
+.star-modal-body,
+    .starred-section,
+    .starred-item,
+    .starred-item-header,
+    .starred-item-info,
+    .starred-park-nested {background: white !important;
+        color: black !important;}
+}
+
+@media print {
+.star-modal-content,
+    div.star-modal-content {max-height: none !important; 
+        overflow: visible !important; 
+        width: 100% !important; 
+        max-width: none !important;
+        height: auto !important;
+        transform: none !important;
+        position: static !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: white !important;
+        background-color: rgb(255, 255, 255) !important;
+        border: none !important;}
+}
+
+@media print {
+.star-modal-header, .star-modal-footer, .starred-item-expand, .starred-item-remove, .star-report-actions {display: none !important;}
+}
+
+@media print {
+.starred-item {page-break-inside: avoid;}
+}
+
+@media print {
+.starred-item-name,
+    .starred-item-meta,
+    .starred-section-title,
+    .starred-section-desc,
+    .starred-report-section-title,
+    div, span, p {color: #222 !important;}
+}
+
+@media print {
+.starred-modal-backdrop {display: none !important;}
+}
+
+@media print {
+.starred-park-nested {page-break-inside: auto; 
+        border: 1px solid #ddd !important; 
+        margin-bottom: 12pt !important;
+        padding: 8pt !important;
+        background: white !important;}
+}
+
+@media print {
+.starred-park-nested:not(:first-child) {page-break-before: auto;}
+}
+
+@media print {
+.starred-report-content {font-size: 10pt !important;}
+}
+
+@media print {
+.starred-report-section {background: #f9f9f9 !important;}
+}
+
+/* --- other --- */
+
+.footer {
+    margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; color: #666; page-break-inside: avoid;
+}
+
+.meta {
+    color: #888; font-size: 14px; margin-bottom: 30px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; page-break-inside: avoid;
+}
+
+.meta div {
+    margin: 4px 0;
+}
+
+.species-highlights, .publications-list {
+    page-break-inside: avoid;
+}
+
+.toc {
+    background: rgba(255,255,255,0.03); border-radius: 8px; padding: 16px 20px; margin-bottom: 30px; page-break-inside: avoid;
+}
+
+.toc-item {
+    color: #888; font-size: 13px; margin: 6px 0;
+}
+
+.toc-item a {
+    color: #60a5fa; text-decoration: none;
+}
+
+.toc-item a:hover {
+    text-decoration: underline;
+}
+
+.toc-title {
+    font-weight: 600; color: #fbbf24; margin-bottom: 12px;
+}
+
+@media print {
+* {background: white !important;}
+}
+
+@media print {
+a {color: #1e40af !important; text-decoration: underline;}
+}
+
+@media print {
+body {padding: 15mm;}
+}
+
+@media print {
+body,
+    html {background: white !important; 
+        background-color: rgb(255, 255, 255) !important;
+        color: black !important; 
+        padding: 10mm !important; 
+        font-size: 10pt !important;}
+}
+
+@media print {
+details {display: block !important;}
+}
+
+@media print {
+details > * {display: block !important;}
+}
+
+@media print {
+details > summary {display: none !important;}
+}
+
+@media print {
+h1 {color: #166534 !important; font-size: 18pt !important; page-break-after: avoid;}
+}
+
+@media print {
+h2 {color: #333 !important; font-size: 14pt !important; page-break-after: avoid; margin-top: 12pt;}
+}
+
+@media print {
+h3 {color: #555 !important; font-size: 12pt !important; page-break-after: avoid; margin-top: 10pt;}
+}
+
+/* h1/h2/h3 star-report styles intentionally omitted: they live in the
+   standalone report template literal (globe.html generateStarReport) and
+   must NOT leak into the main page CSS. */
+
+tr.selected {
+    background: rgba(59,130,246,0.15) !important;
+}
+
+tr.selected td {
+    border-color: rgba(59,130,246,0.3) !important;
+}
+

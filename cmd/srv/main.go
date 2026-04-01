@@ -38,6 +38,9 @@ func run() error {
 	dataDir := *flagDataDir
 	if store, err := areas.LoadKeystones(dataDir); err == nil {
 		server.AreaStore = store
+		if server.GPXLearner != nil {
+			server.GPXLearner.SetAreaStore(store)
+		}
 		slog.Info("loaded protected areas", "count", len(store.Areas))
 	} else {
 		slog.Warn("failed to load areas", "error", err)
@@ -85,6 +88,8 @@ func run() error {
 	// Start background workers with cancellable context
 	go server.StartResearchWorker(ctx)
 	go server.StartNarrativeCacheWorker(ctx)
+	go server.StartAutofetchWorker(ctx)
+	go server.StartUploadQueueCleanup(ctx)
 
 	// Start HTTP server in a goroutine
 	errCh := make(chan error, 1)

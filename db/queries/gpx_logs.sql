@@ -9,10 +9,13 @@ INSERT INTO gpx_upload_logs (
     foot_segments, foot_km, foot_minutes,
     vehicle_segments, vehicle_km, vehicle_minutes,
     aircraft_segments, aircraft_km, aircraft_minutes,
+    boat_segments, boat_km, boat_minutes,
+    fixed_wing_segments, fixed_wing_km, fixed_wing_minutes,
+    rotor_wing_segments, rotor_wing_km, rotor_wing_minutes,
     recon_segments, recon_km, recon_minutes,
     fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes,
     transit_segments, transit_km, logistics_segments, logistics_km
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 RETURNING id;
 
 -- name: ListGPXUploadLogs :many
@@ -26,6 +29,9 @@ SELECT
     foot_segments, foot_km, foot_minutes,
     vehicle_segments, vehicle_km, vehicle_minutes,
     aircraft_segments, aircraft_km, aircraft_minutes,
+    boat_segments, boat_km, boat_minutes,
+    fixed_wing_segments, fixed_wing_km, fixed_wing_minutes,
+    rotor_wing_segments, rotor_wing_km, rotor_wing_minutes,
     recon_segments, recon_km, recon_minutes,
     fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes,
     transit_segments, transit_km, logistics_segments, logistics_km
@@ -40,7 +46,16 @@ SELECT
     protected_area_id, protected_area_name,
     patrol_km, road_km, boundary_km, excluded_km,
     total_segments, patrol_segments, static_segments, excluded_segments,
-    processing_status, rejection_reason
+    processing_status, rejection_reason,
+    foot_segments, foot_km, foot_minutes,
+    vehicle_segments, vehicle_km, vehicle_minutes,
+    aircraft_segments, aircraft_km, aircraft_minutes,
+    boat_segments, boat_km, boat_minutes,
+    fixed_wing_segments, fixed_wing_km, fixed_wing_minutes,
+    rotor_wing_segments, rotor_wing_km, rotor_wing_minutes,
+    recon_segments, recon_km, recon_minutes,
+    fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes,
+    transit_segments, transit_km, logistics_segments, logistics_km
 FROM gpx_upload_logs
 WHERE protected_area_id = ?
 ORDER BY upload_time DESC
@@ -59,11 +74,17 @@ SELECT
     SUM(foot_km) as total_foot_km,
     SUM(vehicle_km) as total_vehicle_km,
     SUM(aircraft_km) as total_aircraft_km,
+    SUM(boat_km) as total_boat_km,
+    SUM(fixed_wing_km) as total_fixed_wing_km,
+    SUM(rotor_wing_km) as total_rotor_wing_km,
     SUM(recon_km) as total_recon_km,
     SUM(fast_vehicle_km) as total_fast_vehicle_km,
     SUM(foot_minutes) as total_foot_minutes,
     SUM(vehicle_minutes) as total_vehicle_minutes,
     SUM(aircraft_minutes) as total_aircraft_minutes,
+    SUM(boat_minutes) as total_boat_minutes,
+    SUM(fixed_wing_minutes) as total_fixed_wing_minutes,
+    SUM(rotor_wing_minutes) as total_rotor_wing_minutes,
     SUM(recon_minutes) as total_recon_minutes
 FROM gpx_upload_logs
 WHERE upload_time >= ?;

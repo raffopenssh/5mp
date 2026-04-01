@@ -2,6 +2,7 @@ package srv
 
 import (
 	"crypto/subtle"
+	"html"
 	"net/http"
 	"os"
 	"strings"
@@ -15,7 +16,7 @@ func loadPasswords() []string {
 	if env := os.Getenv("ACCESS_PASSWORDS"); env != "" {
 		return strings.Split(env, ",")
 	}
-	return []string{"test2026", "REDACTED_PWD", "REDACTED_PWD"}
+	return []string{"test2026", "REDACTED_PWD", "REDACTED_PWD", "REDACTED_PWD"}
 }
 
 // PasswordMiddleware checks for valid password in cookie or query param
@@ -90,6 +91,18 @@ func isValidPassword(pwd string) bool {
 func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusUnauthorized)
+
+	// Build hidden fields for existing query params (preserve through login)
+	var hiddenFields string
+	for key, values := range r.URL.Query() {
+		if key == "pwd" {
+			continue
+		}
+		for _, val := range values {
+			hiddenFields += `<input type="hidden" name="` + html.EscapeString(key) + `" value="` + html.EscapeString(val) + `">`
+		}
+	}
+
 	html := `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -357,6 +370,7 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         <p>Real-time fire detection, deforestation monitoring, and patrol tracking for 162 African keystone protected areas. Generate custom reports for managers, governments, and donors.</p>
         <p style="margin-top:12px;font-size:12px;color:#666;"><strong style="color:#fbbf24;">Alpha Version</strong> — Enter access password to continue</p>
         <form method="GET">
+            ` + hiddenFields + `
             <div class="form-group">
                 <input type="password" name="pwd" placeholder="Enter password" autofocus required>
             </div>

@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -162,6 +163,7 @@ func (s *Server) Serve(addr string) error {
 	// API routes
 	mux.HandleFunc("GET /api/version", s.HandleAPIVersion)
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)
+	mux.HandleFunc("GET /api/nearby-places", s.HandleAPINearbyPlaces)
 	mux.HandleFunc("GET /api/grid/{id}/effort", s.HandleAPIGridCellEffort)
 	mux.HandleFunc("GET /api/worldclim/test", s.HandleWorldClimTest)
 	mux.HandleFunc("GET /api/areas", s.HandleAPIAreas)
@@ -205,12 +207,12 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/parks/{id}/export.kml", s.HandleAPIParkKML)
 	mux.HandleFunc("GET /api/export/merged.kml", s.HandleAPIMergedKML)
 	
-	// MBTiles generation endpoints
-	mux.HandleFunc("POST /api/parks/{id}/mbtiles", s.HandleAPIMBTilesCreate)
-	mux.HandleFunc("GET /api/parks/{id}/mbtiles/estimate", s.HandleAPIMBTilesEstimate)
-	mux.HandleFunc("GET /api/mbtiles/{id}/status", s.HandleAPIMBTilesStatus)
-	mux.HandleFunc("GET /api/mbtiles/{id}/download", s.HandleAPIMBTilesDownload)
-	mux.HandleFunc("GET /api/mbtiles", s.HandleAPIMBTilesList)
+	// MBTiles generation endpoints (Zenodo-backed, with legacy fallback)
+	mux.HandleFunc("POST /api/parks/{id}/mbtiles", s.HandleAPIZenodoMBTilesCreate)
+	mux.HandleFunc("GET /api/parks/{id}/mbtiles/estimate", s.HandleAPIZenodoMBTilesEstimate)
+	mux.HandleFunc("GET /api/mbtiles/{id}/status", s.HandleAPIZenodoMBTilesStatus)
+	mux.HandleFunc("GET /api/mbtiles/{id}/download", s.HandleAPIZenodoMBTilesDownload)
+	mux.HandleFunc("GET /api/mbtiles", s.HandleAPIZenodoMBTilesList)
 	mux.HandleFunc("GET /api/parks/{id}/climate", s.HandleAPIParkClimate)
 	mux.HandleFunc("GET /api/parks/{id}/infrastructure", s.HandleAPIParkInfrastructure)
 	mux.HandleFunc("GET /api/parks/{id}/species", s.HandleAPIParkSpecies)
@@ -253,7 +255,19 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/admin/bulk-approve", s.RequireAdmin(s.HandleAPIBulkApprove))
 	mux.HandleFunc("POST /api/admin/bulk-reject", s.RequireAdmin(s.HandleAPIBulkReject))
 	mux.HandleFunc("POST /api/admin/delete-upload", s.RequireAdmin(s.HandleAPIDeleteUpload))
+	mux.HandleFunc("POST /api/admin/bulk-delete-uploads", s.RequireAdmin(s.HandleAPIBulkDeleteUploads))
+	mux.HandleFunc("GET /api/admin/upload-detail", s.HandleAPIUploadDetail)
 	mux.HandleFunc("POST /api/admin/hide-notification", s.RequireAdmin(s.HandleAPIHideNotification))
+
+	// Automated fetch (EarthRanger/PAMDAS GPS sync)
+	mux.HandleFunc("GET /api/admin/autofetch", s.HandleAPIAutofetchList)
+	mux.HandleFunc("POST /api/admin/autofetch/add", s.HandleAPIAutofetchAdd)
+	mux.HandleFunc("POST /api/admin/autofetch/disable", s.HandleAPIAutofetchDisable)
+	mux.HandleFunc("POST /api/admin/autofetch/enable", s.HandleAPIAutofetchEnable)
+	mux.HandleFunc("POST /api/admin/autofetch/delete", s.HandleAPIAutofetchDelete)
+	mux.HandleFunc("POST /api/admin/autofetch/run", s.HandleAPIAutofetchRunNow)
+	mux.HandleFunc("POST /api/admin/rebuild-effort", s.HandleAPIRebuildEffort)
+	mux.HandleFunc("GET /api/admin/autofetch/script", s.HandleAPIAutofetchScript)
 
 	// RSS Feed for starred items
 	mux.HandleFunc("GET /api/feed", s.HandleAPIFeed)
@@ -270,8 +284,17 @@ func (s *Server) Serve(addr string) error {
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
 	
-	// Initialize MBTiles queue
+	// Initialize MBTiles queue (legacy disk-based, as fallback)
 	InitMBTilesQueue("data/mbtiles_output", s.DB)
+
+	// Initialize Zenodo-backed MBTiles queue (preferred)
+	if token := os.Getenv("ZENODO_TOKEN"); token != "" {
+		if err := InitZenodoMBTilesQueue(token, s.DB); err != nil {
+			slog.Warn("Failed to init Zenodo MBTiles queue", "error", err)
+		}
+	} else {
+		slog.Info("ZENODO_TOKEN not set, MBTiles will use disk storage only")
+	}
 	
 	slog.Info("starting server", "addr", addr)
 	

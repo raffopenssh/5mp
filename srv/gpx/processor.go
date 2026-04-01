@@ -3,11 +3,20 @@ package gpx
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 	"math"
+	"regexp"
 	"strings"
 	"time"
 )
+
+// runwayPatterns matches runway length in waypoint names.
+// Examples: "Boma 900m", "Juba 3000m", "Bor 1.3 km", "Duk Fadiat 1200 m"
+var runwayPatterns = []*regexp.Regexp{
+	regexp.MustCompile(`(\d+(?:\.\d+)?)\s*(km)\b`),
+	regexp.MustCompile(`(\d+(?:\.\d+)?)\s*(m)\b`),
+}
 
 // Point represents a single GPS point with coordinates, elevation, and time.
 type Point struct {
@@ -19,18 +28,26 @@ type Point struct {
 
 // Segment represents a continuous track segment with computed statistics.
 type Segment struct {
-	Points       []Point
-	StartTime    *time.Time
-	EndTime      *time.Time
-	DistanceKm   float64
-	AvgSpeedKmh  float64
-	MovementType string
+	Points          []Point
+	StartTime       *time.Time
+	EndTime         *time.Time
+	DistanceKm      float64
+	AvgSpeedKmh     float64
+	MovementType    string
+	MovementSubtype string       // "boat", "fixed_wing", "rotor_wing", or ""
+	Hint            MovementHint // External classification hint (from ER metadata, Locus, etc.)
 }
 
 // Track represents a GPX track containing multiple segments.
 type Track struct {
 	Name     string
 	Segments [][]Point
+	Activity string // Locus activity hint (e.g., "transport_airplane")
+
+	// EarthRanger metadata (from autofetch GPX extensions)
+	ERSubjectType    string // e.g., "vehicle", "aircraft", "person"
+	ERSubjectSubtype string // e.g., "truck", "plane", "helicopter", "er_mobile", "ranger"
+	ERPatrolType     string // e.g., "plane_patrol_operations", "vehicle_patrol"
 }
 
 // GPXData represents the parsed GPX file data.
@@ -57,6 +74,122 @@ type MovementHint struct {
 	IsFoot      bool
 	Type        string  // "vehicle", "aircraft", "foot", or ""
 	Confidence  float64 // 0.0 to 1.0
+
+	// SubtypeHint provides finer-grained classification from ER metadata.
+	// Values: "boat", "helicopter", "fixed_wing", or "" (unknown).
+	// Does NOT affect base Type classification; used only by ClassifyMovementSubtype.
+	SubtypeHint string
+}
+
+// AirstripWaypoint represents a waypoint identified as an airstrip,
+// typically from GPX files where waypoints have runway length info (e.g., "Kapoeta 1200m").
+type AirstripWaypoint struct {
+	Lat      float64
+	Lon      float64
+	Name     string
+	RunwayM  float64 // Runway length in meters (0 if unknown)
+}
+
+// ExtractAirstrips parses waypoints to find airstrip locations.
+// Airstrips are identified by waypoint names containing runway lengths (e.g., "Boma 900m",
+// "Juba 3000m", "Duk Fadiat 1.2 km"). These are common in conservation aviation GPX files
+// from East/Central Africa.
+func ExtractAirstrips(waypoints []Waypoint) []AirstripWaypoint {
+	var airstrips []AirstripWaypoint
+	for _, wp := range waypoints {
+		name := wp.Name
+		if name == "" {
+			name = wp.Desc
+		}
+		if name == "" {
+			continue
+		}
+
+		// Match patterns like "1200m", "1.2 km", "900 m", "1.3km"
+		runwayM := parseRunwayLength(name)
+		if runwayM > 0 {
+			airstrips = append(airstrips, AirstripWaypoint{
+				Lat:     wp.Lat,
+				Lon:     wp.Lon,
+				Name:    name,
+				RunwayM: runwayM,
+			})
+			continue
+		}
+
+		// Also match names containing "airstrip", "runway", "airfield", "aerodrome"
+		lower := strings.ToLower(name)
+		if strings.Contains(lower, "airstrip") || strings.Contains(lower, "runway") ||
+			strings.Contains(lower, "airfield") || strings.Contains(lower, "aerodrome") ||
+			strings.Contains(lower, "landing strip") {
+			airstrips = append(airstrips, AirstripWaypoint{
+				Lat:  wp.Lat,
+				Lon:  wp.Lon,
+				Name: name,
+			})
+		}
+	}
+	return airstrips
+}
+
+// parseRunwayLength extracts runway length in meters from a waypoint name.
+// Handles: "Boma 900m", "Juba 3000m", "Bor 1.3 km", "Duk Fadiat 1200 m".
+func parseRunwayLength(name string) float64 {
+	// Pattern: number followed by "m" or "km" (with optional space)
+	// Must be a plausible runway: 200m - 5000m
+	for _, re := range runwayPatterns {
+		matches := re.FindStringSubmatch(name)
+		if len(matches) >= 3 {
+			var val float64
+			_, err := fmt.Sscanf(matches[1], "%f", &val)
+			if err != nil {
+				continue
+			}
+			unit := strings.ToLower(strings.TrimSpace(matches[2]))
+			if unit == "km" {
+				val *= 1000
+			}
+			// Plausible runway: 100m to 5000m
+			if val >= 100 && val <= 5000 {
+				return val
+			}
+		}
+	}
+	return 0
+}
+
+// isTrackNearAirstrip checks if a track's start or end point is within radiusKm of any airstrip.
+// Returns true and the closest airstrip if found.
+func isTrackNearAirstrip(points []Point, airstrips []AirstripWaypoint, radiusKm float64) (bool, *AirstripWaypoint) {
+	if len(points) == 0 || len(airstrips) == 0 {
+		return false, nil
+	}
+
+	start := points[0]
+	end := points[len(points)-1]
+
+	var closest *AirstripWaypoint
+	minDist := radiusKm + 1
+
+	for i := range airstrips {
+		a := &airstrips[i]
+		dStart := haversineDistance(start, Point{Lat: a.Lat, Lon: a.Lon})
+		dEnd := haversineDistance(end, Point{Lat: a.Lat, Lon: a.Lon})
+
+		d := dStart
+		if dEnd < d {
+			d = dEnd
+		}
+		if d < minDist {
+			minDist = d
+			closest = a
+		}
+	}
+
+	if minDist <= radiusKm {
+		return true, closest
+	}
+	return false, nil
 }
 
 // ExtractMovementHintsFromWaypoints analyzes waypoint descriptions for movement hints.
@@ -70,11 +203,21 @@ func ExtractMovementHintsFromWaypoints(waypoints []Waypoint) MovementHint {
 			hint.Type = "vehicle"
 			hint.Confidence = 0.8
 		}
+		// Check for boat/marine indicators
+		if strings.Contains(desc, "boat") || strings.Contains(desc, "marine") || strings.Contains(desc, "river patrol") || strings.Contains(desc, "lake patrol") {
+			hint.IsVehicle = true
+			hint.Type = "vehicle"
+			hint.SubtypeHint = "boat"
+			hint.Confidence = 0.8
+		}
 		// Check for aircraft indicators
 		if strings.Contains(desc, "flight") || strings.Contains(desc, "plane") || strings.Contains(desc, "aircraft") || strings.Contains(desc, "helicopter") || strings.Contains(desc, "flying") {
 			hint.IsAircraft = true
 			hint.Type = "aircraft"
 			hint.Confidence = 0.9
+			if strings.Contains(desc, "helicopter") || strings.Contains(desc, "heli") {
+				hint.SubtypeHint = "helicopter"
+			}
 		}
 		// Check for foot patrol indicators
 		if strings.Contains(desc, "patrol") || strings.Contains(desc, "walking") || strings.Contains(desc, "foot") || strings.Contains(desc, "hiking") || strings.Contains(desc, "ranger") {
@@ -84,6 +227,175 @@ func ExtractMovementHintsFromWaypoints(waypoints []Waypoint) MovementHint {
 		}
 	}
 	return hint
+}
+
+// mergeTrackActivityHint merges a Locus/GPX track-level activity string into a movement hint.
+// Common Locus activities: transport_airplane, transport_car, run, walk, bike.
+// mergeTrackNameHint extracts subtype hints from GPX track names.
+// Users often name tracks like "boat 83F_Pilot..." or "helicopter patrol".
+// These are weak signals (confidence boost, not authoritative) but useful
+// when combined with trajectory analysis.
+// mergeTrackNameHint extracts movement type AND subtype hints from GPX track names.
+// Users often name tracks like "boat 83F_Pilot..." or "helicopter patrol".
+// Track names are user-provided labels — more trustworthy than Locus auto-classification
+// (which e.g. misclassifies boats as "transport_airplane"). So track name hints for
+// movement TYPE override Locus activity hints when they conflict.
+func mergeTrackNameHint(base MovementHint, trackName string) MovementHint {
+	if trackName == "" {
+		return base
+	}
+	name := strings.ToLower(trackName)
+
+	switch {
+	case strings.Contains(name, "boat") || strings.Contains(name, "marine") ||
+		strings.Contains(name, "canoe") || strings.Contains(name, "kayak") ||
+		strings.Contains(name, "pirogue"):
+		// Boat: override movement type to vehicle (Locus often says "airplane")
+		base.IsVehicle = true
+		base.IsAircraft = false
+		base.Type = "vehicle"
+		base.Confidence = 0.95 // User-named = high confidence
+		base.SubtypeHint = "boat_name_hint"
+	case strings.Contains(name, "helicopter") || strings.Contains(name, "heli") ||
+		strings.Contains(name, "chopper") || strings.Contains(name, "rotor"):
+		base.IsAircraft = true
+		base.Type = "aircraft"
+		base.Confidence = 0.95
+		base.SubtypeHint = "helicopter_name_hint"
+	case strings.Contains(name, "fixed wing") || strings.Contains(name, "fixed-wing") ||
+		strings.Contains(name, "cessna") || strings.Contains(name, "caravan") ||
+		strings.Contains(name, "bush plane"):
+		base.IsAircraft = true
+		base.Type = "aircraft"
+		base.Confidence = 0.95
+		base.SubtypeHint = "fixed_wing_name_hint"
+	}
+	return base
+}
+
+func mergeTrackActivityHint(base MovementHint, activity string) MovementHint {
+	if activity == "" {
+		return base
+	}
+	activity = strings.ToLower(activity)
+	switch {
+	case strings.Contains(activity, "airplane") || strings.Contains(activity, "aircraft") ||
+		strings.Contains(activity, "helicopter") || strings.Contains(activity, "flight"):
+		base.IsAircraft = true
+		base.Type = "aircraft"
+		base.Confidence = 0.8 // Locus auto-detection is unreliable (tags boats/walking as airplane)
+		if strings.Contains(activity, "helicopter") {
+			base.SubtypeHint = "helicopter"
+		}
+		// NOTE: Locus "transport_airplane" is generic — does NOT imply fixed-wing.
+		// Let trajectory analysis determine subtype (fixed_wing vs rotor_wing).
+	case strings.Contains(activity, "car") || strings.Contains(activity, "vehicle") ||
+		strings.Contains(activity, "motor") || strings.Contains(activity, "drive"):
+		base.IsVehicle = true
+		base.Type = "vehicle"
+		base.Confidence = 0.8 // Locus auto-detection
+	case strings.Contains(activity, "walk") || strings.Contains(activity, "run") ||
+		strings.Contains(activity, "hike") || strings.Contains(activity, "foot"):
+		base.IsFoot = true
+		base.Type = "foot"
+		base.Confidence = 0.8 // Locus auto-detection
+	}
+	return base
+}
+
+// mergeERSubjectHint creates a MovementHint from EarthRanger subject metadata.
+// This is the most authoritative source: the ER system knows whether a tracked device
+// is mounted on a truck, plane, helicopter, or carried by a ranger.
+//
+// Subject types: person, vehicle, aircraft
+// Subject subtypes: er_mobile, ranger, truck, car, plane, helicopter
+// Patrol types: plane_patrol_operations, helicopter_patrol_law_enforcement, vehicle_patrol, etc.
+func mergeERSubjectHint(base MovementHint, subjectType, subjectSubtype, patrolType string) MovementHint {
+	subjectType = strings.ToLower(subjectType)
+	subjectSubtype = strings.ToLower(subjectSubtype)
+	patrolType = strings.ToLower(patrolType)
+
+	if subjectType == "" {
+		return base
+	}
+
+	// Patrol type is the most specific signal — it overrides subject type.
+	// A person/er_mobile leading a heli_patrol is effectively aircraft.
+	if patrolType != "" {
+		switch {
+		case strings.Contains(patrolType, "plane") || strings.Contains(patrolType, "heli"):
+			base.IsAircraft = true
+			base.Type = "aircraft"
+			base.Confidence = 1.0 // Authoritative: ER patrol definition
+			if strings.Contains(patrolType, "heli") {
+				base.SubtypeHint = "helicopter"
+			} else {
+				base.SubtypeHint = "fixed_wing"
+			}
+			return base
+		case strings.Contains(patrolType, "vehicle") || strings.Contains(patrolType, "car") ||
+			strings.Contains(patrolType, "truck"):
+			base.IsVehicle = true
+			base.Type = "vehicle"
+			base.Confidence = 1.0
+			return base
+		case strings.Contains(patrolType, "foot") || strings.Contains(patrolType, "walk") ||
+			strings.Contains(patrolType, "ranger"):
+			base.IsFoot = true
+			base.Type = "foot"
+			base.Confidence = 1.0
+			return base
+		case strings.Contains(patrolType, "boat") || strings.Contains(patrolType, "marine"):
+			// Boat patrols are closest to "vehicle" in our taxonomy
+			base.IsVehicle = true
+			base.Type = "vehicle"
+			base.Confidence = 1.0
+			base.SubtypeHint = "boat"
+			return base
+		}
+	}
+
+	// Subject type: device-level classification
+	switch subjectType {
+	case "aircraft":
+		// Device is physically mounted on an aircraft — definitive
+		base.IsAircraft = true
+		base.Type = "aircraft"
+		base.Confidence = 1.0
+		// Set subtype hint from subject_subtype
+		switch subjectSubtype {
+		case "helicopter", "heli":
+			base.SubtypeHint = "helicopter"
+		case "plane", "fixed_wing":
+			base.SubtypeHint = "fixed_wing"
+		}
+	case "vehicle":
+		// Device is physically mounted on a vehicle — definitive
+		base.IsVehicle = true
+		base.Type = "vehicle"
+		base.Confidence = 1.0
+	case "person":
+		// Person-carried devices need subtype disambiguation:
+		// - "ranger" (InReach) = almost always foot patrol
+		// - "er_mobile" (phone app) = ambiguous — could be in vehicle/aircraft
+		switch subjectSubtype {
+		case "ranger":
+			base.IsFoot = true
+			base.Type = "foot"
+			base.Confidence = 0.9 // Very likely foot, but ranger could be in vehicle
+		case "er_mobile":
+			// Mobile phones travel with the person — they could be driving or flying.
+			// Set moderate confidence; let speed-based classifier refine.
+			base.IsFoot = true
+			base.Type = "foot"
+			base.Confidence = 0.5 // Low: phone users often drive
+		default:
+			base.IsFoot = true
+			base.Type = "foot"
+			base.Confidence = 0.6
+		}
+	}
+	return base
 }
 
 type gpxFile struct {
@@ -106,9 +418,17 @@ type gpxMeta struct {
 	Name string `xml:"name"`
 }
 
+type gpxTrackExtensions struct {
+	LocusActivity    string `xml:"activity"`
+	ERSubjectType    string `xml:"subject_type"`
+	ERSubjectSubtype string `xml:"subject_subtype"`
+	ERPatrolType     string `xml:"patrol_type"`
+}
+
 type gpxTrack struct {
-	Name     string       `xml:"name"`
-	Segments []gpxSegment `xml:"trkseg"`
+	Name       string             `xml:"name"`
+	Segments   []gpxSegment       `xml:"trkseg"`
+	Extensions gpxTrackExtensions `xml:"extensions"`
 }
 
 type gpxSegment struct {
@@ -150,18 +470,7 @@ func ParseGPX(r io.Reader) (*GPXData, error) {
 		}
 
 		if wpt.Time != "" {
-			// Try multiple time formats
-			for _, format := range []string{
-				time.RFC3339,
-				time.RFC3339Nano,
-				"2006-01-02T15:04:05Z",
-				"2006-01-02T15:04:05",
-			} {
-				if t, err := time.Parse(format, wpt.Time); err == nil {
-					waypoint.Time = &t
-					break
-				}
-			}
+			waypoint.Time = parseFlexibleTime(wpt.Time)
 		}
 
 		data.Waypoints = append(data.Waypoints, waypoint)
@@ -169,8 +478,12 @@ func ParseGPX(r io.Reader) (*GPXData, error) {
 
 	for _, trk := range gpx.Tracks {
 		track := Track{
-			Name:     trk.Name,
-			Segments: make([][]Point, 0, len(trk.Segments)),
+			Name:             trk.Name,
+			Segments:         make([][]Point, 0, len(trk.Segments)),
+			Activity:         trk.Extensions.LocusActivity,
+			ERSubjectType:    trk.Extensions.ERSubjectType,
+			ERSubjectSubtype: trk.Extensions.ERSubjectSubtype,
+			ERPatrolType:     trk.Extensions.ERPatrolType,
 		}
 
 		for _, seg := range trk.Segments {
@@ -184,9 +497,7 @@ func ParseGPX(r io.Reader) (*GPXData, error) {
 				}
 
 				if pt.Time != "" {
-					if t, err := time.Parse(time.RFC3339, pt.Time); err == nil {
-						point.Time = &t
-					}
+					point.Time = parseFlexibleTime(pt.Time)
 				}
 
 				points = append(points, point)
@@ -214,21 +525,79 @@ func SplitIntoSegments(data *GPXData, maxDuration time.Duration) []Segment {
 	// Extract movement hints from waypoints (InReach messages, etc.)
 	hint := ExtractMovementHintsFromWaypoints(data.Waypoints)
 
+	// Extract airstrip locations from waypoints.
+	// Waypoints like "Kapoeta 1200m" or "Boma 900m" mark airstrips with runway lengths.
+	// Tracks that start or end near these are likely aircraft.
+	airstrips := ExtractAirstrips(data.Waypoints)
+
 	var segments []Segment
 
 	for _, track := range data.Tracks {
+		// Build movement hint from all available sources, in order of authority:
+		// 1. EarthRanger subject metadata (highest — device is physically on aircraft/vehicle)
+		// 2. EarthRanger patrol type (operational context)
+		// 3. Locus activity hint (app-level tag)
+		// 4. Airstrip proximity (track starts/ends near known airstrip waypoint)
+		// 5. Waypoint text analysis (lowest)
+		trackHint := hint
+		trackHint = mergeTrackActivityHint(trackHint, track.Activity)
+		trackHint = mergeTrackNameHint(trackHint, track.Name) // After Locus: user names override Locus auto-classification
+		trackHint = mergeERSubjectHint(trackHint, track.ERSubjectType, track.ERSubjectSubtype, track.ERPatrolType) // ER metadata is most authoritative
+
+		// If no strong hint yet, check airstrip proximity.
+		// Only apply if the track's speed profile is consistent with aircraft (>30 km/h avg).
+		// This prevents slow foot patrols near an airstrip from being tagged aircraft.
+		if trackHint.Confidence < 0.8 && len(airstrips) > 0 {
+			// Collect all points across all segments of this track
+			var allPoints []Point
+			for _, seg := range track.Segments {
+				allPoints = append(allPoints, seg...)
+			}
+			if near, _ := isTrackNearAirstrip(allPoints, airstrips, 5.0); near {
+				// Only boost if speed is plausible for aircraft (>30 km/h)
+				trackSpeed := CalculateSpeed(allPoints)
+				if trackSpeed > 30 {
+					trackHint = mergeAirstripHint(trackHint, trackSpeed)
+				}
+			}
+		}
+
 		for _, trackSeg := range track.Segments {
 			if len(trackSeg) == 0 {
 				continue
 			}
 
 			// Split this track segment into time-bounded segments
-			segs := splitByDurationWithHint(trackSeg, maxDuration, hint)
+			segs := splitByDurationWithHint(trackSeg, maxDuration, trackHint)
 			segments = append(segments, segs...)
 		}
 	}
 
 	return segments
+}
+
+// mergeAirstripHint boosts the aircraft confidence for tracks near airstrips.
+// Confidence scales with speed: 30-60 km/h = 0.6, 60-100 = 0.7, >100 = 0.85.
+// This is lower than ER hints (1.0) because airstrip proximity alone isn't definitive —
+// vehicles also use airstrips for logistics.
+func mergeAirstripHint(base MovementHint, trackSpeedKmh float64) MovementHint {
+	var conf float64
+	switch {
+	case trackSpeedKmh > 100:
+		conf = 0.85
+	case trackSpeedKmh > 60:
+		conf = 0.75
+	default:
+		conf = 0.6
+	}
+
+	// Only upgrade if our new confidence is higher than existing
+	if conf > base.Confidence {
+		base.IsAircraft = true
+		base.Type = "aircraft"
+		base.Confidence = conf
+	}
+	return base
 }
 
 // splitByDuration splits a slice of points into segments based on time duration.
@@ -295,6 +664,7 @@ func buildSegment(points []Point) Segment {
 func buildSegmentWithHint(points []Point, hint MovementHint) Segment {
 	seg := Segment{
 		Points: points,
+		Hint:   hint,
 	}
 
 	// Find start and end times
@@ -314,7 +684,21 @@ func buildSegmentWithHint(points []Point, hint MovementHint) Segment {
 	// Calculate distance and speed
 	seg.DistanceKm = CalculateDistance(points)
 	seg.AvgSpeedKmh = CalculateSpeed(points)
-	seg.MovementType = ClassifyMovementTypeWithHint(seg, hint)
+
+	// Use the full multi-signal classifier when we have enough points,
+	// falling back to speed-only for very short segments.
+	if len(points) >= 3 {
+		classification := ClassifyMovementFullWithHint(points, hint)
+		seg.MovementType = classification.MovementType
+		seg.MovementSubtype = classification.MovementSubtype
+	} else {
+		seg.MovementType = ClassifyMovementTypeWithHint(seg, hint)
+		// For short segments, still try subtype from hints alone
+		if hint.SubtypeHint != "" {
+			metrics := AnalyzeTrajectory(points)
+			seg.MovementSubtype, _ = ClassifyMovementSubtype(seg.MovementType, metrics, hint)
+		}
+	}
 
 	return seg
 }
@@ -328,30 +712,72 @@ func ClassifyMovementType(segment Segment) string {
 	return ClassifyMovementTypeWithHint(segment, MovementHint{})
 }
 
-// ClassifyMovementTypeWithHint determines movement type using speed and optional message hints.
-// Message hints from Garmin InReach waypoints can improve classification confidence,
-// especially in ambiguous speed ranges (e.g., slow vehicle vs fast walking).
+// ClassifyMovementTypeWithHint determines movement type using speed and optional movement hints.
+//
+// Confidence levels and their meaning:
+//   - 1.0: Authoritative (EarthRanger device metadata — GPS tracker is physically on the aircraft/vehicle)
+//          Always trusted. A truck GPS says "vehicle" even when parked (speed=0).
+//   - 0.95: Strong (Locus activity tag, ER patrol type)
+//          Trusted but sanity-checked against speed.
+//   - 0.8-0.9: Good (waypoint text, ER ranger subtype)
+//          Used for ambiguous speed ranges.
+//   - 0.5-0.6: Weak (ER mobile phone — could be anywhere)
+//          Only nudges classification in truly ambiguous zones.
 func ClassifyMovementTypeWithHint(segment Segment, hint MovementHint) string {
 	speed := segment.AvgSpeedKmh
 
-	// If we have a high-confidence hint, use it for ambiguous speeds
-	if hint.Type != "" && hint.Confidence >= 0.8 {
-		// Aircraft hint with speed > 50 km/h
-		if hint.Type == "aircraft" && speed > 50 {
-			return "aircraft"
-		}
-		// Vehicle hint in reasonable vehicle speed range
-		if hint.Type == "vehicle" && speed >= 5 && speed <= 150 {
-			return "vehicle"
-		}
-		// Foot hint with speed < 15 km/h (fast running)
-		if hint.Type == "foot" && speed < 15 {
+	// Authoritative hints (confidence 1.0): EarthRanger device-level metadata.
+	// A GPS tracker mounted on a truck IS a vehicle track, even at 0 km/h.
+	// A GPS tracker on a plane IS an aircraft track, even when taxiing at 5 km/h.
+	if hint.Type != "" && hint.Confidence >= 1.0 {
+		return hint.Type
+	}
+
+	// Strong hints (0.9-0.99): Locus activity, ER patrol type, ER ranger subtype.
+	// Trust with mild sanity checks.
+	if hint.Type != "" && hint.Confidence >= 0.9 {
+		switch hint.Type {
+		case "aircraft":
+			if speed >= 30 {
+				return "aircraft"
+			}
+			if speed >= 8 {
+				// Slow for aircraft — likely ground vehicle (taxi to runway, etc.)
+				return "vehicle"
+			}
+			// Walking speed — pilot on ground despite Locus airplane tag
 			return "foot"
+		case "vehicle":
+			return "vehicle"
+		case "foot":
+			if speed < 20 { // running max ~20 km/h
+				return "foot"
+			}
+			// Ranger going >20 km/h = probably in vehicle
+			return "vehicle"
 		}
 	}
 
-	// For moderate confidence hints, use them in ambiguous ranges
-	if hint.Type != "" && hint.Confidence >= 0.6 {
+	// Good hints (0.7-0.89): waypoint text hints.
+	if hint.Type != "" && hint.Confidence >= 0.7 {
+		switch hint.Type {
+		case "aircraft":
+			if speed > 50 {
+				return "aircraft"
+			}
+		case "vehicle":
+			if speed >= 5 && speed <= 150 {
+				return "vehicle"
+			}
+		case "foot":
+			if speed < 15 {
+				return "foot"
+			}
+		}
+	}
+
+	// Weak hints (0.5-0.69): ER mobile phone users — only for ambiguous zones.
+	if hint.Type != "" && hint.Confidence >= 0.5 {
 		// Ambiguous zone: 5-12 km/h could be fast walk or slow vehicle
 		if speed >= 5 && speed <= 12 {
 			if hint.Type == "vehicle" {
@@ -361,8 +787,8 @@ func ClassifyMovementTypeWithHint(segment Segment, hint MovementHint) string {
 				return "foot"
 			}
 		}
-		// Ambiguous zone: 80-150 km/h could be fast vehicle or slow aircraft
-		if speed >= 80 && speed <= 150 {
+		// Ambiguous zone: 60-120 km/h could be fast vehicle or slow aircraft
+		if speed >= 60 && speed <= 120 {
 			if hint.Type == "aircraft" {
 				return "aircraft"
 			}
@@ -372,11 +798,13 @@ func ClassifyMovementTypeWithHint(segment Segment, hint MovementHint) string {
 		}
 	}
 
-	// Default speed-based classification
+	// Default speed-based classification (no hint or hint didn't match)
+	// In African conservation, vehicles rarely exceed 80 km/h on unpaved roads.
+	// Aircraft (even slow bush planes) typically cruise above 80 km/h.
 	switch {
 	case speed < 8:
 		return "foot"
-	case speed <= 120:
+	case speed <= 80:
 		return "vehicle"
 	default:
 		return "aircraft"
@@ -475,11 +903,18 @@ func RemoveStraightLineGaps(segments []Segment) []Segment {
 	return result
 }
 
-// removeGapsFromSegment finds and splits a segment at gap points
+// removeGapsFromSegment finds and splits a segment at gap points.
+// The original segment's movement hint is preserved in all sub-segments.
 func removeGapsFromSegment(seg Segment) []Segment {
 	if len(seg.Points) < 3 {
 		return []Segment{seg}
 	}
+
+	// For aircraft/vehicle segments with authoritative hints, use relaxed gap
+	// thresholds.  An aircraft covering 2 km in 15 seconds is normal flight,
+	// not a "gap".  The tight default thresholds (0.5 km + 2 min) were designed
+	// for foot patrol data and shred aircraft tracks into unusable fragments.
+	isHighSpeed := seg.Hint.Type == "aircraft" || seg.Hint.Type == "vehicle"
 
 	var result []Segment
 	var currentPoints []Point
@@ -494,42 +929,59 @@ func removeGapsFromSegment(seg Segment) []Segment {
 
 		prevPt := seg.Points[i-1]
 
+		// Calculate distance between points
+		dist := haversineDistance(prevPt, pt)
+
 		// Check for gap characteristics
 		isGap := false
 
-		// Time gap check (>5 minutes)
 		if pt.Time != nil && prevPt.Time != nil {
 			timeGap := pt.Time.Sub(*prevPt.Time)
-			if timeGap > 5*time.Minute {
-				// Calculate instantaneous speed during the gap
-				dist := haversineDistance(prevPt, pt)
-				hours := timeGap.Hours()
-				if hours > 0 {
-					speed := dist / hours
-					// If speed > 200 km/h during a gap, it's likely GPS loss
-					if speed > 200 {
-						isGap = true
-					}
-				}
+			hours := timeGap.Hours()
+			var speed float64
+			if hours > 0 {
+				speed = dist / hours
 			}
-		}
 
-		// Also check for unrealistically long distance jumps (>10km in single point)
-		dist := haversineDistance(prevPt, pt)
-		if dist > 10 {
-			// Check if there's a time gap too
-			if pt.Time != nil && prevPt.Time != nil {
-				timeGap := pt.Time.Sub(*prevPt.Time)
-				if timeGap > 1*time.Minute {
+			if isHighSpeed {
+				// Relaxed criteria for aircraft/vehicle:
+				// Only split on truly implausible gaps.
+
+				// 1. Teleportation: huge distance with unrealistic speed
+				if timeGap > 5*time.Minute && speed > 500 {
+					isGap = true
+				}
+				// 2. Very large jump (>50 km) with significant gap
+				if dist > 50 && timeGap > 5*time.Minute {
+					isGap = true
+				}
+			} else {
+				// Default criteria for foot patrol / unknown:
+
+				// 1. Long time gap with unrealistic speed (>200 km/h)
+				if timeGap > 5*time.Minute && speed > 200 {
+					isGap = true
+				}
+				// 2. Large distance jump (>10km) with significant time gap
+				if dist > 10 && timeGap > 1*time.Minute {
+					isGap = true
+				}
+				// 3. Medium distance jump (>0.5km) with long time gap (>2 minutes)
+				if dist > 0.5 && timeGap > 2*time.Minute {
+					isGap = true
+				}
+				// 4. Fast movement (>50 km/h) over short distance (>0.3km)
+				if dist > 0.3 && speed > 50 {
 					isGap = true
 				}
 			}
 		}
 
 		if isGap {
-			// End current segment and start new one
+			// End current segment and start new one, preserving hint
 			if len(currentPoints) >= 2 {
-				result = append(result, buildSegment(currentPoints))
+				sub := buildSegmentWithHint(currentPoints, seg.Hint)
+				result = append(result, sub)
 			}
 			currentPoints = []Point{pt}
 		} else {
@@ -537,9 +989,10 @@ func removeGapsFromSegment(seg Segment) []Segment {
 		}
 	}
 
-	// Don't forget the last segment
+	// Don't forget the last segment, preserving hint
 	if len(currentPoints) >= 2 {
-		result = append(result, buildSegment(currentPoints))
+		sub := buildSegmentWithHint(currentPoints, seg.Hint)
+		result = append(result, sub)
 	}
 
 	if len(result) == 0 {
@@ -547,4 +1000,47 @@ func removeGapsFromSegment(seg Segment) []Segment {
 	}
 
 	return result
+}
+
+// parseFlexibleTime parses ISO-8601 timestamps with various offset formats.
+// Handles EarthRanger's "+00:00" and malformed "+00:00Z" double-suffix.
+func parseFlexibleTime(s string) *time.Time {
+	// Try standard RFC3339 first (fastest path)
+	if t, err := time.Parse(time.RFC3339, s); err == nil {
+		return &t
+	}
+	if t, err := time.Parse(time.RFC3339Nano, s); err == nil {
+		return &t
+	}
+
+	// Strip double-suffix like "+00:00Z" → try again
+	norm := s
+	if strings.HasSuffix(norm, "Z") {
+		withoutZ := norm[:len(norm)-1]
+		// Check if there's still an offset before the Z
+		if len(withoutZ) > 6 {
+			tail := withoutZ[len(withoutZ)-6:]
+			if (tail[0] == '+' || tail[0] == '-') && tail[3] == ':' {
+				// e.g. "2026-03-22T19:15:06+00:00Z" → "2026-03-22T19:15:06+00:00"
+				norm = withoutZ
+			}
+		}
+	}
+	if norm != s {
+		if t, err := time.Parse(time.RFC3339, norm); err == nil {
+			return &t
+		}
+	}
+
+	// Try other common formats
+	for _, format := range []string{
+		"2006-01-02T15:04:05Z",
+		"2006-01-02T15:04:05",
+		"2006-01-02 15:04:05",
+	} {
+		if t, err := time.Parse(format, s); err == nil {
+			return &t
+		}
+	}
+	return nil
 }

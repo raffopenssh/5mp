@@ -51,13 +51,14 @@ type UploadValidationSummary struct {
 
 // SegmentSummary represents a processed segment in the upload response.
 type SegmentSummary struct {
-	StartTime    *time.Time `json:"start_time,omitempty"`
-	EndTime      *time.Time `json:"end_time,omitempty"`
-	MovementType string     `json:"movement_type,omitempty"`
-	DistanceKm   float64    `json:"distance_km"`
-	Points       int        `json:"points"`
-	Area         string     `json:"area"`
-	GridCellIDs  []string   `json:"grid_cells,omitempty"`
+	StartTime       *time.Time `json:"start_time,omitempty"`
+	EndTime         *time.Time `json:"end_time,omitempty"`
+	MovementType    string     `json:"movement_type,omitempty"`
+	MovementSubtype string     `json:"movement_subtype,omitempty"` // boat, fixed_wing, rotor_wing
+	DistanceKm      float64    `json:"distance_km"`
+	Points          int        `json:"points"`
+	Area            string     `json:"area"`
+	GridCellIDs     []string   `json:"grid_cells,omitempty"`
 	Analysis     *GPXAnalysis `json:"analysis,omitempty"`
 }
 
@@ -223,20 +224,21 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 			}
 
 			allSegments = append(allSegments, SegmentSummary{
-				StartTime:    seg.StartTime,
-				EndTime:      seg.EndTime,
-				MovementType: movementType,
-				DistanceKm:   seg.DistanceKm,
-				Points:       len(seg.Points),
-				Area:         areaName,
-				GridCellIDs:  gridCells,
-				Analysis:     &analysis,
+				StartTime:       seg.StartTime,
+				EndTime:         seg.EndTime,
+				MovementType:    movementType,
+				MovementSubtype: seg.MovementSubtype,
+				DistanceKm:      seg.DistanceKm,
+				Points:          len(seg.Points),
+				Area:            areaName,
+				GridCellIDs:     gridCells,
+				Analysis:        &analysis,
 			})
 		}
 
 		// Validate and persist upload to database
 		if s.DB != nil {
-			validationResult, err := s.persistUploadWithValidation(ctx, userID, userEmail, filename, fileHash, gpxData, segments)
+			validationResult, err := s.persistUploadWithValidation(ctx, userID, userEmail, filename, fileHash, segments)
 			if err != nil {
 				slog.Warn("failed to persist upload", "error", err, "filename", filename)
 			} else {
@@ -398,6 +400,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		startTime       *time.Time
 		endTime         *time.Time
 		movementType    = "foot" // default
+		typeDistKm      = make(map[string]float64)
 	)
 
 	for _, seg := range segments {
@@ -412,9 +415,18 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 			endTime = seg.EndTime
 		}
 
-		// Use most common movement type (simplified: just use first valid one)
+		// Track distance per movement type for majority vote
 		if seg.MovementType != "" {
-			movementType = seg.MovementType
+			typeDistKm[seg.MovementType] += seg.DistanceKm
+		}
+	}
+
+	// Use movement type that covers the most distance
+	var maxDist float64
+	for mt, dist := range typeDistKm {
+		if dist > maxDist {
+			maxDist = dist
+			movementType = mt
 		}
 	}
 
@@ -437,17 +449,19 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		return 0, fmt.Errorf("create gpx upload: %w", err)
 	}
 
-	// Collect all points from all segments
-	var allPoints []gpx.Point
+	// Collect all points with their segment's movement type
+	var typedPoints []pointWithType
 	for _, seg := range segments {
-		allPoints = append(allPoints, seg.Points...)
+		for _, pt := range seg.Points {
+			typedPoints = append(typedPoints, pointWithType{pt, seg.MovementType})
+		}
 	}
 
 	// Sample points if needed (keep max N points)
-	sampledPoints := samplePoints(allPoints, maxTrackPointsPerUpload)
+	sampledTyped := sampleTypedPoints(typedPoints, maxTrackPointsPerUpload)
 
-	// Store sampled track points
-	for _, pt := range sampledPoints {
+	// Store sampled track points with movement type
+	for _, pt := range sampledTyped {
 		gridCellID := gridCellIDForPoint(pt.Lat, pt.Lon)
 
 		// Ensure grid cell exists
@@ -467,34 +481,33 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		}
 
 		gridCellIDPtr := &gridCellID
+		movementType := pt.MovementType
+		var movementTypePtr *string
+		if movementType != "" {
+			movementTypePtr = &movementType
+		}
 		err = q.CreateTrackPoint(ctx, dbgen.CreateTrackPointParams{
-			UploadID:   uploadID,
-			Lat:        pt.Lat,
-			Lon:        pt.Lon,
-			Elevation:  pt.Elevation,
-			Timestamp:  pt.Time,
-			GridCellID: gridCellIDPtr,
+			UploadID:     uploadID,
+			Lat:          pt.Lat,
+			Lon:          pt.Lon,
+			Elevation:    pt.Elevation,
+			Timestamp:    pt.Time,
+			GridCellID:   gridCellIDPtr,
+			MovementType: movementTypePtr,
 		})
 		if err != nil {
 			return 0, fmt.Errorf("create track point: %w", err)
 		}
 	}
 
-	// Queue for learning - find park ID from first segment's location
+	// Determine park for settlement visits and notifications.
+	// (Learning queue is handled by processUploadAsync with per-park dedup.)
 	var parkID *string
 	if len(segments) > 0 && len(segments[0].Points) > 0 && s.AreaStore != nil {
 		pt := segments[0].Points[0]
 		if area := s.AreaStore.FindArea(pt.Lat, pt.Lon); area != nil {
 			parkID = &area.ID
 		}
-	}
-	_, err = q.QueueGPXLearning(ctx, dbgen.QueueGPXLearningParams{
-		UploadID: &uploadID,
-		ParkID:   parkID,
-	})
-	if err != nil {
-		slog.Warn("failed to queue upload for learning", "uploadID", uploadID, "error", err)
-		// Don't fail the upload just because learning queue failed
 	}
 
 	// Update effort_data grid cells (non-fatal error - continue even if this fails)
@@ -707,6 +720,32 @@ func samplePoints(points []gpx.Point, maxPoints int) []gpx.Point {
 	return result
 }
 
+// pointWithType pairs a GPX point with its segment's movement classification.
+type pointWithType struct {
+	gpx.Point
+	MovementType string
+}
+
+// sampleTypedPoints returns a subset of typed points, evenly distributed across the input.
+func sampleTypedPoints(points []pointWithType, maxPoints int) []pointWithType {
+	if len(points) <= maxPoints {
+		return points
+	}
+
+	result := make([]pointWithType, 0, maxPoints)
+	step := float64(len(points)-1) / float64(maxPoints-1)
+
+	for i := 0; i < maxPoints; i++ {
+		idx := int(math.Round(float64(i) * step))
+		if idx >= len(points) {
+			idx = len(points) - 1
+		}
+		result = append(result, points[idx])
+	}
+
+	return result
+}
+
 // gridCellIDForPoint returns the grid cell ID for a lat/lon coordinate.
 // Format: "lat_lon" with 1 decimal place (e.g., "-2.3_34.8").
 func gridCellIDForPoint(lat, lon float64) string {
@@ -714,6 +753,73 @@ func gridCellIDForPoint(lat, lon float64) string {
 	latGrid := math.Floor(lat/gridCellSize) * gridCellSize
 	lonGrid := math.Floor(lon/gridCellSize) * gridCellSize
 	return fmt.Sprintf("%.1f_%.1f", latGrid, lonGrid)
+}
+
+// gridCellTracker assigns points to grid cells with hysteresis to prevent
+// boundary-straddling tracks from creating 2-wide pixel bands.
+// Once a point is assigned to a cell, subsequent points stay in that cell
+// unless they move >35% (0.035°) into the adjacent cell.
+type gridCellTracker struct {
+	currentCell string
+	currentLat  float64 // cell floor lat
+	currentLon  float64 // cell floor lon
+}
+
+const gridHysteresis = 0.035 // 35% of cell size — ~3.5km buffer
+
+// Assign returns the grid cell ID for a point, applying hysteresis
+// relative to the current cell. First call always sets the current cell.
+func (t *gridCellTracker) Assign(lat, lon float64) string {
+	newLatGrid := math.Floor(lat/gridCellSize) * gridCellSize
+	newLonGrid := math.Floor(lon/gridCellSize) * gridCellSize
+	newCell := fmt.Sprintf("%.1f_%.1f", newLatGrid, newLonGrid)
+
+	if t.currentCell == "" {
+		// First point — just assign
+		t.currentCell = newCell
+		t.currentLat = newLatGrid
+		t.currentLon = newLonGrid
+		return newCell
+	}
+
+	if newCell == t.currentCell {
+		return t.currentCell
+	}
+
+	// Point is in a different cell — check if it's clearly inside (past hysteresis)
+	// Distance from the boundary INTO the new cell must exceed threshold
+	latOK := true
+	lonOK := true
+
+	if newLatGrid != t.currentLat {
+		// Crossed a lat boundary. How far past the boundary?
+		if newLatGrid > t.currentLat {
+			// Moved north: new cell starts at newLatGrid, point should be > newLatGrid + hysteresis
+			latOK = lat >= newLatGrid+gridHysteresis
+		} else {
+			// Moved south: new cell ends at newLatGrid + gridCellSize, point should be < that - hysteresis
+			latOK = lat <= newLatGrid+gridCellSize-gridHysteresis
+		}
+	}
+
+	if newLonGrid != t.currentLon {
+		if newLonGrid > t.currentLon {
+			lonOK = lon >= newLonGrid+gridHysteresis
+		} else {
+			lonOK = lon <= newLonGrid+gridCellSize-gridHysteresis
+		}
+	}
+
+	if latOK && lonOK {
+		// Clearly in the new cell — switch
+		t.currentCell = newCell
+		t.currentLat = newLatGrid
+		t.currentLon = newLonGrid
+		return newCell
+	}
+
+	// Still near the boundary — stay in current cell
+	return t.currentCell
 }
 
 // gridCellCenter returns the center lat/lon for a grid cell.
@@ -735,139 +841,497 @@ type gridCellStats struct {
 	DistanceKm   float64
 	PointCount   int
 	MovementType string
+	SpeedSum     float64 // sum of per-segment speeds weighted by distance
+	SpeedDistKm  float64 // total distance with valid speed data
+	AltSum       float64 // sum of altitudes weighted by distance
+	AltDistKm    float64 // total distance with valid altitude data
+}
+
+// avgSpeed returns the distance-weighted average speed, or nil if no data.
+func (s *gridCellStats) avgSpeed() *float64 {
+	if s.SpeedDistKm > 0.001 {
+		v := s.SpeedSum / s.SpeedDistKm
+		return &v
+	}
+	return nil
+}
+
+// avgAlt returns the distance-weighted average altitude, or nil if no data.
+func (s *gridCellStats) avgAlt() *float64 {
+	if s.AltDistKm > 0.001 {
+		v := s.AltSum / s.AltDistKm
+		return &v
+	}
+	return nil
 }
 
 // updateEffortData computes which grid cells each segment passes through
 // and updates the effort_data table with aggregated statistics.
+// Effort is bucketed by year/month from actual point timestamps so multi-day
+// or multi-month uploads are attributed to the correct time periods.
 func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segments []gpx.Segment, uploadID int64) error {
-	// Determine the time period for effort data (use upload time if no timestamps)
+	// Fallback year/month if points have no timestamps
 	now := time.Now()
-	year := int64(now.Year())
-	month := int64(now.Month())
-
-	// Find earliest segment time to use for year/month
+	fallbackYear := int64(now.Year())
+	fallbackMonth := int64(now.Month())
+	fallbackDay := int64(now.Day())
 	for _, seg := range segments {
 		if seg.StartTime != nil {
-			year = int64(seg.StartTime.Year())
-			month = int64(seg.StartTime.Month())
+			fallbackYear = int64(seg.StartTime.Year())
+			fallbackMonth = int64(seg.StartTime.Month())
+			fallbackDay = int64(seg.StartTime.Day())
 			break
 		}
 	}
 
-	// Aggregate stats by grid cell and movement type
-	cellStats := make(map[string]*gridCellStats) // key: "cellID:movementType"
+	// yearMonthDay encodes year+month+day for map keys
+	type yearMonthDay struct {
+		year  int64
+		month int64
+		day   int64
+	}
+
+	// Aggregate stats by grid cell, movement type, AND year-month-day
+	// key: "cellID:movementType" → per year-month-day stats
+	type cellYMKey struct {
+		cellID       string
+		movementType string
+		ymd          yearMonthDay
+	}
+	cellStats := make(map[cellYMKey]*gridCellStats)
 
 	for _, seg := range segments {
 		if len(seg.Points) < 2 {
 			continue
 		}
 
-		// Walk through points, attributing distance and count to grid cells
+		// Use hysteresis tracker per segment to avoid boundary-straddling
+		// tracks creating 2-wide pixel bands
+		var tracker gridCellTracker
+
 		for i := 1; i < len(seg.Points); i++ {
 			p1 := seg.Points[i-1]
 			p2 := seg.Points[i]
 
-			// Calculate segment distance
 			segDist := haversineDistanceKm(p1.Lat, p1.Lon, p2.Lat, p2.Lon)
 
-			// Attribute to the grid cell of the midpoint
 			midLat := (p1.Lat + p2.Lat) / 2
 			midLon := (p1.Lon + p2.Lon) / 2
-			cellID := gridCellIDForPoint(midLat, midLon)
+			cellID := tracker.Assign(midLat, midLon)
 
-			key := cellID + ":" + seg.MovementType
+			// Determine year/month/day from point timestamp
+			ymd := yearMonthDay{year: fallbackYear, month: fallbackMonth, day: fallbackDay}
+			if p2.Time != nil {
+				ymd = yearMonthDay{year: int64(p2.Time.Year()), month: int64(p2.Time.Month()), day: int64(p2.Time.Day())}
+			} else if p1.Time != nil {
+				ymd = yearMonthDay{year: int64(p1.Time.Year()), month: int64(p1.Time.Month()), day: int64(p1.Time.Day())}
+			}
+
+			// Use the finest-grained type: subtype (boat, fixed_wing, rotor_wing)
+			// when available, otherwise the base type (foot, vehicle, aircraft).
+			effType := seg.MovementType
+			if seg.MovementSubtype != "" {
+				effType = seg.MovementSubtype
+			}
+			key := cellYMKey{cellID: cellID, movementType: effType, ymd: ymd}
 			if cellStats[key] == nil {
-				cellStats[key] = &gridCellStats{
-					MovementType: seg.MovementType,
-				}
+				cellStats[key] = &gridCellStats{MovementType: effType}
 			}
 			cellStats[key].DistanceKm += segDist
 			cellStats[key].PointCount++
+
+			// Track speed (distance-weighted) from timestamps
+			if segDist > 0.001 && p1.Time != nil && p2.Time != nil {
+				dt := p2.Time.Sub(*p1.Time).Hours()
+				if dt > 0 {
+					speed := segDist / dt // km/h
+					if speed < 500 {     // sanity: ignore GPS glitches
+						cellStats[key].SpeedSum += speed * segDist
+						cellStats[key].SpeedDistKm += segDist
+					}
+				}
+			}
+
+			// Track altitude (distance-weighted) from elevation data
+			if segDist > 0.001 && p2.Elevation != nil && *p2.Elevation > 0 {
+				cellStats[key].AltSum += *p2.Elevation * segDist
+				cellStats[key].AltDistKm += segDist
+			}
 		}
 	}
 
-	// Also aggregate "all" movement type for easier querying
-	allCellStats := make(map[string]*gridCellStats) // key: cellID
+	// Also aggregate "all" movement type per year-month-day
+	type cellYMAll struct {
+		cellID string
+		ymd    yearMonthDay
+	}
+	allCellStats := make(map[cellYMAll]*gridCellStats)
 	for key, stats := range cellStats {
-		cellID := strings.Split(key, ":")[0]
-		if allCellStats[cellID] == nil {
-			allCellStats[cellID] = &gridCellStats{MovementType: "all"}
+		ak := cellYMAll{cellID: key.cellID, ymd: key.ymd}
+		if allCellStats[ak] == nil {
+			allCellStats[ak] = &gridCellStats{MovementType: "all"}
 		}
-		allCellStats[cellID].DistanceKm += stats.DistanceKm
-		allCellStats[cellID].PointCount += stats.PointCount
+		allCellStats[ak].DistanceKm += stats.DistanceKm
+		allCellStats[ak].PointCount += stats.PointCount
+		allCellStats[ak].SpeedSum += stats.SpeedSum
+		allCellStats[ak].SpeedDistKm += stats.SpeedDistKm
+		allCellStats[ak].AltSum += stats.AltSum
+		allCellStats[ak].AltDistKm += stats.AltDistKm
 	}
 
-	// Ensure grid cells exist and update effort data
+	// Ensure grid cells exist and upsert effort data per year-month bucket
+	ensuredCells := make(map[string]bool)
 	for key, stats := range cellStats {
-		keyParts := strings.Split(key, ":")
-		cellID := keyParts[0]
+		cellID := key.cellID
 
-		// Parse lat/lon from cellID
-		coordParts := strings.Split(cellID, "_")
-		if len(coordParts) != 2 {
-			continue
+		if !ensuredCells[cellID] {
+			coordParts := strings.Split(cellID, "_")
+			if len(coordParts) != 2 {
+				continue
+			}
+			lat, _ := strconv.ParseFloat(coordParts[0], 64)
+			lon, _ := strconv.ParseFloat(coordParts[1], 64)
+
+			latCenter, lonCenter := gridCellCenter(lat, lon)
+			latMin, latMax, lonMin, lonMax := gridCellBounds(lat, lon)
+
+			_, err := q.GetOrCreateGridCell(ctx, dbgen.GetOrCreateGridCellParams{
+				ID:        cellID,
+				LatCenter: latCenter,
+				LonCenter: lonCenter,
+				LatMin:    latMin,
+				LatMax:    latMax,
+				LonMin:    lonMin,
+				LonMax:    lonMax,
+			})
+			if err != nil {
+				return fmt.Errorf("get or create grid cell %s: %w", cellID, err)
+			}
+			ensuredCells[cellID] = true
 		}
-		lat, _ := strconv.ParseFloat(coordParts[0], 64)
-		lon, _ := strconv.ParseFloat(coordParts[1], 64)
 
-		// Ensure grid cell exists
-		latCenter, lonCenter := gridCellCenter(lat, lon)
-		latMin, latMax, lonMin, lonMax := gridCellBounds(lat, lon)
-
-		_, err := q.GetOrCreateGridCell(ctx, dbgen.GetOrCreateGridCellParams{
-			ID:        cellID,
-			LatCenter: latCenter,
-			LonCenter: lonCenter,
-			LatMin:    latMin,
-			LatMax:    latMax,
-			LonMin:    lonMin,
-			LonMax:    lonMax,
-		})
-		if err != nil {
-			return fmt.Errorf("get or create grid cell %s: %w", cellID, err)
-		}
-
-		// Upsert effort data for this specific movement type
-		err = q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
+		dayVal := key.ymd.day
+		err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
 			GridCellID:       cellID,
-			Year:             year,
-			Month:            month,
-			Day:              nil, // monthly aggregate
+			Year:             key.ymd.year,
+			Month:            key.ymd.month,
+			Day:              &dayVal,
 			MovementType:     stats.MovementType,
 			TotalDistanceKm:  stats.DistanceKm,
 			TotalPoints:      int64(stats.PointCount),
 			UniqueUploads:    1,
 			ProtectedAreaIds: nil,
+			AvgSpeedKmh:      stats.avgSpeed(),
+			AvgAltitudeM:     stats.avgAlt(),
 		})
 		if err != nil {
-			return fmt.Errorf("upsert effort data for %s: %w", key, err)
+			return fmt.Errorf("upsert effort data for %s/%d-%02d-%02d: %w", cellID, key.ymd.year, key.ymd.month, key.ymd.day, err)
 		}
 	}
 
-	// Also upsert "all" movement type aggregates
-	for cellID, stats := range allCellStats {
+	// Upsert "all" movement type aggregates per year-month-day
+	for ak, stats := range allCellStats {
+		dayVal := ak.ymd.day
 		err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
-			GridCellID:       cellID,
-			Year:             year,
-			Month:            month,
-			Day:              nil,
+			GridCellID:       ak.cellID,
+			Year:             ak.ymd.year,
+			Month:            ak.ymd.month,
+			Day:              &dayVal,
 			MovementType:     "all",
 			TotalDistanceKm:  stats.DistanceKm,
 			TotalPoints:      int64(stats.PointCount),
 			UniqueUploads:    1,
 			ProtectedAreaIds: nil,
+			AvgSpeedKmh:      stats.avgSpeed(),
+			AvgAltitudeM:     stats.avgAlt(),
 		})
 		if err != nil {
-			return fmt.Errorf("upsert effort data (all) for %s: %w", cellID, err)
+			return fmt.Errorf("upsert effort data (all) for %s/%d-%02d-%02d: %w", ak.cellID, ak.ymd.year, ak.ymd.month, ak.ymd.day, err)
 		}
 	}
 
 	// Track subcell visits for spatial coverage calculation
-	if err := s.trackSubcellVisits(ctx, q, segments, year, month); err != nil {
+	if err := s.trackSubcellVisits(ctx, q, segments, fallbackYear, fallbackMonth); err != nil {
 		return fmt.Errorf("track subcell visits: %w", err)
 	}
 
 	return nil
+}
+
+// rebuildAllEffortData truncates effort_data and rebuilds it from all remaining
+// completed uploads using their track_points with actual timestamps.
+// This is called asynchronously after an upload is deleted.
+func (s *Server) rebuildAllEffortData() {
+	ctx := context.Background()
+	q := dbgen.New(s.DB)
+
+	slog.Info("starting effort_data rebuild after upload deletion")
+
+	// Truncate effort_data
+	if _, err := s.DB.ExecContext(ctx, "DELETE FROM effort_data"); err != nil {
+		slog.Error("rebuildAllEffortData: failed to truncate effort_data", "error", err)
+		return
+	}
+
+	// Get all completed upload logs with distance breakdown and linked upload_id
+	rows, err := s.DB.QueryContext(ctx, `
+		SELECT l.id, l.upload_id, l.foot_km, l.vehicle_km, l.aircraft_km, l.upload_time
+		FROM gpx_upload_logs l
+		WHERE l.processing_status = 'completed'
+		  AND l.upload_id IS NOT NULL
+		ORDER BY l.id
+	`)
+	if err != nil {
+		slog.Error("rebuildAllEffortData: failed to list uploads", "error", err)
+		return
+	}
+	defer rows.Close()
+
+	type uploadInfo struct {
+		logID      int64
+		uploadID   int64
+		footKm     float64
+		vehicleKm  float64
+		aircraftKm float64
+		uploadTime string
+	}
+	var uploads []uploadInfo
+	for rows.Next() {
+		var u uploadInfo
+		if err := rows.Scan(&u.logID, &u.uploadID, &u.footKm, &u.vehicleKm, &u.aircraftKm, &u.uploadTime); err != nil {
+			slog.Warn("rebuildAllEffortData: scan error", "error", err)
+			continue
+		}
+		uploads = append(uploads, u)
+	}
+	rows.Close()
+
+	var rebuilt int
+	for _, u := range uploads {
+		// Query track_points grouped by grid_cell, movement_type, AND year-month-day
+		// from actual point timestamps. This ensures multi-day uploads get
+		// effort attributed to the correct time periods.
+		cellRows, err := s.DB.QueryContext(ctx, `
+			SELECT grid_cell_id,
+			       COALESCE(movement_type, '') as mt,
+			       CASE WHEN timestamp IS NOT NULL AND length(timestamp) >= 10
+			            THEN CAST(substr(timestamp, 1, 4) AS INTEGER)
+			            ELSE 0 END as yr,
+			       CASE WHEN timestamp IS NOT NULL AND length(timestamp) >= 10
+			            THEN CAST(substr(timestamp, 6, 2) AS INTEGER)
+			            ELSE 0 END as mo,
+			       CASE WHEN timestamp IS NOT NULL AND length(timestamp) >= 10
+			            THEN CAST(substr(timestamp, 9, 2) AS INTEGER)
+			            ELSE 0 END as dy,
+			       COUNT(*) as pts
+			FROM track_points
+			WHERE upload_id = ? AND grid_cell_id IS NOT NULL
+			GROUP BY grid_cell_id, mt, yr, mo, dy
+		`, u.uploadID)
+		if err != nil {
+			slog.Warn("rebuildAllEffortData: failed to get grid cells", "logID", u.logID, "error", err)
+			continue
+		}
+
+		type cellKey struct {
+			id           string
+			movementType string
+			year         int64
+			month        int64
+			day          int64
+		}
+		var cells []cellKey
+		cellPts := make(map[cellKey]int64)
+		var totalPts int64
+		var hasTypedPoints bool
+		for cellRows.Next() {
+			var c cellKey
+			var pts int64
+			if err := cellRows.Scan(&c.id, &c.movementType, &c.year, &c.month, &c.day, &pts); err != nil {
+				continue
+			}
+			if c.movementType != "" {
+				hasTypedPoints = true
+			}
+			cells = append(cells, c)
+			cellPts[c] = pts
+			totalPts += pts
+		}
+		cellRows.Close()
+
+		if len(cells) == 0 || totalPts == 0 {
+			continue
+		}
+
+		// Fallback year/month/day from upload_time for points without timestamps
+		fallbackYear := int64(time.Now().Year())
+		fallbackMonth := int64(time.Now().Month())
+		fallbackDay := int64(time.Now().Day())
+		if len(u.uploadTime) >= 10 {
+			if t, err := time.Parse("2006-01-02", u.uploadTime[:10]); err == nil {
+				fallbackYear = int64(t.Year())
+				fallbackMonth = int64(t.Month())
+				fallbackDay = int64(t.Day())
+			}
+		}
+
+		totalKm := u.footKm + u.vehicleKm + u.aircraftKm
+		if totalKm <= 0 {
+			continue
+		}
+
+		// Resolve year/month/day for each cell (use fallback if timestamp was NULL)
+		resolveYMD := func(c cellKey) (int64, int64, int64) {
+			if c.year > 0 && c.month > 0 && c.day > 0 {
+				return c.year, c.month, c.day
+			}
+			return fallbackYear, fallbackMonth, fallbackDay
+		}
+
+		if hasTypedPoints {
+			mtKm := map[string]float64{
+				"foot":     u.footKm,
+				"vehicle":  u.vehicleKm,
+				"aircraft": u.aircraftKm,
+			}
+
+			// Count total points per movement type (for proportional km distribution)
+			mtTotalPts := make(map[string]int64)
+			for _, c := range cells {
+				mt := c.movementType
+				if mt == "" {
+					mt = "foot"
+				}
+				mtTotalPts[mt] += cellPts[c]
+			}
+
+			// Per-cell, per-year-month-day, per-movement-type effort
+			type ymdCellKey struct {
+				cellID string
+				year   int64
+				month  int64
+				day    int64
+			}
+			allPts := make(map[ymdCellKey]int64)
+			allKm := make(map[ymdCellKey]float64)
+
+			for _, c := range cells {
+				mt := c.movementType
+				if mt == "" {
+					mt = "foot"
+				}
+				pts := cellPts[c]
+				yr, mo, dy := resolveYMD(c)
+				ak := ymdCellKey{cellID: c.id, year: yr, month: mo, day: dy}
+				allPts[ak] += pts
+
+				km := mtKm[mt]
+				if km <= 0 || mtTotalPts[mt] == 0 {
+					continue
+				}
+				fraction := float64(pts) / float64(mtTotalPts[mt])
+				cellKm := km * fraction
+				allKm[ak] += cellKm
+
+				dayVal := dy
+				err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
+					GridCellID:      c.id,
+					Year:            yr,
+					Month:           mo,
+					Day:             &dayVal,
+					MovementType:    mt,
+					TotalDistanceKm: cellKm,
+					TotalPoints:     pts,
+					UniqueUploads:   1,
+				})
+				if err != nil {
+					slog.Warn("rebuildAllEffortData: upsert error", "cell", c.id, "mt", mt, "error", err)
+				}
+			}
+
+			// "all" aggregates per cell per year-month-day
+			for ak, pts := range allPts {
+				dayVal := ak.day
+				err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
+					GridCellID:      ak.cellID,
+					Year:            ak.year,
+					Month:           ak.month,
+					Day:             &dayVal,
+					MovementType:    "all",
+					TotalDistanceKm: allKm[ak],
+					TotalPoints:     pts,
+					UniqueUploads:   1,
+				})
+				if err != nil {
+					slog.Warn("rebuildAllEffortData: upsert all error", "cell", ak.cellID, "error", err)
+				}
+			}
+		} else {
+			// Legacy path: no per-point movement types, use proportional distribution.
+			type ymdCellKey struct {
+				cellID string
+				year   int64
+				month  int64
+				day    int64
+			}
+			ymdPts := make(map[ymdCellKey]int64)
+			for _, c := range cells {
+				yr, mo, dy := resolveYMD(c)
+				ak := ymdCellKey{cellID: c.id, year: yr, month: mo, day: dy}
+				ymdPts[ak] += cellPts[c]
+			}
+
+			for ak, pts := range ymdPts {
+				fraction := float64(pts) / float64(totalPts)
+
+				for _, mt := range []struct {
+					name string
+					km   float64
+				}{
+					{"foot", u.footKm},
+					{"vehicle", u.vehicleKm},
+					{"aircraft", u.aircraftKm},
+				} {
+					if mt.km <= 0 {
+						continue
+					}
+					dayVal := ak.day
+					err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
+						GridCellID:      ak.cellID,
+						Year:            ak.year,
+						Month:           ak.month,
+						Day:             &dayVal,
+						MovementType:    mt.name,
+						TotalDistanceKm: mt.km * fraction,
+						TotalPoints:     int64(float64(pts) * (mt.km / totalKm)),
+						UniqueUploads:   1,
+					})
+					if err != nil {
+						slog.Warn("rebuildAllEffortData: upsert error", "cell", ak.cellID, "error", err)
+					}
+				}
+
+				dayVal := ak.day
+				err := q.UpsertEffortData(ctx, dbgen.UpsertEffortDataParams{
+					GridCellID:      ak.cellID,
+					Year:            ak.year,
+					Month:           ak.month,
+					Day:             &dayVal,
+					MovementType:    "all",
+					TotalDistanceKm: totalKm * fraction,
+					TotalPoints:     pts,
+					UniqueUploads:   1,
+				})
+				if err != nil {
+					slog.Warn("rebuildAllEffortData: upsert all error", "cell", ak.cellID, "error", err)
+				}
+			}
+		}
+
+		rebuilt++
+	}
+
+	slog.Info("effort_data rebuild complete", "uploads_processed", rebuilt)
 }
 
 // haversineDistanceKm calculates the great-circle distance in kilometers.
@@ -911,8 +1375,31 @@ func subcellIDForPoint(lat, lon float64) string {
 	return fmt.Sprintf("%d_%d", row, col)
 }
 
+// subcellIDForCell returns the subcell ID relative to a specific grid cell.
+// Used when hysteresis assigns a point to a cell that differs from the raw floor.
+// The point may be slightly outside the cell; clamp to edge subcells (0 or 9).
+func subcellIDForCell(cellID string, lat, lon float64) string {
+	// Parse cell ID to get the floor lat/lon
+	var cellLat, cellLon float64
+	fmt.Sscanf(cellID, "%f_%f", &cellLat, &cellLon)
+	
+	latPos := (lat - cellLat) / gridCellSize
+	lonPos := (lon - cellLon) / gridCellSize
+	
+	row := int(latPos * 10)
+	col := int(lonPos * 10)
+	
+	if row < 0 { row = 0 }
+	if row > 9 { row = 9 }
+	if col < 0 { col = 0 }
+	if col > 9 { col = 9 }
+	
+	return fmt.Sprintf("%d_%d", row, col)
+}
+
 // trackSubcellVisits records which subcells within each grid cell have been visited
-// Uses the actual point timestamps for day-level granularity
+// Uses the actual point timestamps for day-level granularity.
+// All movement types (foot, vehicle, aircraft) contribute to subcell coverage.
 func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segments []gpx.Segment, defaultYear, defaultMonth int64) error {
 	// Track visited subcells per grid cell per day
 	// Key: "gridCellID:subcellID:date" -> {lat, lon}
@@ -924,9 +1411,10 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 	defaultDate := time.Date(int(defaultYear), time.Month(defaultMonth), 1, 0, 0, 0, 0, time.UTC)
 	
 	for _, seg := range segments {
+		var tracker gridCellTracker
 		for _, pt := range seg.Points {
-			gridCellID := gridCellIDForPoint(pt.Lat, pt.Lon)
-			subcellID := subcellIDForPoint(pt.Lat, pt.Lon)
+			gridCellID := tracker.Assign(pt.Lat, pt.Lon)
+			subcellID := subcellIDForCell(gridCellID, pt.Lat, pt.Lon)
 			
 			// Use point timestamp if available, otherwise default date
 			visitDate := defaultDate
@@ -977,17 +1465,17 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 		}
 		gridCellID := parts[0]
 		subcellID := parts[1]
-		visitDateStr := parts[2]
+		visitDateStr := parts[2] // already "YYYY-MM-DD" format
 		
-		visitDate, err := time.Parse("2006-01-02", visitDateStr)
-		if err != nil {
+		// Validate date format
+		if _, err := time.Parse("2006-01-02", visitDateStr); err != nil {
 			continue
 		}
 		
-		err = q.UpsertSubcellVisit(ctx, dbgen.UpsertSubcellVisitParams{
+		err := q.UpsertSubcellVisit(ctx, dbgen.UpsertSubcellVisitParams{
 			GridCellID: gridCellID,
 			SubcellID:  subcellID,
-			VisitDate:  visitDate,
+			VisitDate:  visitDateStr,
 		})
 		if err != nil {
 			return fmt.Errorf("upsert subcell visit: %w", err)
@@ -999,17 +1487,52 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 
 // persistUploadWithValidation validates, classifies, and persists GPX upload data
 // Returns the validation result for user feedback
-func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEmail, filename, fileHash string, gpxData *gpx.GPXData, segments []gpx.Segment) (*GPXValidationResult, error) {
-	// Run validation and classification
-	validationResult := ValidateAndClassifyGPX(gpxData)
+func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEmail, filename, fileHash string, segments []gpx.Segment) (*GPXValidationResult, error) {
+	// Run validation and classification on pre-processed segments
+	// (already split and gap-cleaned by caller)
+	validationResult := ValidateAndClassifyGPX(segments)
 	
-	// Find protected area from first point
-	if len(segments) > 0 && len(segments[0].Points) > 0 && s.AreaStore != nil {
-		pt := segments[0].Points[0]
-		if area := s.AreaStore.FindArea(pt.Lat, pt.Lon); area != nil {
-			validationResult.ProtectedAreaID = area.ID
-			validationResult.ProtectedAreaName = area.Name
+	// Find protected area per segment using median point (robust to transit).
+	// The overall upload is assigned to the park with the most segment distance.
+	parkDistKm := make(map[string]float64)      // park_id -> total km
+	parkNames := make(map[string]string)          // park_id -> name
+	segmentParks := make(map[int]string)          // segment_index -> park_id
+	if s.AreaStore != nil {
+		for i, seg := range segments {
+			if len(seg.Points) == 0 {
+				continue
+			}
+			// Try median point first (most representative)
+			mid := seg.Points[len(seg.Points)/2]
+			area := s.AreaStore.FindArea(mid.Lat, mid.Lon)
+			// Fall back to first/last point
+			if area == nil {
+				area = s.AreaStore.FindArea(seg.Points[0].Lat, seg.Points[0].Lon)
+			}
+			if area == nil {
+				area = s.AreaStore.FindArea(seg.Points[len(seg.Points)-1].Lat, seg.Points[len(seg.Points)-1].Lon)
+			}
+			if area != nil {
+				segmentParks[i] = area.ID
+				parkNames[area.ID] = area.Name
+				// Use raw segment distance for park detection (classified segments
+				// may have been merged, breaking the 1:1 index mapping)
+				parkDistKm[area.ID] += seg.DistanceKm
+			}
 		}
+	}
+	// Pick majority park by distance
+	var bestPark string
+	var bestDist float64
+	for pid, d := range parkDistKm {
+		if d > bestDist {
+			bestDist = d
+			bestPark = pid
+		}
+	}
+	if bestPark != "" {
+		validationResult.ProtectedAreaID = bestPark
+		validationResult.ProtectedAreaName = parkNames[bestPark]
 	}
 	
 	q := dbgen.New(s.DB)
@@ -1080,6 +1603,16 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		AircraftSegments:      ptrInt64(int64(ms.AircraftSegments)),
 		AircraftKm:            ptrFloat64(ms.AircraftKm),
 		AircraftMinutes:       ptrFloat64(ms.AircraftMinutes),
+		// Movement subtypes
+		BoatSegments:          ptrInt64(int64(ms.BoatSegments)),
+		BoatKm:                ptrFloat64(ms.BoatKm),
+		BoatMinutes:           ptrFloat64(ms.BoatMinutes),
+		FixedWingSegments:     ptrInt64(int64(ms.FixedWingSegments)),
+		FixedWingKm:           ptrFloat64(ms.FixedWingKm),
+		FixedWingMinutes:      ptrFloat64(ms.FixedWingMinutes),
+		RotorWingSegments:     ptrInt64(int64(ms.RotorWingSegments)),
+		RotorWingKm:           ptrFloat64(ms.RotorWingKm),
+		RotorWingMinutes:      ptrFloat64(ms.RotorWingMinutes),
 		// Special categories
 		ReconSegments:         ptrInt64(int64(ms.ReconSegments)),
 		ReconKm:               ptrFloat64(ms.ReconKm),
@@ -1097,14 +1630,31 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		slog.Warn("failed to create gpx upload log", "error", err)
 	}
 	
-	// If valid, persist to the original upload tables using the raw segments
-	slog.Info("upload validation", "isValid", validationResult.IsValid, "patrolKm", validationResult.PatrolKm, "segments", len(segments))
-	if validationResult.IsValid && validationResult.PatrolKm > 0 {
-		// Use the raw segments for persistence - they contain the actual GPS points.
-		// The validation result classifies the GPX track segments, but Points are not
-		// stored in ClassifiedSegment (json:"-"), so we use the original segments.
-		patrolOnlySegments := segments
-		slog.Info("persisting patrol segments", "count", len(patrolOnlySegments))
+	// If valid, persist to the original upload tables using the raw segments.
+	// Include uploads with any patrol or aircraft effort (aerial surveys count).
+	totalEffortKm := validationResult.PatrolKm + validationResult.MovementStats.AircraftKm
+	slog.Info("upload validation", "isValid", validationResult.IsValid, "patrolKm", validationResult.PatrolKm, "aircraftKm", validationResult.MovementStats.AircraftKm, "segments", len(segments))
+	if validationResult.IsValid && totalEffortKm > 0 {
+		// Apply validation classifier's movement types to the raw segments.
+		// After merging, classified segments track which original input segments
+		// they cover via OriginalIndices. Use that to map back correctly.
+		var patrolOnlySegments []gpx.Segment
+		for _, cs := range validationResult.ClassifiedSegments {
+			if !cs.IncludeInEffort {
+				continue // skip road, auto_generated, static, idle
+			}
+			// Collect original segments covered by this classified segment
+			for _, origIdx := range cs.OriginalIndices {
+				if origIdx < len(segments) {
+					seg := segments[origIdx]
+					if cs.MovementType != "" {
+						seg.MovementType = cs.MovementType
+					}
+					patrolOnlySegments = append(patrolOnlySegments, seg)
+				}
+			}
+		}
+		slog.Info("persisting patrol segments", "count", len(patrolOnlySegments), "filtered_from", len(segments))
 		
 		if len(patrolOnlySegments) > 0 {
 			persistID, err := s.persistUpload(ctx, userID, userEmail, filename, fileHash, patrolOnlySegments)
@@ -1124,15 +1674,27 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		}
 	}
 	
-	// Queue for background learning if we have a park and valid data
-	if validationResult.ProtectedAreaID != "" && len(validationResult.ClassifiedSegments) > 0 {
-		_, err := q.QueueGPXLearning(ctx, dbgen.QueueGPXLearningParams{
+	// Queue for background learning — one job per park that has segments.
+	// This correctly handles multi-park GPX files (e.g. autofetch from EarthRanger).
+	queuedParks := make(map[string]bool)
+	for _, pid := range segmentParks {
+		if pid != "" && !queuedParks[pid] {
+			queuedParks[pid] = true
+			_, err := q.QueueGPXLearning(ctx, dbgen.QueueGPXLearningParams{
+				UploadID: uploadID,
+				ParkID:   strPtr(pid),
+			})
+			if err != nil {
+				slog.Debug("failed to queue gpx learning", "park", pid, "error", err)
+			}
+		}
+	}
+	// Fallback: if no per-segment parks but overall park detected, queue that
+	if len(queuedParks) == 0 && validationResult.ProtectedAreaID != "" && len(validationResult.ClassifiedSegments) > 0 {
+		_, _ = q.QueueGPXLearning(ctx, dbgen.QueueGPXLearningParams{
 			UploadID: uploadID,
 			ParkID:   strPtr(validationResult.ProtectedAreaID),
 		})
-		if err != nil {
-			slog.Debug("failed to queue gpx learning", "error", err)
-		}
 	}
 	
 	return validationResult, nil
@@ -1323,4 +1885,10 @@ func (s *Server) isNearBase(ctx context.Context, lat, lon, threshold float64) bo
 		return false
 	}
 	return count > 0
+}
+
+// HandleAPIRebuildEffort triggers a full rebuild of effort_data from track_points.
+func (s *Server) HandleAPIRebuildEffort(w http.ResponseWriter, r *http.Request) {
+	go s.rebuildAllEffortData()
+	writeJSON(w, 200, map[string]string{"ok": "rebuild started"})
 }

@@ -57,8 +57,15 @@ Use the data flow maps to find the specific files you need to modify.
 
 ## How to Run
 
+The server runs as a **systemd service** (`5mp.service`):
+
 ```bash
-make build && ./server
+# Build and restart
+make build && sudo systemctl restart 5mp
+
+# Check status / logs
+systemctl status 5mp
+sudo journalctl -u 5mp -f
 ```
 
 **Build details:**
@@ -68,13 +75,22 @@ make build && ./server
 
 Access: http://localhost:8000/?pwd=test2026
 
+### Systemd Service (`5mp.service`)
+
+The service auto-restarts on crash. Environment variables (e.g. `ZENODO_TOKEN`) are
+configured in `/etc/systemd/system/5mp.service`. After editing, run:
+
+```bash
+sudo systemctl daemon-reload && sudo systemctl restart 5mp
+```
+
 ### ⚠️ IMPORTANT: Keeping Version Up-to-Date
 
 **ALWAYS rebuild after making changes to show the correct version:**
 
 ```bash
 # After any code changes or git commits:
-make build && pkill -f "./server" && ./server > /tmp/server.log 2>&1 &
+make build && sudo systemctl restart 5mp
 ```
 
 **Why this matters:**
@@ -91,7 +107,7 @@ curl -s "http://localhost:8000/api/version?pwd=test2026" | jq -r '.version'
 git rev-parse --short HEAD
 
 # If they don't match, rebuild:
-make build && pkill -f "./server" && ./server > /tmp/server.log 2>&1 &
+make build && sudo systemctl restart 5mp
 ```
 
 ---
@@ -231,38 +247,43 @@ TEST.getEntryCount('fire')               // Count entries
 
 ---
 
-## Remote Database Backup
+## Remote Database Backups
 
-**Location:** exe-dev-monitor-peer01.exe.xyz  
-**File:** 5mp_db_backup_20260302.sqlite3 (1.87 GB)  
-**Uploaded:** 2026-03-04 09:18:53 UTC
+See `BACKUP_INFO.md` for full details and restore instructions.
 
-**Access Credentials:**
+### Latest: Zenodo Draft (April 1, 2026)
+
+| Field | Value |
+|-------|-------|
+| **Deposition ID** | `19363779` |
+| **State** | Draft (unsubmitted, no public DOI) |
+| **Draft URL** | https://zenodo.org/deposit/19363779 |
+| **File** | `5mp_db_backup_20260401.sqlite3` (1.2 GB) |
+| **MD5** | `d17ef446b03f58b5fdd1cb527dcd3088` |
+| **Manifest** | `data/db_backup_zenodo_manifest.json` |
+
+```bash
+# Download (requires ZENODO_TOKEN - draft is not public)
+curl -H "Authorization: Bearer $ZENODO_TOKEN" \
+  "https://zenodo.org/api/files/4bd66ea4-80b9-45f9-af7b-4237c268844a/5mp_db_backup_20260401.sqlite3" \
+  -o 5mp_db_backup_20260401.sqlite3
+
+# Create new backup:
+ZENODO_TOKEN=... go run ./cmd/backup-zenodo/
+```
+
+### Previous: exe-dev-monitor-peer01 (March 2, 2026)
+
 ```
 File ID:  c8de734b-ad0e-4c25-b5bb-6e4ddef3f847
 Token:    REDACTED_TOKEN
 ```
 
-**Verification Status:**
-- ✅ PRAGMA integrity_check: ok
-- ✅ MD5: c4f7fff51e59277566d3d03e9eaf31a1
-- ✅ 490,467 pages (4KB each), WAL mode
-- ✅ Verified: 2026-03-04 09:43:56 UTC
-
-**Download:**
 ```bash
 curl -H "Authorization: Bearer REDACTED_TOKEN" \
   https://exe-dev-monitor-peer01.exe.xyz:8000/api/download/c8de734b-ad0e-4c25-b5bb-6e4ddef3f847 \
   -o db_backup_20260302.sqlite3
 ```
-
-**Verify Integrity:**
-```bash
-curl -X POST -H "Authorization: Bearer REDACTED_TOKEN" \
-  https://exe-dev-monitor-peer01.exe.xyz:8000/api/verify/c8de734b-ad0e-4c25-b5bb-6e4ddef3f847
-```
-
-See `backup_info.txt` for full details.
 
 ---
 

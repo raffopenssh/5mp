@@ -149,17 +149,18 @@ func (q *Queries) CreateSettlementVisit(ctx context.Context, arg CreateSettlemen
 }
 
 const createTrackPoint = `-- name: CreateTrackPoint :exec
-INSERT INTO track_points (upload_id, lat, lon, elevation, timestamp, grid_cell_id)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO track_points (upload_id, lat, lon, elevation, timestamp, grid_cell_id, movement_type)
+VALUES (?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateTrackPointParams struct {
-	UploadID   int64      `json:"upload_id"`
-	Lat        float64    `json:"lat"`
-	Lon        float64    `json:"lon"`
-	Elevation  *float64   `json:"elevation"`
-	Timestamp  *time.Time `json:"timestamp"`
-	GridCellID *string    `json:"grid_cell_id"`
+	UploadID     int64      `json:"upload_id"`
+	Lat          float64    `json:"lat"`
+	Lon          float64    `json:"lon"`
+	Elevation    *float64   `json:"elevation"`
+	Timestamp    *time.Time `json:"timestamp"`
+	GridCellID   *string    `json:"grid_cell_id"`
+	MovementType *string    `json:"movement_type"`
 }
 
 func (q *Queries) CreateTrackPoint(ctx context.Context, arg CreateTrackPointParams) error {
@@ -170,6 +171,7 @@ func (q *Queries) CreateTrackPoint(ctx context.Context, arg CreateTrackPointPara
 		arg.Elevation,
 		arg.Timestamp,
 		arg.GridCellID,
+		arg.MovementType,
 	)
 	return err
 }
@@ -1316,7 +1318,7 @@ func (q *Queries) GetTotalDistanceByYear(ctx context.Context, year int64) (inter
 }
 
 const getTrackPointsByUpload = `-- name: GetTrackPointsByUpload :many
-SELECT id, upload_id, lat, lon, elevation, timestamp, grid_cell_id FROM track_points WHERE upload_id = ? ORDER BY timestamp
+SELECT id, upload_id, lat, lon, elevation, timestamp, grid_cell_id, movement_type FROM track_points WHERE upload_id = ? ORDER BY timestamp
 `
 
 func (q *Queries) GetTrackPointsByUpload(ctx context.Context, uploadID int64) ([]TrackPoint, error) {
@@ -1336,6 +1338,7 @@ func (q *Queries) GetTrackPointsByUpload(ctx context.Context, uploadID int64) ([
 			&i.Elevation,
 			&i.Timestamp,
 			&i.GridCellID,
+			&i.MovementType,
 		); err != nil {
 			return nil, err
 		}
@@ -1995,24 +1998,38 @@ func (q *Queries) UpsertChecklistItem(ctx context.Context, arg UpsertChecklistIt
 }
 
 const upsertEffortData = `-- name: UpsertEffortData :exec
-INSERT INTO effort_data (grid_cell_id, year, month, day, movement_type, total_distance_km, total_points, unique_uploads, protected_area_ids)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO effort_data (grid_cell_id, year, month, day, movement_type, total_distance_km, total_points, unique_uploads, protected_area_ids, avg_speed_kmh, avg_altitude_m)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(grid_cell_id, year, month, day, movement_type) DO UPDATE SET
     total_distance_km = effort_data.total_distance_km + excluded.total_distance_km,
     total_points = effort_data.total_points + excluded.total_points,
-    unique_uploads = effort_data.unique_uploads + excluded.unique_uploads
+    unique_uploads = effort_data.unique_uploads + excluded.unique_uploads,
+    avg_speed_kmh = CASE
+        WHEN effort_data.avg_speed_kmh IS NULL THEN excluded.avg_speed_kmh
+        WHEN excluded.avg_speed_kmh IS NULL THEN effort_data.avg_speed_kmh
+        ELSE (effort_data.avg_speed_kmh * effort_data.total_distance_km + excluded.avg_speed_kmh * excluded.total_distance_km)
+             / (effort_data.total_distance_km + excluded.total_distance_km)
+        END,
+    avg_altitude_m = CASE
+        WHEN effort_data.avg_altitude_m IS NULL THEN excluded.avg_altitude_m
+        WHEN excluded.avg_altitude_m IS NULL THEN effort_data.avg_altitude_m
+        ELSE (effort_data.avg_altitude_m * effort_data.total_distance_km + excluded.avg_altitude_m * excluded.total_distance_km)
+             / (effort_data.total_distance_km + excluded.total_distance_km)
+        END
 `
 
 type UpsertEffortDataParams struct {
-	GridCellID       string  `json:"grid_cell_id"`
-	Year             int64   `json:"year"`
-	Month            int64   `json:"month"`
-	Day              *int64  `json:"day"`
-	MovementType     string  `json:"movement_type"`
-	TotalDistanceKm  float64 `json:"total_distance_km"`
-	TotalPoints      int64   `json:"total_points"`
-	UniqueUploads    int64   `json:"unique_uploads"`
-	ProtectedAreaIds *string `json:"protected_area_ids"`
+	GridCellID       string   `json:"grid_cell_id"`
+	Year             int64    `json:"year"`
+	Month            int64    `json:"month"`
+	Day              *int64   `json:"day"`
+	MovementType     string   `json:"movement_type"`
+	TotalDistanceKm  float64  `json:"total_distance_km"`
+	TotalPoints      int64    `json:"total_points"`
+	UniqueUploads    int64    `json:"unique_uploads"`
+	ProtectedAreaIds *string  `json:"protected_area_ids"`
+	AvgSpeedKmh      *float64 `json:"avg_speed_kmh"`
+	AvgAltitudeM     *float64 `json:"avg_altitude_m"`
 }
 
 func (q *Queries) UpsertEffortData(ctx context.Context, arg UpsertEffortDataParams) error {
@@ -2026,6 +2043,8 @@ func (q *Queries) UpsertEffortData(ctx context.Context, arg UpsertEffortDataPara
 		arg.TotalPoints,
 		arg.UniqueUploads,
 		arg.ProtectedAreaIds,
+		arg.AvgSpeedKmh,
+		arg.AvgAltitudeM,
 	)
 	return err
 }
@@ -2084,9 +2103,9 @@ ON CONFLICT(grid_cell_id, subcell_id, visit_date) DO UPDATE SET
 `
 
 type UpsertSubcellVisitParams struct {
-	GridCellID string    `json:"grid_cell_id"`
-	SubcellID  string    `json:"subcell_id"`
-	VisitDate  time.Time `json:"visit_date"`
+	GridCellID string `json:"grid_cell_id"`
+	SubcellID  string `json:"subcell_id"`
+	VisitDate  string `json:"visit_date"`
 }
 
 // Subcell visits tracking for spatial coverage (day granularity)

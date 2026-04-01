@@ -49,3 +49,7 @@ data/export/narrative_summary.json
 # Large trajectory files - download from backup
 data/fire_trajectories_v2/
 .secrets/
+
+# Autofetch encryption key (auto-generated)
+.autofetch_key
+backup-zenodo
