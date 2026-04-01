@@ -247,38 +247,39 @@ TEST.getEntryCount('fire')               // Count entries
 
 ---
 
-## Remote Database Backup
+## Remote Database Backups
 
-**Location:** exe-dev-monitor-peer01.exe.xyz  
-**File:** 5mp_db_backup_20260302.sqlite3 (1.87 GB)  
-**Uploaded:** 2026-03-04 09:18:53 UTC
+See `BACKUP_INFO.md` for full details and restore instructions.
 
-**Access Credentials:**
+### Latest: Zenodo (April 1, 2026)
+
+| Field | Value |
+|-------|-------|
+| **Deposit ID** | `19363593` |
+| **DOI** | `10.5281/zenodo.19363593` |
+| **Record URL** | https://zenodo.org/records/19363593 |
+| **File** | `5mp_db_backup_20260401.sqlite3` (1.2 GB) |
+| **MD5** | `d17ef446b03f58b5fdd1cb527dcd3088` |
+| **Access** | Restricted (requires `$ZENODO_TOKEN`) |
+
+```bash
+curl -H "Authorization: Bearer $ZENODO_TOKEN" \
+  "https://zenodo.org/api/records/19363593/draft/files/5mp_db_backup_20260401.sqlite3/content" \
+  -o 5mp_db_backup_20260401.sqlite3
+```
+
+### Previous: exe-dev-monitor-peer01 (March 2, 2026)
+
 ```
 File ID:  c8de734b-ad0e-4c25-b5bb-6e4ddef3f847
 Token:    REDACTED_TOKEN
 ```
 
-**Verification Status:**
-- ✅ PRAGMA integrity_check: ok
-- ✅ MD5: c4f7fff51e59277566d3d03e9eaf31a1
-- ✅ 490,467 pages (4KB each), WAL mode
-- ✅ Verified: 2026-03-04 09:43:56 UTC
-
-**Download:**
 ```bash
 curl -H "Authorization: Bearer REDACTED_TOKEN" \
   https://exe-dev-monitor-peer01.exe.xyz:8000/api/download/c8de734b-ad0e-4c25-b5bb-6e4ddef3f847 \
   -o db_backup_20260302.sqlite3
 ```
-
-**Verify Integrity:**
-```bash
-curl -X POST -H "Authorization: Bearer REDACTED_TOKEN" \
-  https://exe-dev-monitor-peer01.exe.xyz:8000/api/verify/c8de734b-ad0e-4c25-b5bb-6e4ddef3f847
-```
-
-See `backup_info.txt` for full details.
 
 ---
 
