@@ -1,6 +1,7 @@
 package srv
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -21,51 +22,69 @@ type WebshareProxy struct {
 	City     string `json:"city"`
 }
 
-// GetWebshareProxies loads proxies from cached file or API
-func GetWebshareProxies() []WebshareProxy {
-	cacheFile := "data/proxy_cache/webshare_proxies.json"
-	
-	// Check cache
-	if info, err := os.Stat(cacheFile); err == nil {
-		if time.Since(info.ModTime()) < time.Hour {
-			if data, err := os.ReadFile(cacheFile); err == nil {
-				var proxies []WebshareProxy
-				if err := json.Unmarshal(data, &proxies); err == nil {
-					return proxies
-				}
+// loadWebshareTokens reads all tokens from .secrets/webshare_tokens (multi-line)
+// or falls back to .secrets/webshare_token (single legacy token).
+func loadWebshareTokens() []string {
+	var tokens []string
+
+	// Prefer multi-token file
+	if f, err := os.Open(".secrets/webshare_tokens"); err == nil {
+		defer f.Close()
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			t := strings.TrimSpace(scanner.Text())
+			if t != "" && !strings.HasPrefix(t, "#") {
+				tokens = append(tokens, t)
 			}
 		}
 	}
-	
-	// Fetch from API
-	tokenFile := ".secrets/webshare_token"
-	tokenData, err := os.ReadFile(tokenFile)
-	if err != nil {
-		slog.Debug("No Webshare token found", "file", tokenFile)
-		return nil
+
+	// Fallback to legacy single-token file
+	if len(tokens) == 0 {
+		if data, err := os.ReadFile(".secrets/webshare_token"); err == nil {
+			if t := strings.TrimSpace(string(data)); t != "" {
+				tokens = append(tokens, t)
+			}
+		}
 	}
-	
-	token := strings.TrimSpace(string(tokenData))
-	
+
+	return tokens
+}
+
+// fetchProxiesWithToken tries a single Webshare API token.
+func fetchProxiesWithToken(token string) ([]WebshareProxy, bool) {
+	suffix := token
+	if len(suffix) > 6 {
+		suffix = token[len(token)-6:]
+	}
+
 	req, err := http.NewRequest("GET", "https://proxy.webshare.io/api/v2/proxy/list/?mode=direct&page=1&page_size=10", nil)
 	if err != nil {
-		return nil
+		return nil, false
 	}
 	req.Header.Set("Authorization", "Token "+token)
-	
+
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		slog.Debug("Failed to fetch Webshare proxies", "error", err)
-		return nil
+		slog.Debug("Webshare API request failed", "token", "..."+suffix, "error", err)
+		return nil, false
 	}
 	defer resp.Body.Close()
-	
-	if resp.StatusCode != 200 {
-		slog.Debug("Webshare API error", "status", resp.StatusCode)
-		return nil
+
+	if resp.StatusCode == 401 {
+		slog.Warn("Webshare token invalid (401)", "token", "..."+suffix)
+		return nil, false
 	}
-	
+	if resp.StatusCode == 429 {
+		slog.Warn("Webshare token rate limited (429)", "token", "..."+suffix)
+		return nil, false
+	}
+	if resp.StatusCode != 200 {
+		slog.Debug("Webshare API error", "token", "..."+suffix, "status", resp.StatusCode)
+		return nil, false
+	}
+
 	var apiResp struct {
 		Results []struct {
 			ProxyAddress string `json:"proxy_address"`
@@ -77,11 +96,11 @@ func GetWebshareProxies() []WebshareProxy {
 			Valid        bool   `json:"valid"`
 		} `json:"results"`
 	}
-	
+
 	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
-		return nil
+		return nil, false
 	}
-	
+
 	var proxies []WebshareProxy
 	for _, p := range apiResp.Results {
 		if p.Valid {
@@ -95,17 +114,55 @@ func GetWebshareProxies() []WebshareProxy {
 			})
 		}
 	}
-	
-	// Cache results
-	if len(proxies) > 0 {
-		os.MkdirAll(filepath.Dir(cacheFile), 0755)
-		if data, err := json.MarshalIndent(proxies, "", "  "); err == nil {
-			os.WriteFile(cacheFile, data, 0644)
+
+	if len(proxies) == 0 {
+		slog.Warn("Webshare token returned 0 valid proxies (quota exhausted?)", "token", "..."+suffix)
+		return nil, false
+	}
+
+	slog.Info("Webshare token OK", "token", "..."+suffix, "proxies", len(proxies))
+	return proxies, true
+}
+
+// GetWebshareProxies loads proxies from cache or tries all tokens with fallback.
+func GetWebshareProxies() []WebshareProxy {
+	cacheFile := "data/proxy_cache/webshare_proxies.json"
+
+	// Check cache
+	if info, err := os.Stat(cacheFile); err == nil {
+		if time.Since(info.ModTime()) < time.Hour {
+			if data, err := os.ReadFile(cacheFile); err == nil {
+				var proxies []WebshareProxy
+				if err := json.Unmarshal(data, &proxies); err == nil && len(proxies) > 0 {
+					return proxies
+				}
+			}
 		}
 	}
-	
-	slog.Info("Fetched Webshare proxies", "count", len(proxies))
-	return proxies
+
+	tokens := loadWebshareTokens()
+	if len(tokens) == 0 {
+		slog.Debug("No Webshare tokens found")
+		return nil
+	}
+
+	slog.Info("Trying Webshare tokens", "count", len(tokens))
+
+	// Try each token until one succeeds
+	for _, token := range tokens {
+		proxies, ok := fetchProxiesWithToken(token)
+		if ok && len(proxies) > 0 {
+			// Cache results
+			os.MkdirAll(filepath.Dir(cacheFile), 0755)
+			if data, err := json.MarshalIndent(proxies, "", "  "); err == nil {
+				os.WriteFile(cacheFile, data, 0644)
+			}
+			return proxies
+		}
+	}
+
+	slog.Warn("All Webshare tokens exhausted or failed")
+	return nil
 }
 
 // ToProxyURL converts a WebshareProxy to a proxy URL string
@@ -119,9 +176,9 @@ func GetWorkingWebshareProxy(testURL string) string {
 	if len(proxies) == 0 {
 		return ""
 	}
-	
+
 	slog.Info("Testing Webshare proxies", "count", len(proxies))
-	
+
 	for i, proxy := range proxies {
 		proxyURL := proxy.ToProxyURL()
 		if testProxy(proxyURL, testURL) {
@@ -132,6 +189,6 @@ func GetWorkingWebshareProxy(testURL string) string {
 			break // Don't test all 10, just first 5
 		}
 	}
-	
+
 	return ""
 }

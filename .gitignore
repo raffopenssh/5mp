@@ -53,3 +53,4 @@ data/fire_trajectories_v2/
 # Autofetch encryption key (auto-generated)
 .autofetch_key
 backup-zenodo
+.secrets/webshare_tokens
