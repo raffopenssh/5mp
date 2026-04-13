@@ -80,8 +80,29 @@ def _fetch_proxies_with_token(token):
         return [], False
 
 
-def get_webshare_proxies():
-    """Fetch proxies from Webshare API, trying all tokens with fallback."""
+def _test_proxy_bandwidth(proxy, test_url="https://firms.modaps.eosdis.nasa.gov", timeout=15):
+    """Test that a proxy can actually route traffic (not just return credentials).
+
+    Webshare still returns valid proxy credentials when bandwidth is exhausted,
+    but the proxies will fail/hang when you try to use them.
+    """
+    try:
+        proxy_dict = get_proxy_dict(proxy)
+        resp = requests.head(test_url, proxies=proxy_dict, timeout=timeout,
+                             headers={'User-Agent': 'Mozilla/5.0'})
+        return resp.status_code < 400
+    except Exception:
+        return False
+
+
+def get_webshare_proxies(verify_bandwidth=True):
+    """Fetch proxies from Webshare API, trying all tokens with fallback.
+
+    When verify_bandwidth=True (default), does a live connectivity test through
+    the first proxy to confirm the account still has bandwidth remaining.
+    This catches the case where Webshare returns credentials but the proxies
+    are non-functional due to exhausted monthly bandwidth.
+    """
     tokens = _load_tokens()
     if not tokens:
         return []
@@ -89,16 +110,36 @@ def get_webshare_proxies():
     # Check cache first (valid for any token)
     if CACHE_FILE.exists():
         import time
-        if time.time() - os.path.getmtime(CACHE_FILE) < 3600:  # 1 hour cache
+        age = time.time() - os.path.getmtime(CACHE_FILE)
+        if age < 3600:  # 1 hour cache
             with open(CACHE_FILE) as f:
                 cached = json.load(f)
                 if cached:
-                    return cached
+                    if not verify_bandwidth:
+                        return cached
+                    # Verify cached proxies still have bandwidth
+                    if _test_proxy_bandwidth(cached[0]):
+                        return cached
+                    print("  Cached proxies failed bandwidth test, re-fetching...")
+                    # Remove stale cache
+                    try:
+                        os.remove(CACHE_FILE)
+                    except OSError:
+                        pass
 
     # Try each token in order until one works
     for token in tokens:
         proxies, usable = _fetch_proxies_with_token(token)
         if usable and proxies:
+            if verify_bandwidth:
+                # Test actual connectivity through the first proxy
+                p = proxies[0]
+                print(f"  Testing bandwidth via {p['host']}:{p['port']}...")
+                if not _test_proxy_bandwidth(p):
+                    suffix = token[-6:]
+                    print(f"  Webshare token ...{suffix}: proxies returned but BANDWIDTH EXHAUSTED")
+                    continue  # Try next token
+                print("  Bandwidth OK")
             # Cache results
             CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
             with open(CACHE_FILE, 'w') as f:

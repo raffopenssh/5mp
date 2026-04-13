@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -124,9 +125,32 @@ func fetchProxiesWithToken(token string) ([]WebshareProxy, bool) {
 	return proxies, true
 }
 
+// testProxyBandwidth does a HEAD request through a proxy to verify it
+// can actually route traffic. Webshare returns valid credentials even when
+// the account's monthly bandwidth is exhausted — the proxies just hang.
+// Uses HEAD to avoid consuming bandwidth on the check itself.
+func testProxyBandwidth(proxy WebshareProxy, testURL string) bool {
+	parsed, err := url.Parse(proxy.ToProxyURL())
+	if err != nil {
+		return false
+	}
+	client := &http.Client{
+		Transport: &http.Transport{Proxy: http.ProxyURL(parsed)},
+		Timeout:   10 * time.Second,
+	}
+	resp, err := client.Head(testURL)
+	if err != nil {
+		return false
+	}
+	resp.Body.Close()
+	return resp.StatusCode < 400
+}
+
 // GetWebshareProxies loads proxies from cache or tries all tokens with fallback.
+// Each token's proxies are bandwidth-tested before being accepted.
 func GetWebshareProxies() []WebshareProxy {
 	cacheFile := "data/proxy_cache/webshare_proxies.json"
+	verifyURL := "https://firms.modaps.eosdis.nasa.gov"
 
 	// Check cache
 	if info, err := os.Stat(cacheFile); err == nil {
@@ -134,7 +158,12 @@ func GetWebshareProxies() []WebshareProxy {
 			if data, err := os.ReadFile(cacheFile); err == nil {
 				var proxies []WebshareProxy
 				if err := json.Unmarshal(data, &proxies); err == nil && len(proxies) > 0 {
-					return proxies
+					// Verify cached proxies still have bandwidth
+					if testProxyBandwidth(proxies[0], verifyURL) {
+						return proxies
+					}
+					slog.Warn("Cached Webshare proxies failed bandwidth test, re-fetching")
+					os.Remove(cacheFile)
 				}
 			}
 		}
@@ -148,10 +177,24 @@ func GetWebshareProxies() []WebshareProxy {
 
 	slog.Info("Trying Webshare tokens", "count", len(tokens))
 
-	// Try each token until one succeeds
+	// Try each token until one succeeds with working bandwidth
 	for _, token := range tokens {
+		suffix := token
+		if len(suffix) > 6 {
+			suffix = token[len(token)-6:]
+		}
+
 		proxies, ok := fetchProxiesWithToken(token)
 		if ok && len(proxies) > 0 {
+			// Verify actual bandwidth by routing a request through the first proxy
+			slog.Info("Testing proxy bandwidth", "token", "..."+suffix,
+				"proxy", fmt.Sprintf("%s:%d", proxies[0].Host, proxies[0].Port))
+			if !testProxyBandwidth(proxies[0], verifyURL) {
+				slog.Warn("Webshare token proxies returned but BANDWIDTH EXHAUSTED", "token", "..."+suffix)
+				continue // Try next token
+			}
+			slog.Info("Webshare bandwidth OK", "token", "..."+suffix)
+
 			// Cache results
 			os.MkdirAll(filepath.Dir(cacheFile), 0755)
 			if data, err := json.MarshalIndent(proxies, "", "  "); err == nil {
