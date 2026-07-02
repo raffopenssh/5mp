@@ -2990,6 +2990,76 @@ func (s *Server) HandleAPIBulkApprove(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]int{"approved": approved})
 }
 
+// HandleAPIApproveHighConfidence approves all pending learned features above a
+// confidence threshold.
+// POST /api/admin/approve-high-confidence {"threshold": 75}
+func (s *Server) HandleAPIApproveHighConfidence(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := dbgen.New(s.DB)
+
+	var req struct {
+		Threshold float64 `json:"threshold"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	if req.Threshold <= 0 {
+		req.Threshold = 75
+	}
+
+	user := s.Auth.GetUserFromRequest(r)
+	approvedBy := "admin"
+	if user != nil && user.Email != "" {
+		approvedBy = user.Email
+	}
+
+	approved := 0
+	for _, t := range []struct {
+		table string
+		kind  string
+	}{
+		{"learned_roads", "road"},
+		{"learned_places", "place"},
+		{"learned_airstrips", "airstrip"},
+	} {
+		rows, err := s.DB.QueryContext(ctx,
+			"SELECT id FROM "+t.table+" WHERE status = 'pending' AND confidence_pct > ?", req.Threshold)
+		if err != nil {
+			continue
+		}
+		var ids []int64
+		for rows.Next() {
+			var id int64
+			if rows.Scan(&id) == nil {
+				ids = append(ids, id)
+			}
+		}
+		rows.Close()
+
+		for _, id := range ids {
+			var err error
+			switch t.kind {
+			case "road":
+				q.RecordRoadHistory(ctx, dbgen.RecordRoadHistoryParams{Action: "approve", ActionBy: &approvedBy, ID: id})
+				err = q.ApproveRoad(ctx, dbgen.ApproveRoadParams{ApprovedBy: &approvedBy, ID: id})
+			case "place":
+				q.RecordPlaceHistory(ctx, dbgen.RecordPlaceHistoryParams{Action: "approve", ActionBy: &approvedBy, ID: id})
+				err = q.ApprovePlace(ctx, dbgen.ApprovePlaceParams{ApprovedBy: &approvedBy, ID: id})
+			case "airstrip":
+				q.RecordAirstripHistory(ctx, dbgen.RecordAirstripHistoryParams{Action: "approve", ActionBy: &approvedBy, ID: id})
+				err = q.ApproveAirstrip(ctx, dbgen.ApproveAirstripParams{ApprovedBy: &approvedBy, ID: id})
+			}
+			if err == nil {
+				approved++
+			}
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]int{"approved": approved})
+}
+
 // HandleAPIBulkReject rejects multiple learned features at once
 // POST /api/admin/bulk-reject
 func (s *Server) HandleAPIBulkReject(w http.ResponseWriter, r *http.Request) {

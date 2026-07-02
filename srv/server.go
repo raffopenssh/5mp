@@ -254,6 +254,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/admin/approve-feature", s.RequireAdmin(s.HandleAPIApproveLearnedFeature))
 	mux.HandleFunc("POST /api/admin/reject-feature", s.RequireAdmin(s.HandleAPIRejectLearnedFeature))
 	mux.HandleFunc("POST /api/admin/bulk-approve", s.RequireAdmin(s.HandleAPIBulkApprove))
+	mux.HandleFunc("POST /api/admin/approve-high-confidence", s.RequireAdmin(s.HandleAPIApproveHighConfidence))
 	mux.HandleFunc("POST /api/admin/bulk-reject", s.RequireAdmin(s.HandleAPIBulkReject))
 	mux.HandleFunc("POST /api/admin/delete-upload", s.RequireAdmin(s.HandleAPIDeleteUpload))
 	mux.HandleFunc("POST /api/admin/bulk-delete-uploads", s.RequireAdmin(s.HandleAPIBulkDeleteUploads))
