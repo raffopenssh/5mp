@@ -102,9 +102,22 @@ FOREIGN KEY constraint failure, whole learning job failed. Added `ptrUploadID()`
    (all gpx_learning_results have new_roads_found=0).
 
 Not a data problem: pooling all vehicle segments park-wide shows cells hit by up to 39
-distinct segments — rangers do repeat corridors. Fix directions: run cross-track park-wide
-over accumulated vehicle_tracks; rasterize between points (Bresenham) or use ≥100m cells;
-consider feeding vehicle patrol segments into findUnmatchedRoadPortions directly.
+distinct segments — rangers do repeat corridors.
+
+### FIXED (commit 669a0004): park-wide incremental road learning
+
+New `srv/road_learner.go` (`learnRoadsFromTrack`) runs inside learner jobs for every NEW
+vehicle track: resample to 50m steps (break >5km gaps) → subtract portions within 100m of
+HeiGIT roads → match pieces ≥300m against existing learned_roads corridors (60% of points
+within 150m; +25% confidence per traversal, cap 95, auto-approve ≥90% & ≥5 traversals) or
+create a new pending row at 25%. `storeVehicleTrack` now dedupes identical geometries per
+park and only new tracks feed learning, so ER autofetch redelivery / requeues are idempotent
+(verified: requeued upload 534, zero new rows or match increments).
+Per-upload grid road creation was removed from `processCrossTrackAnalysis` (airstrips/bases
+kept). `cmd/road-backfill` seeded learned_roads from deduplicated historical vehicle_tracks:
+38 roads (Nyerere 13 / Ruaha 16 / Udzungwa 9), 4 with ≥2 traversals, 1 auto-approved.
+Backup: `backups/roads_pre_backfill_20260702.sql`. Do not re-run the backfill on a non-empty
+learned_roads table (it refuses without -force).
 
 ## Remaining / possible follow-ups
 1. **Similar +? vs total bugs**: `UpdatePlaceStats`/`UpdateRoadStats`/`UpdateLearnedRoadMatch`
