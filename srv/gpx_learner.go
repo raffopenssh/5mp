@@ -228,20 +228,39 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 		return nil // No segments to learn from
 	}
 
-	// Populate Points from GeoJSON for segments that have it.
-	// Points is json:"-" so it's lost during serialization.
+	// Populate Points (json:"-", lost during serialization) in priority order:
+	// 1. SampledPoints — exact per-segment points with time+elevation (new format)
+	// 2. GeoJSON — coordinates only (road/boundary segments)
+	// 3. track_points index reconstruction — legacy fallback for old logs;
+	//    unreliable when uploads were sampled (>1000 pts) or had excluded segments.
 	for i := range segments {
-		if len(segments[i].Points) == 0 && segments[i].GeoJSON != "" {
+		if len(segments[i].Points) > 0 {
+			continue
+		}
+		if len(segments[i].SampledPoints) > 0 {
+			segments[i].Points = decodeSampledPoints(segments[i].SampledPoints)
+		} else if segments[i].GeoJSON != "" {
 			segments[i].Points = pointsFromGeoJSON(segments[i].GeoJSON)
 		}
 	}
 
-	// Also load raw track points from the upload if available
-	if uploadID > 0 {
+	// Duration is json:"-" and lost through serialization; recover it from
+	// point timestamps so time-based stats (total_time_hours) aren't zero.
+	for i := range segments {
+		seg := &segments[i]
+		if seg.Duration != 0 || len(seg.Points) < 2 {
+			continue
+		}
+		first, last := seg.Points[0].Time, seg.Points[len(seg.Points)-1].Time
+		if first != nil && last != nil && last.After(*first) {
+			seg.Duration = last.Sub(*first)
+		}
+	}
+
+	// Legacy fallback: load raw track points from the upload if available
+	if uploadID > 0 && countSegmentsWithPoints(segments) < len(segments) {
 		rawPoints := l.loadTrackPoints(ctx, uploadID)
 		if len(rawPoints) > 0 {
-			// Assign raw points to all segments that have no GeoJSON.
-			// All types need points (patrol for MCP, aircraft for airstrip detection, etc.)
 			// Track_points are stored sequentially across GPX track segments,
 			// but start/end indices are per-segment (reset to 0 for each).
 			// We accumulate a global offset as we assign points.
@@ -333,9 +352,15 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 			l.processAircraftSegment(ctx, parkID, uploadID, seg, result)
 		}
 
-		// Store vehicle tracks (simplified)
-		if seg.MovementType == "vehicle" && seg.GeoJSON != "" {
-			l.storeVehicleTrack(ctx, parkID, uploadID, seg)
+		// Store vehicle tracks (simplified). Patrol segments don't carry
+		// GeoJSON, so fall back to building it from recovered Points.
+		if seg.MovementType == "vehicle" {
+			if seg.GeoJSON == "" && len(seg.Points) >= 2 {
+				seg.GeoJSON = pointsToGeoJSON(seg.Points)
+			}
+			if seg.GeoJSON != "" {
+				l.storeVehicleTrack(ctx, parkID, uploadID, seg)
+			}
 		}
 
 		// Detect stops for place learning
@@ -622,8 +647,14 @@ func (l *GPXLearner) processDeparture(ctx context.Context, parkID string, upload
 }
 
 func (l *GPXLearner) classifyAircraft(seg ClassifiedSegment) string {
-	// Fixed wing: higher speeds, gradual altitude changes
-	// Rotor wing: can hover, more vertical movement
+	// Prefer the movement classifier's subtype (multi-signal: P10 speed floor,
+	// speed CV, hover ratio) over crude average-speed thresholds.
+	switch seg.MovementSubtype {
+	case "fixed_wing", "rotor_wing":
+		return seg.MovementSubtype
+	}
+	// Fallback for legacy segments without a subtype:
+	// fixed wing = higher speeds; rotor wing = can hover, slower.
 	if seg.AvgSpeedKmh > 150 {
 		return "fixed_wing"
 	} else if seg.AvgSpeedKmh < 80 {

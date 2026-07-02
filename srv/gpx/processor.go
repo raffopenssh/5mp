@@ -910,11 +910,15 @@ func removeGapsFromSegment(seg Segment) []Segment {
 		return []Segment{seg}
 	}
 
-	// For aircraft/vehicle segments with authoritative hints, use relaxed gap
-	// thresholds.  An aircraft covering 2 km in 15 seconds is normal flight,
-	// not a "gap".  The tight default thresholds (0.5 km + 2 min) were designed
-	// for foot patrol data and shred aircraft tracks into unusable fragments.
-	isHighSpeed := seg.Hint.Type == "aircraft" || seg.Hint.Type == "vehicle"
+	// For aircraft/vehicle segments, use relaxed gap thresholds.  An aircraft
+	// covering 2 km in 15 seconds is normal flight, not a "gap".  The tight
+	// default thresholds (0.5 km + 2 min) were designed for foot patrol data
+	// and shred aircraft tracks into unusable fragments.
+	// Use BOTH external hints and the segment's own movement-based
+	// classification (computed by buildSegmentWithHint) — hint-less uploads
+	// (e.g. plain Locus exports) must not get their flights shredded either.
+	isHighSpeed := seg.Hint.Type == "aircraft" || seg.Hint.Type == "vehicle" ||
+		seg.MovementType == "aircraft" || seg.MovementType == "vehicle"
 
 	var result []Segment
 	var currentPoints []Point

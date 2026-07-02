@@ -95,6 +95,73 @@ type ClassifiedSegment struct {
 	GeoJSON         string        `json:"geojson,omitempty"`
 	Points          []gpx.Point   `json:"-"` // For internal processing
 	OriginalIndices []int         `json:"original_indices,omitempty"` // Input segment indices covered by this classified segment (after merging)
+
+	// SampledPoints is a compact serialization of (up to ~300) evenly sampled
+	// track points: [lon, lat, unixSeconds, elevM]. unixSeconds is 0 when the
+	// point has no timestamp; elevM is sampledElevMissing when absent.
+	// This lets the background learner recover per-segment points exactly,
+	// instead of guessing indices into the (sampled, effort-only) track_points
+	// table — which broke for any upload with >1000 points or excluded segments.
+	SampledPoints   [][4]float64  `json:"sampled_points,omitempty"`
+}
+
+// sampledElevMissing is the sentinel elevation for points without elevation data.
+const sampledElevMissing = -100000
+
+// sampledPointsMax caps how many points are embedded per classified segment.
+const sampledPointsMax = 300
+
+// buildSampledPoints compactly serializes points for storage in
+// classified_segments_json (see ClassifiedSegment.SampledPoints).
+func buildSampledPoints(points []gpx.Point) [][4]float64 {
+	if len(points) == 0 {
+		return nil
+	}
+	n := len(points)
+	out := make([][4]float64, 0, min(n, sampledPointsMax))
+	appendPt := func(pt gpx.Point) {
+		var ts, elev float64 = 0, sampledElevMissing
+		if pt.Time != nil {
+			ts = float64(pt.Time.Unix())
+		}
+		if pt.Elevation != nil {
+			elev = *pt.Elevation
+		}
+		out = append(out, [4]float64{pt.Lon, pt.Lat, ts, elev})
+	}
+	if n <= sampledPointsMax {
+		for _, pt := range points {
+			appendPt(pt)
+		}
+		return out
+	}
+	step := float64(n-1) / float64(sampledPointsMax-1)
+	for i := 0; i < sampledPointsMax; i++ {
+		idx := int(math.Round(float64(i) * step))
+		if idx >= n {
+			idx = n - 1
+		}
+		appendPt(points[idx])
+	}
+	return out
+}
+
+// decodeSampledPoints reverses buildSampledPoints.
+func decodeSampledPoints(sp [][4]float64) []gpx.Point {
+	points := make([]gpx.Point, 0, len(sp))
+	for _, v := range sp {
+		pt := gpx.Point{Lon: v[0], Lat: v[1]}
+		if v[2] != 0 {
+			t := time.Unix(int64(v[2]), 0).UTC()
+			pt.Time = &t
+		}
+		if v[3] != sampledElevMissing {
+			elev := v[3]
+			pt.Elevation = &elev
+		}
+		points = append(points, pt)
+	}
+	return points
 }
 
 // MinimumWaypoints is the minimum required waypoints for a valid GPX file
@@ -160,8 +227,11 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 		}
 
 		// Check for boundary traces (skip for aircraft/vehicle — a circular
-		// survey flight is not a park boundary digitization)
-		if isBoundaryTrace(seg) && timeSeg.Hint.Type != "aircraft" && timeSeg.Hint.Type != "vehicle" {
+		// survey flight is not a park boundary digitization). Consider both the
+		// external hint AND the segment's movement-based classification.
+		isAirOrVehicle := timeSeg.Hint.Type == "aircraft" || timeSeg.Hint.Type == "vehicle" ||
+			timeSeg.MovementType == "aircraft" || timeSeg.MovementType == "vehicle"
+		if isBoundaryTrace(seg) && !isAirOrVehicle {
 			classified := ClassifiedSegment{
 				Classification:  "boundary",
 				StartIndex:      0,
@@ -179,7 +249,7 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 
 		// Check for road traces (skip for aircraft/vehicle — straight survey transects
 		// and highway driving are not road digitizations)
-		if isRoadTrace(seg) && timeSeg.Hint.Type != "aircraft" && timeSeg.Hint.Type != "vehicle" {
+		if isRoadTrace(seg) && !isAirOrVehicle {
 			classified := ClassifiedSegment{
 				Classification:  "road",
 				StartIndex:      0,
@@ -373,6 +443,16 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 	// Recompute all stats from merged segments (the per-segment accumulation
 	// above is now stale because segments were merged/absorbed).
 	recomputeStatsFromSegments(result)
+
+	// Embed compact sampled points for the background learner. Points is
+	// json:"-" (too large), and reconstructing from the track_points table by
+	// index is unreliable (sampling + excluded segments shift offsets).
+	for i := range result.ClassifiedSegments {
+		cs := &result.ClassifiedSegments[i]
+		if len(cs.Points) > 0 && cs.SampledPoints == nil {
+			cs.SampledPoints = buildSampledPoints(cs.Points)
+		}
+	}
 
 	// Final validation checks
 	if result.PatrolKm == 0 && result.TotalPoints >= MinimumWaypoints {
