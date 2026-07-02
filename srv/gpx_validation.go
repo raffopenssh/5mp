@@ -708,6 +708,22 @@ func recomputeStatsFromSegments(result *GPXValidationResult) {
 			result.MovementStats.AircraftMinutes += durationMin
 		}
 
+		// Movement subtype stats (boat, fixed_wing, rotor_wing)
+		switch cs.MovementSubtype {
+		case "boat":
+			result.MovementStats.BoatSegments++
+			result.MovementStats.BoatKm += cs.DistanceKm
+			result.MovementStats.BoatMinutes += durationMin
+		case "fixed_wing":
+			result.MovementStats.FixedWingSegments++
+			result.MovementStats.FixedWingKm += cs.DistanceKm
+			result.MovementStats.FixedWingMinutes += durationMin
+		case "rotor_wing":
+			result.MovementStats.RotorWingSegments++
+			result.MovementStats.RotorWingKm += cs.DistanceKm
+			result.MovementStats.RotorWingMinutes += durationMin
+		}
+
 		// Activity type stats
 		switch cs.ActivityType {
 		case "patrol", "reconnaissance":
