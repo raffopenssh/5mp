@@ -58,21 +58,38 @@ Uploaded helicopter + car test files through `/api/upload/async`: correct moveme
 `gpx_uploads` (aircraft/vehicle), per-point types in `track_points`, learner jobs completed,
 park_vehicle_stats updated.
 
+## Follow-up conversation (July 2, 2026): learner reset + admin UI
+
+### Learner data reset & reprocess (decision: no historical data needed)
+User decided old data isn't needed — clean slate, rely on 4-hourly EarthRanger autofetch.
+Backups: `db.sqlite3.bak-learner-reset` (full DB) + `backups/backups_learner_20260702.sql`
+(learner tables dump). Wiped: learned_roads/places/airstrips (+history), park_vehicle_stats,
+vehicle_tracks, gpx_learning_results, gpx_learning_queue, track_points, gpx_uploads,
+gpx_upload_logs, effort_data, new_upload notifications. Deleted upload_queue ids 93/94 (stale
+Jan–Mar backfill blobs stuck 'processing'). Requeued the remaining 24 raw files → all
+reprocessed cleanly with the new movement-only classifier (23 uploads, 61 learning jobs
+completed; inflated visit counts / doubled airstrip counts / zero total_time_hours all gone).
+
+### Bug fixed: learner FK failure for jobs without upload_id
+`storeLearningResult`/`CreateVehicleTrack` passed `ptrInt64(0)` when job.UploadID was nil →
+FOREIGN KEY constraint failure, whole learning job failed. Added `ptrUploadID()` (nil for 0).
+
+### Admin UI additions (`srv/learned_kml.go`, globe.html)
+- `GET /api/admin/learned-features-kml?scope=pending` or `?park_id=X` — sheet-level KML export
+  (folders: Roads/Places/Airstrips, all pending or per-park). Subtle "⤓ KML" link on the
+  Pending Approvals and Learned Features sheets (one button per sheet, not per row).
+- Coverage line per park: "built on N data points / N tracks between DATE – DATE"
+  (`learnedCoverageForPark`, surfaced in pending-approvals `coverage` map and
+  learned-features `coverage` field).
+- Learned Features tab rewritten: park dropdown populated from learning-results, renders
+  its own table into #features-content (old code referenced non-existent element IDs).
+
 ## Remaining / possible follow-ups
-1. **Similar +? vs total bugs**: `UpdatePlaceStats` and `UpdateRoadStats` SQL use `+ 1`
-   (safe), but `srv/gpx_learner.go:505-534` computes `newMatchCount := matchCount + 1` and
-   passes `MatchCount: ptrInt64(1)` on CREATE — verify road auto-approve math is consistent.
-   Also `srv/gpx_learner.go:1961` passes `ptrInt64(int64(road.TrackCount))` to a query — check
-   whether that query is an INSERT (fine) or the additive UPDATE (bug).
-2. **park_vehicle_stats total_time_hours**: was always 0; the Duration-recovery fix only helps
-   NEW uploads. Old rows still have 0. Historical reprocessing would fix.
-3. **Historical reprocessing** (open decision): stored `gpx_uploads.movement_type` for old
-   autofetch rows disagrees with the new classifier in ~2/3 of cases (whole multi-track file got
-   ONE majority type). Old `classified_segments_json` rows also lack SampledPoints. Reprocessing
-   uploads from `upload_queue.file_content` (status='completed') would fix both — but consider
-   dedup (file_hash), effort_data/grid rebuild implications, and 5.7M-row DB safety first.
-4. **learned_places visit counts**: eyeball for inflation from repeated learner runs on the
-   same upload (learning queue had 1426 completed jobs; jobs re-run per park per upload).
+1. **Similar +? vs total bugs**: `UpdatePlaceStats`/`UpdateRoadStats`/`UpdateLearnedRoadMatch`
+   SQL use `+ 1` (safe). `CreateLearnedRoad` from cross-track analysis passes
+   `MatchCount: road.TrackCount` on INSERT (fine). Verified during this pass.
+2. **learned_places visit counts**: post-reset values look sane; keep an eye on repeated
+   learner runs re-counting the same underlying tracks as autofetch accumulates.
 
 ## Tools
 - `cmd/gpx-classify` — per-track classifier debug (`-hints`, `-segments`).

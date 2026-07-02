@@ -14548,6 +14548,15 @@ ${starredItems.narratives.map(n => {
             if (el('stat-pending-places')) el('stat-pending-places').textContent = stats.pending_places || 0;
             if (el('stat-pending-airstrips')) el('stat-pending-airstrips').textContent = stats.pending_airstrips || 0;
             if (el('stat-high-confidence')) el('stat-high-confidence').textContent = stats.high_confidence || 0;
+
+            // Per-park data coverage (learned date/time range + point counts)
+            const covEl = el('pending-coverage');
+            if (covEl) {
+                const cov = data.coverage || {};
+                const parts = Object.keys(cov).sort().map(pid =>
+                    `<span style="white-space:nowrap;"><span style="color:#999;">${escapeHtml(pid)}</span>: ${escapeHtml(formatLearnedCoverage(cov[pid]))}</span>`);
+                covEl.innerHTML = parts.join('<span style="color:#444;"> · </span>');
+            }
             
             tbody.innerHTML = data.features.map(f => {
                 const confidence = f.confidence_pct || f.confidence || 0;
@@ -14636,50 +14645,97 @@ ${starredItems.narratives.map(n => {
         }
     }
     
-    async function loadLearnedFeatures() {
-        const select = document.getElementById('features-park-select');
-        const tbody = document.getElementById('features-table-body');
-        if (!tbody) return;
-        
-        const parkCode = select ? select.value : '';
-        if (!parkCode) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#888;">Select a park to view features</td></tr>';
-            return;
-        }
-        
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">Loading...</td></tr>';
-        
+    function downloadLearnedKML(scope, parkId) {
+        let url = `/api/admin/learned-features-kml?pwd=${encodeURIComponent(getPwd())}`;
+        if (scope === 'pending') url += '&scope=pending';
+        else if (parkId) url += `&park_id=${encodeURIComponent(parkId)}`;
+        window.location.href = url;
+    }
+
+    function formatLearnedCoverage(cov) {
+        if (!cov) return '';
+        const fmt = t => { const d = new Date(t); return isNaN(d) ? t : d.toLocaleDateString(undefined, {year:'numeric',month:'short',day:'numeric'}); };
+        const pts = (cov.data_points || 0).toLocaleString();
+        const range = (cov.from && cov.to) ? `${fmt(cov.from)} – ${fmt(cov.to)}` : 'unknown period';
+        return `built on ${pts} data points / ${cov.uploads || 0} tracks between ${range}`;
+    }
+
+    async function populateFeaturesParkFilter() {
+        const select = document.getElementById('features-park-filter');
+        if (!select || select.dataset.populated) return;
         try {
-            const res = await fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(parkCode)}&pwd=${encodeURIComponent(getPwd())}`);
+            const res = await fetch(`/api/admin/learning-results?limit=100`);
             const data = await res.json();
-            
+            const parks = new Map();
+            (data.results || []).forEach(r => { if (r.park_id) parks.set(r.park_id, r.park_name || r.park_id); });
+            [...parks.entries()].sort((a,b) => a[1].localeCompare(b[1])).forEach(([id, name]) => {
+                const opt = document.createElement('option');
+                opt.value = id; opt.textContent = name;
+                select.appendChild(opt);
+            });
+            select.dataset.populated = '1';
+        } catch (e) { /* ignore */ }
+    }
+
+    async function loadLearnedFeatures() {
+        const container = document.getElementById('features-content');
+        if (!container) return;
+        populateFeaturesParkFilter();
+
+        const select = document.getElementById('features-park-filter');
+        const parkCode = select ? select.value : '';
+
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">Loading...</div>';
+
+        try {
+            const parkParam = parkCode ? `&park_id=${encodeURIComponent(parkCode)}` : '';
+            const res = await fetch(`/api/admin/learned-features?pwd=${encodeURIComponent(getPwd())}${parkParam || '&park_id=__none__'}`);
+            // Without a park the endpoint requires park_id; fall back to pending-approvals view
+            let data;
+            if (parkCode) {
+                data = await res.json();
+            } else {
+                container.innerHTML = '<div style="color:#666;text-align:center;padding:40px;">Select a park to view learned features</div>';
+                return;
+            }
+
             // Combine all feature types into a single array
             const features = [];
             if (data.roads) data.roads.forEach(r => features.push({...r, type: 'road', name: r.name || 'Road ' + r.id, confidence: r.confidence_pct, hit_count: r.match_count}));
             if (data.places) data.places.forEach(p => features.push({...p, type: 'place', name: p.name || p.place_type, confidence: p.confidence_pct, hit_count: p.visit_count}));
-            if (data.airstrips) data.airstrips.forEach(a => features.push({...a, type: 'airstrip', name: a.name || 'Airstrip ' + a.id, confidence: a.confidence_pct, hit_count: a.detection_count}));
-            
+            if (data.airstrips) data.airstrips.forEach(a => features.push({...a, type: 'airstrip', name: a.name || 'Airstrip ' + a.id, confidence: a.confidence_pct, hit_count: (a.landing_count || 0) + (a.takeoff_count || 0)}));
+
+            const covLine = data.coverage ? `<div style="font-size:11px;color:#666;line-height:1.5;">${escapeHtml(formatLearnedCoverage(data.coverage))}</div>` : '';
+            const kmlBtn = `<a href="#" onclick="event.preventDefault();downloadLearnedKML(null,'${escapeHtml(parkCode)}')" title="Download all learned features for this park as KML" style="color:#666;font-size:11px;text-decoration:none;margin-left:auto;"><i class="icon-download" style="font-size:10px;"></i> KML</a>`;
+            const header = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">${covLine}${kmlBtn}</div>`;
+
             if (features.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#888;">No learned features for this park</td></tr>';
+                container.innerHTML = header + '<div style="text-align:center;padding:20px;color:#888;">No learned features for this park</div>';
                 return;
             }
-            
-            tbody.innerHTML = features.map(f => `
-                <tr onclick="showFeatureDetail('${f.type}',${f.id})" style="cursor:pointer;">
-                    <td><span class="feature-type-badge type-${f.type}">${f.type}</span></td>
-                    <td>${escapeHtml(f.name || 'Unnamed')}</td>
-                    <td>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill" style="width:${f.confidence || 0}%;background:${getConfidenceColor(f.confidence)}"></div>
-                        </div>
-                        <span class="confidence-text">${(f.confidence || 0).toFixed(0)}%</span>
-                    </td>
-                    <td>${f.hit_count || 0}</td>
-                    <td><span class="status-badge status-${f.status}">${f.status}</span></td>
-                </tr>
-            `).join('');
+
+            container.innerHTML = header + `
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead><tr><th>Type</th><th>Name</th><th>Confidence</th><th>Hits</th><th>Status</th></tr></thead>
+                    <tbody id="features-table-body">${features.map(f => `
+                        <tr data-id="${f.id}" data-type="${f.type}" onclick="handleAdminRowClick(event, '${f.type}', ${f.id})" style="cursor:pointer;">
+                            <td><span class="feature-type-badge type-${f.type}">${f.type}</span></td>
+                            <td>${escapeHtml(f.name || 'Unnamed')}</td>
+                            <td>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" style="width:${f.confidence || 0}%;background:${getConfidenceColor(f.confidence)}"></div>
+                                </div>
+                                <span class="confidence-text">${(f.confidence || 0).toFixed(0)}%</span>
+                            </td>
+                            <td>${f.hit_count || 0}</td>
+                            <td><span class="status-badge status-${f.status}">${f.status}</span></td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>`;
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#f87171;">${escapeHtml(err.message)}</td></tr>`;
+            container.innerHTML = `<div style="text-align:center;color:#f87171;padding:20px;">${escapeHtml(err.message)}</div>`;
         }
     }
     
@@ -16006,7 +16062,11 @@ ${starredItems.narratives.map(n => {
                         <div class="admin-stat-card"><div class="admin-stat-label">Pending Airstrips</div><div class="admin-stat-value warning" id="stat-pending-airstrips">-</div></div>
                         <div class="admin-stat-card"><div class="admin-stat-label">High Confidence (&gt;75%)</div><div class="admin-stat-value" id="stat-high-confidence">-</div></div>
                     </div>
-                    <div style="margin-bottom:12px;"><button class="admin-btn approve" onclick="approveAllHighConfidence()">✓ Approve All &gt;75% Confidence</button></div>
+                    <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+                        <button class="admin-btn approve" onclick="approveAllHighConfidence()">✓ Approve All &gt;75% Confidence</button>
+                        <a href="#" onclick="event.preventDefault();downloadLearnedKML('pending')" title="Download all pending features as KML" style="color:#666;font-size:11px;text-decoration:none;margin-left:auto;"><i class="icon-download" style="font-size:10px;"></i> KML</a>
+                    </div>
+                    <div id="pending-coverage" style="font-size:11px;color:#666;margin-bottom:10px;line-height:1.5;"></div>
                     <div class="admin-table-container">
                         <table class="admin-table">
                             <thead><tr><th>Park</th><th>Type</th><th>Details</th><th>Location</th><th>Confidence</th><th>Date</th><th>Actions</th></tr></thead>

@@ -31,6 +31,15 @@ const (
 // ptr helpers for sqlc nullable types
 func ptrFloat64(v float64) *float64 { return &v }
 func ptrInt64(v int64) *int64       { return &v }
+
+// ptrUploadID returns nil for uploadID 0 (learning jobs without an associated
+// gpx_uploads row) so FK constraints on upload_id columns don't fail.
+func ptrUploadID(v int64) *int64 {
+	if v == 0 {
+		return nil
+	}
+	return &v
+}
 func ptrString(v string) *string    { return &v }
 
 // GPXLearner processes uploaded GPX data to learn roads, places, and patterns
@@ -754,7 +763,7 @@ func (l *GPXLearner) storeVehicleTrack(ctx context.Context, parkID string, uploa
 
 	l.queries.CreateVehicleTrack(ctx, dbgen.CreateVehicleTrackParams{
 		ParkID:       parkID,
-		UploadID:     ptrInt64(uploadID),
+		UploadID:     ptrUploadID(uploadID),
 		Geojson:      string(geojson),
 		LengthM:      ptrFloat64(seg.DistanceKm * 1000),
 		MovementType: ptrString("vehicle"),
@@ -1092,7 +1101,7 @@ func (l *GPXLearner) storeLearningResult(ctx context.Context, result *LearningRe
 	discoveriesJSON, _ := json.Marshal(result)
 
 	_, err := l.queries.CreateLearningResult(ctx, dbgen.CreateLearningResultParams{
-		UploadID:              ptrInt64(result.UploadID),
+		UploadID:              ptrUploadID(result.UploadID),
 		ParkID:                result.ParkID,
 		ParkName:              ptrString(result.ParkName),
 		VehicleMedianSpeedKmh: ptrFloat64(result.VehicleMedianSpeed),

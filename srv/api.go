@@ -2726,10 +2726,23 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 		)
 	`).Scan(&stats.HighConfidence)
 	
+	// Per-park data coverage (time range + points behind the learned features)
+	coverage := make(map[string]interface{})
+	seenParks := make(map[string]bool)
+	for _, f := range features {
+		if f.ParkID != "" && !seenParks[f.ParkID] {
+			seenParks[f.ParkID] = true
+			if cov := s.learnedCoverageForPark(f.ParkID); cov != nil {
+				coverage[f.ParkID] = cov
+			}
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"features": features,
 		"stats":    stats,
+		"coverage": coverage,
 	})
 }
 
@@ -2776,6 +2789,10 @@ func (s *Server) HandleAPILearnedFeatures(w http.ResponseWriter, r *http.Request
 		response["places"] = places
 		response["airstrips"] = airstrips
 		response["vehicle_stats"] = stats
+	}
+
+	if cov := s.learnedCoverageForPark(parkID); cov != nil {
+		response["coverage"] = cov
 	}
 
 	w.Header().Set("Content-Type", "application/json")

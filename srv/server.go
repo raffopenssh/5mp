@@ -246,6 +246,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/admin/trigger-faolex-sync", s.RequireAdminOrLocal(s.HandleAPITriggerFAOLEXSync))
 	mux.HandleFunc("POST /api/admin/trigger-publication-sync", s.RequireAdminOrLocal(s.HandleAPITriggerPublicationSync))
 	mux.HandleFunc("GET /api/admin/learned-features", s.RequireAdmin(s.HandleAPILearnedFeatures))
+	mux.HandleFunc("GET /api/admin/learned-features-kml", s.RequireAdmin(s.HandleAPILearnedFeaturesKML))
 	mux.HandleFunc("GET /api/admin/feature-history", s.RequireAdmin(s.HandleAPIFeatureHistory))
 	mux.HandleFunc("POST /api/admin/rollback-feature", s.RequireAdmin(s.HandleAPIRollbackFeature))
 	mux.HandleFunc("GET /api/parks/{id}/patrol-mcp", s.HandleAPIPatrolMCP)
