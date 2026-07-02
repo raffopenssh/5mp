@@ -321,6 +321,8 @@ class FireGroupLoader:
             'transhumance_fast': 'Rapid transhumance movement',
             'external_fire': 'External fire approaching park',
             'spot_fire': 'Isolated fire event',
+            'spreading_fire': 'Multi-day spreading fire',
+            'local_fire': 'Localized fire activity',
             'wildfire': 'Wildfire activity'
         }.get(group_type, 'Fire activity')
         
