@@ -61,10 +61,15 @@ type MovementMetrics struct {
 	// Takeoff/landing roll distance (meters) and acceleration.
 	// Fixed-wing: gradual acceleration over 300-1500m of runway, many GPS intervals.
 	// Helicopter: near-vertical liftoff, 0→flight speed in 1-2 GPS intervals (<100m).
-	TakeoffRollM      float64 // Distance from <10 km/h to >80 km/h at track start
-	LandingRollM      float64 // Distance from >80 km/h to <10 km/h at track end
+	TakeoffRollM      float64 // Distance from <10 km/h to >95 km/h at track start
+	LandingRollM      float64 // Distance from >95 km/h to <10 km/h at track end
 	TakeoffAccelKmhs  float64 // Peak acceleration during takeoff (km/h per second)
 	LandingDecelKmhs  float64 // Peak deceleration during landing (km/h per second)
+
+	// Interior stationary gaps: recording pauses / parked periods in the middle
+	// of a track (dt > 3 min while moving < 5 km/h). Ground vehicles park;
+	// aircraft never stop mid-flight. Strong negative evidence for aircraft.
+	InteriorStopEvents int
 }
 
 // MovementClassification contains both movement type and activity type
@@ -90,6 +95,8 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 	var intervals []float64 // time intervals in seconds between consecutive points
 	var climbRates []float64 // vertical speed in m/s (positive=up, absolute value used for stats)
 	var stopCount int
+	var interiorStops int
+	var stopRunSec float64
 	
 	// For bounding box and centroid
 	minLat, maxLat := points[0].Lat, points[0].Lat
@@ -126,7 +133,12 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 				if i > 0 && points[i-1].Time != nil && pt.Time != nil {
 					dtSec := pt.Time.Sub(*points[i-1].Time).Seconds()
 					if dtSec > 0 {
-						climbRates = append(climbRates, elevDiff/dtSec)
+						rate := elevDiff / dtSec
+						// Discard GPS elevation glitches: no aircraft in this domain
+						// sustains >30 m/s vertical speed between fixes.
+						if rate <= 30 {
+							climbRates = append(climbRates, rate)
+						}
 					}
 				}
 			}
@@ -154,10 +166,26 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 		if duration > 0 {
 			speed = dist / duration
 		}
-		
+
+		// Interior stationary run: accumulate consecutive time spent below
+		// 5 km/h. When a run exceeds 3 minutes away from the track ends, count
+		// one stop event (a parked vehicle / stationary person). Aircraft never
+		// stop mid-flight, so this is strong negative evidence for aircraft.
+		if speed < 5 {
+			stopRunSec += duration * 3600
+		} else {
+			if stopRunSec > 180 && i > len(points)/20 && i < len(points)*19/20 {
+				interiorStops++
+			}
+			stopRunSec = 0
+		}
+
 		if speed < 0.5 {
 			stopCount++
-		} else {
+		} else if speed <= 400 {
+			// Speeds above 400 km/h are GPS glitches (teleporting fixes) —
+			// no conservation aircraft cruises that fast. Excluding them keeps
+			// glitchy trackers from being classified as aircraft.
 			speeds = append(speeds, speed)
 		}
 		
@@ -185,6 +213,7 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 	}
 
 	metrics := MovementMetrics{}
+	metrics.InteriorStopEvents = interiorStops
 	
 	// Centroid
 	n := float64(len(points))
@@ -344,10 +373,14 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 					}
 				}
 				prevTakeoffSpeed = spd
-				if spd > 80 {
-					metrics.HasTakeoffPattern = true
-					metrics.TakeoffRollM = takeoffDist * 1000
-					metrics.TakeoffAccelKmhs = peakAccel
+				if spd > 95 {
+					// Sanity: a real takeoff roll is < 2.5 km. Longer "rolls" are
+					// just a ground vehicle gradually speeding up on a road.
+					if takeoffDist*1000 <= 2500 {
+						metrics.HasTakeoffPattern = true
+						metrics.TakeoffRollM = takeoffDist * 1000
+						metrics.TakeoffAccelKmhs = peakAccel
+					}
 					break
 				}
 			}
@@ -372,7 +405,7 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 				prevLandSpeed = spd
 				continue
 			}
-			if !inLanding && spd >= 10 && spd <= 80 {
+			if !inLanding && spd >= 10 && spd <= 95 {
 				inLanding = true
 				prevLandSpeed = spd
 			}
@@ -385,10 +418,14 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 					}
 				}
 				prevLandSpeed = spd
-				if spd > 80 {
-					metrics.HasLandingPattern = true
-					metrics.LandingRollM = landingDist * 1000
-					metrics.LandingDecelKmhs = peakDecel
+				if spd > 95 {
+					// Sanity: a real landing roll is < 2.5 km. Longer "rolls" are
+					// just a ground vehicle gradually slowing down on a road.
+					if landingDist*1000 <= 2500 {
+						metrics.HasLandingPattern = true
+						metrics.LandingRollM = landingDist * 1000
+						metrics.LandingDecelKmhs = peakDecel
+					}
 					break
 				}
 			}
@@ -433,16 +470,21 @@ func AnalyzeTrajectory(points []Point) MovementMetrics {
 	if elevCount > 0 && float64(elevCount)/n > 0.5 {
 		metrics.HasElevation = true
 		
-		var minElev, maxElev, sumElev float64
-		minElev = elevations[0]
-		maxElev = elevations[0]
+		var sumElev float64
 		for _, e := range elevations {
 			sumElev += e
-			if e < minElev { minElev = e }
-			if e > maxElev { maxElev = e }
 		}
-		metrics.ElevationRangeM = maxElev - minElev
-		metrics.MaxElevationM = maxElev
+		// Robust range/max via P2..P98 percentiles — GPS elevation glitches
+		// (e.g. a single -481m or +3000m spike) otherwise dominate the range.
+		sortedElev := make([]float64, len(elevations))
+		copy(sortedElev, elevations)
+		sort.Float64s(sortedElev)
+		loIdx := int(float64(len(sortedElev)) * 0.02)
+		hiIdx := int(float64(len(sortedElev))*0.98) - 1
+		if hiIdx < loIdx { hiIdx = loIdx }
+		if hiIdx >= len(sortedElev) { hiIdx = len(sortedElev) - 1 }
+		metrics.ElevationRangeM = sortedElev[hiIdx] - sortedElev[loIdx]
+		metrics.MaxElevationM = sortedElev[hiIdx]
 		metrics.AvgElevationM = sumElev / float64(len(elevations))
 		
 		// Elevation change rate: meters per km of horizontal travel
@@ -607,25 +649,46 @@ func ClassifyMovementFullWithHint(points []Point, hint MovementHint) MovementCla
 	if speed > 100 {
 		aircraftScore += 3.0
 	}
-	// Elevation range > 500m (strong indicator of altitude changes = flight)
-	if metrics.HasElevation && metrics.ElevationRangeM > 500 {
+	// Elevation range > 500m at flight-plausible speed (strong).
+	// Speed gate matters: a car descending an escarpment also covers 700m of
+	// elevation, but does so below ~70 km/h average. Alternatively, a very
+	// high elevation change rate (>60 m per km travelled, sustained) is a climb
+	// profile no road can match.
+	if metrics.HasElevation && metrics.ElevationRangeM > 500 &&
+		(speed > 70 || (metrics.ElevationChangeRate > 40 && speed > 40)) {
 		aircraftScore += 3.0
 	}
-	// Max elevation > 2000m (moderate — useful in Africa where terrain typically <1500m)
-	if metrics.HasElevation && metrics.MaxElevationM > 2000 {
+	// Elevation range > 2000m at speed: no road descends/climbs 2000m in one
+	// track at >40 km/h average — unmistakable flight profile.
+	extremeClimb := metrics.HasElevation && metrics.ElevationRangeM > 2000 && speed > 40
+	if extremeClimb {
+		aircraftScore += 4.0
+	}
+	// Max elevation > 2500m at speed (moderate — roads reach 2000m+ in East Africa,
+	// so require both altitude and flight-plausible speed)
+	if metrics.HasElevation && metrics.MaxElevationM > 2500 && speed > 70 {
 		aircraftScore += 2.0
 	}
-	// Landing/takeoff pattern (moderate)
-	if metrics.HasLandingPattern || metrics.HasTakeoffPattern {
+	// Landing/takeoff pattern (moderate) — only meaningful if the track
+	// actually reaches sustained flight speeds (p90 > 90 km/h).
+	if (metrics.HasLandingPattern || metrics.HasTakeoffPattern) && p90 > 90 {
 		aircraftScore += 2.0
+	}
+	// Interior stops: aircraft don't park mid-flight — but helicopters DO
+	// land mid-patrol, so the penalty is capped and skipped entirely when the
+	// track reaches speeds no ground vehicle can (p90 > 150 km/h).
+	if metrics.InteriorStopEvents > 0 && p90 <= 150 {
+		penalty := 1.5 * float64(metrics.InteriorStopEvents)
+		if penalty > 3.0 {
+			penalty = 3.0
+		}
+		aircraftScore -= penalty
+		if aircraftScore < 0 {
+			aircraftScore = 0
+		}
 	}
 	// Speed 40-100, very smooth, very linear (weak — slow aircraft like ULM/helicopter)
 	if speed >= 40 && speed <= 100 && smooth > 0.85 && linear > 0.9 && bearingVar < 0.05 {
-		aircraftScore += 1.0
-	}
-	// Regular 120s interval AND speed > 80 (weak — GPS tracker on aircraft)
-	if metrics.MedianIntervalSec > 100 && metrics.MedianIntervalSec < 140 &&
-		metrics.IntervalConsistency < 0.15 && speed > 80 {
 		aircraftScore += 1.0
 	}
 	// Very high speed unmistakable
@@ -656,14 +719,18 @@ func ClassifyMovementFullWithHint(points []Point, hint MovementHint) MovementCla
 	if speed >= 8 && speed <= 12 && linear > 0.85 {
 		vehicleScore += 2.0
 	}
-	// Regular 120s interval with speed 10-80 (weak — GPS tracker on vehicle)
-	if metrics.MedianIntervalSec > 100 && metrics.MedianIntervalSec < 140 &&
-		metrics.IntervalConsistency < 0.15 && speed >= 10 && speed <= 80 {
-		vehicleScore += 1.0
-	}
 	// Speed clearly in vehicle range but not aircraft
 	if speed >= 12 && speed < 80 {
 		vehicleScore += 2.0
+	}
+	// Sustained bursts above pedestrian capability. A patrol on foot never
+	// sustains >13 km/h across the top decile; a slow-moving vehicle (creeping
+	// around camp, stop-go in convoy) shows short bursts of 15-30 km/h.
+	if p90 >= 13 && p90 <= 80 {
+		vehicleScore += 2.0
+	}
+	if metrics.MaxSpeedKmh > 25 && metrics.MaxSpeedKmh <= 120 {
+		vehicleScore += 1.0
 	}
 	
 	// --- Foot evidence ---
@@ -684,10 +751,6 @@ func ClassifyMovementFullWithHint(points []Point, hint MovementHint) MovementCla
 	if speed >= 5 && speed <= 8 && smooth < 0.4 {
 		footScore += 2.0
 	}
-	// Sampling interval 600s+ with speed < 8 (weak — InReach = usually foot)
-	if metrics.MedianIntervalSec >= 600 && speed < 8 {
-		footScore += 1.0
-	}
 	// Very slow speed
 	if speed < 7 {
 		footScore += 1.5
@@ -705,6 +768,15 @@ func ClassifyMovementFullWithHint(points []Point, hint MovementHint) MovementCla
 		}
 	}
 	
+	// Extreme climb profile overrides accumulated vehicle evidence — no road
+	// gains 2000m within a single track at speed.
+	if extremeClimb {
+		vehicleScore -= 2.0
+		if vehicleScore < 0 {
+			vehicleScore = 0
+		}
+	}
+
 	// --- Pick winner ---
 	type scored struct {
 		label string
@@ -881,6 +953,13 @@ func classifyAircraftSubtype(metrics MovementMetrics, hint MovementHint) (string
 		return "rotor_wing", 1.0
 	case "fixed_wing":
 		return "fixed_wing", 1.0
+	// Explicit user labels in the track name ("helicopter ...", "caravan ...").
+	// These are deliberate annotations, not inferred metadata — trust them for
+	// the subtype (movement type itself is still decided from trajectory).
+	case "helicopter_name_hint":
+		return "rotor_wing", 0.9
+	case "fixed_wing_name_hint":
+		return "fixed_wing", 0.9
 	}
 
 	speed := metrics.AvgSpeedKmh
@@ -888,101 +967,57 @@ func classifyAircraftSubtype(metrics MovementMetrics, hint MovementHint) (string
 
 	var fixedScore, rotorScore float64
 
-	// === STRONGEST SIGNAL: Takeoff/landing acceleration ===
-	// Helicopter: explosive acceleration >5 km/h/s (0→100 in ~20s).
-	// Fixed-wing: gradual acceleration <3 km/h/s (needs long runway roll).
-	// Also check roll distance, but acceleration is more reliable since
-	// helicopter ground track during rapid climb can still be 200-400m.
-	rollDetected := false
-	if metrics.HasTakeoffPattern {
-		if metrics.TakeoffAccelKmhs > 5.0 {
-			rotorScore += 4.0 // explosive accel = rotor-wing
-			rollDetected = true
-		} else if metrics.TakeoffAccelKmhs < 2.5 && metrics.TakeoffRollM > 400 {
-			fixedScore += 4.0 // slow accel + long roll = fixed-wing
-			rollDetected = true
-		}
-	}
-	if metrics.HasLandingPattern {
-		if metrics.LandingDecelKmhs > 5.0 {
-			rotorScore += 4.0 // rapid decel = rotor-wing
-			rollDetected = true
-		} else if metrics.LandingDecelKmhs < 2.5 && metrics.LandingRollM > 400 {
-			fixedScore += 4.0
-			rollDetected = true
-		}
+	// NOTE: takeoff/landing roll distance and peak acceleration are NOT used.
+	// At 10s GPS sampling, measured "rolls" for real helicopters (270-630m,
+	// accelerating through translational lift) overlap fixed-wing runway rolls
+	// (~490m for a Caravan), and both show 7-10 km/h/s between fixes.
+
+	// === Speed floor: fixed-wing cannot fly below stall speed ===
+	// A fixed-wing survey aircraft never drops below ~100 km/h in flight,
+	// so P10 speed stays high. Helicopters slow down, orbit, and hover.
+	p10 := metrics.P10SpeedKmh
+	if p10 > 100 {
+		fixedScore += 2.5
+	} else if p10 > 0 && p10 < 50 {
+		rotorScore += 2.0
 	}
 
 	// === Speed signals ===
-	// Fixed-wing typically >100 km/h, rotor-wing 40-200 km/h
-	if speed > 150 {
-		fixedScore += 2.0
-	} else if speed > 100 && p90 > 150 {
+	// Fixed-wing typically >100 km/h sustained; rotor-wing 40-200 km/h
+	if speed > 150 && p10 > 80 {
 		fixedScore += 1.5
 	} else if speed >= 40 && speed <= 120 {
 		rotorScore += 1.0
 	}
+	_ = p90
 
-	// Speed variability: rotor-wing much more variable (hover, accel, decel)
+	// Speed variability: rotor-wing much more variable (hover, accel, decel).
+	// Fixed-wing holds a steady airspeed.
 	if metrics.SpeedCV > 0.45 {
 		rotorScore += 2.0
-	} else if metrics.SpeedCV > 0.30 {
+	} else if metrics.SpeedCV >= 0.28 {
 		rotorScore += 1.0
 	} else if metrics.SpeedCV < 0.20 {
 		fixedScore += 1.5
 	}
 
-	// Hover detection: only rotor-wing can hover in place
+	// Hover detection: only rotor-wing can hover in place mid-track
 	if metrics.HoverRatio > 0.05 {
 		rotorScore += 2.0
 	} else if metrics.HoverRatio > 0.02 {
 		rotorScore += 1.0
 	}
 
-	// === Turn patterns ===
-	// Rotor-wing is more maneuverable
-	if metrics.SharpTurnRatio > 0.05 {
-		rotorScore += 1.5
-	} else if metrics.SharpTurnRatio > 0.02 {
-		rotorScore += 0.5
-	}
-	if metrics.MeanTurnAngleDeg > 10 {
-		rotorScore += 1.0
-	} else if metrics.MeanTurnAngleDeg < 5 {
-		fixedScore += 1.0
-	}
+	// NOTE: linearity and sharp-turn ratio are deliberately NOT used here.
+	// Fixed-wing survey flights fly grid transects with 180° turns at each
+	// end, producing low linearity and many sharp turns — indistinguishable
+	// from helicopter maneuvering on those metrics.
 
-	// Linearity: fixed-wing flies straighter
-	if metrics.LinearityScore > 0.7 {
-		fixedScore += 1.0
-	} else if metrics.LinearityScore < 0.5 {
-		rotorScore += 1.0
-	}
+	// NOTE: climb-rate is deliberately NOT used. Fixed-wing aircraft climb at
+	// 2-5 m/s (400-1000 fpm) just like helicopters, and EarthRanger exports
+	// often lack elevation entirely.
 
-	// === Elevation evidence (if available) ===
-	if metrics.HasElevation {
-		// Rotor-wing has dramatic climb/descent rates
-		if metrics.MaxClimbRateMps > 2.0 {
-			rotorScore += 1.5
-		}
-		if metrics.AvgClimbRateMps > 0.5 {
-			rotorScore += 1.0
-		}
-	}
-
-	// === Track name hints ===
-	switch hint.SubtypeHint {
-	case "helicopter_name_hint":
-		rotorScore += 2.0
-	case "fixed_wing_name_hint":
-		fixedScore += 2.0
-	}
-
-	// Pick winner — lower threshold if roll distance was decisive
-	minScore := 3.0
-	if rollDetected {
-		minScore = 2.0 // roll alone is sufficient
-	}
+	const minScore = 3.0
 
 	if fixedScore > rotorScore && fixedScore >= minScore {
 		conf := 0.6 + math.Min((fixedScore-rotorScore)/fixedScore, 1.0)*0.3
