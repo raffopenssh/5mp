@@ -572,7 +572,10 @@ func (l *GPXLearner) processApproach(ctx context.Context, parkID string, uploadI
 	})
 
 	if err == nil && len(existing) > 0 {
-		// Update existing airstrip
+		// Update existing airstrip.
+		// NOTE: UpdateAirstripStats SQL is "landing_count = landing_count + ?",
+		// so we pass the INCREMENT (1), not the new total. Passing the total
+		// previously caused exponential doubling (new = 2*old+1).
 		airstrip := existing[0]
 		landingCount := int64(1)
 		if airstrip.LandingCount != nil {
@@ -585,7 +588,7 @@ func (l *GPXLearner) processApproach(ctx context.Context, parkID string, uploadI
 		confidence := math.Min(float64(landingCount)*20.0, 90.0)
 
 		l.queries.UpdateAirstripStats(ctx, dbgen.UpdateAirstripStatsParams{
-			LandingCount:  ptrInt64(landingCount),
+			LandingCount:  ptrInt64(1), // increment
 			TakeoffCount:  ptrInt64(0), // Don't change takeoff count
 			ConfidencePct: ptrFloat64(confidence),
 			ID:            airstrip.ID,
@@ -639,7 +642,7 @@ func (l *GPXLearner) processDeparture(ctx context.Context, parkID string, upload
 
 		l.queries.UpdateAirstripStats(ctx, dbgen.UpdateAirstripStatsParams{
 			LandingCount:  ptrInt64(0), // Don't change landing count
-			TakeoffCount:  ptrInt64(takeoffCount),
+			TakeoffCount:  ptrInt64(1), // increment (SQL adds to existing)
 			ConfidencePct: ptrFloat64(confidence),
 			ID:            airstrip.ID,
 		})
