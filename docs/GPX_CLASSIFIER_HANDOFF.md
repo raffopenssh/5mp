@@ -84,6 +84,28 @@ FOREIGN KEY constraint failure, whole learning job failed. Added `ptrUploadID()`
 - Learned Features tab rewritten: park dropdown populated from learning-results, renders
   its own table into #features-content (old code referenced non-existent element IDs).
 
+## Known issue: learned_roads always empty (diagnosed July 2026)
+
+0 rows in learned_roads despite 366 vehicle_tracks. Verified against real
+`gpx_upload_logs.classified_segments_json` (534 segments, 25 logs). Two independent causes:
+
+1. **HeiGIT path is dead code.** `processRoadSegment` → `findUnmatchedRoadPortions` only runs
+   for `Classification == "road"`, but commit c02af451 intentionally skips isRoadTrace for
+   vehicle/aircraft movement. Real data: 479 vehicle segments are all patrol(228)/idle(251);
+   the single "road" segment is a degenerate stationary blob. HeiGIT matching never executes.
+   (Latent bug there too: the roads_heigit bbox query only tests each road's first coordinate.)
+2. **Cross-track analysis thresholds unreachable.** `detectRoadsFromTracks` needs ≥5 distinct
+   segments in the same 10m cell, then a ≥100m connected component — but it runs per-upload
+   only, and points (SampledPoints ≤300/seg, track_points ≤1000/upload, ER fixes ~5min apart)
+   have median spacing ~717m vs 10m cells, with no line rasterization between points.
+   Simulated with real data: best upload has 2 hot cells; analysis.Roads always empty
+   (all gpx_learning_results have new_roads_found=0).
+
+Not a data problem: pooling all vehicle segments park-wide shows cells hit by up to 39
+distinct segments — rangers do repeat corridors. Fix directions: run cross-track park-wide
+over accumulated vehicle_tracks; rasterize between points (Bresenham) or use ≥100m cells;
+consider feeding vehicle patrol segments into findUnmatchedRoadPortions directly.
+
 ## Remaining / possible follow-ups
 1. **Similar +? vs total bugs**: `UpdatePlaceStats`/`UpdateRoadStats`/`UpdateLearnedRoadMatch`
    SQL use `+ 1` (safe). `CreateLearnedRoad` from cross-track analysis passes
