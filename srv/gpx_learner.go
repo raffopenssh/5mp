@@ -328,6 +328,13 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	var vehicleSpeeds, footSpeeds []float64
 	var footPoints []gpx.Point // For MCP calculation
 
+	// Road learning state, loaded once per job: HeiGIT reference roads and
+	// existing learned road corridors (see road_learner.go). Lazily
+	// initialized on the first vehicle segment.
+	var roadHeigit *corridorIndex
+	var roadCandidates []*learnedRoadCandidate
+	roadStateLoaded := false
+
 	// Process each segment — use MovementType from classifier (which
 	// already incorporates ER hints), falling back to speed inference.
 	for _, seg := range segments {
@@ -368,7 +375,21 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 				seg.GeoJSON = pointsToGeoJSON(seg.Points)
 			}
 			if seg.GeoJSON != "" {
-				l.storeVehicleTrack(ctx, parkID, uploadID, seg)
+				isNew := l.storeVehicleTrack(ctx, parkID, uploadID, seg)
+
+				// Incremental road learning: only for tracks we haven't
+				// seen before (ER autofetch redelivers overlapping data).
+				if isNew {
+					if !roadStateLoaded {
+						roadHeigit = l.heigitIndexForPark(ctx, parkID)
+						roadCandidates = l.loadLearnedRoadCandidates(ctx, parkID)
+						roadStateLoaded = true
+					}
+					coords := l.parseGeoJSONCoords(seg.GeoJSON)
+					if len(coords) >= 2 {
+						l.learnRoadsFromTrack(ctx, parkID, coords, roadHeigit, &roadCandidates, result)
+					}
+				}
 			}
 		}
 
@@ -748,10 +769,14 @@ func (l *GPXLearner) extractAircraftPatterns(seg ClassifiedSegment) (*AircraftPa
 	return approach, departure
 }
 
-func (l *GPXLearner) storeVehicleTrack(ctx context.Context, parkID string, uploadID int64, seg ClassifiedSegment) {
+// storeVehicleTrack persists a simplified vehicle track. Returns true if the
+// geometry was new for this park (false for exact duplicates, which happen
+// when EarthRanger autofetch re-delivers overlapping windows or files are
+// requeued — those must not feed road learning again).
+func (l *GPXLearner) storeVehicleTrack(ctx context.Context, parkID string, uploadID int64, seg ClassifiedSegment) bool {
 	coords := l.parseGeoJSONCoords(seg.GeoJSON)
 	if len(coords) < 2 {
-		return
+		return false
 	}
 
 	// Simplify to 10m resolution and remove timestamps
@@ -761,13 +786,18 @@ func (l *GPXLearner) storeVehicleTrack(ctx context.Context, parkID string, uploa
 		"coordinates": simplified,
 	})
 
-	l.queries.CreateVehicleTrack(ctx, dbgen.CreateVehicleTrackParams{
+	if l.vehicleTrackExists(ctx, parkID, string(geojson)) {
+		return false
+	}
+
+	_, err := l.queries.CreateVehicleTrack(ctx, dbgen.CreateVehicleTrackParams{
 		ParkID:       parkID,
 		UploadID:     ptrUploadID(uploadID),
 		Geojson:      string(geojson),
 		LengthM:      ptrFloat64(seg.DistanceKm * 1000),
 		MovementType: ptrString("vehicle"),
 	})
+	return err == nil
 }
 
 func (l *GPXLearner) detectStops(seg ClassifiedSegment) []StopPoint {
@@ -1949,35 +1979,13 @@ func RunCrossTrackAnalysis(segments []ClassifiedSegment, cellSizeMeters float64)
 
 // processCrossTrackAnalysis integrates cross-track analysis into the learning job
 func (l *GPXLearner) processCrossTrackAnalysis(ctx context.Context, parkID string, uploadID int64, segments []ClassifiedSegment, result *LearningResult) {
-	// Run the cross-track analysis
+	// Run the cross-track analysis.
+	// NOTE: road detection moved to road_learner.go (learnRoadsFromTrack),
+	// which accumulates traversals park-wide across uploads. The per-upload
+	// grid road detection here never fired with real EarthRanger data
+	// (fixes ~700m apart vs 10m cells) and is intentionally not stored to
+	// avoid double-creating learned_roads rows.
 	analysis := RunCrossTrackAnalysis(segments, 10.0)
-
-	// Store detected roads
-	for _, road := range analysis.Roads {
-		if road.LengthM < 100 { // Skip very short segments
-			continue
-		}
-
-		geojson, _ := json.Marshal(map[string]interface{}{
-			"type":        "LineString",
-			"coordinates": road.Points,
-		})
-
-		_, err := l.queries.CreateLearnedRoad(ctx, dbgen.CreateLearnedRoadParams{
-			ParkID:        parkID,
-			Geojson:       string(geojson),
-			LengthM:       ptrFloat64(road.LengthM),
-			MatchCount:    ptrInt64(int64(road.TrackCount)),
-			ConfidencePct: ptrFloat64(road.Confidence),
-		})
-		if err == nil {
-			result.NewRoads++
-			result.NewRoadsKm += road.LengthM / 1000.0
-			if road.Confidence > result.RoadConfidence {
-				result.RoadConfidence = road.Confidence
-			}
-		}
-	}
 
 	// Store detected airstrips
 	for _, airstrip := range analysis.Airstrips {
