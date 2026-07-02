@@ -1,22 +1,29 @@
 {
-  "total_groups": 443,
-  "total_fires": 51,
-  "total_parks": 1,
+  "total_groups": 164562,
+  "total_fires": 550215,
+  "total_parks": 162,
   "date_range": {
-    "start": "2026-02-19",
-    "end": "2026-03-05"
+    "start": "2025-12-25",
+    "end": "2026-07-02"
   },
+  "algorithm": "v6_track_matching",
   "params": {
-    "spatial_eps_km": 5.0,
-    "temporal_eps_days": 2,
+    "day_eps_km": 3.0,
+    "day_min_samples": 3,
+    "max_gap_days": 3,
+    "base_link_km": 5.0,
+    "spread_km_per_day": 8.0,
+    "turn_limit_deg": 100,
+    "chain_max_gap_days": 4,
+    "chain_turn_limit_deg": 75,
     "min_fires": 10,
     "min_days_trajectory": 2,
     "zigzag_threshold": 90,
     "max_zigzag_ratio": 0.3
   },
   "trajectory_types": {
-    "clean": 292,
-    "cleaned": 151,
-    "cluster": 0
+    "clean": 108985,
+    "cleaned": 55213,
+    "cluster": 364
   }
 }
