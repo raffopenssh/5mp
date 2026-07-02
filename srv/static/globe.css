@@ -1054,18 +1054,18 @@
                 justify-content: center;
             }
             .maplibregl-popup-close-button {
-                min-width: 44px !important;
-                min-height: 44px !important;
+                min-width: 32px !important;
+                min-height: 32px !important;
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
-                font-size: 22px !important;
+                font-size: 18px !important;
             }
 
             /* Star buttons */
             .star-btn {
-                min-width: 44px;
-                min-height: 44px;
+                min-width: 32px;
+                min-height: 32px;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
@@ -1073,17 +1073,17 @@
 
             /* Popup action buttons */
             .pa-popup-btn, .pa-export-btn {
-                min-height: 44px;
-                padding: 10px 8px;
-                font-size: 12px;
+                min-height: 32px;
+                padding: 6px 8px;
+                font-size: 11px;
                 display: inline-flex;
                 align-items: center;
             }
 
             /* Popup section headers — accordion touch target */
             .pa-popup-section-header {
-                min-height: 44px;
-                padding: 12px 10px;
+                min-height: 36px;
+                padding: 8px 10px;
             }
 
             /* Popup max-height for small screens */
@@ -1113,8 +1113,8 @@
             .filter-panel { max-height: 40vh; }
 
             /* Time slider handles */
-            .time-slider-handle { width: 28px; height: 28px; }
-            .time-slider-track { height: 10px; }
+            .time-slider-handle { width: 20px; height: 20px; }
+            .time-slider-track { height: 8px; }
         }
         
         @media (max-width: 480px) {
