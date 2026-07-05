@@ -1,20 +1,20 @@
-75ba2d0f 2026-03-30 17:21:09 Preserve URL query params through login form
-17990a86 2026-03-30 17:16:13 Add REDACTED_PWD to accepted passwords
-0a7ae32b 2026-03-30 17:05:03 Add About modal to share link system (modal=about param)
-164c54bc 2026-03-30 04:29:19 Fix publication data inconsistency: migrate WDPA IDs to park IDs
-05d985e6 2026-03-30 04:18:43 Fix research notification click and +N more publications in popup
-cc93aa9a 2026-03-29 14:21:29 Fix movement type filter not applied when 3+ types active
-58eddbee 2026-03-29 06:37:20 Revert "Fix boat false positives from sparse ER vehicle GPS data"
-cfb5e2ee 2026-03-29 05:56:38 Fix boat false positives from sparse ER vehicle GPS data
-82bc0c1a 2026-03-28 20:08:30 Fix pixel tooltip to respect movement type filter; make fire notifications clickable with real timestamps
-a79a3c21 2026-03-28 19:39:09 Tighten boat classifier to reduce false positives from smooth vehicle drives
-6916c56e 2026-03-28 19:28:29 Filter panel: restore original button padding, dual icons for VHL
-3c750b12 2026-03-28 19:25:54 Filter panel: 5 movement subtypes in single row with Lucide icons
-9e7e8471 2026-03-28 18:35:48 Add Cmd+A multi-select, bulk delete for uploads, fix inline detail colspan
-54fce54e 2026-03-28 18:26:33 Add movement subtypes (boat, fixed-wing, helicopter) to GPX upload logs
-a9f5233f 2026-03-28 17:00:46 Default to 90d date preset for grid, widen pixel popup to 380px
-2fa18d42 2026-03-28 16:51:09 Fix movement classification: helicopter detection, Locus hint sanity checks, pixel total match
-8f63ec2c 2026-03-28 12:29:36 Effort pixel popup: tabular layout with per-type stats + share link support
-0ae18b34 2026-03-28 12:11:19 Add movement subtype classification: boat, fixed-wing, rotor-wing
-f93b2982 2026-03-26 19:10:28 Add speed/altitude tracking, nearby place names in pixel popup
-783979fe 2026-03-26 18:32:45 Tune intensity: reduce aircraft flyover slightly, add distance differentiation to long view
+b7cb360e 2026-07-05 05:22:14 docs: remove completed handover note
+e94915f3 2026-07-05 05:22:07 Test env read filters, stats-panel layer toggles, pixel zoom fade
+76671ee2 2026-07-05 04:54:08 docs: fill WIP hash in handover
+2b64044f 2026-07-05 04:54:01 WIP test env: write-path isolation via test2026 password (migration 035 unapplied; read filters + UI toggles pending)
+b012dd52 2026-07-05 04:52:38 docs: handover for test-env tenant, stats-panel layer toggles, pixel rendering polish
+3b316747 2026-07-02 15:08:56 gpx: fix subtype stats (boat/fixed-wing/rotor) zeroed by post-merge recompute
+6a967d1a 2026-07-02 15:02:40 docs: record road-learning fix + backfill results in handoff
+669a0004 2026-07-02 15:00:36 learner: park-wide incremental road learning from vehicle tracks
+e8d24ce0 2026-07-02 14:45:36 docs: diagnose why learned_roads stays empty (dead road path + unreachable cross-track thresholds)
+f68bd214 2026-07-02 14:39:19 admin: implement missing /api/admin/approve-high-confidence endpoint
+99c8b98c 2026-07-02 14:34:56 learner: reset+reprocess data, sheet-level KML export, per-park coverage info
+abb239f6 2026-07-02 14:01:32 docs: update GPX classifier handoff with pipeline verification results
+f6ae51b4 2026-07-02 14:00:14 gpx learner: fix exponential airstrip count doubling
+c02af451 2026-07-02 13:54:33 gpx: fix detection pipeline — movement-aware gap/road/boundary handling, learner point recovery
+9117f025 2026-07-02 13:51:39 Fix time slider date preset tags: auto-collapse, layout regressions from CSS extraction
+6c53c4c2 2026-07-02 13:22:41 gpx: movement-only classifier fixes (verified on labeled test set + EarthRanger data)
+0c890856 2026-07-02 12:57:03 Rebuild recent-season fire groups with v6 tracker (all 162 parks)
+1162013e 2026-07-02 12:48:58 Fire trajectory builder v6: per-day clustering + track matching
+0f0501cc 2026-07-02 12:24:20 Reduce oversized mobile touch targets from P3 accessibility commit
+dbea1560 2026-04-01 05:11:23 Merge production into main: integrate 82 production commits with 7 hardening fixes
