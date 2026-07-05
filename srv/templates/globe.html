@@ -1831,9 +1831,9 @@
                     ],
                     'circle-blur': 1.0,
                     // Opacity scales with intensity AND recency: stale cells fade out.
-                    // Fades to 0 between z15→z17 so satellite imagery is unobstructed.
+                    // Fades to 0 between z13→z15 so satellite imagery is unobstructed.
                     'circle-opacity': ['interpolate', ['linear'], ['zoom'],
-                        15, ['*',
+                        13, ['*',
                             ['interpolate', ['linear'], gridIntensity,
                                 0, 0.1,
                                 0.5, 0.2,
@@ -1847,7 +1847,7 @@
                                 1.0, 1.0
                             ]
                         ],
-                        17, 0
+                        15, 0
                     ]
                 }
             });
@@ -1879,9 +1879,9 @@
                         12, ['*', 180, ['interpolate', ['linear'], gridIntensity, 0, 1, 1, 1.3]]
                     ],
                     'circle-blur': 0.7,
-                    // Glow opacity: intensity × recency, fading to 0 at z15→z17
+                    // Glow opacity: intensity × recency, fading to 0 at z13→z15
                     'circle-opacity': ['interpolate', ['linear'], ['zoom'],
-                        15, ['*',
+                        13, ['*',
                             ['interpolate', ['linear'], gridIntensity,
                                 0, 0.1,
                                 0.5, 0.25,
@@ -1893,7 +1893,7 @@
                                 1.0, 1.0
                             ]
                         ],
-                        17, 0
+                        15, 0
                     ]
                 }
             });
@@ -1917,9 +1917,9 @@
                         12, ['*', 128, gridFillMetric]
                     ],
                     'circle-blur': 0.1,
-                    // Fill opacity from intensity, fading to 0 at z15→z17
+                    // Fill opacity from intensity, fading to 0 at z13→z15
                     'circle-opacity': ['interpolate', ['linear'], ['zoom'],
-                        15, [
+                        13, [
                             'interpolate', ['linear'], gridIntensity,
                             0, 0,
                             0.1, 0.35,
@@ -1927,7 +1927,7 @@
                             0.7, 0.75,
                             1.0, 0.9
                         ],
-                        17, 0
+                        15, 0
                     ]
                 }
             });
@@ -1949,14 +1949,14 @@
                         11, 3
                     ],
                     // Ring opacity: full for recently visited, fades for stale;
-                    // fades to 0 at z15→z17 so satellite imagery is unobstructed
+                    // fades to 0 at z13→z15 so satellite imagery is unobstructed
                     'circle-stroke-opacity': ['interpolate', ['linear'], ['zoom'],
-                        15, ['interpolate', ['linear'], gridRecency,
+                        13, ['interpolate', ['linear'], gridRecency,
                             0, 0.3,
                             0.5, 0.6,
                             1.0, 1.0
                         ],
-                        17, 0
+                        15, 0
                     ],
                     'circle-opacity': 1
                 }
