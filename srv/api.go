@@ -273,6 +273,7 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			FromYear: int64(2018),
 			ToYear:   int64(2026),
 			BBox:     &[4]float64{queryMinLon, queryMinLat, queryMaxLon, queryMaxLat},
+			Env:      RequestEnv(r),
 		}
 		if fromStr != "" {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
@@ -305,10 +306,11 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			FROM effort_data e
 			JOIN grid_cells g ON e.grid_cell_id = g.id
 			WHERE e.movement_type IN ('foot', 'vehicle', 'aircraft')
+			  AND e.env = ?
 			  AND g.lat_center BETWEEN ? AND ?
 			  AND g.lon_center BETWEEN ? AND ?
 		`
-		args := []interface{}{queryMinLat, queryMaxLat, queryMinLon, queryMaxLon}
+		args := []interface{}{RequestEnv(r), queryMinLat, queryMaxLat, queryMinLon, queryMaxLon}
 		
 		if fromStr != "" {
 			query += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
@@ -439,9 +441,10 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 			SUM(e.total_points) as total_points
 		FROM effort_data e
 		WHERE e.grid_cell_id = ?
+		  AND e.env = ?
 		  AND e.movement_type IN ('foot', 'vehicle', 'aircraft')
 	`
-	args := []interface{}{gridCellID}
+	args := []interface{}{gridCellID, RequestEnv(r)}
 	
 	if fromStr != "" {
 		query += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
@@ -575,7 +578,7 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	bboxStr := r.URL.Query().Get("bbox")
 
 	// Build query params
-	params := GridQueryParams{}
+	params := GridQueryParams{Env: RequestEnv(r)}
 	now := time.Now()
 
 	// Determine date range (year + month + day precision)
@@ -1082,9 +1085,9 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 			COALESCE(SUM(e.unique_uploads), 0) as total_uploads
 		FROM effort_data e
 		JOIN grid_cells g ON e.grid_cell_id = g.id
-		WHERE 1=1
+		WHERE e.env = ?
 	`
-	var args []interface{}
+	args := []interface{}{RequestEnv(r)}
 	// Day-level filtering when day precision is available
 	if fromDay > 0 && toDay > 0 && fromMonth > 0 && toMonth > 0 {
 		statsQuery += " AND ((e.day IS NOT NULL AND (e.year * 10000 + e.month * 100 + e.day) BETWEEN ? AND ?) OR (e.day IS NULL AND (e.year * 100 + e.month) BETWEEN ? AND ?))"
@@ -4739,10 +4742,11 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			FROM effort_data e
 			JOIN grid_cells g ON e.grid_cell_id = g.id
 			WHERE e.movement_type = 'all'
+				AND e.env = ?
 				AND g.lat_center BETWEEN ? AND ?
 				AND g.lon_center BETWEEN ? AND ?
 		`
-		patrolArgs := []interface{}{patrolBBox[1], patrolBBox[3], patrolBBox[0], patrolBBox[2]}
+		patrolArgs := []interface{}{RequestEnv(r), patrolBBox[1], patrolBBox[3], patrolBBox[0], patrolBBox[2]}
 		
 		if fromDate != "" {
 			patrolQuery += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"

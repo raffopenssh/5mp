@@ -40,6 +40,11 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 	var query string
 	var args []interface{}
 
+	// Env scoping: only 'new_upload' notifications are tenant-scoped; all
+	// other notification types are shared across prod and test.
+	env := RequestEnv(r)
+	envCond := "(notification_type <> 'new_upload' OR env = ?)"
+
 	// For fire_alert notifications with active=true, filter by recent end_date in feature_geometries
 	if notifType == "fire_alert" && activeOnly {
 		query = `SELECT DISTINCT n.id, n.park_id, n.notification_type, n.title, n.message, n.reference_id, n.reference_url, n.reference_data, n.is_read, n.created_at
@@ -52,20 +57,20 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 		args = []interface{}{limit}
 	} else if parkID != "" {
 		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
-		         FROM notifications WHERE park_id = ? ORDER BY created_at DESC LIMIT ?`
-		args = []interface{}{parkID, limit}
+		         FROM notifications WHERE park_id = ? AND ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
+		args = []interface{}{parkID, env, limit}
 	} else if notifType != "" {
 		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
-		         FROM notifications WHERE notification_type = ? ORDER BY created_at DESC LIMIT ?`
-		args = []interface{}{notifType, limit}
+		         FROM notifications WHERE notification_type = ? AND ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
+		args = []interface{}{notifType, env, limit}
 	} else if unreadOnly {
 		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
-		         FROM notifications WHERE is_read = 0 ORDER BY created_at DESC LIMIT ?`
-		args = []interface{}{limit}
+		         FROM notifications WHERE is_read = 0 AND ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
+		args = []interface{}{env, limit}
 	} else {
 		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
-		         FROM notifications ORDER BY created_at DESC LIMIT ?`
-		args = []interface{}{limit}
+		         FROM notifications WHERE ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
+		args = []interface{}{env, limit}
 	}
 
 	rows, err := s.DB.Query(query, args...)
@@ -113,7 +118,7 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 
 	// Get unread count
 	var unreadCount int
-	s.DB.QueryRow("SELECT COUNT(*) FROM notifications WHERE is_read = 0").Scan(&unreadCount)
+	s.DB.QueryRow("SELECT COUNT(*) FROM notifications WHERE is_read = 0 AND "+envCond, env).Scan(&unreadCount)
 
 	response := map[string]interface{}{
 		"notifications": notifications,

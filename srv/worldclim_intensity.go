@@ -17,6 +17,10 @@ func (s *Server) QueryGridDataWithWorldClim(ctx context.Context, params GridQuer
 		  AND e.year BETWEEN ? AND ?
 	`
 	args := []interface{}{params.FromYear, params.ToYear}
+	if params.Env != "" {
+		query += " AND e.env = ?"
+		args = append(args, params.Env)
+	}
 	
 	if params.BBox != nil {
 		query += ` AND g.lat_center BETWEEN ? AND ? AND g.lon_center BETWEEN ? AND ?`
@@ -54,10 +58,11 @@ func (s *Server) QueryGridDataWithWorldClim(ctx context.Context, params GridQuer
 			WHERE e.grid_cell_id = ?
 			  AND e.movement_type = 'all'
 			  AND e.year BETWEEN ? AND ?
+			  AND (? = '' OR e.env = ?)
 		`, dryMonthsSQL, rainyMonthsSQL)
 		
 		var dryCount, rainyCount int64
-		if err := s.DB.QueryRowContext(ctx, visitQuery, gridCellID, params.FromYear, params.ToYear).Scan(&dryCount, &rainyCount); err != nil {
+		if err := s.DB.QueryRowContext(ctx, visitQuery, gridCellID, params.FromYear, params.ToYear, params.Env, params.Env).Scan(&dryCount, &rainyCount); err != nil {
 			continue
 		}
 		

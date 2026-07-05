@@ -128,6 +128,14 @@
         .stats-item.active .stats-label { color: #22c55e; }
         .stats-item::after { content: ''; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 4px; height: 4px; border-radius: 50%; background: transparent; transition: all 0.2s; }
         .stats-item:hover::after { background: rgba(34,197,94,0.5); }
+        /* Layer visibility toggles: dot indicator shows on/off state */
+        .stats-item.layer-toggle.layer-on::after { background: #22c55e; box-shadow: 0 0 4px rgba(34,197,94,0.8); }
+        .stats-item.layer-toggle.fire.layer-on::after { background: #ef4444; box-shadow: 0 0 4px rgba(239,68,68,0.8); }
+        .stats-item.layer-toggle.deforest.layer-on::after { background: #a855f7; box-shadow: 0 0 4px rgba(168,85,247,0.8); }
+        .stats-item.layer-toggle.settlement.layer-on::after { background: #fbbf24; box-shadow: 0 0 4px rgba(251,191,36,0.8); }
+        .stats-item.layer-toggle:not(.layer-on) .stats-label { opacity: 0.55; }
+        .stats-item.layer-toggle.loading::after { animation: layerPulse 0.8s ease-in-out infinite; }
+        @keyframes layerPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
         .stats-item.active::after { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.6); }
         .stats-label { color: #888; transition: color 0.2s; }
         .stats-value { color: #22c55e; font-weight: 600; font-variant-numeric: tabular-nums; transition: color 0.2s; }

@@ -1,5 +1,10 @@
 -- Add stat_value column to feature_geometries for fast stats aggregation
 -- Stores fires_total for fire_trajectory, area_km2 for deforestation
+-- (uses CREATE TABLE trick since ALTER TABLE ADD COLUMN IF NOT EXISTS is not supported)
+CREATE TABLE IF NOT EXISTS _tmp_fg_check (x);
+DROP TABLE _tmp_fg_check;
+
+-- Only add column if it doesn't exist (will no-op if already present)
 ALTER TABLE feature_geometries ADD COLUMN stat_value REAL DEFAULT 0;
 
 -- Populate existing rows

@@ -40,6 +40,7 @@ type pageData struct {
 	Hostname string
 	User     *auth.User
 	Version  string
+	IsTest   bool
 }
 
 func New(dbPath, hostname string) (*Server, error) {
@@ -76,6 +77,7 @@ func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 		Hostname: s.Hostname,
 		User:     user,
 		Version:  Version,
+		IsTest:   RequestEnv(r) == "test",
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -176,6 +178,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/logout", s.HandleAPILogout)
 	mux.HandleFunc("POST /api/upload", RateLimitMiddleware(uploadRL, s.HandleAPIUpload))
 	mux.HandleFunc("GET /api/stats", s.HandleAPIStats)
+	mux.HandleFunc("GET /api/features-in-bbox", s.HandleAPIFeaturesInBBox)
 	mux.HandleFunc("GET /api/parks/export", s.HandleAPIParksExport)
 	mux.HandleFunc("GET /api/activity", s.HandleAPIActivity)
 

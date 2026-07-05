@@ -44,10 +44,12 @@
 
 
     <div id="map" role="application" aria-label="Interactive conservation map"></div>
+    {{if .IsTest}}<div id="test-env-badge" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:2000;background:rgba(234,179,8,0.92);color:#1a1a00;font:600 11px/1 sans-serif;padding:5px 10px;border-radius:4px;letter-spacing:1px;pointer-events:none;">TEST ENV</div>
+    <script>window.IS_TEST_ENV = true;</script>{{end}}
 
     <div class="stats-panel" role="region" aria-label="Patrol and conservation statistics">
         <div class="stats-header">Patrol Activity</div>
-        <div class="stats-item" id="stat-pixels" onclick="handleStatClick('pixels')" title="Click to highlight active grid cells">
+        <div class="stats-item layer-toggle" id="stat-pixels" onclick="toggleViewLayer('pixels')" title="Click to show/hide patrol pixels">
             <span class="stats-label">Active Pixels</span>
             <span class="stats-value" id="stats-pixels">15</span>
         </div>
@@ -57,15 +59,15 @@
         </div>
         <div class="stats-divider"></div>
         <div class="stats-header">Conservation Data</div>
-        <div class="stats-item fire" id="stat-fires" title="Fire detections in selected period">
+        <div class="stats-item fire layer-toggle" id="stat-fires" onclick="toggleViewLayer('fires')" title="Click to show/hide fires in view">
             <span class="stats-label">Fire Activity</span>
             <span class="stats-value"><span id="stats-fires">0</span><span class="stats-trend stable" id="stats-fire-trend"></span></span>
         </div>
-        <div class="stats-item deforest" id="stat-deforest" title="Total forest loss in selected period">
+        <div class="stats-item deforest layer-toggle" id="stat-deforest" onclick="toggleViewLayer('deforest')" title="Click to show/hide deforestation in view">
             <span class="stats-label">Deforestation</span>
             <span class="stats-value"><span id="stats-deforest">0 km²</span><span class="stats-trend stable" id="stats-deforest-trend"></span></span>
         </div>
-        <div class="stats-item settlement" id="stat-settlements" title="Total settlements across all parks">
+        <div class="stats-item settlement layer-toggle" id="stat-settlements" onclick="toggleViewLayer('settlements')" title="Click to show/hide settlements in view">
             <span class="stats-label">Settlements</span>
             <span class="stats-value" id="stats-settlements">0</span>
         </div>
@@ -1828,20 +1830,24 @@
                         12, ['*', 200, ['interpolate', ['linear'], gridIntensity, 0, 1, 0.5, 1.2, 1.0, 1.5, 1.5, 2.0]]
                     ],
                     'circle-blur': 1.0,
-                    // Opacity scales with intensity AND recency: stale cells fade out
-                    'circle-opacity': ['*',
-                        ['interpolate', ['linear'], gridIntensity,
-                            0, 0.1,
-                            0.5, 0.2,
-                            1.0, 0.35,
-                            1.5, 0.5
+                    // Opacity scales with intensity AND recency: stale cells fade out.
+                    // Fades to 0 between z15→z17 so satellite imagery is unobstructed.
+                    'circle-opacity': ['interpolate', ['linear'], ['zoom'],
+                        15, ['*',
+                            ['interpolate', ['linear'], gridIntensity,
+                                0, 0.1,
+                                0.5, 0.2,
+                                1.0, 0.35,
+                                1.5, 0.5
+                            ],
+                            // Recency multiplier: 1.0 keeps full opacity, 0.3 is the floor
+                            ['interpolate', ['linear'], gridRecency,
+                                0, 0.3,
+                                0.5, 0.6,
+                                1.0, 1.0
+                            ]
                         ],
-                        // Recency multiplier: 1.0 keeps full opacity, 0.3 is the floor
-                        ['interpolate', ['linear'], gridRecency,
-                            0, 0.3,
-                            0.5, 0.6,
-                            1.0, 1.0
-                        ]
+                        17, 0
                     ]
                 }
             });
@@ -1873,18 +1879,21 @@
                         12, ['*', 180, ['interpolate', ['linear'], gridIntensity, 0, 1, 1, 1.3]]
                     ],
                     'circle-blur': 0.7,
-                    // Glow opacity: intensity × recency
-                    'circle-opacity': ['*',
-                        ['interpolate', ['linear'], gridIntensity,
-                            0, 0.1,
-                            0.5, 0.25,
-                            1.0, 0.4
+                    // Glow opacity: intensity × recency, fading to 0 at z15→z17
+                    'circle-opacity': ['interpolate', ['linear'], ['zoom'],
+                        15, ['*',
+                            ['interpolate', ['linear'], gridIntensity,
+                                0, 0.1,
+                                0.5, 0.25,
+                                1.0, 0.4
+                            ],
+                            ['interpolate', ['linear'], gridRecency,
+                                0, 0.25,
+                                0.5, 0.55,
+                                1.0, 1.0
+                            ]
                         ],
-                        ['interpolate', ['linear'], gridRecency,
-                            0, 0.25,
-                            0.5, 0.55,
-                            1.0, 1.0
-                        ]
+                        17, 0
                     ]
                 }
             });
@@ -1908,13 +1917,17 @@
                         12, ['*', 128, gridFillMetric]
                     ],
                     'circle-blur': 0.1,
-                    'circle-opacity': [
-                        'interpolate', ['linear'], gridIntensity,
-                        0, 0,
-                        0.1, 0.35,
-                        0.3, 0.55,
-                        0.7, 0.75,
-                        1.0, 0.9
+                    // Fill opacity from intensity, fading to 0 at z15→z17
+                    'circle-opacity': ['interpolate', ['linear'], ['zoom'],
+                        15, [
+                            'interpolate', ['linear'], gridIntensity,
+                            0, 0,
+                            0.1, 0.35,
+                            0.3, 0.55,
+                            0.7, 0.75,
+                            1.0, 0.9
+                        ],
+                        17, 0
                     ]
                 }
             });
@@ -1935,11 +1948,15 @@
                         7, 1.5,
                         11, 3
                     ],
-                    // Ring opacity: full for recently visited, fades for stale
-                    'circle-stroke-opacity': ['interpolate', ['linear'], gridRecency,
-                        0, 0.3,
-                        0.5, 0.6,
-                        1.0, 1.0
+                    // Ring opacity: full for recently visited, fades for stale;
+                    // fades to 0 at z15→z17 so satellite imagery is unobstructed
+                    'circle-stroke-opacity': ['interpolate', ['linear'], ['zoom'],
+                        15, ['interpolate', ['linear'], gridRecency,
+                            0, 0.3,
+                            0.5, 0.6,
+                            1.0, 1.0
+                        ],
+                        17, 0
                     ],
                     'circle-opacity': 1
                 }
@@ -3897,6 +3914,8 @@
             
             // Also reload stats when filters change
             loadStats();
+            // Refresh in-view feature layers (fires/deforest/settlements) with new dates
+            if (typeof window.refreshViewLayers === 'function') window.refreshViewLayers();
         }
 
         
@@ -8566,6 +8585,141 @@
                 paClickHandlerInitialized = true;
             }
         }, 1000);
+
+        // ── Stats-panel layer visibility toggles ──────────────────────────
+        // pixels ON by default; fires/deforest/settlements OFF.
+        // Feature layers load from /api/features-in-bbox for the current view,
+        // respecting bbox + date range, and refresh on map move / date change.
+        window.viewLayers = { pixels: true, fires: false, deforest: false, settlements: false };
+        const VIEW_LAYER_DEFAULTS = { pixels: true, fires: false, deforest: false, settlements: false };
+        const VIEW_LAYER_META = {
+            fires:       { featureType: 'fire_trajectory', color: '#ef4444', statId: 'stat-fires' },
+            deforest:    { featureType: 'deforestation',   color: '#a855f7', statId: 'stat-deforest' },
+            settlements: { featureType: 'settlement',      color: '#fbbf24', statId: 'stat-settlements' }
+        };
+        const GRID_PIXEL_LAYERS = ['grid-halo', 'grid-glow', 'grid-fill', 'grid-cells'];
+
+        function updateViewLayerUI() {
+            const map2 = { pixels: 'stat-pixels', fires: 'stat-fires', deforest: 'stat-deforest', settlements: 'stat-settlements' };
+            Object.keys(map2).forEach(k => {
+                const el = document.getElementById(map2[k]);
+                if (el) el.classList.toggle('layer-on', !!viewLayers[k]);
+            });
+        }
+
+        function currentViewBbox() {
+            if (currentBbox && currentBbox.length === 4) return currentBbox;
+            if (typeof map === 'undefined' || !map.getBounds) return null;
+            const b = map.getBounds();
+            return [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
+        }
+
+        function toggleViewLayer(name) {
+            viewLayers[name] = !viewLayers[name];
+            updateViewLayerUI();
+            applyViewLayer(name);
+            if (typeof updateShareURL === 'function') updateShareURL();
+        }
+        window.toggleViewLayer = toggleViewLayer;
+        window.applyViewLayer = applyViewLayer;
+        window.updateViewLayerUI = updateViewLayerUI;
+
+        function applyViewLayer(name) {
+            if (name === 'pixels') {
+                const vis = viewLayers.pixels ? 'visible' : 'none';
+                GRID_PIXEL_LAYERS.forEach(id => {
+                    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
+                });
+                return;
+            }
+            if (viewLayers[name]) {
+                loadViewFeatureLayer(name);
+            } else {
+                removeViewFeatureLayer(name);
+            }
+        }
+
+        function removeViewFeatureLayer(name) {
+            ['-fill', '-line', '-point'].forEach(sfx => {
+                const id = 'viewlayer-' + name + sfx;
+                if (map.getLayer(id)) map.removeLayer(id);
+            });
+            const srcId = 'viewlayer-' + name;
+            if (map.getSource(srcId)) map.removeSource(srcId);
+        }
+
+        let viewLayerAbort = {};
+        async function loadViewFeatureLayer(name) {
+            const meta = VIEW_LAYER_META[name];
+            if (!meta) return;
+            const bbox = currentViewBbox();
+            if (!bbox) return;
+            const statEl = document.getElementById(meta.statId);
+            if (statEl) statEl.classList.add('loading');
+            if (viewLayerAbort[name]) viewLayerAbort[name].abort();
+            const ctrl = new AbortController();
+            viewLayerAbort[name] = ctrl;
+            try {
+                let url = '/api/features-in-bbox?type=' + meta.featureType +
+                    '&bbox=' + bbox.map(v => v.toFixed(4)).join(',') +
+                    '&limit=1500&pwd=' + encodeURIComponent(getPwd() || '');
+                if (dateFrom) url += '&from=' + dateFrom;
+                if (dateTo) url += '&to=' + dateTo;
+                const res = await fetch(url, { signal: ctrl.signal });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const geojson = await res.json();
+                if (!viewLayers[name]) return; // toggled off while loading
+                const srcId = 'viewlayer-' + name;
+                const existing = map.getSource(srcId);
+                if (existing) {
+                    existing.setData(geojson);
+                } else {
+                    map.addSource(srcId, { type: 'geojson', data: geojson });
+                    map.addLayer({
+                        id: srcId + '-fill', type: 'fill', source: srcId,
+                        filter: ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']],
+                        paint: { 'fill-color': meta.color, 'fill-opacity': 0.25, 'fill-outline-color': meta.color }
+                    });
+                    map.addLayer({
+                        id: srcId + '-line', type: 'line', source: srcId,
+                        filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
+                        paint: { 'line-color': meta.color, 'line-width': 2, 'line-opacity': 0.8 }
+                    });
+                    map.addLayer({
+                        id: srcId + '-point', type: 'circle', source: srcId,
+                        filter: ['==', ['geometry-type'], 'Point'],
+                        paint: {
+                            'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2, 8, 4, 12, 6],
+                            'circle-color': meta.color, 'circle-opacity': 0.7,
+                            'circle-stroke-width': 1, 'circle-stroke-color': '#fff', 'circle-stroke-opacity': 0.5
+                        }
+                    });
+                }
+                if (geojson.truncated) {
+                    showToast('Showing largest 1500 ' + name + ' in view — zoom in for full detail', 'info');
+                }
+            } catch (e) {
+                if (e.name !== 'AbortError') console.error('View layer ' + name + ' load failed:', e);
+            } finally {
+                if (statEl) statEl.classList.remove('loading');
+            }
+        }
+
+        // Refresh active feature layers on map move / date change (debounced)
+        let viewLayerRefreshTimeout = null;
+        function refreshViewLayers() {
+            if (viewLayerRefreshTimeout) clearTimeout(viewLayerRefreshTimeout);
+            viewLayerRefreshTimeout = setTimeout(function() {
+                Object.keys(VIEW_LAYER_META).forEach(name => {
+                    if (viewLayers[name]) loadViewFeatureLayer(name);
+                });
+            }, 600);
+        }
+        window.refreshViewLayers = refreshViewLayers;
+        if (typeof map !== 'undefined') map.on('moveend', refreshViewLayers);
+
+        // Initialize toggle indicator state
+        updateViewLayerUI();
 
         // Stats panel interactivity
         let activeStatMode = null;
@@ -15332,6 +15486,16 @@ ${starredItems.narratives.map(n => {
             params.set('bbox', currentBbox.map(v => v.toFixed(4)).join(','));
         }
         
+        // Add layer toggle state (only when differing from defaults)
+        if (window.viewLayers) {
+            const names = ['pixels', 'fires', 'deforest', 'settlements'];
+            const defaults = { pixels: true, fires: false, deforest: false, settlements: false };
+            if (names.some(n => !!viewLayers[n] !== defaults[n])) {
+                const on = names.filter(n => viewLayers[n]);
+                params.set('layers', on.length ? on.join(',') : 'none');
+            }
+        }
+        
         // Add selected parks (up to 10 to keep URL manageable)
         if (selectedPAIds && selectedPAIds.size > 0) {
             const paIds = Array.from(selectedPAIds).slice(0, 10);
@@ -15568,6 +15732,20 @@ ${starredItems.narratives.map(n => {
                 // Fit map to bbox
                 map.fitBounds([[coords[0], coords[1]], [coords[2], coords[3]]], { padding: 50 });
             }
+        }
+        
+        // Restore layer toggle state (layers=pixels,fires,... or layers=none)
+        const layersParam = params.get('layers');
+        if (layersParam !== null && window.viewLayers) {
+            const on = layersParam === 'none' ? [] : layersParam.split(',').map(s => s.trim());
+            ['pixels', 'fires', 'deforest', 'settlements'].forEach(name => {
+                const want = on.includes(name);
+                if (viewLayers[name] !== want) {
+                    viewLayers[name] = want;
+                    if (typeof window.applyViewLayer === 'function') window.applyViewLayer(name);
+                }
+            });
+            if (typeof window.updateViewLayerUI === 'function') window.updateViewLayerUI();
         }
         
         // Restore country filter

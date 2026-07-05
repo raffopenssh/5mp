@@ -1029,6 +1029,7 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 			ProtectedAreaIds: nil,
 			AvgSpeedKmh:      stats.avgSpeed(),
 			AvgAltitudeM:     stats.avgAlt(),
+			Env:              env,
 		})
 		if err != nil {
 			return fmt.Errorf("upsert effort data for %s/%d-%02d-%02d: %w", cellID, key.ymd.year, key.ymd.month, key.ymd.day, err)
@@ -1050,6 +1051,7 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 			ProtectedAreaIds: nil,
 			AvgSpeedKmh:      stats.avgSpeed(),
 			AvgAltitudeM:     stats.avgAlt(),
+			Env:              env,
 		})
 		if err != nil {
 			return fmt.Errorf("upsert effort data (all) for %s/%d-%02d-%02d: %w", ak.cellID, ak.ymd.year, ak.ymd.month, ak.ymd.day, err)
@@ -1081,8 +1083,10 @@ func (s *Server) rebuildAllEffortData() {
 
 	// Get all completed upload logs with distance breakdown and linked upload_id
 	rows, err := s.DB.QueryContext(ctx, `
-		SELECT l.id, l.upload_id, l.foot_km, l.vehicle_km, l.aircraft_km, l.upload_time
+		SELECT l.id, l.upload_id, l.foot_km, l.vehicle_km, l.aircraft_km, l.upload_time,
+		       COALESCE(u.env, 'prod')
 		FROM gpx_upload_logs l
+		LEFT JOIN gpx_uploads u ON u.id = l.upload_id
 		WHERE l.processing_status = 'completed'
 		  AND l.upload_id IS NOT NULL
 		ORDER BY l.id
@@ -1100,11 +1104,12 @@ func (s *Server) rebuildAllEffortData() {
 		vehicleKm  float64
 		aircraftKm float64
 		uploadTime string
+		env        string
 	}
 	var uploads []uploadInfo
 	for rows.Next() {
 		var u uploadInfo
-		if err := rows.Scan(&u.logID, &u.uploadID, &u.footKm, &u.vehicleKm, &u.aircraftKm, &u.uploadTime); err != nil {
+		if err := rows.Scan(&u.logID, &u.uploadID, &u.footKm, &u.vehicleKm, &u.aircraftKm, &u.uploadTime, &u.env); err != nil {
 			slog.Warn("rebuildAllEffortData: scan error", "error", err)
 			continue
 		}
@@ -1249,6 +1254,7 @@ func (s *Server) rebuildAllEffortData() {
 					TotalDistanceKm: cellKm,
 					TotalPoints:     pts,
 					UniqueUploads:   1,
+					Env:             u.env,
 				})
 				if err != nil {
 					slog.Warn("rebuildAllEffortData: upsert error", "cell", c.id, "mt", mt, "error", err)
@@ -1267,6 +1273,7 @@ func (s *Server) rebuildAllEffortData() {
 					TotalDistanceKm: allKm[ak],
 					TotalPoints:     pts,
 					UniqueUploads:   1,
+					Env:             u.env,
 				})
 				if err != nil {
 					slog.Warn("rebuildAllEffortData: upsert all error", "cell", ak.cellID, "error", err)
@@ -1311,6 +1318,7 @@ func (s *Server) rebuildAllEffortData() {
 						TotalDistanceKm: mt.km * fraction,
 						TotalPoints:     int64(float64(pts) * (mt.km / totalKm)),
 						UniqueUploads:   1,
+						Env:             u.env,
 					})
 					if err != nil {
 						slog.Warn("rebuildAllEffortData: upsert error", "cell", ak.cellID, "error", err)
@@ -1327,6 +1335,7 @@ func (s *Server) rebuildAllEffortData() {
 					TotalDistanceKm: totalKm * fraction,
 					TotalPoints:     pts,
 					UniqueUploads:   1,
+					Env:             u.env,
 				})
 				if err != nil {
 					slog.Warn("rebuildAllEffortData: upsert all error", "cell", ak.cellID, "error", err)
