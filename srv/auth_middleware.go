@@ -16,7 +16,7 @@ func loadPasswords() []string {
 	if env := os.Getenv("ACCESS_PASSWORDS"); env != "" {
 		return strings.Split(env, ",")
 	}
-	return []string{"test2026", "REDACTED_PWD", "REDACTED_PWD", "REDACTED_PWD"}
+	return []string{"test2026", "REDACTED_PWD", "REDACTED_PWD", "REDACTED_PWD", "test2026"}
 }
 
 // PasswordMiddleware checks for valid password in cookie or query param
@@ -77,6 +77,21 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 		// Show password form
 		s.showPasswordForm(w, r)
 	})
+}
+
+// RequestEnv returns "test" if the request authenticated with the test
+// environment password (via pwd query param or access_pwd cookie), else "prod".
+func RequestEnv(r *http.Request) string {
+	if r == nil {
+		return "prod"
+	}
+	if r.URL.Query().Get("pwd") == "test2026" {
+		return "test"
+	}
+	if c, err := r.Cookie("access_pwd"); err == nil && c.Value == "test2026" {
+		return "test"
+	}
+	return "prod"
 }
 
 func isValidPassword(pwd string) bool {
@@ -378,6 +393,9 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         </form>
         <div class="footer">
             <span>FIVE MEGAPIXELS</span>
+        </div>
+        <div style="margin-top:10px;">
+            <a href="/?pwd=test2026" style="color:#555;font-size:11px;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">test environment</a>
         </div>
     </div>
 </body>

@@ -127,7 +127,7 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 
 	// Check for duplicate upload
 	q := dbgen.New(s.DB)
-	existing, err := q.GetGPXUploadByHash(ctx, &fileHash)
+	existing, err := q.GetGPXUploadByHash(ctx, dbgen.GetGPXUploadByHashParams{FileHash: &fileHash, Env: "prod"})
 	if err == nil && existing.ID > 0 {
 		// Duplicate found - return info about previous upload
 		w.Header().Set("Content-Type", "application/json")
@@ -238,7 +238,7 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 
 		// Validate and persist upload to database
 		if s.DB != nil {
-			validationResult, err := s.persistUploadWithValidation(ctx, userID, userEmail, filename, fileHash, segments)
+			validationResult, err := s.persistUploadWithValidation(ctx, userID, userEmail, filename, fileHash, segments, RequestEnv(r))
 			if err != nil {
 				slog.Warn("failed to persist upload", "error", err, "filename", filename)
 			} else {
@@ -368,7 +368,10 @@ const (
 // - gpx_uploads record for metadata
 // - track_points (sampled if > maxTrackPointsPerUpload)
 // - effort_data grid cell aggregates
-func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename, fileHash string, segments []gpx.Segment) (int64, error) {
+func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename, fileHash string, segments []gpx.Segment, env string) (int64, error) {
+	if env == "" {
+		env = "prod"
+	}
 	if len(segments) == 0 {
 		return 0, nil
 	}
@@ -444,6 +447,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		TotalPoints:      int64(totalPoints),
 		FileHash:         &fileHash,
 		ProcessingStatus: &processingStatus,
+		Env:              env,
 	})
 	if err != nil {
 		return 0, fmt.Errorf("create gpx upload: %w", err)
@@ -494,6 +498,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 			Timestamp:    pt.Time,
 			GridCellID:   gridCellIDPtr,
 			MovementType: movementTypePtr,
+			Env:          env,
 		})
 		if err != nil {
 			return 0, fmt.Errorf("create track point: %w", err)
@@ -511,7 +516,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 	}
 
 	// Update effort_data grid cells (non-fatal error - continue even if this fails)
-	if err := s.updateEffortData(ctx, q, segments, uploadID); err != nil {
+	if err := s.updateEffortData(ctx, q, segments, uploadID, env); err != nil {
 		slog.Warn("failed to update effort data", "uploadID", uploadID, "error", err)
 		// Don't fail the whole upload - learning and basic data is more important
 	}
@@ -683,13 +688,14 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		refDataJSON, _ := json.Marshal(refData)
 		
 		_, err = s.DB.ExecContext(ctx, `
-			INSERT INTO notifications (park_id, notification_type, title, message, reference_id, reference_data, created_at)
-			VALUES (?, 'new_upload', ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+			INSERT INTO notifications (park_id, notification_type, title, message, reference_id, reference_data, env, created_at)
+			VALUES (?, 'new_upload', ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
 			notifParkID,
 			fmt.Sprintf("New Patrol Data: %s", locationName),
 			fmt.Sprintf("%.1f km patrol uploaded with %d segments", totalDistKm, len(segments)),
 			fmt.Sprintf("%d", uploadID),
 			string(refDataJSON),
+			env,
 		)
 		if err != nil {
 			slog.Warn("failed to create upload notification", "uploadID", uploadID, "error", err)
@@ -869,7 +875,7 @@ func (s *gridCellStats) avgAlt() *float64 {
 // and updates the effort_data table with aggregated statistics.
 // Effort is bucketed by year/month from actual point timestamps so multi-day
 // or multi-month uploads are attributed to the correct time periods.
-func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segments []gpx.Segment, uploadID int64) error {
+func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segments []gpx.Segment, uploadID int64, env string) error {
 	// Fallback year/month if points have no timestamps
 	now := time.Now()
 	fallbackYear := int64(now.Year())
@@ -1051,7 +1057,7 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 	}
 
 	// Track subcell visits for spatial coverage calculation
-	if err := s.trackSubcellVisits(ctx, q, segments, fallbackYear, fallbackMonth); err != nil {
+	if err := s.trackSubcellVisits(ctx, q, segments, fallbackYear, fallbackMonth, env); err != nil {
 		return fmt.Errorf("track subcell visits: %w", err)
 	}
 
@@ -1400,7 +1406,7 @@ func subcellIDForCell(cellID string, lat, lon float64) string {
 // trackSubcellVisits records which subcells within each grid cell have been visited
 // Uses the actual point timestamps for day-level granularity.
 // All movement types (foot, vehicle, aircraft) contribute to subcell coverage.
-func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segments []gpx.Segment, defaultYear, defaultMonth int64) error {
+func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segments []gpx.Segment, defaultYear, defaultMonth int64, env string) error {
 	// Track visited subcells per grid cell per day
 	// Key: "gridCellID:subcellID:date" -> {lat, lon}
 	type subcellInfo struct {
@@ -1468,14 +1474,16 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 		visitDateStr := parts[2] // already "YYYY-MM-DD" format
 		
 		// Validate date format
-		if _, err := time.Parse("2006-01-02", visitDateStr); err != nil {
+		visitTime, err := time.Parse("2006-01-02", visitDateStr)
+		if err != nil {
 			continue
 		}
 		
-		err := q.UpsertSubcellVisit(ctx, dbgen.UpsertSubcellVisitParams{
+		err = q.UpsertSubcellVisit(ctx, dbgen.UpsertSubcellVisitParams{
 			GridCellID: gridCellID,
 			SubcellID:  subcellID,
-			VisitDate:  visitDateStr,
+			VisitDate:  visitTime,
+			Env:        env,
 		})
 		if err != nil {
 			return fmt.Errorf("upsert subcell visit: %w", err)
@@ -1487,7 +1495,10 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 
 // persistUploadWithValidation validates, classifies, and persists GPX upload data
 // Returns the validation result for user feedback
-func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEmail, filename, fileHash string, segments []gpx.Segment) (*GPXValidationResult, error) {
+func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEmail, filename, fileHash string, segments []gpx.Segment, env string) (*GPXValidationResult, error) {
+	if env == "" {
+		env = "prod"
+	}
 	// Run validation and classification on pre-processed segments
 	// (already split and gap-cleaned by caller)
 	validationResult := ValidateAndClassifyGPX(segments)
@@ -1657,7 +1668,7 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		slog.Info("persisting patrol segments", "count", len(patrolOnlySegments), "filtered_from", len(segments))
 		
 		if len(patrolOnlySegments) > 0 {
-			persistID, err := s.persistUpload(ctx, userID, userEmail, filename, fileHash, patrolOnlySegments)
+			persistID, err := s.persistUpload(ctx, userID, userEmail, filename, fileHash, patrolOnlySegments, env)
 			if err != nil {
 				return validationResult, err
 			}
@@ -1676,6 +1687,10 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 	
 	// Queue for background learning — one job per park that has segments.
 	// This correctly handles multi-park GPX files (e.g. autofetch from EarthRanger).
+	// Test-environment uploads must not pollute learned features.
+	if env == "test" {
+		return validationResult, nil
+	}
 	queuedParks := make(map[string]bool)
 	for _, pid := range segmentParks {
 		if pid != "" && !queuedParks[pid] {

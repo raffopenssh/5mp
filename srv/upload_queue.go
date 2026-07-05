@@ -154,6 +154,7 @@ func (p *UploadQueueProcessor) processUpload(ctx context.Context, item dbgen.Get
 		item.Filename,
 		stringOrEmpty(fileHash),
 		segments,
+		item.Env,
 	)
 	if err != nil {
 		errMsg := "failed to persist upload: " + err.Error()

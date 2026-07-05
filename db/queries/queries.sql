@@ -21,12 +21,12 @@ SELECT * FROM users WHERE role IN ('approved', 'admin') ORDER BY created_at DESC
 SELECT * FROM users ORDER BY created_at DESC;
 
 -- name: CreateGPXUpload :one
-INSERT INTO gpx_uploads (user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points, file_hash, processing_status)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO gpx_uploads (user_id, filename, movement_type, protected_area_id, upload_date, start_time, end_time, total_distance_km, total_points, file_hash, processing_status, env)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 RETURNING id;
 
 -- name: GetGPXUploadByHash :one
-SELECT * FROM gpx_uploads WHERE file_hash = ?;
+SELECT * FROM gpx_uploads WHERE file_hash = ? AND env = ?;
 
 -- name: UpdateGPXUploadStatus :exec
 UPDATE gpx_uploads SET processing_status = ?, error_message = ? WHERE id = ?;
@@ -50,9 +50,9 @@ RETURNING *;
 SELECT * FROM grid_cells WHERE id = ?;
 
 -- name: UpsertEffortData :exec
-INSERT INTO effort_data (grid_cell_id, year, month, day, movement_type, total_distance_km, total_points, unique_uploads, protected_area_ids, avg_speed_kmh, avg_altitude_m)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-ON CONFLICT(grid_cell_id, year, month, day, movement_type) DO UPDATE SET
+INSERT INTO effort_data (grid_cell_id, year, month, day, movement_type, total_distance_km, total_points, unique_uploads, protected_area_ids, avg_speed_kmh, avg_altitude_m, env)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(grid_cell_id, year, month, day, movement_type, env) DO UPDATE SET
     total_distance_km = effort_data.total_distance_km + excluded.total_distance_km,
     total_points = effort_data.total_points + excluded.total_points,
     unique_uploads = effort_data.unique_uploads + excluded.unique_uploads,
@@ -101,8 +101,8 @@ FROM effort_data e
 WHERE e.year = ? AND e.day IS NULL AND e.movement_type = 'all';
 
 -- name: CreateTrackPoint :exec
-INSERT INTO track_points (upload_id, lat, lon, elevation, timestamp, grid_cell_id, movement_type)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO track_points (upload_id, lat, lon, elevation, timestamp, grid_cell_id, movement_type, env)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 -- name: GetTrackPointsByUpload :many
 SELECT * FROM track_points WHERE upload_id = ? ORDER BY timestamp;
@@ -199,9 +199,9 @@ WHERE grid_cell_id = ? AND year = ? AND month = ? AND movement_type = ?;
 -- Subcell visits tracking for spatial coverage (day granularity)
 
 -- name: UpsertSubcellVisit :exec
-INSERT INTO subcell_visits (grid_cell_id, subcell_id, visit_date, visit_count)
-VALUES (?, ?, ?, 1)
-ON CONFLICT(grid_cell_id, subcell_id, visit_date) DO UPDATE SET
+INSERT INTO subcell_visits (grid_cell_id, subcell_id, visit_date, visit_count, env)
+VALUES (?, ?, ?, 1, ?)
+ON CONFLICT(grid_cell_id, subcell_id, visit_date, env) DO UPDATE SET
     visit_count = visit_count + 1;
 
 -- name: GetSubcellCoverageByDateRange :one
@@ -314,18 +314,18 @@ LIMIT 1;
 
 -- Upload Queue queries
 -- name: QueueUpload :one
-INSERT INTO upload_queue (user_id, user_email, filename, file_hash, file_content, status)
-VALUES (?, ?, ?, ?, ?, 'pending')
+INSERT INTO upload_queue (user_id, user_email, filename, file_hash, file_content, status, env)
+VALUES (?, ?, ?, ?, ?, 'pending', ?)
 RETURNING *;
 
 -- name: GetUploadQueueItem :one
 SELECT * FROM upload_queue WHERE id = ?;
 
 -- name: GetUploadQueueByHash :one
-SELECT * FROM upload_queue WHERE file_hash = ? AND status != 'failed' LIMIT 1;
+SELECT * FROM upload_queue WHERE file_hash = ? AND env = ? AND status != 'failed' LIMIT 1;
 
 -- name: GetPendingUploads :many
-SELECT id, user_id, user_email, filename, file_hash, file_content, status, created_at 
+SELECT id, user_id, user_email, filename, file_hash, file_content, status, created_at, env
 FROM upload_queue WHERE status = 'pending' ORDER BY created_at LIMIT ?;
 
 -- name: MarkUploadProcessing :exec

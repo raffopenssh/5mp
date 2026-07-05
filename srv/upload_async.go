@@ -99,7 +99,8 @@ func (s *Server) HandleAsyncUpload(w http.ResponseWriter, r *http.Request) {
 	fileHash := hex.EncodeToString(hasher.Sum(nil))
 
 	// Check for duplicate in queue
-	existing, err := q.GetUploadQueueByHash(ctx, &fileHash)
+	env := RequestEnv(r)
+	existing, err := q.GetUploadQueueByHash(ctx, dbgen.GetUploadQueueByHashParams{FileHash: &fileHash, Env: env})
 	if err == nil && existing.ID > 0 {
 		// Return existing queue item
 		w.Header().Set("Content-Type", "application/json")
@@ -112,7 +113,7 @@ func (s *Server) HandleAsyncUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check for duplicate in completed uploads
-	existingUpload, err := q.GetGPXUploadByHash(ctx, &fileHash)
+	existingUpload, err := q.GetGPXUploadByHash(ctx, dbgen.GetGPXUploadByHashParams{FileHash: &fileHash, Env: env})
 	if err == nil && existingUpload.ID > 0 {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusConflict)
@@ -136,6 +137,7 @@ func (s *Server) HandleAsyncUpload(w http.ResponseWriter, r *http.Request) {
 		Filename:    fileHeader.Filename,
 		FileHash:    &fileHash,
 		FileContent: content,
+		Env:         env,
 	})
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
