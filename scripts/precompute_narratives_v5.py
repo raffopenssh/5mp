@@ -95,6 +95,7 @@ class NarrativeGeneratorV5:
             SELECT park_id, feature_id, start_date, end_date, properties_json
             FROM feature_geometries
             WHERE feature_type = 'fire_trajectory' AND start_date >= ?
+              AND (dist_to_park_km IS NULL OR dist_to_park_km <= 20)
             ORDER BY park_id, start_date
         ''', (MIN_DATE,))
         

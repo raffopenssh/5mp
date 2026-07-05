@@ -44,6 +44,12 @@ from collections import defaultdict
 BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / "db.sqlite3"
 INPUT_DIR = BASE_DIR / "data" / "fire_groups_v5"  # Updated for v5 trajectory output
+
+# Groups are 'relevant' to a park (counted in stats, eligible for notifications)
+# if any part of the trajectory is inside or within RELEVANCE_KM of the boundary.
+# The FULL trajectory geometry is always stored and displayed - never clipped:
+# a transect that reaches the park shows its entire path from wherever it started.
+RELEVANCE_KM = 20
 TRENDS_DIR = BASE_DIR / "data" / "fire_trends"
 KEYSTONES_FILE = BASE_DIR / "data" / "keystones_with_boundaries.json"
 
@@ -460,6 +466,7 @@ class FireGroupLoader:
                 "avg_speed_km_day": round(group.get('speed_km_day', 0), 1),
                 "total_frp": round(group.get('total_frp', 0), 1),
                 "pct_inside": group.get('pct_inside', 0),
+                "dist_to_park_km": group.get('dist_to_park_km'),
                 "cross_border": group.get('cross_border', False),
                 "affected_parks": group.get('affected_parks', [park_id]),
                 "narrative": narrative,
@@ -484,32 +491,42 @@ class FireGroupLoader:
             lons = [c[0] for c in coords]
             lats = [c[1] for c in coords]
             
+            # Distance to park boundary (0 = inside). Fallback: 0 for groups
+            # partially inside; unknown (None) treated as relevant.
+            dist_to_park = group.get('dist_to_park_km')
+            if dist_to_park is None and group.get('pct_inside', 0) > 0:
+                dist_to_park = 0.0
+            
             # Insert into feature_geometries (OR REPLACE for duplicates)
             self.conn.execute("""
                 INSERT OR REPLACE INTO feature_geometries 
                 (feature_type, feature_id, park_id, geojson, 
                  bbox_minx, bbox_miny, bbox_maxx, bbox_maxy,
-                 start_date, end_date, properties_json)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 start_date, end_date, properties_json, dist_to_park_km)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 'fire_trajectory', feature_id, park_id, geojson,
                 min(lons), min(lats), max(lons), max(lats),
-                start_date, end_date, json.dumps(props)
+                start_date, end_date, json.dumps(props), dist_to_park
             ))
             
-            # Collect stats
-            yearly_stats[year]['total_groups'] += 1
-            yearly_stats[year][position] += 1
-            yearly_stats[year]['total_days'] += group.get('days', 1)
-            
-            # Weekly count (by start date)
-            if start_date:
-                try:
-                    dt = datetime.strptime(start_date, '%Y-%m-%d')
-                    week_start = (dt - timedelta(days=dt.weekday())).strftime('%Y-%m-%d')
-                    weekly_counts[week_start] += group.get('fire_count', 1)
-                except:
-                    pass
+            # Per-park stats: only count groups relevant to the park
+            # (inside, or within 20km of the boundary). Groups further out
+            # are kept in feature_geometries for map display only.
+            relevant = group.get('pct_inside', 0) > 0 or (dist_to_park is not None and dist_to_park <= RELEVANCE_KM)
+            if relevant:
+                yearly_stats[year]['total_groups'] += 1
+                yearly_stats[year][position] += 1
+                yearly_stats[year]['total_days'] += group.get('days', 1)
+                
+                # Weekly count (by start date)
+                if start_date:
+                    try:
+                        dt = datetime.strptime(start_date, '%Y-%m-%d')
+                        week_start = (dt - timedelta(days=dt.weekday())).strftime('%Y-%m-%d')
+                        weekly_counts[week_start] += group.get('fire_count', 1)
+                    except:
+                        pass
             
             count += 1
         

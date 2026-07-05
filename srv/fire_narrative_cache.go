@@ -363,6 +363,7 @@ func (s *Server) analyzeFireTrendFast(parkID string, currentYear int) *FireTrend
 		SELECT strftime('%Y-%m', start_date) as month, COUNT(*) as groups
 		FROM feature_geometries 
 		WHERE park_id = ? AND feature_type = 'fire_trajectory' AND start_date IS NOT NULL
+		  AND (dist_to_park_km IS NULL OR dist_to_park_km <= 20)
 		GROUP BY month 
 		ORDER BY month
 	`, parkID)

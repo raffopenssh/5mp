@@ -944,6 +944,7 @@ func (s *Server) updateFireGroupAlertsFromFeatures() error {
 		SELECT park_id, feature_id, properties_json, start_date, end_date
 		FROM feature_geometries
 		WHERE feature_type = 'fire_trajectory' AND end_date >= ?
+		  AND (dist_to_park_km IS NULL OR dist_to_park_km <= 20)
 		ORDER BY end_date DESC
 	`, cutoff)
 	if err != nil {
@@ -1181,7 +1182,8 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         FROM feature_geometries fg
         LEFT JOIN fire_group_names fgn ON fg.park_id = fgn.park_id AND fg.feature_id = fgn.feature_id
         WHERE fg.park_id = ? AND fg.feature_type = 'fire_trajectory'
-          AND fg.start_date >= ? 
+          AND fg.start_date >= ?
+          AND (fg.dist_to_park_km IS NULL OR fg.dist_to_park_km <= 20)
         ORDER BY fg.start_date DESC
     `, parkID, startDate.Format("2006-01-02"))
     

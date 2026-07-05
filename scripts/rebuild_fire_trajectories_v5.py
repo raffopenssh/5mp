@@ -468,7 +468,25 @@ def classify_group(days, distance_km, pct_inside, speed, fire_count):
         return 'local_fire'
 
 
-def track_to_group(track, park_id, park_geometry):
+def _group_dist_to_park_km(trajectory, pct_inside, park_shape):
+    """Min distance (km) from trajectory points to park boundary; 0 if any inside."""
+    if pct_inside > 0 or park_shape is None:
+        return 0.0
+    try:
+        from shapely.geometry import Point
+        best = None
+        for p in trajectory:
+            d_deg = park_shape.distance(Point(p[0], p[1]))
+            lat_scale = max(math.cos(math.radians(p[1])), 0.3)
+            d_km = d_deg * 111.0 * ((1 + lat_scale) / 2)
+            if best is None or d_km < best:
+                best = d_km
+        return round(best, 1) if best is not None else 0.0
+    except Exception:
+        return 0.0
+
+
+def track_to_group(track, park_id, park_geometry, park_shape=None):
     fires = track.fires
     if len(fires) < MIN_FIRES:
         return None
@@ -538,6 +556,7 @@ def track_to_group(track, park_id, park_geometry):
         'direction': direction,
         'group_type': group_type,
         'pct_inside': round(pct_inside, 1),
+        'dist_to_park_km': _group_dist_to_park_km(trajectory, pct_inside, park_shape),
         'total_frp': round(total_frp, 1),
         'primary_park': park_id,
         'affected_parks': [park_id],
@@ -552,9 +571,17 @@ def process_park_fires(fires, park_id, park_geometry):
     dcs = daily_clusters(fires)
     tracks = build_tracks(dcs)
     tracks = chain_tracks(tracks)
+    park_shape = None
+    try:
+        from shapely.geometry import shape as _shape
+        park_shape = _shape(park_geometry)
+        if not park_shape.is_valid:
+            park_shape = park_shape.buffer(0)
+    except Exception:
+        pass
     groups = []
     for t in tracks:
-        g = track_to_group(t, park_id, park_geometry)
+        g = track_to_group(t, park_id, park_geometry, park_shape)
         if g:
             groups.append(g)
     return groups
