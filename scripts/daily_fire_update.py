@@ -21,7 +21,6 @@ import sqlite3
 import requests
 import subprocess
 import math
-import random
 from datetime import datetime, timedelta
 from pathlib import Path
 from collections import defaultdict
@@ -54,18 +53,6 @@ LOG_DIR.mkdir(exist_ok=True)
 NASA_API_KEY = "REDACTED_FIRMS_KEY"
 FIRMS_NRT_URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 
-# Proxy list sources (ordered by reliability)
-PROXY_SOURCES = [
-    # ProxyScrape API (reliable, updated frequently)
-    "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=10000&country=all&ssl=all&anonymity=all",
-    # GitHub sources (community maintained)
-    "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-http.txt",
-    "https://raw.githubusercontent.com/MuRongPIG/Proxy-Master/main/http.txt",
-    "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt",
-    "https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt",
-    "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt",
-]
-
 DEFAULT_DAYS = 5  # Default: last 5 days
 INCREMENTAL_DAYS = 14  # Days window for incremental rebuild
 
@@ -78,58 +65,18 @@ def log(msg):
     print(f"[{timestamp}] {msg}", flush=True)
 
 
-def fetch_proxies(max_per_source=50):
-    """Fetch proxies from GitHub sources."""
-    all_proxies = []
-    for source in PROXY_SOURCES:
-        try:
-            resp = requests.get(source, timeout=20)
-            resp.raise_for_status()
-            proxies = [p.strip() for p in resp.text.split('\n') 
-                      if p.strip() and ':' in p and not p.startswith('#')]
-            all_proxies.extend(proxies[:max_per_source])
-        except Exception as e:
-            log(f"  Failed to fetch from {source.split('/')[-2]}: {e}")
-    # Deduplicate
-    return list(set(all_proxies))
-
-
-def test_proxy(proxy, test_url="https://firms.modaps.eosdis.nasa.gov", timeout=10):
-    """Test if proxy works for given URL."""
-    try:
-        proxy_dict = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
-        resp = requests.get(
-            test_url, 
-            proxies=proxy_dict, 
-            timeout=timeout,
-            headers={'User-Agent': 'Mozilla/5.0'}
-        )
-        return resp.status_code < 400
-    except:
-        return False
-
-
-def get_working_proxy(test_url="https://firms.modaps.eosdis.nasa.gov", max_test=50):
-    """Get a working proxy for the target URL."""
-    log("  Fetching proxy lists from GitHub...")
-    proxies = fetch_proxies()
-    
-    if not proxies:
-        log("  No proxies fetched from sources")
-        return None
-    
-    log(f"  Testing up to {max_test} proxies for FIRMS API...")
-    random.shuffle(proxies)
-    
-    for i, proxy in enumerate(proxies[:max_test]):
-        if test_proxy(proxy, test_url, timeout=8):
-            log(f"  Found working proxy: {proxy}")
-            return proxy
-        if (i + 1) % 10 == 0:
-            log(f"    Tested {i + 1}/{min(len(proxies), max_test)}...")
-    
-    log("  No working proxy found after testing {min(len(proxies), max_test)} proxies")
-    return None
+def parse_firms_csv(text):
+    """Parse FIRMS CSV text into a list of dicts (one per detection)."""
+    lines = text.strip().split('\n')
+    if len(lines) < 2:
+        return []
+    header = lines[0].split(',')
+    fires = []
+    for line in lines[1:]:
+        values = line.split(',')
+        if len(values) >= len(header):
+            fires.append(dict(zip(header, values)))
+    return fires
 
 
 class DailyFireUpdater:
@@ -139,6 +86,12 @@ class DailyFireUpdater:
         self.conn.row_factory = sqlite3.Row
         self.parks = self._load_parks()
         self.affected_parks = set()
+        # Canonical single-park assignment: nearest park boundary within
+        # 100km (park_assigner.ASSIGN_MAX_DIST_KM). Replaces the old bbox
+        # first-match _find_park which caused overlap duplicates.
+        from park_assigner import ParkAssigner
+        log("Loading ParkAssigner (100km nearest-boundary assignment)...")
+        self.assigner = ParkAssigner()
         
     def _load_parks(self):
         parks = {}
@@ -187,128 +140,47 @@ class DailyFireUpdater:
             url = f"{FIRMS_NRT_URL}/{NASA_API_KEY}/{source}/{area}/1/{start_date.strftime('%Y-%m-%d')}"
             log(f"  Using SP API (from {start_date.strftime('%Y-%m-%d')} to today)")
         
-        # Try Webshare proxies first (reliable, authenticated)
-        if WEBSHARE_AVAILABLE:
-            log("  Trying Webshare proxies (reliable)...")
-            webshare_proxies = get_webshare_proxies()
-            if webshare_proxies:
-                for ws_proxy in webshare_proxies:
-                    try:
-                        proxy_dict = get_proxy_dict(ws_proxy)
-                        proxy_str = f"{ws_proxy['host']}:{ws_proxy['port']}"
-                        log(f"  Trying Webshare proxy: {proxy_str} ({ws_proxy['city']}, {ws_proxy['country']})")
-                        
-                        response = requests.get(url, proxies=proxy_dict, timeout=120)
-                        response.raise_for_status()
-                        
-                        # Success!
-                        log(f"  ✓ Successfully downloaded via Webshare proxy: {proxy_str}")
-                        lines = response.text.strip().split('\n')
-                        if len(lines) < 2:
-                            log("  No fires found in NRT data")
-                            return []
-                        
-                        header = lines[0].split(',')
-                        fires = []
-                        for line in lines[1:]:
-                            values = line.split(',')
-                            if len(values) >= len(header):
-                                fire = dict(zip(header, values))
-                                fires.append(fire)
-                        
-                        log(f"  Downloaded {len(fires)} fire detections")
-                        return fires
-                    except Exception as e:
-                        log(f"    Webshare proxy failed: {str(e)[:60]}")
-                        continue
-        
-        # Fall back to free proxies
-        log("  Webshare proxies unavailable, trying free proxies...")
-        log("  Fetching proxy lists from GitHub...")
-        all_proxies = fetch_proxies()
-        
-        if all_proxies:
-            random.shuffle(all_proxies)
-            
-            # Try up to 5 different proxies
-            max_attempts = 5
-            attempt = 0
-            
-            for proxy in all_proxies[:30]:  # Check first 30 proxies
-                # Quick test
-                if not test_proxy(proxy, "https://firms.modaps.eosdis.nasa.gov", timeout=5):
-                    continue
-                
-                attempt += 1
-                log(f"  Attempt {attempt}/{max_attempts}: Trying proxy {proxy}")
-                
-                try:
-                    proxy_dict = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
-                    response = requests.get(url, proxies=proxy_dict, timeout=120)
-                    response.raise_for_status()
-                    
-                    # Success!
-                    log(f"  ✓ Successfully downloaded via proxy: {proxy}")
-                    lines = response.text.strip().split('\n')
-                    if len(lines) < 2:
-                        log("  No fires found in NRT data")
-                        return []
-                    
-                    header = lines[0].split(',')
-                    fires = []
-                    for line in lines[1:]:
-                        values = line.split(',')
-                        if len(values) >= len(header):
-                            fire = dict(zip(header, values))
-                            fires.append(fire)
-                    
-                    log(f"  Downloaded {len(fires)} fire detections")
-                    return fires
-                    
-                except Exception as e:
-                    log(f"    ✗ Failed: {str(e)[:80]}")
-                    if attempt >= max_attempts:
-                        break
-                    continue
-        
-        # All proxies failed, try direct
-        log("  All proxies failed, trying direct connection...")
+        # 1. Direct connection first (verified working from this VM, 2026-07-05)
+        last_err = None
         try:
+            log("  Trying direct connection...")
             response = requests.get(url, timeout=120)
             response.raise_for_status()
-            
-            lines = response.text.strip().split('\n')
-            if len(lines) < 2:
-                log("  No fires found in NRT data")
-                return []
-            
-            header = lines[0].split(',')
-            fires = []
-            for line in lines[1:]:
-                values = line.split(',')
-                if len(values) >= len(header):
-                    fire = dict(zip(header, values))
-                    fires.append(fire)
-            
+            fires = parse_firms_csv(response.text)
             log(f"  Downloaded {len(fires)} fire detections (direct)")
             return fires
-            
         except Exception as e:
-            log(f"  Error downloading NRT fires: {e}")
-            # Create notification for critical failure
-            try:
-                import sqlite3
-                conn = sqlite3.connect(str(DB_PATH))
-                conn.execute("""
-                    INSERT INTO notifications (park_id, notification_type, title, message, created_at)
-                    VALUES ('SYSTEM', 'fire_download_failed', 'Fire Download Failed', ?, datetime('now'))
-                """, (f"Failed to download NRT fires: {str(e)[:200]}",))
-                conn.commit()
-                conn.close()
-                log("  Created notification for download failure")
-            except Exception as notif_err:
-                log(f"  Failed to create notification: {notif_err}")
-            return []
+            last_err = e
+            log(f"    Direct failed: {str(e)[:80]}")
+
+        # 2. Fallback: Webshare authenticated proxies
+        if WEBSHARE_AVAILABLE:
+            log("  Falling back to Webshare proxies...")
+            for ws_proxy in (get_webshare_proxies() or []):
+                proxy_str = f"{ws_proxy['host']}:{ws_proxy['port']}"
+                try:
+                    log(f"  Trying Webshare proxy: {proxy_str} ({ws_proxy.get('city')}, {ws_proxy.get('country')})")
+                    response = requests.get(url, proxies=get_proxy_dict(ws_proxy), timeout=120)
+                    response.raise_for_status()
+                    fires = parse_firms_csv(response.text)
+                    log(f"  Downloaded {len(fires)} fire detections (via Webshare {proxy_str})")
+                    return fires
+                except Exception as e:
+                    last_err = e
+                    log(f"    Webshare proxy failed: {str(e)[:60]}")
+
+        # All paths failed: notify
+        log(f"  Error downloading NRT fires: {last_err}")
+        try:
+            self.conn.execute("""
+                INSERT INTO notifications (park_id, notification_type, title, message, created_at)
+                VALUES ('SYSTEM', 'fire_download_failed', 'Fire Download Failed', ?, datetime('now'))
+            """, (f"Failed to download NRT fires: {str(last_err)[:200]}",))
+            self.conn.commit()
+            log("  Created notification for download failure")
+        except Exception as notif_err:
+            log(f"  Failed to create notification: {notif_err}")
+        return []
     
     def insert_fires(self, fires):
         if not fires:
@@ -340,9 +212,9 @@ class DailyFireUpdater:
                 track = float(fire.get('track', 0))
                 daynight = fire.get('daynight', '')
                 
-                # Find which park this fire belongs to
-                park_id = self._find_park(lon, lat)
-                in_pa = 1 if park_id else 0
+                # Canonical single-park assignment (annotated by _assign_fires)
+                park_id = fire.get('_park_id')
+                in_pa = 1 if fire.get('_dist_km') == 0.0 else 0
                 
                 cursor.execute('''
                     INSERT OR IGNORE INTO fire_detections 
@@ -382,14 +254,32 @@ class DailyFireUpdater:
         
         return inserted
     
-    def _find_park(self, lon, lat):
-        for park_id, park in self.parks.items():
-            bbox = park.get('bbox')
-            if bbox:
-                minx, miny, maxx, maxy = bbox
-                if minx - 0.5 <= lon <= maxx + 0.5 and miny - 0.5 <= lat <= maxy + 0.5:
-                    return park_id
-        return None
+    def _assign_fires(self, fires):
+        """Annotate each fire dict with _park_id/_dist_km via ParkAssigner.
+
+        One fire -> at most one park (nearest boundary within 100km).
+        Run once so insert_fires and update_raw_json_files agree.
+        """
+        if not fires:
+            return
+        log(f"Step 1b: Assigning {len(fires)} fires to parks (nearest boundary, <=100km)...")
+        assigned = 0
+        for fire in fires:
+            try:
+                lat = float(fire.get('latitude', 0))
+                lon = float(fire.get('longitude', 0))
+            except (TypeError, ValueError):
+                fire['_park_id'], fire['_dist_km'] = None, None
+                continue
+            if lat == 0.0 or lon == 0.0:
+                fire['_park_id'], fire['_dist_km'] = None, None
+                continue
+            park_id, dist_km = self.assigner.assign(lon, lat)
+            fire['_park_id'], fire['_dist_km'] = park_id, dist_km
+            if park_id:
+                assigned += 1
+        log(f"  {assigned}/{len(fires)} fires within 100km of a park")
+
     
     def update_raw_json_files(self, fires):
         """Update raw JSON fire files with NRT data so trajectory builder can use them."""
@@ -410,7 +300,7 @@ class DailyFireUpdater:
                 lon = float(fire.get('longitude', 0))
                 if lon == 0.0 or lat == 0.0:
                     continue
-                park_id = self._find_park(lon, lat)
+                park_id = fire.get('_park_id')  # canonical assignment from _assign_fires
                 if park_id:
                     fires_by_park[park_id].append({
                         'latitude': lat,
@@ -623,12 +513,17 @@ class DailyFireUpdater:
             base_idx = index % len(group_names)
             return f"{group_names[base_idx]}-{cycle}"
         
-        # Get all current fire trajectories
+        # Get current RELEVANT fire trajectories (inside park or <=20km from
+        # boundary; NULL dist = unknown = treated relevant). Names are a
+        # park-scoped resource - don't burn Alpha..Zulu on fires 80km out.
+        # Groups already named keep their names (continuity); we just stop
+        # naming new far-away groups.
         cursor = self.conn.execute("""
             SELECT park_id, feature_id, start_date, end_date
             FROM feature_geometries
             WHERE feature_type = 'fire_trajectory'
               AND feature_id LIKE '%_2026_grp_%'
+              AND (dist_to_park_km IS NULL OR dist_to_park_km <= 20)
             ORDER BY park_id, start_date ASC
         """)
         
@@ -780,25 +675,23 @@ class DailyFireUpdater:
             }
             return priority_map.get(status, 100)
         
-        # Query active fire trajectories with their friendly names
+        # Query active RELEVANT fire trajectories with their friendly names.
+        # Gated to inside-park or <=20km from boundary (NULL = unknown =
+        # relevant). Fires further out stay visible on the map layer but
+        # don't generate notifications.
         cursor = self.conn.execute("""
             SELECT fg.park_id, fg.feature_id, fg.properties_json, fg.end_date, fgn.friendly_name
             FROM feature_geometries fg
             JOIN fire_group_names fgn ON fg.park_id = fgn.park_id AND fg.feature_id = fgn.feature_id
             WHERE fg.feature_type = 'fire_trajectory'
               AND fg.end_date >= date('now', '-3 days')
+              AND (fg.dist_to_park_km IS NULL OR fg.dist_to_park_km <= 20)
             ORDER BY fg.end_date DESC
         """)
         
-        # Collect all groups with their computed priorities
-        all_groups = []
-        
-        for row in cursor:
-            all_groups.append(row)
-        
         # Sort by priority (lowest number first), then by park_id
         all_groups_with_priority = []
-        for row in all_groups:
+        for row in cursor:
             park_id, feature_id, props_json, end_date, friendly_name = row
             props = json.loads(props_json)
             
@@ -849,16 +742,10 @@ class DailyFireUpdater:
             if check.fetchone():
                 continue  # Skip if exists
             
-            # Parse properties
-            props = json.loads(props_json)
             fires_total = props.get('fires_total', 0)
             days = props.get('days', 1)
             
-            # Create notification with stable friendly name
-            # Get enhanced status
-            status_emoji, status_text, status_detail = self.analyze_fire_status(props, end_date)
-            
-            # Create notification with enhanced info
+            # Create notification with stable friendly name + enhanced status
             title = f"{status_emoji} {friendly_name} ({status_text})"
             message = f"{fires_total} fires, {days} days • {status_detail}"
             
@@ -913,6 +800,9 @@ class DailyFireUpdater:
         
         # Step 1: Download NRT fires
         fires = self.download_nrt_fires()
+        
+        # Step 1b: Canonical park assignment (one park per fire, <=100km)
+        self._assign_fires(fires)
         
         # Step 2: Insert into database
         self.insert_fires(fires)
