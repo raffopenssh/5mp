@@ -8,7 +8,7 @@ Read AGENTS.md first. DB backup: db.sqlite3.bak-testenv. Ignore dirty data/* and
 3. TODO: fade the 4 grid pixel layers (grid-halo/grid-glow/grid-fill/grid-cells, defined globe.html ~1787-1950) to 0 opacity between z15→z17 (wrap opacity exprs in zoom interpolate). Verify satellite toast (z>=13, showSatelliteHint ~976) still works.
 4. TODO: polish pixel intensity visuals (glow/ring/fill/transparency; user likes recent-weeks look; keep green; sqrt scaling for fill, recency-driven halo, brighter core for intensity>1 are ideas).
 
-## State: WIP commit "<hash>" — backend WRITE path done, compiles (go build ./...). NOT built/deployed/tested.
+## State: WIP commit 2b64044f — backend WRITE path done, compiles (go build ./...). NOT built/deployed/tested.
 
 ### Done
 - test2026 password + `RequestEnv(r)` helper + login link (srv/auth_middleware.go).
