@@ -332,7 +332,9 @@ class FireGroupLoader:
             'wildfire': 'Wildfire activity'
         }.get(group_type, 'Fire activity')
         
-        # Position description
+        # Position description. With the 100km ingest buffer, "outside"
+        # spans 0-100km - always say how far so 2km and 90km read differently.
+        dist_to_park = group.get('dist_to_park_km')
         pos_desc = {
             'starts_inside': 'originated inside park',
             'ends_inside': 'entered and stopped inside park',
@@ -340,6 +342,11 @@ class FireGroupLoader:
             'entirely_outside': 'detected outside park boundary',
             'contained': 'contained within park'
         }.get(position, '')
+        if position == 'entirely_outside' and dist_to_park:
+            if dist_to_park >= 1:
+                pos_desc = f"detected ~{dist_to_park:.0f}km outside park boundary"
+            else:
+                pos_desc = "detected just outside park boundary"
         
         # Main sentence
         if days == 1:

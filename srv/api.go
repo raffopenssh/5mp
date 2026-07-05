@@ -5082,8 +5082,10 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 		var fires, groups, defoEvents, settlements, pop, pixels, pubs int
 		var defoKm2, roadsKm, roadlessPct, patrolDist, intensity float64
 		
-		s.DB.QueryRow(`SELECT COUNT(*) FROM fire_detections WHERE park_id = ? AND ($1 = '' OR acq_date >= $1) AND ($2 = '' OR acq_date <= $2)`, 
-			area.ID, dateFrom, dateTo).Scan(&fires)
+		// protected_area_id is the canonical park assignment (nearest boundary
+		// <=100km via ParkAssigner since 2026-07; bbox-based before that).
+		s.DB.QueryRow(`SELECT COUNT(*) FROM fire_detections WHERE protected_area_id = ? AND (? = '' OR acq_date >= ?) AND (? = '' OR acq_date <= ?)`,
+			area.ID, dateFrom, dateFrom, dateTo, dateTo).Scan(&fires)
 		s.DB.QueryRow(`SELECT COUNT(DISTINCT group_name) FROM fire_group_alerts WHERE park_id = ?`, area.ID).Scan(&groups)
 		s.DB.QueryRow(`SELECT COALESCE(SUM(area_km2), 0), COUNT(*) FROM deforestation_events WHERE park_id = ?`, area.ID).Scan(&defoKm2, &defoEvents)
 		s.DB.QueryRow(`SELECT COUNT(*), COALESCE(SUM(population_est), 0) FROM park_settlements WHERE park_id = ?`, area.ID).Scan(&settlements, &pop)
