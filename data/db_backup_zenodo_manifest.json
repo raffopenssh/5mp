@@ -4,11 +4,11 @@
       "key": "db_backup",
       "depo_id": 19363779,
       "bucket_url": "https://zenodo.org/api/files/4bd66ea4-80b9-45f9-af7b-4237c268844a",
-      "filename": "5mp_db_backup_20260401.sqlite3",
-      "size": 1262694400,
-      "checksum": "d17ef446b03f58b5fdd1cb527dcd3088",
-      "uploaded_at": "2026-04-01T04:44:55.830939827Z",
-      "version": "2026-04-01T04:42:29"
+      "filename": "5mp_db_backup_20260706.sqlite3.gz",
+      "size": 2608679381,
+      "checksum": "05d8a420e6486a4bb0932f2bc87e6f88",
+      "uploaded_at": "2026-07-06T17:02:59.575927944Z",
+      "version": "2026-07-06T16:01:15"
     }
   }
 }
