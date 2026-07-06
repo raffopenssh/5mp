@@ -26,10 +26,21 @@ OUT_DIR = "data/turbidity"
 STATE_FILE = f"{OUT_DIR}/state.json"
 WATERWAY_CACHE = "data/osm_raw/waterways"
 
-# country ISO3 prefix -> geofabrik PBF in data/osm_raw/
-PBF_MAP = {
-    "CAF": "central-african-republic-latest.osm.pbf",
-    "SSD": "south-sudan-latest.osm.pbf",
+# country ISO3 prefix -> geofabrik africa/ region name. PBFs are downloaded
+# on demand to /tmp, waterways extracted for ALL parks of the country in one
+# pass (small geojson caches in data/osm_raw/waterways/), then deleted.
+GEOFABRIK = {
+    "AGO": "angola", "BEN": "benin", "BWA": "botswana",
+    "CAF": "central-african-republic", "CIV": "ivory-coast",
+    "CMR": "cameroon", "COD": "congo-democratic-republic",
+    "COG": "congo-brazzaville", "DZA": "algeria", "ETH": "ethiopia",
+    "GAB": "gabon", "GHA": "ghana", "GNQ": "equatorial-guinea",
+    "KEN": "kenya", "LBR": "liberia", "LSO": "lesotho", "MLI": "mali",
+    "MOZ": "mozambique", "MWI": "malawi", "NAM": "namibia",
+    "NER": "niger", "NGA": "nigeria", "RWA": "rwanda", "SDN": "sudan",
+    "SEN": "senegal-and-gambia", "SSD": "south-sudan", "TCD": "chad",
+    "TGO": "togo", "TZA": "tanzania", "UGA": "uganda",
+    "ZAF": "south-africa", "ZMB": "zambia", "ZWE": "zimbabwe",
 }
 
 os.environ.setdefault("GDAL_DISABLE_READDIR_ON_OPEN", "EMPTY_DIR")
@@ -54,27 +65,209 @@ def park_bbox(park, buffer_km):
     return min(lons)-d, min(lats)-d, max(lons)+d, max(lats)+d
 
 
-def extract_waterways(park_id, bbox):
-    """osmium bbox-extract + waterway filter -> cached geojson."""
-    os.makedirs(WATERWAY_CACHE, exist_ok=True)
-    out = f"{WATERWAY_CACHE}/{park_id}.geojson"
-    if os.path.exists(out):
-        return out
-    pbf = PBF_MAP.get(park_id.split("_")[0])
-    if not pbf or not os.path.exists(f"data/osm_raw/{pbf}"):
-        raise SystemExit(f"no OSM PBF for {park_id} — download from geofabrik into data/osm_raw/ and add to PBF_MAP")
+def _osmium_extract(pbf_path, park_id, bbox, out):
+    """bbox-extract park area from country PBF; derive waterway geojson.
+    Returns path to the bbox-extracted park PBF (caller may reuse for
+    infra enrichment, and must delete it)."""
     w, s, e, n = bbox
     tmp = f"/tmp/{park_id}_ww.osm.pbf"
-    subprocess.run(["osmium", "extract", "-b", f"{w},{s},{e},{n}",
-                    f"data/osm_raw/{pbf}", "-o", tmp, "--overwrite"], check=True)
     tmp2 = f"/tmp/{park_id}_ww2.osm.pbf"
+    subprocess.run(["osmium", "extract", "-b", f"{w},{s},{e},{n}",
+                    pbf_path, "-o", tmp, "--overwrite"], check=True)
     subprocess.run(["osmium", "tags-filter", tmp, "w/waterway=river,stream",
                     "-o", tmp2, "--overwrite"], check=True)
     subprocess.run(["osmium", "export", tmp2, "-o", out, "--overwrite",
                     "--geometry-types=linestring"], check=True)
-    for t in (tmp, tmp2):
-        try: os.remove(t)
-        except OSError: pass
+    try: os.remove(tmp2)
+    except OSError: pass
+    return tmp
+
+
+def _export_filtered(park_pbf, park_id, filt, geom_types):
+    """osmium tags-filter + export -> parsed geojson features (or [])."""
+    tmpf = f"/tmp/{park_id}_enr.osm.pbf"
+    tmpj = f"/tmp/{park_id}_enr.geojson"
+    try:
+        subprocess.run(["osmium", "tags-filter", park_pbf, *filt,
+                        "-o", tmpf, "--overwrite"], check=True)
+        subprocess.run(["osmium", "export", tmpf, "-o", tmpj, "--overwrite",
+                        f"--geometry-types={geom_types}", "-u", "type_id"],
+                       check=True)
+        return json.load(open(tmpj)).get("features", [])
+    except Exception as ex:
+        print(f"  enrich export failed ({filt}): {ex}", file=sys.stderr)
+        return []
+    finally:
+        for t in (tmpf, tmpj):
+            try: os.remove(t)
+            except OSError: pass
+
+
+def _line_centroid_len(coords):
+    lons = [c[0] for c in coords]; lats = [c[1] for c in coords]
+    length = sum(km(a, b) for a, b in zip(coords, coords[1:]))
+    return sum(lons)/len(lons), sum(lats)/len(lats), length
+
+
+_PAVED = {"asphalt", "concrete", "paved", "paving_stones", "chipseal",
+          "concrete:plates", "sett", "cobblestone"}
+_UNPAVED = {"unpaved", "compacted", "ground", "gravel", "dirt", "sand",
+            "earth", "fine_gravel", "mud", "grass", "pebblestone", "rock"}
+
+
+def _road_class(props):
+    """Map OSM tags -> (dl_class, passability) matching HeiGIT conventions
+    used elsewhere in roads_heigit (paved/unpaved/unknown, PAV_/UNP_ codes)."""
+    surface = (props.get("surface") or "").split(";")[0]
+    hw = props.get("highway", "")
+    if surface in _PAVED:
+        dl = "paved"
+    elif surface in _UNPAVED or hw in ("track", "path"):
+        dl = "unpaved"
+    elif hw in ("motorway", "trunk", "primary"):
+        dl = "paved"  # near-universal for these classes in the region
+    else:
+        dl = "unknown"
+    if dl == "unknown":
+        return dl, None
+    prefix = "PAV" if dl == "paved" else "UNP"
+    lanes = props.get("lanes")
+    try:
+        dual = props.get("oneway") == "yes" or (lanes and int(lanes) >= 4)
+    except ValueError:
+        dual = False
+    if hw in ("track", "path", "service"):
+        kind = "LIGHT"
+    else:
+        kind = "DUAL" if dual else "SINGLE"
+    return dl, f"{prefix}_{kind}"
+
+
+def enrich_park_infra(park_pbf, park_id):
+    """Fill osm_places (placenames + named rivers/streams as points) and
+    roads_heigit for parks that have no rows yet. Runs opportunistically
+    while the country PBF is on disk; no-op when data already present."""
+    import sqlite3
+    db = sqlite3.connect("db.sqlite3")
+    try:
+        n_places = db.execute("SELECT COUNT(*) FROM osm_places WHERE park_id=?",
+                              (park_id,)).fetchone()[0]
+        n_roads = db.execute("SELECT COUNT(*) FROM roads_heigit WHERE park_id=?",
+                             (park_id,)).fetchone()[0]
+
+        if n_places == 0:
+            rows = []
+            for f in _export_filtered(park_pbf, park_id,
+                                      ["n/place=city,town,village,hamlet"], "point"):
+                p = f["properties"]
+                name = p.get("name")
+                if not name:
+                    continue
+                lo, la = f["geometry"]["coordinates"]
+                rows.append((park_id, p["place"], name, la, lo,
+                             f.get("id", ""), json.dumps(p, ensure_ascii=False)))
+            # named rivers/streams: one row per name (longest way wins;
+            # OSM splits rivers into many ways). osm_tags keeps attributes:
+            # intermittent, width, tidal, boat...
+            best = {}
+            for f in _export_filtered(park_pbf, park_id,
+                                      ["w/waterway=river,stream"], "linestring"):
+                p = f["properties"]
+                name = p.get("name")
+                if not name or f["geometry"]["type"] != "LineString":
+                    continue
+                lo, la, length = _line_centroid_len(f["geometry"]["coordinates"])
+                key = (name, p["waterway"])
+                if key not in best or length > best[key][0]:
+                    best[key] = (length, (park_id, p["waterway"], name, la, lo,
+                                          f.get("id", ""),
+                                          json.dumps(p, ensure_ascii=False)))
+            rows += [r for _, r in best.values()]
+            for f in _export_filtered(park_pbf, park_id,
+                                      ["n/natural=peak,hill"], "point"):
+                p = f["properties"]
+                name = p.get("name")
+                if not name:
+                    continue
+                lo, la = f["geometry"]["coordinates"]
+                ptype = "mountain" if p.get("natural") == "peak" else "hill"
+                rows.append((park_id, ptype, name, la, lo,
+                             f.get("id", ""), json.dumps(p, ensure_ascii=False)))
+            if rows:
+                db.executemany("""INSERT INTO osm_places
+                    (park_id, place_type, name, lat, lon, osm_id, osm_tags)
+                    VALUES (?,?,?,?,?,?,?)""", rows)
+                db.commit()
+                print(f"  enriched osm_places: {park_id} +{len(rows)}", file=sys.stderr)
+
+        if n_roads == 0:
+            rows = []
+            for f in _export_filtered(park_pbf, park_id,
+                    ["w/highway=motorway,trunk,primary,secondary,tertiary,"
+                     "unclassified,residential,track,path,service"], "linestring"):
+                if f["geometry"]["type"] != "LineString":
+                    continue
+                p = f["properties"]
+                _, _, length = _line_centroid_len(f["geometry"]["coordinates"])
+                dl_class, passability = _road_class(p)
+                rows.append((park_id, f.get("id", ""), p.get("name"),
+                             p.get("highway"), (p.get("surface") or "").split(";")[0],
+                             round(length, 2), json.dumps(f["geometry"]),
+                             dl_class, passability))
+            if rows:
+                db.executemany("""INSERT INTO roads_heigit
+                    (park_id, osm_id, name, highway_type, surface, length_km,
+                     geojson, dl_class_2024, passability)
+                    VALUES (?,?,?,?,?,?,?,?,?)""", rows)
+                db.commit()
+                print(f"  enriched roads_heigit: {park_id} +{len(rows)}", file=sys.stderr)
+    finally:
+        db.close()
+
+
+def ensure_waterways(park_id, bbox, parks, buffer_km):
+    """Return cached waterway geojson for park. On cache miss, download the
+    country PBF from geofabrik to /tmp, extract waterways for ALL parks of
+    that country in one pass (so the big PBF is only ever downloaded once),
+    then delete the PBF. Keeps disk usage to the small geojson caches."""
+    os.makedirs(WATERWAY_CACHE, exist_ok=True)
+    out = f"{WATERWAY_CACHE}/{park_id}.geojson"
+    if os.path.exists(out):
+        return out
+    iso = park_id.split("_")[0]
+    region = GEOFABRIK.get(iso)
+    if not region:
+        raise SystemExit(f"no geofabrik mapping for {iso}")
+    # legacy local PBFs (pre-rollout) — use if present
+    pbf = f"/tmp/{region}-latest.osm.pbf"
+    legacy = f"data/osm_raw/{region}-latest.osm.pbf"
+    if os.path.exists(legacy):
+        pbf = legacy
+    if not os.path.exists(pbf):
+        url = f"https://download.geofabrik.de/africa/{region}-latest.osm.pbf"
+        print(f"downloading {url}", file=sys.stderr)
+        subprocess.run(["curl", "-sfL", "--retry", "3", url, "-o", pbf], check=True)
+    try:
+        for pid, p in parks.items():
+            if pid.split("_")[0] != iso:
+                continue
+            po = f"{WATERWAY_CACHE}/{pid}.geojson"
+            if os.path.exists(po):
+                continue
+            print(f"  extracting waterways: {pid}", file=sys.stderr)
+            park_pbf = _osmium_extract(pbf, pid, park_bbox(p, buffer_km), po)
+            # while we have the OSM data anyway: backfill missing park infra
+            # (placenames, named rivers, roads incl. surface/passability)
+            try:
+                enrich_park_infra(park_pbf, pid)
+            except Exception as ex:
+                print(f"  enrich {pid} failed: {ex}", file=sys.stderr)
+            try: os.remove(park_pbf)
+            except OSError: pass
+    finally:
+        if pbf.startswith("/tmp/"):
+            try: os.remove(pbf)
+            except OSError: pass
     return out
 
 
@@ -274,10 +467,10 @@ def detect_onsets(pl, min_ratio=1.8, min_red=1200, max_clean=1000,
     return dedup, turbid_km
 
 
-def scan_park(park, args):
+def scan_park(park, args, parks):
     bbox = park_bbox(park, args.buffer_km)
     print(f"{park['id']} bbox {['%.2f' % x for x in bbox]}", file=sys.stderr)
-    ww_path = extract_waterways(park["id"], bbox)
+    ww_path = ensure_waterways(park["id"], bbox, parks, args.buffer_km)
     polylines = build_polylines(ww_path, bbox, args.min_stream_km)
     npts = sum(len(pl["samples"]) for pl in polylines)
     print(f"{len(polylines)} waterways, {npts} sample pts", file=sys.stderr)
@@ -343,14 +536,14 @@ def main():
         state = {}
         try: state = json.load(open(STATE_FILE))
         except Exception: pass
-        cand = [p for pid, p in parks.items() if pid.split("_")[0] in PBF_MAP]
+        cand = [p for pid, p in parks.items() if pid.split("_")[0] in GEOFABRIK]
         cand.sort(key=lambda p: state.get(p["id"], {}).get("scanned_at", ""))
         targets = cand[:1]
     else:
         ap.error("need --park or --rotate")
 
     for p in targets:
-        res = scan_park(p, args)
+        res = scan_park(p, args, parks)
         state = {}
         try: state = json.load(open(STATE_FILE))
         except Exception: pass
