@@ -157,7 +157,7 @@
         const pins = pinnedTypes();
         return {
             pixels: !!v.pixels,
-            fires: !!v.fires || pins.has('fires') || true, // fire heatmap always as background context
+            fires: !!v.fires || pins.has('fires'),
             trajectories: !!v.fires || pins.has('fires'),
             deforest: !!v.deforest || pins.has('deforest'),
             settlements: !!v.settlements || pins.has('settlements')
@@ -188,7 +188,7 @@
         const spanDays = (parseD(toISO) - parseD(fromISO)) / DAY;
         const step = chooseStep(spanDays);
         const res = chooseRes(bbox);
-        const data = { step, res, fireFrames: [], effortFrames: [], trajs: [], deforest: [], settlements: [] };
+        const data = { step, res, bbox: bbox.slice(), fireFrames: [], effortFrames: [], trajs: [], deforest: [], settlements: [] };
         const tasks = [];
         let done = 0, total = 0;
         const tick = (label) => { done++; showLoading(label, Math.round(done / total * 100)); };
@@ -213,8 +213,9 @@
         }
         if (layers.pixels) {
             total++;
-            tasks.push(fetchJSON(`/api/fire-frames?layer=effort&bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&pwd=${pwd}`).then(j => {
+            tasks.push(fetchJSON(`/api/fire-frames?layer=effort&bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}&pwd=${pwd}`).then(j => {
                 data.effortFrames = (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p }));
+                data.effortRes = j.res || res;
                 tick('Patrol effort loaded');
             }).catch(() => tick('Patrol effort skipped')));
         }
@@ -308,6 +309,21 @@
         const zoom = map.getZoom();
         const bMs = bucketMs(A.data.step);
 
+        // Clip rendering to the selected bbox (if any) + subtle outline
+        let clipped = false;
+        if (A.data.bbox && typeof currentBbox !== 'undefined' && currentBbox) {
+            const bb = A.data.bbox;
+            const p0 = proj(bb[0], bb[3]), p1 = proj(bb[2], bb[1]);
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(p0.x, p0.y, p1.x - p0.x, p1.y - p0.y);
+            ctx.beginPath();
+            ctx.rect(p0.x, p0.y, p1.x - p0.x, p1.y - p0.y);
+            ctx.clip();
+            clipped = true;
+        }
+
         // --- pinned static infrastructure: roads/rivers/places/etc ---
         if (A.data.statics && A.data.statics.length) {
             for (const s of A.data.statics) {
@@ -373,19 +389,23 @@
             }
         }
 
-        // --- patrol effort: green pixels fading over 90 days ---
+        // --- patrol effort: green grid cells fading over 90 days ---
         if (A.data.effortFrames.length) {
+            const eres = A.data.effortRes || A.data.res || 0.1;
             for (const f of A.data.effortFrames) {
                 if (f.t > t) break;
                 const ageD = (t - f.t) / DAY;
                 if (ageD > EFFORT_FADE_DAYS) continue;
-                const alpha = 0.75 * (1 - ageD / EFFORT_FADE_DAYS);
+                const alpha = (0.2 + 0.55 * (1 - ageD / EFFORT_FADE_DAYS));
                 for (const pt of f.pts) {
-                    const p = proj(pt[0], pt[1]);
-                    if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) continue;
-                    const r = Math.max(2, Math.min(10, 1.5 + Math.log2(1 + pt[2]) )) * Math.max(0.6, zoom / 6);
-                    ctx.fillStyle = `rgba(74,222,128,${alpha})`;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
+                    const lon = pt[0] * eres, lat = pt[1] * eres;
+                    const p0 = proj(lon - eres / 2, lat + eres / 2);
+                    const p1 = proj(lon + eres / 2, lat - eres / 2);
+                    if (p1.x < -10 || p1.y < -10 || p0.x > w + 10 || p0.y > h + 10) continue;
+                    const km = pt[2];
+                    const inten = Math.min(1, Math.log2(1 + km) / 7); // ~128km/bucket saturates
+                    ctx.fillStyle = `rgba(74,222,128,${alpha * (0.35 + 0.65 * inten)})`;
+                    ctx.fillRect(p0.x, p0.y, Math.max(1.5, p1.x - p0.x), Math.max(1.5, p1.y - p0.y));
                 }
             }
         }
@@ -471,6 +491,8 @@
                 }
             }
         }
+
+        if (clipped) ctx.restore();
     }
 
     // ---------- playback ----------

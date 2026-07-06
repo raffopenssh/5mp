@@ -62,84 +62,114 @@ func (s *Server) HandleAPIFireFrames(w http.ResponseWriter, r *http.Request) {
 	}
 
 	step := q.Get("step")
-	var dateExpr string
+	var table string
 	switch step {
 	case "day":
-		dateExpr = "acq_date"
+		table = "fire_grid_day"
 	case "month":
-		dateExpr = "strftime('%Y-%m-01', acq_date)"
+		table = "fire_grid_month"
+		if t, err := time.Parse("2006-01-02", from); err == nil {
+			from = t.Format("2006-01") + "-01" // align to bucket start
+		}
 	default:
 		step = "week"
-		// ISO-ish week starting Monday
-		dateExpr = "date(acq_date, 'weekday 0', '-6 days')"
+		table = "fire_grid_week"
+		if t, err := time.Parse("2006-01-02", from); err == nil {
+			offset := (int(t.Weekday()) + 6) % 7 // days since Monday
+			from = t.AddDate(0, 0, -offset).Format("2006-01-02")
+		}
 	}
 
-	res := 0.1
-	if rv, err := strconv.ParseFloat(q.Get("res"), 64); err == nil && rv >= 0.01 && rv <= 2.0 {
+	// Pre-aggregated tables store cells at base resolution 0.1°; coarser output
+	// resolutions are re-binned in SQL. Finer than 0.1 is clamped to 0.1.
+	const baseRes = 0.1
+	res := baseRes
+	if rv, err := strconv.ParseFloat(q.Get("res"), 64); err == nil && rv >= baseRes && rv <= 2.0 {
 		res = rv
 	}
 
 	const maxPoints = 200000
 
 	// layer=effort: patrol effort (green pixels) from effort_data, bucketed the same way.
-	// Returns real cell-center coords in p entries: [lon, lat, distance_km, uploads].
+	// Returns grid-indexed coords in p entries: [xi, yi, distance_km, uploads].
 	if q.Get("layer") == "effort" {
-		s.serveEffortFrames(w, from, to, step, south, north, west, east)
+		s.serveEffortFrames(w, from, to, step, res, south, north, west, east)
 		return
 	}
+
+	// Query pre-aggregated grid (built by scripts/build_fire_grid_agg.py,
+	// maintained incrementally by the daily fire cron). PK (d, xi, yi) makes
+	// the date-range scan fast even for full 2020-2026 continental spans.
+	xiMin := int(math.Round(west / baseRes))
+	xiMax := int(math.Round(east / baseRes))
+	yiMin := int(math.Round(south / baseRes))
+	yiMax := int(math.Round(north / baseRes))
 
 	query := fmt.Sprintf(`
-		SELECT CAST(round(longitude / ?) AS INTEGER) AS xi,
-		       CAST(round(latitude / ?) AS INTEGER) AS yi,
-		       %s AS bucket,
-		       COUNT(*) AS n,
-		       COALESCE(SUM(frp), 0) AS frp
-		FROM fire_detections
-		WHERE acq_date >= ? AND acq_date <= ?
-		  AND latitude BETWEEN ? AND ?
-		  AND longitude BETWEEN ? AND ?
-		GROUP BY xi, yi, bucket
-		LIMIT ?`, dateExpr)
-
-	rows, err := s.DB.Query(query, res, res, from, to, south, north, west, east, maxPoints+1)
-	if err != nil {
-		http.Error(w, `{"error":"query failed"}`, http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
+		SELECT CAST(round(xi * ? / ?) AS INTEGER) AS oxi,
+		       CAST(round(yi * ? / ?) AS INTEGER) AS oyi,
+		       d AS bucket,
+		       SUM(n) AS n,
+		       SUM(frp) AS frp
+		FROM %s
+		WHERE d >= ? AND d <= ?
+		  AND xi BETWEEN ? AND ?
+		  AND yi BETWEEN ? AND ?
+		GROUP BY oxi, oyi, bucket
+		LIMIT ?`, table)
 
 	type frame struct {
 		D string           `json:"d"`
 		P [][4]interface{} `json:"p"`
 	}
-	framesByDate := map[string]*frame{}
-	count := 0
+
+	// If the result exceeds maxPoints, retry at coarser resolution (up to 2x twice)
+	// so continental full-span animations still show everything, just coarser.
+	var frames []*frame
 	truncated := false
-	for rows.Next() {
-		var xi, yi, n int
-		var bucket string
-		var frp float64
-		if err := rows.Scan(&xi, &yi, &bucket, &n, &frp); err != nil {
+	for attempt := 0; ; attempt++ {
+		rows, err := s.DB.Query(query, baseRes, res, baseRes, res, from, to, xiMin, xiMax, yiMin, yiMax, maxPoints+1)
+		if err != nil {
+			http.Error(w, `{"error":"query failed"}`, http.StatusInternalServerError)
+			return
+		}
+
+		framesByDate := map[string]*frame{}
+		count := 0
+		truncated = false
+		for rows.Next() {
+			var xi, yi, n int
+			var bucket string
+			var frp float64
+			if err := rows.Scan(&xi, &yi, &bucket, &n, &frp); err != nil {
+				continue
+			}
+			count++
+			if count > maxPoints {
+				truncated = true
+				break
+			}
+			f := framesByDate[bucket]
+			if f == nil {
+				f = &frame{D: bucket}
+				framesByDate[bucket] = f
+			}
+			f.P = append(f.P, [4]interface{}{xi, yi, n, math.Round(frp)})
+		}
+		rows.Close()
+
+		if truncated && attempt < 2 && res*2 <= 2.0 {
+			res *= 2
 			continue
 		}
-		count++
-		if count > maxPoints {
-			truncated = true
-			break
-		}
-		f := framesByDate[bucket]
-		if f == nil {
-			f = &frame{D: bucket}
-			framesByDate[bucket] = f
-		}
-		f.P = append(f.P, [4]interface{}{xi, yi, n, math.Round(frp)})
-	}
 
-	frames := make([]*frame, 0, len(framesByDate))
-	for _, f := range framesByDate {
-		frames = append(frames, f)
+		frames = make([]*frame, 0, len(framesByDate))
+		for _, f := range framesByDate {
+			frames = append(frames, f)
+		}
+		sort.Slice(frames, func(i, j int) bool { return frames[i].D < frames[j].D })
+		break
 	}
-	sort.Slice(frames, func(i, j int) bool { return frames[i].D < frames[j].D })
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "public, max-age=3600")
@@ -153,8 +183,11 @@ func (s *Server) HandleAPIFireFrames(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// serveEffortFrames returns time-bucketed patrol effort per grid cell.
-func (s *Server) serveEffortFrames(w http.ResponseWriter, from, to, step string, south, north, west, east float64) {
+// serveEffortFrames returns time-bucketed patrol effort binned to the same
+// xi/yi grid as fire frames (cell center = xi*res, yi*res), so the animator
+// renders both layers with identical grid-aligned pixels.
+// p entries: [xi, yi, distance_km, uploads].
+func (s *Server) serveEffortFrames(w http.ResponseWriter, from, to, step string, res, south, north, west, east float64) {
 	var bucketExpr string
 	dateExpr := "printf('%04d-%02d-%02d', e.year, e.month, COALESCE(e.day,1))"
 	switch step {
@@ -167,17 +200,19 @@ func (s *Server) serveEffortFrames(w http.ResponseWriter, from, to, step string,
 	}
 
 	query := fmt.Sprintf(`
-		SELECT gc.lon_center, gc.lat_center, %s AS bucket,
+		SELECT CAST(round(gc.lon_center / ?) AS INTEGER) AS xi,
+		       CAST(round(gc.lat_center / ?) AS INTEGER) AS yi,
+		       %s AS bucket,
 		       SUM(e.total_distance_km) AS dist, SUM(e.unique_uploads) AS ups
 		FROM effort_data e
 		JOIN grid_cells gc ON gc.id = e.grid_cell_id
 		WHERE e.day IS NOT NULL AND e.movement_type = 'all' AND e.env = 'prod'
 		  AND gc.lat_center BETWEEN ? AND ? AND gc.lon_center BETWEEN ? AND ?
 		  AND %s >= ? AND %s <= ?
-		GROUP BY gc.lon_center, gc.lat_center, bucket
+		GROUP BY xi, yi, bucket
 		LIMIT 200000`, bucketExpr, dateExpr, dateExpr)
 
-	rows, err := s.DB.Query(query, south, north, west, east, from, to)
+	rows, err := s.DB.Query(query, res, res, south, north, west, east, from, to)
 	if err != nil {
 		http.Error(w, `{"error":"query failed"}`, http.StatusInternalServerError)
 		return
@@ -190,10 +225,10 @@ func (s *Server) serveEffortFrames(w http.ResponseWriter, from, to, step string,
 	}
 	framesByDate := map[string]*frame{}
 	for rows.Next() {
-		var lon, lat, dist float64
+		var xi, yi, ups int
+		var dist float64
 		var bucket string
-		var ups int
-		if err := rows.Scan(&lon, &lat, &bucket, &dist, &ups); err != nil {
+		if err := rows.Scan(&xi, &yi, &bucket, &dist, &ups); err != nil {
 			continue
 		}
 		f := framesByDate[bucket]
@@ -201,7 +236,7 @@ func (s *Server) serveEffortFrames(w http.ResponseWriter, from, to, step string,
 			f = &frame{D: bucket}
 			framesByDate[bucket] = f
 		}
-		f.P = append(f.P, [4]interface{}{math.Round(lon*100) / 100, math.Round(lat*100) / 100, math.Round(dist*10) / 10, ups})
+		f.P = append(f.P, [4]interface{}{xi, yi, math.Round(dist*10) / 10, ups})
 	}
 	frames := make([]*frame, 0, len(framesByDate))
 	for _, f := range framesByDate {
@@ -212,7 +247,7 @@ func (s *Server) serveEffortFrames(w http.ResponseWriter, from, to, step string,
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "public, max-age=600")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"res": 0, "step": step, "from": from, "to": to,
+		"res": res, "step": step, "from": from, "to": to,
 		"layer": "effort", "frames": frames, "truncated": false,
 	})
 }

@@ -358,6 +358,23 @@ class DailyFireUpdater:
         self.affected_parks.update(parks_updated)
         log(f"  Added {total_added} fires to {len(parks_updated)} raw JSON files")
     
+    def refresh_grid_agg(self):
+        """Incrementally refresh fire_grid_day/week/month (time animator backend)."""
+        import subprocess
+        since = (datetime.now() - timedelta(days=self.days + 2)).strftime('%Y-%m-%d')
+        log(f"Step 2c: Refreshing animation grid aggregates since {since}...")
+        try:
+            r = subprocess.run(
+                [sys.executable, 'scripts/build_fire_grid_agg.py', '--since', since],
+                capture_output=True, text=True, timeout=600,
+                cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            if r.returncode != 0:
+                log(f"  Grid agg refresh failed: {r.stderr.strip()[:300]}")
+            else:
+                log(f"  {r.stdout.strip().splitlines()[-1] if r.stdout.strip() else 'done'}")
+        except Exception as e:
+            log(f"  Grid agg refresh error: {e}")
+
     def rebuild_groups_incremental(self):
         """Run rebuild_fire_trajectories_v5.py --incremental for affected parks"""
         if not self.affected_parks:
@@ -809,6 +826,9 @@ class DailyFireUpdater:
         
         # Step 2b: Update raw JSON files for trajectory builder
         self.update_raw_json_files(fires)
+        
+        # Step 2c: Refresh pre-aggregated animation grids (fire_grid_day/week/month)
+        self.refresh_grid_agg()
         
         # Step 3: Rebuild groups (incremental)
         self.rebuild_groups_incremental()
