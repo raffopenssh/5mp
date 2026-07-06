@@ -519,49 +519,83 @@
             }
         }
 
-        // --- patrol circles: fire-style pulse in the live pixel look ---
-        // Each patrolled cell lights up when visited (halo + fill + ring, like the
-        // live grid-halo/grid-fill/grid-cells layers) then fades out — same temporal
-        // language as the fire grid, so the animation reads "patrol intensity over time".
-        ctx.globalCompositeOperation = 'lighter';
+        // --- patrol circles: exact replica of the live pixel stack, animated ---
+        // Reproduces the static map's 4-layer look (grid-halo / grid-glow /
+        // grid-fill / grid-cells) with the same size ratios and opacity ramps,
+        // driven by km-effort as intensity and fade-age as recency. Cells light
+        // up when visited then fade — patrol intensity over time.
+        //
+        // Static layer geometry, measured against cellPx (screen px per 0.1° cell):
+        //   ring   = cellPx * 0.25            (gridCellRadius across all zooms)
+        //   halo   = cellPx * 0.44 * (1..2)   (intensity factor)
+        //   glow   = cellPx * 0.33 * (1..1.3)
+        //   fill   = cellPx * 0.22 * fillMetric
+        ctx.globalCompositeOperation = 'source-over'; // static map stacks alpha, not additive
         if (on.effortPts && D.effortPts) {
             const eres = D.effortPts.res;
             const eoff = D.effortPts.off || 0;
             const fadeMs = Math.max(bMs * 3, DAY * 10); // linger a touch longer than fires
+            const pw = (x, s) => { // piecewise-linear, mirrors MapLibre interpolate
+                if (x <= s[0][0]) return s[0][1];
+                for (let i = 1; i < s.length; i++) if (x <= s[i][0]) {
+                    const [x0, y0] = s[i - 1], [x1, y1] = s[i];
+                    return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+                }
+                return s[s.length - 1][1];
+            };
             for (const f of D.effortPts.frames) {
                 if (f.t > t) break;
                 const age = t - f.t;
                 if (age > fadeMs) continue;
-                const k = 1 - age / fadeMs;                 // 1 fresh → 0 faded
+                const k = 1 - age / fadeMs;                 // recency: 1 fresh → 0 faded
                 const flash = Math.max(0, 1 - age / (fadeMs * 0.25)); // bright pop on arrival
+                // static recency multipliers
+                const recHalo = pw(k, [[0, 0.3], [0.5, 0.6], [1, 1]]);
+                const recGlow = pw(k, [[0, 0.25], [0.5, 0.55], [1, 1]]);
+                const recRing = pw(k, [[0, 0.3], [0.5, 0.6], [1, 1]]);
                 for (const pt of f.pts) {
                     const lon = (pt[0] + eoff) * eres, lat = (pt[1] + eoff) * eres;
                     const p = proj(lon, lat);
-                    if (p.x < -25 || p.y < -25 || p.x > w + 25 || p.y > h + 25) continue;
+                    if (p.x < -30 || p.y < -30 || p.x > w + 30 || p.y > h + 30) continue;
                     const km = pt[2];
-                    const inten = Math.min(1, Math.log2(1 + km) / 7); // effort intensity 0..1
+                    const inten = Math.min(1.5, Math.log2(1 + km) / 4.5); // → static 0..1.5 scale
                     const cellPx = Math.abs(proj(lon + eres, lat).x - p.x);
-                    const rCell = Math.max(2.5, Math.min(cellPx * 0.5, 22));
-                    // halo glow — like grid-halo (#22c55e, heavy blur)
-                    const rHalo = rCell * (1.1 + 0.6 * inten) * (1 + flash * 0.35);
-                    const haloA = (0.10 + 0.30 * inten + 0.25 * flash) * k;
-                    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rHalo);
-                    g.addColorStop(0, `rgba(34,197,94,${Math.min(0.85, haloA)})`);
-                    g.addColorStop(0.55, `rgba(34,197,94,${Math.min(0.6, haloA * 0.55)})`);
+                    const rRing = Math.max(2, cellPx * 0.25);
+                    // halo — grid-halo: #22c55e, blur 1.0 (pure gradient falloff)
+                    const intenF = pw(inten, [[0, 1], [0.5, 1.2], [1, 1.5], [1.5, 2]]);
+                    const rHalo = cellPx * 0.44 * intenF * (1 + flash * 0.3);
+                    const haloA = pw(inten, [[0, 0.1], [0.5, 0.2], [1, 0.35], [1.5, 0.5]]) * recHalo * k + flash * 0.15;
+                    let g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rHalo);
+                    g.addColorStop(0, `rgba(34,197,94,${Math.min(0.7, haloA)})`);
+                    g.addColorStop(0.6, `rgba(34,197,94,${Math.min(0.5, haloA * 0.45)})`);
                     g.addColorStop(1, 'rgba(34,197,94,0)');
                     ctx.fillStyle = g;
                     ctx.beginPath(); ctx.arc(p.x, p.y, rHalo, 0, 6.283); ctx.fill();
-                    // inner fill — like grid-fill (#4ade80), sized by intensity
-                    const rFill = rCell * (0.25 + 0.5 * inten);
-                    ctx.fillStyle = `rgba(74,222,128,${(0.25 + 0.45 * inten) * k})`;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, rFill, 0, 6.283); ctx.fill();
-                    // outline ring — like grid-cells stroke, fades with age
-                    ctx.strokeStyle = `rgba(74,222,128,${(0.20 + 0.55 * k) * k})`;
-                    ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, rCell, 0, 6.283); ctx.stroke();
+                    // glow — grid-glow: #22c55e, blur 0.7 (tighter core)
+                    const rGlow = cellPx * 0.33 * pw(inten, [[0, 1], [1, 1.3]]);
+                    const glowA = pw(inten, [[0, 0.1], [0.5, 0.25], [1, 0.4]]) * recGlow * k;
+                    g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rGlow);
+                    g.addColorStop(0, `rgba(34,197,94,${Math.min(0.7, glowA)})`);
+                    g.addColorStop(0.5, `rgba(34,197,94,${Math.min(0.5, glowA * 0.7)})`);
+                    g.addColorStop(1, 'rgba(34,197,94,0)');
+                    ctx.fillStyle = g;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, rGlow, 0, 6.283); ctx.fill();
+                    // fill — grid-fill: #4ade80, crisp, sized by fill metric
+                    const fillMetric = pw(inten, [[0, 0], [0.3, 0.3], [0.7, 0.6], [1, 0.8], [1.5, 1]]);
+                    const rFill = Math.max(1, cellPx * 0.22 * fillMetric);
+                    const fillA = pw(inten, [[0, 0], [0.1, 0.35], [0.3, 0.55], [0.7, 0.75], [1, 0.9]]) * k;
+                    if (fillA > 0.01) {
+                        ctx.fillStyle = `rgba(74,222,128,${fillA})`;
+                        ctx.beginPath(); ctx.arc(p.x, p.y, rFill, 0, 6.283); ctx.fill();
+                    }
+                    // ring — grid-cells: #4ade80 stroke, opacity from recency
+                    ctx.strokeStyle = `rgba(74,222,128,${recRing * Math.min(1, k * 2)})`;
+                    ctx.lineWidth = Math.max(0.5, Math.min(2, cellPx * 0.035));
+                    ctx.beginPath(); ctx.arc(p.x, p.y, rRing, 0, 6.283); ctx.stroke();
                 }
             }
         }
+        ctx.globalCompositeOperation = 'lighter';
 
         // --- fire grid: flash + afterglow ---
         if (on.fireGrid && D.fireGrid) {

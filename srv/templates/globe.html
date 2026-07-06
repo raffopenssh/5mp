@@ -1822,6 +1822,8 @@
                 source: 'grid',
                 filter: ['!', ['has', 'point_count']],
                 paint: {
+                    // keep pixels pinned to their geographic cell when the map is tilted
+                    'circle-pitch-alignment': 'map',
                     'circle-color': '#22c55e',
                     'circle-radius': [
                         'interpolate', ['exponential', 2], ['zoom'],
@@ -1872,6 +1874,8 @@
                 source: 'grid',
                 filter: ['!', ['has', 'point_count']],
                 paint: {
+                    // keep pixels pinned to their geographic cell when the map is tilted
+                    'circle-pitch-alignment': 'map',
                     'circle-color': '#22c55e',
                     'circle-radius': [
                         'interpolate', ['exponential', 2], ['zoom'],
@@ -1910,6 +1914,8 @@
                 source: 'grid',
                 filter: ['!', ['has', 'point_count']],
                 paint: {
+                    // keep pixels pinned to their geographic cell when the map is tilted
+                    'circle-pitch-alignment': 'map',
                     'circle-color': '#4ade80',
                     'circle-radius': [
                         'interpolate', ['exponential', 2], ['zoom'],
@@ -1942,6 +1948,8 @@
                 source: 'grid',
                 filter: ['!', ['has', 'point_count']],
                 paint: {
+                    // keep pixels pinned to their geographic cell when the map is tilted
+                    'circle-pitch-alignment': 'map',
                     'circle-color': 'transparent',
                     'circle-radius': gridCellRadius,
                     'circle-stroke-color': '#4ade80',
