@@ -217,6 +217,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/mbtiles/{id}/download", s.HandleAPIZenodoMBTilesDownload)
 	mux.HandleFunc("GET /api/mbtiles", s.HandleAPIZenodoMBTilesList)
 	mux.HandleFunc("GET /api/parks/{id}/climate", s.HandleAPIParkClimate)
+	mux.HandleFunc("GET /api/parks/{id}/turbidity", s.HandleAPIParkTurbidity)
 	mux.HandleFunc("GET /api/parks/{id}/infrastructure", s.HandleAPIParkInfrastructure)
 	mux.HandleFunc("GET /api/parks/{id}/species", s.HandleAPIParkSpecies)
 	mux.HandleFunc("GET /api/parks/{id}/settlement-intensity", s.HandleAPISettlementIntensity)

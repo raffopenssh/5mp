@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -229,4 +230,59 @@ func (s *Server) StartTurbidityWatcher() {
 			time.Sleep(6 * time.Hour)
 		}
 	}()
+}
+
+// HandleAPIParkTurbidity serves the mining/water-quality evidence bundle for
+// a park: raw turbidity scan output (alerts + per-river coverage — shown
+// separately in the UI so users can judge plausibility), mining-classified
+// settlements, and a GFW corroboration summary.
+func (s *Server) HandleAPIParkTurbidity(w http.ResponseWriter, r *http.Request) {
+	parkID := r.PathValue("id")
+
+	// raw scan file (includes rivers[] coverage which loadTurbidityAlerts drops)
+	var scan map[string]any
+	if data, err := os.ReadFile(fmt.Sprintf("data/turbidity/%s.json", parkID)); err == nil {
+		json.Unmarshal(data, &scan)
+	}
+
+	type miningSite struct {
+		ID             int64   `json:"id"`
+		Lat            float64 `json:"lat"`
+		Lon            float64 `json:"lon"`
+		Classification string  `json:"classification"`
+		Confidence     float64 `json:"confidence"`
+		Narrative      string  `json:"narrative"`
+	}
+	sites := []miningSite{}
+	rows, err := s.DB.Query(`
+		SELECT id, lat, lon, classification, COALESCE(classification_confidence,0),
+		       COALESCE(narrative,'')
+		FROM park_settlements
+		WHERE park_id = ? AND classification = 'mining'
+		ORDER BY classification_confidence DESC LIMIT 100`, parkID)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var m miningSite
+			if rows.Scan(&m.ID, &m.Lat, &m.Lon, &m.Classification,
+				&m.Confidence, &m.Narrative) == nil {
+				sites = append(sites, m)
+			}
+		}
+	}
+
+	gfw := loadGFWClusters(parkID)
+	gfwTotal := 0
+	for _, c := range gfw {
+		gfwTotal += c.N
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{
+		"park_id":            parkID,
+		"scan":               scan, // null when park not yet scanned
+		"mining_settlements": sites,
+		"gfw_clusters":       len(gfw),
+		"gfw_total_alerts":   gfwTotal,
+	})
 }

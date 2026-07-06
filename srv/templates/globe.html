@@ -6537,6 +6537,17 @@
                         </div>
                     </div>
                     
+                    <!-- Mining / Water Quality Section -->
+                    <div class="pa-popup-section" id="mining-section-${paId}" onclick="togglePopupSection(this)">
+                        <div class="pa-popup-section-header">
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="turbidity" onclick="event.stopPropagation(); togglePinFromIcon(this)">◈</span> Mining &amp; Water Quality<span id="mining-count-${paId}" class="pa-popup-section-count"></span></div>
+                            <span class="pa-popup-section-toggle">▼</span>
+                        </div>
+                        <div class="pa-popup-section-content" id="mining-content-${paId}">
+                            <div class="pa-popup-section-loading">Loading...</div>
+                        </div>
+                    </div>
+
                     <!-- Roadless Section -->
                     <div class="pa-popup-section" id="road-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
@@ -6624,6 +6635,7 @@
                 fetchPopupClimateData(paId);
                 fetchPopupSpeciesData(paId);
                 fetchPopupLegalData(paId);
+                fetchPopupMiningData(paId, name);
             }
         }
         
@@ -7981,6 +7993,87 @@
             }
         }
         
+        async function fetchPopupMiningData(paId, parkName) {
+            const el = document.getElementById(`mining-content-${paId}`);
+            if (!el) return;
+            try {
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/turbidity?pwd=${encodeURIComponent(getPwd())}`);
+                if (!resp.ok) throw new Error('Not available');
+                const data = await resp.json();
+                const scan = data.scan;
+                const alerts = (scan && scan.alerts) || [];
+                const sites = data.mining_settlements || [];
+
+                const countEl = document.getElementById(`mining-count-${paId}`);
+                if (countEl && (alerts.length || sites.length)) countEl.textContent = ` (${alerts.length + sites.length})`;
+
+                if (!scan && sites.length === 0) {
+                    el.innerHTML = '<div class="pa-popup-section-empty">River turbidity not yet scanned for this park (rotation in progress)</div>';
+                    return;
+                }
+
+                let html = '';
+
+                // ---- Evidence: satellite water-quality scan (shown separately
+                //      from interpretation so users can judge plausibility) ----
+                if (scan) {
+                    const riversScanned = (scan.rivers || []).length;
+                    const totalKm = (scan.rivers || []).reduce((a, r) => a + (r.length_km || 0), 0);
+                    html += `<div style="font-size:10px; color:#888; margin-bottom:6px;">
+                        <i class="icon-droplets icon-color-info"></i> Sentinel-2 water-quality scan · ${scan.scanned_at ? scan.scanned_at.substring(0,10) : ''} ·
+                        ${riversScanned} rivers / ${Math.round(totalKm).toLocaleString()} km surveyed (${(scan.n_sample_pts||0).toLocaleString()} sample points)</div>`;
+
+                    if (alerts.length === 0) {
+                        html += '<div style="font-size:10px; color:#22c55e; margin-bottom:8px;"><i class="icon-check icon-color-success"></i> No abnormal turbidity detected</div>';
+                    } else {
+                        html += `<div style="font-size:10px; font-weight:600; color:#ccc; margin-bottom:4px;">Turbidity evidence (${alerts.length})</div>`;
+                        alerts.forEach((a, idx) => {
+                            const kind = a.type === 'turbid_headwater' ? 'Turbid from headwaters' : 'Turbidity onset';
+                            const detail = a.type === 'turbid_headwater'
+                                ? `sediment source upstream of first observable water`
+                                : `${a.ratio}× brighter than upstream (clean above)`;
+                            const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="mining-${idx}" style="display:inline-block; background:#3b82f6; color:white; font-size:8px; font-weight:600; padding:1px 4px; border-radius:3px; margin-right:4px;">${idx}</span>` : '';
+                            html += `<div class="narrative-row" onclick="zoomToTurbidityAlert('${paId}', ${a.lat}, ${a.lon}, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to zoom. Scene ${escapeHtml(a.scene||'')}">
+                                ${testBadge}<span style="color:#eab308;">◈</span> <b>${kind}</b> — ${escapeHtml(a.river)}<br>
+                                <span style="color:#888;">${a.downstream_turbid_km} km turbid downstream · ${detail} · ${a.date}</span>
+                            </div>`;
+                        });
+                    }
+                }
+
+                // ---- Interpretation: suspected mining sites ----
+                if (sites.length > 0) {
+                    html += `<div style="font-size:10px; font-weight:600; color:#ccc; margin:8px 0 4px;">Suspected mining sites (${sites.length})</div>`;
+                    sites.slice(0, 10).forEach(st => {
+                        const confPct = Math.round(st.confidence * 100);
+                        const confColor = st.confidence >= 0.8 ? '#ef4444' : st.confidence >= 0.6 ? '#f59e0b' : '#888';
+                        let text = st.narrative || `Mining-classified settlement at ${st.lat.toFixed(4)}, ${st.lon.toFixed(4)}`;
+                        const full = text;
+                        if (text.length > 180) text = text.substring(0, 177) + '...';
+                        html += `<div class="narrative-row" onclick="zoomToTurbidityAlert('${paId}', ${st.lat}, ${st.lon}, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to zoom. ${escapeHtml(full)}">
+                            <span style="color:${confColor};">⛏</span> <span style="color:${confColor}; font-weight:600;">${confPct}%</span> ${escapeHtml(text)}
+                        </div>`;
+                    });
+                    if (sites.length > 10) html += `<div style="font-size:9px; color:#666;">…and ${sites.length - 10} more</div>`;
+                }
+
+                // ---- Corroboration ----
+                if (data.gfw_total_alerts > 0) {
+                    html += `<div style="font-size:9px; color:#666; margin-top:6px;">Corroboration: ${data.gfw_total_alerts.toLocaleString()} GFW integrated deforestation alerts in ${data.gfw_clusters} clusters (100km buffer). Note: GFW misses savanna mining — turbidity is the primary signal.</div>`;
+                }
+
+                el.innerHTML = html || '<div class="pa-popup-section-empty">No mining indicators</div>';
+            } catch (e) {
+                el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
+                console.error('Mining data error:', e);
+            }
+        }
+
+        function zoomToTurbidityAlert(paId, lat, lon, event) {
+            if (event) event.stopPropagation();
+            map.flyTo({ center: [lon, lat], zoom: 13 });
+        }
+
         async function fetchPopupLegalData(paId) {
             const el = document.getElementById(`legal-content-${paId}`);
             if (!el) return;
@@ -13521,8 +13614,31 @@ ${starredItems.narratives.map(n => {
             
             let geojson;
             
-            // Infrastructure comes from learned features endpoint
-            if (type === 'infrastructure') {
+            // Turbidity alerts + mining sites come from the turbidity endpoint
+            if (type === 'turbidity') {
+                const response = await fetch(`/api/parks/${parkId}/turbidity?pwd=${window.getPwd() || ''}`);
+                if (!response.ok) throw new Error('Failed to fetch turbidity data');
+                const t = await response.json();
+                const features = [];
+                ((t.scan && t.scan.alerts) || []).forEach((a, i) => {
+                    features.push({
+                        type: 'Feature',
+                        geometry: { type: 'Point', coordinates: [a.lon, a.lat] },
+                        properties: { feature_type: 'turbidity_alert', feature_id: `turbidity_${i}`,
+                                      name: `${a.type === 'turbid_headwater' ? 'Turbid headwaters' : 'Turbidity onset'}: ${a.river}`,
+                                      turbid_km: a.downstream_turbid_km, date: a.date }
+                    });
+                });
+                (t.mining_settlements || []).forEach(st => {
+                    features.push({
+                        type: 'Feature',
+                        geometry: { type: 'Point', coordinates: [st.lon, st.lat] },
+                        properties: { feature_type: 'mining_site', feature_id: `mining_${st.id}`,
+                                      name: `Suspected mining (${Math.round(st.confidence*100)}%)` }
+                    });
+                });
+                geojson = { type: 'FeatureCollection', features };
+            } else if (type === 'infrastructure') {
                 const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&pwd=${window.getPwd() || ''}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 const learned = await response.json();
@@ -13579,7 +13695,7 @@ ${starredItems.narratives.map(n => {
             map.addSource(sourceId, { type: 'geojson', data: geojson });
             
             // Style based on type
-            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', river: '#3b82f6', water: '#3b82f6', place: '#a855f7', infrastructure: '#22c55e' };
+            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', river: '#3b82f6', water: '#3b82f6', place: '#a855f7', infrastructure: '#22c55e', turbidity: '#eab308' };
             const color = colors[normalizedType] || '#22c55e';
             const lineWidths = { fire: 3, settlement: 3, deforestation: 3, road: 2, river: 2.5, water: 2, place: 2, infrastructure: 2 };
             const lineWidth = lineWidths[normalizedType] || 2;
@@ -14010,13 +14126,13 @@ ${starredItems.narratives.map(n => {
         const typeIcons = {
             'fire': '◇', 'fire_trajectory': '◇', 'settlement': '◻', 'deforestation': '△', 
             'road': '═', 'place': '●', 'river': '~', 'water': '○',
-            'active-fire': '◆', 'infrastructure': '▣'
+            'active-fire': '◆', 'infrastructure': '▣', 'turbidity': '◈'
         };
         const typeLabels = {
             'fire': 'Fire trajectories', 'fire_trajectory': 'Fire trajectories',
             'settlement': 'Settlements', 'deforestation': 'Deforestation',
             'road': 'Roads', 'place': 'Places', 'river': 'Rivers', 'water': 'Waterbodies',
-            'active-fire': 'Active fire', 'infrastructure': 'Infrastructure'
+            'active-fire': 'Active fire', 'infrastructure': 'Infrastructure', 'turbidity': 'Mining / turbidity'
         };
         
         // Group pins by park

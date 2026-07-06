@@ -1,6 +1,6 @@
 # Handover: Artisanal Gold Mine Detection (5MP)
 
-**Updated:** 2026-07-06 (session 2). Continue in a fresh conversation with this doc.
+**Updated:** 2026-07-06 (session 3). Continue in a fresh conversation with this doc.
 
 ## Status: pipeline built & live for CAF_Chinko
 
@@ -58,43 +58,55 @@
   (5.650,24.341 onset — auto, mining 1.0).
 - 3 mining_alert notifications live in DB (ids 22285-7).
 
-## NEXT STEPS (user-requested, not yet done)
+## Session 3 progress (this session)
 
-1. **Daily cron** at a different time than others (gfw_alerts runs 04:30,
-   fire cron 03:00) — e.g. `0 6 * * *  cd /home/exedev/5mp && python3
+### Rollout infrastructure (DONE)
+- `analysis/river_turbidity.py`: `GEOFABRIK` map for all 33 keystone
+  countries. `ensure_waterways()` downloads country PBF to /tmp on cache
+  miss, extracts waterways for ALL parks of that country in one pass,
+  deletes the PBF. Only small per-park geojson caches kept
+  (`data/osm_raw/waterways/`, 27MB for CAF+SSD+GNQ). Big PBFs deleted
+  (283MB freed). `--rotate` now eligible for all 162 parks.
+- **Opportunistic infra enrichment** (`enrich_park_infra`): while a park
+  PBF extract is on disk, backfills missing `osm_places` (settlements,
+  named rivers deduped by longest way with osm_tags attrs, peaks/hills)
+  and `roads_heigit` (highway type, surface, length, geometry, derived
+  dl_class_2024 + passability PAV_/UNP_ codes matching HeiGIT). No-op when
+  park already has rows. Verified: GNQ_Reserva_de_la_Paz +74 places,
+  +3768 roads. Remaining gaps fill as rotation reaches AGO/COG.
+
+### UI (DONE)
+- `GET /api/parks/{id}/turbidity` (srv/turbidity.go): raw scan JSON
+  (alerts + rivers[] coverage), mining-classified park_settlements,
+  GFW corroboration counts.
+- "Mining & Water Quality" popup section (globe.html, after
+  Deforestation): deliberately separates **evidence** (scan metadata:
+  rivers/km surveyed/sample pts; turbidity alerts with ratio, downstream
+  turbid-km, scene date) from **interpretation** (suspected mining sites
+  with confidence %) plus GFW corroboration footnote — so users can judge
+  plausibility. Click rows to zoom. TEST badges (mining-N) in test=1.
+- Pinning: `turbidity` type in addPinnedLayer (builds GeoJSON client-side
+  from the API: turbidity_alert + mining_site points, #eab308), icon ◈,
+  label "Mining / turbidity". Works via section icon toggle.
+
+## NEXT STEPS
+
+1. **Daily cron** (still todo): `0 6 * * * cd /home/exedev/5mp && python3
    analysis/river_turbidity.py --rotate >> logs/turbidity.log 2>&1`.
-   Server watcher picks results up within 6h automatically.
-2. **Dedicated park-tooltip section** ("Mining / Water quality"?). Popup
-   sections live in srv/templates/globe.html ~line 6500 (pa-popup-section
-   blocks; fetchPopupFireData pattern ~line 6670). Per-site show: river name,
-   alert type (onset vs turbid headwater), date+scene, downstream turbid-km,
-   distance/direction from park, link to notification, mining-classified
-   settlements w/ confidence + narrative. Data source: new API endpoint
-   (e.g. GET /api/parks/{id}/turbidity serving data/turbidity/{park}.json +
-   mining settlements) — endpoint NOT yet written.
-3. **Pinning**: reuse togglePinFromIcon/addPinnedLayer machinery
-   (globe.html ~12700+). Options: pin alert points (build GeoJSON client-side
-   from the API), and ideally the turbid river segments (would need plume
-   mask → line features; artifacts/turbid_px*.json can seed a
-   feature_geometries type 'turbidity').
-4. **Timeline filter**: alerts carry scene `date`; monthly historic scans via
-   `--datetime` can build an onset timeline per river (first turbid month).
-   Integrate with globe time slider (window.dateFrom/dateTo, see
-   addPinnedLayer dateParams) by filtering alerts on date.
-5. **Rollout beyond CAR+SSD** (user decision): fetch geofabrik PBF per
-   country on demand, extract per-park waterways (small), run scans for all
-   parks of that country, also enrich park roads/river places if useful,
-   then DELETE the big PBF once done. Implement as a `--country XYZ` batch
-   or extend --rotate to: pick next country with unscanned parks → download
-   PBF → loop parks → cleanup. Keep only data/osm_raw/waterways/*.geojson.
-   Geofabrik URL pattern: https://download.geofabrik.de/africa/{name}-latest.osm.pbf
-   (need ISO3→geofabrik-name map for the 33 countries in keystones).
-6. Tune false positives: Mbari headwater alert looks weak (1.5km, but passed
-   ≥5km gate via turbid_km? — recheck; wet-season sediment naturally higher).
-   Consider NASA POWER rain control per alert (method in session-1 notes).
-7. review settlement 29801 classification (temporary_camp despite alert 0km —
-   scoreMining ties with pastoral; maybe boost turbidity weight or force
-   mining when TurbidityAlertKm<1).
+   Watch first runs: each cache-miss country downloads its PBF (COD 400MB+,
+   TZA large) — fine on /tmp (51GB disk) but verify cleanup. Server watcher
+   picks results up within 6h.
+2. **Timeline filter**: alerts carry scene `date`; monthly historic scans via
+   `--datetime` can build an onset timeline per river. Integrate with globe
+   time slider (window.dateFrom/dateTo) by filtering alerts on date.
+3. Turbid river segment lines (plume mask -> feature_geometries type
+   'turbidity') for a nicer pin than points.
+4. Tune false positives: Mbari headwater alert weak (1.5km); consider NASA
+   POWER rain control per alert (method in session-1 notes).
+5. Review settlement 29801 (temporary_camp despite turbidity 0km — consider
+   forcing mining when TurbidityAlertKm<1).
+6. mining_alert notifications: add share-link handling (notif_mining=...?)
+   like notif_fire.
 
 ## Method notes / gotchas
 - SCL==6 (water) only in wide channels; headwater sources hide upstream of
@@ -115,7 +127,7 @@
   cmd/register-mining/.
 - data/turbidity/CAF_Chinko.json + state.json + artifacts/ (plume masks,
   turbid extent, pit onset series).
-- data/osm_raw/: CAR+SSD PBFs (283MB — candidates for cleanup per step 5),
-  waterways/CAF_Chinko.geojson cache, caf_rivers/mining geojsons.
+- data/osm_raw/: waterways/*.geojson caches (all CAF+SSD parks + GNQ),
+  caf/ssd_mining geojsons. Country PBFs no longer stored (auto /tmp).
 - Test: https://five-megapixel-conservation.exe.xyz:8000/?pwd=test2026&test=1&popup=CAF_Chinko
 - DB backup: db.sqlite3.bak (pre-change, 2026-07-06, delete when confident).
