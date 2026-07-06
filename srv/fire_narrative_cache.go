@@ -7,13 +7,36 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
 	"srv.exe.dev/srv/areas"
 )
 
+// runPrecomputeNarrativesV5 shells out to the canonical v5 python pipeline
+// which reads feature_geometries (real v5 hash feature_ids) and rewrites
+// fire_narrative_cache. parks == nil means full refresh (all parks + settlement/
+// deforestation exports); otherwise fire-only per-park refresh.
+func (s *Server) runPrecomputeNarrativesV5(parks []string) error {
+	args := []string{"scripts/precompute_narratives_v5.py"}
+	for _, p := range parks {
+		args = append(args, "--park", p)
+	}
+	cmd := exec.Command("python3", args...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("[FireNarrativeCache] precompute_narratives_v5 %v failed: %v\n%s", parks, err, out)
+		return err
+	}
+	log.Printf("[FireNarrativeCache] precompute_narratives_v5 %v done", parks)
+	return nil
+}
+
 // PrecomputeFireNarratives computes and caches fire narratives for all parks
+//
+// DEPRECATED: uses stale v2 JSON with sequential _grp_N ids. Use
+// runPrecomputeNarrativesV5 instead. Kept for reference only.
 func (s *Server) PrecomputeFireNarratives(ctx context.Context) error {
 	if s.AreaStore == nil {
 		log.Println("[FireNarrativeCache] No area store, skipping")
@@ -730,8 +753,8 @@ func (s *Server) StartNarrativeCacheWorker(ctx context.Context) {
 	s.DB.QueryRow("SELECT COUNT(*) FROM park_settlements WHERE classified_at IS NOT NULL").Scan(&settCount)
 	
 	if fireCount == 0 {
-		log.Println("[NarrativeCacheWorker] Fire cache empty, running initial computation")
-		s.PrecomputeFireNarratives(ctx)
+		log.Println("[NarrativeCacheWorker] Fire cache empty, running initial computation (v5 python)")
+		s.runPrecomputeNarrativesV5(nil)
 	}
 	
 	if settCount == 0 {
@@ -751,16 +774,16 @@ func (s *Server) StartNarrativeCacheWorker(ctx context.Context) {
 		case <-ticker.C:
 			now := time.Now().UTC()
 			
-			// Daily at 3am UTC: Refresh fire narratives for parks with recent fires (last 14 days)
-			if now.Hour() == 3 {
-				log.Println("[NarrativeCacheWorker] Running daily fire refresh for recent activity")
-				s.PrecomputeRecentFireNarratives(ctx, 14)
-			}
+			// Daily at 3am UTC: fire narratives handled by scripts/daily_fire_update.py
+			// cron (runs precompute_narratives_v5.py --incremental). The old Go
+			// refresh (PrecomputeRecentFireNarratives / PrecomputeFireNarratives)
+			// used stale v2 JSON files with sequential _grp_N feature ids that
+			// broke fire pinning, so it is no longer scheduled here.
 			
-			// Weekly (Sunday 2am UTC): Full fire narrative refresh
+			// Weekly (Sunday 2am UTC): Full fire narrative refresh via canonical v5 python
 			if now.Weekday() == time.Sunday && now.Hour() == 2 {
-				log.Println("[NarrativeCacheWorker] Running weekly full fire refresh")
-				s.PrecomputeFireNarratives(ctx)
+				log.Println("[NarrativeCacheWorker] Running weekly full fire refresh (v5 python)")
+				s.runPrecomputeNarrativesV5(nil)
 			}
 			
 			// Annually (January 1st, 4am UTC): Refresh settlement/deforestation classifications

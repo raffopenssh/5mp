@@ -1,10 +1,12 @@
 package srv
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
+	"os/exec"
 	"time"
+
+	"encoding/json"
 )
 
 // HandleAPIRefreshPark refreshes derived data for a single park after its
@@ -14,8 +16,8 @@ import (
 // It:
 //  1. Force-reclassifies park_settlements (Go classifier = current canonical
 //     style for settlements; new places/roads/turbidity signals flow in).
-//  2. Recomputes fire_narrative_cache for the park (same code path as
-//     PrecomputeRecentFireNarratives).
+//  2. Recomputes fire_narrative_cache for the park via the canonical v5
+//     python pipeline (scripts/precompute_narratives_v5.py --park X).
 //
 // Deforestation narratives are intentionally NOT touched here: their
 // canonical style is the python pipeline (scripts/rebuild_events_enhanced.py);
@@ -55,26 +57,21 @@ func (s *Server) HandleAPIRefreshPark(w http.ResponseWriter, r *http.Request) {
 	//    python-classified rows are never touched — see classifyParkDeforestation).
 	defoCount := s.classifyParkDeforestation(parkID)
 
-	// 3. Recompute fire narrative cache for this park.
-	fromYear := time.Now().Year() - 25
-	toYear := time.Now().Year()
+	// 3. Recompute fire narrative cache for this park via the canonical v5
+	//    python pipeline (reads feature_geometries, real v5 hash feature_ids).
+	//    The old Go path (computeFireNarrativeForCache) read stale v2 JSON files
+	//    and generated sequential _grp_N ids that don't exist in the features
+	//    API, breaking fire pinning ("Feature not found").
 	fireOK := false
-	if narrative := s.computeFireNarrativeForCache(parkID, parkName, fromYear, toYear); narrative != nil {
-		narrativeJSON, _ := json.Marshal(narrative)
-		_, err := s.DB.Exec(`
-			INSERT INTO fire_narrative_cache (park_id, narrative_json, computed_at, from_year, to_year)
-			VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?)
-			ON CONFLICT(park_id) DO UPDATE SET
-				narrative_json = excluded.narrative_json,
-				computed_at = CURRENT_TIMESTAMP,
-				from_year = excluded.from_year,
-				to_year = excluded.to_year`,
-			parkID, string(narrativeJSON), fromYear, toYear)
-		fireOK = err == nil
+	cmd := exec.Command("python3", "scripts/precompute_narratives_v5.py", "--park", parkID)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		log.Printf("[RefreshPark] %s: precompute_narratives_v5 failed: %v\n%s", parkID, err, out)
+	} else {
+		fireOK = true
 	}
 
-	log.Printf("[RefreshPark] %s: %d settlements reclassified, %d deforestation rows classified, fire narrative=%v (%v)",
-		parkID, settCount, defoCount, fireOK, time.Since(start))
+	log.Printf("[RefreshPark] %s (%s): %d settlements reclassified, %d deforestation rows classified, fire narrative=%v (%v)",
+		parkID, parkName, settCount, defoCount, fireOK, time.Since(start))
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{

@@ -1178,7 +1178,8 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
     // Query recent fire trajectories from feature_geometries with persistent names
     rows, err := s.DB.Query(`
         SELECT fg.feature_id, fg.geojson, fg.properties_json, fg.start_date, fg.end_date,
-               COALESCE(fgn.friendly_name, fg.feature_id) as display_name
+               COALESCE(fgn.friendly_name, fg.feature_id) as display_name,
+               COALESCE(fg.dist_to_park_km, 0) as dist_to_park_km
         FROM feature_geometries fg
         LEFT JOIN fire_group_names fgn ON fg.park_id = fgn.park_id AND fg.feature_id = fgn.feature_id
         WHERE fg.park_id = ? AND fg.feature_type = 'fire_trajectory'
@@ -1203,7 +1204,8 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         var featureID, geojson, propsJSON, displayName string
         var startDateStr, endDateStr sql.NullString
         
-        if err := rows.Scan(&featureID, &geojson, &propsJSON, &startDateStr, &endDateStr, &displayName); err != nil {
+        var distToParkKm float64
+        if err := rows.Scan(&featureID, &geojson, &propsJSON, &startDateStr, &endDateStr, &displayName, &distToParkKm); err != nil {
             continue
         }
         
@@ -1284,12 +1286,18 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         
         status, emoji, detail, priority := analyzeFireStatus(position, direction, avgSpeed, pctInside, daysSince, daysActive)
         
+        // A group counts as "inside" only if it actually touches the park:
+        // dist_to_park_km == 0 (or NULL) or some fires fall inside. Groups up
+        // to 20 km outside are still returned (approaching-fire context) but
+        // must not inflate the "Currently Active (N)" inside count.
+        isInside := distToParkKm <= 0.001 || pctInside > 0
+        
         group := FireGroup{
             Name:         displayName,  // Use persistent friendly name from fire_group_names
             FeatureID:    featureID,    // Include feature_id for stable identification
             Type:         groupType,
             IsActive:     isActive,
-            IsInside:     true, // From feature_geometries, assume inside
+            IsInside:     isInside,
             Status:       status,
             StatusEmoji:  emoji,
             StatusDetail: detail,
@@ -1309,7 +1317,9 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         }
         
         groups = append(groups, group)
-        insideCount++
+        if isInside {
+            insideCount++
+        }
         groupIndex++
     }
     
@@ -1320,6 +1330,10 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         if groups[i].IsActive != groups[j].IsActive {
             return groups[i].IsActive
         }
+        // Inside-park groups before nearby-outside (UI shows active+inside)
+        if groups[i].IsInside != groups[j].IsInside {
+            return groups[i].IsInside
+        }
         // Then by priority (lowest number = highest priority)
         if groups[i].Priority != groups[j].Priority {
             return groups[i].Priority < groups[j].Priority
@@ -1328,7 +1342,12 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         return groups[i].LastSeen > groups[j].LastSeen
     })
     
-    // Limit to reasonable number (but active groups are already at the top, so we won't lose them)
+    // True counts before truncation (peak-season parks can have 100s of
+    // legitimately active groups; don't let payload capping distort counts).
+    trueTotalGroups := len(groups)
+    trueActiveCount := activeCount
+
+    // Limit payload to reasonable number (active groups sorted to top, so kept first)
     if len(groups) > 100 {
         groups = groups[:100]
     }
@@ -1344,11 +1363,11 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         }
     }
     
-    // Build narrative
+    // Build narrative (use true counts, not payload-capped slice lengths)
     narrative := fmt.Sprintf("In the past %d days, %s has %d tracked fire groups with %d total fire detections.",
-        days, parkName, len(groups), totalFires)
-    if len(activeGroups) > 0 {
-        narrative += fmt.Sprintf(" %d groups are currently active.", len(activeGroups))
+        days, parkName, trueTotalGroups, totalFires)
+    if trueActiveCount > 0 {
+        narrative += fmt.Sprintf(" %d groups are currently active.", trueActiveCount)
     }
     
     resp := FireRealtimeResponse{
@@ -1356,8 +1375,8 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         ParkName:          parkName,
         AnalysisPeriod:    fmt.Sprintf("%s to %s", startDate.Format("2006-01-02"), endDate.Format("2006-01-02")),
         TotalFires:        totalFires,
-        TotalGroups:       len(groups),
-        ActiveGroupsCount: len(activeGroups),
+        TotalGroups:       trueTotalGroups,
+        ActiveGroupsCount: trueActiveCount,
         GroupsInsideCount: insideCount,
         Groups:            groups,
         ActiveGroups:      activeGroups,

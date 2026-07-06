@@ -553,11 +553,9 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 			// Build summary
 			narrative.Summary = s.buildFireSummary(parkName, fromYear, toYear, 1, narrative.TotalFires, totalGroups, stoppedInside, transited, narrative.ResponseRate, "", 0)
 			narrative.Trend = s.analyzeFireTrendFast(internalID, toYear)
-			// Save to cache
-			if jsonData, err := json.Marshal(narrative); err == nil {
-				s.DB.Exec(`INSERT OR REPLACE INTO fire_narrative_cache (park_id, narrative_json, computed_at) VALUES (?, ?, datetime('now'))`,
-					internalID, string(jsonData))
-			}
+			// NOTE: do NOT save to fire_narrative_cache here — this fallback is
+			// v2-JSON-derived (sequential _grp_N ids) and would overwrite the
+			// canonical v5 cache written by scripts/precompute_narratives_v5.py.
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(narrative)
 			return

@@ -671,70 +671,6 @@
             return narrative.outcome === 'STOPPED_INSIDE';
         }
         
-        // Render weekly fire comparison chart (current year vs prior years avg)
-        function renderFireWeeklyChart(trendData, paId) {
-            if (!trendData.weeks || trendData.weeks.length < 10) return '';
-            
-            const weeks = trendData.weeks;
-            const currentYear = new Date().getFullYear();
-            
-            // Group by week number (W01-W52)
-            const byWeekNum = {};
-            weeks.forEach(w => {
-                const match = w.week.match(/(\d{4})-W(\d{2})/);
-                if (!match) return;
-                const year = parseInt(match[1]);
-                const weekNum = match[2];
-                if (!byWeekNum[weekNum]) byWeekNum[weekNum] = { prior: [], current: null };
-                if (year === currentYear) {
-                    byWeekNum[weekNum].current = w.groups;
-                } else {
-                    byWeekNum[weekNum].prior.push(w.groups);
-                }
-            });
-            
-            // Get last 12 weeks for display
-            const currentWeekNum = Math.ceil((new Date() - new Date(currentYear, 0, 1)) / (7 * 24 * 60 * 60 * 1000));
-            const displayWeeks = [];
-            for (let i = 11; i >= 0; i--) {
-                let wn = currentWeekNum - i;
-                if (wn <= 0) wn += 52;
-                const weekStr = String(wn).padStart(2, '0');
-                const data = byWeekNum[weekStr] || { prior: [], current: null };
-                const priorAvg = data.prior.length > 0 ? data.prior.reduce((a,b) => a+b, 0) / data.prior.length : 0;
-                displayWeeks.push({ week: weekStr, current: data.current, priorAvg: priorAvg });
-            }
-            
-            if (displayWeeks.every(d => d.current === null && d.priorAvg === 0)) return '';
-            
-            const w = 280, h = 70, pad = 6;
-            const chartW = w - pad * 2, chartH = h - pad * 2 - 14;
-            const maxVal = Math.max(...displayWeeks.map(d => Math.max(d.current || 0, d.priorAvg)), 1);
-            const barW = chartW / displayWeeks.length - 2;
-            
-            return `
-                <div style="margin-top: 10px;">
-                    <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Weekly: <span style="color:#f97316">●</span> ${currentYear} vs <span style="color:#666">●</span> prior avg</div>
-                    <svg width="${w}" height="${h}" style="background: rgba(0,0,0,0.2); border-radius: 4px;">
-                        ${displayWeeks.map((d, i) => {
-                            const x = pad + i * (chartW / displayWeeks.length);
-                            const priorH = (d.priorAvg / maxVal) * chartH;
-                            const currH = ((d.current || 0) / maxVal) * chartH;
-                            const priorY = pad + chartH - priorH;
-                            const currY = pad + chartH - currH;
-                            return `
-                                <rect x="${x}" y="${priorY.toFixed(1)}" width="${barW/2}" height="${priorH.toFixed(1)}" fill="#444" rx="1"/>
-                                ${d.current !== null ? `<rect x="${x + barW/2}" y="${currY.toFixed(1)}" width="${barW/2}" height="${currH.toFixed(1)}" fill="${d.current > d.priorAvg * 1.5 ? '#ef4444' : d.current < d.priorAvg * 0.5 ? '#22c55e' : '#f97316'}" rx="1"/>` : ''}
-                            `;
-                        }).join('')}
-                        <text x="${pad}" y="${h-2}" fill="#666" font-size="7">W${displayWeeks[0].week}</text>
-                        <text x="${w-pad}" y="${h-2}" fill="#666" font-size="7" text-anchor="end">W${displayWeeks[displayWeeks.length-1].week}</text>
-                    </svg>
-                </div>
-            `;
-        }
-        
-        
         // Format date range for display - show actual dates, not just years
         // Shared smooth area sparkline. series: [{label, from, to, v, v2?}] sorted.
         // Click a bucket -> applyPreciseDateFilter(from, to). v2 = optional overlay series.
@@ -752,7 +688,8 @@
             // Dual y-axes: main series (left) and v2 overlay (right) are scaled
             // independently so small counts (e.g. fire groups) remain visible.
             const hasV2 = opts.v2Color && series.some(d => d.v2 > 0);
-            const max = Math.max(...series.map(d => d.v)) || 1;
+            const hasV3 = series.some(d => d.v3 > 0); // prior-years avg, same scale as v
+            const max = Math.max(...series.map(d => Math.max(d.v, d.v3 || 0))) || 1;
             const max2 = hasV2 ? (Math.max(...series.map(d => d.v2 || 0)) || 1) : max;
             const xs = i => pad + i * (w - 2*pad) / (series.length - 1);
             const ys = v => h - pad - (v / max) * (h - 2*pad);
@@ -760,17 +697,19 @@
             const line = (vals, yfn) => vals.map((v, i) => `${i ? 'L' : 'M'}${xs(i).toFixed(1)},${yfn(v).toFixed(1)}`).join('');
             const main = line(series.map(d => d.v), ys);
             const area = `${main} L${xs(series.length-1).toFixed(1)},${h-pad} L${xs(0).toFixed(1)},${h-pad} Z`;
-            const overlay = hasV2
-                ? `<path d="${line(series.map(d => d.v2 || 0), ys2)}" fill="none" stroke="${opts.v2Color}" stroke-width="1.2" opacity="0.9"/>` : '';
+            const overlay = (hasV2
+                ? `<path d="${line(series.map(d => d.v2 || 0), ys2)}" fill="none" stroke="${opts.v2Color}" stroke-width="1.2" opacity="0.9"/>` : '')
+                + (hasV3
+                ? `<path d="${line(series.map(d => d.v3 || 0), ys)}" fill="none" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3,2" opacity="0.8"/>` : '');
             const axisLabels = `<text x="1" y="8" font-size="7" fill="${color}" opacity="0.85">${max.toLocaleString()}</text>`
                 + (hasV2 ? `<text x="${w-1}" y="8" font-size="7" text-anchor="end" fill="${opts.v2Color}" opacity="0.85">${max2.toLocaleString()}</text>` : '');
             // Invisible hover/click strips
             const bw = (w - 2*pad) / (series.length - 1);
             const strips = series.map((d, i) =>
-                `<rect x="${(xs(i) - bw/2).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${h}" fill="transparent" style="cursor:pointer;" onclick="event.stopPropagation(); sparkClick('${sid}', ${i})"><title>${d.label}: ${d.v.toLocaleString(undefined,{maximumFractionDigits:2})}${unit}${d.v2 != null && opts.v2Label ? ` · ${d.v2.toLocaleString()} ${opts.v2Label}` : ''}\nClick to filter time range</title></rect>`
+                `<rect x="${(xs(i) - bw/2).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${h}" fill="transparent" style="cursor:pointer;" onclick="event.stopPropagation(); sparkClick('${sid}', ${i})"><title>${d.label}: ${d.v.toLocaleString(undefined,{maximumFractionDigits:2})}${unit}${d.v2 != null && opts.v2Label ? ` · ${d.v2.toLocaleString()} ${opts.v2Label}` : ''}${d.v3 != null && opts.v3Label ? ` · ${d.v3.toLocaleString(undefined,{maximumFractionDigits:1})} ${opts.v3Label}` : ''}\nClick to filter time range</title></rect>`
             ).join('');
             const legend = opts.v2Color && opts.v2Label
-                ? `<span style="float:right;"><span style="color:${color};">▬</span> ${opts.label || ''} <span style="color:${opts.v2Color};">▬</span> ${opts.v2Label}</span>` : '';
+                ? `<span style="float:right;"><span style="color:${color};">▬</span> ${opts.label || ''} <span style="color:${opts.v2Color};">▬</span> ${opts.v2Label}${hasV3 && opts.v3Label ? ` <span style="color:#9ca3af;">╌</span> ${opts.v3Label}` : ''}</span>` : '';
             return `<div style="margin-top: 10px;">
                 ${opts.title ? `<div style="font-size: 8px; color: #666; margin-bottom: 2px;">${opts.title}${legend}</div>` : ''}
                 <svg width="${w}" height="${h}" style="display:block;" viewBox="0 0 ${w} ${h}">
@@ -6914,7 +6853,6 @@
                         <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08);">
                             ${trendData.seasonality ? `<div style="font-size: 10px; color: #888; margin-bottom: 4px;">Peak season: ${trendData.seasonality.replace('dry season peaks ', '')}</div>` : ''}
                             ${trendData.avg_groups_per_km2 ? `<div style="font-size: 10px; color: #888; margin-bottom: 4px;">${trendData.avg_groups_per_km2.toFixed(1)} fire groups per 1000 km²/year</div>` : ''}
-                            ${trendData.weeks && trendData.weeks.length > 10 ? renderFireWeeklyChart(trendData, paId) : ''}
                         </div>` : ''}
                         ${trendData.latitude_comparison ? `<div style="font-size: 10px; color: ${trendData.latitude_comparison.percentile > 70 ? '#f59e0b' : trendData.latitude_comparison.percentile < 30 ? '#22c55e' : '#888'}; margin-bottom: 4px;">${trendData.latitude_comparison.percentile > 70 ? 'Higher' : trendData.latitude_comparison.percentile < 30 ? 'Lower' : 'Similar'} fire activity than ${100 - Math.round(trendData.latitude_comparison.percentile)}% of ${trendData.latitude_comparison.latitude_band} parks</div>` : ''}
                         
@@ -6931,19 +6869,45 @@
                         </div>` : ''}
                     `;
                     
-                    // Async weekly fire trend sparkline (fires vs groups vs stopped)
-                    fetch(`/api/parks/${encodeURIComponent(paId)}/fire-trend?pwd=${encodeURIComponent(getPwd())}${dateFrom ? `&from=${dateFrom}` : ''}${dateTo ? `&to=${dateTo}` : ''}`)
+                    // Async weekly fire trend sparkline (fires vs groups + prior-years avg).
+                    // Fetch full history (2020+) so we can compute the prior-years
+                    // average per ISO week client-side, then subset to the filter range.
+                    fetch(`/api/parks/${encodeURIComponent(paId)}/fire-trend?pwd=${encodeURIComponent(getPwd())}`)
                         .then(r => r.json())
                         .then(td => {
                             const div = document.getElementById(`fire-trend-${paId}`);
                             if (!div || !td.weeks || td.weeks.length < 2) return;
-                            const series = td.weeks.map(wk => {
+                            // Bucket fires by week-of-year across all years
+                            const isoWeek = d => {
+                                const dt = new Date(d + 'T00:00:00Z');
+                                dt.setUTCDate(dt.getUTCDate() + 4 - (dt.getUTCDay() || 7));
+                                const yStart = new Date(Date.UTC(dt.getUTCFullYear(), 0, 1));
+                                return Math.ceil(((dt - yStart) / 86400000 + 1) / 7);
+                            };
+                            const byWeekNum = {};
+                            td.weeks.forEach(wk => {
+                                const wn = isoWeek(wk.week), yr = wk.week.slice(0, 4);
+                                (byWeekNum[wn] = byWeekNum[wn] || {})[yr] = wk.fires;
+                            });
+                            const priorAvg = (weekDate) => {
+                                const wn = isoWeek(weekDate), yr = weekDate.slice(0, 4);
+                                const vals = Object.entries(byWeekNum[wn] || {})
+                                    .filter(([y]) => y !== yr).map(([, v]) => v);
+                                return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+                            };
+                            let weeks = td.weeks;
+                            if (dateFrom || dateTo) {
+                                weeks = weeks.filter(wk => (!dateFrom || wk.week >= dateFrom.slice(0,10)) && (!dateTo || wk.week <= dateTo.slice(0,10)));
+                            }
+                            if (weeks.length < 2) return;
+                            const series = weeks.map(wk => {
                                 const end = new Date(wk.week + 'T00:00:00'); end.setDate(end.getDate() + 6);
                                 return {label: wk.week, from: wk.week, to: end.toISOString().slice(0,10),
                                         v: wk.fires, v2: wk.groups,
+                                        v3: Math.round(priorAvg(wk.week) * 10) / 10,
                                         _stopped: wk.stopped};
                             });
-                            div.innerHTML = areaSparkline(series, '#ef4444', ' fires', {title: 'Weekly fires · click to filter', v2Color: '#f59e0b', v2Label: 'groups', label: 'fires'});
+                            div.innerHTML = areaSparkline(series, '#ef4444', ' fires', {title: 'Weekly fires · click to filter', v2Color: '#f59e0b', v2Label: 'groups', label: 'fires', v3Label: 'prior avg'});
                         })
                         .catch(() => {});
                     

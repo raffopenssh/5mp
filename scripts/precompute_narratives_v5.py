@@ -84,20 +84,25 @@ class NarrativeGeneratorV5:
         except: pass
         log(f"Loaded info for {len(self.parks)} parks")
     
-    def generate_fire_narratives(self):
+    def generate_fire_narratives(self, only_parks=None):
         """Generate fire narratives with v5 trajectory analysis"""
         log("=" * 70)
         log(f"FIRE NARRATIVES V5 (from {MIN_DATE} onwards)")
         log("=" * 70)
         
         # Query trajectories from DB
-        cursor = self.conn.execute('''
+        query = '''
             SELECT park_id, feature_id, start_date, end_date, properties_json
             FROM feature_geometries
             WHERE feature_type = 'fire_trajectory' AND start_date >= ?
               AND (dist_to_park_km IS NULL OR dist_to_park_km <= 20)
-            ORDER BY park_id, start_date
-        ''', (MIN_DATE,))
+        '''
+        params = [MIN_DATE]
+        if only_parks:
+            query += f" AND park_id IN ({','.join('?' * len(only_parks))})"
+            params.extend(only_parks)
+        query += ' ORDER BY park_id, start_date'
+        cursor = self.conn.execute(query, params)
         
         by_park = defaultdict(list)
         for row in cursor:
@@ -543,12 +548,18 @@ class NarrativeGeneratorV5:
         log(f"Deforestation: {summary['deforestation']['parks']} parks, {summary['deforestation']['total_area_km2']} km²")
         return summary
     
-    def run(self):
-        """Run all narrative generation"""
+    def run(self, only_parks=None):
+        """Run all narrative generation. only_parks: fire-only per-park refresh."""
         log("=" * 70)
         log("NARRATIVE PRECOMPUTATION V5")
         log(f"Started: {datetime.now()}")
         log("=" * 70 + "\n")
+        
+        if only_parks:
+            self.generate_fire_narratives(only_parks=only_parks)
+            self.conn.close()
+            log(f"Per-park fire refresh done: {only_parks}")
+            return
         
         fire = self.generate_fire_narratives()
         settlement = self.generate_settlement_narratives()
@@ -565,13 +576,14 @@ def main():
     parser = argparse.ArgumentParser(description="Precompute Narratives v5")
     parser.add_argument('--incremental', action='store_true', help='Incremental mode: only updated parks')
     parser.add_argument('--days', type=int, default=60, help='Days window for incremental (default: 60)')
+    parser.add_argument('--park', action='append', help='Refresh fire narrative for specific park(s) only')
     args = parser.parse_args()
     
     log("=" * 70)
     log(f"Precompute Narratives v5 (from {MIN_DATE})")
     log("=" * 70)
     
-    NarrativeGeneratorV5().run()
+    NarrativeGeneratorV5().run(only_parks=args.park)
 
 if __name__ == "__main__":
     main()
