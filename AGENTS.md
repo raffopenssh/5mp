@@ -322,12 +322,15 @@ Animates all toggled/pinned map layers over the time-slider window.
 | Pre-agg tables | `fire_grid_day/week/month` (base 0.1°, PK `(d, xi, yi)` WITHOUT ROWID; cell center = `xi*res, yi*res`) |
 | Agg builder | `scripts/build_fire_grid_agg.py` (full ~100s; `--since YYYY-MM-DD` incremental; called by `daily_fire_update.py` step 2c) |
 
-**Key behaviors** (all in `anim.js`):
-- Layer selection = `wantedLayers()`: reads `window.viewLayers` toggles + pinned layers. Fires load **only** when toggled/pinned (no always-on background).
-- Bbox: `activeBbox()` uses `currentBbox` (drawn/country selection) else viewport; data fetched AND canvas **clipped** to it (`draw()` top).
-- Temporal semantics: fires flash + afterglow (~2.2 buckets); trajectories build point-by-point at true dated speed with glowing head, then residual; patrol effort = grid-aligned green cells fading over `EFFORT_FADE_DAYS` (90); deforestation accumulates (45d flash); settlements/pinned infra static; turbidity accumulates (Chinko).
-- `chooseStep()`: ≤92d→day, ≤800d→week, else month. `chooseRes()`: by bbox width (0.05–0.25).
-- GIF export via `gifenc` CDN (80 frames, 720px).
+**Key behaviors** (all in `anim.js`, v2 — integrated into the time slider):
+- UI lives **inside** the time-slider header: play/date/speed/GIF/close inline, playhead + progress rendered in the slider track (playhead is pointer-draggable to scrub; pauses while dragging, resumes after). `#anim-open-btn` is a preset-tag-styled chip.
+- **Layer chips** (`.anim-chip`, staggered reveal like date tags — all always shown so users see what's available): fireGrid / firePts / trajs / effortGrid / effortPts / deforest / settlements / turb / infra. Lazy-load on first enable (`ensureLayer`); toggleable mid-play. turb/infra greyed (`.unavailable`) when nothing pinned.
+- Defaults from `viewLayers` toggles + pins; zoom ≥ `POINTS_ZOOM` (6.5) and bbox ≤ 40 deg² prefers real points. `firePts` = `/api/fire-frames?mode=points` (individual VIIRS detections, ≤60k, server falls back to grid). `effortPts` = patrol-effort **circles**: same aggregated frames as effortGrid, drawn as fire-style green glow + recency ring, newest visit per cell wins.
+- Map stays fully interactive (canvas pointer-events:none); pan/zoom outside the 30%-padded fetch bbox triggers debounced refetch (`onMoveEnd`), unless a drawn bbox is fixed (then canvas is clipped to it).
+- Temporal semantics: fire grid/points flash + afterglow; trajectories build at true dated speed with glowing head, then **ashen out** (red→grey→gone over `TRAJ_FADE_DAYS`=21); effort ages to ash over 90d so refreshes flash green; deforestation accumulates (45d flash); settlements/infra static; turbidity accumulates.
+- Speed +/−: click steps ×1.35, press-and-hold ramps (mobile). Keyboard: space/←/→/Esc.
+- **Share links**: `anim=<layers>&anim_speed&anim_t&anim_paused` written by `shareCurrentView()` (via `Animator.getState()`); restored through `window._pendingAnim` set in `restoreStateFromURL()`, polled by anim.js until map ready.
+- `chooseStep()`: ≤92d→day, ≤800d→week, else month. GIF export via `gifenc` CDN (80 frames, 720px; hidden on mobile).
 
 **Server-side** (`fire_frames.go`):
 - `/api/fire-frames?bbox&from&to&step=day|week|month&res=0.1` reads pre-agg tables (never `fire_detections` — a raw scan took 3min for full-span; agg is ~3s). Coarser `res` re-binned in SQL; `from` aligned to bucket start. If >200k points, auto-doubles `res` up to 2× twice instead of truncating.

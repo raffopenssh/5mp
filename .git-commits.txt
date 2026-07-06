@@ -1,3 +1,11 @@
+d201bb7c 2026-07-06 13:07:11 Animator v2: integrate into time slider with toggleable layer chips, points mode, share-link state
+e366b26c 2026-07-06 12:40:06 AGENTS.md: document time animator (APIs, pre-agg grid tables, tuning knobs)
+0c66df4e 2026-07-06 12:34:21 Animator: pre-aggregated fire grids (fast full-span), grid-aligned effort pixels, fires only when toggled, bbox clipping
+72082a78 2026-07-06 12:06:57 Add time animator: fire heatmap flash, dated trajectory build-up, patrol fade, deforest/turbidity accumulate, pinned infra static, GIF export
+80d9f3bb 2026-07-06 11:40:47 AGENTS.md: document fire_narrative_cache single-writer rule + fire-realtime count semantics
+432c64c7 2026-07-06 11:37:53 Fix fire UI issues: v5 cache overwrite, active-count truncation, dup weekly chart
+a484b90d 2026-07-06 11:22:59 Add session docs, OSM mining extracts, deprecated worldclim script
+dc8be8dc 2026-07-06 11:22:37 Handover: diagnose fire UI issues (stale v2 cache overwrite, 100-group cap, dup weekly chart)
 b292f5d9 2026-07-06 10:42:59 Popup UI: per-event deforest rows, stats tables, sparklines, filter chips
 608ab676 2026-07-06 10:07:58 Daily park refresh complete: live-run verified, cron installed, UI checked
 e8828ba7 2026-07-06 10:02:52 Track daily_park_refresh rotation state
@@ -10,11 +18,3 @@ a3053307 2026-07-06 10:02:28 Backfill full VIIRS fire history 2018-2025 into fir
 4ace5edb 2026-07-06 06:17:09 Cache CAF+SSD park waterway extracts; country PBFs deleted (283MB->27MB)
 9af6c1cb 2026-07-06 06:14:54 Turbidity scanner: all-country rollout + opportunistic infra enrichment
 3ce8cbfc 2026-07-06 06:00:52 Mining detection: per-park river turbidity scanner + server integration
-44f88026 2026-07-06 05:32:33 GFW integrated alerts scanner: 1 park/day rotation (CAR+SSD priority), 100km buffer, cell clustering
-91bae809 2026-07-06 04:59:55 Add mining-detection handover doc + river turbidity analysis scripts
-090a6baa 2026-07-05 08:03:51 Cleanup: remove DB backups, unused fire_detections_2025_2026 + old fire_trends; deprecate v2/v3 rebuild scripts
-5a6623a8 2026-07-05 07:05:01 Fire narratives: distance in outside-park text; api.go park fire counts via protected_area_id
-4805d56d 2026-07-05 06:37:05 daily_fire_update: ParkAssigner wiring, 20km gating, direct-first FIRMS, drop free proxies
-7e448627 2026-07-05 06:26:29 WIP fire 100km buffer: park assigner, dist_to_park_km, 20km relevance gating
-439c27b3 2026-07-05 05:38:09 UI: pixel fade at z13-15, clearer layer toggles, nicer test-env login CTA
-4c2a7440 2026-07-05 05:22:27 chore: refresh .git-commits.txt
