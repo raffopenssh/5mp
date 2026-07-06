@@ -1,3 +1,9 @@
+eb8c2a27 2026-07-06 14:22:26 Fix date preset tags vanishing after slider drag; animator follows date changes
+aa3e29c1 2026-07-06 13:56:09 Animated patrol circles: exact replica of the static pixel stack
+d9d5bbe2 2026-07-06 13:50:42 Fix line-gap artefacts in animated patrol effort (round-vs-floor grid snapping)
+d2805cf0 2026-07-06 13:24:35 Fix anim share-link restore: keep polling until restoreStateFromURL sets _pendingAnim
+49412c21 2026-07-06 13:21:02 Animator: cleaner badge layout, fire-style patrol circles, hide base pixels during effort anim
+dc6e040c 2026-07-06 13:08:20 AGENTS.md: document animator v2 (slider integration, chips, points mode, share state)
 d201bb7c 2026-07-06 13:07:11 Animator v2: integrate into time slider with toggleable layer chips, points mode, share-link state
 e366b26c 2026-07-06 12:40:06 AGENTS.md: document time animator (APIs, pre-agg grid tables, tuning knobs)
 0c66df4e 2026-07-06 12:34:21 Animator: pre-aggregated fire grids (fast full-span), grid-aligned effort pixels, fires only when toggled, bbox clipping
@@ -12,9 +18,3 @@ e8828ba7 2026-07-06 10:02:52 Track daily_park_refresh rotation state
 b993cfab 2026-07-06 10:02:37 Data updates from 3am daily_fire_update cron (trends, raw fire JSONs)
 a3053307 2026-07-06 10:02:28 Backfill full VIIRS fire history 2018-2025 into fire_detections
 9bcdd226 2026-07-06 06:57:29 Handover: mark daily park refresh implemented; list remaining steps
-26d26d8e 2026-07-06 06:57:07 Daily park refresh: wire rotation scans to fire/deforest/settlement refresh
-017da55b 2026-07-06 06:40:33 Handover: plan for wiring daily park rotation to fire/deforestation refresh
-0feca516 2026-07-06 06:23:29 Mining & Water Quality popup section + /api/parks/{id}/turbidity + pinning
-4ace5edb 2026-07-06 06:17:09 Cache CAF+SSD park waterway extracts; country PBFs deleted (283MB->27MB)
-9af6c1cb 2026-07-06 06:14:54 Turbidity scanner: all-country rollout + opportunistic infra enrichment
-3ce8cbfc 2026-07-06 06:00:52 Mining detection: per-park river turbidity scanner + server integration

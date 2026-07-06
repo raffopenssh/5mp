@@ -8,6 +8,9 @@ fetchpas
 *.sqlite3
 *.sqlite3-shm
 *.sqlite3-wal
+db.sqlite3.*.bak
+db.sqlite3.bak
+db.sqlite3.pre-*
 5mp.db
 *.db
 
@@ -53,3 +56,7 @@ data/fire_trajectories_v2/
 # Autofetch encryption key (auto-generated)
 .autofetch_key
 backup-zenodo
+
+# Local-only backups & raw downloads
+backups/*.sql
+data/worldclim/*.zip
