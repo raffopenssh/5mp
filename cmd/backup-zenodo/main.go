@@ -21,6 +21,7 @@ func main() {
 	dbPath := "db.sqlite3"
 	date := time.Now().UTC().Format("20060102")
 	backupFile := fmt.Sprintf("5mp_db_backup_%s.sqlite3", date)
+	compressedFile := backupFile + ".gz"
 	manifestFile := "data/db_backup_zenodo_manifest.json"
 	manifestKey := "db_backup"
 
@@ -43,6 +44,20 @@ func main() {
 		log.Fatalf("integrity check returned: %s", out)
 	}
 	log.Println("Integrity check: ok")
+
+	// Step 2b: Compress backup with gzip
+	log.Printf("Compressing backup: %s -> %s", backupFile, compressedFile)
+	compressCmd := exec.Command("gzip", "-f", "-6", backupFile)
+	compressCmd.Stdout = os.Stdout
+	compressCmd.Stderr = os.Stderr
+	if err := compressCmd.Run(); err != nil {
+		log.Fatalf("gzip compression failed: %v", err)
+	}
+	if fi, err := os.Stat(compressedFile); err == nil {
+		log.Printf("Compressed size: %d bytes", fi.Size())
+	} else {
+		log.Fatalf("compressed file not found: %v", err)
+	}
 
 	// Step 3: Upload to Zenodo as draft (Upload does NOT publish)
 	client := zenodo.New(token,
@@ -71,7 +86,7 @@ func main() {
 	}
 
 	log.Println("Uploading to Zenodo (draft only, will NOT publish)...")
-	if err := client.Upload(manifestKey, backupFile, version, meta, manifest); err != nil {
+	if err := client.Upload(manifestKey, compressedFile, version, meta, manifest); err != nil {
 		log.Fatalf("Zenodo upload failed: %v", err)
 	}
 
@@ -106,8 +121,8 @@ func main() {
 	log.Printf("Download:      %s/%s (requires auth)", entry.BucketURL, entry.Filename)
 
 	// Step 6: Remove local backup
-	log.Printf("Removing local backup: %s", backupFile)
-	if err := os.Remove(backupFile); err != nil {
+	log.Printf("Removing local backup: %s", compressedFile)
+	if err := os.Remove(compressedFile); err != nil {
 		log.Printf("WARNING: failed to remove local backup: %v", err)
 	} else {
 		log.Println("Local backup removed.")

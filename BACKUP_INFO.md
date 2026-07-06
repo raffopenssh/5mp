@@ -1,6 +1,47 @@
 # Database Backups
 
-## Latest Backup — April 1, 2026 (Zenodo Draft)
+## Latest Backup — July 6, 2026 (Zenodo Draft, gzip-compressed)
+
+| Field | Value |
+|-------|-------|
+| **Location** | Zenodo (draft, not published) |
+| **Deposition ID** | `19363779` |
+| **State** | Draft (unsubmitted) — no public DOI |
+| **Draft URL** | https://zenodo.org/deposit/19363779 |
+| **Bucket URL** | `https://zenodo.org/api/files/4bd66ea4-80b9-45f9-af7b-4237c268844a` |
+| **File** | `5mp_db_backup_20260706.sqlite3.gz` (gzip -6) |
+| **Size** | 2,608,679,381 bytes (~2.6 GB compressed, from ~8.8 GB db.sqlite3) |
+| **MD5** | `05d8a420e6486a4bb0932f2bc87e6f88` |
+| **Created** | July 6, 2026 17:03 UTC |
+| **Method** | SQLite `.backup` (atomic copy) + gzip compression |
+| **Manifest** | `data/db_backup_zenodo_manifest.json` |
+
+### Verification
+
+- ✅ PRAGMA integrity_check: **ok**
+- ✅ MD5: `05d8a420e6486a4bb0932f2bc87e6f88`
+- ✅ Zenodo HEAD check: HTTP 200
+- ✅ State: unsubmitted (draft, not public)
+
+### Download from Zenodo
+
+```bash
+# Requires ZENODO_TOKEN (draft deposits are not publicly accessible)
+curl -H "Authorization: Bearer $ZENODO_TOKEN" \
+  "https://zenodo.org/api/files/4bd66ea4-80b9-45f9-af7b-4237c268844a/5mp_db_backup_20260706.sqlite3.gz" \
+  -o 5mp_db_backup_20260706.sqlite3.gz
+gunzip 5mp_db_backup_20260706.sqlite3.gz
+```
+
+> Note: `cmd/backup-zenodo/` now gzip-compresses the backup before upload
+> (`.sqlite3.gz`). Zenodo's PUT endpoint intermittently returned 502s on
+> this large upload; the client's built-in retry/backoff eventually
+> succeeded — this is expected occasional flakiness for multi-GB uploads,
+> not a client bug.
+
+---
+
+## Previous Backup — April 1, 2026 (Zenodo Draft)
 
 | Field | Value |
 |-------|-------|
