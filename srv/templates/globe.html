@@ -8846,7 +8846,10 @@
 
         function applyViewLayer(name) {
             if (name === 'pixels') {
-                const vis = viewLayers.pixels ? 'visible' : 'none';
+                // while the animator renders patrol effort, keep base pixels hidden (overlap)
+                const animEffort = window.Animator && Animator.isOpen && Animator.isOpen() &&
+                    (Animator.getState().layers || []).some(l => l === 'effortGrid' || l === 'effortPts');
+                const vis = (viewLayers.pixels && !animEffort) ? 'visible' : 'none';
                 GRID_PIXEL_LAYERS.forEach(id => {
                     if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
                 });

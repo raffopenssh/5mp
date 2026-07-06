@@ -63,44 +63,58 @@
     const CSS = `
     #anim-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
 
-    /* open chip (idle state) — matches date preset tag styling */
-    #anim-open-btn { font-size: 10px; font-weight: 600; color: #22c55e; background: rgba(34,197,94,0.10);
-        border: 1px solid rgba(34,197,94,0.35); border-radius: 4px; padding: 2px 7px; margin-left: 10px;
-        cursor: pointer; letter-spacing: 0.3px; line-height: 1.4; white-space: nowrap; user-select: none;
+    /* open chip (idle state) — same badge geometry as the date preset tags (td/3d/…) */
+    #anim-open-btn { font-size: 9px; font-weight: 600; color: #22c55e; background: rgba(34,197,94,0.10);
+        border: 1px solid rgba(34,197,94,0.35); border-radius: 3px; padding: 1px 5px; margin-left: 8px;
+        cursor: pointer; letter-spacing: 0.3px; line-height: 1.3; white-space: nowrap; user-select: none;
         vertical-align: middle; transition: background .15s, border-color .15s; font-family: inherit; }
     #anim-open-btn:hover { background: rgba(34,197,94,0.22); border-color: #22c55e; }
     .time-slider-container.animating #anim-open-btn { display: none; }
 
-    /* inline controls in the slider header */
-    #anim-inline { display: inline-flex; align-items: center; gap: 6px; margin-left: 10px; }
-    .anim-btn { background: rgba(255,255,255,0.06); color: #ccc; border: 1px solid rgba(255,255,255,0.14);
-        border-radius: 4px; padding: 1px 8px; cursor: pointer; font-size: 12px; line-height: 1.5;
-        font-family: inherit; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
-    .anim-btn:hover { background: rgba(255,255,255,0.14); }
-    .anim-btn.primary { background: rgba(34,197,94,0.18); border-color: rgba(34,197,94,0.5); color: #22c55e; font-weight: 700; min-width: 30px; }
+    /* inline controls in the slider header — same badge height as the date tags */
+    #anim-inline { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; }
+    .anim-btn { background: rgba(255,255,255,0.04); color: #aaa; border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 3px; padding: 1px 6px; cursor: pointer; font-size: 10px; font-weight: 600; line-height: 1.3;
+        letter-spacing: 0.3px; font-family: inherit; user-select: none; -webkit-user-select: none; touch-action: manipulation;
+        transition: background .15s, border-color .15s, color .15s; }
+    .anim-btn:hover { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.35); color: #ccc; }
+    .anim-btn.primary { background: rgba(34,197,94,0.18); border-color: rgba(34,197,94,0.5); color: #22c55e; font-weight: 700; min-width: 26px; text-align: center; }
     .anim-btn.primary:hover { background: rgba(34,197,94,0.3); }
-    #anim-date-lbl { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 12px; color: #fff;
-        min-width: 84px; text-align: center; }
-    #anim-speed-lbl { font-size: 10px; color: #999; min-width: 52px; text-align: center; font-variant-numeric: tabular-nums; }
+    #anim-date-lbl { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 11px; color: #fff;
+        min-width: 80px; text-align: center; line-height: 1.3; }
+    #anim-speed-lbl { font-size: 9px; color: #999; min-width: 46px; text-align: center; font-variant-numeric: tabular-nums; line-height: 1.3; }
 
-    /* layer chips row */
-    #anim-chips { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin: 2px 0 4px; min-height: 18px; }
-    .anim-chip { font-size: 10px; font-weight: 600; color: #888; background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; padding: 1px 7px 1px 5px; cursor: pointer;
-        letter-spacing: 0.3px; line-height: 1.5; white-space: nowrap; user-select: none; -webkit-user-select: none;
+    /* staggered reveal (same expansion behaviour as the date preset tags) */
+    #anim-inline > * { max-width: 0; opacity: 0; padding-left: 0; padding-right: 0; margin: 0; border-width: 0;
+        overflow: hidden; min-width: 0;
+        transition: max-width .25s cubic-bezier(.4,0,.2,1), opacity .2s ease, padding .25s cubic-bezier(.4,0,.2,1),
+            background .15s, border-color .15s, color .15s; }
+    #anim-inline > .visible { max-width: 90px; opacity: 1; }
+    #anim-inline > .anim-btn.visible { padding: 1px 6px; border-width: 1px; }
+    #anim-inline > .anim-btn.primary.visible { min-width: 26px; }
+    #anim-inline > #anim-date-lbl.visible { min-width: 80px; }
+    #anim-inline > #anim-speed-lbl.visible { min-width: 46px; }
+
+    /* layer chips row — same badge geometry as the date tags */
+    #anim-chips { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; margin: 3px 0 4px; min-height: 16px; }
+    .anim-chip { font-size: 9px; font-weight: 600; color: #888; background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.12); border-radius: 3px; padding: 1px 5px; cursor: pointer;
+        letter-spacing: 0.3px; line-height: 1.3; white-space: nowrap; user-select: none; -webkit-user-select: none;
         display: inline-flex; align-items: center; gap: 4px; max-width: 0; opacity: 0; padding-left: 0; padding-right: 0;
         border-width: 0; overflow: hidden;
-        transition: max-width .25s cubic-bezier(.4,0,.2,1), opacity .2s ease, padding .25s cubic-bezier(.4,0,.2,1);
+        transition: max-width .25s cubic-bezier(.4,0,.2,1), opacity .2s ease, padding .25s cubic-bezier(.4,0,.2,1),
+            background .15s, border-color .15s, color .15s;
         font-family: inherit; }
-    .anim-chip.visible { max-width: 130px; opacity: 1; padding: 1px 7px 1px 5px; border-width: 1px; }
-    .anim-chip i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none;
+    .anim-chip.visible { max-width: 120px; opacity: 1; padding: 1px 6px 1px 5px; border-width: 1px; }
+    .anim-chip i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex: none;
         background: #555; transition: background .15s, box-shadow .15s; }
     .anim-chip.on { color: #ddd; background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.25); }
     .anim-chip.on i { box-shadow: 0 0 5px currentColor; }
     .anim-chip.loading i { animation: animChipPulse 0.8s infinite alternate; }
     @keyframes animChipPulse { 0% { opacity: .3; } 100% { opacity: 1; } }
-    .anim-chip:hover { border-color: rgba(255,255,255,0.35); color: #ccc; }
+    .anim-chip:hover { border-color: rgba(34,197,94,0.35); color: #ccc; }
     .anim-chip.unavailable { opacity: .35; pointer-events: none; }
+    .anim-chip.hidden { display: none; }
 
     /* playhead + progress inside the slider track */
     #anim-progress { position: absolute; height: 100%; background: rgba(255,255,255,0.35); border-radius: 3px;
@@ -126,14 +140,21 @@
     .time-slider-container.animating .time-slider-date { flex-wrap: wrap; row-gap: 2px; }
     .time-slider-container.animating .time-slider-date-part { white-space: nowrap; }
     @media (max-width: 768px) {
-        #anim-inline { gap: 4px; margin-left: 0; width: 100%; justify-content: flex-start; }
+        #anim-inline { gap: 3px; margin-left: 0; width: 100%; justify-content: flex-start; }
         .time-slider-container.animating .time-slider-date-tags { display: none; }
-        .anim-btn { font-size: 11px; padding: 1px 6px; }
-        #anim-date-lbl { font-size: 11px; min-width: 72px; }
-        #anim-speed-lbl { min-width: 44px; font-size: 9px; }
-        .anim-chip { font-size: 9px; }
-        .anim-chip.visible { max-width: 110px; }
+        #anim-date-lbl { font-size: 10px; min-width: 68px; }
+        #anim-inline > #anim-date-lbl.visible { min-width: 68px; }
+        #anim-speed-lbl { min-width: 40px; font-size: 9px; }
+        #anim-inline > #anim-speed-lbl.visible { min-width: 40px; }
+        .anim-chip { font-size: 8px; }
+        .anim-chip.visible { max-width: 100px; padding: 1px 5px 1px 4px; }
+        #anim-chips { gap: 2px; }
         #anim-gif { display: none; }
+        /* bigger touch targets: keep badge look, extend invisible hit area */
+        .anim-btn { padding: 3px 8px; font-size: 11px; }
+        #anim-inline > .anim-btn.visible { padding: 3px 8px; max-width: 60px;
+            overflow: visible; position: relative; }
+        #anim-inline > .anim-btn.visible::after { content: ''; position: absolute; inset: -8px -6px; }
     }
     `;
 
@@ -496,42 +517,45 @@
             }
         }
 
-        // --- patrol circles: same glow language as fires (green), ash-out over 90d ---
+        // --- patrol circles: fire-style pulse in the live pixel look ---
+        // Each patrolled cell lights up when visited (halo + fill + ring, like the
+        // live grid-halo/grid-fill/grid-cells layers) then fades out — same temporal
+        // language as the fire grid, so the animation reads "patrol intensity over time".
         ctx.globalCompositeOperation = 'lighter';
         if (on.effortPts && D.effortPts) {
             const eres = D.effortPts.res;
-            // latest state per cell wins (recency), so track drawn cells newest-first
-            const drawn = new Set();
-            const frames = D.effortPts.frames;
-            for (let i = frames.length - 1; i >= 0; i--) {
-                const f = frames[i];
-                if (f.t > t) continue;
-                const ageD = (t - f.t) / DAY;
-                if (ageD > EFFORT_FADE_DAYS) break;
-                const life = 1 - ageD / EFFORT_FADE_DAYS;             // 1 fresh → 0 aged
-                const flash = Math.max(0, 1 - (t - f.t) / (bMs * 2.2)); // fire-style afterglow on refresh
+            const fadeMs = Math.max(bMs * 3, DAY * 10); // linger a touch longer than fires
+            for (const f of D.effortPts.frames) {
+                if (f.t > t) break;
+                const age = t - f.t;
+                if (age > fadeMs) continue;
+                const k = 1 - age / fadeMs;                 // 1 fresh → 0 faded
+                const flash = Math.max(0, 1 - age / (fadeMs * 0.25)); // bright pop on arrival
                 for (const pt of f.pts) {
-                    const key = pt[0] + ':' + pt[1];
-                    if (drawn.has(key)) continue;   // newer visit already rendered this cell
-                    drawn.add(key);
                     const lon = pt[0] * eres, lat = pt[1] * eres;
                     const p = proj(lon, lat);
                     if (p.x < -25 || p.y < -25 || p.x > w + 25 || p.y > h + 25) continue;
                     const km = pt[2];
-                    const inten = Math.min(1, Math.log2(1 + km) / 7);
+                    const inten = Math.min(1, Math.log2(1 + km) / 7); // effort intensity 0..1
                     const cellPx = Math.abs(proj(lon + eres, lat).x - p.x);
-                    const r = Math.max(3, Math.min(cellPx * 0.75, 26)) * (0.6 + 0.4 * inten) * (1 + flash * 0.5);
-                    const alpha = (0.18 + 0.45 * flash) + 0.35 * inten;
-                    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
-                    g.addColorStop(0, effortAsh(1 - life, Math.min(0.95, alpha) * (0.3 + 0.7 * life)));
-                    g.addColorStop(0.5, effortAsh(1 - life, alpha * 0.5 * (0.3 + 0.7 * life)));
-                    g.addColorStop(1, 'rgba(74,222,128,0)');
+                    const rCell = Math.max(2.5, Math.min(cellPx * 0.5, 22));
+                    // halo glow — like grid-halo (#22c55e, heavy blur)
+                    const rHalo = rCell * (1.1 + 0.6 * inten) * (1 + flash * 0.35);
+                    const haloA = (0.10 + 0.30 * inten + 0.25 * flash) * k;
+                    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rHalo);
+                    g.addColorStop(0, `rgba(34,197,94,${Math.min(0.85, haloA)})`);
+                    g.addColorStop(0.55, `rgba(34,197,94,${Math.min(0.6, haloA * 0.55)})`);
+                    g.addColorStop(1, 'rgba(34,197,94,0)');
                     ctx.fillStyle = g;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
-                    // recency ring, like the live grid-cells outline
-                    ctx.strokeStyle = effortAsh(1 - life, 0.5 * life + 0.08);
+                    ctx.beginPath(); ctx.arc(p.x, p.y, rHalo, 0, 6.283); ctx.fill();
+                    // inner fill — like grid-fill (#4ade80), sized by intensity
+                    const rFill = rCell * (0.25 + 0.5 * inten);
+                    ctx.fillStyle = `rgba(74,222,128,${(0.25 + 0.45 * inten) * k})`;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, rFill, 0, 6.283); ctx.fill();
+                    // outline ring — like grid-cells stroke, fades with age
+                    ctx.strokeStyle = `rgba(74,222,128,${(0.20 + 0.55 * k) * k})`;
                     ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, r * 0.8, 0, 6.283); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(p.x, p.y, rCell, 0, 6.283); ctx.stroke();
                 }
             }
         }
@@ -766,10 +790,23 @@
         });
     }
 
+    // Hide the live map's patrol pixel layers while the animator renders effort
+    // (they'd overlap the animated circles/grid); restore per viewLayers.pixels.
+    const BASE_EFFORT_LAYERS = ['grid-halo', 'grid-glow', 'grid-fill', 'grid-cells'];
+    function syncBaseEffortVisibility() {
+        if (typeof map === 'undefined' || !map || !map.getLayer) return;
+        const animatingEffort = !!(A && (A.on.effortGrid || A.on.effortPts));
+        const vis = (animatingEffort || !(window.viewLayers && window.viewLayers.pixels)) ? 'none' : 'visible';
+        BASE_EFFORT_LAYERS.forEach(id => {
+            try { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis); } catch (e) {}
+        });
+    }
+
     async function toggleChip(name) {
         if (!A) return;
         A.on[name] = !A.on[name];
         updateChips();
+        syncBaseEffortVisibility();
         if (A.on[name]) await ensureLayer(name);
         draw(A.t);
         if (typeof updateShareURL === 'function') updateShareURL();
@@ -794,6 +831,10 @@
             <button id="anim-gif" class="anim-btn" title="Download animated GIF">GIF</button>
             <button id="anim-close" class="anim-btn" title="Close animator (Esc)">✕</button>`;
         dateRow.appendChild(inline);
+        // staggered expansion, same behaviour as the date preset tags
+        Array.from(inline.children).forEach((el, i) => {
+            setTimeout(() => el.classList.add('visible'), 40 + i * 45);
+        });
 
         // chips row
         const chips = document.createElement('div');
@@ -812,11 +853,17 @@
                 if (name === 'turb' && !(snap.turb.plume.length || snap.turb.mines.length)) chip.classList.add('unavailable');
                 if (name === 'infra' && !snap.statics.length) chip.classList.add('unavailable');
             }
+            // patrol layers: hidden entirely when the pixels toggle is off
+            // (unless a share link explicitly enabled them)
+            if ((name === 'effortGrid' || name === 'effortPts') &&
+                !(window.viewLayers && window.viewLayers.pixels) && !A.on[name]) {
+                chip.classList.add('hidden');
+            }
             chips.appendChild(chip);
         }
         header.appendChild(chips);
         // staggered reveal (same behaviour as date preset tags)
-        Array.from(chips.children).forEach((chip, i) => {
+        Array.from(chips.children).filter(c => !c.classList.contains('hidden')).forEach((chip, i) => {
             setTimeout(() => chip.classList.add('visible'), 60 + i * 45);
         });
         updateChips();
@@ -963,6 +1010,7 @@
             initial.forEach(n => { A.on[n] = true; });
 
             buildUI();
+            syncBaseEffortVisibility();
 
             // load initial layers with progress modal
             const active = initial.slice();
@@ -1002,6 +1050,7 @@
             teardownUI();
             hideLoading();
             A = null;
+            syncBaseEffortVisibility(); // restore live patrol pixels per viewLayers.pixels
             if (typeof updateShareURL === 'function') updateShareURL();
         },
         isOpen() { return !!A; },
