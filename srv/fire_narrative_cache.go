@@ -874,11 +874,33 @@ func (s *Server) classifyParkData(parkID string) (int, int) {
 
 func (s *Server) classifyParkSettlements(parkID string) int {
 	// Only reclassify if unclassified or older than 1 year
-	rows, err := s.DB.Query(`
+	return s.classifyParkSettlementsImpl(parkID, false)
+}
+
+// ClassifyParkSettlementsForce reclassifies ALL settlements in a park, ignoring
+// the 365-day staleness gate. Used by /api/refresh-park after infrastructure
+// enrichment (new roads/rivers/places) so narratives pick up the new context.
+func (s *Server) ClassifyParkSettlementsForce(parkID string) int {
+	return s.classifyParkSettlementsImpl(parkID, true)
+}
+
+func (s *Server) classifyParkSettlementsImpl(parkID string, force bool) int {
+	query := `
 		SELECT id, lat, lon, area_m2, population_est, nearest_place, distance_to_place_km
 		FROM park_settlements
 		WHERE park_id = ? AND (classified_at IS NULL OR classified_at < datetime('now', '-365 days'))
-	`, parkID)
+	`
+	if force {
+		// Skip mining candidates whose narrative carries a prepended
+		// turbidity-alert note (see RegisterMiningCandidate) — reclassifying
+		// would erase the note.
+		query = `
+		SELECT id, lat, lon, area_m2, population_est, nearest_place, distance_to_place_km
+		FROM park_settlements
+		WHERE park_id = ? AND (narrative IS NULL OR narrative NOT LIKE '[Turbidity alert%')
+	`
+	}
+	rows, err := s.DB.Query(query, parkID)
 	if err != nil {
 		return 0
 	}
@@ -923,11 +945,16 @@ func (s *Server) classifyParkSettlements(parkID string) int {
 }
 
 func (s *Server) classifyParkDeforestation(parkID string) int {
-	// Only reclassify if unclassified or older than 1 year
+	// Only classify rows that were never classified. Rows with an existing
+	// classification come from the python pipeline (scripts/rebuild_events_enhanced.py
+	// / scripts/daily_park_refresh.py) whose narrative style is canonical —
+	// the Go classifier writes a different text style and must never
+	// overwrite them (previously gated only by classified_at < now-365d,
+	// which would have rewritten everything a year after the python run).
 	rows, err := s.DB.Query(`
 		SELECT id, year, area_km2, lat, lon, COALESCE(pattern_type, '')
 		FROM deforestation_events
-		WHERE park_id = ? AND (classified_at IS NULL OR classified_at < datetime('now', '-365 days'))
+		WHERE park_id = ? AND classification IS NULL
 	`, parkID)
 	if err != nil {
 		return 0
