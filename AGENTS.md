@@ -287,6 +287,36 @@ curl -H "Authorization: Bearer REDACTED_TOKEN" \
 
 ---
 
+## ⚠️ Fire Narrative Cache — Single Writer Rule
+
+**Only `scripts/precompute_narratives_v5.py` may write `fire_narrative_cache`.**
+It reads `feature_geometries` and emits real v5 hash feature_ids
+(`CAF_Chinko_2026_grp_dcb35641`). The legacy Go path
+(`computeFireNarrativeForCache` → `getTrajectoryNarrativesFromJSON` in
+`srv/fire_narrative_cache.go`) reads stale `data/fire_trajectories_v2/` files and
+generates sequential `_grp_N` ids that don't exist in the features API →
+"Feature not found" when pinning fires. It is DEPRECATED — never re-wire it
+into refresh paths. (This bug shipped once via `/api/refresh-park`; fixed 2026-07-06.)
+
+- Per-park refresh: `python3 scripts/precompute_narratives_v5.py --park CAF_Chinko` (~1s, fire-only)
+- `/api/refresh-park` and the weekly cache worker shell out to this script.
+- Detect stale v2-written rows: `computed_at` without a `T` (Go used `CURRENT_TIMESTAMP`,
+  python uses ISO8601): `SELECT park_id FROM fire_narrative_cache WHERE computed_at NOT LIKE '%T%'`
+- Verify a cache is v5: feature_ids in `narratives[].feature_id` must be hex hashes, not `_grp_1`.
+
+**fire-realtime counts** (`srv/fire_realtime_handlers.go`, `handleFireRealtimeFromFeatures`):
+`groups[]` payload is capped at 100, but `total_groups`/`active_groups_count` are true
+pre-cap counts. `is_inside` = touches park (`dist_to_park_km≈0` or `pct_inside>0`);
+groups up to 20km outside are included for context but not "inside". Peak-season
+parks (Angola/DRC/Zambia, Jun–Aug) legitimately have 150–280 active groups — not a bug.
+
+**Popup fire chart**: single `areaSparkline` (globe.html) fed by `/api/parks/{id}/fire-trend`.
+Series keys: `v`=fires (red, left axis), `v2`=groups (orange, right axis),
+`v3`=prior-years ISO-week average (dashed gray, same axis as `v`, computed client-side
+from full history). Don't add a second weekly chart.
+
+---
+
 ## Data Processing Scripts (v5)
 
 See `docs/SCRIPTS.md` and `docs/FIRE_PIPELINE.md` for full details.
