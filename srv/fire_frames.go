@@ -97,6 +97,15 @@ func (s *Server) HandleAPIFireFrames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// mode=points: individual fire detections (for high-zoom animation).
+	// Only allowed for reasonably small bboxes; falls back to grid if too many.
+	if q.Get("mode") == "points" && (east-west)*(north-south) <= 40 {
+		if s.serveFirePoints(w, from, to, south, north, west, east) {
+			return
+		}
+		// too many points -> fall through to grid response
+	}
+
 	// Query pre-aggregated grid (built by scripts/build_fire_grid_agg.py,
 	// maintained incrementally by the daily fire cron). PK (d, xi, yi) makes
 	// the date-range scan fast even for full 2020-2026 continental spans.
@@ -181,6 +190,58 @@ func (s *Server) HandleAPIFireFrames(w http.ResponseWriter, r *http.Request) {
 		"frames":    frames,
 		"truncated": truncated,
 	})
+}
+
+// serveFirePoints returns individual fire detections for high-zoom animation.
+// Response: {"mode":"points","from":from,"points":[[lon,lat,dayOffset,frp],...]} sorted by date.
+// Returns false (and writes nothing) if the result would exceed the cap, so the
+// caller can fall back to the gridded response.
+func (s *Server) serveFirePoints(w http.ResponseWriter, from, to string, south, north, west, east float64) bool {
+	const maxPts = 60000
+	fromT, err := time.Parse("2006-01-02", from)
+	if err != nil {
+		return false
+	}
+	rows, err := s.DB.Query(`
+		SELECT longitude, latitude, acq_date, COALESCE(frp,0)
+		FROM fire_detections
+		WHERE acq_date >= ? AND acq_date <= ?
+		  AND latitude BETWEEN ? AND ?
+		  AND longitude BETWEEN ? AND ?
+		ORDER BY acq_date
+		LIMIT ?`, from, to, south, north, west, east, maxPts+1)
+	if err != nil {
+		return false
+	}
+	defer rows.Close()
+
+	pts := make([][4]interface{}, 0, 4096)
+	for rows.Next() {
+		var lon, lat, frp float64
+		var d string
+		if err := rows.Scan(&lon, &lat, &d, &frp); err != nil {
+			continue
+		}
+		if len(pts) >= maxPts {
+			return false // too many; caller falls back to grid
+		}
+		dt, err := time.Parse("2006-01-02", d)
+		if err != nil {
+			continue
+		}
+		day := int(dt.Sub(fromT).Hours() / 24)
+		pts = append(pts, [4]interface{}{math.Round(lon*10000) / 10000, math.Round(lat*10000) / 10000, day, math.Round(frp)})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"mode":   "points",
+		"from":   from,
+		"to":     to,
+		"points": pts,
+	})
+	return true
 }
 
 // serveEffortFrames returns time-bucketed patrol effort binned to the same

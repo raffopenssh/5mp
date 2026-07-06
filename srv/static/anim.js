@@ -1,39 +1,57 @@
 // ============================================================
-// 5MP Time Animator
-// Animates currently-visible/toggled/pinned data over the
-// selected time window on a canvas overlay above the MapLibre map.
+// 5MP Time Animator v2 — integrated into the time slider.
 //
-// Temporal semantics (deliberate, per layer):
-//   fires (heatmap)   : transient — flash + afterglow fading over ~2 buckets
-//   fire trajectories : build up point-by-point at true dated speed
-//                       (people/fire-front movement), bright head marker,
-//                       then fade to a dim residual trace after group ends
-//   patrol pixels     : fade over 90 days (coverage goes stale — recency)
-//   deforestation     : accumulates permanently, new events flash brighter
-//   settlements       : static context (no reliable event dates)
-//   turbidity plume   : dated sample pixels accumulate (sediment stays in
-//                       the record), new ones flash; mining sites static
-//   pinned park infra : roads/rivers/places/water/airstrips — static context
-//                       snapshotted from whatever is pinned on the map
+// - Controls live inside the time-slider header; progress playhead
+//   rendered inside the slider track (draggable to scrub).
+// - Layer chips (styled like date preset tags) let the user toggle
+//   exactly what animates: fire grid / fire points / fire paths /
+//   patrol grid / patrol points / deforestation / settlements /
+//   turbidity / pinned infrastructure. Lazy-loaded on first enable.
+// - Grid aggregates for wide views, real per-detection points for
+//   high zoom (server falls back to grid if the bbox is too big).
+// - Map stays fully interactive while animating (canvas is
+//   pointer-events:none); layer chips can be toggled mid-play.
+// - Speed: +/- click, press-and-hold to ramp (mobile friendly).
+// - Temporal semantics:
+//     fire grid/points : flash + afterglow (additive glow)
+//     fire paths       : build point-by-point at true dated speed,
+//                        then "ashen out" — red → grey → gone
+//     patrol effort    : same glow language in green; ages to ash
+//                        over 90d so recency/refresh is visible
+//     deforestation    : accumulates, new events flash
+//     settlements      : static context
+//     turbidity        : accumulates + flash; mines static
+//     pinned infra     : static context lines
+// - Share links: anim=<layers>&anim_speed&anim_t&anim_paused.
 // ============================================================
 (function () {
     'use strict';
 
     const DAY = 86400000;
-    const EFFORT_FADE_DAYS = 90;
-    const TRAJ_RESIDUAL_ALPHA = 0.18;
-    const TRAJ_FADE_DAYS = 30;      // head→residual fade after group end
-    const DEFOREST_FLASH_DAYS = 45; // new deforestation flashes bright
+    const EFFORT_FADE_DAYS = 90;   // effort ash-out horizon
+    const TRAJ_FADE_DAYS = 21;     // trajectory ashening after group end
+    const DEFOREST_FLASH_DAYS = 45;
+    const POINTS_ZOOM = 6.5;       // default to real points at/above this zoom
+    const POINTS_MAX_AREA = 40;    // deg², matches server cap
 
     let A = null; // active animator state
 
+    const LAYERS = {
+        fireGrid:    { label: 'fire grid',     color: '#ef4444', title: 'Aggregated fire heatmap (0.1° grid)' },
+        firePts:     { label: 'fire points',   color: '#ff7043', title: 'Individual VIIRS detections (high zoom)' },
+        trajs:       { label: 'fire paths',    color: '#fda668', title: 'Fire movement trajectories (build up, then ashen out)' },
+        effortGrid:  { label: 'patrol grid',   color: '#4ade80', title: 'Aggregated patrol effort (0.1° grid pixels)' },
+        effortPts:   { label: 'patrol circles', color: '#86efac', title: 'Patrol effort circles (like the live map) — age and ashen over 90d' },
+        deforest:    { label: 'deforest',      color: '#a855f7', title: 'Deforestation events (accumulate)' },
+        settlements: { label: 'settlements',   color: '#fbbf24', title: 'Settlements (static context)' },
+        turb:        { label: 'turbidity',     color: '#eab308', title: 'Turbidity plume + mining sites' },
+        infra:       { label: 'infra',         color: '#60a5fa', title: 'Pinned roads/rivers/places (static)' }
+    };
+    const LAYER_ORDER = ['fireGrid', 'firePts', 'trajs', 'effortGrid', 'effortPts', 'deforest', 'settlements', 'turb', 'infra'];
+
     function getPwdSafe() { return (typeof getPwd === 'function' ? getPwd() : '') || ''; }
     function toast(msg, type) { if (typeof showToast === 'function') showToast(msg, type || 'info'); }
-
-    function fmtDate(ms) {
-        const d = new Date(ms);
-        return d.toISOString().slice(0, 10);
-    }
+    function fmtDate(ms) { return new Date(ms).toISOString().slice(0, 10); }
     function fmtDateHuman(ms) {
         const d = new Date(ms);
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -41,35 +59,82 @@
     }
     function parseD(s) { return Date.parse(s + 'T00:00:00Z'); }
 
-    // ---------- UI ----------
+    // ---------- CSS ----------
     const CSS = `
-    #anim-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: 84px; z-index: 650;
-        background: rgba(12,14,16,0.94); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px;
-        padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; min-width: 340px; max-width: 94vw;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.6); font-family: inherit; color: #ddd; }
-    #anim-bar .anim-row { display: flex; align-items: center; gap: 10px; }
-    #anim-bar button { background: rgba(255,255,255,0.08); color: #ddd; border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 13px; line-height: 1; }
-    #anim-bar button:hover { background: rgba(255,255,255,0.16); }
-    #anim-bar button.primary { background: #16a34a; border-color: #16a34a; color: #fff; font-weight: 600; }
-    #anim-bar button.primary:hover { background: #15803d; }
-    #anim-bar .anim-date { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; color: #fff; min-width: 110px; text-align: center; }
-    #anim-scrub { flex: 1; min-width: 120px; accent-color: #22c55e; }
-    #anim-bar .anim-speed { font-size: 11px; color: #999; min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; }
-    #anim-bar .anim-legend { display: flex; gap: 8px; flex-wrap: wrap; font-size: 10px; color: #999; }
-    #anim-bar .anim-legend span { display: inline-flex; align-items: center; gap: 3px; }
-    #anim-bar .anim-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-    #anim-bar .anim-close { margin-left: auto; }
+    #anim-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+
+    /* open chip (idle state) — matches date preset tag styling */
+    #anim-open-btn { font-size: 10px; font-weight: 600; color: #22c55e; background: rgba(34,197,94,0.10);
+        border: 1px solid rgba(34,197,94,0.35); border-radius: 4px; padding: 2px 7px; margin-left: 10px;
+        cursor: pointer; letter-spacing: 0.3px; line-height: 1.4; white-space: nowrap; user-select: none;
+        vertical-align: middle; transition: background .15s, border-color .15s; font-family: inherit; }
+    #anim-open-btn:hover { background: rgba(34,197,94,0.22); border-color: #22c55e; }
+    .time-slider-container.animating #anim-open-btn { display: none; }
+
+    /* inline controls in the slider header */
+    #anim-inline { display: inline-flex; align-items: center; gap: 6px; margin-left: 10px; }
+    .anim-btn { background: rgba(255,255,255,0.06); color: #ccc; border: 1px solid rgba(255,255,255,0.14);
+        border-radius: 4px; padding: 1px 8px; cursor: pointer; font-size: 12px; line-height: 1.5;
+        font-family: inherit; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+    .anim-btn:hover { background: rgba(255,255,255,0.14); }
+    .anim-btn.primary { background: rgba(34,197,94,0.18); border-color: rgba(34,197,94,0.5); color: #22c55e; font-weight: 700; min-width: 30px; }
+    .anim-btn.primary:hover { background: rgba(34,197,94,0.3); }
+    #anim-date-lbl { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 12px; color: #fff;
+        min-width: 84px; text-align: center; }
+    #anim-speed-lbl { font-size: 10px; color: #999; min-width: 52px; text-align: center; font-variant-numeric: tabular-nums; }
+
+    /* layer chips row */
+    #anim-chips { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin: 2px 0 4px; min-height: 18px; }
+    .anim-chip { font-size: 10px; font-weight: 600; color: #888; background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; padding: 1px 7px 1px 5px; cursor: pointer;
+        letter-spacing: 0.3px; line-height: 1.5; white-space: nowrap; user-select: none; -webkit-user-select: none;
+        display: inline-flex; align-items: center; gap: 4px; max-width: 0; opacity: 0; padding-left: 0; padding-right: 0;
+        border-width: 0; overflow: hidden;
+        transition: max-width .25s cubic-bezier(.4,0,.2,1), opacity .2s ease, padding .25s cubic-bezier(.4,0,.2,1);
+        font-family: inherit; }
+    .anim-chip.visible { max-width: 130px; opacity: 1; padding: 1px 7px 1px 5px; border-width: 1px; }
+    .anim-chip i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none;
+        background: #555; transition: background .15s, box-shadow .15s; }
+    .anim-chip.on { color: #ddd; background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.25); }
+    .anim-chip.on i { box-shadow: 0 0 5px currentColor; }
+    .anim-chip.loading i { animation: animChipPulse 0.8s infinite alternate; }
+    @keyframes animChipPulse { 0% { opacity: .3; } 100% { opacity: 1; } }
+    .anim-chip:hover { border-color: rgba(255,255,255,0.35); color: #ccc; }
+    .anim-chip.unavailable { opacity: .35; pointer-events: none; }
+
+    /* playhead + progress inside the slider track */
+    #anim-progress { position: absolute; height: 100%; background: rgba(255,255,255,0.35); border-radius: 3px;
+        pointer-events: none; z-index: 1; mix-blend-mode: overlay; }
+    #anim-playhead { position: absolute; top: 50%; width: 4px; height: 18px; background: #fff; border-radius: 2px;
+        transform: translate(-50%, -50%); z-index: 3; cursor: ew-resize; box-shadow: 0 0 6px rgba(255,255,255,0.7);
+        touch-action: none; }
+    #anim-playhead::after { content: ''; position: absolute; inset: -8px -10px; }
+
+    .time-slider-container.animating { height: auto; min-height: 92px;
+        background: linear-gradient(to top, rgba(10,10,10,0.96) 0%, rgba(10,10,10,0.92) 80%, rgba(10,10,10,0.55) 100%); }
+    .time-slider-container.animating .time-slider-header { margin-bottom: 2px; }
+
     #anim-loading { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 700;
         background: rgba(12,14,16,0.95); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px;
-        padding: 26px 34px; text-align: center; color: #ddd; box-shadow: 0 8px 40px rgba(0,0,0,0.7); }
-    #anim-loading .flame { font-size: 30px; animation: animFlicker 0.9s infinite alternate; }
+        padding: 22px 30px; text-align: center; color: #ddd; box-shadow: 0 8px 40px rgba(0,0,0,0.7); }
+    #anim-loading .flame { font-size: 26px; animation: animFlicker 0.9s infinite alternate; }
     @keyframes animFlicker { 0% { transform: scale(1) rotate(-3deg); opacity: .8; } 100% { transform: scale(1.15) rotate(3deg); opacity: 1; } }
-    #anim-loading .bar { width: 220px; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; margin: 12px auto 4px; overflow: hidden; }
+    #anim-loading .bar { width: 200px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 3px; margin: 10px auto 4px; overflow: hidden; }
     #anim-loading .bar > div { height: 100%; width: 0%; background: linear-gradient(90deg,#f59e0b,#ef4444); border-radius: 3px; transition: width .3s; }
     #anim-loading .sub { font-size: 11px; color: #888; margin-top: 4px; }
-    #anim-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
-    @media (max-width: 640px) { #anim-bar { bottom: 70px; padding: 8px 10px; } #anim-bar .anim-date { font-size: 13px; min-width: 88px; } }
+
+    .time-slider-container.animating .time-slider-date { flex-wrap: wrap; row-gap: 2px; }
+    .time-slider-container.animating .time-slider-date-part { white-space: nowrap; }
+    @media (max-width: 768px) {
+        #anim-inline { gap: 4px; margin-left: 0; width: 100%; justify-content: flex-start; }
+        .time-slider-container.animating .time-slider-date-tags { display: none; }
+        .anim-btn { font-size: 11px; padding: 1px 6px; }
+        #anim-date-lbl { font-size: 11px; min-width: 72px; }
+        #anim-speed-lbl { min-width: 44px; font-size: 9px; }
+        .anim-chip { font-size: 9px; }
+        .anim-chip.visible { max-width: 110px; }
+        #anim-gif { display: none; }
+    }
     `;
 
     function injectCSS() {
@@ -85,7 +150,7 @@
         if (!el) {
             el = document.createElement('div');
             el.id = 'anim-loading';
-            el.innerHTML = '<div class="flame">🔥</div><div class="msg" style="margin-top:8px;font-size:13px;"></div><div class="bar"><div></div></div><div class="sub">preparing animation…</div>';
+            el.innerHTML = '<div class="flame">🔥</div><div class="msg" style="margin-top:6px;font-size:13px;"></div><div class="bar"><div></div></div><div class="sub">preparing animation…</div>';
             document.body.appendChild(el);
         }
         el.querySelector('.msg').textContent = msg;
@@ -93,11 +158,18 @@
     }
     function hideLoading() { const el = document.getElementById('anim-loading'); if (el) el.remove(); }
 
-    // ---------- data loading ----------
+    // ---------- geometry helpers ----------
     function activeBbox() {
-        if (typeof currentBbox !== 'undefined' && currentBbox && currentBbox.length === 4) return currentBbox.slice();
+        if (typeof currentBbox !== 'undefined' && currentBbox && currentBbox.length === 4) return { bbox: currentBbox.slice(), fixed: true };
         const b = map.getBounds();
-        return [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
+        // pad viewport 30% each side so panning a bit doesn't leave the data
+        const w = b.getEast() - b.getWest(), h = b.getNorth() - b.getSouth();
+        return { bbox: [b.getWest() - w * 0.3, b.getSouth() - h * 0.3, b.getEast() + w * 0.3, b.getNorth() + h * 0.3], fixed: false };
+    }
+    function bboxArea(bb) { return Math.abs((bb[2] - bb[0]) * (bb[3] - bb[1])); }
+    function viewportInside(bb) {
+        const b = map.getBounds();
+        return b.getWest() >= bb[0] && b.getSouth() >= bb[1] && b.getEast() <= bb[2] && b.getNorth() <= bb[3];
     }
 
     function pinnedTypes() {
@@ -109,17 +181,14 @@
                 else if (t.includes('deforest')) out.add('deforest');
                 else if (t.includes('settlement')) out.add('settlements');
             });
-        } catch (e) { /* pinnedLayers not in scope */ }
+        } catch (e) {}
         return out;
     }
 
-    // Snapshot GeoJSON data of everything currently pinned on the map
-    // (park layers + single-feature pins + realtime trajectories).
-    // Splits into: static infrastructure features and dated turbidity features.
     const STATIC_COLORS = { road: '#60a5fa', river: '#3b82f6', water: '#3b82f6', place: '#c084fc',
         infrastructure: '#22c55e', airstrip: '#22c55e', learned: '#22c55e' };
     function snapshotPinned() {
-        const statics = [];   // { geom, color, kind }
+        const statics = [];
         const turb = { plume: [], alerts: [], mines: [] };
         const seen = new Set();
         const style = map.getStyle();
@@ -137,31 +206,16 @@
                 const key = ft + ':' + (p.feature_id || JSON.stringify(f.geometry.coordinates && f.geometry.coordinates[0]));
                 if (seen.has(key)) continue;
                 seen.add(key);
-                // dated turbidity features get animated
                 if (ft === 'turbid_water') { turb.plume.push({ lon: f.geometry.coordinates[0], lat: f.geometry.coordinates[1], t: p.date ? parseD(p.date) : null }); continue; }
                 if (ft === 'turbidity_alert') { turb.alerts.push({ lon: f.geometry.coordinates[0], lat: f.geometry.coordinates[1], t: p.date ? parseD(p.date) : null }); continue; }
                 if (ft === 'mining_site') { turb.mines.push({ lon: f.geometry.coordinates[0], lat: f.geometry.coordinates[1] }); continue; }
-                // animated elsewhere — skip (fires/deforest/settlements come from API)
                 if (ft.includes('fire') || ft.includes('deforest') || ft === 'settlement') continue;
-                // everything else pinned = static infrastructure context
                 let color = '#9ca3af';
                 for (const k of Object.keys(STATIC_COLORS)) { if (ft.includes(k)) { color = STATIC_COLORS[k]; break; } }
                 statics.push({ geom: f.geometry, color });
             }
         }
         return { statics, turb };
-    }
-
-    function wantedLayers() {
-        const v = window.viewLayers || {};
-        const pins = pinnedTypes();
-        return {
-            pixels: !!v.pixels,
-            fires: !!v.fires || pins.has('fires'),
-            trajectories: !!v.fires || pins.has('fires'),
-            deforest: !!v.deforest || pins.has('deforest'),
-            settlements: !!v.settlements || pins.has('settlements')
-        };
     }
 
     function chooseStep(spanDays) {
@@ -173,8 +227,9 @@
         const w = Math.abs(bbox[2] - bbox[0]);
         if (w > 30) return 0.25;
         if (w > 10) return 0.1;
-        return 0.05;
+        return 0.1;
     }
+    function bucketMs(step) { return step === 'day' ? DAY : step === 'week' ? 7 * DAY : 30 * DAY; }
 
     async function fetchJSON(url) {
         const r = await fetch(url);
@@ -182,69 +237,92 @@
         return r.json();
     }
 
-    async function loadData(bbox, fromISO, toISO, layers) {
+    // ---------- per-layer lazy loaders ----------
+    async function loadLayer(name) {
         const pwd = encodeURIComponent(getPwdSafe());
-        const bb = bbox.map(v => v.toFixed(4)).join(',');
-        const spanDays = (parseD(toISO) - parseD(fromISO)) / DAY;
+        const bb = A.fetchBbox.map(v => v.toFixed(4)).join(',');
+        const fromISO = A.fromISO, toISO = A.toISO;
+        const spanDays = (A.t1 - A.t0) / DAY;
         const step = chooseStep(spanDays);
-        const res = chooseRes(bbox);
-        const data = { step, res, bbox: bbox.slice(), fireFrames: [], effortFrames: [], trajs: [], deforest: [], settlements: [] };
-        const tasks = [];
-        let done = 0, total = 0;
-        const tick = (label) => { done++; showLoading(label, Math.round(done / total * 100)); };
-
-        if (layers.fires) {
-            total++;
-            tasks.push(fetchJSON(`/api/fire-frames?bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}&pwd=${pwd}`).then(j => {
-                data.fireFrames = (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p }));
-                data.res = j.res || res;
-                tick('Fire heatmap loaded');
-            }));
-        }
-        if (layers.trajectories) {
-            total++;
-            tasks.push(fetchJSON(`/api/fire-anim-trajectories?bbox=${bb}&from=${fromISO}&to=${toISO}&limit=800&pwd=${pwd}`).then(j => {
-                data.trajs = (j.groups || []).map(g => {
+        const res = chooseRes(A.fetchBbox);
+        const D = A.data;
+        switch (name) {
+            case 'fireGrid': {
+                const j = await fetchJSON(`/api/fire-frames?bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}&pwd=${pwd}`);
+                D.fireGrid = { frames: (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p })), res: j.res || res, step: j.step || step };
+                break;
+            }
+            case 'firePts': {
+                if (bboxArea(A.fetchBbox) > POINTS_MAX_AREA) { D.firePts = null; throw new Error('zoom in for fire points'); }
+                const j = await fetchJSON(`/api/fire-frames?mode=points&bbox=${bb}&from=${fromISO}&to=${toISO}&step=day&pwd=${pwd}`);
+                if (j.mode !== 'points') { D.firePts = null; throw new Error('too many fires here — use fire grid'); }
+                const f0 = parseD(j.from);
+                D.firePts = (j.points || []).map(p => [p[0], p[1], f0 + p[2] * DAY, p[3]]);
+                break;
+            }
+            case 'trajs': {
+                const j = await fetchJSON(`/api/fire-anim-trajectories?bbox=${bb}&from=${fromISO}&to=${toISO}&limit=800&pwd=${pwd}`);
+                D.trajs = (j.groups || []).map(g => {
                     const pts = g.pts.map(p => [p[0], p[1], parseD(p[2])]).sort((a, b) => a[2] - b[2]);
                     return { pts, t0: pts[0][2], t1: pts[pts.length - 1][2], type: g.type, kmd: g.kmd };
                 }).filter(g => g.pts.length >= 2);
-                tick('Fire trajectories loaded');
-            }));
-        }
-        if (layers.pixels) {
-            total++;
-            tasks.push(fetchJSON(`/api/fire-frames?layer=effort&bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}&pwd=${pwd}`).then(j => {
-                data.effortFrames = (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p }));
-                data.effortRes = j.res || res;
-                tick('Patrol effort loaded');
-            }).catch(() => tick('Patrol effort skipped')));
-        }
-        if (layers.deforest) {
-            total++;
-            tasks.push(fetchJSON(`/api/features-in-bbox?type=deforestation&bbox=${bb}&from=${fromISO}&to=${toISO}&limit=1500&pwd=${pwd}`).then(j => {
-                data.deforest = (j.features || []).map(f => {
+                break;
+            }
+            case 'effortGrid': {
+                const j = await fetchJSON(`/api/fire-frames?layer=effort&bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}&pwd=${pwd}`);
+                D.effortGrid = { frames: (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p })), res: j.res || res, step: j.step || step };
+                break;
+            }
+            case 'effortPts': {
+                // same aggregated effort frames as effortGrid, rendered as circles
+                const j = await fetchJSON(`/api/fire-frames?layer=effort&bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}&pwd=${pwd}`);
+                D.effortPts = { frames: (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p })), res: j.res || res, step: j.step || step };
+                if (D.effortGrid === undefined) D.effortGrid = D.effortPts; // share
+                break;
+            }
+            case 'deforest': {
+                const j = await fetchJSON(`/api/features-in-bbox?type=deforestation&bbox=${bb}&from=${fromISO}&to=${toISO}&limit=1500&pwd=${pwd}`);
+                D.deforest = (j.features || []).map(f => {
                     const p = f.properties || {};
                     return { lon: p.lon, lat: p.lat, t: parseD(p.start_date || (p.year + '-06-15')), area: p.area_km2 || 0.1 };
                 }).filter(d => d.lon != null && !isNaN(d.t)).sort((a, b) => a.t - b.t);
-                tick('Deforestation loaded');
-            }).catch(() => tick('Deforestation skipped')));
-        }
-        if (layers.settlements) {
-            total++;
-            tasks.push(fetchJSON(`/api/features-in-bbox?type=settlement&bbox=${bb}&limit=1500&pwd=${pwd}`).then(j => {
-                data.settlements = (j.features || []).map(f => {
+                break;
+            }
+            case 'settlements': {
+                const j = await fetchJSON(`/api/features-in-bbox?type=settlement&bbox=${bb}&limit=1500&pwd=${pwd}`);
+                D.settlements = (j.features || []).map(f => {
                     const p = f.properties || {};
                     return { lon: p.lon, lat: p.lat };
                 }).filter(d => d.lon != null);
-                tick('Settlements loaded');
-            }).catch(() => tick('Settlements skipped')));
+                break;
+            }
+            case 'turb': case 'infra': {
+                const snap = snapshotPinned();
+                D.turb = snap.turb;
+                D.infra = snap.statics;
+                break;
+            }
         }
-        showLoading('Fetching data…', 2);
-        await Promise.all(tasks);
-        return data;
     }
 
-    // ---------- rendering ----------
+    function ensureLayer(name) {
+        if (A.data[name] !== undefined) return Promise.resolve();
+        if (A.loading[name]) return A.loading[name];
+        const chip = document.querySelector(`.anim-chip[data-layer="${name}"]`);
+        if (chip) chip.classList.add('loading');
+        A.loading[name] = loadLayer(name).catch(e => {
+            A.on[name] = false;
+            toast(e.message, 'warning');
+        }).finally(() => {
+            delete A.loading[name];
+            if (chip) chip.classList.remove('loading');
+            updateChips();
+            if (A) draw(A.t);
+        });
+        return A.loading[name];
+    }
+
+    // ---------- canvas ----------
     function makeCanvas() {
         const mapEl = map.getContainer();
         const c = document.createElement('canvas');
@@ -262,9 +340,6 @@
         return { canvas: c, resize };
     }
 
-    function bucketMs(step) { return step === 'day' ? DAY : step === 'week' ? 7 * DAY : 30 * DAY; }
-
-    // Draw any GeoJSON geometry as static context (thin, semi-transparent).
     function drawGeom(ctx, geom, color, proj, w, h) {
         const line = (coords) => {
             ctx.beginPath();
@@ -280,17 +355,13 @@
         switch (geom.type) {
             case 'Point': {
                 const p = proj(geom.coordinates[0], geom.coordinates[1]);
-                if (p.x >= -10 && p.y >= -10 && p.x <= w + 10 && p.y <= h + 10) {
-                    ctx.beginPath(); ctx.arc(p.x, p.y, 2.2, 0, 6.283); ctx.fill();
-                }
+                if (p.x >= -10 && p.y >= -10 && p.x <= w + 10 && p.y <= h + 10) { ctx.beginPath(); ctx.arc(p.x, p.y, 2.2, 0, 6.283); ctx.fill(); }
                 break;
             }
             case 'MultiPoint':
                 for (const c of geom.coordinates) {
                     const p = proj(c[0], c[1]);
-                    if (p.x >= -10 && p.y >= -10 && p.x <= w + 10 && p.y <= h + 10) {
-                        ctx.beginPath(); ctx.arc(p.x, p.y, 2.2, 0, 6.283); ctx.fill();
-                    }
+                    if (p.x >= -10 && p.y >= -10 && p.x <= w + 10 && p.y <= h + 10) { ctx.beginPath(); ctx.arc(p.x, p.y, 2.2, 0, 6.283); ctx.fill(); }
                 }
                 break;
             case 'LineString': line(geom.coordinates); break;
@@ -301,39 +372,53 @@
         ctx.globalAlpha = 1;
     }
 
+    // red → ash-grey interpolation for trajectory fade-out
+    function ashColor(k, alpha) {
+        // k: 0 = fresh red, 1 = fully ash
+        const r = Math.round(239 + (140 - 239) * k);
+        const g = Math.round(68 + (140 - 68) * k);
+        const b = Math.round(68 + (140 - 68) * k);
+        return `rgba(${r},${g},${b},${alpha})`;
+    }
+    // green → ash for effort aging
+    function effortAsh(k, alpha) {
+        const r = Math.round(74 + (130 - 74) * k);
+        const g = Math.round(222 + (135 - 222) * k);
+        const b = Math.round(128 + (130 - 128) * k);
+        return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    // ---------- draw ----------
     function draw(t) {
+        if (!A) return;
         const ctx = A.ctx;
         const w = A.canvas.clientWidth, h = A.canvas.clientHeight;
         ctx.clearRect(0, 0, w, h);
         const proj = (lon, lat) => map.project([lon, lat]);
         const zoom = map.getZoom();
-        const bMs = bucketMs(A.data.step);
+        const D = A.data, on = A.on;
+        const step = (D.fireGrid && D.fireGrid.step) || chooseStep((A.t1 - A.t0) / DAY);
+        const bMs = bucketMs(step);
 
-        // Clip rendering to the selected bbox (if any) + subtle outline
+        // clip to fixed bbox selection if present
         let clipped = false;
-        if (A.data.bbox && typeof currentBbox !== 'undefined' && currentBbox) {
-            const bb = A.data.bbox;
+        if (A.bboxFixed) {
+            const bb = A.fetchBbox;
             const p0 = proj(bb[0], bb[3]), p1 = proj(bb[2], bb[1]);
             ctx.save();
             ctx.strokeStyle = 'rgba(255,255,255,0.25)';
             ctx.lineWidth = 1;
             ctx.strokeRect(p0.x, p0.y, p1.x - p0.x, p1.y - p0.y);
-            ctx.beginPath();
-            ctx.rect(p0.x, p0.y, p1.x - p0.x, p1.y - p0.y);
-            ctx.clip();
+            ctx.beginPath(); ctx.rect(p0.x, p0.y, p1.x - p0.x, p1.y - p0.y); ctx.clip();
             clipped = true;
         }
 
-        // --- pinned static infrastructure: roads/rivers/places/etc ---
-        if (A.data.statics && A.data.statics.length) {
-            for (const s of A.data.statics) {
-                drawGeom(ctx, s.geom, s.color, proj, w, h);
-            }
-        }
+        // --- infra (static) ---
+        if (on.infra && D.infra) for (const s of D.infra) drawGeom(ctx, s.geom, s.color, proj, w, h);
 
-        // --- turbidity: mining sites static; plume pixels accumulate + flash ---
-        if (A.data.turb) {
-            const tb = A.data.turb;
+        // --- turbidity ---
+        if (on.turb && D.turb) {
+            const tb = D.turb;
             if (tb.mines.length) {
                 ctx.fillStyle = 'rgba(239,68,68,0.8)';
                 ctx.strokeStyle = 'rgba(255,255,255,0.6)';
@@ -345,7 +430,7 @@
                 }
             }
             for (const pt of tb.plume) {
-                if (pt.t && pt.t > t) continue;   // appears at its scan date, then stays
+                if (pt.t && pt.t > t) continue;
                 const p = proj(pt.lon, pt.lat);
                 if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) continue;
                 const age = pt.t ? (t - pt.t) / DAY : 999;
@@ -365,19 +450,19 @@
             }
         }
 
-        // --- settlements: static context, dim yellow ---
-        if (A.data.settlements.length) {
+        // --- settlements (static) ---
+        if (on.settlements && D.settlements) {
             ctx.fillStyle = 'rgba(251,191,36,0.45)';
-            for (const s of A.data.settlements) {
+            for (const s of D.settlements) {
                 const p = proj(s.lon, s.lat);
                 if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) continue;
                 ctx.beginPath(); ctx.arc(p.x, p.y, 1.6, 0, 6.283); ctx.fill();
             }
         }
 
-        // --- deforestation: accumulate; recent flash brighter ---
-        if (A.data.deforest.length) {
-            for (const d of A.data.deforest) {
+        // --- deforestation (accumulate + flash) ---
+        if (on.deforest && D.deforest) {
+            for (const d of D.deforest) {
                 if (d.t > t) break;
                 const p = proj(d.lon, d.lat);
                 if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) continue;
@@ -389,33 +474,73 @@
             }
         }
 
-        // --- patrol effort: green grid cells fading over 90 days ---
-        if (A.data.effortFrames.length) {
-            const eres = A.data.effortRes || A.data.res || 0.1;
-            for (const f of A.data.effortFrames) {
+        // --- patrol grid: flat grid-aligned pixels, ash-out over 90d ---
+        if (on.effortGrid && D.effortGrid) {
+            const eres = D.effortGrid.res;
+            for (const f of D.effortGrid.frames) {
                 if (f.t > t) break;
                 const ageD = (t - f.t) / DAY;
                 if (ageD > EFFORT_FADE_DAYS) continue;
-                const alpha = (0.2 + 0.55 * (1 - ageD / EFFORT_FADE_DAYS));
+                const life = 1 - ageD / EFFORT_FADE_DAYS;
                 for (const pt of f.pts) {
                     const lon = pt[0] * eres, lat = pt[1] * eres;
                     const p0 = proj(lon - eres / 2, lat + eres / 2);
                     const p1 = proj(lon + eres / 2, lat - eres / 2);
                     if (p1.x < -10 || p1.y < -10 || p0.x > w + 10 || p0.y > h + 10) continue;
                     const km = pt[2];
-                    const inten = Math.min(1, Math.log2(1 + km) / 7); // ~128km/bucket saturates
-                    ctx.fillStyle = `rgba(74,222,128,${alpha * (0.35 + 0.65 * inten)})`;
+                    const inten = Math.min(1, Math.log2(1 + km) / 7);
+                    const alpha = (0.2 + 0.55 * life) * (0.35 + 0.65 * inten);
+                    ctx.fillStyle = effortAsh(1 - life, alpha);
                     ctx.fillRect(p0.x, p0.y, Math.max(1.5, p1.x - p0.x), Math.max(1.5, p1.y - p0.y));
                 }
             }
         }
 
-        // --- fire heatmap: flash + afterglow (additive) ---
-        if (A.data.fireFrames.length) {
-            ctx.globalCompositeOperation = 'lighter';
+        // --- patrol circles: same glow language as fires (green), ash-out over 90d ---
+        ctx.globalCompositeOperation = 'lighter';
+        if (on.effortPts && D.effortPts) {
+            const eres = D.effortPts.res;
+            // latest state per cell wins (recency), so track drawn cells newest-first
+            const drawn = new Set();
+            const frames = D.effortPts.frames;
+            for (let i = frames.length - 1; i >= 0; i--) {
+                const f = frames[i];
+                if (f.t > t) continue;
+                const ageD = (t - f.t) / DAY;
+                if (ageD > EFFORT_FADE_DAYS) break;
+                const life = 1 - ageD / EFFORT_FADE_DAYS;             // 1 fresh → 0 aged
+                const flash = Math.max(0, 1 - (t - f.t) / (bMs * 2.2)); // fire-style afterglow on refresh
+                for (const pt of f.pts) {
+                    const key = pt[0] + ':' + pt[1];
+                    if (drawn.has(key)) continue;   // newer visit already rendered this cell
+                    drawn.add(key);
+                    const lon = pt[0] * eres, lat = pt[1] * eres;
+                    const p = proj(lon, lat);
+                    if (p.x < -25 || p.y < -25 || p.x > w + 25 || p.y > h + 25) continue;
+                    const km = pt[2];
+                    const inten = Math.min(1, Math.log2(1 + km) / 7);
+                    const cellPx = Math.abs(proj(lon + eres, lat).x - p.x);
+                    const r = Math.max(3, Math.min(cellPx * 0.75, 26)) * (0.6 + 0.4 * inten) * (1 + flash * 0.5);
+                    const alpha = (0.18 + 0.45 * flash) + 0.35 * inten;
+                    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+                    g.addColorStop(0, effortAsh(1 - life, Math.min(0.95, alpha) * (0.3 + 0.7 * life)));
+                    g.addColorStop(0.5, effortAsh(1 - life, alpha * 0.5 * (0.3 + 0.7 * life)));
+                    g.addColorStop(1, 'rgba(74,222,128,0)');
+                    ctx.fillStyle = g;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
+                    // recency ring, like the live grid-cells outline
+                    ctx.strokeStyle = effortAsh(1 - life, 0.5 * life + 0.08);
+                    ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, r * 0.8, 0, 6.283); ctx.stroke();
+                }
+            }
+        }
+
+        // --- fire grid: flash + afterglow ---
+        if (on.fireGrid && D.fireGrid) {
             const fadeMs = bMs * 2.2;
-            const res = A.data.res;
-            for (const f of A.data.fireFrames) {
+            const res = D.fireGrid.res;
+            for (const f of D.fireGrid.frames) {
                 if (f.t > t) break;
                 const age = t - f.t;
                 if (age > fadeMs) continue;
@@ -434,21 +559,43 @@
                     ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
                 }
             }
-            ctx.globalCompositeOperation = 'source-over';
         }
+        // --- fire points: individual detections flash + afterglow ---
+        if (on.firePts && D.firePts) {
+            const fadeMs = DAY * 3;
+            for (const pt of D.firePts) {
+                if (pt[2] > t) break;
+                const age = t - pt[2];
+                if (age > fadeMs) continue;
+                const k = 1 - age / fadeMs;
+                const p = proj(pt[0], pt[1]);
+                if (p.x < -15 || p.y < -15 || p.x > w + 15 || p.y > h + 15) continue;
+                const frp = pt[3] || 1;
+                const r = (2 + Math.min(6, Math.log2(1 + frp))) * Math.max(0.6, zoom / 7);
+                const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+                g.addColorStop(0, `rgba(255,${Math.round(150 + 80 * k)},50,${0.6 * k + 0.1})`);
+                g.addColorStop(0.5, `rgba(239,68,68,${0.35 * k})`);
+                g.addColorStop(1, 'rgba(239,68,68,0)');
+                ctx.fillStyle = g;
+                ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
+            }
+        }
+        ctx.globalCompositeOperation = 'source-over';
 
-        // --- fire trajectories: build up at true speed, head marker, residual trace ---
-        if (A.data.trajs.length) {
-            for (const g of A.data.trajs) {
+        // --- fire trajectories: build up one-by-one, then ashen out (red → grey → gone) ---
+        if (on.trajs && D.trajs) {
+            for (const g of D.trajs) {
                 if (g.t0 > t) continue;
-                let alpha;
+                let alpha, ash;
                 if (t <= g.t1) {
-                    alpha = 0.95;
+                    alpha = 0.95; ash = 0;
                 } else {
                     const fade = (t - g.t1) / (TRAJ_FADE_DAYS * DAY);
-                    alpha = Math.max(TRAJ_RESIDUAL_ALPHA, 0.95 - fade * (0.95 - TRAJ_RESIDUAL_ALPHA));
+                    if (fade >= 1) continue;               // fully gone
+                    ash = Math.min(1, fade * 1.6);         // grey out first…
+                    alpha = 0.95 * (1 - fade);             // …then vanish
                 }
-                ctx.strokeStyle = `rgba(239,68,68,${alpha})`;
+                ctx.strokeStyle = ashColor(ash, alpha);
                 ctx.lineWidth = t <= g.t1 ? 2.5 : 1.5;
                 ctx.lineJoin = 'round'; ctx.lineCap = 'round';
                 ctx.beginPath();
@@ -461,7 +608,6 @@
                         else ctx.lineTo(p.x, p.y);
                         headX = p.x; headY = p.y;
                     } else {
-                        // interpolate partial segment toward next point (true speed)
                         if (started && i > 0) {
                             const prev = g.pts[i - 1];
                             const span = pt[2] - prev[2];
@@ -480,7 +626,6 @@
                     }
                 }
                 if (started) ctx.stroke();
-                // head marker while active
                 if (headX !== null && t <= g.t1 + 2 * DAY) {
                     const gr = ctx.createRadialGradient(headX, headY, 0, headX, headY, 7);
                     gr.addColorStop(0, 'rgba(255,220,120,0.95)');
@@ -506,14 +651,29 @@
         if (A.playing) A.raf = requestAnimationFrame(loop);
     }
 
+    function sliderRangePcts() {
+        const sh = document.getElementById('time-slider-start');
+        const eh = document.getElementById('time-slider-end');
+        const sp = sh ? parseFloat(sh.style.left) || 0 : 0;
+        const ep = eh ? parseFloat(eh.style.left) || 100 : 100;
+        return [sp, ep];
+    }
+
     function drawAndSync() {
         draw(A.t);
-        const el = document.getElementById('anim-date');
+        const el = document.getElementById('anim-date-lbl');
         if (el) el.textContent = fmtDateHuman(A.t);
-        const sc = document.getElementById('anim-scrub');
-        if (sc && !A.scrubbing) sc.value = Math.round((A.t - A.t0) / (A.t1 - A.t0) * 1000);
         const sp = document.getElementById('anim-speed-lbl');
         if (sp) sp.textContent = fmtSpeed();
+        // playhead + progress in slider track
+        const [s, e] = sliderRangePcts();
+        const frac = Math.max(0, Math.min(1, (A.t - A.t0) / (A.t1 - A.t0)));
+        const pct = s + (e - s) * frac;
+        const ph = document.getElementById('anim-playhead');
+        if (ph) ph.style.left = pct + '%';
+        const pr = document.getElementById('anim-progress');
+        if (pr) { pr.style.left = s + '%'; pr.style.width = (pct - s) + '%'; }
+        if (typeof window._animShareSync === 'function') window._animShareSync();
     }
 
     function fmtSpeed() {
@@ -544,10 +704,9 @@
         pause();
         const btn = document.getElementById('anim-gif');
         try {
-            btn.textContent = '⏳ 0%';
+            btn.textContent = '⏳0%';
             const gifenc = await import('https://unpkg.com/gifenc@1.0.3/dist/gifenc.esm.js');
             const { GIFEncoder, quantize, applyPalette } = gifenc;
-
             const mapCanvas = map.getCanvas();
             const srcW = A.canvas.clientWidth, srcH = A.canvas.clientHeight;
             const outW = Math.min(720, srcW);
@@ -555,12 +714,9 @@
             const off = document.createElement('canvas');
             off.width = outW; off.height = outH;
             const octx = off.getContext('2d', { willReadFrequently: true });
-
-            const frames = 80;                       // total gif frames
-            const delayMs = 100;                     // 10 fps
+            const frames = 80, delayMs = 100;
             const enc = GIFEncoder();
             const span = A.t1 - A.t0;
-
             for (let i = 0; i < frames; i++) {
                 const t = A.t0 + span * i / (frames - 1);
                 draw(t);
@@ -568,19 +724,17 @@
                 octx.fillRect(0, 0, outW, outH);
                 octx.drawImage(mapCanvas, 0, 0, outW, outH);
                 octx.drawImage(A.canvas, 0, 0, outW, outH);
-                // date stamp
                 octx.font = 'bold 16px sans-serif';
                 octx.fillStyle = 'rgba(0,0,0,0.55)';
                 octx.fillRect(8, outH - 30, 150, 22);
                 octx.fillStyle = '#fff';
                 octx.fillText(fmtDateHuman(t), 14, outH - 14);
-
                 const { data } = octx.getImageData(0, 0, outW, outH);
                 const palette = quantize(data, 256);
                 const index = applyPalette(data, palette);
                 enc.writeFrame(index, outW, outH, { palette, delay: delayMs });
-                btn.textContent = '⏳ ' + Math.round((i + 1) / frames * 100) + '%';
-                if (i % 8 === 0) await new Promise(r => setTimeout(r, 0)); // keep UI alive
+                btn.textContent = '⏳' + Math.round((i + 1) / frames * 100) + '%';
+                if (i % 8 === 0) await new Promise(r => setTimeout(r, 0));
             }
             enc.finish();
             const blob = new Blob([enc.bytes()], { type: 'image/gif' });
@@ -595,126 +749,289 @@
             toast('GIF export failed: ' + e.message, 'error');
         } finally {
             A.recording = false;
-            btn.textContent = '⬇ GIF';
+            btn.textContent = 'GIF';
             drawAndSync();
         }
     }
 
-    // ---------- control bar ----------
-    function buildBar(layers) {
-        const bar = document.createElement('div');
-        bar.id = 'anim-bar';
-        const chips = [];
-        if (layers.fires) chips.push('<span><i style="background:#ef4444"></i>fires</span>');
-        if (layers.trajectories) chips.push('<span><i style="background:#ff7832"></i>fire movement</span>');
-        if (layers.pixels) chips.push('<span><i style="background:#4ade80"></i>patrols (fade 90d)</span>');
-        if (layers.deforest) chips.push('<span><i style="background:#a855f7"></i>deforestation (accumulates)</span>');
-        if (layers.settlements) chips.push('<span><i style="background:#fbbf24"></i>settlements</span>');
-        if (A.data.turb && (A.data.turb.plume.length || A.data.turb.mines.length)) chips.push('<span><i style="background:#eab308"></i>turbidity (accumulates)</span>');
-        if (A.data.statics && A.data.statics.length) chips.push('<span><i style="background:#60a5fa"></i>pinned infrastructure</span>');
-        bar.innerHTML = `
-            <div class="anim-row">
-                <button id="anim-play" class="primary" title="Play/Pause (space)">▶</button>
-                <span class="anim-date" id="anim-date"></span>
-                <input type="range" id="anim-scrub" min="0" max="1000" value="0">
-                <button id="anim-slower" title="Slower">−</button>
-                <span class="anim-speed" id="anim-speed-lbl"></span>
-                <button id="anim-faster" title="Faster">+</button>
-                <button id="anim-gif" title="Download animated GIF">⬇ GIF</button>
-                <button id="anim-close" class="anim-close" title="Close animator">✕</button>
-            </div>
-            <div class="anim-legend">${chips.join('')}</div>`;
-        document.body.appendChild(bar);
+    // ---------- chips ----------
+    function updateChips() {
+        if (!A) return;
+        document.querySelectorAll('.anim-chip').forEach(chip => {
+            const name = chip.dataset.layer;
+            chip.classList.toggle('on', !!A.on[name]);
+            const dot = chip.querySelector('i');
+            if (dot) dot.style.background = A.on[name] ? LAYERS[name].color : '#555';
+            if (A.on[name]) chip.style.color = '';
+        });
+    }
 
-        bar.querySelector('#anim-play').onclick = () => A.playing ? pause() : play();
-        bar.querySelector('#anim-close').onclick = () => window.Animator.close();
-        bar.querySelector('#anim-gif').onclick = exportGIF;
-        bar.querySelector('#anim-slower').onclick = () => { A.speed = Math.max(0.25, A.speed / 1.6); drawAndSync(); };
-        bar.querySelector('#anim-faster').onclick = () => { A.speed = Math.min(365, A.speed * 1.6); drawAndSync(); };
-        const sc = bar.querySelector('#anim-scrub');
-        sc.oninput = () => {
-            A.scrubbing = true;
-            A.t = A.t0 + (A.t1 - A.t0) * sc.value / 1000;
-            draw(A.t);
-            document.getElementById('anim-date').textContent = fmtDateHuman(A.t);
+    async function toggleChip(name) {
+        if (!A) return;
+        A.on[name] = !A.on[name];
+        updateChips();
+        if (A.on[name]) await ensureLayer(name);
+        draw(A.t);
+        if (typeof updateShareURL === 'function') updateShareURL();
+    }
+
+    // ---------- UI build / teardown ----------
+    function buildUI() {
+        const container = document.getElementById('time-slider-container');
+        const header = container.querySelector('.time-slider-header');
+        const dateRow = document.getElementById('time-slider-date');
+        container.classList.add('animating');
+
+        // inline controls in the date row
+        const inline = document.createElement('span');
+        inline.id = 'anim-inline';
+        inline.innerHTML = `
+            <button id="anim-play" class="anim-btn primary" title="Play/Pause (space)">⏸</button>
+            <span id="anim-date-lbl"></span>
+            <button id="anim-slower" class="anim-btn" title="Slower (hold to ramp)">−</button>
+            <span id="anim-speed-lbl"></span>
+            <button id="anim-faster" class="anim-btn" title="Faster (hold to ramp)">+</button>
+            <button id="anim-gif" class="anim-btn" title="Download animated GIF">GIF</button>
+            <button id="anim-close" class="anim-btn" title="Close animator (Esc)">✕</button>`;
+        dateRow.appendChild(inline);
+
+        // chips row
+        const chips = document.createElement('div');
+        chips.id = 'anim-chips';
+        for (const name of LAYER_ORDER) {
+            const def = LAYERS[name];
+            const chip = document.createElement('span');
+            chip.className = 'anim-chip';
+            chip.dataset.layer = name;
+            chip.title = def.title;
+            chip.innerHTML = `<i></i>${def.label}`;
+            chip.onclick = () => toggleChip(name);
+            // hide chips with no possible data
+            if ((name === 'turb' || name === 'infra')) {
+                const snap = A.snapPreview || (A.snapPreview = snapshotPinned());
+                if (name === 'turb' && !(snap.turb.plume.length || snap.turb.mines.length)) chip.classList.add('unavailable');
+                if (name === 'infra' && !snap.statics.length) chip.classList.add('unavailable');
+            }
+            chips.appendChild(chip);
+        }
+        header.appendChild(chips);
+        // staggered reveal (same behaviour as date preset tags)
+        Array.from(chips.children).forEach((chip, i) => {
+            setTimeout(() => chip.classList.add('visible'), 60 + i * 45);
+        });
+        updateChips();
+
+        // playhead + progress in slider track
+        const track = document.getElementById('time-slider-track');
+        const prog = document.createElement('div');
+        prog.id = 'anim-progress';
+        track.appendChild(prog);
+        const ph = document.createElement('div');
+        ph.id = 'anim-playhead';
+        track.appendChild(ph);
+
+        // playhead drag = scrub (works during playback; pauses while dragging)
+        let wasPlaying = false;
+        const scrubMove = (e) => {
+            const rect = track.getBoundingClientRect();
+            const x = (e.touches ? e.touches[0].clientX : e.clientX);
+            const pct = Math.max(0, Math.min(100, (x - rect.left) / rect.width * 100));
+            const [s, ep] = sliderRangePcts();
+            const frac = Math.max(0, Math.min(1, (pct - s) / Math.max(0.001, ep - s)));
+            A.t = A.t0 + (A.t1 - A.t0) * frac;
+            drawAndSync();
+            e.preventDefault();
         };
-        sc.onchange = () => { A.scrubbing = false; };
+        const scrubEnd = () => {
+            document.removeEventListener('pointermove', scrubMove);
+            document.removeEventListener('pointerup', scrubEnd);
+            if (wasPlaying) play();
+        };
+        ph.addEventListener('pointerdown', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            wasPlaying = A.playing;
+            pause();
+            document.addEventListener('pointermove', scrubMove);
+            document.addEventListener('pointerup', scrubEnd);
+        });
 
+        // controls
+        document.getElementById('anim-play').onclick = () => A.playing ? pause() : play();
+        document.getElementById('anim-close').onclick = () => window.Animator.close();
+        document.getElementById('anim-gif').onclick = exportGIF;
+
+        // speed: click steps, press-and-hold ramps (mobile friendly)
+        const speedBtn = (id, factor) => {
+            const btn = document.getElementById(id);
+            let timer = null, held = false;
+            const bump = () => { A.speed = Math.max(0.25, Math.min(365, A.speed * factor)); drawAndSync(); };
+            btn.addEventListener('click', (e) => { if (!held) bump(); held = false; });
+            btn.addEventListener('pointerdown', () => {
+                timer = setTimeout(function ramp() {
+                    held = true; bump();
+                    timer = setTimeout(ramp, 130);
+                }, 350);
+            });
+            const stop = () => { if (timer) { clearTimeout(timer); timer = null; } };
+            btn.addEventListener('pointerup', stop);
+            btn.addEventListener('pointerleave', stop);
+            btn.addEventListener('pointercancel', stop);
+        };
+        speedBtn('anim-slower', 1 / 1.35);
+        speedBtn('anim-faster', 1.35);
+
+        // keyboard
         A.keyHandler = (e) => {
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
             if (e.code === 'Space') { e.preventDefault(); A.playing ? pause() : play(); }
-            else if (e.code === 'ArrowRight') { A.t = Math.min(A.t1, A.t + bucketMs(A.data.step)); drawAndSync(); }
-            else if (e.code === 'ArrowLeft') { A.t = Math.max(A.t0, A.t - bucketMs(A.data.step)); drawAndSync(); }
+            else if (e.code === 'ArrowRight') { A.t = Math.min(A.t1, A.t + bucketMs(chooseStep((A.t1 - A.t0) / DAY))); drawAndSync(); }
+            else if (e.code === 'ArrowLeft') { A.t = Math.max(A.t0, A.t - bucketMs(chooseStep((A.t1 - A.t0) / DAY))); drawAndSync(); }
             else if (e.code === 'Escape') { window.Animator.close(); }
         };
         document.addEventListener('keydown', A.keyHandler);
     }
 
+    function teardownUI() {
+        const container = document.getElementById('time-slider-container');
+        if (container) container.classList.remove('animating');
+        ['anim-inline', 'anim-chips', 'anim-playhead', 'anim-progress'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        });
+    }
+
+    // refetch point layers when the viewport leaves the fetched bbox (pan/zoom during play)
+    function onMoveEnd() {
+        if (!A || A.bboxFixed) return;
+        if (viewportInside(A.fetchBbox)) return;
+        clearTimeout(A._refetchTimer);
+        A._refetchTimer = setTimeout(() => {
+            if (!A) return;
+            const { bbox } = activeBbox();
+            A.fetchBbox = bbox;
+            for (const name of LAYER_ORDER) {
+                if (A.on[name] && A.data[name] !== undefined && name !== 'turb' && name !== 'infra') {
+                    delete A.data[name];
+                    ensureLayer(name);
+                }
+            }
+        }, 500);
+    }
+
     // ---------- public API ----------
     window.Animator = {
-        async open() {
-            if (A) { this.close(); }
+        async open(opts) {
+            opts = opts || {};
+            if (A) this.close();
             injectCSS();
             const fromISO = (typeof dateFrom !== 'undefined' && dateFrom) ? dateFrom : '2023-01-01';
             const toISO = (typeof dateTo !== 'undefined' && dateTo) ? dateTo : fmtDate(Date.now());
-            const bbox = activeBbox();
-            const layers = wantedLayers();
-
-            showLoading('Fetching data…', 0);
-            let data;
-            try {
-                data = await loadData(bbox, fromISO, toISO, layers);
-            } catch (e) {
-                hideLoading();
-                toast('Animation data load failed: ' + e.message, 'error');
-                return;
-            }
-            hideLoading();
-
-            // Snapshot pinned park layers: static infrastructure + turbidity
-            const snap = snapshotPinned();
-            data.statics = snap.statics;
-            data.turb = snap.turb;
-
-            const nFire = data.fireFrames.reduce((s, f) => s + f.pts.length, 0);
-            if (!nFire && !data.trajs.length && !data.deforest.length && !data.effortFrames.length) {
-                toast('No animatable data in view for this time window', 'warning');
-                return;
-            }
+            const { bbox, fixed } = activeBbox();
 
             const { canvas, resize } = makeCanvas();
             A = {
-                canvas, ctx: canvas.getContext('2d'), resize, data, layers,
+                canvas, ctx: canvas.getContext('2d'), resize,
+                data: {}, loading: {}, on: {},
+                fromISO, toISO, fetchBbox: bbox, bboxFixed: fixed,
                 t0: parseD(fromISO), t1: parseD(toISO) + DAY - 1,
-                playing: false, speed: 1, raf: null, scrubbing: false, recording: false
+                playing: false, speed: 1, raf: null, recording: false
             };
             A.t = A.t0;
             const spanDays = (A.t1 - A.t0) / DAY;
-            A.speed = Math.max(0.5, spanDays / 20); // full span in ~20s by default
+            A.speed = opts.speed || Math.max(0.5, spanDays / 20);
+            if (opts.t) { const tv = parseD(opts.t); if (tv >= A.t0 && tv <= A.t1) A.t = tv; }
 
-            buildBar(layers);
+            // default layer set: current toggles + pins, grid vs points by zoom
+            let initial;
+            if (opts.layers && opts.layers.length) {
+                initial = opts.layers.filter(n => LAYERS[n]);
+            } else {
+                initial = [];
+                const v = window.viewLayers || {};
+                const pins = pinnedTypes();
+                const hiZoom = map.getZoom() >= POINTS_ZOOM && bboxArea(bbox) <= POINTS_MAX_AREA;
+                if (v.fires || pins.has('fires')) { initial.push('trajs', hiZoom ? 'firePts' : 'fireGrid'); }
+                if (v.pixels) initial.push(hiZoom ? 'effortPts' : 'effortGrid');
+                if (v.deforest || pins.has('deforest')) initial.push('deforest');
+                if (v.settlements || pins.has('settlements')) initial.push('settlements');
+                const snap = snapshotPinned();
+                A.snapPreview = snap;
+                if (snap.turb.plume.length || snap.turb.mines.length) initial.push('turb');
+                if (snap.statics.length) initial.push('infra');
+                if (!initial.length) initial = ['fireGrid', 'trajs'];
+            }
+            initial.forEach(n => { A.on[n] = true; });
+
+            buildUI();
+
+            // load initial layers with progress modal
+            const active = initial.slice();
+            let done = 0;
+            showLoading('Loading ' + active.length + ' layers…', 5);
+            await Promise.all(active.map(n => ensureLayer(n).then(() => {
+                done++;
+                showLoading('Loaded ' + done + '/' + active.length, Math.round(done / active.length * 100));
+            })));
+            hideLoading();
+
+            const any = LAYER_ORDER.some(n => A.on[n] && A.data[n] && (
+                Array.isArray(A.data[n]) ? A.data[n].length :
+                (A.data[n].frames ? A.data[n].frames.length : true)));
+            if (!any) toast('No animatable data in view for this window — toggle layers or adjust dates', 'warning');
+
             A.mapHandler = () => { if (A) draw(A.t); };
+            A.moveEndHandler = onMoveEnd;
             A.resizeHandler = () => { if (A) { A.resize(); draw(A.t); } };
             map.on('move', A.mapHandler);
+            map.on('moveend', A.moveEndHandler);
             window.addEventListener('resize', A.resizeHandler);
 
             drawAndSync();
-            play();
-            toast(`Animating ${fmtDateHuman(A.t0)} → ${fmtDateHuman(A.t1)}` + (data.step !== 'day' ? ` (${data.step}ly steps)` : ''), 'info');
+            if (opts.paused) { pause(); drawAndSync(); } else play();
+            if (typeof updateShareURL === 'function') updateShareURL();
         },
         close() {
             if (!A) return;
             pause();
             map.off('move', A.mapHandler);
+            map.off('moveend', A.moveEndHandler);
             window.removeEventListener('resize', A.resizeHandler);
             document.removeEventListener('keydown', A.keyHandler);
+            clearTimeout(A._refetchTimer);
             if (A.canvas) A.canvas.remove();
-            const bar = document.getElementById('anim-bar');
-            if (bar) bar.remove();
+            teardownUI();
             hideLoading();
             A = null;
+            if (typeof updateShareURL === 'function') updateShareURL();
         },
         isOpen() { return !!A; },
-        toggle() { A ? this.close() : this.open(); }
+        toggle() { A ? this.close() : this.open(); },
+        getState() {
+            if (!A) return null;
+            return {
+                layers: LAYER_ORDER.filter(n => A.on[n]),
+                speed: A.speed,
+                tISO: fmtDate(A.t),
+                playing: A.playing
+            };
+        }
     };
+
+    // inject CSS immediately so the open chip is styled from load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', injectCSS);
+    } else injectCSS();
+
+    // auto-open from share link (?anim=...) once the map is ready
+    function tryPendingAnim() {
+        const pending = window._pendingAnim;
+        if (!pending) return;
+        if (typeof map === 'undefined' || !map || !map.loaded || !map.loaded()) {
+            setTimeout(tryPendingAnim, 500);
+            return;
+        }
+        window._pendingAnim = null;
+        setTimeout(() => window.Animator.open(pending), 800);
+    }
+    setTimeout(tryPendingAnim, 1500);
 })();

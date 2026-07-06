@@ -282,7 +282,7 @@
     <!-- Time Slider -->
     <div class="time-slider-container" id="time-slider-container">
         <div class="time-slider-header">
-            <div class="time-slider-date" id="time-slider-date"><span class="time-slider-date-part" id="time-slider-date-start" onclick="editSliderDate('start')" title="Click to set start date">Jan 2020</span><span class="time-slider-date-sep"> - </span><span class="time-slider-date-part" id="time-slider-date-end" onclick="editSliderDate('end')" title="Click to set end date">Dec 2024</span><span class="time-slider-date-tags" id="time-slider-date-tags"><span class="time-slider-date-tag" data-preset="td" onclick="applyDatePreset('td')">td<span class="tag-hint">Today</span></span><span class="time-slider-date-tag" data-preset="3d" onclick="applyDatePreset('3d')">3d<span class="tag-hint">Last 3 days</span></span><span class="time-slider-date-tag" data-preset="7d" onclick="applyDatePreset('7d')">7d<span class="tag-hint">Last 7 days</span></span><span class="time-slider-date-tag" data-preset="14d" onclick="applyDatePreset('14d')">14d<span class="tag-hint">Last 14 days</span></span><span class="time-slider-date-tag" data-preset="30d" onclick="applyDatePreset('30d')">30d<span class="tag-hint">Last 30 days</span></span><span class="time-slider-date-tag" data-preset="90d" onclick="applyDatePreset('90d')">90d<span class="tag-hint">Last 90 days</span></span><span class="time-slider-date-tag" data-preset="cmo" onclick="applyDatePreset('cmo')">cmo<span class="tag-hint">Current month</span></span></span><button id="anim-open-btn" onclick="Animator.toggle()" title="Animate visible data over selected time window" style="margin-left:10px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);color:#22c55e;border-radius:8px;padding:2px 10px;font-size:12px;cursor:pointer;vertical-align:middle;">&#9654; Animate</button></div>
+            <div class="time-slider-date" id="time-slider-date"><span class="time-slider-date-part" id="time-slider-date-start" onclick="editSliderDate('start')" title="Click to set start date">Jan 2020</span><span class="time-slider-date-sep"> - </span><span class="time-slider-date-part" id="time-slider-date-end" onclick="editSliderDate('end')" title="Click to set end date">Dec 2024</span><span class="time-slider-date-tags" id="time-slider-date-tags"><span class="time-slider-date-tag" data-preset="td" onclick="applyDatePreset('td')">td<span class="tag-hint">Today</span></span><span class="time-slider-date-tag" data-preset="3d" onclick="applyDatePreset('3d')">3d<span class="tag-hint">Last 3 days</span></span><span class="time-slider-date-tag" data-preset="7d" onclick="applyDatePreset('7d')">7d<span class="tag-hint">Last 7 days</span></span><span class="time-slider-date-tag" data-preset="14d" onclick="applyDatePreset('14d')">14d<span class="tag-hint">Last 14 days</span></span><span class="time-slider-date-tag" data-preset="30d" onclick="applyDatePreset('30d')">30d<span class="tag-hint">Last 30 days</span></span><span class="time-slider-date-tag" data-preset="90d" onclick="applyDatePreset('90d')">90d<span class="tag-hint">Last 90 days</span></span><span class="time-slider-date-tag" data-preset="cmo" onclick="applyDatePreset('cmo')">cmo<span class="tag-hint">Current month</span></span></span><button id="anim-open-btn" onclick="Animator.toggle()" title="Animate visible data over the selected time window">&#9654; animate</button></div>
         </div>
         <div class="time-slider-track-wrapper">
             <div class="time-slider-track" id="time-slider-track">
@@ -15878,6 +15878,17 @@ ${starredItems.narratives.map(n => {
             params.set('modal', 'about');
         }
         
+        // Add animator state (layers, speed, current frame, paused)
+        if (window.Animator && Animator.isOpen()) {
+            const st = Animator.getState();
+            if (st) {
+                params.set('anim', st.layers.join(','));
+                params.set('anim_speed', st.speed.toFixed(2));
+                params.set('anim_t', st.tISO);
+                if (!st.playing) params.set('anim_paused', '1');
+            }
+        }
+        
         const url = window.location.origin + window.location.pathname + '?' + params.toString();
         
         // Copy to clipboard
@@ -15994,6 +16005,17 @@ ${starredItems.narratives.map(n => {
                 }
             });
             if (typeof window.updateViewLayerUI === 'function') window.updateViewLayerUI();
+        }
+        
+        // Restore animator state (picked up by anim.js once map is ready)
+        const animParam = params.get('anim');
+        if (animParam !== null) {
+            window._pendingAnim = {
+                layers: animParam ? animParam.split(',').map(s => s.trim()).filter(Boolean) : [],
+                speed: parseFloat(params.get('anim_speed')) || undefined,
+                t: params.get('anim_t') || undefined,
+                paused: params.get('anim_paused') === '1'
+            };
         }
         
         // Restore country filter

@@ -432,9 +432,10 @@
             .time-slider-container { height: 60px; padding: 6px 12px 10px; }
             .time-slider-date { font-size: 12px; }
             #map { bottom: 60px !important; }
-            /* Larger touch targets for slider handles */
-            .time-slider-handle { width: 20px; height: 20px; }
-            .time-slider-track { height: 8px; }
+            /* Touch targets for slider handles (visual slightly smaller; hit area padded) */
+            .time-slider-handle { width: 15px; height: 15px; }
+            .time-slider-handle::after { content: ''; position: absolute; inset: -10px; }
+            .time-slider-track { height: 7px; }
         }
 
         /* ===== GPX Admin Panel Styles ===== */
@@ -1126,8 +1127,8 @@
             .filter-panel { max-height: 40vh; }
 
             /* Time slider handles */
-            .time-slider-handle { width: 20px; height: 20px; }
-            .time-slider-track { height: 8px; }
+            .time-slider-handle { width: 15px; height: 15px; }
+            .time-slider-track { height: 7px; }
         }
         
         @media (max-width: 480px) {
