@@ -87,3 +87,15 @@ Watch: DB is WAL, 1.8GB, 6.1M fire rows — per-park updates only, LIMIT explora
 ## Related docs
 - analysis/HANDOVER_MINING_DETECTION.md (turbidity/mining pipeline, session history)
 - docs/FIRE_PIPELINE.md, docs/DATA_FLOW.md
+
+## STATUS UPDATE 2026-07-06 (session 2) — IMPLEMENTED, commit 26d26d8e
+Done: scripts/daily_park_refresh.py (--rotate/--park/--dry-run), /api/refresh-park
+(RequireAdminOrLocal), Go deforest gate fixed (classification IS NULL only),
+export_events_from_db.py fixed + --park, patrol pixel count respects env tenant.
+Backup: db.sqlite3.pre-daily-refresh.bak (integrity ok). Server rebuilt/restarted.
+Dry-run on CAF_Chinko OK (221 GFW cells year 2026, 231 events reclassify cleanly).
+REMAINING:
+1. Live run: python3 scripts/daily_park_refresh.py --park CAF_Chinko
+   then diff narratives vs backup (style must be identical for pre-2024 rows).
+2. Add cron: 30 7 * * * cd /home/exedev/5mp && /usr/bin/python3 scripts/daily_park_refresh.py --rotate >> logs/daily_refresh.log 2>&1
+3. UI check: ?pwd=test2026&test=1&popup=CAF_Chinko, TEST.findBrokenEntries('deforestation').
