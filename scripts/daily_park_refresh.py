@@ -236,14 +236,21 @@ def ingest_gfw_deforestation(conn, rebuilder, park_id, dry_run=False):
 
 
 def reclassify_deforestation(conn, rebuilder, park_id, dry_run=False):
-    """Re-run the canonical python classifier over the park's existing events.
+    """Re-run the canonical python classifier over the park's GFW-era events.
+
+    ONLY year >= 2024 (GFW-sourced) rows are touched. Historical Hansen rows
+    (<= 2023) were classified 2026-02-15 against a fire_detections table that
+    contained full 2018+ history; that table now only holds 2026+ NRT data, so
+    reclassifying old rows would zero fires_same_year and flip classifications
+    (verified live: 56/231 flips on CAF_Chinko). Nearest-place snapshots have
+    also drifted. Keep historical narratives byte-identical.
 
     UPDATE in place: id, polygon_ids, year, lat, lon, area preserved —
     only classification/confidence/pattern/narrative/fire stats change.
     """
     rows = conn.execute("""
         SELECT id, year, lat, lon, polygon_ids
-        FROM deforestation_events WHERE park_id = ?
+        FROM deforestation_events WHERE park_id = ? AND year >= 2024
     """, (park_id,)).fetchall()
     if not rows:
         return 0

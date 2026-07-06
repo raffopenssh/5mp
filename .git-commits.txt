@@ -1,3 +1,9 @@
+26d26d8e 2026-07-06 06:57:07 Daily park refresh: wire rotation scans to fire/deforest/settlement refresh
+017da55b 2026-07-06 06:40:33 Handover: plan for wiring daily park rotation to fire/deforestation refresh
+0feca516 2026-07-06 06:23:29 Mining & Water Quality popup section + /api/parks/{id}/turbidity + pinning
+4ace5edb 2026-07-06 06:17:09 Cache CAF+SSD park waterway extracts; country PBFs deleted (283MB->27MB)
+9af6c1cb 2026-07-06 06:14:54 Turbidity scanner: all-country rollout + opportunistic infra enrichment
+3ce8cbfc 2026-07-06 06:00:52 Mining detection: per-park river turbidity scanner + server integration
 44f88026 2026-07-06 05:32:33 GFW integrated alerts scanner: 1 park/day rotation (CAR+SSD priority), 100km buffer, cell clustering
 91bae809 2026-07-06 04:59:55 Add mining-detection handover doc + river turbidity analysis scripts
 090a6baa 2026-07-05 08:03:51 Cleanup: remove DB backups, unused fire_detections_2025_2026 + old fire_trends; deprecate v2/v3 rebuild scripts
@@ -12,9 +18,3 @@ e94915f3 2026-07-05 05:22:07 Test env read filters, stats-panel layer toggles, p
 2b64044f 2026-07-05 04:54:01 WIP test env: write-path isolation via test2026 password (migration 035 unapplied; read filters + UI toggles pending)
 b012dd52 2026-07-05 04:52:38 docs: handover for test-env tenant, stats-panel layer toggles, pixel rendering polish
 3b316747 2026-07-02 15:08:56 gpx: fix subtype stats (boat/fixed-wing/rotor) zeroed by post-merge recompute
-6a967d1a 2026-07-02 15:02:40 docs: record road-learning fix + backfill results in handoff
-669a0004 2026-07-02 15:00:36 learner: park-wide incremental road learning from vehicle tracks
-e8d24ce0 2026-07-02 14:45:36 docs: diagnose why learned_roads stays empty (dead road path + unreachable cross-track thresholds)
-f68bd214 2026-07-02 14:39:19 admin: implement missing /api/admin/approve-high-confidence endpoint
-99c8b98c 2026-07-02 14:34:56 learner: reset+reprocess data, sheet-level KML export, per-park coverage info
-abb239f6 2026-07-02 14:01:32 docs: update GPX classifier handoff with pipeline verification results
