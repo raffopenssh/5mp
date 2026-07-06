@@ -94,8 +94,16 @@ Done: scripts/daily_park_refresh.py (--rotate/--park/--dry-run), /api/refresh-pa
 export_events_from_db.py fixed + --park, patrol pixel count respects env tenant.
 Backup: db.sqlite3.pre-daily-refresh.bak (integrity ok). Server rebuilt/restarted.
 Dry-run on CAF_Chinko OK (221 GFW cells year 2026, 231 events reclassify cleanly).
-REMAINING:
-1. Live run: python3 scripts/daily_park_refresh.py --park CAF_Chinko
-   then diff narratives vs backup (style must be identical for pre-2024 rows).
-2. Add cron: 30 7 * * * cd /home/exedev/5mp && /usr/bin/python3 scripts/daily_park_refresh.py --rotate >> logs/daily_refresh.log 2>&1
-3. UI check: ?pwd=test2026&test=1&popup=CAF_Chinko, TEST.findBrokenEntries('deforestation').
+REMAINING: none.
+
+## STATUS UPDATE 2026-07-06 (session 3) — COMPLETE
+1. ✅ Live run done (state: data/daily_refresh_state.json, CAF_Chinko refreshed 07:04Z).
+   41 GFW 2026 events inserted (polygon_ids deforest_gfw_CAF_Chinko_2026_*), python-style
+   narratives ("Slash-and-burn clearing detected in 2026. ... Located 6.8km from Agoumar.
+   Near Mbomou river."). Verified vs db.sqlite3.pre-daily-refresh.bak: 0 narrative diffs
+   on pre-existing rows (byte-identical, style preserved). Settlements reclassified (Go),
+   fire_narrative_cache recomputed 10:01, JSON exports mirrored.
+2. ✅ Cron installed: 30 7 * * * ... daily_park_refresh.py --rotate >> logs/daily_refresh.log
+3. ✅ UI verified: TEST.findBrokenEntries('deforestation') = [], 221 entries render,
+   2026 GFW entry pins on map (36 polygon features load & display).
+Server rebuilt at e8828ba7.
