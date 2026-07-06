@@ -260,9 +260,14 @@ func (s *Server) serveEffortFrames(w http.ResponseWriter, from, to, step string,
 		bucketExpr = fmt.Sprintf("date(%s, 'weekday 0', '-6 days')", dateExpr)
 	}
 
+	// NOTE: floor() indexing, not round(). grid_cells centers sit at exactly
+	// x.x5, so round(center/0.1) divides x.5 values — float noise collapses
+	// adjacent cells onto one index and leaves empty rows/columns (visible as
+	// periodic line gaps in the animator). floor puts each center safely inside
+	// its cell; the client renders at (xi+0.5)*res (see "align":"center").
 	query := fmt.Sprintf(`
-		SELECT CAST(round(gc.lon_center / ?) AS INTEGER) AS xi,
-		       CAST(round(gc.lat_center / ?) AS INTEGER) AS yi,
+		SELECT CAST(floor(gc.lon_center / ?) AS INTEGER) AS xi,
+		       CAST(floor(gc.lat_center / ?) AS INTEGER) AS yi,
 		       %s AS bucket,
 		       SUM(e.total_distance_km) AS dist, SUM(e.unique_uploads) AS ups
 		FROM effort_data e
@@ -310,6 +315,7 @@ func (s *Server) serveEffortFrames(w http.ResponseWriter, from, to, step string,
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"res": res, "step": step, "from": from, "to": to,
 		"layer": "effort", "frames": frames, "truncated": false,
+		"align": "center", // cell center = (xi+0.5)*res, not xi*res
 	})
 }
 

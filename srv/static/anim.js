@@ -291,13 +291,13 @@
             }
             case 'effortGrid': {
                 const j = await fetchJSON(`/api/fire-frames?layer=effort&bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}&pwd=${pwd}`);
-                D.effortGrid = { frames: (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p })), res: j.res || res, step: j.step || step };
+                D.effortGrid = { frames: (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p })), res: j.res || res, step: j.step || step, off: j.align === 'center' ? 0.5 : 0 };
                 break;
             }
             case 'effortPts': {
                 // same aggregated effort frames as effortGrid, rendered as circles
                 const j = await fetchJSON(`/api/fire-frames?layer=effort&bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}&pwd=${pwd}`);
-                D.effortPts = { frames: (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p })), res: j.res || res, step: j.step || step };
+                D.effortPts = { frames: (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p })), res: j.res || res, step: j.step || step, off: j.align === 'center' ? 0.5 : 0 };
                 if (D.effortGrid === undefined) D.effortGrid = D.effortPts; // share
                 break;
             }
@@ -498,13 +498,14 @@
         // --- patrol grid: flat grid-aligned pixels, ash-out over 90d ---
         if (on.effortGrid && D.effortGrid) {
             const eres = D.effortGrid.res;
+            const eoff = D.effortGrid.off || 0;
             for (const f of D.effortGrid.frames) {
                 if (f.t > t) break;
                 const ageD = (t - f.t) / DAY;
                 if (ageD > EFFORT_FADE_DAYS) continue;
                 const life = 1 - ageD / EFFORT_FADE_DAYS;
                 for (const pt of f.pts) {
-                    const lon = pt[0] * eres, lat = pt[1] * eres;
+                    const lon = (pt[0] + eoff) * eres, lat = (pt[1] + eoff) * eres;
                     const p0 = proj(lon - eres / 2, lat + eres / 2);
                     const p1 = proj(lon + eres / 2, lat - eres / 2);
                     if (p1.x < -10 || p1.y < -10 || p0.x > w + 10 || p0.y > h + 10) continue;
@@ -512,7 +513,8 @@
                     const inten = Math.min(1, Math.log2(1 + km) / 7);
                     const alpha = (0.2 + 0.55 * life) * (0.35 + 0.65 * inten);
                     ctx.fillStyle = effortAsh(1 - life, alpha);
-                    ctx.fillRect(p0.x, p0.y, Math.max(1.5, p1.x - p0.x), Math.max(1.5, p1.y - p0.y));
+                    // ceil the size so float rounding can't leave 1px seams between cells
+                    ctx.fillRect(p0.x, p0.y, Math.max(1.5, Math.ceil(p1.x - p0.x)), Math.max(1.5, Math.ceil(p1.y - p0.y)));
                 }
             }
         }
@@ -524,6 +526,7 @@
         ctx.globalCompositeOperation = 'lighter';
         if (on.effortPts && D.effortPts) {
             const eres = D.effortPts.res;
+            const eoff = D.effortPts.off || 0;
             const fadeMs = Math.max(bMs * 3, DAY * 10); // linger a touch longer than fires
             for (const f of D.effortPts.frames) {
                 if (f.t > t) break;
@@ -532,7 +535,7 @@
                 const k = 1 - age / fadeMs;                 // 1 fresh → 0 faded
                 const flash = Math.max(0, 1 - age / (fadeMs * 0.25)); // bright pop on arrival
                 for (const pt of f.pts) {
-                    const lon = pt[0] * eres, lat = pt[1] * eres;
+                    const lon = (pt[0] + eoff) * eres, lat = (pt[1] + eoff) * eres;
                     const p = proj(lon, lat);
                     if (p.x < -25 || p.y < -25 || p.x > w + 25 || p.y > h + 25) continue;
                     const km = pt[2];
