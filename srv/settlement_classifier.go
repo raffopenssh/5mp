@@ -47,6 +47,11 @@ type ClassifiedSettlement struct {
 	// Deforestation metrics  
 	DeforestNearby  float64 `json:"deforest_nearby_km2"`
 	DeforestPattern string  `json:"deforest_pattern,omitempty"`
+
+	// Mining evidence (Sentinel-2 river turbidity + GFW integrated alerts)
+	TurbidityAlertKm   float64         `json:"turbidity_alert_km,omitempty"`   // distance to nearest turbidity onset
+	TurbidityAlert     *TurbidityAlert `json:"turbidity_alert,omitempty"`      // the alert itself, when close
+	GFWAlertsWithin5km int             `json:"gfw_alerts_5km,omitempty"`       // GFW integrated alerts within 5km
 }
 
 // ClassifySettlement determines the type of a settlement based on multiple indicators
@@ -166,6 +171,16 @@ func (s *Server) loadSettlementContext(parkID string, st *ClassifiedSettlement) 
 	if roadLat.Valid && roadLon.Valid {
 		st.NearestRoad = haversineDistance(st.Lat, st.Lon, roadLat.Float64, roadLon.Float64)
 	}
+
+	// Mining evidence: river turbidity onsets (Sentinel-2) + GFW alert clusters
+	st.TurbidityAlertKm = 1e9
+	if d, a := nearestTurbidityAlertKm(parkID, st.Lat, st.Lon); a != nil {
+		st.TurbidityAlertKm = d
+		if d < 15 {
+			st.TurbidityAlert = a
+		}
+	}
+	st.GFWAlertsWithin5km = gfwAlertsNearby(parkID, st.Lat, st.Lon, 5)
 }
 
 // Scoring functions for each classification
@@ -223,6 +238,21 @@ func (s *Server) scoreMining(st *ClassifiedSettlement) float64 {
 	
 	// Far from villages
 	if st.DistanceToPlace > 20 {
+		score += 0.1
+	}
+	
+	// River turbidity onset nearby (Sentinel-2 sediment plume) — strongest
+	// signal for alluvial gold mining; confirmed at Chinko headwaters.
+	if st.TurbidityAlertKm < 3 {
+		score += 0.5
+	} else if st.TurbidityAlertKm < 10 {
+		score += 0.3
+	}
+	
+	// GFW integrated alerts clustered nearby (fresh canopy disturbance)
+	if st.GFWAlertsWithin5km > 100 {
+		score += 0.2
+	} else if st.GFWAlertsWithin5km > 20 {
 		score += 0.1
 	}
 	
@@ -365,8 +395,16 @@ func (s *Server) buildSettlementNarrativeText(st *ClassifiedSettlement) string {
 			location, st.FiresWithin5km, st.DeforestNearby)
 		
 	case ClassMining:
-		return fmt.Sprintf("Possible mining site %s. Low fire activity but %.2f km² of forest loss with %s pattern. Proximity to %s suggests alluvial extraction.",
+		base := fmt.Sprintf("Possible mining site %s. Low fire activity but %.2f km² of forest loss with %s pattern. Proximity to %s suggests alluvial extraction.",
 			location, st.DeforestNearby, st.DeforestPattern, st.NearestRiver)
+		if st.TurbidityAlert != nil {
+			base += fmt.Sprintf(" Sentinel-2 shows a sediment plume on the %s %.1fkm away (~%.0fkm of river turbid downstream, %s) — consistent with active alluvial gold washing.",
+				st.TurbidityAlert.River, st.TurbidityAlertKm, st.TurbidityAlert.DownstreamTurbidKm, st.TurbidityAlert.Date)
+		}
+		if st.GFWAlertsWithin5km > 20 {
+			base += fmt.Sprintf(" %d GFW canopy-disturbance alerts within 5km corroborate recent ground activity.", st.GFWAlertsWithin5km)
+		}
+		return base
 		
 	case ClassFishing:
 		return fmt.Sprintf("Fishing camp %s, %.1fkm from %s River. Small footprint (%.0f m²) and minimal forest disturbance consistent with seasonal fishing activity.",

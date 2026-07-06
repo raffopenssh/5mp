@@ -1,3 +1,11 @@
+44f88026 2026-07-06 05:32:33 GFW integrated alerts scanner: 1 park/day rotation (CAR+SSD priority), 100km buffer, cell clustering
+91bae809 2026-07-06 04:59:55 Add mining-detection handover doc + river turbidity analysis scripts
+090a6baa 2026-07-05 08:03:51 Cleanup: remove DB backups, unused fire_detections_2025_2026 + old fire_trends; deprecate v2/v3 rebuild scripts
+5a6623a8 2026-07-05 07:05:01 Fire narratives: distance in outside-park text; api.go park fire counts via protected_area_id
+4805d56d 2026-07-05 06:37:05 daily_fire_update: ParkAssigner wiring, 20km gating, direct-first FIRMS, drop free proxies
+7e448627 2026-07-05 06:26:29 WIP fire 100km buffer: park assigner, dist_to_park_km, 20km relevance gating
+439c27b3 2026-07-05 05:38:09 UI: pixel fade at z13-15, clearer layer toggles, nicer test-env login CTA
+4c2a7440 2026-07-05 05:22:27 chore: refresh .git-commits.txt
 b7cb360e 2026-07-05 05:22:14 docs: remove completed handover note
 e94915f3 2026-07-05 05:22:07 Test env read filters, stats-panel layer toggles, pixel zoom fade
 76671ee2 2026-07-05 04:54:08 docs: fill WIP hash in handover
@@ -10,11 +18,3 @@ e8d24ce0 2026-07-02 14:45:36 docs: diagnose why learned_roads stays empty (dead 
 f68bd214 2026-07-02 14:39:19 admin: implement missing /api/admin/approve-high-confidence endpoint
 99c8b98c 2026-07-02 14:34:56 learner: reset+reprocess data, sheet-level KML export, per-park coverage info
 abb239f6 2026-07-02 14:01:32 docs: update GPX classifier handoff with pipeline verification results
-f6ae51b4 2026-07-02 14:00:14 gpx learner: fix exponential airstrip count doubling
-c02af451 2026-07-02 13:54:33 gpx: fix detection pipeline — movement-aware gap/road/boundary handling, learner point recovery
-9117f025 2026-07-02 13:51:39 Fix time slider date preset tags: auto-collapse, layout regressions from CSS extraction
-6c53c4c2 2026-07-02 13:22:41 gpx: movement-only classifier fixes (verified on labeled test set + EarthRanger data)
-0c890856 2026-07-02 12:57:03 Rebuild recent-season fire groups with v6 tracker (all 162 parks)
-1162013e 2026-07-02 12:48:58 Fire trajectory builder v6: per-day clustering + track matching
-0f0501cc 2026-07-02 12:24:20 Reduce oversized mobile touch targets from P3 accessibility commit
-dbea1560 2026-04-01 05:11:23 Merge production into main: integrate 82 production commits with 7 hardening fixes

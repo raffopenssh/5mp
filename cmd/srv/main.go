@@ -90,6 +90,7 @@ func run() error {
 	go server.StartNarrativeCacheWorker(ctx)
 	go server.StartAutofetchWorker(ctx)
 	go server.StartUploadQueueCleanup(ctx)
+	server.StartTurbidityWatcher()
 
 	// Start HTTP server in a goroutine
 	errCh := make(chan error, 1)

@@ -1,0 +1,201 @@
+{
+ "park_id": "CAF_Chinko",
+ "scanned_at": "2026-07-06T05:45:42Z",
+ "datetime_range": "2026-05-22T00:00:00Z/2026-07-06T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 214,
+ "n_sample_pts": 13562,
+ "alerts": [
+  {
+   "lat": 7.18405,
+   "lon": 24.55889,
+   "river": "Chinko",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1660,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 108.6,
+   "downstream_turbid_km": 66.8,
+   "scene": "S2C_35NKJ_20260629_0_L2A",
+   "date": "2026-06-29"
+  },
+  {
+   "lat": 5.64971,
+   "lon": 24.34101,
+   "river": "unnamed river",
+   "waterway": "river",
+   "type": "turbidity_onset",
+   "red": 1425,
+   "upstream_median": 600,
+   "ratio": 2.38,
+   "dist_km": 191.4,
+   "downstream_turbid_km": 26.8,
+   "scene": "S2B_35NKG_20260704_0_L2A",
+   "date": "2026-07-04"
+  },
+  {
+   "lat": 5.47692,
+   "lon": 23.29759,
+   "river": "Mbari",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1233,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 156.4,
+   "downstream_turbid_km": 1.5,
+   "scene": "S2C_34NGM_20260619_0_L2A",
+   "date": "2026-06-19"
+  }
+ ],
+ "rivers": [
+  {
+   "name": "Chinko",
+   "waterway": "river",
+   "length_km": 646.7,
+   "water_samples": 463,
+   "turbid_km": 66.8
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 301.8,
+   "water_samples": 211,
+   "turbid_km": 27.0
+  },
+  {
+   "name": "Mbomou",
+   "waterway": "river",
+   "length_km": 415.1,
+   "water_samples": 835,
+   "turbid_km": 9.8
+  },
+  {
+   "name": "Mbari",
+   "waterway": "river",
+   "length_km": 398.8,
+   "water_samples": 54,
+   "turbid_km": 1.5
+  },
+  {
+   "name": "Mbomou",
+   "waterway": "river",
+   "length_km": 10.7,
+   "water_samples": 14,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mbomou",
+   "waterway": "river",
+   "length_km": 8.1,
+   "water_samples": 14,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Kotto",
+   "waterway": "river",
+   "length_km": 88.8,
+   "water_samples": 7,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Ouara",
+   "waterway": "river",
+   "length_km": 327.1,
+   "water_samples": 21,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Asa",
+   "waterway": "river",
+   "length_km": 19.7,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 26.8,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 37.2,
+   "water_samples": 16,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 30.4,
+   "water_samples": 3,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 30.7,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 33.2,
+   "water_samples": 3,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 12.3,
+   "water_samples": 5,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 24.4,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 18.1,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 10.9,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 12.9,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 4.7,
+   "water_samples": 11,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 12.9,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  }
+ ]
+}

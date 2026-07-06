@@ -1,72 +1,121 @@
-# Handover: Artisanal Gold Mine Detection (Chinko, CAR)
+# Handover: Artisanal Gold Mine Detection (5MP)
 
-**Date:** 2026-07-06. Continue in a fresh conversation with this doc.
+**Updated:** 2026-07-06 (session 2). Continue in a fresh conversation with this doc.
 
-## Goal
-Detect artisanal/unregulated gold mines that our current settlement-classifier
-(hydrorivers + GHSL, `srv/settlement_classifier.go` → `scoreMining`) overlooks.
-Only 3 mining sites classified in CAF_Chinko today (`park_settlements`,
-classification='mining', ids 20775/20779/20782). User confirmed new mines exist
-at the **Chinko river headwaters** and asked to combine:
-- fire data (VIIRS, `fire_detections` table + `data/fire_groups_v5/*.json`)
-- OSM waterways (downloaded: `data/osm_raw/caf_rivers.geojson`, 41.6k segments;
-  also `caf_mining.geojson`, `ssd_mining.geojson`, raw PBFs for CAR + SSD)
-- **river color / turbidity** from Sentinel-2 (KEY SIGNAL, works — see below)
-- NASA POWER rainfall as control for rain-driven turbidity
-- downstream/watershed impact (user suggested global-river-runner /
-  mghydro.com/watersheds for tracing)
+## Status: pipeline built & live for CAF_Chinko
 
-## KEY FINDING — confirmed turbidity plume (likely active mining)
-Sentinel-2 scene **S2C_34NHN_20260619_0_L2A** (2026-06-19, 3% cloud):
-- The **upper Chinko mainstem turns abruptly turbid (golden-brown)**.
-  Clean water upstream of ~6.77°N; strongly turbid from **~6.75°N,24.266°E
-  down through 6.60°N** and beyond (red reflectance jumps 600→1700-2100).
-- The turbid channel traces NE **up a western tributary** past 7.05°N toward
-  ~7.35°N, 24.0–24.15°E (scene edge). Plume head not yet localized — next step:
-  inspect chips north of 7.13°N along ~24.05–24.15°E, and the parallel branch
-  at ~23.93°E. True-color chips saved in /tmp/onset/ (regenerate if gone).
-- **Rain control done** (NASA POWER PRECTOTCORR): 7d rain before 2026-06-19 was
-  38-56mm basin-wide, uniform — rain can't explain a point-source onset;
-  upstream-of-onset water is clean on the same date. Signal is anthropogenic.
-- Esri basemap (older imagery) shows the same river CLEAN → activity is recent.
-- VIIRS fire groups near headwaters (2025-12→2026-03) include several small
-  spot/local fires within 2km of the OSM river, e.g. grp dd1a9e50 (7.497,24.569),
-  fe7b2e7f (7.682,24.513) — candidate camp corroboration.
+### Confirmed mine (registered)
+- **Pit:** 7.44637°N, 24.02954°E (Chinko headwaters, OUTSIDE park, upstream).
+  Largest bright-bare cluster ~0.5ha (53 px S2 20260530) + second cluster
+  41px at 7.44219,24.02137. Registered as `park_settlements` id **29800**
+  (classification=mining, conf 0.95).
+- **Onset dating** (`analysis/date_mining_onset.py`, monthly S2 bright-bare
+  fraction at pit ±150m, `data/turbidity/artifacts/pit_onset_series.json`):
+  bright_bare 0.02-0.03 baseline; rises 2025-03/04 (0.08→0.14), again
+  2026-02→04 (0.07→0.11). Strong seasonal confound (dry-season bareness) —
+  interpretation: clearing began **~Mar-Apr 2025**, expanded 2026. NB: monthly
+  red/NDVI at this savanna site never shows a clean step; the *turbidity* on
+  the river is the unambiguous signal.
+- **Downstream impact:** plume masks (S2C_34NHN_20260619) snapped to OSM
+  waterways = **21.3 turbid km** in that scene footprint
+  (`data/turbidity/artifacts/turbid_extent.json`; masks turbid_px*.json
+  copied there from /tmp). Full-basin scan shows Chinko mainstem turbid_km
+  ≈ 67 over 647km surveyed (see data/turbidity/CAF_Chinko.json rivers[]).
 
-## Method that works (river turbidity scan)
-`analysis/river_turbidity.py` — samples S2 L2A red/green/nir/SCL along OSM
-river polylines (earth-search.aws.element84.com STAC, sentinel-cogs COGs,
-rasterio direct HTTP). Water = SCL==6. Turbidity proxy: red reflectance jump
-vs upstream rolling median (>1.8x and >800 = alert).
-`analysis/trace_channel.py` — full-raster turbid-pixel mask from TCI
-((r>140)&(r-b>60)&(r-g>20)) → maps whole plume network; /tmp/turbid_px.json.
+## Components shipped (session 2)
 
-## Fire-side candidates (recurring small fires, riverine, remote)
-From fire_groups_v5 clustering (small groups ≤60 fires, spot/local type,
-recurring ≥2yrs, <2km from OSM river, far from known places/settlements):
-top: 6.7524,24.7088 / 6.7512,23.3308 / 6.6584,23.2022 / 6.5929,24.9801 /
-5.5454,23.1721 / 6.4252,23.0874(3yrs) / 4.8569,23.7379(3yrs).
-Esri z15 chips were inconclusive (old imagery, savanna bare patches) —
-should re-check with fresh S2 instead. /tmp/mining_candidates.json (58 sites).
+### 1. Per-park turbidity scanner — `analysis/river_turbidity.py` (rewritten)
+- `--park CAF_Chinko` / `--rotate` (most-stale park w/ PBF coverage) /
+  `--datetime 2025-01-01/2025-03-01` for historic scans; `--days 45` default.
+- osmium bbox-extract waterways from country PBF (`PBF_MAP` in script: CAF,
+  SSD present in `data/osm_raw/`), cached `data/osm_raw/waterways/{park}.geojson`.
+- Chains named rivers (OSM ways = flow order), samples red+SCL every
+  250m (rivers) / 500m (streams ≥8km), newest low-cloud scenes first.
+- Two alert types in `data/turbidity/{park}.json`:
+  - `turbidity_onset`: red > 1.8× upstream rolling median, >1200, confirmed
+    4/6 downstream samples, upstream clean (<1000), dedup 5km.
+  - `turbid_headwater`: turbid at uppermost observable water sample and
+    ≥5km turbid — the confirmed-mine signature (source hidden in narrow channel).
+- CAF_Chinko current output: 3 alerts (Chinko headwater 66.8 turbid-km;
+  unnamed river 5.65N/24.34E onset 26.8km; Mbari headwater 1.5km — the Mbari
+  one is likely marginal/wet-season, watch false-positive rate).
+- Runtime ~15min/park, ~13.5k sample points, no API keys needed.
 
-## Suggested next steps
-1. Localize plume head: S2 chips N of 7.13°N; then Esri/S2 zoom for pits/camps.
-2. Wrap turbidity scan into a script for all park rivers (needs OSM waterways
-   per park; CAR+SSD PBFs already in data/osm_raw/). Alert = onset point.
-3. Time series: run same scan on monthly S2 scenes to date mining onset
-   (scene IDs found via STAC query in analysis/river_turbidity.py).
-4. Cross-check turbid onsets with small VIIRS fire clusters (camp fires) and
-   Hansen deforestation; add `turbidity` evidence to scoreMining().
-5. Downstream impact: trace turbid extent (already have full plume mask) =
-   km of river impacted; consider mghydro watershed API for basin delineation.
-6. Surface as notifications/park narrative ("possible new mining, river X").
+### 2. Server integration — `srv/turbidity.go` (new)
+- Loads `data/turbidity/{park}.json` + `data/gfw_alerts/{park}.json` (cached).
+- `scoreMining()` in `srv/settlement_classifier.go` now adds:
+  +0.5 turbidity alert <3km / +0.3 <10km; +0.2 GFW alerts >100 within 5km
+  (+0.1 >20). `ClassifiedSettlement` gained `TurbidityAlertKm`,
+  `TurbidityAlert`, `GFWAlertsWithin5km`; mining narrative mentions plume+GFW.
+- `SyncTurbidityAlerts()` (via `StartTurbidityWatcher()`, every 6h, started in
+  cmd/srv/main.go): creates `notification_type='mining_alert'` notifications
+  (dedup on reference_id `turbidity_{park}_{lat}_{lon}`, alert JSON in
+  reference_data) and **auto-registers mining settlement candidates** for
+  alerts with ≥10km downstream plume (`RegisterMiningCandidate`).
+- `cmd/register-mining/`: manual registration CLI.
+- Registered so far: 29800 (confirmed pit, manual), 29801 (7.184,24.559
+  headwater alert — auto, classified temporary_camp 0.8; review), 29802
+  (5.650,24.341 onset — auto, mining 1.0).
+- 3 mining_alert notifications live in DB (ids 22285-7).
 
-## Data/tools inventory
-- data/osm_raw/: CAR+SSD PBF, caf_rivers.geojson, caf/ssd_mining.geojson
-- /tmp/chinko_river_color.json (1947 samples along 644km mainstem, 2026-05/06)
-- /tmp/turbid_px.json, /tmp/mining_candidates.json, /tmp/onset/*.jpg chips
-- rasterio/shapely/numpy installed; osmium-tool installed
-- STAC: earth-search.aws.element84.com/v1, collection sentinel-2-l2a, free
-- NASA POWER: power.larc.nasa.gov daily PRECTOTCORR point API, free
-- DB: fire_detections has NRT 2026-02-26→today only; full history 2020-2026
-  in data/fire_groups_v5/*.json (v5 groups, centroid=[lon,lat]!)
+## NEXT STEPS (user-requested, not yet done)
+
+1. **Daily cron** at a different time than others (gfw_alerts runs 04:30,
+   fire cron 03:00) — e.g. `0 6 * * *  cd /home/exedev/5mp && python3
+   analysis/river_turbidity.py --rotate >> logs/turbidity.log 2>&1`.
+   Server watcher picks results up within 6h automatically.
+2. **Dedicated park-tooltip section** ("Mining / Water quality"?). Popup
+   sections live in srv/templates/globe.html ~line 6500 (pa-popup-section
+   blocks; fetchPopupFireData pattern ~line 6670). Per-site show: river name,
+   alert type (onset vs turbid headwater), date+scene, downstream turbid-km,
+   distance/direction from park, link to notification, mining-classified
+   settlements w/ confidence + narrative. Data source: new API endpoint
+   (e.g. GET /api/parks/{id}/turbidity serving data/turbidity/{park}.json +
+   mining settlements) — endpoint NOT yet written.
+3. **Pinning**: reuse togglePinFromIcon/addPinnedLayer machinery
+   (globe.html ~12700+). Options: pin alert points (build GeoJSON client-side
+   from the API), and ideally the turbid river segments (would need plume
+   mask → line features; artifacts/turbid_px*.json can seed a
+   feature_geometries type 'turbidity').
+4. **Timeline filter**: alerts carry scene `date`; monthly historic scans via
+   `--datetime` can build an onset timeline per river (first turbid month).
+   Integrate with globe time slider (window.dateFrom/dateTo, see
+   addPinnedLayer dateParams) by filtering alerts on date.
+5. **Rollout beyond CAR+SSD** (user decision): fetch geofabrik PBF per
+   country on demand, extract per-park waterways (small), run scans for all
+   parks of that country, also enrich park roads/river places if useful,
+   then DELETE the big PBF once done. Implement as a `--country XYZ` batch
+   or extend --rotate to: pick next country with unscanned parks → download
+   PBF → loop parks → cleanup. Keep only data/osm_raw/waterways/*.geojson.
+   Geofabrik URL pattern: https://download.geofabrik.de/africa/{name}-latest.osm.pbf
+   (need ISO3→geofabrik-name map for the 33 countries in keystones).
+6. Tune false positives: Mbari headwater alert looks weak (1.5km, but passed
+   ≥5km gate via turbid_km? — recheck; wet-season sediment naturally higher).
+   Consider NASA POWER rain control per alert (method in session-1 notes).
+7. review settlement 29801 classification (temporary_camp despite alert 0km —
+   scoreMining ties with pastoral; maybe boost turbidity weight or force
+   mining when TurbidityAlertKm<1).
+
+## Method notes / gotchas
+- SCL==6 (water) only in wide channels; headwater sources hide upstream of
+  first water pixel — that's why turbid_headwater type exists.
+- Dry season (Dec-Apr) makes whole savanna bare AND rivers shrink; best scan
+  months May-Nov. Onset dating must compare same-season months.
+- GFW integrated alerts do NOT see this mining (savanna, no canopy). VIIRS
+  non-discriminating. Turbidity is primary; GFW+fires only corroborate.
+- rasterio direct-HTTP on sentinel-cogs is free & keyless; ~1-2s/scene open.
+- fire_detections table has NRT 2026-02-26+ only; full history in
+  data/fire_groups_v5/*.json (centroid=[lon,lat]!).
+
+## Inventory
+- analysis/river_turbidity.py (scanner), date_mining_onset.py (pit dating),
+  trace_channel.py + trace_turbidity.py (session-1 one-offs), gfw_alerts.py
+  (daily cron 04:30, data/gfw_alerts/).
+- srv/turbidity.go, scoreMining in srv/settlement_classifier.go,
+  cmd/register-mining/.
+- data/turbidity/CAF_Chinko.json + state.json + artifacts/ (plume masks,
+  turbid extent, pit onset series).
+- data/osm_raw/: CAR+SSD PBFs (283MB — candidates for cleanup per step 5),
+  waterways/CAF_Chinko.geojson cache, caf_rivers/mining geojsons.
+- Test: https://five-megapixel-conservation.exe.xyz:8000/?pwd=test2026&test=1&popup=CAF_Chinko
+- DB backup: db.sqlite3.bak (pre-change, 2026-07-06, delete when confident).
