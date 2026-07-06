@@ -1820,7 +1820,7 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 	
 	// Handle deforestation with narrative from deforestation_events
 	if featureType == "deforestation" {
-		s.handleDeforestationFeatures(w, internalID, limitStr, startDate, endDate, featureID)
+		s.handleDeforestationFeatures(w, internalID, limitStr, startDate, endDate, featureID, r.URL.Query().Get("event_id"))
 		return
 	}
 
@@ -5589,7 +5589,7 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 }
 
 // handleDeforestationFeatures returns GeoJSON features for deforestation with narratives
-func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID string, limitStr string, startDate string, endDate string, featureID string) {
+func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID string, limitStr string, startDate string, endDate string, featureID string, eventID string) {
 	limit := 1000
 	if limitStr != "" {
 		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 10000 {
@@ -5619,6 +5619,12 @@ func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID strin
 	if featureID != "" {
 		query += " AND fg.feature_id = ?"
 		args = append(args, featureID)
+	}
+	// Fetch ALL polygons of one deforestation event (for pinning multi-patch events)
+	if eventID != "" {
+		query += ` AND EXISTS (SELECT 1 FROM deforestation_events de2 WHERE de2.id = ? AND de2.park_id = fg.park_id
+			AND (',' || de2.polygon_ids || ',') LIKE ('%,' || fg.feature_id || ',%'))`
+		args = append(args, eventID)
 	}
 	if startDate != "" {
 		query += " AND (fg.start_date IS NULL OR fg.start_date >= ?)"

@@ -231,6 +231,7 @@ func (s *Server) Serve(addr string) error {
 	// Narrative endpoints (rich textual descriptions with OSM place names)
 	mux.HandleFunc("GET /api/parks/{id}/fire-narrative", s.HandleAPIFireNarrative)
 	mux.HandleFunc("GET /api/parks/{id}/fire-realtime", s.HandleAPIFireRealtime)
+	mux.HandleFunc("GET /api/parks/{id}/fire-trend", s.HandleAPIFireTrend)
 	mux.HandleFunc("GET /api/fire-alerts", s.HandleAPIFireAlerts)
 	mux.HandleFunc("POST /api/admin/update-fire-alerts", s.RequireAdmin(s.HandleAPIUpdateFireAlerts))
 	mux.HandleFunc("POST /api/update-fire-alerts", s.RequireAdminOrLocal(s.HandleAPIUpdateFireAlerts))
