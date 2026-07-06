@@ -1072,15 +1072,17 @@
     } else injectCSS();
 
     // auto-open from share link (?anim=...) once the map is ready
+    let pendingTries = 0;
     function tryPendingAnim() {
         const pending = window._pendingAnim;
-        if (!pending) return;
-        if (typeof map === 'undefined' || !map || !map.loaded || !map.loaded()) {
-            setTimeout(tryPendingAnim, 500);
+        // restoreStateFromURL() sets _pendingAnim on map 'load' — keep polling,
+        // since map load usually finishes well after our first check (~60s cap).
+        if (!pending || typeof map === 'undefined' || !map || !map.loaded || !map.loaded()) {
+            if (++pendingTries < 120) setTimeout(tryPendingAnim, 500);
             return;
         }
         window._pendingAnim = null;
         setTimeout(() => window.Animator.open(pending), 800);
     }
-    setTimeout(tryPendingAnim, 1500);
+    setTimeout(tryPendingAnim, 1000);
 })();
