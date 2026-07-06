@@ -310,6 +310,34 @@ pre-cap counts. `is_inside` = touches park (`dist_to_park_km≈0` or `pct_inside
 groups up to 20km outside are included for context but not "inside". Peak-season
 parks (Angola/DRC/Zambia, Jun–Aug) legitimately have 150–280 active groups — not a bug.
 
+## Time Animator ("▶ Animate" button next to slider presets)
+
+Animates all toggled/pinned map layers over the time-slider window.
+
+| Piece | Where |
+|-------|-------|
+| Frontend | `srv/static/anim.js` (canvas overlay above MapLibre; `window.Animator.open/close/toggle`) |
+| Fire/effort frames API | `GET /api/fire-frames` → `srv/fire_frames.go` |
+| Dated trajectories API | `GET /api/fire-anim-trajectories` → same file (reads `data/fire_groups_v5/*.json`, ~40-park LRU cache) |
+| Pre-agg tables | `fire_grid_day/week/month` (base 0.1°, PK `(d, xi, yi)` WITHOUT ROWID; cell center = `xi*res, yi*res`) |
+| Agg builder | `scripts/build_fire_grid_agg.py` (full ~100s; `--since YYYY-MM-DD` incremental; called by `daily_fire_update.py` step 2c) |
+
+**Key behaviors** (all in `anim.js`):
+- Layer selection = `wantedLayers()`: reads `window.viewLayers` toggles + pinned layers. Fires load **only** when toggled/pinned (no always-on background).
+- Bbox: `activeBbox()` uses `currentBbox` (drawn/country selection) else viewport; data fetched AND canvas **clipped** to it (`draw()` top).
+- Temporal semantics: fires flash + afterglow (~2.2 buckets); trajectories build point-by-point at true dated speed with glowing head, then residual; patrol effort = grid-aligned green cells fading over `EFFORT_FADE_DAYS` (90); deforestation accumulates (45d flash); settlements/pinned infra static; turbidity accumulates (Chinko).
+- `chooseStep()`: ≤92d→day, ≤800d→week, else month. `chooseRes()`: by bbox width (0.05–0.25).
+- GIF export via `gifenc` CDN (80 frames, 720px).
+
+**Server-side** (`fire_frames.go`):
+- `/api/fire-frames?bbox&from&to&step=day|week|month&res=0.1` reads pre-agg tables (never `fire_detections` — a raw scan took 3min for full-span; agg is ~3s). Coarser `res` re-binned in SQL; `from` aligned to bucket start. If >200k points, auto-doubles `res` up to 2× twice instead of truncating.
+- `layer=effort` returns `[xi, yi, km, uploads]` on the same grid (from `effort_data`+`grid_cells`, `movement_type='all', env='prod'`).
+- Frame point format: `p: [[xi, yi, count, frp], ...]`, `d` = bucket start date.
+
+**After bulk fire data changes**: rerun `python3 scripts/build_fire_grid_agg.py` (full) or `--since` — otherwise the animator shows stale fires. Daily cron keeps it fresh automatically.
+
+---
+
 **Popup fire chart**: single `areaSparkline` (globe.html) fed by `/api/parks/{id}/fire-trend`.
 Series keys: `v`=fires (red, left axis), `v2`=groups (orange, right axis),
 `v3`=prior-years ISO-week average (dashed gray, same axis as `v`, computed client-side
