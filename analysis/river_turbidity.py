@@ -21,6 +21,10 @@ State:  data/turbidity/state.json
 """
 import argparse, datetime, json, math, os, subprocess, sys, urllib.request
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))), "scripts"))
+from cron_notify import notify_status  # noqa: E402
+
 STAC = "https://earth-search.aws.element84.com/v1/search"
 OUT_DIR = "data/turbidity"
 STATE_FILE = f"{OUT_DIR}/state.json"
@@ -487,7 +491,7 @@ def scan_park(park, args, parks):
         return None
     sample_scenes(polylines, scenes)
 
-    all_alerts, rivers_scanned = [], []
+    all_alerts, rivers_scanned, turbid_pts = [], [], []
     for pl in polylines:
         alerts, turbid_km = detect_onsets(pl)
         nwater = sum(1 for v in pl["vals"] if v and v["scl"] == 6)
@@ -497,6 +501,14 @@ def scan_park(park, args, parks):
                                "water_samples": nwater,
                                "turbid_km": round(turbid_km, 1)})
         all_alerts += alerts
+        # turbid water sample points (red >= 1200 on SCL water) — lets the UI
+        # draw the sediment plume network, timeslider-filterable by date
+        for j, v in enumerate(pl["vals"]):
+            if v and v["scl"] == 6 and v["red"] >= 1200:
+                p = pl["samples"][j]
+                turbid_pts.append({"lat": round(p[1], 5), "lon": round(p[0], 5),
+                                   "red": v["red"], "date": v["date"],
+                                   "river": pl["name"] or f"unnamed {pl['waterway']}"})
     all_alerts.sort(key=lambda a: -a["downstream_turbid_km"])
 
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -508,6 +520,7 @@ def scan_park(park, args, parks):
         "alerts": all_alerts,
         "rivers": sorted([r for r in rivers_scanned if r["water_samples"] > 0],
                          key=lambda r: -r["turbid_km"])[:50],
+        "turbid_points": turbid_pts[:5000],
     }
     path = f"{OUT_DIR}/{park['id']}.json"
     json.dump(out, open(path, "w"), indent=1)
@@ -543,7 +556,12 @@ def main():
         ap.error("need --park or --rotate")
 
     for p in targets:
-        res = scan_park(p, args, parks)
+        try:
+            res = scan_park(p, args, parks)
+        except Exception as ex:  # noqa: BLE001
+            notify_status("turbidity_scan_failed", "Turbidity Scan Failed",
+                          f"{p['id']}: {str(ex)[:200]}")
+            raise
         state = {}
         try: state = json.load(open(STATE_FILE))
         except Exception: pass
@@ -552,6 +570,16 @@ def main():
                           "n_alerts": len(res["alerts"]) if res else 0}
         os.makedirs(OUT_DIR, exist_ok=True)
         json.dump(state, open(STATE_FILE, "w"), indent=1)
+        if res:
+            notify_status("turbidity_scan_success", "Turbidity Scan Complete",
+                          f"{p['id']}: {len(res['alerts'])} alerts, "
+                          f"{len(res.get('rivers', []))} rivers, "
+                          f"{res.get('n_sample_pts', 0):,} sample points "
+                          f"({res.get('datetime_range', '')})")
+        else:
+            notify_status("turbidity_scan_success", "Turbidity Scan Complete",
+                          f"{p['id']}: no usable Sentinel-2 scenes in window "
+                          f"(clouds) — will retry on next rotation")
 
 
 if __name__ == "__main__":

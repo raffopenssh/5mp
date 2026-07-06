@@ -15,6 +15,10 @@ State:  data/gfw_alerts/state.json — last scan time + request count per park.
 """
 import json, math, sys, time, subprocess, argparse, os, datetime
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))), "scripts"))
+from cron_notify import notify_status  # noqa: E402
+
 API_KEY = os.environ.get("GFW_API_KEY", "REDACTED_GFW_KEY")
 BASE = "https://data-api.globalforestwatch.org"
 STATE_FILE = "data/gfw_alerts/state.json"
@@ -176,7 +180,15 @@ def main():
         ap.error("need --park or --rotate")
 
     for p in targets:
-        n = scan_park(p, args.buffer_km, since, args.tile_deg)
+        try:
+            n = scan_park(p, args.buffer_km, since, args.tile_deg)
+        except Exception as ex:  # noqa: BLE001
+            notify_status("gfw_scan_failed", "GFW Alert Scan Failed",
+                          f"{p['id']}: {str(ex)[:200]}")
+            raise
+        notify_status("gfw_scan_success", "GFW Alert Scan Complete",
+                      f"{p['id']}: {n:,} integrated deforestation alerts "
+                      f"since {since} ({_nreq} API requests)")
         state = load_state()
         state[p["id"]] = {"scanned_at": datetime.datetime.now(datetime.timezone.utc)
                           .strftime("%Y-%m-%dT%H:%M:%SZ"),

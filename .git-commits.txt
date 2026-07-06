@@ -1,3 +1,9 @@
+b292f5d9 2026-07-06 10:42:59 Popup UI: per-event deforest rows, stats tables, sparklines, filter chips
+608ab676 2026-07-06 10:07:58 Daily park refresh complete: live-run verified, cron installed, UI checked
+e8828ba7 2026-07-06 10:02:52 Track daily_park_refresh rotation state
+b993cfab 2026-07-06 10:02:37 Data updates from 3am daily_fire_update cron (trends, raw fire JSONs)
+a3053307 2026-07-06 10:02:28 Backfill full VIIRS fire history 2018-2025 into fire_detections
+9bcdd226 2026-07-06 06:57:29 Handover: mark daily park refresh implemented; list remaining steps
 26d26d8e 2026-07-06 06:57:07 Daily park refresh: wire rotation scans to fire/deforest/settlement refresh
 017da55b 2026-07-06 06:40:33 Handover: plan for wiring daily park rotation to fire/deforestation refresh
 0feca516 2026-07-06 06:23:29 Mining & Water Quality popup section + /api/parks/{id}/turbidity + pinning
@@ -12,9 +18,3 @@
 7e448627 2026-07-05 06:26:29 WIP fire 100km buffer: park assigner, dist_to_park_km, 20km relevance gating
 439c27b3 2026-07-05 05:38:09 UI: pixel fade at z13-15, clearer layer toggles, nicer test-env login CTA
 4c2a7440 2026-07-05 05:22:27 chore: refresh .git-commits.txt
-b7cb360e 2026-07-05 05:22:14 docs: remove completed handover note
-e94915f3 2026-07-05 05:22:07 Test env read filters, stats-panel layer toggles, pixel zoom fade
-76671ee2 2026-07-05 04:54:08 docs: fill WIP hash in handover
-2b64044f 2026-07-05 04:54:01 WIP test env: write-path isolation via test2026 password (migration 035 unapplied; read filters + UI toggles pending)
-b012dd52 2026-07-05 04:52:38 docs: handover for test-env tenant, stats-panel layer toggles, pixel rendering polish
-3b316747 2026-07-02 15:08:56 gpx: fix subtype stats (boat/fixed-wing/rotor) zeroed by post-merge recompute

@@ -749,14 +749,21 @@
             const sid = 'spark_' + Math.random().toString(36).slice(2, 8);
             window._sparkSeries[sid] = series;
             const w = 232, h = 36, pad = 2;
-            const max = Math.max(...series.map(d => Math.max(d.v, d.v2 || 0))) || 1;
+            // Dual y-axes: main series (left) and v2 overlay (right) are scaled
+            // independently so small counts (e.g. fire groups) remain visible.
+            const hasV2 = opts.v2Color && series.some(d => d.v2 > 0);
+            const max = Math.max(...series.map(d => d.v)) || 1;
+            const max2 = hasV2 ? (Math.max(...series.map(d => d.v2 || 0)) || 1) : max;
             const xs = i => pad + i * (w - 2*pad) / (series.length - 1);
             const ys = v => h - pad - (v / max) * (h - 2*pad);
-            const line = vals => vals.map((v, i) => `${i ? 'L' : 'M'}${xs(i).toFixed(1)},${ys(v).toFixed(1)}`).join('');
-            const main = line(series.map(d => d.v));
+            const ys2 = v => h - pad - (v / max2) * (h - 2*pad);
+            const line = (vals, yfn) => vals.map((v, i) => `${i ? 'L' : 'M'}${xs(i).toFixed(1)},${yfn(v).toFixed(1)}`).join('');
+            const main = line(series.map(d => d.v), ys);
             const area = `${main} L${xs(series.length-1).toFixed(1)},${h-pad} L${xs(0).toFixed(1)},${h-pad} Z`;
-            const overlay = opts.v2Color && series.some(d => d.v2 > 0)
-                ? `<path d="${line(series.map(d => d.v2 || 0))}" fill="none" stroke="${opts.v2Color}" stroke-width="1.2" opacity="0.9"/>` : '';
+            const overlay = hasV2
+                ? `<path d="${line(series.map(d => d.v2 || 0), ys2)}" fill="none" stroke="${opts.v2Color}" stroke-width="1.2" opacity="0.9"/>` : '';
+            const axisLabels = `<text x="1" y="8" font-size="7" fill="${color}" opacity="0.85">${max.toLocaleString()}</text>`
+                + (hasV2 ? `<text x="${w-1}" y="8" font-size="7" text-anchor="end" fill="${opts.v2Color}" opacity="0.85">${max2.toLocaleString()}</text>` : '');
             // Invisible hover/click strips
             const bw = (w - 2*pad) / (series.length - 1);
             const strips = series.map((d, i) =>
@@ -769,7 +776,7 @@
                 <svg width="${w}" height="${h}" style="display:block;" viewBox="0 0 ${w} ${h}">
                     <path d="${area}" fill="${color}" opacity="0.18"/>
                     <path d="${main}" fill="none" stroke="${color}" stroke-width="1.4"/>
-                    ${overlay}${strips}
+                    ${overlay}${axisLabels}${strips}
                 </svg>
                 <div style="display:flex;justify-content:space-between;font-size:8px;color:#666;"><span>${series[0].label}</span><span>${series[series.length-1].label}</span></div>
             </div>`;
@@ -4817,7 +4824,7 @@
                     fetchRetry('/api/notifications?type=new_upload&limit=10'),
                     fetchRetry(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
                     fetchRetry('/api/notifications?type=new_publication&limit=10'),
-                    fetchRetry('/api/notifications?type=fire_download_success&limit=5')
+                    fetchRetry('/api/notifications?type=fire_download_success,fire_download_failed,turbidity_scan_success,turbidity_scan_failed,gfw_scan_success,gfw_scan_failed,park_refresh_success,park_refresh_failed&limit=10')
                 ]);
                 
                 // Process upload notifications
@@ -5290,15 +5297,19 @@
         }
 
         function renderFireDownloadNotification(notif) {
-            // Fire download success notification (fire_download_success type) - non-clickable status
+            // Cron status notification (fire download, turbidity/GFW scan, park refresh) - non-clickable
             const message = notif.message || '';
+            const failed = (notif.notification_type || '').endsWith('_failed');
             const matches = message.match(/(\d+)\s+new fire detections from (\d+)\s+parks/);
             const fireCount = matches ? matches[1] : '';
             const parkCount = matches ? matches[2] : '';
+            const iconHtml = failed ? icon('x', 'fire') : icon('check', 'success');
+            const iconStyle = failed ? 'background: rgba(239,68,68,0.15); color: #ef4444;'
+                                     : 'background: rgba(34,197,94,0.15); color: #22c55e;';
             
             return `
                 <div class="notification-item" style="cursor:default;">
-                    <div class="notification-icon" style="background: rgba(34,197,94,0.15); color: #22c55e;">${icon('check', 'success')}</div>
+                    <div class="notification-icon" style="${iconStyle}">${iconHtml}</div>
                     <div class="notification-content">
                         <div class="notification-location">${escapeHtml(notif.title)}</div>
                         <div class="notification-subtitle">${fireCount ? `${fireCount} fires • ${parkCount} parks` : escapeHtml(message)}</div>
@@ -8129,7 +8140,7 @@
                                 ? `sediment source upstream of first observable water`
                                 : `${a.ratio}× brighter than upstream (clean above)`;
                             const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="mining-${idx}" style="display:inline-block; background:#3b82f6; color:white; font-size:8px; font-weight:600; padding:1px 4px; border-radius:3px; margin-right:4px;">${idx}</span>` : '';
-                            html += `<div class="narrative-row" onclick="zoomToTurbidityAlert('${paId}', ${a.lat}, ${a.lon}, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to zoom. Scene ${escapeHtml(a.scene||'')}">
+                            html += `<div class="narrative-row" data-park="${paId}" data-type="turbidity" data-feature="turbidity_${idx}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'turbidity', 'turbidity_${idx}', this, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to pin on map. Scene ${escapeHtml(a.scene||'')}">
                                 ${testBadge}<span style="color:#eab308;">◈</span> <b>${kind}</b> — ${escapeHtml(a.river)}<br>
                                 <span style="color:#888;">${a.downstream_turbid_km} km turbid downstream · ${detail} · ${a.date}</span>
                             </div>`;
@@ -8146,7 +8157,7 @@
                         let text = st.narrative || `Mining-classified settlement at ${st.lat.toFixed(4)}, ${st.lon.toFixed(4)}`;
                         const full = text;
                         if (text.length > 180) text = text.substring(0, 177) + '...';
-                        html += `<div class="narrative-row" onclick="zoomToTurbidityAlert('${paId}', ${st.lat}, ${st.lon}, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to zoom. ${escapeHtml(full)}">
+                        html += `<div class="narrative-row" data-park="${paId}" data-type="turbidity" data-feature="mining_${st.id}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'turbidity', 'mining_${st.id}', this, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to pin on map. ${escapeHtml(full)}">
                             <span style="color:${confColor};">⛏</span> <span style="color:${confColor}; font-weight:600;">${confPct}%</span> ${escapeHtml(text)}
                         </div>`;
                     });
@@ -8168,6 +8179,62 @@
         function zoomToTurbidityAlert(paId, lat, lon, event) {
             if (event) event.stopPropagation();
             map.flyTo({ center: [lon, lat], zoom: 13 });
+        }
+
+        // Build the full turbidity FeatureCollection for a park: onset alerts,
+        // suspected mining sites, and turbid water sample points (the sediment
+        // plume network). Plume points carry dates and are filtered by the
+        // global time slider window.
+        async function buildTurbidityGeoJSON(parkId) {
+            const response = await fetch(`/api/parks/${parkId}/turbidity?pwd=${window.getPwd() || ''}`);
+            if (!response.ok) throw new Error('Failed to fetch turbidity data');
+            const t = await response.json();
+            const features = [];
+            ((t.scan && t.scan.alerts) || []).forEach((a, i) => {
+                features.push({
+                    type: 'Feature',
+                    geometry: { type: 'Point', coordinates: [a.lon, a.lat] },
+                    properties: { feature_type: 'turbidity_alert', feature_id: `turbidity_${i}`,
+                                  name: `${a.type === 'turbid_headwater' ? 'Turbid headwaters' : 'Turbidity onset'}: ${a.river}`,
+                                  river: a.river, turbid_km: a.downstream_turbid_km, date: a.date }
+                });
+            });
+            (t.mining_settlements || []).forEach(st => {
+                features.push({
+                    type: 'Feature',
+                    geometry: { type: 'Point', coordinates: [st.lon, st.lat] },
+                    properties: { feature_type: 'mining_site', feature_id: `mining_${st.id}`,
+                                  name: `Suspected mining (${Math.round(st.confidence*100)}%)`,
+                                  narrative: st.narrative || '' }
+                });
+            });
+            ((t.scan && t.scan.turbid_points) || []).forEach((p, i) => {
+                if (window.dateFrom && p.date && p.date < window.dateFrom) return;
+                if (window.dateTo && p.date && p.date > window.dateTo) return;
+                features.push({
+                    type: 'Feature',
+                    geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
+                    properties: { feature_type: 'turbid_water', feature_id: `turbid_px_${i}`,
+                                  river: p.river, red: p.red, date: p.date,
+                                  name: `Turbid water · ${p.river} · ${p.date}` }
+                });
+            });
+            return { type: 'FeatureCollection', features };
+        }
+
+        // Data-driven paint for turbidity point layers: alerts = yellow rings,
+        // mining sites = red, plume sample points = small yellow dots.
+        function turbidityCirclePaint() {
+            const isPlume = ['==', ['get', 'feature_type'], 'turbid_water'];
+            const isMine = ['==', ['get', 'feature_type'], 'mining_site'];
+            return {
+                'circle-radius': ['case', isPlume, 1.8, isMine, 6, 5],
+                'circle-color': ['case', isMine, '#ef4444', '#eab308'],
+                'circle-opacity': ['case', isPlume, 0.75, 0.9],
+                'circle-stroke-width': ['case', isPlume, 0, 1.5],
+                'circle-stroke-color': '#fff',
+                'circle-stroke-opacity': 0.8
+            };
         }
 
         async function fetchPopupLegalData(paId) {
@@ -13150,6 +13217,21 @@ ${starredItems.narratives.map(n => {
         const sourceId = `pinned-single-source-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
         
         try {
+            // Turbidity alerts / mining sites: build from turbidity endpoint
+            if (type === 'turbidity') {
+                const all = await buildTurbidityGeoJSON(parkId);
+                const features = all.features.filter(f => f.properties?.feature_id === featureId);
+                if (features.length === 0) { showToast(`Feature not found: ${featureId}`, 'warning'); return false; }
+                const feature = features[0];
+                if (map.getLayer(layerId)) map.removeLayer(layerId);
+                if (map.getSource(sourceId)) map.removeSource(sourceId);
+                map.addSource(sourceId, { type: 'geojson', data: { type: 'FeatureCollection', features } });
+                map.addLayer({ id: layerId, type: 'circle', source: sourceId, paint: turbidityCirclePaint() });
+                singlePinnedFeatures[key] = { parkId, parkName, type, featureId, sourceId, layerId,
+                    feature, narrative: narrative || feature.properties?.narrative || feature.properties?.name || '' };
+                return true;
+            }
+
             // Map type to feature_type for API
             const featureType = type === 'fire' ? 'fire_trajectory' : type;
             
@@ -13714,30 +13796,9 @@ ${starredItems.narratives.map(n => {
             
             let geojson;
             
-            // Turbidity alerts + mining sites come from the turbidity endpoint
+            // Turbidity alerts + mining sites + plume points (time-filtered)
             if (type === 'turbidity') {
-                const response = await fetch(`/api/parks/${parkId}/turbidity?pwd=${window.getPwd() || ''}`);
-                if (!response.ok) throw new Error('Failed to fetch turbidity data');
-                const t = await response.json();
-                const features = [];
-                ((t.scan && t.scan.alerts) || []).forEach((a, i) => {
-                    features.push({
-                        type: 'Feature',
-                        geometry: { type: 'Point', coordinates: [a.lon, a.lat] },
-                        properties: { feature_type: 'turbidity_alert', feature_id: `turbidity_${i}`,
-                                      name: `${a.type === 'turbid_headwater' ? 'Turbid headwaters' : 'Turbidity onset'}: ${a.river}`,
-                                      turbid_km: a.downstream_turbid_km, date: a.date }
-                    });
-                });
-                (t.mining_settlements || []).forEach(st => {
-                    features.push({
-                        type: 'Feature',
-                        geometry: { type: 'Point', coordinates: [st.lon, st.lat] },
-                        properties: { feature_type: 'mining_site', feature_id: `mining_${st.id}`,
-                                      name: `Suspected mining (${Math.round(st.confidence*100)}%)` }
-                    });
-                });
-                geojson = { type: 'FeatureCollection', features };
+                geojson = await buildTurbidityGeoJSON(parkId);
             } else if (type === 'infrastructure') {
                 const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&pwd=${window.getPwd() || ''}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
@@ -13868,13 +13929,14 @@ ${starredItems.narratives.map(n => {
                     });
                     pinnedLayers[key].textLayerId = textLayerId;
                 } else {
-                    // Other point types: simple circles
+                    // Other point types: simple circles (turbidity: data-driven
+                    // paint distinguishes plume points / alerts / mining sites)
                     map.addLayer({
                         id: layerId,
                         type: 'circle',
                         source: sourceId,
                         filter: ['==', ['geometry-type'], 'Point'],
-                        paint: {
+                        paint: normalizedType === 'turbidity' ? turbidityCirclePaint() : {
                             'circle-radius': 5,
                             'circle-color': color,
                             'circle-opacity': 0.6,
@@ -14331,18 +14393,24 @@ ${starredItems.narratives.map(n => {
             if (!layer || !layer.parkId || !layer.type) continue;
             
             try {
-                // Build date params
-                let dateParams = '';
-                const featureType = layer.type === 'fire' ? 'fire_trajectory' : layer.type;
-                if (dateFrom && dateTo) {
-                    dateParams = `&start=${dateFrom}&end=${dateTo}`;
+                let geojson;
+                if (layer.type === 'turbidity') {
+                    // rebuild with current timeslider window (plume points carry dates)
+                    geojson = await buildTurbidityGeoJSON(layer.parkId);
+                } else {
+                    // Build date params
+                    let dateParams = '';
+                    const featureType = layer.type === 'fire' ? 'fire_trajectory' : layer.type;
+                    if (dateFrom && dateTo) {
+                        dateParams = `&start=${dateFrom}&end=${dateTo}`;
+                    }
+                    
+                    // Fetch updated data
+                    const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.getPwd() || ''}`);
+                    if (!response.ok) continue;
+                    
+                    geojson = await response.json();
                 }
-                
-                // Fetch updated data
-                const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.getPwd() || ''}`);
-                if (!response.ok) continue;
-                
-                const geojson = await response.json();
                 
                 // Update source data
                 const source = map.getSource(layer.sourceId);

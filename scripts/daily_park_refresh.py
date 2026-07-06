@@ -381,15 +381,25 @@ def main():
     conn = rebuilder.conn
     conn.row_factory = sqlite3.Row
 
+    from cron_notify import notify_status
     for park_id in targets:
         log(f"=== {park_id} ===")
-        ingest_gfw_deforestation(conn, rebuilder, park_id, args.dry_run)
-        reclassify_deforestation(conn, rebuilder, park_id, args.dry_run)
-        reload_fire_groups(park_id, args.dry_run)
-        call_refresh_endpoint(park_id, args.dry_run)
-        export_park_json(park_id, args.dry_run)
+        try:
+            ingest_gfw_deforestation(conn, rebuilder, park_id, args.dry_run)
+            reclassify_deforestation(conn, rebuilder, park_id, args.dry_run)
+            reload_fire_groups(park_id, args.dry_run)
+            call_refresh_endpoint(park_id, args.dry_run)
+            export_park_json(park_id, args.dry_run)
+        except Exception as ex:
+            if not args.dry_run:
+                notify_status("park_refresh_failed", "Daily Park Refresh Failed",
+                              f"{park_id}: {str(ex)[:200]}")
+            raise
         if not args.dry_run:
             save_state(park_id)
+            notify_status("park_refresh_success", "Daily Park Refresh Complete",
+                          f"{park_id}: deforestation ingested+reclassified, "
+                          f"fire groups reloaded, narratives refreshed, JSON exported")
         log(f"=== {park_id} done ===")
 
     conn.close()

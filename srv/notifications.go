@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -60,9 +61,15 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 		         FROM notifications WHERE park_id = ? AND ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
 		args = []interface{}{parkID, env, limit}
 	} else if notifType != "" {
+		// comma-separated list of types supported (e.g. cron status types)
+		types := strings.Split(notifType, ",")
+		placeholders := strings.TrimSuffix(strings.Repeat("?,", len(types)), ",")
 		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
-		         FROM notifications WHERE notification_type = ? AND ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
-		args = []interface{}{notifType, env, limit}
+		         FROM notifications WHERE notification_type IN (` + placeholders + `) AND ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
+		for _, t := range types {
+			args = append(args, strings.TrimSpace(t))
+		}
+		args = append(args, env, limit)
 	} else if unreadOnly {
 		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
 		         FROM notifications WHERE is_read = 0 AND ` + envCond + ` ORDER BY created_at DESC LIMIT ?`

@@ -5584,6 +5584,37 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 		})
 	}
 
+	// Fallback: settlements without polygon geometry (e.g. turbidity-derived
+	// mining candidates registered directly in park_settlements). Serve a
+	// Point feature so pinning from the popup works.
+	if len(fc.Features) == 0 && strings.HasPrefix(featureID, "settlement_") {
+		if sid, err := strconv.ParseInt(strings.TrimPrefix(featureID, "settlement_"), 10, 64); err == nil {
+			var lat, lon float64
+			var narrative, classification sql.NullString
+			err := s.DB.QueryRow(`
+				SELECT lat, lon, narrative, classification
+				FROM park_settlements WHERE id = ? AND park_id = ?`,
+				sid, parkID).Scan(&lat, &lon, &narrative, &classification)
+			if err == nil {
+				props := map[string]interface{}{
+					"feature_type":  "settlement",
+					"feature_id":    featureID,
+					"settlement_id": sid,
+				}
+				if narrative.Valid {
+					props["narrative"] = narrative.String
+				}
+				if classification.Valid {
+					props["classification"] = classification.String
+				}
+				geom, _ := json.Marshal(map[string]interface{}{
+					"type": "Point", "coordinates": []float64{lon, lat}})
+				fc.Features = append(fc.Features, GeoJSONFeature{
+					Type: "Feature", Geometry: geom, Properties: props})
+			}
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(fc)
 }
