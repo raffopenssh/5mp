@@ -141,7 +141,7 @@
     .time-slider-container.animating .time-slider-date-part { white-space: nowrap; }
     @media (max-width: 768px) {
         #anim-inline { gap: 3px; margin-left: 0; width: 100%; justify-content: flex-start; }
-        .time-slider-container.animating .time-slider-date-tags { display: none; }
+        /* keep date preset tags tappable while animating — header wraps */
         #anim-date-lbl { font-size: 10px; min-width: 68px; }
         #anim-inline > #anim-date-lbl.visible { min-width: 68px; }
         #anim-speed-lbl { min-width: 40px; font-size: 9px; }
@@ -1092,6 +1092,25 @@
         },
         isOpen() { return !!A; },
         toggle() { A ? this.close() : this.open(); },
+        // Called by the time slider whenever the date window changes
+        // (preset tap like td/90d, slider drag, or precise date edit).
+        // Reopens the animation over the new window, keeping layer choices.
+        onDateRangeChanged() {
+            if (!A || A.recording) return;
+            const fromISO = (typeof dateFrom !== 'undefined' && dateFrom) ? dateFrom : null;
+            const toISO = (typeof dateTo !== 'undefined' && dateTo) ? dateTo : null;
+            if (!fromISO || !toISO) return;
+            if (fromISO === A.fromISO && toISO === A.toISO) return;
+            clearTimeout(this._rangeTimer);
+            this._rangeTimer = setTimeout(() => {
+                if (!A) return;
+                const layers = LAYER_ORDER.filter(n => A.on[n]);
+                const paused = !A.playing;
+                this.close();
+                // speed intentionally recomputed for the new span
+                this.open({ layers, paused });
+            }, 350);
+        },
         getState() {
             if (!A) return null;
             return {

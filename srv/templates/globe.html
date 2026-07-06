@@ -9305,6 +9305,9 @@
             if (typeof refreshPinnedLayers === 'function') {
                 refreshPinnedLayers();
             }
+
+            // If the animator is open, restart it over the new window
+            if (window.Animator && Animator.isOpen && Animator.isOpen()) Animator.onDateRangeChanged();
         }
         
         function initTicks() {
@@ -9455,8 +9458,11 @@
                 sliderEndValue = TOTAL_MONTHS;
                 updateSliderDisplay();
                 updateDateFilter();
-                // updateDateFilter calls clearPresetTag which handles hiding
-                hideDateTags();
+                // Keep tags visible (deselected) so they remain tappable
+                document.querySelectorAll('.time-slider-date-tag').forEach(function(tag) {
+                    tag.classList.remove('active', 'dimmed');
+                    tag.classList.add('visible');
+                });
                 updateShareURLPreset(null);
                 return;
             }
@@ -9542,15 +9548,13 @@
             if (activePresetTag) {
                 activePresetTag = null;
                 updateShareURLPreset(null);
-                // Don't hide tags if editor is open — just remove active styling
-                if (_activeEditor) {
-                    document.querySelectorAll('.time-slider-date-tag').forEach(function(tag) {
-                        tag.classList.remove('active', 'dimmed');
-                        tag.classList.add('visible');
-                    });
-                } else {
-                    hideDateTags();
-                }
+                // Keep tags visible (just not active) so presets stay reachable
+                // after a manual slider drag — hiding them looked like the
+                // td/3d/90d buttons vanished (esp. next to the animate button).
+                document.querySelectorAll('.time-slider-date-tag').forEach(function(tag) {
+                    tag.classList.remove('active', 'dimmed');
+                    tag.classList.add('visible');
+                });
             }
         }
 
@@ -9628,6 +9632,9 @@
             reloadGridData();
             if (typeof refreshPopupData === 'function') refreshPopupData();
             if (typeof refreshPinnedLayers === 'function') refreshPinnedLayers();
+
+            // If the animator is open, restart it over the new window
+            if (window.Animator && Animator.isOpen && Animator.isOpen()) Animator.onDateRangeChanged();
         }
 
         // Inline date editor for precise filtering (expert mode)

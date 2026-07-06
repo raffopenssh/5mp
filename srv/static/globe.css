@@ -429,8 +429,9 @@
  
 
         @media (max-width: 768px) {
-            .time-slider-container { height: 60px; padding: 6px 12px 10px; }
-            .time-slider-date { font-size: 12px; }
+            .time-slider-container { height: auto; min-height: 60px; padding: 6px 12px 10px; }
+            /* wrap so preset tags + animate button never push off-screen */
+            .time-slider-date { font-size: 12px; flex-wrap: wrap; row-gap: 2px; }
             #map { bottom: 60px !important; }
             /* Touch targets for slider handles (visual slightly smaller; hit area padded) */
             .time-slider-handle { width: 15px; height: 15px; }
