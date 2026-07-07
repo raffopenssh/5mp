@@ -418,7 +418,7 @@
         }
 
         /* Time Slider - Google Timelapse Style */
-        .time-slider-container { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(10,10,10,0.92); z-index: 400; padding: 8px 20px 12px; display: flex; flex-direction: column; overflow: visible; }
+        .time-slider-container { position: fixed; bottom: 0; left: 0; right: 0; height: auto; min-height: 70px; background: rgba(10,10,10,0.92); z-index: 400; padding: 8px 20px 12px; display: flex; flex-direction: column; overflow: visible; }
         /* soft fade rising above the container so header buttons never sit on bare map */
         .time-slider-container::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 56px; background: linear-gradient(to top, rgba(10,10,10,0.92), rgba(10,10,10,0.55) 40%, rgba(10,10,10,0.2) 75%, transparent); pointer-events: none; }
         .time-slider-header { margin-bottom: 6px; }
@@ -1174,7 +1174,7 @@
         
         /* === LANDSCAPE MOBILE === */
         @media (max-width: 768px) and (orientation: landscape) {
-            .time-slider-container { height: 44px; padding: 4px 12px 6px; }
+            .time-slider-container { height: auto; min-height: 44px; padding: 4px 12px 6px; }
             .time-slider-ticks { display: none; }
             .stats-panel { display: none; }
             .map-toolbar { bottom: 56px; }
@@ -1532,6 +1532,22 @@
 
 .time-slider-date-tags {
     display: inline-flex; gap: 0; margin-left: 0; align-items: center;
+}
+
+/* Collapsed placeholder chip: shows current span ("13d", "3.2y") or '×' while expanded.
+   Styled exactly like a .time-slider-date-tag so it reads as one of them. */
+.time-slider-tag-expand {
+    font-size: 9px; font-weight: 600; color: #888; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 3px; padding: 1px 4px;
+    margin-left: 3px; cursor: pointer; letter-spacing: 0.3px; line-height: 1.3;
+    white-space: nowrap; user-select: none; flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.time-slider-tag-expand:hover { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.35); color: #aaa; }
+.time-slider-tag-expand.expanded { border-color: rgba(255,255,255,0.08); color: #666; }
+.time-slider-tag-expand.hidden { display: none; }
+@media (max-width: 768px) {
+.time-slider-tag-expand { font-size: 8px; margin-left: 2px; }
 }
 
 @media (max-width: 768px) {

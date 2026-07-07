@@ -282,7 +282,7 @@
     <!-- Time Slider -->
     <div class="time-slider-container" id="time-slider-container">
         <div class="time-slider-header">
-            <div class="time-slider-date" id="time-slider-date"><span class="time-slider-date-part" id="time-slider-date-start" onclick="editSliderDate('start')" title="Click to set start date">Jan 2020</span><span class="time-slider-date-sep"> - </span><span class="time-slider-date-part" id="time-slider-date-end" onclick="editSliderDate('end')" title="Click to set end date">Dec 2024</span><span class="time-slider-date-tags" id="time-slider-date-tags"><span class="time-slider-date-tag" data-preset="td" onclick="applyDatePreset('td')">td<span class="tag-hint">Today</span></span><span class="time-slider-date-tag" data-preset="3d" onclick="applyDatePreset('3d')">3d<span class="tag-hint">Last 3 days</span></span><span class="time-slider-date-tag" data-preset="7d" onclick="applyDatePreset('7d')">7d<span class="tag-hint">Last 7 days</span></span><span class="time-slider-date-tag" data-preset="14d" onclick="applyDatePreset('14d')">14d<span class="tag-hint">Last 14 days</span></span><span class="time-slider-date-tag" data-preset="30d" onclick="applyDatePreset('30d')">30d<span class="tag-hint">Last 30 days</span></span><span class="time-slider-date-tag" data-preset="90d" onclick="applyDatePreset('90d')">90d<span class="tag-hint">Last 90 days</span></span><span class="time-slider-date-tag" data-preset="cmo" onclick="applyDatePreset('cmo')">cmo<span class="tag-hint">Current month</span></span></span><button id="anim-open-btn" onclick="Animator.toggle()" title="Animate visible data over the selected time window">&#9654; animate</button></div>
+            <div class="time-slider-date" id="time-slider-date"><span class="time-slider-date-part" id="time-slider-date-start" onclick="editSliderDate('start')" title="Click to set start date">Jan 2020</span><span class="time-slider-date-sep"> - </span><span class="time-slider-date-part" id="time-slider-date-end" onclick="editSliderDate('end')" title="Click to set end date">Dec 2024</span><span class="time-slider-date-tags" id="time-slider-date-tags"><span class="time-slider-date-tag" data-preset="td" onclick="applyDatePreset('td')">td<span class="tag-hint">Today</span></span><span class="time-slider-date-tag" data-preset="3d" onclick="applyDatePreset('3d')">3d<span class="tag-hint">Last 3 days</span></span><span class="time-slider-date-tag" data-preset="7d" onclick="applyDatePreset('7d')">7d<span class="tag-hint">Last 7 days</span></span><span class="time-slider-date-tag" data-preset="14d" onclick="applyDatePreset('14d')">14d<span class="tag-hint">Last 14 days</span></span><span class="time-slider-date-tag" data-preset="30d" onclick="applyDatePreset('30d')">30d<span class="tag-hint">Last 30 days</span></span><span class="time-slider-date-tag" data-preset="90d" onclick="applyDatePreset('90d')">90d<span class="tag-hint">Last 90 days</span></span><span class="time-slider-date-tag" data-preset="cmo" onclick="applyDatePreset('cmo')">cmo<span class="tag-hint">Current month</span></span><span class="time-slider-tag-expand" id="date-tag-expand" onclick="toggleDateTags()" title="Date presets">+</span></span><button id="anim-open-btn" onclick="Animator.toggle()" title="Animate visible data over the selected time window">&#9654; animate</button></div>
         </div>
         <div class="time-slider-track-wrapper">
             <div class="time-slider-track" id="time-slider-track">
@@ -9311,6 +9311,9 @@
             dateTo = formatDateISO(endLast > today ? today : endLast);
             currentPreset = 'custom';
             
+            // Refresh the collapsed span chip (e.g. "13d")
+            if (typeof setTagExpandState === 'function') setTagExpandState(tagsExpanded());
+            
             // Update filter panel display
             if (typeof updateTimeFilterDisplay === 'function') {
                 updateTimeFilterDisplay(dateFrom, dateTo);
@@ -9486,14 +9489,16 @@
                     tag.classList.remove('active', 'dimmed');
                     tag.classList.add('visible');
                 });
+                setTagExpandState(true);
                 updateShareURLPreset(null);
                 return;
             }
 
+            applyPreciseDateFilter(fromISO, toISO); // clears activePresetTag — set ours after
             activePresetTag = preset;
-            applyPreciseDateFilter(fromISO, toISO);
             updatePresetTagUI(preset);
             updateShareURLPreset(preset);
+            setTagExpandState(false); // hide span chip; the active tag labels the range
         };
 
         // Pending animation timers
@@ -9511,7 +9516,46 @@
                 tag.classList.remove('dimmed');
                 _tagTimers.push(setTimeout(function() { tag.classList.add('visible'); }, i * 50));
             });
+            setTagExpandState(true);
         }
+
+        // Collapsed placeholder chip: shows the current span (e.g. "13d", "3.2y")
+        // when no preset is active; '\u00d7' while the strip is expanded.
+        function currentSpanLabel() {
+            try {
+                var from = window.dateFrom, to = window.dateTo;
+                if (!from || !to) return '+';
+                var days = Math.round((new Date(to + 'T00:00:00') - new Date(from + 'T00:00:00')) / 86400000) + 1;
+                if (days < 1) return '+';
+                if (days < 100) return days + 'd';
+                if (days < 730) return Math.round(days / 30.44) + 'mo';
+                return (days / 365.25).toFixed(1).replace(/\.0$/, '') + 'y';
+            } catch (e) { return '+'; }
+        }
+        function setTagExpandState(expanded) {
+            var btn = document.getElementById('date-tag-expand');
+            if (!btn) return;
+            btn.textContent = expanded ? '\u00d7' : currentSpanLabel();
+            btn.classList.toggle('expanded', expanded);
+            // Hide the chip whenever a preset tag is active — the tag itself
+            // already labels the range (avoids "14d 14d").
+            btn.classList.toggle('hidden', !!activePresetTag);
+        }
+        function tagsExpanded() {
+            var btn = document.getElementById('date-tag-expand');
+            return btn ? btn.classList.contains('expanded') : false;
+        }
+        window.toggleDateTags = function() {
+            if (tagsExpanded()) {
+                updatePresetTagUI(activePresetTag); // collapse back to active-only (or none)
+            } else {
+                showDateTags();
+                if (activePresetTag) {
+                    var el = document.querySelector('[data-preset="' + activePresetTag + '"]');
+                    if (el) el.classList.add('active');
+                }
+            }
+        };
 
         // Hide all tags (reverse stagger)
         function hideDateTags() {
@@ -9522,6 +9566,7 @@
                     tag.classList.remove('visible', 'active', 'dimmed');
                 }, i * 35));
             });
+            setTagExpandState(false);
         }
 
         // Show only the active preset tag, dim/hide the rest
@@ -9536,6 +9581,7 @@
                     tag.classList.remove('active');
                 }
             });
+            setTagExpandState(false);
         }
 
         function updatePresetTagUI(preset) {
@@ -9548,6 +9594,7 @@
                         tag.classList.remove('active', 'dimmed');
                         tag.classList.add('visible');
                     });
+                    setTagExpandState(true);
                 } else {
                     hideDateTags();
                 }
@@ -9571,13 +9618,8 @@
             if (activePresetTag) {
                 activePresetTag = null;
                 updateShareURLPreset(null);
-                // Keep tags visible (just not active) so presets stay reachable
-                // after a manual slider drag — hiding them looked like the
-                // td/3d/90d buttons vanished (esp. next to the animate button).
-                document.querySelectorAll('.time-slider-date-tag').forEach(function(tag) {
-                    tag.classList.remove('active', 'dimmed');
-                    tag.classList.add('visible');
-                });
+                // Collapse to the [+] placeholder — presets stay reachable via it.
+                hideDateTags();
             }
         }
 
@@ -9596,15 +9638,12 @@
                 applyDatePreset(urlPreset);
             } else if (urlFrom && urlTo) {
                 // Apply precise dates from URL — skip default month-rounded load.
-                // Tags start hidden (no preset active) — show them so td/3d/… stay reachable.
+                // No preset active: tags stay collapsed behind the [+] placeholder.
                 applyPreciseDateFilter(urlFrom, urlTo);
-                showDateTags();
             } else if (urlFrom) {
                 applyPreciseDateFilter(urlFrom, formatDateISO(SLIDER_END_DATE));
-                showDateTags();
             } else if (urlTo) {
                 applyPreciseDateFilter(formatDateISO(valueToDate(sliderStartValue)), urlTo);
-                showDateTags();
             } else {
                 // Default to 90d for good visual differentiation
                 applyDatePreset('90d');
@@ -9623,6 +9662,10 @@
         function applyPreciseDateFilter(newFrom, newTo) {
             // Validate
             if (!newFrom || !newTo) return;
+
+            // A precise range invalidates any active preset (applyDatePreset
+            // re-sets it right after calling us).
+            if (activePresetTag) clearPresetTag();
             if (newFrom > newTo) { var tmp = newFrom; newFrom = newTo; newTo = tmp; }
 
             // Clamp to valid range: 2020-01-01 to today
@@ -9654,6 +9697,9 @@
 
             // Filter panel display
             if (typeof updateTimeFilterDisplay === 'function') updateTimeFilterDisplay(dateFrom, dateTo);
+
+            // Refresh the collapsed span chip (e.g. "13d")
+            if (typeof setTagExpandState === 'function') setTagExpandState(tagsExpanded());
 
             // Reload everything — identical to what dragging the slider does
             reloadGridData();
