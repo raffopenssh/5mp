@@ -315,19 +315,14 @@
             </svg>
         </button>
         <button class="footer-btn info-btn" onclick="showModal('manifest')" title="About 5MP" aria-label="About 5MP">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <defs>
-                    <linearGradient id="info-ring-grad" x1="0" y1="0" x2="24" y2="24">
-                        <stop offset="0%" stop-color="#4ade80"/>
-                        <stop offset="55%" stop-color="#22c55e"/>
-                        <stop offset="100%" stop-color="#0ea5a4"/>
-                    </linearGradient>
-                </defs>
-                <!-- open ring, like a compass bezel -->
-                <path d="M 12 2 A 10 10 0 1 1 4.9 5.1" stroke="url(#info-ring-grad)" stroke-width="2" stroke-linecap="round"/>
-                <!-- the i -->
-                <circle cx="12" cy="7.6" r="1.4" fill="url(#info-ring-grad)"/>
-                <path d="M12 11.2 v6" stroke="url(#info-ring-grad)" stroke-width="2.4" stroke-linecap="round"/>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <!-- minimal compass: bezel + cardinal ticks + needle -->
+                <circle cx="12" cy="12" r="9.2" stroke-width="1.5"/>
+                <path d="M12 2.8v1.8M12 19.4v1.8M2.8 12h1.8M19.4 12h1.8" stroke-width="1.2" stroke-linecap="round" opacity="0.55"/>
+                <g class="compass-needle">
+                    <path d="M14.8 9.2 L12.9 12.9 L9.2 14.8 L11.1 11.1 Z" fill="#22c55e" stroke="none"/>
+                    <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>
+                </g>
             </svg>
         </button>
     </div>
@@ -9600,12 +9595,16 @@
                 // Apply date preset from share link
                 applyDatePreset(urlPreset);
             } else if (urlFrom && urlTo) {
-                // Apply precise dates from URL — skip default month-rounded load
+                // Apply precise dates from URL — skip default month-rounded load.
+                // Tags start hidden (no preset active) — show them so td/3d/… stay reachable.
                 applyPreciseDateFilter(urlFrom, urlTo);
+                showDateTags();
             } else if (urlFrom) {
                 applyPreciseDateFilter(urlFrom, formatDateISO(SLIDER_END_DATE));
+                showDateTags();
             } else if (urlTo) {
                 applyPreciseDateFilter(formatDateISO(valueToDate(sliderStartValue)), urlTo);
+                showDateTags();
             } else {
                 // Default to 90d for good visual differentiation
                 applyDatePreset('90d');
