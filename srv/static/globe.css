@@ -646,7 +646,7 @@
         /* ===== End Pinned GeoJSON Styles ===== */
          
          
-        .map-toolbar { position: fixed; top: 10px; left: 10px; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; gap: 8px; z-index: 150; }
+        .map-toolbar { position: fixed; top: 10px; left: 10px; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; gap: 8px; z-index: 450; /* above the time-slider backdrop gradient (400) so its shadow renders underneath the buttons */ }
         .toolbar-btn { position: relative; width: 44px; height: 44px; min-width: 44px; min-height: 44px; background: rgba(18,18,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center; -webkit-transition: all 0.2s; transition: all 0.2s; padding: 0; }
         .toolbar-btn:hover { background: rgba(30,30,30,0.95); border-color: rgba(255,255,255,0.2); }
         .toolbar-btn svg { width: 20px; height: 20px; color: #a0a0a0; }
