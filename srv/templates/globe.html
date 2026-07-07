@@ -8105,7 +8105,11 @@
                 const scan = data.scan;
                 const alerts = (scan && scan.alerts) || [];
                 const sites = data.mining_settlements || [];
-                const pits = ((data.pits && data.pits.sites) || []).filter(p => p.score >= 0.45);
+                // Keep the ORIGINAL sites[] index (_idx): map feature_ids (pit_N)
+                // are built from the unfiltered array in buildTurbidityGeoJSON.
+                const pits = ((data.pits && data.pits.sites) || [])
+                    .map((p, i) => ({ ...p, _idx: i }))
+                    .filter(p => p.score >= 0.45);
 
                 const countEl = document.getElementById(`mining-count-${paId}`);
                 if (countEl && (alerts.length || sites.length || pits.length)) countEl.textContent = ` (${alerts.length + sites.length + pits.length})`;
@@ -8116,6 +8120,77 @@
                 }
 
                 let html = '';
+
+                // ---- Summary table + sparkline (like the fire accordion) ----
+                const totalPitHa = pits.reduce((a, p) => a + (p.area_ha || 0), 0);
+                const newPits = pits.filter(p => p.new_since);
+                const newPitHa = newPits.reduce((a, p) => a + (p.area_ha || 0), 0);
+                const turbidKmTotal = alerts.reduce((a, x) => a + (x.downstream_turbid_km || 0), 0);
+                if (pits.length || alerts.length || sites.length) {
+                    if (pits.length) {
+                        html += `<div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Suspected pit sites</span>
+                            <span class="pa-popup-mini-stat-value${pits.length > 50 ? ' bad' : pits.length > 10 ? ' warning' : ''}">${pits.length}</span>
+                        </div>
+                        <div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Bare pit area</span>
+                            <span class="pa-popup-mini-stat-value${totalPitHa > 100 ? ' bad' : totalPitHa > 20 ? ' warning' : ''}">${(totalPitHa / 100).toFixed(2)} km²</span>
+                        </div>`;
+                        if (newPits.length) {
+                            html += `<div class="pa-popup-mini-stat">
+                                <span class="pa-popup-mini-stat-label">New clearings (≈12 mo)</span>
+                                <span class="pa-popup-mini-stat-value bad">${newPits.length} sites · ${(newPitHa / 100).toFixed(2)} km²</span>
+                            </div>`;
+                        }
+                    }
+                    if (alerts.length) {
+                        html += `<div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Turbidity alerts</span>
+                            <span class="pa-popup-mini-stat-value warning">${alerts.length} · ${Math.round(turbidKmTotal)} km turbid</span>
+                        </div>`;
+                    }
+                    if (sites.length) {
+                        html += `<div class="pa-popup-mini-stat">
+                            <span class="pa-popup-mini-stat-label">Suspected mining sites</span>
+                            <span class="pa-popup-mini-stat-value">${sites.length}</span>
+                        </div>`;
+                    }
+                    // Monthly sparkline: new bare-ground (ha) by first-seen month
+                    // (pit new_since dates) with turbidity alerts overlaid by month.
+                    const monthKey = d => d.slice(0, 7);
+                    const events = {};
+                    newPits.forEach(p => {
+                        const m = monthKey(p.new_since);
+                        (events[m] = events[m] || { ha: 0, n: 0, alerts: 0 }).ha += p.area_ha || 0;
+                        events[m].n++;
+                    });
+                    alerts.forEach(a => {
+                        if (!a.date) return;
+                        const m = monthKey(a.date);
+                        (events[m] = events[m] || { ha: 0, n: 0, alerts: 0 }).alerts++;
+                    });
+                    const months = Object.keys(events).sort();
+                    if (months.length >= 1) {
+                        // continuous month range from first event to now
+                        const series = [];
+                        const cur = new Date(months[0] + '-01T00:00:00Z');
+                        const endM = new Date().toISOString().slice(0, 7);
+                        while (cur.toISOString().slice(0, 7) <= endM && series.length < 60) {
+                            const m = cur.toISOString().slice(0, 7);
+                            const e = events[m] || { ha: 0, n: 0, alerts: 0 };
+                            const last = new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth() + 1, 0));
+                            series.push({ label: m, from: m + '-01', to: last.toISOString().slice(0, 10),
+                                          v: Math.round(e.ha * 10) / 10, v2: e.alerts });
+                            cur.setUTCMonth(cur.getUTCMonth() + 1);
+                        }
+                        if (series.length >= 2) {
+                            html += areaSparkline(series, '#f97316', ' ha new bare ground',
+                                { title: 'New pit clearings (ha/month, first seen) · click to filter',
+                                  v2Color: '#eab308', v2Label: 'turbidity alerts', label: 'new ha' });
+                        }
+                    }
+                    html += `<div style="margin-bottom:8px;"></div>`;
+                }
 
                 // ---- Evidence: satellite water-quality scan (shown separately
                 //      from interpretation so users can judge plausibility) ----
@@ -8144,21 +8219,69 @@
                     }
                 }
 
-                // ---- Evidence: pit detections (bright-bare clusters along rivers) ----
+                // ---- Evidence: pit detections, grouped into nearby clusters ----
                 if (pits.length > 0) {
                     const pscan = data.pits;
-                    html += `<div style="font-size:10px; font-weight:600; color:#ccc; margin:8px 0 4px;">Pit detections (${pits.length})</div>`;
-                    html += `<div style="font-size:9px; color:#888; margin-bottom:4px;">Persistent bright bare-earth clusters within 1 km of a waterway · scanned ${pscan.scanned_at ? pscan.scanned_at.substring(0,10) : ''} (${pscan.tiles_scanned}/${pscan.tiles_total} river tiles)</div>`;
-                    pits.slice(0, 12).forEach((p, idx) => {
+                    // Greedy clustering: pits within 2 km of an existing member join it.
+                    const distKm = (a, b) => {
+                        const R = 6371, toR = Math.PI / 180;
+                        const dLat = (b.lat - a.lat) * toR, dLon = (b.lon - a.lon) * toR;
+                        const s = Math.sin(dLat/2)**2 + Math.cos(a.lat*toR) * Math.cos(b.lat*toR) * Math.sin(dLon/2)**2;
+                        return 2 * R * Math.asin(Math.sqrt(s));
+                    };
+                    const clusters = [];
+                    pits.slice().sort((a, b) => b.score - a.score).forEach(p => {
+                        const c = clusters.find(c => c.members.some(m => distKm(m, p) <= 2.0));
+                        if (c) c.members.push(p); else clusters.push({ members: [p] });
+                    });
+                    clusters.forEach(c => {
+                        c.ha = c.members.reduce((a, p) => a + (p.area_ha || 0), 0);
+                        c.maxScore = c.members[0].score;
+                        c.newN = c.members.filter(p => p.new_since).length;
+                        c.span = c.members.length > 1 ? Math.max(...c.members.map(m => distKm(c.members[0], m))) : 0;
+                        c.minWater = Math.min(...c.members.map(m => m.water_km ?? 99));
+                        c.ponds = c.members.reduce((a, p) => a + (p.pond_px || 0), 0);
+                    });
+                    clusters.sort((a, b) => (b.maxScore - a.maxScore) || (b.ha - a.ha));
+
+                    const renderPitRow = (p, indent) => {
                         const scoreColor = p.score >= 0.7 ? '#ef4444' : p.score >= 0.6 ? '#f59e0b' : '#888';
                         const newTag = p.new_since ? ` · <span style="color:#ef4444;">new since ${p.new_since}</span>` : (p.historical_px != null && p.historical_px >= p.px * 0.8 ? ' · long-standing' : '');
-                        const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="pit-${idx}" style="display:inline-block; background:#3b82f6; color:white; font-size:8px; font-weight:600; padding:1px 4px; border-radius:3px; margin-right:4px;">${idx}</span>` : '';
-                        html += `<div class="narrative-row" data-park="${paId}" data-type="turbidity" data-feature="pit_${idx}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'turbidity', 'pit_${idx}', this, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to pin on map. Scene ${escapeHtml(p.scene||'')}">
-                            ${testBadge}<span style="color:${scoreColor};">⛏</span> <span style="color:${scoreColor}; font-weight:600;">${Math.round(p.score*100)}%</span> <b>${p.area_ha} ha</b> bare-earth cluster · ${p.water_km} km from river${newTag}<br>
+                        const ponds = p.pond_px > 0 ? ` · <span style="color:#3b82f6;">${(p.pond_px*0.04).toFixed(1)} ha ponds</span>` : '';
+                        const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="pit-${p._idx}" style="display:inline-block; background:#3b82f6; color:white; font-size:8px; font-weight:600; padding:1px 4px; border-radius:3px; margin-right:4px;">${p._idx}</span>` : '';
+                        return `<div class="narrative-row" data-park="${paId}" data-type="turbidity" data-feature="pit_${p._idx}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'turbidity', 'pit_${p._idx}', this, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; ${indent ? 'margin-left:14px;' : ''} padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to pin on map. Scene ${escapeHtml(p.scene||'')}">
+                            ${testBadge}<span style="color:${scoreColor};">⛏</span> <span style="color:${scoreColor}; font-weight:600;">${Math.round(p.score*100)}%</span> <b>${p.area_ha} ha</b> bare-earth · ${p.water_km} km from river${ponds}${newTag}<br>
                             <span style="color:#888;">${p.lat.toFixed(4)}, ${p.lon.toFixed(4)} · ${p.date}${p.persistent ? ' · persistent' : ''}</span>
                         </div>`;
+                    };
+
+                    html += `<div style="font-size:10px; font-weight:600; color:#ccc; margin:8px 0 4px;">Pit detections — ${pits.length} site${pits.length>1?'s':''} in ${clusters.length} cluster${clusters.length>1?'s':''} · ${(totalPitHa/100).toFixed(2)} km² bare ground</div>`;
+                    html += `<div style="font-size:9px; color:#888; margin-bottom:4px;">Persistent bright bare-earth within 1 km of a waterway, grouped when ≤2 km apart · scanned ${pscan.scanned_at ? pscan.scanned_at.substring(0,10) : ''} (${pscan.tiles_scanned}/${pscan.tiles_total} river tiles)</div>`;
+
+                    const MAX_CLUSTERS = 8;
+                    clusters.slice(0, MAX_CLUSTERS).forEach((c, ci) => {
+                        if (c.members.length === 1) {
+                            html += renderPitRow(c.members[0], false);
+                            return;
+                        }
+                        const scoreColor = c.maxScore >= 0.7 ? '#ef4444' : c.maxScore >= 0.6 ? '#f59e0b' : '#888';
+                        const cid = `pitcluster-${paId}-${ci}`;
+                        const top = c.members[0];
+                        const newTag = c.newN ? ` · <span style="color:#ef4444;">${c.newN} new</span>` : '';
+                        const ponds = c.ponds > 0 ? ` · <span style="color:#3b82f6;">${(c.ponds*0.04).toFixed(1)} ha ponds</span>` : '';
+                        html += `<div class="narrative-row" onclick="event.stopPropagation(); const b=document.getElementById('${cid}'); const open=b.style.display!=='none'; b.style.display=open?'none':'block'; this.querySelector('.cl-arrow').textContent=open?'▸':'▾';" style="font-size:10px; color:#ddd; margin-bottom:4px; padding:4px 6px; background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.25); border-radius:4px; cursor:pointer;" title="Cluster of ${c.members.length} pit sites within ${Math.max(1, Math.ceil(c.span))} km — click to expand">
+                            <span class="cl-arrow" style="color:#f97316;">▸</span> <span style="color:${scoreColor};">⛏</span> <span style="color:${scoreColor}; font-weight:600;">${Math.round(c.maxScore*100)}%</span> <b>Cluster · ${c.members.length} pits · ${c.ha >= 100 ? (c.ha/100).toFixed(2) + ' km²' : c.ha.toFixed(1) + ' ha'}</b> bare ground${ponds}${newTag}<br>
+                            <span style="color:#888;">${top.lat.toFixed(4)}, ${top.lon.toFixed(4)} · spans ${c.span < 1 ? '<1' : c.span.toFixed(1)} km · ${c.minWater} km from river · largest ${top.area_ha} ha</span>
+                            <div id="${cid}" style="display:none; margin-top:4px;">${c.members.map(m => renderPitRow(m, true)).join('')}</div>
+                        </div>`;
                     });
-                    if (pits.length > 12) html += `<div style="font-size:9px; color:#666;">…and ${pits.length - 12} more</div>`;
+                    if (clusters.length > MAX_CLUSTERS) {
+                        const hidden = clusters.slice(MAX_CLUSTERS);
+                        const hn = hidden.reduce((a, c) => a + c.members.length, 0);
+                        const hid = `pitclusters-more-${paId}`;
+                        html += `<div id="${hid}" style="display:none;">${hidden.map((c, ci) => c.members.length === 1 ? renderPitRow(c.members[0], false) : c.members.map(m => renderPitRow(m, false)).join('')).join('')}</div>`;
+                        html += `<div class="section-more-btn" onclick="event.stopPropagation(); document.getElementById('${hid}').style.display='block'; this.style.display='none';" style="padding:4px 0; font-size:9px; color:#f97316; cursor:pointer;">+ ${hidden.length} more clusters (${hn} sites)</div>`;
+                    }
                 }
 
                 // ---- Interpretation: suspected mining sites ----
@@ -8209,7 +8332,8 @@
                     geometry: { type: 'Point', coordinates: [a.lon, a.lat] },
                     properties: { feature_type: 'turbidity_alert', feature_id: `turbidity_${i}`,
                                   name: `${a.type === 'turbid_headwater' ? 'Turbid headwaters' : 'Turbidity onset'}: ${a.river}`,
-                                  river: a.river, turbid_km: a.downstream_turbid_km, date: a.date }
+                                  river: a.river, turbid_km: a.downstream_turbid_km, date: a.date,
+                                  alert_type: a.type, ratio: a.ratio, red: a.red, scene: a.scene }
                 });
             });
             ((t.pits && t.pits.sites) || []).forEach((p, i) => {
@@ -8219,7 +8343,10 @@
                     geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
                     properties: { feature_type: 'pit_site', feature_id: `pit_${i}`,
                                   name: `Pit cluster ${p.area_ha} ha (${Math.round(p.score*100)}%)${p.new_since ? ' · new since ' + p.new_since : ''}`,
-                                  area_ha: p.area_ha, score: p.score, date: p.date }
+                                  area_ha: p.area_ha, score: p.score, date: p.date,
+                                  water_km: p.water_km, pond_px: p.pond_px || 0,
+                                  new_since: p.new_since || '', persistent: !!p.persistent,
+                                  scene: p.scene || '', historical_px: p.historical_px, px: p.px }
                 });
             });
             (t.mining_settlements || []).forEach(st => {
@@ -8228,7 +8355,7 @@
                     geometry: { type: 'Point', coordinates: [st.lon, st.lat] },
                     properties: { feature_type: 'mining_site', feature_id: `mining_${st.id}`,
                                   name: `Suspected mining (${Math.round(st.confidence*100)}%)`,
-                                  narrative: st.narrative || '' }
+                                  confidence: st.confidence, narrative: st.narrative || '' }
                 });
             });
             ((t.scan && t.scan.turbid_points) || []).forEach((p, i) => {
@@ -8243,6 +8370,51 @@
                 });
             });
             return { type: 'FeatureCollection', features };
+        }
+
+        // Rich tooltip body for mining/turbidity map features. Used by both
+        // hover and pinned popups (light-on-white styling to match other types).
+        function turbidityFeatureHTML(props) {
+            const ft = props.feature_type;
+            let h = `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
+            if (ft === 'pit_site') {
+                const scorePct = Math.round((props.score || 0) * 100);
+                const scoreColor = props.score >= 0.7 ? '#dc2626' : props.score >= 0.6 ? '#d97706' : '#6b7280';
+                h += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">Suspected mining pits <span style="color:${scoreColor};">(${scorePct}% confidence)</span></div>`;
+                h += `<div style="margin-bottom: 3px;"><b>${props.area_ha} ha</b> (${((props.area_ha||0)/100).toFixed(3)} km²) bare ground · ${props.water_km} km from river</div>`;
+                if (props.pond_px > 0) h += `<div style="margin-bottom: 3px; color: #2563eb;">${(props.pond_px * 0.04).toFixed(1)} ha of water ponds inside — typical of active washing pits</div>`;
+                if (props.new_since) {
+                    h += `<div style="margin-bottom: 3px; color: #dc2626; font-weight: 500;">New clearing — ground was vegetated on ${props.new_since}</div>`;
+                } else if (props.historical_px != null && props.px && props.historical_px >= props.px * 0.8) {
+                    h += `<div style="margin-bottom: 3px; color: #6b7280;">Long-standing — already bare a year ago (may be village/outcrop)</div>`;
+                }
+                const meta = [];
+                if (props.persistent) meta.push('persistent across scenes');
+                if (props.date) meta.push(`Sentinel-2 ${props.date}`);
+                if (meta.length) h += `<div style="color: #6b7280; font-size: 11px;">${meta.join(' · ')}</div>`;
+            } else if (ft === 'turbidity_alert') {
+                const headwater = props.alert_type === 'turbid_headwater';
+                h += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${headwater ? 'Turbid from headwaters' : 'Turbidity onset'} · ${props.river || 'river'}</div>`;
+                h += `<div style="margin-bottom: 3px;"><b>${props.turbid_km} km</b> of sediment-laden water downstream</div>`;
+                if (headwater) {
+                    h += `<div style="margin-bottom: 3px; color: #6b7280;">River is already turbid at the first observable water — sediment source (likely pit washing) hidden upstream in narrow channels</div>`;
+                } else if (props.ratio) {
+                    h += `<div style="margin-bottom: 3px; color: #6b7280;">Water turns ${props.ratio}× brighter than the clean upstream reach at this point — point-source sediment input</div>`;
+                }
+                if (props.date) h += `<div style="color: #6b7280; font-size: 11px;">Sentinel-2 ${props.date}</div>`;
+            } else if (ft === 'mining_site') {
+                const confPct = Math.round((props.confidence || 0) * 100);
+                h += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">Suspected mining site <span style="color:${props.confidence >= 0.8 ? '#dc2626' : '#d97706'};">(${confPct}%)</span></div>`;
+                if (props.narrative) h += `<div style="font-size: 12px; line-height: 1.5;">${props.narrative}</div>`;
+            } else if (ft === 'turbid_water') {
+                h += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">Turbid water sample</div>`;
+                h += `<div style="margin-bottom: 3px; color: #6b7280;">${props.river || 'river'} · red reflectance ${props.red || '?'} (clean water < 1000)</div>`;
+                if (props.date) h += `<div style="color: #6b7280; font-size: 11px;">Sentinel-2 ${props.date}</div>`;
+            } else {
+                if (props.name) h += `<div style="font-weight: 600;">${props.name}</div>`;
+            }
+            h += `</div>`;
+            return h;
         }
 
         // Data-driven paint for turbidity point layers: alerts = yellow rings,
@@ -13321,7 +13493,20 @@ ${starredItems.narratives.map(n => {
                 map.addSource(sourceId, { type: 'geojson', data: { type: 'FeatureCollection', features } });
                 map.addLayer({ id: layerId, type: 'circle', source: sourceId, paint: turbidityCirclePaint() });
                 singlePinnedFeatures[key] = { parkId, parkName, type, featureId, sourceId, layerId,
-                    feature, narrative: narrative || feature.properties?.narrative || feature.properties?.name || '' };
+                    feature, narrative: turbidityFeatureHTML(feature.properties || {}) };
+                // Hover popup with full details (pit area, ponds, newness, plume km)
+                map.on('mouseenter', layerId, (e) => {
+                    map.getCanvas().style.cursor = 'pointer';
+                    if (e.features && e.features.length > 0) {
+                        const hp = createFeatureHoverPopup(e.features[0].properties, e.lngLat, 'turbidity', parkName);
+                        if (hp) { activeHoverPopups.push(hp); singlePinnedFeatures[key]._hoverPopup = hp; }
+                    }
+                });
+                map.on('mouseleave', layerId, () => {
+                    map.getCanvas().style.cursor = '';
+                    const hp = singlePinnedFeatures[key] && singlePinnedFeatures[key]._hoverPopup;
+                    if (hp) { hp.remove(); const ix = activeHoverPopups.indexOf(hp); if (ix > -1) activeHoverPopups.splice(ix, 1); singlePinnedFeatures[key]._hoverPopup = null; }
+                });
                 return true;
             }
 
@@ -14655,8 +14840,14 @@ ${starredItems.narratives.map(n => {
         
         const typeLabels = { 
             fire: 'Fire Group', settlement: 'Settlement', deforestation: 'Deforestation', 
-            road: 'Road', river: 'River', place: 'Place', water: 'Waterbody', visits: 'Patrol Visits' 
+            road: 'Road', river: 'River', place: 'Place', water: 'Waterbody', visits: 'Patrol Visits',
+            turbidity: 'Mining / Water Quality'
         };
+        if (type === 'turbidity') {
+            const subLabels = { pit_site: 'Mining · Pit Detection', turbidity_alert: 'Mining · Turbidity Alert',
+                                mining_site: 'Mining · Suspected Site', turbid_water: 'Mining · Turbid Water' };
+            typeLabels.turbidity = subLabels[props.feature_type] || typeLabels.turbidity;
+        }
         
         let html = `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-width: 180px; max-width: 280px; color: #1f2937;">
@@ -14762,6 +14953,8 @@ ${starredItems.narratives.map(n => {
             }
             if (props.navigable) html += `<div style="color: #6b7280; font-size: 12px;">Navigable</div>`;
             html += `</div>`;
+        } else if (type === 'turbidity') {
+            html += turbidityFeatureHTML(props);
         }
 
         html += `</div>`;
@@ -14778,8 +14971,14 @@ ${starredItems.narratives.map(n => {
         
         const typeLabels = { 
             fire: 'Fire Group', settlement: 'Settlement', deforestation: 'Deforestation', 
-            road: 'Road', river: 'River', place: 'Place', water: 'Waterbody', visits: 'Patrol Visits' 
+            road: 'Road', river: 'River', place: 'Place', water: 'Waterbody', visits: 'Patrol Visits',
+            turbidity: 'Mining / Water Quality'
         };
+        if (type === 'turbidity') {
+            const subLabels = { pit_site: 'Mining · Pit Detection', turbidity_alert: 'Mining · Turbidity Alert',
+                                mining_site: 'Mining · Suspected Site', turbid_water: 'Mining · Turbid Water' };
+            typeLabels.turbidity = subLabels[props.feature_type] || typeLabels.turbidity;
+        }
         
         // Close park popup if open
         const parkPopup = document.querySelector('.pa-popup');
@@ -14869,6 +15068,8 @@ ${starredItems.narratives.map(n => {
             }
             if (props.navigable) html += `<div style="color: #6b7280;">Navigable</div>`;
             html += `</div>`;
+        } else if (type === 'turbidity') {
+            html += turbidityFeatureHTML(props);
         }
 
         html += `</div>`;

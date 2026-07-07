@@ -39,6 +39,19 @@ Akobo drainage. Verified visually (S2 truecolor + Esri basemap).
   `mining_alert` notifications (`reference_id=pit_{park}_{lat}_{lon}`) and
   auto-registers settlement candidates — capped: score≥0.8, top 15/park.
 - `scoreMining()`: +0.5 if pit <1km, +0.2 <5km (`PitSiteKm`/`PitSite`).
+- globe.html Mining & Water Quality accordion (reworked 2026-07-07):
+  summary mini-stat table (pit sites, bare pit area km², new clearings ≈12mo,
+  turbidity alerts + total turbid km, suspected sites) + monthly sparkline
+  (new bare-ground ha by `new_since` month, turbidity alerts overlaid,
+  click-to-filter like the fire sparkline). Pit list is grouped into
+  clusters (greedy, ≤2 km link distance), collapsible, top-8 clusters +
+  "+N more" expander; per-pit rows keep TEST badges `pit-{origIdx}`
+  (indices refer to the UNFILTERED sites[] so `pit_N` feature_ids match
+  buildTurbidityGeoJSON). Map tooltips: `turbidityFeatureHTML(props)`
+  renders rich hover/pinned popups (area ha+km², pond ha, newness,
+  persistence, plume km, ratio-vs-upstream) wired into
+  createFeatureHoverPopup/showPinnedFeaturePopup ('turbidity' type) and
+  single-pin hover handlers.
 - globe.html: "Pit detections" block in Mining & Water Quality accordion
   (score≥0.45 shown, ⛏ icon, new-since flag, TEST badges pit-N); orange
   `pit_site` circles (score-scaled) in the turbidity pin layer.
