@@ -9476,9 +9476,14 @@
                 default: return;
             }
 
-            // Tapping the already-active tag just re-applies its range
-            // (refreshes td/cmo to today). It must NEVER reset the slider to
-            // some other range — that looked like erratic 2023-2026 jumps.
+            // Tapping the already-active tag toggles the strip open/closed so
+            // other presets stay reachable (the span chip is hidden while a
+            // preset is active). Dates are NOT changed — the old behaviour of
+            // resetting to Jan 2023-today looked like erratic slider jumps.
+            if (activePresetTag === preset) {
+                window.toggleDateTags();
+                return;
+            }
 
             applyPreciseDateFilter(fromISO, toISO); // clears activePresetTag — set ours after
             activePresetTag = preset;
