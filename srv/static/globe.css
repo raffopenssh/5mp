@@ -1031,6 +1031,8 @@
                 background: transparent; border-radius: 0;
             }
             .footer-sep { display: none; }
+            /* Truncate commit hash to ~4 chars so it doesn't overlap the toolbar */
+            #version-link { display: inline-block; max-width: 4ch; overflow: hidden; white-space: nowrap; vertical-align: bottom; }
             .footer-btn { display: none; }
             .footer-btn.info-btn, .footer-btn.share-btn { display: flex; }  /* Show info and share on mobile */
             .desktop-only { display: none !important; }
