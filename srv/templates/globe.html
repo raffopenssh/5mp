@@ -14520,7 +14520,11 @@ ${starredItems.narratives.map(n => {
             
             try {
                 let geojson;
-                if (layer.type === 'turbidity') {
+                if (layer.type === 'visits' || layer.type === 'infrastructure') {
+                    // Learned-features layers (patrol visits, infrastructure) are not
+                    // date-filtered and don't exist in the features API — leave as-is.
+                    continue;
+                } else if (layer.type === 'turbidity') {
                     // rebuild with current timeslider window (plume points carry dates)
                     geojson = await buildTurbidityGeoJSON(layer.parkId);
                 } else {
