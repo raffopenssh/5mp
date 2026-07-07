@@ -3,5 +3,10 @@
   "scanned_at": "2026-07-06T05:31:44Z",
   "n_alerts": 635657,
   "n_requests": 81
+ },
+ "CAF_Bamingui-Bangoran": {
+  "scanned_at": "2026-07-07T04:32:27Z",
+  "n_alerts": 18056,
+  "n_requests": 50
  }
 }
