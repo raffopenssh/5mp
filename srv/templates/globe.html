@@ -9476,23 +9476,9 @@
                 default: return;
             }
 
-            // Toggle off if same preset clicked again
-            if (activePresetTag === preset) {
-                activePresetTag = null;
-                // Reset to full range
-                sliderStartValue = 36; // Jan 2023 default
-                sliderEndValue = TOTAL_MONTHS;
-                updateSliderDisplay();
-                updateDateFilter();
-                // Keep tags visible (deselected) so they remain tappable
-                document.querySelectorAll('.time-slider-date-tag').forEach(function(tag) {
-                    tag.classList.remove('active', 'dimmed');
-                    tag.classList.add('visible');
-                });
-                setTagExpandState(true);
-                updateShareURLPreset(null);
-                return;
-            }
+            // Tapping the already-active tag just re-applies its range
+            // (refreshes td/cmo to today). It must NEVER reset the slider to
+            // some other range — that looked like erratic 2023-2026 jumps.
 
             applyPreciseDateFilter(fromISO, toISO); // clears activePresetTag — set ours after
             activePresetTag = preset;
