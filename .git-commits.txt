@@ -1,3 +1,6 @@
+94e27441 2026-07-06 17:06:08 chore: update Zenodo backup manifest (2026-07-06 gzip backup)
+248816d2 2026-07-06 17:06:04 docs: update BACKUP_INFO with July 6 gzip-compressed Zenodo backup
+412ed90d 2026-07-06 14:55:51 Ignore local db backups, worldclim zip, learner SQL dumps; refresh commit list
 eb8c2a27 2026-07-06 14:22:26 Fix date preset tags vanishing after slider drag; animator follows date changes
 aa3e29c1 2026-07-06 13:56:09 Animated patrol circles: exact replica of the static pixel stack
 d9d5bbe2 2026-07-06 13:50:42 Fix line-gap artefacts in animated patrol effort (round-vs-floor grid snapping)
@@ -15,6 +18,3 @@ dc8be8dc 2026-07-06 11:22:37 Handover: diagnose fire UI issues (stale v2 cache o
 b292f5d9 2026-07-06 10:42:59 Popup UI: per-event deforest rows, stats tables, sparklines, filter chips
 608ab676 2026-07-06 10:07:58 Daily park refresh complete: live-run verified, cron installed, UI checked
 e8828ba7 2026-07-06 10:02:52 Track daily_park_refresh rotation state
-b993cfab 2026-07-06 10:02:37 Data updates from 3am daily_fire_update cron (trends, raw fire JSONs)
-a3053307 2026-07-06 10:02:28 Backfill full VIIRS fire history 2018-2025 into fire_detections
-9bcdd226 2026-07-06 06:57:29 Handover: mark daily park refresh implemented; list remaining steps

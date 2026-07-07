@@ -120,6 +120,18 @@ def park_bbox(conn, park_id):
     return None
 
 
+def name_rivers(conn, park_id, dry_run=False):
+    """Push OSM waterway names (osm_places river/stream points) onto
+    park_rivers_hydro line segments so the map labels rivers instead of
+    showing their names as place markers."""
+    if dry_run:
+        log(f"  [dry-run] would name rivers from OSM for {park_id}")
+        return
+    from name_rivers_from_osm import name_park
+    n = name_park(conn, park_id, verbose=False)
+    log(f"  river naming: {n} segments named from OSM waterway points")
+
+
 def ingest_gfw_deforestation(conn, rebuilder, park_id, dry_run=False):
     """GFW alert cells -> feature_geometries + deforestation_events (years >= 2024).
 
@@ -385,6 +397,7 @@ def main():
     for park_id in targets:
         log(f"=== {park_id} ===")
         try:
+            name_rivers(conn, park_id, args.dry_run)
             ingest_gfw_deforestation(conn, rebuilder, park_id, args.dry_run)
             reclassify_deforestation(conn, rebuilder, park_id, args.dry_run)
             reload_fire_groups(park_id, args.dry_run)

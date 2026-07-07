@@ -1986,10 +1986,13 @@ func (s *Server) handlePlaceFeatures(w http.ResponseWriter, parkID string, limit
 		}
 	}
 
+	// Exclude waterway rows (river/stream/lake): those are OSM waterway *names*
+	// captured as points — they belong on the river/waterbody line layers as
+	// labels, not as place markers (they made "Chinko" show up as villages).
 	rows, err := s.DB.Query(`
 		SELECT id, place_type, name, lat, lon, osm_id, osm_tags
 		FROM osm_places
-		WHERE park_id = ?
+		WHERE park_id = ? AND place_type NOT IN ('river', 'stream', 'lake')
 		ORDER BY
 			CASE place_type
 				WHEN 'city' THEN 1
@@ -2382,7 +2385,7 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 	
 	// Count places from osm_places
 	var placesCount int
-	s.DB.QueryRow(`SELECT COUNT(*) FROM osm_places WHERE park_id = ?`, internalID).Scan(&placesCount)
+	s.DB.QueryRow(`SELECT COUNT(*) FROM osm_places WHERE park_id = ? AND place_type NOT IN ('river', 'stream', 'lake')`, internalID).Scan(&placesCount)
 	stats.Places = placesCount
 	
 	// Count waterbodies
@@ -4652,7 +4655,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 
 	// Places folder - only create if data exists
 	var placePlacemarks []string
-	placeRows, _ := s.DB.Query(`SELECT name, lat, lon, place_type FROM osm_places WHERE park_id = ? LIMIT 500`, parkID)
+	placeRows, _ := s.DB.Query(`SELECT name, lat, lon, place_type FROM osm_places WHERE park_id = ? AND place_type NOT IN ('river', 'stream', 'lake') LIMIT 500`, parkID)
 	if placeRows != nil {
 		defer placeRows.Close()
 		for placeRows.Next() {
@@ -5317,7 +5320,7 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 	placeRows, err := s.DB.QueryContext(ctx, `
 		SELECT name, place_type, lat, lon
 		FROM osm_places 
-		WHERE park_id = ?
+		WHERE park_id = ? AND place_type NOT IN ('river', 'stream', 'lake')
 		ORDER BY place_type, name
 		LIMIT 50
 	`, internalID)
@@ -5332,7 +5335,7 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 	}
 	
 	// Count total places
-	s.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM osm_places WHERE park_id = ?`, internalID).Scan(&response.Summary.TotalPlaces)
+	s.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM osm_places WHERE park_id = ? AND place_type NOT IN ('river', 'stream', 'lake')`, internalID).Scan(&response.Summary.TotalPlaces)
 	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
