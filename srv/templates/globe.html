@@ -9267,6 +9267,24 @@
         function valueToDate(value) {
             return addMonths(SLIDER_START_DATE, value);
         }
+
+        // Publish the real slider height as --slider-h so bottom-anchored UI
+        // (toolbar, fab, footer, legend) stays above it even when the
+        // container grows (animator chips, wrapped rows on mobile).
+        (function trackSliderHeight() {
+            var el = document.getElementById('time-slider-container');
+            if (!el) return;
+            var apply = function() {
+                document.documentElement.style.setProperty('--slider-h', el.offsetHeight + 'px');
+            };
+            if (window.ResizeObserver) {
+                new ResizeObserver(apply).observe(el);
+            } else {
+                window.addEventListener('resize', apply);
+                setInterval(apply, 1000);
+            }
+            apply();
+        })();
         
         function updateSliderDisplay() {
             const startDate = valueToDate(sliderStartValue);
