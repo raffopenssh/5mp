@@ -1,6 +1,52 @@
 # Handover: Artisanal Gold Mine Detection (5MP)
 
-**Updated:** 2026-07-06 (session 3). Continue in a fresh conversation with this doc.
+**Updated:** 2026-07-07 (session 4). Continue in a fresh conversation with this doc.
+
+## Session 4: pit scanner (the missing signal)
+
+**Problem diagnosed:** the turbidity cron missed known mines because (a) the
+`SCL==6` water gate never fires on narrow headwater channels (checked: zero
+water pixels at the confirmed Chinko pit, its tributary, and confluence in
+all Jun/Jul-2026 scenes), and (b) wet season suppresses both bare-earth and
+ratio-vs-upstream signals.
+
+**Fix shipped: `analysis/mining_pits.py`** — detects the pits themselves
+(what the eye sees on Google Earth), no water pixels needed:
+- Corridor = 0.05° tiles touched by OSM waterways (reuses
+  `data/osm_raw/waterways/{park}.geojson` caches).
+- Bright-bare clusters (red>1400, NDVI<0.35, ≥8px=0.08ha, ≤3000px) within
+  1km of a waterway, newest clear scene per tile.
+- Persistence pass (older scene ≥10d back, batched per scene) kills
+  clouds/flood/burn artifacts. History pass (~1yr ago, same season) splits
+  **new clearings** (score +0.20, `new_since` date) from villages/outcrops
+  (score −0.15). Scoring: size/water-dist/ponds/persistence/newness.
+- Output `data/mining_pits/{park}.json`; `--rotate` daily cron 09:00
+  (`logs/mining_pits.log`, state in `data/mining_pits/state.json`);
+  `--bbox` for corridor-scoped scans (merges with prior sites outside bbox).
+
+**Validation:** confirmed Chinko pit re-found at exact coords (44px,
+persistent). Bonus: discovered NEW 2025-onset complex ~7.24–7.28N 24.07–24.09E
+(three clusters 1.4–8.6ha, vegetated Aug 2025) — 20km S of the known pit.
+
+**Akobo/Boma test (user-requested):** `--park SSD_Boma --bbox 34.0,5.8,35.3,8.2`
+→ **228 sites**, 121 new-since-2025, top sites 25–29ha with ponds at
+6.58N 34.89E etc. — the known SSD/Ethiopia ASM belt lights up along the
+Akobo drainage. Verified visually (S2 truecolor + Esri basemap).
+
+**Server/UI wiring:**
+- `srv/turbidity.go`: pits served in `/api/parks/{id}/turbidity` (`pits` key);
+  `syncPitSites()` (called from SyncTurbidityAlerts, 6h watcher) creates
+  `mining_alert` notifications (`reference_id=pit_{park}_{lat}_{lon}`) and
+  auto-registers settlement candidates — capped: score≥0.8, top 15/park.
+- `scoreMining()`: +0.5 if pit <1km, +0.2 <5km (`PitSiteKm`/`PitSite`).
+- globe.html: "Pit detections" block in Mining & Water Quality accordion
+  (score≥0.45 shown, ⛏ icon, new-since flag, TEST badges pit-N); orange
+  `pit_site` circles (score-scaled) in the turbidity pin layer.
+
+**Tuning notes:** MAX_PX=3000 skips towns; kept[:400] caps verify work;
+SSD_Boma full run ~25min. Wet-season bareness suppression means dry-season
+rescans will find MORE (rotation handles this). Consider: polygon outlines
+instead of centroids; Sentinel-1 pond detection for cloud-blind confirmation.
 
 ## Status: pipeline built & live for CAF_Chinko
 

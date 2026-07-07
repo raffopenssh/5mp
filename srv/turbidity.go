@@ -251,8 +251,12 @@ func (s *Server) syncPitSites() {
 		if err != nil || json.Unmarshal(data, &f) != nil {
 			continue
 		}
+		// Cap per park: notifications + auto-registration only for the
+		// strongest detections (score >= 0.8, top 15 by score). The full
+		// list stays visible in the Mining & Water Quality accordion.
+		registered := 0
 		for _, p := range f.Sites {
-			if p.Score < 0.7 {
+			if p.Score < 0.8 || registered >= 15 {
 				continue
 			}
 			refID := fmt.Sprintf("pit_%s_%.3f_%.3f", parkID, p.Lat, p.Lon)
@@ -284,6 +288,7 @@ func (s *Server) syncPitSites() {
 			note := fmt.Sprintf("[Pit detection %s] %.1f ha bare-earth cluster %.1f km from waterway; suspected mining pits/camp.%s",
 				p.Date, p.AreaHa, p.WaterKm, newness)
 			s.RegisterMiningCandidate(parkID, p.Lat, p.Lon, p.AreaHa*10000, note)
+			registered++
 		}
 	}
 }
