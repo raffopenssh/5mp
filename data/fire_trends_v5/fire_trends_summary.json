@@ -1,10 +1,10 @@
 {
   "total_groups": 322,
-  "total_fires": 555,
+  "total_fires": 560,
   "total_parks": 1,
   "date_range": {
-    "start": "2026-06-22",
-    "end": "2026-07-06"
+    "start": "2026-06-23",
+    "end": "2026-07-07"
   },
   "algorithm": "v6_track_matching",
   "params": {
