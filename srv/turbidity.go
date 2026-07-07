@@ -63,8 +63,43 @@ type gfwFile struct {
 var (
 	turbidityCache   = map[string][]TurbidityAlert{}
 	gfwClusterCache  = map[string][]GFWCluster{}
+	pitSiteCache     = map[string][]pitSite{}
 	turbidityCacheMu sync.Mutex
 )
+
+func loadPitSites(parkID string) []pitSite {
+	turbidityCacheMu.Lock()
+	defer turbidityCacheMu.Unlock()
+	if p, ok := pitSiteCache[parkID]; ok {
+		return p
+	}
+	var f struct {
+		Sites []pitSite `json:"sites"`
+	}
+	if data, err := os.ReadFile(fmt.Sprintf("data/mining_pits/%s.json", parkID)); err == nil {
+		json.Unmarshal(data, &f)
+	}
+	pitSiteCache[parkID] = f.Sites
+	return f.Sites
+}
+
+// nearestPitSiteKm returns distance (km) to the closest scored pit detection.
+func nearestPitSiteKm(parkID string, lat, lon float64) (float64, *pitSite) {
+	best := 1e9
+	var bestP *pitSite
+	sites := loadPitSites(parkID)
+	for i := range sites {
+		if sites[i].Score < 0.6 {
+			continue
+		}
+		d := haversineDistance(lat, lon, sites[i].Lat, sites[i].Lon)
+		if d < best {
+			best = d
+			bestP = &sites[i]
+		}
+	}
+	return best, bestP
+}
 
 func loadTurbidityAlerts(parkID string) []TurbidityAlert {
 	turbidityCacheMu.Lock()
@@ -179,6 +214,78 @@ func (s *Server) SyncTurbidityAlerts() {
 			}
 		}
 	}
+	s.syncPitSites()
+}
+
+// pitSite is one bright-bare cluster from analysis/mining_pits.py.
+type pitSite struct {
+	Lat          float64 `json:"lat"`
+	Lon          float64 `json:"lon"`
+	Px           int     `json:"px"`
+	AreaHa       float64 `json:"area_ha"`
+	WaterKm      float64 `json:"water_km"`
+	PondPx       int     `json:"pond_px"`
+	Score        float64 `json:"score"`
+	Scene        string  `json:"scene"`
+	Date         string  `json:"date"`
+	NewSince     string  `json:"new_since"`
+	HistoricalPx *int    `json:"historical_px"`
+}
+
+// syncPitSites turns high-confidence pit detections (score >= 0.7) into
+// mining_alert notifications and settlement candidates.
+func (s *Server) syncPitSites() {
+	entries, err := os.ReadDir("data/mining_pits")
+	if err != nil {
+		return
+	}
+	for _, e := range entries {
+		if len(e.Name()) < 6 || e.Name()[len(e.Name())-5:] != ".json" {
+			continue
+		}
+		parkID := e.Name()[:len(e.Name())-5]
+		var f struct {
+			Sites []pitSite `json:"sites"`
+		}
+		data, err := os.ReadFile("data/mining_pits/" + e.Name())
+		if err != nil || json.Unmarshal(data, &f) != nil {
+			continue
+		}
+		for _, p := range f.Sites {
+			if p.Score < 0.7 {
+				continue
+			}
+			refID := fmt.Sprintf("pit_%s_%.3f_%.3f", parkID, p.Lat, p.Lon)
+			var exists int
+			s.DB.QueryRow(`SELECT COUNT(*) FROM notifications WHERE reference_id = ?`, refID).Scan(&exists)
+			if exists > 0 {
+				continue
+			}
+			newness := ""
+			if p.NewSince != "" {
+				newness = fmt.Sprintf(" Ground was vegetated on %s — clearing is new.", p.NewSince)
+			}
+			title := fmt.Sprintf("Possible mining pits: %.1f ha bare-earth cluster near river", p.AreaHa)
+			msg := fmt.Sprintf(
+				"Sentinel-2 shows a persistent bright bare-earth cluster (%.1f ha) at "+
+					"%.4f°, %.4f°, %.1f km from the nearest waterway (scene %s, %s).%s "+
+					"Riverside pit clusters are the visual signature of artisanal gold mining.",
+				p.AreaHa, p.Lat, p.Lon, p.WaterKm, p.Scene, p.Date, newness)
+			refData, _ := json.Marshal(p)
+			if _, err := s.DB.Exec(`
+				INSERT INTO notifications (park_id, notification_type, title, message, reference_id, reference_data, created_at)
+				VALUES (?, 'mining_alert', ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+				parkID, title, msg, refID, string(refData)); err != nil {
+				slog.Error("pit notification insert failed", "error", err)
+				continue
+			}
+			slog.Info("created pit mining notification", "park", parkID,
+				"lat", p.Lat, "lon", p.Lon, "area_ha", p.AreaHa, "score", p.Score)
+			note := fmt.Sprintf("[Pit detection %s] %.1f ha bare-earth cluster %.1f km from waterway; suspected mining pits/camp.%s",
+				p.Date, p.AreaHa, p.WaterKm, newness)
+			s.RegisterMiningCandidate(parkID, p.Lat, p.Lon, p.AreaHa*10000, note)
+		}
+	}
 }
 
 // RegisterMiningCandidate inserts (or finds) a park_settlements row for a
@@ -277,10 +384,18 @@ func (s *Server) HandleAPIParkTurbidity(w http.ResponseWriter, r *http.Request) 
 		gfwTotal += c.N
 	}
 
+	// pit-detection scan output (analysis/mining_pits.py): bright-bare
+	// clusters along river corridors, verified for persistence + newness.
+	var pits map[string]any
+	if data, err := os.ReadFile(fmt.Sprintf("data/mining_pits/%s.json", parkID)); err == nil {
+		json.Unmarshal(data, &pits)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{
 		"park_id":            parkID,
 		"scan":               scan, // null when park not yet scanned
+		"pits":               pits, // null when pit scan not yet run
 		"mining_settlements": sites,
 		"gfw_clusters":       len(gfw),
 		"gfw_total_alerts":   gfwTotal,

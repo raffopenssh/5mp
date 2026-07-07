@@ -8105,11 +8105,12 @@
                 const scan = data.scan;
                 const alerts = (scan && scan.alerts) || [];
                 const sites = data.mining_settlements || [];
+                const pits = ((data.pits && data.pits.sites) || []).filter(p => p.score >= 0.45);
 
                 const countEl = document.getElementById(`mining-count-${paId}`);
-                if (countEl && (alerts.length || sites.length)) countEl.textContent = ` (${alerts.length + sites.length})`;
+                if (countEl && (alerts.length || sites.length || pits.length)) countEl.textContent = ` (${alerts.length + sites.length + pits.length})`;
 
-                if (!scan && sites.length === 0) {
+                if (!scan && sites.length === 0 && pits.length === 0) {
                     el.innerHTML = '<div class="pa-popup-section-empty">River turbidity not yet scanned for this park (rotation in progress)</div>';
                     return;
                 }
@@ -8141,6 +8142,23 @@
                             </div>`;
                         });
                     }
+                }
+
+                // ---- Evidence: pit detections (bright-bare clusters along rivers) ----
+                if (pits.length > 0) {
+                    const pscan = data.pits;
+                    html += `<div style="font-size:10px; font-weight:600; color:#ccc; margin:8px 0 4px;">Pit detections (${pits.length})</div>`;
+                    html += `<div style="font-size:9px; color:#888; margin-bottom:4px;">Persistent bright bare-earth clusters within 1 km of a waterway · scanned ${pscan.scanned_at ? pscan.scanned_at.substring(0,10) : ''} (${pscan.tiles_scanned}/${pscan.tiles_total} river tiles)</div>`;
+                    pits.slice(0, 12).forEach((p, idx) => {
+                        const scoreColor = p.score >= 0.7 ? '#ef4444' : p.score >= 0.6 ? '#f59e0b' : '#888';
+                        const newTag = p.new_since ? ` · <span style="color:#ef4444;">new since ${p.new_since}</span>` : (p.historical_px != null && p.historical_px >= p.px * 0.8 ? ' · long-standing' : '');
+                        const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="pit-${idx}" style="display:inline-block; background:#3b82f6; color:white; font-size:8px; font-weight:600; padding:1px 4px; border-radius:3px; margin-right:4px;">${idx}</span>` : '';
+                        html += `<div class="narrative-row" data-park="${paId}" data-type="turbidity" data-feature="pit_${idx}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'turbidity', 'pit_${idx}', this, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to pin on map. Scene ${escapeHtml(p.scene||'')}">
+                            ${testBadge}<span style="color:${scoreColor};">⛏</span> <span style="color:${scoreColor}; font-weight:600;">${Math.round(p.score*100)}%</span> <b>${p.area_ha} ha</b> bare-earth cluster · ${p.water_km} km from river${newTag}<br>
+                            <span style="color:#888;">${p.lat.toFixed(4)}, ${p.lon.toFixed(4)} · ${p.date}${p.persistent ? ' · persistent' : ''}</span>
+                        </div>`;
+                    });
+                    if (pits.length > 12) html += `<div style="font-size:9px; color:#666;">…and ${pits.length - 12} more</div>`;
                 }
 
                 // ---- Interpretation: suspected mining sites ----
@@ -8194,6 +8212,16 @@
                                   river: a.river, turbid_km: a.downstream_turbid_km, date: a.date }
                 });
             });
+            ((t.pits && t.pits.sites) || []).forEach((p, i) => {
+                if (p.score < 0.45) return;
+                features.push({
+                    type: 'Feature',
+                    geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
+                    properties: { feature_type: 'pit_site', feature_id: `pit_${i}`,
+                                  name: `Pit cluster ${p.area_ha} ha (${Math.round(p.score*100)}%)${p.new_since ? ' · new since ' + p.new_since : ''}`,
+                                  area_ha: p.area_ha, score: p.score, date: p.date }
+                });
+            });
             (t.mining_settlements || []).forEach(st => {
                 features.push({
                     type: 'Feature',
@@ -8222,9 +8250,10 @@
         function turbidityCirclePaint() {
             const isPlume = ['==', ['get', 'feature_type'], 'turbid_water'];
             const isMine = ['==', ['get', 'feature_type'], 'mining_site'];
+            const isPit = ['==', ['get', 'feature_type'], 'pit_site'];
             return {
-                'circle-radius': ['case', isPlume, 1.8, isMine, 6, 5],
-                'circle-color': ['case', isMine, '#ef4444', '#eab308'],
+                'circle-radius': ['case', isPlume, 1.8, isMine, 6, isPit, ['interpolate', ['linear'], ['get', 'score'], 0.45, 4, 0.8, 7], 5],
+                'circle-color': ['case', isMine, '#ef4444', isPit, '#f97316', '#eab308'],
                 'circle-opacity': ['case', isPlume, 0.75, 0.9],
                 'circle-stroke-width': ['case', isPlume, 0, 1.5],
                 'circle-stroke-color': '#fff',

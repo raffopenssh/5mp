@@ -52,6 +52,8 @@ type ClassifiedSettlement struct {
 	TurbidityAlertKm   float64         `json:"turbidity_alert_km,omitempty"`   // distance to nearest turbidity onset
 	TurbidityAlert     *TurbidityAlert `json:"turbidity_alert,omitempty"`      // the alert itself, when close
 	GFWAlertsWithin5km int             `json:"gfw_alerts_5km,omitempty"`       // GFW integrated alerts within 5km
+	PitSiteKm          float64         `json:"pit_site_km,omitempty"`          // distance to nearest detected pit cluster
+	PitSite            *pitSite        `json:"pit_site,omitempty"`             // the pit detection, when close
 }
 
 // ClassifySettlement determines the type of a settlement based on multiple indicators
@@ -181,6 +183,13 @@ func (s *Server) loadSettlementContext(parkID string, st *ClassifiedSettlement) 
 		}
 	}
 	st.GFWAlertsWithin5km = gfwAlertsNearby(parkID, st.Lat, st.Lon, 5)
+	st.PitSiteKm = 1e9
+	if d, p := nearestPitSiteKm(parkID, st.Lat, st.Lon); p != nil {
+		st.PitSiteKm = d
+		if d < 5 {
+			st.PitSite = p
+		}
+	}
 }
 
 // Scoring functions for each classification
@@ -255,7 +264,14 @@ func (s *Server) scoreMining(st *ClassifiedSettlement) float64 {
 	} else if st.GFWAlertsWithin5km > 20 {
 		score += 0.1
 	}
-	
+
+	// Detected pit cluster nearby (Sentinel-2 bright-bare, persistent, riverside)
+	if st.PitSiteKm < 1 {
+		score += 0.5
+	} else if st.PitSiteKm < 5 {
+		score += 0.2
+	}
+
 	return math.Min(score, 1.0)
 }
 
