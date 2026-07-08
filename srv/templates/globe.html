@@ -314,6 +314,7 @@
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
             </svg>
         </button>
+        <div class="methods-hint" id="methods-hint" onclick="showModal('manifest'); dismissMethodsHint();" role="button" tabindex="0">How this map works</div>
         <button class="footer-btn info-btn" onclick="showModal('manifest')" title="About 5MP" aria-label="About 5MP">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <!-- minimal compass: bezel + cardinal ticks + needle -->
@@ -447,6 +448,7 @@
                     <li style="margin-bottom: 6px;"><span style="color: #a855f7;">Settlements</span> – Built-up areas classified by type and distance to park</li>
                     <li style="margin-bottom: 6px;"><span style="color: #ef4444;">Deforestation</span> – Forest loss events clustered and classified by cause</li>
                     <li style="margin-bottom: 6px;"><span style="color: #22c55e;">Patrol Tracks</span> – GPS coverage intensity in 10×10 km grid cells</li>
+                    <li style="margin-bottom: 6px;"><span style="color: #38bdf8;">River Turbidity &amp; Mining</span> – Sediment plumes and bare-earth pits along rivers, signs of alluvial mining</li>
                 </ul>
 
                 <!-- Data Processing -->
@@ -477,6 +479,15 @@
                     <li>Annual tree cover loss 2001-2024</li>
                     <li>Clustered into events (5km radius)</li>
                     <li>Classified: agricultural clearing, logging, charcoal production</li>
+                    <li>Near-real-time: GFW integrated alerts (GLAD-S2/RADD, ~10m) with 100km buffer — one park rescanned per day</li>
+                </ul>
+
+                <h4 style="color: #38bdf8; margin: 14px 0 6px; font-size: 13px;">River Turbidity &amp; Mining Detection</h4>
+                <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
+                    <li>Source: Sentinel-2 L2A imagery (10m), sampled along OSM waterways</li>
+                    <li>Flags abrupt turbidity onsets vs. upstream median — the signature of alluvial mining</li>
+                    <li>Companion pit scanner finds bright bare-earth clusters near rivers, verified for persistence across scenes</li>
+                    <li>Rotation: one park scanned per day; each park revisited on a rolling cycle</li>
                 </ul>
 
                 <h4 style="color: #22c55e; margin: 14px 0 6px; font-size: 13px;">Patrol Tracking</h4>
@@ -493,6 +504,22 @@
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                         <td style="padding: 6px 0; color: #f97316;">Fire data</td>
                         <td style="padding: 6px 0;">Daily at 5am CAT</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 6px 0; color: #ef4444;">Deforestation alerts (GFW)</td>
+                        <td style="padding: 6px 0;">Daily rotation — one park/day</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 6px 0; color: #38bdf8;">River turbidity scan</td>
+                        <td style="padding: 6px 0;">Daily rotation — one park/day</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 6px 0; color: #eab308;">Mining pit scan</td>
+                        <td style="padding: 6px 0;">Daily rotation — one park/day</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 6px 0; color: #a3a3a3;">Park narratives refresh</td>
+                        <td style="padding: 6px 0;">Daily — follows the scanned park</td>
                     </tr>
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                         <td style="padding: 6px 0; color: #3b82f6;">Research papers</td>
@@ -518,6 +545,14 @@
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                         <td style="padding: 6px 0; color: #fff;">Forest</td>
                         <td style="padding: 6px 0;"><a href="https://glad.earthengine.app/view/global-forest-change" target="_blank" style="color: #22c55e;">Hansen/UMD v1.11</a></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 6px 0; color: #fff;">Forest alerts</td>
+                        <td style="padding: 6px 0;"><a href="https://www.globalforestwatch.org/" target="_blank" style="color: #22c55e;">GFW integrated alerts</a></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 6px 0; color: #fff;">Turbidity / mining</td>
+                        <td style="padding: 6px 0;"><a href="https://registry.opendata.aws/sentinel-2-l2a-cogs/" target="_blank" style="color: #22c55e;">Sentinel-2 L2A</a> + OSM waterways</td>
                     </tr>
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                         <td style="padding: 6px 0; color: #fff;">Settlements</td>
@@ -550,7 +585,6 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                         <span>Version: <strong id="modal-version" style="color: #22c55e;">{{.Version}}</strong></span>
                         <span><a href="https://github.com/5mp-conservation/5mp" target="_blank" style="color: #888;">GitHub</a></span>
-                        <span><a href="/static/downloads/five-megapixel-conservation_latest.sqlite3" style="color: #888;">Download DB</a></span>
                     </div>
                 </div>
             </div>
@@ -10072,7 +10106,28 @@
                 }
             }, 1500);
         }
+
+        // Second, subtler hint: methods/compass button (a while after the upload hint)
+        var methodsKey = '5mp_methods_hint_shown';
+        if (!localStorage.getItem(methodsKey)) {
+            setTimeout(function() {
+                var h = document.getElementById('methods-hint');
+                // Skip if a modal is already open (user found their way around)
+                if (h && !document.querySelector('.modal-overlay.active')) {
+                    h.classList.add('show');
+                    setTimeout(function() { dismissMethodsHint(); }, 7000);
+                } else {
+                    localStorage.setItem(methodsKey, '1');
+                }
+            }, 12000);
+        }
     })();
+
+    function dismissMethodsHint() {
+        var h = document.getElementById('methods-hint');
+        if (h) h.classList.remove('show');
+        localStorage.setItem('5mp_methods_hint_shown', '1');
+    }
     
     // ========== STARRING SYSTEM ==========
     
