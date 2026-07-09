@@ -161,29 +161,23 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 	stats := ParkStats{ParkID: parkID}
 	var insights []string
 	
-	// Query aggregated fire infraction data across year range
+	// Query aggregated fire infraction data across year range.
+	// NOTE: an older version selected a trajectories_json column that no longer
+	// exists, which made this query error silently and left stats.Fire nil for
+	// every park. Trajectories are served by /api/parks/{id}/features instead.
 	var fire FireStats
-	var trajJSON sql.NullString
 	err := s.DB.QueryRow(`
 		SELECT 
-			MAX(year) as year,
-			SUM(total_groups) as total_groups,
-			SUM(groups_stopped_inside) as stopped,
-			SUM(groups_transited) as transited,
-			AVG(avg_days_burning) as avg_days,
-			(SELECT trajectories_json FROM park_group_infractions WHERE park_id = ? ORDER BY year DESC LIMIT 1) as traj
+			COALESCE(MAX(year), 0) as year,
+			COALESCE(SUM(total_groups), 0) as total_groups,
+			COALESCE(SUM(groups_stopped_inside), 0) as stopped,
+			COALESCE(SUM(groups_transited), 0) as transited,
+			COALESCE(AVG(avg_days_burning), 0) as avg_days
 		FROM park_group_infractions 
 		WHERE park_id = ? AND year >= ? AND year <= ?
-	`, internalID, internalID, fromYear, toYear).Scan(&fire.Year, &fire.GroupsEntered, &fire.GroupsStoppedInside, &fire.GroupsTransited, &fire.AvgDaysInside, &trajJSON)
+	`, internalID, fromYear, toYear).Scan(&fire.Year, &fire.GroupsEntered, &fire.GroupsStoppedInside, &fire.GroupsTransited, &fire.AvgDaysInside)
 	
 	if err == nil && fire.GroupsEntered > 0 {
-		// Parse trajectory JSON if available
-		if trajJSON.Valid && trajJSON.String != "" {
-			var trajs []FireGroupTrajectory
-			if json.Unmarshal([]byte(trajJSON.String), &trajs) == nil {
-				fire.Trajectories = trajs
-			}
-		}
 		fire.ResponseRate = float64(fire.GroupsStoppedInside) / float64(fire.GroupsEntered) * 100
 		stats.Fire = &fire
 		
@@ -232,26 +226,41 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	
-	// Get total fire count and peak month
+	// Total fires, peak month, and per-year counts in a single scan over the
+	// (protected_area_id, acq_date) index. substr avoids per-row strftime,
+	// and one year-month GROUP BY replaces three separate table scans.
 	var totalFires int
-	var peakMonth string
-	err = s.DB.QueryRow(`
-		SELECT COUNT(*) FROM fire_detections WHERE protected_area_id = ?
-	`, internalID).Scan(&totalFires)
-	if err == nil && stats.Fire != nil {
-		stats.Fire.TotalFires = totalFires
-	}
-	
-	// Find peak month
-	err = s.DB.QueryRow(`
-		SELECT strftime('%m', acq_date) as month, COUNT(*) as cnt
+	monthCounts := map[string]int{}
+	firesByYear := map[int]int{}
+	ymRows, ymErr := s.DB.Query(`
+		SELECT substr(acq_date, 1, 7) as ym, COUNT(*) as cnt
 		FROM fire_detections 
 		WHERE protected_area_id = ?
-		GROUP BY month
-		ORDER BY cnt DESC
-		LIMIT 1
-	`, internalID).Scan(&peakMonth, &totalFires)
-	if err == nil && stats.Fire != nil {
+		GROUP BY ym
+	`, internalID)
+	if ymErr == nil {
+		for ymRows.Next() {
+			var ym string
+			var cnt int
+			if ymRows.Scan(&ym, &cnt) == nil && len(ym) == 7 {
+				totalFires += cnt
+				monthCounts[ym[5:7]] += cnt
+				if y, err := strconv.Atoi(ym[:4]); err == nil {
+					firesByYear[y] += cnt
+				}
+			}
+		}
+		ymRows.Close()
+	}
+	if stats.Fire != nil {
+		stats.Fire.TotalFires = totalFires
+		var peakMonth string
+		peakCount := 0
+		for m, c := range monthCounts {
+			if c > peakCount {
+				peakMonth, peakCount = m, c
+			}
+		}
 		monthNames := map[string]string{
 			"01": "January", "02": "February", "03": "March", "04": "April",
 			"05": "May", "06": "June", "07": "July", "08": "August",
@@ -284,24 +293,21 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	
-	// Get multi-year fire trend with total fires per year
-	// Note: Uses correlated subquery instead of JOIN for better performance (0.3s vs 8s)
+	// Get multi-year fire trend; per-year fire counts come from the year-month
+	// scan above (firesByYear), replacing a correlated strftime() subquery that
+	// took seconds on big parks.
 	rows, err = s.DB.Query(`
-		SELECT 
-			pgi.year,
-			pgi.total_groups,
-			(SELECT COUNT(*) FROM fire_detections fd 
-			 WHERE fd.protected_area_id = pgi.park_id 
-			 AND CAST(strftime('%Y', fd.acq_date) AS INTEGER) = pgi.year) as total_fires
-		FROM park_group_infractions pgi
-		WHERE pgi.park_id = ?
-		ORDER BY pgi.year
+		SELECT year, total_groups
+		FROM park_group_infractions
+		WHERE park_id = ?
+		ORDER BY year
 	`, internalID)
 	if err == nil {
 		defer rows.Close()
 		for rows.Next() {
 			var yr YearlyFireSummary
-			if rows.Scan(&yr.Year, &yr.Groups, &yr.TotalFires) == nil {
+			if rows.Scan(&yr.Year, &yr.Groups) == nil {
+				yr.TotalFires = firesByYear[yr.Year]
 				stats.FireTrend = append(stats.FireTrend, yr)
 			}
 		}
