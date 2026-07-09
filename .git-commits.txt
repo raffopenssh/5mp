@@ -1,3 +1,5 @@
+7b84afa 2026-07-09 18:08:08 Data: daily worker outputs (GFW, turbidity, mining pits, OSM waterways)
+aa1b4d4 2026-07-09 18:08:08 Onboard DZA_Djurdjura via worker test (163 parks, onboarded_at set)
 157e4fb 2026-07-09 17:58:21 Onboarding fixes: all-time fire backfill, FIRMS 5-day cap, search loaded-flag bug
 652665f 2026-07-09 17:39:20 Document park onboarding flow in AGENTS.md
 8ee80af 2026-07-09 17:38:53 On-the-fly park onboarding: search-dwell offer, nightly worker, undo/removal
@@ -16,5 +18,3 @@ b4341f4 2026-07-09 10:05:19 Update generated commit list
 8797be3 2026-07-09 09:46:51 Update generated commit list
 604a285 2026-07-09 09:46:28 FloatUI: draggable/collapsible/dockable pinned-layers box and park popup
 44e2e4e 2026-07-09 09:26:15 Locus: 5m gap in closed rings so Locus draws lines not polygons; tooltip export buttons as uniform Lucide icons
-ec31007 2026-07-09 09:20:46 Locus export: build DBs fully in RAM via sqlite Serialize (no temp files); remove HANDOVER.md — round 2 complete
-13e576b 2026-07-09 09:18:34 Add Locus Map 4 backup export (.locus button in park tooltip)

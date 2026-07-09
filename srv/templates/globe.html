@@ -3112,22 +3112,44 @@
         // the inline star report uses (narratives, classified events, species...).
         // Replaces the old HTML/print export.
         async function collectReportParks() {
-            // Starred parks + parks found inside starred bboxes, deduped.
-            const parks = [];
-            for (const park of starredItems.parks) {
-                parks.push({ park, source: 'starred' });
-            }
-            for (const bbox of starredItems.bboxes) {
-                const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
-                if (bboxData?.parks) {
-                    for (const p of bboxData.parks) {
-                        if (!parks.find(item => item.park.id === p.id)) {
-                            parks.push({ park: p, source: 'area: ' + (bbox.name || bbox.bbox.join(',')) });
-                        }
-                    }
+            // All parks a report/export should cover, deduped by park id:
+            // - starred parks (full report)
+            // - parks inside starred bboxes (full report; resolved via
+            //   findParksInBbox when the inline report cache hasn't loaded yet,
+            //   so exports never silently drop area parks)
+            // - parks referenced only by starred narratives (section-filtered:
+            //   entry.sections is a Set of narrative types; null = full report)
+            const byId = new Map();
+            const add = (park, source, sections) => {
+                if (!park || !park.id) return;
+                const existing = byId.get(park.id);
+                if (existing) {
+                    if (!sections) existing.sections = null; // full report wins
+                    else if (existing.sections) sections.forEach(s => existing.sections.add(s));
+                    return;
                 }
+                byId.set(park.id, { park, source, sections: sections ? new Set(sections) : null });
+            };
+            for (const park of starredItems.parks) add(park, 'starred', null);
+            for (const bbox of starredItems.bboxes) {
+                const key = bbox.bbox.join(',');
+                let parksIn = reportDataCache.bboxes.get(key)?.parks;
+                if (!parksIn) {
+                    try { parksIn = await findParksInBbox(bbox.bbox); }
+                    catch (e) { console.warn('collectReportParks: bbox resolve failed', e); parksIn = []; }
+                }
+                for (const p of parksIn || []) add(p, 'area: ' + (bbox.name || key), null);
             }
-            return parks;
+            for (const n of starredItems.narratives) {
+                const pid = n.park_id || n.parkId;
+                if (!pid) continue;
+                const park = starredItems.parks.find(p => p.id === pid)
+                    || (window.keystoneAreas || []).find(p => p.id === pid)
+                    || (getParkFeature(pid) ? { id: pid, name: getParkFeature(pid).properties.name, country: getParkFeature(pid).properties.country, area_km2: getParkFeature(pid).properties.area_km2 } : null)
+                    || { id: pid, name: n.park_name || n.parkName || pid };
+                add(park, 'starred sections', [n.type]);
+            }
+            return [...byId.values()];
         }
 
         // ===== Shared export geo helpers =====
@@ -3450,7 +3472,11 @@
             });
         }
 
-        function buildParkMarkdown(park, data) {
+        function buildParkMarkdown(park, data, sections = null) {
+            // sections: optional Set of starred narrative types ('fire',
+            // 'deforestation', 'settlement', 'road') — when set, only those
+            // sections are included (park starred via accordion ★ only).
+            const has = t => !sections || sections.has(t);
             const fmt = n => (n || 0).toLocaleString('en-US');
             // Insights and narratives may carry emojis from server-side text; keep MD plain.
             const plain = t => String(t || '').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{FE0F}\u{2B00}-\u{2BFF}]/gu, '').replace(/\s+/g, ' ').trim();
@@ -3459,6 +3485,10 @@
             const headMeta = [park.country, areaStr].filter(Boolean).join(', ');
             lines.push(`## ${park.name || park.id}${headMeta ? ` (${headMeta})` : ''}`);
             lines.push('');
+            if (sections) {
+                lines.push(`_Starred sections only: ${[...sections].join(', ')}_`);
+                lines.push('');
+            }
             // Map placeholder: replaced by an SVG park map in Print/PDF output
             lines.push(`[MAP:${park.id}]`);
             lines.push('');
@@ -3490,18 +3520,18 @@
 
             // Overview: key summary stats as a compact Markdown table
             const kv = [];
-            if (fireDetections) kv.push(['Fire detections', `${fmt(fireDetections)} in ${fmt(fireNarratives.length)} group${fireNarratives.length !== 1 ? 's' : ''} (${respRate}% stopped)`]);
-            if (deforest.total_loss_km2) kv.push(['Forest loss', `${deforest.total_loss_km2.toFixed(1)} km2${deforest.worst_year ? ` (worst: ${deforest.worst_year})` : ''}`]);
-            if (settle.settlement_count) kv.push(['Settlements', `${fmt(settle.settlement_count)}${settle.total_population ? ` (~${fmt(settle.total_population)} people)` : ''}`]);
-            if (species.total_count) kv.push(['Mammal species', fmt(species.total_count)]);
-            if (grid.activePixels) {
+            if (has('fire') && fireDetections) kv.push(['Fire detections', `${fmt(fireDetections)} in ${fmt(fireNarratives.length)} group${fireNarratives.length !== 1 ? 's' : ''} (${respRate}% stopped)`]);
+            if (has('deforestation') && deforest.total_loss_km2) kv.push(['Forest loss', `${deforest.total_loss_km2.toFixed(1)} km2${deforest.worst_year ? ` (worst: ${deforest.worst_year})` : ''}`]);
+            if (has('settlement') && settle.settlement_count) kv.push(['Settlements', `${fmt(settle.settlement_count)}${settle.total_population ? ` (~${fmt(settle.total_population)} people)` : ''}`]);
+            if (has('biodiversity') && species.total_count) kv.push(['Mammal species', fmt(species.total_count)]);
+            if (has('patrol') && grid.activePixels) {
                 const byType = Object.entries(grid.byType || {}).filter(([, v]) => v > 0.5)
                     .map(([k, v]) => `${k} ${v.toFixed(0)} km`).join(', ');
                 kv.push(['Patrol effort', `${fmt(grid.activePixels)} pixels, ${(grid.totalDistanceKm || 0).toFixed(0)} km${byType ? ` (${byType})` : ''}`]);
             }
-            if ((data.road || {}).roadCount) kv.push(['Roads', `${fmt(data.road.roadCount)} segments, ${(data.road.totalRoadKm || 0).toFixed(0)} km`]);
-            if ((data.road || {}).riverCount) kv.push(['Rivers', `${fmt(data.road.riverCount)} segments`]);
-            if ((research.publications || []).length) kv.push(['Publications', fmt(research.publications.length)]);
+            if (has('road') && (data.road || {}).roadCount) kv.push(['Roads', `${fmt(data.road.roadCount)} segments, ${(data.road.totalRoadKm || 0).toFixed(0)} km`]);
+            if (has('road') && (data.road || {}).riverCount) kv.push(['Rivers', `${fmt(data.road.riverCount)} segments`]);
+            if (has('research') && (research.publications || []).length) kv.push(['Publications', fmt(research.publications.length)]);
             if (kv.length) {
                 const w = Math.max(...kv.map(([k]) => k.length));
                 lines.push(`| ${'Metric'.padEnd(w)} | Value |`);
@@ -3511,7 +3541,7 @@
             }
 
             // Fire
-            if (cfg.fire !== false && fireNarratives.length > 0) {
+            if (has('fire') && cfg.fire !== false && fireNarratives.length > 0) {
                 lines.push('### Fire activity');
                 lines.push('');
                 lines.push(`Detections: ${fmt(fireDetections)} | Groups: ${fmt(fireNarratives.length)} | Stopped: ${stopped} (${respRate}%)` + (fire.peak_month ? ` | Peak: ${fire.peak_month}` : ''));
@@ -3528,7 +3558,7 @@
 
             // Deforestation
             const deforestEvents = deforest.classified_events || [];
-            if (cfg.deforestation !== false && (deforest.total_loss_km2 > 0 || deforestEvents.length > 0)) {
+            if (has('deforestation') && cfg.deforestation !== false && (deforest.total_loss_km2 > 0 || deforestEvents.length > 0)) {
                 lines.push('### Deforestation');
                 lines.push('');
                 const trendStr = deforest.trend_direction ? ` | Trend: ${deforest.trend_direction} (${deforest.trend_percent_change > 0 ? '+' : ''}${(deforest.trend_percent_change || 0).toFixed(1)}%)` : '';
@@ -3547,7 +3577,7 @@
 
             // Settlements
             const settlements = settle.classified_settlements || [];
-            if (cfg.settlement !== false && (settle.settlement_count > 0 || settlements.length > 0)) {
+            if (has('settlement') && cfg.settlement !== false && (settle.settlement_count > 0 || settlements.length > 0)) {
                 lines.push('### Settlements');
                 lines.push('');
                 let builtUp = settle.built_up_km2 || 0;
@@ -3580,7 +3610,7 @@
 
             // Biodiversity
             const speciesList = species.species || [];
-            if (cfg.biodiversity !== false && speciesList.length > 0) {
+            if (has('biodiversity') && cfg.biodiversity !== false && speciesList.length > 0) {
                 const threatened = speciesList.filter(s => ['CR', 'EN', 'VU'].includes(s.status) && (s.common_name || s.binomial));
                 lines.push('### Biodiversity');
                 lines.push('');
@@ -3601,7 +3631,7 @@
             }
 
             // Climate
-            if (cfg.climate !== false && (climate.precip_annual_mm || climate.climate_zone)) {
+            if (has('climate') && cfg.climate !== false && (climate.precip_annual_mm || climate.climate_zone)) {
                 lines.push('### Climate');
                 lines.push('');
                 const parts = [];
@@ -3615,7 +3645,7 @@
             }
 
             // Patrol & infrastructure
-            if (cfg.patrol !== false && (grid.activePixels > 0 || (stats.insights || []).length > 0)) {
+            if (has('patrol') && cfg.patrol !== false && (grid.activePixels > 0 || (stats.insights || []).length > 0)) {
                 lines.push('### Patrol activity');
                 lines.push('');
                 const g = [];
@@ -3636,7 +3666,7 @@
 
             // Infrastructure: rivers, roads, places + patrol-learned features
             const road = data.road || {};
-            if (cfg.patrol !== false && (road.riverCount || road.roadCount || road.placeCount || (road.learnedPlaces || []).length || (road.airstrips || []).length)) {
+            if (has('road') && cfg.patrol !== false && (road.riverCount || road.roadCount || road.placeCount || (road.learnedPlaces || []).length || (road.airstrips || []).length)) {
                 lines.push('### Infrastructure & access');
                 lines.push('');
                 const ip = [];
@@ -3676,7 +3706,7 @@
             const miningSites = turb.mining_settlements || [];
             const turbAlerts = turb.alerts || [];
             const pitSites = turb.pit_sites || [];
-            if (cfg.settlement !== false && (miningSites.length || turbAlerts.length || pitSites.length || (turb.turbid_rivers || []).length)) {
+            if (has('mining') && cfg.settlement !== false && (miningSites.length || turbAlerts.length || pitSites.length || (turb.turbid_rivers || []).length)) {
                 lines.push('### Mining & water quality');
                 lines.push('');
                 const mp = [];
@@ -3700,7 +3730,7 @@
 
             // Publications
             const pubs = research.publications || [];
-            if (cfg.publications !== false && pubs.length > 0) {
+            if (has('research') && cfg.publications !== false && pubs.length > 0) {
                 lines.push('### Research publications');
                 lines.push('');
                 const limit = deep ? pubs.length : 10;
@@ -3714,7 +3744,7 @@
 
             // Legal documents
             const legalDocs = legal.documents || [];
-            if (cfg.publications !== false && legalDocs.length > 0) {
+            if (has('legal') && cfg.publications !== false && legalDocs.length > 0) {
                 lines.push('### Legal framework');
                 lines.push('');
                 const limit = deep ? legalDocs.length : 5;
@@ -3739,7 +3769,7 @@
                 if (!park.country) park.country = getParkFeature(park.id)?.properties?.country || '';
             }
 
-            const results = await Promise.all(parksToFetch.map(async ({ park, source }) => {
+            const results = await Promise.all(parksToFetch.map(async ({ park, source, sections }) => {
                 // Reuse cache when the inline report already fetched this park
                 const cached = reportDataCache.parks.get(park.id) ||
                     (() => {
@@ -3749,12 +3779,12 @@
                         }
                         return null;
                     })();
-                if (cached && !cached.error) return { park, data: cached, source };
+                if (cached && !cached.error) return { park, data: cached, source, sections };
                 try {
                     const data = await fetchParkReportData(park.id, { from: dateFrom, to: dateTo });
-                    return { park, data, source };
+                    return { park, data, source, sections };
                 } catch (err) {
-                    return { park, data: { error: err.message }, source };
+                    return { park, data: { error: err.message }, source, sections };
                 }
             }));
 
@@ -3775,8 +3805,8 @@
             // Link back to this exact view online (no pwd embedded)
             try { doc.push(`- View online: ${buildShareUrl(false)}`); } catch (e) {}
             doc.push('');
-            for (const { park, data } of results) {
-                doc.push(buildParkMarkdown(park, data));
+            for (const { park, data, sections } of results) {
+                doc.push(buildParkMarkdown(park, data, sections));
                 doc.push('---');
                 doc.push('');
             }
@@ -4445,21 +4475,10 @@
         async function exportFullReportKmlV2(progress = (m) => showToast(m, 'info', { key: 'export', sticky: true, spinner: true })) {
             const pwd = getPwd();
             const dateParams = (dateFrom ? '&from=' + dateFrom : '') + (dateTo ? '&to=' + dateTo : '');
-            
-            // Collect all unique park IDs
-            const parkIDs = new Set();
-            for (const park of starredItems.parks) {
-                if (park.id) parkIDs.add(park.id);
-            }
-            for (const bbox of starredItems.bboxes) {
-                const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
-                if (bboxData?.parks) {
-                    for (const p of bboxData.parks) {
-                        if (p.id) parkIDs.add(p.id);
-                    }
-                }
-            }
-            
+
+            // All report parks: starred, in starred areas, or starred narratives
+            const parkIDs = new Set((await collectReportParks()).map(e => e.park.id).filter(Boolean));
+
             if (parkIDs.size === 0) {
                 showToast('No parks to export', 'error', { key: 'export' });
                 return;
@@ -7465,6 +7484,7 @@
                     <div class="pa-popup-section" id="mining-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="turbidity" onclick="event.stopPropagation(); togglePinFromIcon(this)">◈</span> Mining &amp; Water Quality<span id="mining-count-${paId}" class="pa-popup-section-count"></span></div>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'mining', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="mining-content-${paId}">
@@ -7489,6 +7509,7 @@
                     <div class="pa-popup-section" id="species-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">❦</span> Species</div>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'biodiversity', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="species-content-${paId}">
@@ -7500,6 +7521,7 @@
                     <div class="pa-popup-section" id="climate-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">☼</span> Climate</div>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'climate', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="climate-content-${paId}">
@@ -7511,6 +7533,7 @@
                     <div class="pa-popup-section" id="research-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◉</span> Research</div>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'research', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="research-content-${paId}">
@@ -7522,6 +7545,7 @@
                     <div class="pa-popup-section" id="legal-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">§</span> Legal</div>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'legal', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="legal-content-${paId}">
@@ -7549,7 +7573,7 @@
             // Update icon pin states before fetching data
             if (paId) {
                 // Small delay to ensure DOM is ready
-                setTimeout(() => updateIconPinStates(paId), 10);
+                setTimeout(() => { updateIconPinStates(paId); updateSectionStarStates(paId); }, 10);
             }
             
             // Fetch all section data
@@ -11140,7 +11164,8 @@
         } else if (type === 'notifications') {
             existingIndex = items.findIndex(i => i.index === data.index);
         } else if (type === 'narratives') {
-            existingIndex = items.findIndex(i => i.parkId === data.parkId && i.type === data.type);
+            const pid = data.park_id || data.parkId;
+            existingIndex = items.findIndex(i => (i.park_id || i.parkId) === pid && i.type === data.type);
         }
         
         const isNowStarred = existingIndex < 0;
@@ -11210,6 +11235,15 @@
         }
     }
     
+    // Name a starred area after its contents: largest park anchors the name,
+    // so multiple areas never end up as identical "Selected Area" rows.
+    function deriveAreaName(parks) {
+        if (!parks || !parks.length) return 'Selected Area';
+        const largest = parks.slice().sort((a, b) => (b.area_km2 || 0) - (a.area_km2 || 0))[0];
+        const base = largest.name || largest.id;
+        return parks.length === 1 ? `${base} area` : `${base} region (${parks.length} parks)`;
+    }
+
     // Async pre-fetch bbox report data (all parks in bbox)
     async function prefetchBboxReportData(bbox, name) {
         const bboxKey = bbox.join(',');
@@ -11249,6 +11283,15 @@
                 fetchedAt: new Date().toISOString()
             });
             console.log(`[Report] Cached bbox data: ${parksWithData.length} parks`);
+
+            // Auto-name generically-named areas after their contents so
+            // multiple starred areas stay distinguishable ("Chinko region"
+            // instead of two identical "Selected Area" entries).
+            const starredBbox = starredItems.bboxes.find(b => b.bbox.join(',') === bboxKey);
+            if (starredBbox && (!starredBbox.name || /^(selected|custom|saved)? ?area$/i.test(starredBbox.name))) {
+                starredBbox.name = deriveAreaName(parksWithData);
+                saveStarredItems();
+            }
             
             // Re-render if modal is open
             if (document.getElementById('star-modal')?.classList.contains('active')) {
@@ -11490,15 +11533,42 @@
                         const count = cached.settlement.settlement_count || 0;
                         const pop = cached.settlement.total_population || 0;
                         summaryPreview = `<div class="starred-item-preview" style="margin-top:6px;padding:6px 8px;background:rgba(59,130,246,0.05);border-left:2px solid #3b82f6;border-radius:4px;font-size:10px;color:#aaa;">${count} settlements (${pop.toLocaleString()} pop.)</div>`;
+                    } else if (type === 'road' && cached.road) {
+                        const parts = [];
+                        if (cached.road.roadCount) parts.push(`${cached.road.roadCount.toLocaleString()} road segments`);
+                        if (cached.road.riverCount) parts.push(`${cached.road.riverCount.toLocaleString()} river segments`);
+                        if (cached.road.placeCount) parts.push(`${cached.road.placeCount.toLocaleString()} places`);
+                        if (parts.length) summaryPreview = `<div class="starred-item-preview" style="margin-top:6px;padding:6px 8px;background:rgba(148,163,184,0.05);border-left:2px solid #94a3b8;border-radius:4px;font-size:10px;color:#aaa;">${parts.join(' • ')}</div>`;
+                    } else if (type === 'mining' && cached.turbidity) {
+                        const t = cached.turbidity, parts = [];
+                        if ((t.mining_settlements || []).length) parts.push(`${t.mining_settlements.length} suspected mining sites`);
+                        if ((t.alerts || []).length) parts.push(`${t.alerts.length} turbidity alerts`);
+                        if (t.gfw_total_alerts) parts.push(`${t.gfw_total_alerts.toLocaleString()} GFW alerts`);
+                        if (parts.length) summaryPreview = `<div class="starred-item-preview" style="margin-top:6px;padding:6px 8px;background:rgba(245,158,11,0.05);border-left:2px solid #f59e0b;border-radius:4px;font-size:10px;color:#aaa;">${parts.join(' • ')}</div>`;
+                    } else if (type === 'biodiversity' && cached.species) {
+                        const total = cached.species.total_count || (cached.species.species || []).length;
+                        const threatened = (cached.species.species || []).filter(s => ['CR','EN','VU'].includes(s.status)).length;
+                        if (total) summaryPreview = `<div class="starred-item-preview" style="margin-top:6px;padding:6px 8px;background:rgba(34,197,94,0.05);border-left:2px solid #22c55e;border-radius:4px;font-size:10px;color:#aaa;">${total} mammal species${threatened ? ` (${threatened} threatened)` : ''}</div>`;
+                    } else if (type === 'climate' && cached.climate) {
+                        const c = cached.climate, parts = [];
+                        if (c.climate_zone) parts.push(c.climate_zone);
+                        if (c.precip_annual_mm) parts.push(`${c.precip_annual_mm} mm/yr`);
+                        if (parts.length) summaryPreview = `<div class="starred-item-preview" style="margin-top:6px;padding:6px 8px;background:rgba(96,165,250,0.05);border-left:2px solid #60a5fa;border-radius:4px;font-size:10px;color:#aaa;">${escapeHtml(parts.join(' • '))}</div>`;
+                    } else if (type === 'research' && cached.research) {
+                        const n = (cached.research.publications || []).length || cached.research.count || 0;
+                        if (n) summaryPreview = `<div class="starred-item-preview" style="margin-top:6px;padding:6px 8px;background:rgba(168,85,247,0.05);border-left:2px solid #a855f7;border-radius:4px;font-size:10px;color:#aaa;">${n} publications</div>`;
+                    } else if (type === 'legal' && cached.legal) {
+                        const n = (cached.legal.documents || []).length || cached.legal.count || 0;
+                        if (n) summaryPreview = `<div class="starred-item-preview" style="margin-top:6px;padding:6px 8px;background:rgba(148,163,184,0.05);border-left:2px solid #94a3b8;border-radius:4px;font-size:10px;color:#aaa;">${n} legal documents</div>`;
                     }
                 }
                 
                 return {
                     id: narrParkId + '_' + item.type,
                     parkId: narrParkId,
-                    name: `${narrParkName} — ${item.type}`,
+                    name: `${narrParkName} — ${NARRATIVE_TITLES[item.type] || item.type}`,
                     meta: narrParkName,
-                    icon: {'fire': '◆', 'deforestation': '▲', 'settlement': '■', 'road': '═'}[item.type] || '●',
+                    icon: {'fire': '◆', 'deforestation': '▲', 'settlement': '■', 'road': '═', 'mining': '◈', 'biodiversity': '❦', 'climate': '☼', 'research': '◉', 'legal': '§'}[item.type] || '●',
                     status: cached ? '<div class="starred-report-ready">✓ Ready</div>' + summaryPreview : starLoadingPill('Preparing narrative…'),
                     reportHtml: cached ? renderNarrativeReportInline(item, cached) : starSkeletonHtml()
                 };
@@ -12283,53 +12353,31 @@
         bboxPagerRerender(container, idx === prev ? 0 : (idx > prev ? 1 : -1));
     }
     
-    // Render single narrative type report
+    // Render single narrative type report: reuse the MD report builder with
+    // a section filter so ALL starrable accordion types (fire, deforestation,
+    // settlement, road, mining, biodiversity, climate, research, legal) render
+    // consistently — the preview matches exactly what exports produce.
     function renderNarrativeReportInline(item, data) {
-        const type = item.type;
-        const typeData = type === 'fire' ? data.fire : type === 'deforestation' ? data.deforestation : type === 'settlement' ? data.settlement : null;
-        
-        if (!typeData) {
-            return '<div style="color:#666;font-size:11px;">No data available for this narrative type.</div>';
+        const parkId = item.park_id || item.parkId;
+        const park = starredItems.parks.find(p => p.id === parkId)
+            || (window.keystoneAreas || []).find(p => p.id === parkId)
+            || { id: parkId, name: item.park_name || item.parkName || parkId };
+        let md;
+        try {
+            md = buildParkMarkdown(park, data, new Set([item.type]));
+        } catch (e) {
+            console.error('Narrative MD build failed:', e);
+            return '<div style="color:#ef4444;font-size:11px;">Report build failed: ' + escapeHtml(e.message) + '</div>';
         }
-        
-        let html = '<div class="starred-report-content">';
-        const fmt = n => n ? n.toLocaleString() : '0';
-        
-        if (type === 'fire' && typeData.total_fires > 0) {
-            html += `<div class="starred-report-section fire">
-                <div class="starred-report-section-stats">
-                    <span>Total: ${fmt(typeData.total_fires)}</span>
-                    <span>Response: ${Math.round(typeData.response_rate || 0)}%</span>
-                </div>
-                ${typeData.summary ? `<div class="starred-report-section-text">${typeData.summary}</div>` : ''}
-                ${typeData.narratives && typeData.narratives.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">All Fire Groups (${typeData.narratives.length}):</div>${typeData.narratives.map(n => `<div style="margin:4px 0;">${n.narrative || n.title || 'Fire group'}</div>`).join('')}</div>` : ''}
-            </div>`;
-        } else if (type === 'deforestation' && typeData.total_loss_km2 > 0) {
-            html += `<div class="starred-report-section deforestation">
-                <div class="starred-report-section-stats">
-                    <span>Loss: ${typeData.total_loss_km2?.toFixed(2) || 0} km²</span>
-                    <span>Trend: ${typeData.trend_direction || '?'}</span>
-                </div>
-                ${typeData.summary ? `<div class="starred-report-section-text">${typeData.summary}</div>` : ''}
-                ${typeData.hotspots && typeData.hotspots.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">All Hotspots (${typeData.hotspots.length}):</div>${typeData.hotspots.map(h => `<div style="margin:4px 0;">${h.name || h.description || 'Hotspot'}: ${h.area_km2?.toFixed(2)} km²</div>`).join('')}</div>` : ''}
-            </div>`;
-        } else if (type === 'settlement' && typeData.settlement_count > 0) {
-            html += `<div class="starred-report-section settlement">
-                <div class="starred-report-section-stats">
-                    <span>Count: ${fmt(typeData.settlement_count)}</span>
-                    <span>Pop: ${fmt(typeData.total_population || 0)}</span>
-                </div>
-                ${typeData.summary ? `<div class="starred-report-section-text">${typeData.summary}</div>` : ''}
-                ${typeData.largest_settlements && typeData.largest_settlements.length > 0 ? `<div class="starred-report-group"><div class="starred-report-group-title">All Settlements (${typeData.largest_settlements.length}):</div>${typeData.largest_settlements.map(s => `<div style="margin:4px 0;">${s.name || 'Settlement'}: pop. ${fmt(s.population || 0)}</div>`).join('')}</div>` : ''}
-            </div>`;
-        } else {
-            html += '<div style="color:#666;font-size:11px;">No significant data for this narrative.</div>';
-        }
-        
-        html += '</div>';
-        return html;
+        return `<div class="starred-md-report">
+            <div class="starred-md-toolbar">
+                <span class="starred-md-label">Report preview — exactly what you export</span>
+                <button onclick="event.stopPropagation(); exportFullReportMd()" title="Open the full editable Markdown report (all starred items)">Edit / Print</button>
+            </div>
+            ${mdToHtml(md)}
+        </div>`;
     }
-    
+
     function flyToPark(item) {
         if (item.bbox && item.bbox.length === 4) {
             map.fitBounds([[item.bbox[0], item.bbox[1]], [item.bbox[2], item.bbox[3]]], { padding: 50, duration: 1500 });
@@ -12363,39 +12411,53 @@
         }
     }
     
+    // Sync view of which parks the report covers and which sections apply
+    // per park: Map(parkId -> null (full report) | Set(narrative types)).
+    // Mirrors collectReportParks() but cache-only (no fetches) for UI use.
+    function reportParkSectionsSync() {
+        const map = new Map();
+        const add = (id, sections) => {
+            if (!id) return;
+            const existing = map.get(id);
+            if (existing !== undefined) {
+                if (!sections) map.set(id, null);
+                else if (existing) sections.forEach(s => existing.add(s));
+                return;
+            }
+            map.set(id, sections ? new Set(sections) : null);
+        };
+        for (const park of starredItems.parks) add(park.id, null);
+        for (const bbox of starredItems.bboxes) {
+            const parks = reportDataCache.bboxes.get(bbox.bbox.join(','))?.parks || [];
+            for (const p of parks) add(p.id, null);
+        }
+        for (const n of starredItems.narratives) add(n.park_id || n.parkId, [n.type]);
+        return map;
+    }
+
     function updateStarReportMeta() {
         const meta = document.getElementById('star-report-meta');
         const now = new Date();
-        const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0);
-        const loadedParks = reportDataCache.parks.size;
         const loadingCount = reportDataCache.loading.size;
-        
-        // Calculate aggregate stats from loaded data
-        let totalFires = 0;
-        let totalSettlements = 0;
-        let totalParks = 0;
-        
-        for (const park of starredItems.parks) {
-            const cached = reportDataCache.parks.get(park.id);
-            if (cached) {
-                totalParks++;
-                totalFires += cached.fire?.total_fires || 0;
-                totalSettlements += cached.stats?.settlement?.settlement_count || 0;
-            }
+
+        // Aggregate stats over UNIQUE parks (a park starred directly and also
+        // inside a starred area is counted once). Narrative-only parks only
+        // contribute the sections that are starred.
+        const coverage = reportParkSectionsSync();
+        let totalParks = 0, loadedParks = 0, totalFires = 0, totalSettlements = 0;
+        for (const [parkId, sections] of coverage) {
+            totalParks++;
+            const cached = reportDataCache.parks.get(parkId);
+            if (!cached) continue;
+            loadedParks++;
+            if (!sections || sections.has('fire')) totalFires += cached.fire?.total_fires || 0;
+            if (!sections || sections.has('settlement')) totalSettlements += cached.settlement?.settlement_count || 0;
         }
-        
-        for (const bbox of starredItems.bboxes) {
-            const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
-            if (bboxData?.parks) {
-                for (const p of bboxData.parks) {
-                    totalFires += p.reportData?.fire?.total_fires || 0;
-                    totalSettlements += p.reportData?.stats?.settlement?.settlement_count || 0;
-                }
-            }
-        }
-        
-        const statsStr = totalParks > 0 ? ` • ${totalParks} parks • ${totalFires.toLocaleString()} fires • ${totalSettlements} settlements` : '';
-        
+
+        const statsStr = totalParks > 0
+            ? ` • ${totalParks} park${totalParks !== 1 ? 's' : ''}${loadedParks < totalParks ? ` (${loadedParks} loaded)` : ''} • ${totalFires.toLocaleString()} fires • ${totalSettlements.toLocaleString()} settlements`
+            : '';
+
         meta.innerHTML = `
             <div style="font-size:11px;color:#888;">
                 <div>Date range: ${dateFrom || '2018-01-01'} to ${dateTo || new Date().toISOString().split('T')[0]}${statsStr}</div>
@@ -14166,20 +14228,30 @@ ${starredItems.narratives.map(n => {
         showToast(isNowStarred ? 'Area starred!' : 'Area removed from stars');
     }
     
+    // Popup accordion section -> narrative star type. Every accordion has a
+    // star; content div ids come from NARRATIVE_SECTION_IDS.
+    const NARRATIVE_SECTION_IDS = {
+        fire: 'fire-content', settlement: 'ghsl-content', deforestation: 'deforest-content',
+        road: 'road-content', mining: 'mining-content', biodiversity: 'species-content',
+        climate: 'climate-content', research: 'research-content', legal: 'legal-content'
+    };
+    const NARRATIVE_TITLES = {
+        fire: 'Fire Activity', settlement: 'Settlements', deforestation: 'Deforestation',
+        road: 'Roads & Infrastructure', mining: 'Mining & Water Quality', biodiversity: 'Species',
+        climate: 'Climate', research: 'Research', legal: 'Legal'
+    };
+
     function starNarrative(parkId, parkName, type, btn) {
         // Get content from the section if available
-        const sectionId = type === 'fire' ? 'fire-content' : 
-                          type === 'settlement' ? 'ghsl-content' : 
-                          type === 'deforestation' ? 'deforest-content' :
-                          type === 'road' ? 'road-content' : null;
-        const sectionEl = document.getElementById(sectionId + '-' + parkId);
+        const sectionId = NARRATIVE_SECTION_IDS[type] || null;
+        const sectionEl = sectionId ? document.getElementById(sectionId + '-' + parkId) : null;
         let content = '';
         if (sectionEl) {
             // Get text content, removing loading indicators
             content = sectionEl.innerText.replace(/Loading.../g, '').trim().substring(0, 500);
         }
         
-        const titleMap = { fire: 'Fire Activity', settlement: 'Settlements', deforestation: 'Deforestation', road: 'Roads' };
+        const titleMap = NARRATIVE_TITLES;
         const data = {
             parkId,
             parkName,
@@ -16256,6 +16328,17 @@ ${starredItems.narratives.map(n => {
     }
     
     // Update icon state when popup opens
+    // Reflect starred narrative state on popup accordion ★ buttons
+    function updateSectionStarStates(parkId) {
+        document.querySelectorAll('.pa-popup-section-star').forEach(btn => {
+            const m = String(btn.getAttribute('onclick') || '').match(/starNarrative\('([^']+)',\s*'(?:[^']*)',\s*'([^']+)'/);
+            if (!m || m[1] !== parkId) return;
+            const starred = starredItems.narratives.some(n => (n.park_id || n.parkId) === parkId && n.type === m[2]);
+            btn.textContent = starred ? '★' : '☆';
+            btn.classList.toggle('starred', starred);
+        });
+    }
+
     function updateIconPinStates(parkId) {
         document.querySelectorAll('.pa-popup-section-icon.toggleable').forEach(icon => {
             if (icon.dataset.parkId === parkId) {

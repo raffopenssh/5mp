@@ -790,6 +790,8 @@
         .float-dock-btn.popup-dock .fui-badge { background: #60a5fa; }
 
         /* Detached / collapsed park popup */
+        /* Park tooltip above bbox clear chip (150) but below toolbars/panels */
+        .maplibregl-popup { z-index: 200; }
         .maplibregl-popup.fui-detached { z-index: 350; }
         .maplibregl-popup.fui-detached .maplibregl-popup-tip { display: none; }
         .maplibregl-popup.fui-detached .maplibregl-popup-content { box-shadow: 0 12px 44px rgba(0,0,0,0.65) !important; border-color: rgba(255,255,255,0.18) !important; }
