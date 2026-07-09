@@ -1,3 +1,6 @@
+bcc8fea 2026-07-09 07:08:46 Star report: MD-rendered inline preview + infrastructure, mining/turbidity sections
+6668802 2026-07-09 06:49:25 Add handover notes for session chip + MD report work
+f23af34 2026-07-09 06:48:53 Update generated commit list
 9e399e2 2026-07-09 06:48:51 Alpha session chip with logout; star report Markdown overhaul
 2d6ca7e 2026-07-09 06:28:47 Update generated commit list
 3eb899c 2026-07-09 06:28:34 Validate park IDs centrally; carry URL params through tryout login
@@ -15,6 +18,3 @@ dce8663 2026-07-07 04:53:45 Update GFW alerts data for CAF_Bamingui-Bangoran; re
 44b916e 2026-07-07 04:44:38 Tapping the active preset tag expands/collapses the tag strip
 45b036e 2026-07-07 04:40:42 Fix erratic time slider: re-tapping active preset no longer resets to 2023-2026
 e919b39 2026-07-07 04:34:23 Collapse date presets behind a span chip; slider backdrop grows with content
-8856a16 2026-07-07 04:20:10 Subtle footer glow instead of boxes; minimal compass info icon; restore preset tags on from/to links
-06b1509 2026-07-07 04:14:30 Footer button polish + taller time-slider backdrop fade
-f3da382 2026-07-07 04:03:27 Fix pinned patrol-visits layer vanishing on time filter change
