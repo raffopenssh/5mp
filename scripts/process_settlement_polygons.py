@@ -218,6 +218,12 @@ def process_park_from_tile(zip_path, tile_name, park, conn, temp_dir):
             tile_path.unlink()
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--park', help='process a single park id; only that park\'s '
+                    'settlement features are cleared+rebuilt (safe for onboarding)')
+    args = ap.parse_args()
+
     print(f"=== GHSL Settlement Polygon Processor ===")
     print(f"Started: {datetime.now()}")
     print()
@@ -237,13 +243,23 @@ def main():
     # Load keystones
     keystones = load_keystones()
     print(f"Loaded {len(keystones)} parks")
+    if args.park:
+        keystones = [p for p in keystones if p['id'] == args.park]
+        if not keystones:
+            print(f"ERROR: park {args.park} not found in keystones")
+            return 1
     
     # Connect to database
     conn = sqlite3.connect(DB_PATH)
     
-    # Clear existing settlement polygons
-    print("Clearing existing settlement features...")
-    conn.execute("DELETE FROM feature_geometries WHERE feature_type = 'settlement'")
+    # Clear existing settlement polygons (scoped to --park if given)
+    if args.park:
+        print(f"Clearing existing settlement features for {args.park}...")
+        conn.execute("DELETE FROM feature_geometries WHERE feature_type = 'settlement' AND park_id = ?",
+                     (args.park,))
+    else:
+        print("Clearing existing settlement features...")
+        conn.execute("DELETE FROM feature_geometries WHERE feature_type = 'settlement'")
     conn.commit()
     
     total_features = 0

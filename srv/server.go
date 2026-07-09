@@ -182,6 +182,9 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/areas", s.HandleAPIAreas)
 	mux.HandleFunc("GET /api/areas/search", s.HandleAPIAreasSearch)
 	mux.HandleFunc("GET /api/wdpa/search", s.HandleAPIWDPASearch)
+	mux.HandleFunc("POST /api/onboarding/request", s.HandleAPIRequestOnboard)
+	mux.HandleFunc("POST /api/onboarding/cancel", s.HandleAPICancelOnboard)
+	mux.HandleFunc("GET /api/onboarding", s.HandleAPIOnboardingStatus)
 	
 	// API auth endpoints
 	mux.HandleFunc("POST /api/login", RateLimitMiddleware(authRL, s.HandleAPILogin))

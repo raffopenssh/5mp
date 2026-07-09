@@ -231,9 +231,19 @@ def calculate_area_km2(geom):
     return geom_utm.area / 1e6  # m2 to km2
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--park', help='process a single park id (e.g. CAF_Chinko)')
+    args = ap.parse_args()
+
     print("Loading parks...")
     parks = load_parks()
     print(f"Loaded {len(parks)} parks with boundaries")
+    if args.park:
+        if args.park not in parks:
+            print(f"Error: park {args.park} not found in keystones")
+            sys.exit(1)
+        parks = {args.park: parks[args.park]}
     
     print("Loading OSM places (rivers, lakes, roads)...")
     osm_places = load_osm_places()
