@@ -372,6 +372,21 @@ Park tooltip icon buttons → `GET /api/parks/{id}/export.kml` (`srv/api.go`,
 
 ---
 
+## On-the-fly Park Onboarding
+
+Search for an unloaded-but-WDPA-matched park name, dwell 15s → offer to add it.
+Backend: `srv/park_onboarding.go` (`POST /api/onboarding/request|cancel`,
+`GET /api/onboarding`; routes NOT under /api/parks/* because of park-id
+middleware). Table: `park_onboarding_requests` (migration 037). Worker:
+`scripts/onboard_park.py` (cron 02:30) — Protected Planet boundary → keystone
+append, FIRMS fire backfill max(6mo, current year), v5 pipeline, GFW scan,
+GHSL/HydroSHEDS if local sources exist, restart. Removal: same search-dwell on
+an onboarded park (or undo toast); only parks with `onboarded_at` in
+keystones_with_boundaries.json can be removed. Test-env requests are tagged
+`env='test'` and skipped by the worker; test UI never shows offers.
+
+---
+
 ## Data Processing Scripts (v5)
 
 See `docs/SCRIPTS.md` and `docs/FIRE_PIPELINE.md` for full details.
