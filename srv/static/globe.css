@@ -282,6 +282,10 @@
         .star-report-btn:hover { background: rgba(34,197,94,0.25); border-color: rgba(34,197,94,0.5); }
         .star-report-btn.secondary { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #888; }
         .star-report-btn.secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #e0e0e0; }
+        .star-report-btn.busy { opacity: 0.7; cursor: progress; position: relative; padding-right: 30px; }
+        .star-report-btn.busy::after { content: ''; position: absolute; right: 9px; top: 50%; margin-top: -6px; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.25); border-top-color: currentColor; border-radius: 50%; animation: exportSpin 0.7s linear infinite; }
+        .toast-spinner { width: 14px; height: 14px; flex: 0 0 auto; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: exportSpin 0.7s linear infinite; }
+        @keyframes exportSpin { to { transform: rotate(360deg); } }
 
         /* Report Builder Modal */
         .report-builder-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; z-index: 10000; align-items: center; justify-content: center; }

@@ -3062,6 +3062,314 @@
             return parks;
         }
 
+        // ===== Shared export geo helpers =====
+
+        async function ensureAreasCache() {
+            if (window._cachedAreasGeoJSON) return window._cachedAreasGeoJSON;
+            try {
+                const resp = await fetch(`/api/areas?pwd=${encodeURIComponent(getPwd())}`);
+                if (resp.ok) window._cachedAreasGeoJSON = await resp.json();
+            } catch (e) { console.warn('Failed to fetch areas:', e); }
+            return window._cachedAreasGeoJSON;
+        }
+
+        function getParkFeature(parkId) {
+            return window._cachedAreasGeoJSON?.features?.find(f => f.properties.id === parkId) || null;
+        }
+
+        // Returns [minLon, minLat, maxLon, maxLat] of a Polygon/MultiPolygon, or null
+        function geometryBbox(geom) {
+            if (!geom || !geom.coordinates) return null;
+            let minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity;
+            const walk = (c) => {
+                if (typeof c[0] === 'number') {
+                    if (c[0] < minLon) minLon = c[0];
+                    if (c[0] > maxLon) maxLon = c[0];
+                    if (c[1] < minLat) minLat = c[1];
+                    if (c[1] > maxLat) maxLat = c[1];
+                } else for (const x of c) walk(x);
+            };
+            walk(geom.coordinates);
+            return isFinite(minLon) ? [minLon, minLat, maxLon, maxLat] : null;
+        }
+
+        // Ray-casting point-in-polygon for Polygon/MultiPolygon GeoJSON geometry
+        function pointInParkGeom(lon, lat, geom) {
+            if (!geom) return false;
+            const inRing = (ring) => {
+                let inside = false;
+                for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+                    const xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+                    if (((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi)) inside = !inside;
+                }
+                return inside;
+            };
+            const polys = geom.type === 'Polygon' ? [geom.coordinates] : (geom.type === 'MultiPolygon' ? geom.coordinates : []);
+            for (const poly of polys) {
+                if (poly.length && inRing(poly[0])) {
+                    let inHole = false;
+                    for (let h = 1; h < poly.length; h++) if (inRing(poly[h])) { inHole = true; break; }
+                    if (!inHole) return true;
+                }
+            }
+            return false;
+        }
+
+        // Fetch raw patrol grid cells for a park (bbox from its boundary, ~5km pad).
+        // Returns {features, bbox, geom} or null.
+        async function fetchParkGridFeatures(parkId, from, to) {
+            await ensureAreasCache();
+            const feat = getParkFeature(parkId);
+            const geom = feat?.geometry || null;
+            let bbox = geom ? geometryBbox(geom) : null;
+            if (!bbox) {
+                const c = feat?.properties?.center;
+                const center = typeof c === 'string' ? JSON.parse(c) : c;
+                if (!center) return null;
+                const lon = center[0] ?? center.lng, lat = center[1] ?? center.lat;
+                bbox = [lon - 0.5, lat - 0.5, lon + 0.5, lat + 0.5];
+            }
+            const pad = 0.05;
+            bbox = [bbox[0] - pad, bbox[1] - pad, bbox[2] + pad, bbox[3] + pad];
+            let url = `/api/grid?bbox=${bbox.join(',')}&pwd=${encodeURIComponent(getPwd())}`;
+            if (from) url += `&from=${from}`;
+            if (to) url += `&to=${to}`;
+            try {
+                const resp = await fetch(url);
+                if (!resp.ok) return { features: [], bbox, geom };
+                const data = await resp.json();
+                return { features: data.features || [], bbox, geom };
+            } catch (e) {
+                return { features: [], bbox, geom };
+            }
+        }
+
+        // Character-based patrol effort map. Each char = one 0.1-deg grid cell
+        // (aggregated if the park is large). '.' marks park interior without
+        // patrol data; effort shown on a low-to-high ramp: - = + * # @
+        const EFFORT_RAMP = ['-', '=', '+', '*', '#', '@'];
+        function buildEffortAsciiMap(gridResult, opts = {}) {
+            if (!gridResult) return null;
+            const { features, bbox, geom } = gridResult;
+            const maxCols = opts.maxCols || 80;
+            const res = 0.1;
+            let cols = Math.ceil((bbox[2] - bbox[0]) / res);
+            let rows = Math.ceil((bbox[3] - bbox[1]) / res);
+            const agg = Math.max(1, Math.ceil(cols / maxCols));
+            cols = Math.ceil(cols / agg);
+            rows = Math.ceil(rows / agg);
+            if (cols < 2 || rows < 2 || rows > 200) return null;
+            const cell = res * agg;
+            const km = new Array(rows * cols).fill(0);
+            let maxKm = 0, activeCells = 0;
+            for (const f of features) {
+                const [lon, lat] = f.geometry?.coordinates || [];
+                if (lon === undefined) continue;
+                const x = Math.floor((lon - bbox[0]) / cell);
+                const y = Math.floor((bbox[3] - lat) / cell); // row 0 = north
+                if (x < 0 || x >= cols || y < 0 || y >= rows) continue;
+                const d = f.properties?.total_distance_km || 0;
+                km[y * cols + x] += d;
+                if (km[y * cols + x] > maxKm) maxKm = km[y * cols + x];
+            }
+            const lines = [];
+            for (let y = 0; y < rows; y++) {
+                let line = '';
+                for (let x = 0; x < cols; x++) {
+                    const v = km[y * cols + x];
+                    if (v > 0) {
+                        activeCells++;
+                        const idx = Math.min(EFFORT_RAMP.length - 1, Math.floor(Math.log10(1 + v) / Math.log10(1 + Math.max(maxKm, 10)) * EFFORT_RAMP.length));
+                        line += EFFORT_RAMP[idx];
+                    } else {
+                        const lon = bbox[0] + (x + 0.5) * cell;
+                        const lat = bbox[3] - (y + 0.5) * cell;
+                        line += (geom && pointInParkGeom(lon, lat, geom)) ? '.' : ' ';
+                    }
+                }
+                lines.push(line.replace(/\s+$/, ''));
+            }
+            // Trim fully-empty top/bottom lines
+            while (lines.length && !lines[0]) lines.shift();
+            while (lines.length && !lines[lines.length - 1]) lines.pop();
+            if (!lines.length) return null;
+            return {
+                lines,
+                legend: `N up | 1 char = ${(cell * 111).toFixed(0)} km cell | . park, no patrols | effort km (low to high): ${EFFORT_RAMP.join(' ')} | max ${maxKm.toFixed(0)} km/cell`,
+                activeCells, maxKm, cell
+            };
+        }
+
+        // ===== SVG park map (used by PDF export + MD preview) =====
+        // Blank-canvas cartography: boundary, rivers, roads, villages as dots;
+        // fire trajectories / patrol pixels / settlements / deforestation
+        // follow the current layer toggles (viewLayers).
+        const _parkMapSvgCache = new Map();
+
+        async function buildParkMapSvg(parkId, parkName) {
+            const layers = {
+                fires: !!viewLayers.fires,
+                pixels: !!viewLayers.pixels,
+                settlements: !!viewLayers.settlements,
+                deforest: !!viewLayers.deforest
+            };
+            const cacheKey = `${parkId}|${dateFrom || ''}|${dateTo || ''}|${JSON.stringify(layers)}`;
+            if (_parkMapSvgCache.has(cacheKey)) return _parkMapSvgCache.get(cacheKey);
+            const promise = _buildParkMapSvgUncached(parkId, parkName, layers).catch(err => {
+                console.warn(`Map build failed for ${parkId}:`, err);
+                _parkMapSvgCache.delete(cacheKey);
+                return null;
+            });
+            _parkMapSvgCache.set(cacheKey, promise);
+            return promise;
+        }
+
+        async function _buildParkMapSvgUncached(parkId, parkName, layers) {
+            const pwd = getPwd();
+            await ensureAreasCache();
+            const feat = getParkFeature(parkId);
+            if (!feat?.geometry) return null;
+            const geom = feat.geometry;
+            const bboxRaw = geometryBbox(geom);
+            if (!bboxRaw) return null;
+            const padLon = (bboxRaw[2] - bboxRaw[0]) * 0.05 + 0.02;
+            const padLat = (bboxRaw[3] - bboxRaw[1]) * 0.05 + 0.02;
+            const bbox = [bboxRaw[0] - padLon, bboxRaw[1] - padLat, bboxRaw[2] + padLon, bboxRaw[3] + padLat];
+
+            const fetchFeatures = async (type, extra = '') => {
+                try {
+                    const resp = await fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=${type}&pwd=${encodeURIComponent(pwd)}${extra}`);
+                    if (!resp.ok) return [];
+                    return (await resp.json()).features || [];
+                } catch (e) { return []; }
+            };
+
+            const dateExtra = (dateFrom ? `&start=${dateFrom}` : '') + (dateTo ? `&end=${dateTo}` : '');
+            const [rivers, roads, places, fires, grid, settlements, deforest] = await Promise.all([
+                fetchFeatures('river', '&limit=200'),
+                fetchFeatures('road', '&limit=500'),
+                fetchFeatures('place', '&limit=300'),
+                layers.fires ? fetchFeatures('fire_trajectory', '&limit=500' + dateExtra) : Promise.resolve([]),
+                layers.pixels ? fetchParkGridFeatures(parkId, dateFrom, dateTo) : Promise.resolve(null),
+                layers.settlements ? fetchFeatures('settlement', '&limit=500') : Promise.resolve([]),
+                layers.deforest ? fetchFeatures('deforestation', '&limit=800' + dateExtra) : Promise.resolve([])
+            ]);
+
+            // Equirectangular projection, x scaled by cos(midLat) so shapes look right
+            const midLat = (bbox[1] + bbox[3]) / 2;
+            const kx = Math.cos(midLat * Math.PI / 180);
+            const spanX = (bbox[2] - bbox[0]) * kx, spanY = bbox[3] - bbox[1];
+            const W = 720;
+            const H = Math.max(240, Math.min(900, Math.round(W * spanY / spanX)));
+            const sx = W / spanX, sy = H / spanY;
+            const px = (lon) => ((lon - bbox[0]) * kx * sx).toFixed(1);
+            const py = (lat) => ((bbox[3] - lat) * sy).toFixed(1);
+            const toPath = (coords) => coords.map((c, i) => `${i ? 'L' : 'M'}${px(c[0])} ${py(c[1])}`).join('');
+            const geomPaths = (g) => {
+                if (!g) return [];
+                if (g.type === 'LineString') return [toPath(g.coordinates)];
+                if (g.type === 'MultiLineString') return g.coordinates.map(toPath);
+                if (g.type === 'Polygon') return g.coordinates.map(r => toPath(r) + 'Z');
+                if (g.type === 'MultiPolygon') return g.coordinates.flatMap(p => p.map(r => toPath(r) + 'Z'));
+                return [];
+            };
+            const centroidOf = (g) => {
+                const bb = geometryBbox(g);
+                return bb ? [(bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2] : null;
+            };
+
+            const parts = [];
+            const clipId = `mapclip-${parkId.replace(/[^\w-]/g, '')}`;
+            parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H + 26}" font-family="ui-monospace,Menlo,monospace">`);
+            parts.push(`<defs><clipPath id="${clipId}"><rect x="0" y="0" width="${W}" height="${H}"/></clipPath></defs>`);
+            parts.push(`<rect x="0" y="0" width="${W}" height="${H}" fill="#fdfdfa" stroke="#ccc" stroke-width="1"/>`);
+            parts.push(`<g clip-path="url(#${clipId})">`);
+
+            // Patrol pixels first (under everything)
+            if (grid?.features?.length) {
+                let maxKm = 1;
+                for (const f of grid.features) maxKm = Math.max(maxKm, f.properties?.total_distance_km || 0);
+                const cw = 0.1 * kx * sx, ch = 0.1 * sy;
+                for (const f of grid.features) {
+                    const [lon, lat] = f.geometry?.coordinates || [];
+                    if (lon === undefined) continue;
+                    const d = f.properties?.total_distance_km || 0;
+                    const op = (0.15 + 0.6 * Math.log10(1 + d) / Math.log10(1 + maxKm)).toFixed(2);
+                    const rx = (parseFloat(px(lon)) - cw / 2).toFixed(1);
+                    const ry = (parseFloat(py(lat)) - ch / 2).toFixed(1);
+                    parts.push(`<rect x="${rx}" y="${ry}" width="${cw.toFixed(1)}" height="${ch.toFixed(1)}" fill="#16a34a" opacity="${op}"/>`);
+                }
+            }
+
+            // Rivers (light blue, width by stream order)
+            for (const f of rivers) {
+                const so = f.properties?.stream_order || 1;
+                const wdt = Math.min(2.5, 0.5 + so * 0.25);
+                for (const p of geomPaths(f.geometry)) parts.push(`<path d="${p}" fill="none" stroke="#7cb8e8" stroke-width="${wdt}" opacity="0.85"/>`);
+            }
+            // Roads (grey, dashed for unpaved)
+            for (const f of roads) {
+                const surf = (f.properties?.surface || '').toLowerCase();
+                const paved = surf.includes('asphalt') || surf.includes('paved') || surf.includes('concrete');
+                for (const p of geomPaths(f.geometry)) parts.push(`<path d="${p}" fill="none" stroke="#8a8a8a" stroke-width="${paved ? 1.6 : 0.9}"${paved ? '' : ' stroke-dasharray="3 2"'} opacity="0.9"/>`);
+            }
+            // Deforestation (magenta dots)
+            for (const f of deforest) {
+                const c = f.geometry?.type === 'Point' ? f.geometry.coordinates : centroidOf(f.geometry);
+                if (c) parts.push(`<circle cx="${px(c[0])}" cy="${py(c[1])}" r="1.8" fill="#d946ef" opacity="0.7"/>`);
+            }
+            // Settlements (orange dots)
+            for (const f of settlements) {
+                const p = f.properties || {};
+                const c = (p.lat && p.lon) ? [p.lon, p.lat] : centroidOf(f.geometry);
+                if (c) parts.push(`<circle cx="${px(c[0])}" cy="${py(c[1])}" r="2.2" fill="#f59e0b" opacity="0.85"/>`);
+            }
+            // Fire trajectories (red paths with dot at end)
+            for (const f of fires) {
+                const g = f.geometry;
+                if (!g) continue;
+                if (g.type === 'Point') {
+                    parts.push(`<circle cx="${px(g.coordinates[0])}" cy="${py(g.coordinates[1])}" r="2" fill="#dc2626" opacity="0.8"/>`);
+                } else {
+                    for (const p of geomPaths(g)) parts.push(`<path d="${p}" fill="none" stroke="#dc2626" stroke-width="1.6" opacity="0.8" stroke-linecap="round"/>`);
+                    const coords = g.type === 'LineString' ? g.coordinates : (g.coordinates[g.coordinates.length - 1] || []);
+                    const last = coords[coords.length - 1];
+                    if (last && typeof last[0] === 'number') parts.push(`<circle cx="${px(last[0])}" cy="${py(last[1])}" r="2.4" fill="#dc2626"/>`);
+                }
+            }
+            // Park boundary on top
+            for (const p of geomPaths(geom)) parts.push(`<path d="${p}" fill="none" stroke="#1a7a3a" stroke-width="2"/>`);
+            // Villages/places as labelled dots (on top; cities/towns/villages only, cap 60)
+            const rankedPlaces = places
+                .filter(f => ['city', 'town', 'village', 'hamlet'].includes(f.properties?.place_type))
+                .slice(0, 60);
+            for (const f of rankedPlaces) {
+                const c = f.geometry?.coordinates;
+                if (!c) continue;
+                const big = ['city', 'town'].includes(f.properties.place_type);
+                parts.push(`<circle cx="${px(c[0])}" cy="${py(c[1])}" r="${big ? 3 : 2}" fill="#333" stroke="#fff" stroke-width="0.7"/>`);
+                if (big && f.properties.name) {
+                    parts.push(`<text x="${(parseFloat(px(c[0])) + 4).toFixed(1)}" y="${(parseFloat(py(c[1])) - 3).toFixed(1)}" font-size="9" fill="#333">${escapeXml(f.properties.name)}</text>`);
+                }
+            }
+            parts.push('</g>');
+            // Scale bar (approx, at map latitude)
+            const kmPerPxX = spanX * 111 / W;
+            const targetKm = [10, 20, 50, 100, 200].find(k => k / kmPerPxX > 60 && k / kmPerPxX < 220) || 50;
+            const barPx = targetKm / kmPerPxX;
+            parts.push(`<line x1="12" y1="${H - 12}" x2="${(12 + barPx).toFixed(0)}" y2="${H - 12}" stroke="#333" stroke-width="2"/>`);
+            parts.push(`<text x="12" y="${H - 17}" font-size="9" fill="#333">${targetKm} km</text>`);
+            // Legend line under the canvas
+            const legend = ['boundary', 'rivers', 'roads', 'places'];
+            if (layers.fires) legend.push('fire paths (red)');
+            if (layers.pixels) legend.push('patrol effort (green)');
+            if (layers.settlements) legend.push('settlements (orange)');
+            if (layers.deforest) legend.push('deforestation (magenta)');
+            parts.push(`<text x="0" y="${H + 16}" font-size="10" fill="#555">${escapeXml(parkName || parkId)} - ${legend.join(', ')}${dateFrom || dateTo ? ` | ${dateFrom || '...'} to ${dateTo || 'now'}` : ''}</text>`);
+            parts.push('</svg>');
+            return parts.join('');
+        }
+
         function mdFilterFireNarratives(narratives) {
             if (!dateFrom && !dateTo) return narratives;
             const fromDate = dateFrom ? new Date(dateFrom) : new Date('1900-01-01');
@@ -3082,6 +3390,9 @@
             const areaStr = park.area_km2 ? `${Math.round(park.area_km2).toLocaleString('en-US')} km2` : '';
             const headMeta = [park.country, areaStr].filter(Boolean).join(', ');
             lines.push(`## ${park.name || park.id}${headMeta ? ` (${headMeta})` : ''}`);
+            lines.push('');
+            // Map placeholder: replaced by an SVG park map in Print/PDF output
+            lines.push(`[MAP:${park.id}]`);
             lines.push('');
 
             if (data.error) {
@@ -3109,15 +3420,25 @@
             const stopped = fireNarratives.filter(n => isFireStopped(n)).length;
             const respRate = fireNarratives.length ? Math.round(stopped / fireNarratives.length * 100) : 0;
 
-            // Overview line
-            const overview = [];
-            if (fireDetections) overview.push(`${fmt(fireDetections)} fire detections in ${fmt(fireNarratives.length)} group${fireNarratives.length !== 1 ? 's' : ''} (${respRate}% stopped)`);
-            if (deforest.total_loss_km2) overview.push(`${deforest.total_loss_km2.toFixed(1)} km2 forest loss`);
-            if (settle.settlement_count) overview.push(`${fmt(settle.settlement_count)} settlements (~${fmt(settle.total_population)} people)`);
-            if (species.total_count) overview.push(`${fmt(species.total_count)} mammal species`);
-            if (grid.activePixels) overview.push(`${fmt(grid.activePixels)} patrol pixels / ${(grid.totalDistanceKm || 0).toFixed(0)} km patrolled`);
-            if (overview.length) {
-                lines.push(overview.map(o => `- ${o}`).join('\n'));
+            // Overview: key summary stats as a compact Markdown table
+            const kv = [];
+            if (fireDetections) kv.push(['Fire detections', `${fmt(fireDetections)} in ${fmt(fireNarratives.length)} group${fireNarratives.length !== 1 ? 's' : ''} (${respRate}% stopped)`]);
+            if (deforest.total_loss_km2) kv.push(['Forest loss', `${deforest.total_loss_km2.toFixed(1)} km2${deforest.worst_year ? ` (worst: ${deforest.worst_year})` : ''}`]);
+            if (settle.settlement_count) kv.push(['Settlements', `${fmt(settle.settlement_count)}${settle.total_population ? ` (~${fmt(settle.total_population)} people)` : ''}`]);
+            if (species.total_count) kv.push(['Mammal species', fmt(species.total_count)]);
+            if (grid.activePixels) {
+                const byType = Object.entries(grid.byType || {}).filter(([, v]) => v > 0.5)
+                    .map(([k, v]) => `${k} ${v.toFixed(0)} km`).join(', ');
+                kv.push(['Patrol effort', `${fmt(grid.activePixels)} pixels, ${(grid.totalDistanceKm || 0).toFixed(0)} km${byType ? ` (${byType})` : ''}`]);
+            }
+            if ((data.road || {}).roadCount) kv.push(['Roads', `${fmt(data.road.roadCount)} segments, ${(data.road.totalRoadKm || 0).toFixed(0)} km`]);
+            if ((data.road || {}).riverCount) kv.push(['Rivers', `${fmt(data.road.riverCount)} segments`]);
+            if ((research.publications || []).length) kv.push(['Publications', fmt(research.publications.length)]);
+            if (kv.length) {
+                const w = Math.max(...kv.map(([k]) => k.length));
+                lines.push(`| ${'Metric'.padEnd(w)} | Value |`);
+                lines.push(`|${'-'.repeat(w + 2)}|-------|`);
+                for (const [k, v] of kv) lines.push(`| ${k.padEnd(w)} | ${v} |`);
                 lines.push('');
             }
 
@@ -3344,6 +3665,11 @@
         async function buildFullReportMarkdown() {
             const parksToFetch = await collectReportParks();
             if (parksToFetch.length === 0) return null;
+            await ensureAreasCache();
+            for (const { park } of parksToFetch) {
+                if (!park.area_km2) park.area_km2 = getParkFeature(park.id)?.properties?.area_km2 || 0;
+                if (!park.country) park.country = getParkFeature(park.id)?.properties?.country || '';
+            }
 
             const results = await Promise.all(parksToFetch.map(async ({ park, source }) => {
                 // Reuse cache when the inline report already fetched this park
@@ -3393,8 +3719,9 @@
         // Opens the editable Markdown report modal (also triggered by Ctrl+P
         // when the star panel is open). From there: edit, print, copy, download.
         async function exportFullReportMd() {
-            showToast('Building Markdown report...', 'info');
+            showToast('Building Markdown report...', 'info', { key: 'export', sticky: true, spinner: true });
             const result = await buildFullReportMarkdown();
+            dismissToast('export');
             if (!result) {
                 showToast('No parks to export', 'error');
                 return;
@@ -3417,6 +3744,40 @@
             document.querySelector('#star-modal .star-report-actions').style.display = 'none';
             document.getElementById('star-md-actions').style.display = 'flex';
             ta.focus();
+            // Kick off park map builds in the background; thumbnails stream into
+            // the strip above the editor with a "more coming" indicator.
+            loadMdReportMaps();
+        }
+
+        async function loadMdReportMaps() {
+            const strip = document.getElementById('md-report-maps');
+            if (!strip) return;
+            const parks = await collectReportParks();
+            if (!parks.length) { strip.style.display = 'none'; return; }
+            strip.style.display = 'flex';
+            strip.innerHTML = '';
+            const status = document.createElement('div');
+            status.style.cssText = 'flex:0 0 auto;font-size:11px;color:#888;display:flex;align-items:center;gap:8px;padding:0 4px;';
+            status.innerHTML = '<span class="toast-spinner"></span><span>Rendering park maps\u2026 they will be embedded in Print / PDF</span>';
+            strip.appendChild(status);
+            let done = 0;
+            window._mdReportMaps = startReportMapBuilds(parks, (d, t) => {
+                done = d;
+                if (d < t) status.lastChild.textContent = `Rendering park maps ${d}/${t}\u2026 embedded in Print / PDF`;
+                else { status.remove(); }
+            });
+            for (const { park } of parks) {
+                window._mdReportMaps.get(park.id).then(svg => {
+                    if (!svg || !document.body.contains(strip)) return;
+                    const thumb = document.createElement('div');
+                    thumb.style.cssText = 'flex:0 0 auto;width:150px;background:#fff;border-radius:4px;overflow:hidden;line-height:0;';
+                    thumb.title = `${park.name || park.id} \u2014 included in Print / PDF at [MAP:${park.id}]`;
+                    thumb.innerHTML = svg;
+                    const s = thumb.querySelector('svg');
+                    if (s) { s.setAttribute('width', '150'); s.removeAttribute('height'); }
+                    strip.insertBefore(thumb, status.parentNode === strip ? status : null);
+                });
+            }
         }
 
         function closeMdReportModal() {
@@ -3453,27 +3814,61 @@
             showToast('Markdown report downloaded', 'success');
         }
 
-        // Build the full report and open the browser print dialog (mono,
-        // MD-formatted) — users save as PDF from there.
-        async function exportFullReportPdf() {
-            showToast('Building report...', 'info');
+        // Kick off async SVG map builds for all report parks. Returns a Map
+        // parkId -> Promise<svg|null>. Progress callback gets (done, total).
+        function startReportMapBuilds(parks, onProgress) {
+            const maps = new Map();
+            let done = 0;
+            for (const { park } of parks) {
+                const p = buildParkMapSvg(park.id, park.name).then(svg => {
+                    done++;
+                    if (onProgress) onProgress(done, parks.length);
+                    return svg;
+                });
+                maps.set(park.id, p);
+            }
+            return maps;
+        }
+
+        // Build the full report (incl. park maps) and open the browser print
+        // dialog — users save as PDF from there. Maps render as static SVG:
+        // PDF cannot display animated GIFs, so no animation is embedded.
+        async function exportFullReportPdf(progress = (m) => showToast(m, 'info', { key: 'export', sticky: true, spinner: true })) {
+            progress('Building report...');
             const result = await buildFullReportMarkdown();
             if (!result) {
-                showToast('No parks to export', 'error');
+                showToast('No parks to export', 'error', { key: 'export' });
                 return;
             }
-            printMarkdownText(result.markdown);
+            const parks = await collectReportParks();
+            progress(`Rendering park maps 0/${parks.length}...`);
+            const mapPromises = startReportMapBuilds(parks, (d, t) => progress(`Rendering park maps ${d}/${t}...`));
+            const svgs = {};
+            for (const [id, p] of mapPromises) svgs[id] = await p;
+            dismissToast('export');
+            printMarkdownText(result.markdown, svgs);
         }
 
         // Print the current (possibly edited) Markdown: minimal mono rendering
-        // in a hidden iframe, headings bolded, everything else as-is.
-        function printMdReport() {
-            printMarkdownText(document.getElementById('md-report-text').value);
+        // in a hidden iframe, headings bolded, [MAP:...] tokens replaced by SVGs.
+        async function printMdReport() {
+            const text = document.getElementById('md-report-text').value;
+            // Resolve any maps that were kicked off when the modal opened
+            const svgs = {};
+            if (window._mdReportMaps) {
+                for (const [id, p] of window._mdReportMaps) svgs[id] = await p;
+            }
+            printMarkdownText(text, svgs);
         }
 
-        function printMarkdownText(text) {
+        function printMarkdownText(text, mapSvgs = {}) {
             const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             const rendered = escaped.split('\n').map(line => {
+                const mapMatch = line.match(/^\[MAP:([\w-]+)\]\s*$/);
+                if (mapMatch) {
+                    const svg = mapSvgs[mapMatch[1]];
+                    return svg ? `<div class="parkmap">${svg}</div>` : '';
+                }
                 if (/^# /.test(line)) return `<h1>${line.slice(2)}</h1>`;
                 if (/^## /.test(line)) return `<h2>${line.slice(3)}</h2>`;
                 if (/^### /.test(line)) return `<h3>${line.slice(4)}</h3>`;
@@ -3489,286 +3884,139 @@
                 h1 { font-size: 16px; margin: 0 0 6px; } h2 { font-size: 13px; margin: 14px 0 4px; page-break-after: avoid; } h3 { font-size: 11px; margin: 10px 0 3px; page-break-after: avoid; }
                 h1, h2, h3 { font-family: inherit; }
                 hr { border: none; border-top: 1px solid #999; margin: 12px 0; }
+                .parkmap { margin: 8px 0; page-break-inside: avoid; }
+                .parkmap svg { max-width: 100%; height: auto; }
             </style></head><body><pre>${rendered}</pre></body></html>`);
             iframe.contentDocument.close();
             setTimeout(() => {
                 iframe.contentWindow.focus();
                 iframe.contentWindow.print();
                 setTimeout(() => iframe.remove(), 2000);
-            }, 150);
+            }, 300);
         }
 
-        async function exportFullReportCsvV2() {
-            const allParks = [];
-            const errors = [];
-            
-            showToast('Fetching comprehensive data for all parks...', 'info');
-            
-            // Collect all parks (direct stars + bbox)
-            const parksToFetch = [];
-            
-            for (const park of starredItems.parks) {
-                parksToFetch.push({ park, source: 'starred' });
-            }
-            
-            for (const bbox of starredItems.bboxes) {
-                const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
-                if (bboxData?.parks) {
-                    for (const p of bboxData.parks) {
-                        // Avoid duplicates
-                        if (!parksToFetch.find(item => item.park.id === p.id)) {
-                            parksToFetch.push({ park: p, source: 'bbox:' + (bbox.name || 'area') });
-                        }
-                    }
-                }
-            }
-            
+        // CSV export: park summary table + per-type patrol stats + character
+        // based patrol effort maps. Sections separated by blank lines; every
+        // section is still valid CSV (ragged rows are fine for spreadsheets).
+        async function exportFullReportCsvV2(progress = (m) => showToast(m, 'info', { key: 'export', sticky: true, spinner: true })) {
+            const parksToFetch = await collectReportParks();
             if (parksToFetch.length === 0) {
-                showToast('No parks to export', 'error');
+                showToast('No parks to export', 'error', { key: 'export' });
                 return;
             }
-            
-            // Fetch comprehensive data for each park using fetchParkReportData
-            const fetchPromises = parksToFetch.map(async ({park, source}) => {
+
+            progress(`Fetching data for ${parksToFetch.length} park${parksToFetch.length > 1 ? 's' : ''}...`);
+            let fetched = 0;
+            const results = await Promise.all(parksToFetch.map(async ({ park, source }) => {
                 try {
-                    const data = await fetchParkReportData(park.id, {
-                        from: dateFrom,
-                        to: dateTo
-                    });
+                    const data = await fetchParkReportData(park.id, { from: dateFrom, to: dateTo });
+                    fetched++;
+                    progress(`Fetching data ${fetched}/${parksToFetch.length}...`);
                     return { park, data, source };
                 } catch (error) {
-                    console.error(`Error fetching data for ${park.name}:`, error);
-                    errors.push(`${park.name}: ${error.message}`);
-                    return { park, data: {}, source, error: error.message };
+                    fetched++;
+                    return { park, data: { error: error.message }, source };
                 }
-            });
-            
-            const results = await Promise.all(fetchPromises);
-            allParks.push(...results);
-            
-            if (errors.length > 0) {
-                showToast(` ${errors.length} park(s) had errors. Check console for details.`, 'warning');
+            }));
+
+            progress('Fetching patrol grids...');
+            await ensureAreasCache();
+            for (const { park } of results) {
+                if (!park.area_km2) park.area_km2 = getParkFeature(park.id)?.properties?.area_km2 || 0;
+                if (!park.country) park.country = getParkFeature(park.id)?.properties?.country || '';
             }
-            
-            // Build comprehensive CSV with ALL fields
-            const rows = [[
-                'Park',
-                'Country',
-                'Area_km2',
-                'Lat',
-                'Lon',
-                'Fire_Total',
-                'Fire_Groups',
-                'Response_%',
-                'Peak_Season',
-                'Fire_Density',
-                'Deforest_Total_km2',
-                'Deforest_Events',
-                'Settlement_Count',
-                'Population',
-                'Built_Up_km2',
-                'Road_Count',
-                'River_Count',
-                'Place_Count',
-                'Active_Pixels',
-                'Total_Distance_km',
-                'Foot_km',
-                'Vehicle_km',
-                'Boat_km',
-                'Air_km',
-                'Species_Count',
-                'Publications_Count',
-                'Legal_Docs_Count',
-                'Source'
-            ].join(',')];
-            
-            // Totals accumulators
-            const totals = {
-                areaKm2: 0,
-                fireTotal: 0,
-                fireGroups: 0,
-                deforestKm2: 0,
-                deforestEvents: 0,
-                settlementCount: 0,
-                population: 0,
-                builtUpKm2: 0,
-                roadCount: 0,
-                riverCount: 0,
-                placeCount: 0,
-                activePixels: 0,
-                totalDistanceKm: 0,
-                footKm: 0,
-                vehicleKm: 0,
-                boatKm: 0,
-                airKm: 0,
-                speciesCount: 0,
-                publicationsCount: 0,
-                legalDocsCount: 0,
-                parksCount: 0
-            };
-            
-            for (const {park, data, source} of allParks) {
-                // Skip parks with errors
-                if (data.error) {
-                    continue;
-                }
-                
-                // Extract all data fields
-                const fire = data.fire || {};
-                const settlement = data.settlement || data.ghsl || {};  // settlement is primary, ghsl is fallback
-                const deforestation = data.deforestation || data.deforest || {};  // deforestation is primary, deforest is fallback
-                const road = data.road || {};
-                const species = data.species || {};
-                const research = data.research || {};
-                const legal = data.legal || {};
-                const grid = data.grid || {};
-                
-                // Parse coordinates
-                let lat = '';
-                let lon = '';
-                if (park.center) {
-                    if (Array.isArray(park.center)) {
-                        lon = park.center[0];
-                        lat = park.center[1];
-                    } else if (park.center.lng && park.center.lat) {
-                        lon = park.center.lng;
-                        lat = park.center.lat;
-                    }
-                }
-                
-                // Build row data - use snake_case field names from fetchParkReportData
-                const areaKm2 = park.area_km2 || 0;
-                const fireTotal = fire.total_fires || 0;
-                const fireGroups = fire.fire_groups || 0;
-                const responseRate = fire.response_rate || 0;
-                const peakSeason = fire.peak_month || '';
-                const fireDensity = fire.density || 0;
-                const deforestTotalKm2 = deforestation.total_loss_km2 || 0;
-                const deforestEvents = (deforestation.classified_events || []).length;
-                const settlementCount = settlement.settlement_count || 0;
-                const population = settlement.total_population || 0;
-                const builtUpKm2 = settlement.built_up_km2 || 0;
-                const roadCount = road.roadCount || 0;
-                const riverCount = road.riverCount || 0;
-                const placeCount = road.placeCount || 0;
-                const activePixels = grid.activePixels || 0;
-                const totalDistanceKm = grid.totalDistanceKm || 0;
-                const footKm = grid.byType?.foot || 0;
-                const vehicleKm = grid.byType?.vehicle || 0;
-                const boatKm = grid.byType?.boat || 0;
-                const airKm = grid.byType?.air || 0;
-                const speciesCount = species.total_count || 0;
-                const publicationsCount = research.count || 0;
-                const legalDocsCount = legal.count || 0;
-                
-                // Add to totals
-                totals.areaKm2 += areaKm2;
-                totals.fireTotal += fireTotal;
-                totals.fireGroups += fireGroups;
-                totals.deforestKm2 += deforestTotalKm2;
-                totals.deforestEvents += deforestEvents;
-                totals.settlementCount += settlementCount;
-                totals.population += population;
-                totals.builtUpKm2 += builtUpKm2;
-                totals.roadCount += roadCount;
-                totals.riverCount += riverCount;
-                totals.placeCount += placeCount;
-                totals.activePixels += activePixels;
-                totals.totalDistanceKm += totalDistanceKm;
-                totals.footKm += footKm;
-                totals.vehicleKm += vehicleKm;
-                totals.boatKm += boatKm;
-                totals.airKm += airKm;
-                totals.speciesCount += speciesCount;
-                totals.publicationsCount += publicationsCount;
-                totals.legalDocsCount += legalDocsCount;
-                totals.parksCount++;
-                
-                // Format numbers without thousand separators for Excel import
-                const formatNum = (num) => {
-                    if (num === 0 || num === '') return '0';
-                    return String(num);
-                };
-                
-                const formatDecimal = (num, decimals = 2) => {
-                    if (num === 0 || num === '') return '0';
-                    return Number(num).toFixed(decimals);
-                };
-                
+            const gridResults = new Map();
+            await Promise.all(results.map(async ({ park }) => {
+                gridResults.set(park.id, await fetchParkGridFeatures(park.id, dateFrom, dateTo));
+            }));
+
+            const rows = [];
+            const esc = csvEscape;
+            const now = new Date();
+            rows.push(['5MP Conservation Report (CSV)'].map(esc).join(','));
+            rows.push(['Generated', now.toISOString().slice(0, 16).replace('T', ' ') + ' UTC'].map(esc).join(','));
+            rows.push(['Period', `${dateFrom || '2018-01-01'} to ${dateTo || now.toISOString().slice(0, 10)}`].map(esc).join(','));
+            rows.push('');
+
+            // === Section 1: Park summary ===
+            rows.push('PARK SUMMARY');
+            rows.push(['Park', 'Country', 'Area_km2', 'Fire_Detections', 'Fire_Groups', 'Stopped_%', 'Peak_Season',
+                'Deforest_km2', 'Settlements', 'Population', 'Species', 'Roads', 'Rivers',
+                'Patrol_Pixels', 'Patrol_km', 'Publications', 'Legal_Docs', 'Source'].join(','));
+            const totals = { area: 0, fires: 0, groups: 0, deforest: 0, settle: 0, pop: 0, pixels: 0, km: 0, n: 0 };
+            for (const { park, data, source } of results) {
+                if (data.error) { rows.push([esc(park.name || park.id), '', '', 'ERROR: ' + esc(data.error)].join(',')); continue; }
+                const fire = data.fire || {}, deforestation = data.deforestation || {}, settle = data.settlement || {};
+                const grid = data.grid || {}, species = data.species || {}, road = data.road || {};
+                totals.area += park.area_km2 || 0; totals.fires += fire.total_fires || 0; totals.groups += fire.fire_groups || 0;
+                totals.deforest += deforestation.total_loss_km2 || 0; totals.settle += settle.settlement_count || 0;
+                totals.pop += settle.total_population || 0; totals.pixels += grid.activePixels || 0;
+                totals.km += grid.totalDistanceKm || 0; totals.n++;
                 rows.push([
-                    csvEscape(park.name || park.id),
-                    csvEscape(park.country || ''),
-                    formatDecimal(areaKm2),
-                    formatDecimal(lat, 6),
-                    formatDecimal(lon, 6),
-                    formatNum(fireTotal),
-                    formatNum(fireGroups),
-                    formatNum(responseRate),
-                    csvEscape(peakSeason),
-                    formatDecimal(fireDensity),
-                    formatDecimal(deforestTotalKm2),
-                    formatNum(deforestEvents),
-                    formatNum(settlementCount),
-                    formatNum(population),
-                    formatDecimal(builtUpKm2),
-                    formatNum(roadCount),
-                    formatNum(riverCount),
-                    formatNum(placeCount),
-                    formatNum(activePixels),
-                    formatDecimal(totalDistanceKm),
-                    formatDecimal(footKm),
-                    formatDecimal(vehicleKm),
-                    formatDecimal(boatKm),
-                    formatDecimal(airKm),
-                    formatNum(speciesCount),
-                    formatNum(publicationsCount),
-                    formatNum(legalDocsCount),
-                    csvEscape(source)
+                    esc(park.name || park.id), esc(park.country || ''),
+                    (park.area_km2 || 0).toFixed(0),
+                    fire.total_fires || 0, fire.fire_groups || 0, fire.response_rate || 0, esc(fire.peak_month || ''),
+                    (deforestation.total_loss_km2 || 0).toFixed(2),
+                    settle.settlement_count || 0, settle.total_population || 0,
+                    species.total_count || 0, road.roadCount || 0, road.riverCount || 0,
+                    grid.activePixels || 0, (grid.totalDistanceKm || 0).toFixed(1),
+                    (data.research || {}).count || ((data.research || {}).publications || []).length || 0,
+                    (data.legal || {}).count || ((data.legal || {}).documents || []).length || 0,
+                    esc(source || '')
                 ].join(','));
             }
-            
-            // Add totals row
-            const avgResponseRate = totals.fireGroups > 0 ? Math.round((totals.fireGroups / totals.parksCount) * 100) / 100 : 0;
-            rows.push([
-                csvEscape('TOTAL (' + totals.parksCount + ' parks)'),
-                '',
-                totals.areaKm2.toFixed(2),
-                '',
-                '',
-                totals.fireTotal,
-                totals.fireGroups,
-                '',
-                '',
-                '',
-                totals.deforestKm2.toFixed(2),
-                totals.deforestEvents,
-                totals.settlementCount,
-                totals.population,
-                totals.builtUpKm2.toFixed(2),
-                totals.roadCount,
-                totals.riverCount,
-                totals.placeCount,
-                totals.activePixels,
-                totals.totalDistanceKm.toFixed(2),
-                totals.footKm.toFixed(2),
-                totals.vehicleKm.toFixed(2),
-                totals.boatKm.toFixed(2),
-                totals.airKm.toFixed(2),
-                totals.speciesCount,
-                totals.publicationsCount,
-                totals.legalDocsCount,
-                ''
-            ].join(','));
-            
-            const csv = rows.join('\n');
-            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+            rows.push([esc(`TOTAL (${totals.n} parks)`), '', totals.area.toFixed(0), totals.fires, totals.groups, '', '',
+                totals.deforest.toFixed(2), totals.settle, totals.pop, '', '', '',
+                totals.pixels, totals.km.toFixed(1), '', '', ''].join(','));
+            rows.push('');
+
+            // === Section 2: Patrol effort by movement type ===
+            rows.push('PATROL EFFORT BY TYPE');
+            rows.push(['Park', 'Type', 'Distance_km', 'Cells_Visited', 'Visit_Days', 'Uploads', 'Avg_Speed_kmh'].join(','));
+            const typeKeys = [['foot', 'foot_km', 'foot_speed_kmh'], ['vehicle', 'vehicle_km', 'vehicle_speed_kmh'],
+                ['boat', 'boat_km', 'boat_speed_kmh'], ['fixed_wing', 'fixed_wing_km', 'fixed_wing_speed_kmh'],
+                ['rotor_wing', 'rotor_wing_km', 'rotor_wing_speed_kmh']];
+            for (const { park } of results) {
+                const gr = gridResults.get(park.id);
+                if (!gr || !gr.features.length) continue;
+                for (const [type, kmKey, spdKey] of typeKeys) {
+                    let km = 0, cells = 0, days = 0, uploads = 0, spdSum = 0, spdN = 0;
+                    for (const f of gr.features) {
+                        const p = f.properties || {};
+                        const d = p[kmKey] || 0;
+                        if (d <= 0) continue;
+                        km += d; cells++;
+                        days += p.visit_days || 0;
+                        uploads += p.unique_uploads || 0;
+                        if (p[spdKey]) { spdSum += p[spdKey]; spdN++; }
+                    }
+                    if (km > 0.05) {
+                        rows.push([esc(park.name || park.id), type, km.toFixed(1), cells, days, uploads,
+                            spdN ? (spdSum / spdN).toFixed(1) : ''].join(','));
+                    }
+                }
+            }
+            rows.push('');
+
+            // === Section 3: ASCII patrol effort maps ===
+            rows.push('PATROL EFFORT MAPS (character map, 1 char = one grid cell)');
+            for (const { park } of results) {
+                const gr = gridResults.get(park.id);
+                const ascii = buildEffortAsciiMap(gr, { maxCols: 100 });
+                if (!ascii) continue;
+                rows.push('');
+                rows.push(esc(`${park.name || park.id} - ${ascii.legend}`));
+                for (const line of ascii.lines) rows.push(esc(line));
+            }
+
+            const csv = rows.join('\r\n');
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = buildReportFilename('5MP_Report', 'csv');
             link.click();
             URL.revokeObjectURL(link.href);
-            
-            showToast(`✅ Exported ${totals.parksCount} parks with comprehensive data to CSV`, 'success');
+            showToast(`Exported ${totals.n} parks to CSV (summary, patrol stats, effort maps)`, 'success', { key: 'export' });
         }
         
         
@@ -3829,268 +4077,203 @@
         }
         
         // Export merged KML for all starred parks
-        // Create patrol grid sheet for a park
-        async function createPatrolGridSheet(park, fromDate, toDate) {
-            // Get park boundary to determine bbox
-            let bounds = park.bounds || park.bbox;
-            
-            // If no bbox but we have center, create approximate bbox
-            if (!bounds && park.center) {
-                const [lon, lat] = park.center;
-                const size = 0.5; // ~50km at equator
-                bounds = [lon - size, lat - size, lon + size, lat + size];
+        // Build a per-park patrol effort heatmap worksheet with cell fill.
+        // Requires xlsx-js-style (drop-in SheetJS fork that writes cell styles).
+        function createEffortHeatmapSheet(park, gridResult, fromDate, toDate) {
+            if (!gridResult || !gridResult.features.length) return null;
+            const { features, bbox, geom } = gridResult;
+            const res = 0.1;
+            const cols = Math.ceil((bbox[2] - bbox[0]) / res);
+            const rows = Math.ceil((bbox[3] - bbox[1]) / res);
+            if (cols < 2 || rows < 2 || cols > 250 || rows > 400) return null;
+            const km = {};
+            let maxKm = 0;
+            for (const f of features) {
+                const [lon, lat] = f.geometry?.coordinates || [];
+                if (lon === undefined) continue;
+                const x = Math.floor((lon - bbox[0]) / res);
+                const y = Math.floor((bbox[3] - lat) / res);
+                if (x < 0 || x >= cols || y < 0 || y >= rows) continue;
+                km[`${y}_${x}`] = (km[`${y}_${x}`] || 0) + (f.properties?.total_distance_km || 0);
+                maxKm = Math.max(maxKm, km[`${y}_${x}`]);
             }
-            if (!bounds) return null;
-            
-            // Fetch grid data for this park's bbox
-            let url = `/api/grid?pwd=${window.getPwd() || ''}`;
-            if (fromDate) url += `&from=${fromDate}`;
-            if (toDate) url += `&to=${toDate}`;
-            if (Array.isArray(bounds)) {
-                url += `&bbox=${bounds.join(',')}`;
-            } else if (bounds.west !== undefined) {
-                url += `&bbox=${bounds.west},${bounds.south},${bounds.east},${bounds.north}`;
-            }
-            
-            const resp = await fetch(url);
-            if (!resp.ok) return null;
-            const gridData = await resp.json();
-            
-            const features = gridData.features || [];
-            if (features.length === 0) return null;
-            
-            // Extract lat/lon ranges and build matrix
-            const lats = new Set();
-            const lons = new Set();
-            const cellData = {};
-            
-            features.forEach(f => {
-                const lat = f.geometry?.coordinates?.[1] || f.properties?.lat_center;
-                const lon = f.geometry?.coordinates?.[0] || f.properties?.lon_center;
-                const score = f.properties?.total_points || f.properties?.score || 0;
-                if (lat && lon) {
-                    const latRound = Math.round(lat * 10) / 10;
-                    const lonRound = Math.round(lon * 10) / 10;
-                    lats.add(latRound);
-                    lons.add(lonRound);
-                    cellData[`${latRound}_${lonRound}`] = score;
-                }
-            });
-            
-            if (lats.size === 0 || lons.size === 0) return null;
-            
-            // Sort lats descending (north to south), lons ascending (west to east)
-            const sortedLats = [...lats].sort((a, b) => b - a);
-            const sortedLons = [...lons].sort((a, b) => a - b);
-            
-            // Build matrix data
-            const data = [];
-            
-            // Header row: park name
-            data.push([`Patrol Effort Grid: ${park.name || park.id}`]);
-            data.push([`Period: ${fromDate || 'start'} to ${toDate || 'present'}`]);
-            data.push([`Cells with data: ${features.length}`]);
-            data.push([]);
-            
-            // Column headers (longitudes)
-            const headerRow = ['Lat \\ Lon', ...sortedLons.map(lon => lon.toFixed(1))];
-            data.push(headerRow);
-            
-            // Data rows (each latitude)
-            for (const lat of sortedLats) {
+            const header = [
+                [`Patrol Effort Heatmap: ${park.name || park.id}`],
+                [`Period: ${fromDate || '2018-01-01'} to ${toDate || 'present'} | Values are patrol km per 0.1-deg cell | Grey = park interior, green = effort intensity`],
+                []
+            ];
+            const HEADER_ROWS = header.length;
+            const data = [...header];
+            // Column header row (longitudes)
+            const lonHdr = [''];
+            for (let x = 0; x < cols; x++) lonHdr.push((bbox[0] + (x + 0.5) * res).toFixed(1));
+            data.push(lonHdr);
+            for (let y = 0; y < rows; y++) {
+                const lat = bbox[3] - (y + 0.5) * res;
                 const row = [lat.toFixed(1)];
-                for (const lon of sortedLons) {
-                    const score = cellData[`${lat}_${lon}`] || '';
-                    row.push(score);
+                for (let x = 0; x < cols; x++) {
+                    const v = km[`${y}_${x}`];
+                    row.push(v ? Math.round(v * 10) / 10 : '');
                 }
                 data.push(row);
             }
-            
-            // Create worksheet
             const ws = XLSX.utils.aoa_to_sheet(data);
-            
-            // Set column widths (square-ish: 5 chars wide)
-            const colWidth = 5;
-            ws['!cols'] = [{wch: 8}, ...sortedLons.map(() => ({wch: colWidth}))];
-            
-            // Set row heights to match column width (approx 15 points per char)
-            ws['!rows'] = data.map((_, i) => i < 5 ? {hpt: 15} : {hpt: 20});
-            
+            // Cell fills: green ramp for effort, light grey for park interior
+            const greenRamp = ['E8F5E9', 'C8E6C9', 'A5D6A7', '66BB6A', '43A047', '1B5E20'];
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const addr = XLSX.utils.encode_cell({ r: HEADER_ROWS + 1 + y, c: 1 + x });
+                    const v = km[`${y}_${x}`];
+                    if (v) {
+                        const idx = Math.min(greenRamp.length - 1,
+                            Math.floor(Math.log10(1 + v) / Math.log10(1 + Math.max(maxKm, 10)) * greenRamp.length));
+                        if (!ws[addr]) ws[addr] = { t: 'n', v: Math.round(v * 10) / 10 };
+                        ws[addr].s = {
+                            fill: { patternType: 'solid', fgColor: { rgb: greenRamp[idx] } },
+                            font: { sz: 8, color: { rgb: idx >= 4 ? 'FFFFFF' : '333333' } },
+                            alignment: { horizontal: 'center' }
+                        };
+                    } else if (geom) {
+                        const lon = bbox[0] + (x + 0.5) * res;
+                        const lat = bbox[3] - (y + 0.5) * res;
+                        if (pointInParkGeom(lon, lat, geom)) {
+                            ws[addr] = { t: 's', v: '', s: { fill: { patternType: 'solid', fgColor: { rgb: 'F0F0EC' } } } };
+                        }
+                    }
+                }
+            }
+            // Square-ish cells
+            ws['!cols'] = [{ wch: 7 }, ...Array(cols).fill({ wch: 4.5 })];
+            ws['!rows'] = data.map((_, i) => (i <= HEADER_ROWS ? { hpt: 14 } : { hpt: 22 }));
             return ws;
         }
-        
-        // V2 Export with comprehensive data using new fetch functions
-        async function exportFullReportXlsxV2() {
-            const allParks = [];
-            const pwd = getPwd();
-            const from = dateFrom;
-            const to = dateTo;
-            
-            // Load SheetJS if not already loaded
-            if (!window.XLSX) {
-                showToast('Loading export library...');
-                await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+
+        // XLSX export: summary + per-record sheets + per-park patrol effort
+        // heatmaps with real cell fill (via xlsx-js-style).
+        async function exportFullReportXlsxV2(progress = (m) => showToast(m, 'info', { key: 'export', sticky: true, spinner: true })) {
+            const from = dateFrom, to = dateTo;
+
+            if (!window.XLSX || !window.XLSX._styled) {
+                progress('Loading export library...');
+                await loadScript('https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js');
+                window.XLSX._styled = true;
             }
-            
-            showToast('Collecting park data...');
-            
-            // Fetch full park list to get area_km2
-            let parksMetadata = {};
-            try {
-                const parksResp = await fetch(`/api/parks/export?pwd=${pwd}`);
-                if (parksResp.ok) {
-                    const parksList = await parksResp.json();
-                    parksMetadata = Object.fromEntries(
-                        parksList.map(p => [p.id || p.wdpa_id, {area_km2: p.area_km2, name: p.name, country: p.country}])
-                    );
-                }
-            } catch (e) {
-                console.error('Failed to fetch parks metadata:', e);
-            }
-            
-            // Collect all starred parks
-            for (const park of starredItems.parks) {
-                const metadata = parksMetadata[park.id] || {};
-                allParks.push({
-                    id: park.id, 
-                    name: park.name || metadata.name, 
-                    country: park.country || metadata.country, 
-                    area_km2: metadata.area_km2
-                });
-            }
-            
-            // Collect parks from bboxes
-            for (const bbox of starredItems.bboxes) {
-                const bboxData = reportDataCache.bboxes.get(bbox.bbox.join(','));
-                if (bboxData?.parks) {
-                    for (const p of bboxData.parks) {
-                        const metadata = parksMetadata[p.id] || {};
-                        allParks.push({
-                            id: p.id, 
-                            name: p.name || metadata.name, 
-                            country: p.country || metadata.country, 
-                            area_km2: metadata.area_km2
-                        });
-                    }
-                }
-            }
-            
-            if (allParks.length === 0) {
-                showToast('No parks to export', 'error');
+
+            const parksToFetch = await collectReportParks();
+            if (parksToFetch.length === 0) {
+                showToast('No parks to export', 'error', { key: 'export' });
                 return;
             }
-            
-            showToast(`Fetching detailed data for ${allParks.length} parks...`);
-            
-            // Fetch full report data for all parks
-            const parkReports = [];
-            for (let i = 0; i < allParks.length; i++) {
-                const park = allParks[i];
+
+            progress(`Fetching data for ${parksToFetch.length} park${parksToFetch.length > 1 ? 's' : ''}...`);
+            let fetched = 0;
+            const parkReports = await Promise.all(parksToFetch.map(async ({ park }) => {
                 try {
-                    const data = await fetchParkReportData(park.id, {from, to});
-                    parkReports.push({park, data});
-                    if ((i + 1) % 5 === 0) {
-                        showToast(`Fetched ${i + 1}/${allParks.length} parks...`);
-                    }
+                    const data = await fetchParkReportData(park.id, { from, to });
+                    fetched++;
+                    progress(`Fetching data ${fetched}/${parksToFetch.length}...`);
+                    return { park, data };
                 } catch (err) {
-                    console.error(`Error fetching data for ${park.id}:`, err);
-                    parkReports.push({park, data: {error: err.message}});
+                    fetched++;
+                    return { park, data: { error: err.message } };
                 }
+            }));
+
+            progress('Fetching patrol grids...');
+            await ensureAreasCache();
+            for (const { park } of parkReports) {
+                if (!park.area_km2) park.area_km2 = getParkFeature(park.id)?.properties?.area_km2 || 0;
+                if (!park.country) park.country = getParkFeature(park.id)?.properties?.country || '';
             }
-            
-            showToast('Generating XLSX workbook...');
-            
+            const gridResults = new Map();
+            await Promise.all(parkReports.map(async ({ park }) => {
+                gridResults.set(park.id, await fetchParkGridFeatures(park.id, from, to));
+            }));
+
+            progress('Generating XLSX workbook...');
             const wb = XLSX.utils.book_new();
-            
+            const hdrStyle = { font: { bold: true }, fill: { patternType: 'solid', fgColor: { rgb: 'E8F0E8' } } };
+            const styleHeaderRow = (ws, r, nCols) => {
+                for (let c = 0; c < nCols; c++) {
+                    const cell = ws[XLSX.utils.encode_cell({ r, c })];
+                    if (cell) cell.s = hdrStyle;
+                }
+            };
+
             // === SUMMARY SHEET ===
+            const sumHdr = ['Park', 'Country', 'Area_km2', 'Fire_Detections', 'Fire_Groups', 'Stopped_%', 'Peak_Season',
+                'Deforest_km2', 'Settlements', 'Population', 'Species', 'Patrol_Pixels', 'Patrol_km'];
             const summaryData = [
-                ['5MP Star Report - Comprehensive Export'],
-                ['Generated: ' + new Date().toISOString()],
-                ['Date Range: ' + (from || '2018-01-01') + ' to ' + (to || 'present')],
-                ['Total Parks: ' + parkReports.length],
+                ['5MP Conservation Report'],
+                ['Generated: ' + new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC'],
+                ['Period: ' + (from || '2018-01-01') + ' to ' + (to || 'present')],
                 [],
-                ['Park', 'Country', 'Area_km2', 'Fire_Detections', 'Fire_Groups', 'Response_%', 'Peak_Season', 'Deforest_km2', 'Settlements', 'Population', 'Active_Pixels', 'Distance_km']
+                sumHdr
             ];
-            
-            let totalFires = 0, totalDeforest = 0, totalPop = 0, totalArea = 0, totalPixels = 0, totalDist = 0;
-            
-            for (const {park, data} of parkReports) {
-                if (data.error) continue;
-                
-                const fire = data.fire || {};
-                const settlement = data.settlement || data.ghsl || {};  // settlement is primary
-                const deforestation = data.deforestation || data.deforest || {};  // deforestation is primary
-                const grid = data.grid || {};
-                
-                // Use snake_case field names (matches API response format)
-                const fireDetections = fire.total_fires || 0;
-                const fireGroups = fire.fire_groups || 0;
-                const responseRate = fire.response_rate || 0;
-                const peakSeason = fire.peak_month || '';
-                const deforestKm2 = deforestation.total_loss_km2 || 0;
-                const settlements = settlement.settlement_count || 0;
-                const population = settlement.total_population || 0;
-                const activePixels = grid.activePixels || 0;
-                const distanceKm = grid.totalDistanceKm || 0;
-                
-                totalFires += fireDetections;
-                totalDeforest += deforestKm2;
-                totalPop += population;
-                totalArea += park.area_km2 || 0;
-                totalPixels += activePixels;
-                totalDist += distanceKm;
-                
+            const tot = { area: 0, fires: 0, deforest: 0, settle: 0, pop: 0, pixels: 0, km: 0 };
+            for (const { park, data } of parkReports) {
+                if (data.error) { summaryData.push([park.name || park.id, 'ERROR: ' + data.error]); continue; }
+                const fire = data.fire || {}, deforestation = data.deforestation || {}, settle = data.settlement || {};
+                const grid = data.grid || {}, species = data.species || {};
+                tot.area += park.area_km2 || 0; tot.fires += fire.total_fires || 0;
+                tot.deforest += deforestation.total_loss_km2 || 0; tot.settle += settle.settlement_count || 0;
+                tot.pop += settle.total_population || 0; tot.pixels += grid.activePixels || 0; tot.km += grid.totalDistanceKm || 0;
                 summaryData.push([
-                    park.name || park.id,
-                    park.country || '',
-                    park.area_km2 ? Math.round(park.area_km2) : '',
-                    fireDetections || '',
-                    fireGroups || '',
-                    responseRate || '',
-                    peakSeason,
-                    deforestKm2 ? Math.round(deforestKm2 * 100) / 100 : '',
-                    settlements || '',
-                    population || '',
-                    activePixels || '',
-                    distanceKm ? Math.round(distanceKm * 10) / 10 : ''
+                    park.name || park.id, park.country || '', Math.round(park.area_km2 || 0),
+                    fire.total_fires || 0, fire.fire_groups || 0, fire.response_rate || 0, fire.peak_month || '',
+                    Math.round((deforestation.total_loss_km2 || 0) * 100) / 100,
+                    settle.settlement_count || 0, settle.total_population || 0, species.total_count || 0,
+                    grid.activePixels || 0, Math.round((grid.totalDistanceKm || 0) * 10) / 10
                 ]);
             }
-            
-            // Add totals row
             summaryData.push([]);
-            summaryData.push([
-                'TOTALS',
-                '',
-                Math.round(totalArea),
-                totalFires,
-                '',
-                '',
-                '',
-                Math.round(totalDeforest * 100) / 100,
-                '',
-                totalPop.toLocaleString(),
-                totalPixels,
-                Math.round(totalDist * 10) / 10
-            ]);
-            
+            summaryData.push(['TOTALS', '', Math.round(tot.area), tot.fires, '', '', '',
+                Math.round(tot.deforest * 100) / 100, tot.settle, tot.pop, '', tot.pixels, Math.round(tot.km * 10) / 10]);
             const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-            summarySheet['!cols'] = [{wch: 30}, {wch: 15}, {wch: 12}, {wch: 15}, {wch: 12}, {wch: 12}, {wch: 15}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}];
+            summarySheet['!cols'] = [{ wch: 30 }, { wch: 14 }, ...Array(sumHdr.length - 2).fill({ wch: 13 })];
+            styleHeaderRow(summarySheet, 4, sumHdr.length);
             XLSX.utils.book_append_sheet(wb, summarySheet, 'Summary');
-            
-            // Per-park sheets removed - using comprehensive data tables instead
-            
+
+            // === PATROL EFFORT BY TYPE ===
+            const effortHdr = ['Park', 'Type', 'Distance_km', 'Cells_Visited', 'Visit_Days', 'Uploads', 'Avg_Speed_kmh'];
+            const effortData = [effortHdr];
+            const typeKeys = [['foot', 'foot_km', 'foot_speed_kmh'], ['vehicle', 'vehicle_km', 'vehicle_speed_kmh'],
+                ['boat', 'boat_km', 'boat_speed_kmh'], ['fixed_wing', 'fixed_wing_km', 'fixed_wing_speed_kmh'],
+                ['rotor_wing', 'rotor_wing_km', 'rotor_wing_speed_kmh']];
+            for (const { park } of parkReports) {
+                const gr = gridResults.get(park.id);
+                if (!gr || !gr.features.length) continue;
+                for (const [type, kmKey, spdKey] of typeKeys) {
+                    let km = 0, cells = 0, days = 0, uploads = 0, spdSum = 0, spdN = 0;
+                    for (const f of gr.features) {
+                        const p = f.properties || {};
+                        const d = p[kmKey] || 0;
+                        if (d <= 0) continue;
+                        km += d; cells++; days += p.visit_days || 0; uploads += p.unique_uploads || 0;
+                        if (p[spdKey]) { spdSum += p[spdKey]; spdN++; }
+                    }
+                    if (km > 0.05) {
+                        effortData.push([park.name || park.id, type, Math.round(km * 10) / 10, cells, days, uploads,
+                            spdN ? Math.round(spdSum / spdN * 10) / 10 : '']);
+                    }
+                }
+            }
+            if (effortData.length > 1) {
+                const effortSheet = XLSX.utils.aoa_to_sheet(effortData);
+                effortSheet['!cols'] = [{ wch: 30 }, { wch: 12 }, ...Array(5).fill({ wch: 13 })];
+                styleHeaderRow(effortSheet, 0, effortHdr.length);
+                XLSX.utils.book_append_sheet(wb, effortSheet, 'Patrol_By_Type');
+            }
+
             // === ALL FIRES SHEET ===
-            const allFiresData = [['Park', 'Date', 'Description', 'Fires_Count', 'Status', 'Response', 'Coords']];
-            for (const {park, data} of parkReports) {
+            const allFiresData = [['Park', 'Date', 'Description', 'Fires_Count', 'Status', 'Stopped', 'Coords']];
+            for (const { park, data } of parkReports) {
                 if (data.error) continue;
-                const fire = data.fire || {};
-                const narratives = fire.narratives || [];
-                
-                for (const n of narratives) {
+                for (const n of ((data.fire || {}).narratives || [])) {
                     allFiresData.push([
                         park.name || park.id,
                         n.entry_date || n.start_date || '',
-                        (n.narrative || n.title || 'Fire event').substring(0, 120),
+                        (n.narrative || n.title || 'Fire event').substring(0, 200),
                         n.fires_inside || n.fires_total || n.fires || 0,
                         n.outcome || n.status || '',
                         isFireStopped(n) ? 'Yes' : 'No',
@@ -4098,170 +4281,100 @@
                     ]);
                 }
             }
-            
             if (allFiresData.length > 1) {
                 const firesSheet = XLSX.utils.aoa_to_sheet(allFiresData);
-                firesSheet['!cols'] = [{wch: 25}, {wch: 12}, {wch: 50}, {wch: 12}, {wch: 15}, {wch: 10}, {wch: 20}];
+                firesSheet['!cols'] = [{ wch: 25 }, { wch: 12 }, { wch: 60 }, { wch: 11 }, { wch: 14 }, { wch: 8 }, { wch: 20 }];
+                styleHeaderRow(firesSheet, 0, 7);
                 XLSX.utils.book_append_sheet(wb, firesSheet, 'All_Fires');
             }
-            
+
             // === ALL DEFORESTATION SHEET ===
             const allDeforestData = [['Park', 'Year', 'Area_km2', 'Classification', 'Narrative', 'Lat', 'Lon']];
-            for (const {park, data} of parkReports) {
+            for (const { park, data } of parkReports) {
                 if (data.error) continue;
-                const deforestation = data.deforestation || data.deforest || {};
-                // Use classified_events which have full narratives
-                const events = deforestation.classified_events || deforestation.events || [];
-                
-                for (const e of events) {
+                const deforestation = data.deforestation || {};
+                for (const e of (deforestation.classified_events || deforestation.events || [])) {
                     allDeforestData.push([
-                        park.name || park.id,
-                        e.year || '',
-                        e.area_km2 ? Math.round(e.area_km2 * 1000) / 1000 : '',  // 3 decimals
-                        e.classification || '',
-                        e.narrative || e.description || '',
-                        e.lat || '',
-                        e.lon || ''
+                        park.name || park.id, e.year || '',
+                        e.area_km2 ? Math.round(e.area_km2 * 1000) / 1000 : '',
+                        e.classification || '', e.narrative || e.description || '',
+                        e.lat || '', e.lon || ''
                     ]);
                 }
             }
-            
             if (allDeforestData.length > 1) {
                 const deforestSheet = XLSX.utils.aoa_to_sheet(allDeforestData);
-                deforestSheet['!cols'] = [{wch: 25}, {wch: 10}, {wch: 12}, {wch: 20}, {wch: 60}, {wch: 12}, {wch: 12}];
+                deforestSheet['!cols'] = [{ wch: 25 }, { wch: 8 }, { wch: 10 }, { wch: 18 }, { wch: 70 }, { wch: 10 }, { wch: 10 }];
+                styleHeaderRow(deforestSheet, 0, 7);
                 XLSX.utils.book_append_sheet(wb, deforestSheet, 'All_Deforestation');
             }
-            
+
             // === ALL SETTLEMENTS SHEET ===
             const allSettlementsData = [['Park', 'Classification', 'Population', 'Area_km2', 'Narrative', 'Lat', 'Lon', 'Nearest_Place']];
-            for (const {park, data} of parkReports) {
+            for (const { park, data } of parkReports) {
                 if (data.error) continue;
-                const settlement = data.settlement || data.ghsl || {};
-                // Use classified_settlements which have full narratives
-                const settlements = settlement.classified_settlements || settlement.settlements || [];
-                
-                for (const s of settlements) {
-                    const areaKm2 = s.area_m2 ? (s.area_m2 / 1000000).toFixed(3) : '0.000';
+                const settlement = data.settlement || {};
+                for (const s of (settlement.classified_settlements || settlement.settlements || [])) {
                     allSettlementsData.push([
-                        park.name || park.id,
-                        s.classification || s.type || '',
+                        park.name || park.id, s.classification || s.type || '',
                         s.population_est || s.population || 0,
-                        areaKm2,
-                        s.narrative || '',
-                        s.lat || '',
-                        s.lon || '',
-                        s.nearest_place || s.name || ''
+                        s.area_m2 ? Math.round(s.area_m2 / 1000) / 1000 : 0,
+                        s.narrative || '', s.lat || '', s.lon || '', s.nearest_place || s.name || ''
                     ]);
                 }
             }
-            
             if (allSettlementsData.length > 1) {
                 const settlementsSheet = XLSX.utils.aoa_to_sheet(allSettlementsData);
-                settlementsSheet['!cols'] = [{wch: 25}, {wch: 20}, {wch: 12}, {wch: 12}, {wch: 60}, {wch: 12}, {wch: 12}, {wch: 25}];
+                settlementsSheet['!cols'] = [{ wch: 25 }, { wch: 16 }, { wch: 11 }, { wch: 10 }, { wch: 70 }, { wch: 10 }, { wch: 10 }, { wch: 22 }];
+                styleHeaderRow(settlementsSheet, 0, 8);
                 XLSX.utils.book_append_sheet(wb, settlementsSheet, 'All_Settlements');
             }
-            
-            // === PATROL PIXELS DETAIL SHEET ===
-            showToast('Fetching patrol pixel details...');
-            const patrolPixelsData = [['Park', 'Start_Date', 'End_Date', 'Lat', 'Lon', 'Intensity', 'Foot_km', 'Vehicle_km', 'Aerial_km']];
-            
-            // Fetch patrol pixel data for all parks via new bulk endpoint
-            try {
-                const pwd = getPwd();
-                const parkIds = parkReports.map(p => p.park.id).join(',');
-                const pixelsUrl = `/api/export/patrol-pixels?parks=${encodeURIComponent(parkIds)}&pwd=${encodeURIComponent(pwd)}` +
-                                 (from ? `&from=${from}` : '') + (to ? `&to=${to}` : '');
-                
-                const pixelsResp = await fetch(pixelsUrl);
-                if (pixelsResp.ok) {
-                    const pixelsData = await pixelsResp.json();
-                    const pixels = pixelsData.pixels || [];
-                    
-                    for (const p of pixels) {
-                        const startDate = `${p.year}-${String(p.month).padStart(2, '0')}-01`;
-                        const endDate = `${p.year}-${String(p.month).padStart(2, '0')}-28`;
-                        
-                        patrolPixelsData.push([
-                            p.park_name || p.park_id || '',
-                            startDate,
-                            endDate,
-                            p.lat ? Math.round(p.lat * 100000) / 100000 : '',
-                            p.lon ? Math.round(p.lon * 100000) / 100000 : '',
-                            p.intensity ? Math.round(p.intensity * 1000) / 1000 : 0,
-                            p.foot_km ? Math.round(p.foot_km * 10) / 10 : 0,
-                            p.vehicle_km ? Math.round(p.vehicle_km * 10) / 10 : 0,
-                            p.aircraft_km ? Math.round(p.aircraft_km * 10) / 10 : 0
-                        ]);
-                    }
-                }
-            } catch (e) {
-                console.warn('Failed to fetch patrol pixel data:', e);
-            }
-            
-            if (patrolPixelsData.length > 1) {
-                const pixelsSheet = XLSX.utils.aoa_to_sheet(patrolPixelsData);
-                pixelsSheet['!cols'] = [{wch: 25}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}];
-                XLSX.utils.book_append_sheet(wb, pixelsSheet, 'Patrol_Pixels');
-            }
-            
-            // === SPECIES SHEET (NEW!) ===
+
+            // === SPECIES SHEET ===
             const allSpeciesData = [['Park', 'Common_Name', 'Scientific_Name', 'Status', 'Order', 'Family']];
-            const threatenedSpeciesData = [['Park', 'Common_Name', 'Scientific_Name', 'Status', 'Order', 'Family']];
-            
-            for (const {park, data} of parkReports) {
+            const threatened = [['Park', 'Common_Name', 'Scientific_Name', 'Status', 'Order', 'Family']];
+            for (const { park, data } of parkReports) {
                 if (data.error) continue;
-                const species = data.species || {};
-                const speciesList = species.species || [];
-                
-                for (const s of speciesList) {
-                    const row = [
-                        park.name || park.id,
-                        s.common_name || '',
-                        s.binomial || s.scientific_name || '',  // binomial is primary field
-                        s.status || '',
-                        s.order || '',
-                        s.family || ''
-                    ];
-                    
+                for (const s of ((data.species || {}).species || [])) {
+                    const row = [park.name || park.id, s.common_name || '', s.binomial || '', s.status || '', s.order || '', s.family || ''];
                     allSpeciesData.push(row);
-                    
-                    // Add to threatened list if CR/EN/VU
-                    const status = (s.status || '').toUpperCase();
-                    if (status === 'CR' || status === 'EN' || status === 'VU' || 
-                        status.includes('CRITICALLY ENDANGERED') || 
-                        status.includes('ENDANGERED') || 
-                        status.includes('VULNERABLE')) {
-                        threatenedSpeciesData.push(row);
-                    }
+                    if (['CR', 'EN', 'VU'].includes((s.status || '').toUpperCase())) threatened.push(row);
                 }
             }
-            
             if (allSpeciesData.length > 1) {
                 const speciesSheet = XLSX.utils.aoa_to_sheet(allSpeciesData);
-                speciesSheet['!cols'] = [{wch: 25}, {wch: 25}, {wch: 30}, {wch: 12}, {wch: 20}, {wch: 20}];
+                speciesSheet['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 28 }, { wch: 8 }, { wch: 18 }, { wch: 18 }];
+                styleHeaderRow(speciesSheet, 0, 6);
                 XLSX.utils.book_append_sheet(wb, speciesSheet, 'Species');
             }
-            
-            if (threatenedSpeciesData.length > 1) {
-                const threatenedSheet = XLSX.utils.aoa_to_sheet(threatenedSpeciesData);
-                threatenedSheet['!cols'] = [{wch: 25}, {wch: 25}, {wch: 30}, {wch: 12}, {wch: 20}, {wch: 20}];
+            if (threatened.length > 1) {
+                const threatenedSheet = XLSX.utils.aoa_to_sheet(threatened);
+                threatenedSheet['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 28 }, { wch: 8 }, { wch: 18 }, { wch: 18 }];
+                styleHeaderRow(threatenedSheet, 0, 6);
                 XLSX.utils.book_append_sheet(wb, threatenedSheet, 'Threatened_Species');
             }
-            
-            // Generate filename
-            const dateStr = from && to ? `_${from}_to_${to}` : from ? `_from_${from}` : to ? `_to_${to}` : '';
-            const filename = `5MP_Report_${parkReports.length}_parks${dateStr}.xlsx`.replace(/[\s\/\\:]/g, '_');
-            
-            // Write file
-            XLSX.writeFile(wb, filename);
-            
-            showToast(` Exported ${parkReports.length} parks with ${wb.SheetNames.length} sheets`, 'success');
+
+            // === PER-PARK EFFORT HEATMAP SHEETS (cell fill) ===
+            let heatmaps = 0;
+            for (const { park } of parkReports) {
+                const ws = createEffortHeatmapSheet(park, gridResults.get(park.id), from, to);
+                if (!ws) continue;
+                let name = `Map ${park.name || park.id}`.replace(/[\\\/\?\*\[\]:]/g, '').substring(0, 31);
+                let i = 2;
+                while (wb.SheetNames.includes(name)) name = name.substring(0, 28) + '_' + (i++);
+                XLSX.utils.book_append_sheet(wb, ws, name);
+                heatmaps++;
+            }
+
+            XLSX.writeFile(wb, buildReportFilename('5MP_Report', 'xlsx'));
+            showToast(`Exported ${parkReports.length} parks, ${wb.SheetNames.length} sheets (${heatmaps} effort heatmap${heatmaps !== 1 ? 's' : ''})`, 'success', { key: 'export' });
         }
+        
         
 
         // Comprehensive KML Export V2 - with park boundaries and all spatial data
         // Export combined KML by fetching server-generated KML for each park
-        async function exportFullReportKmlV2() {
+        async function exportFullReportKmlV2(progress = (m) => showToast(m, 'info', { key: 'export', sticky: true, spinner: true })) {
             const pwd = getPwd();
             const dateParams = (dateFrom ? '&from=' + dateFrom : '') + (dateTo ? '&to=' + dateTo : '');
             
@@ -4280,35 +4393,30 @@
             }
             
             if (parkIDs.size === 0) {
-                showToast('No parks to export', 'error');
+                showToast('No parks to export', 'error', { key: 'export' });
                 return;
             }
-            
-            showToast(`Preparing KML export for ${parkIDs.size} park${parkIDs.size > 1 ? 's' : ''}...`, 'info');
-            
-            // Fetch KML for each park from server with progress
-            const kmlDocs = [];
-            let successCount = 0;
+
+            progress(`Preparing KML export for ${parkIDs.size} park${parkIDs.size > 1 ? 's' : ''}...`);
+
+            // Fetch KML for each park from server (parallel, single updating toast)
             let processed = 0;
-            for (const parkID of parkIDs) {
+            const kmlDocs = (await Promise.all([...parkIDs].map(async (parkID) => {
                 try {
                     const resp = await fetch(`/api/parks/${encodeURIComponent(parkID)}/export.kml?pwd=${encodeURIComponent(pwd)}${dateParams}`);
-                    if (resp.ok) {
-                        const kmlText = await resp.text();
-                        kmlDocs.push({parkID, kml: kmlText});
-                        successCount++;
-                    }
+                    processed++;
+                    progress(`Building KML ${processed}/${parkIDs.size}...`);
+                    if (resp.ok) return { parkID, kml: await resp.text() };
                 } catch (err) {
+                    processed++;
                     console.error(`Failed to fetch KML for ${parkID}:`, err);
                 }
-                processed++;
-                if (parkIDs.size > 3) {
-                    showToast(`Processing KML ${processed}/${parkIDs.size}...`, 'info');
-                }
-            }
-            
+                return null;
+            }))).filter(Boolean);
+            const successCount = kmlDocs.length;
+
             if (kmlDocs.length === 0) {
-                showToast('Failed to generate KML', 'error');
+                showToast('Failed to generate KML', 'error', { key: 'export' });
                 return;
             }
             
@@ -4326,7 +4434,7 @@
             document.body.removeChild(link);
             URL.revokeObjectURL(link.href);
             
-            showToast(` Exported KML with ${successCount} parks`, 'success');
+            showToast(`Exported KML with ${successCount} park${successCount !== 1 ? 's' : ''} (all geo layers incl. turbidity)`, 'success', { key: 'export' });
         }
         
         // Helper function to merge multiple KML documents into one
@@ -6942,29 +7050,80 @@
                 .replace(/'/g, '&apos;');
         }
         
-        function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 100px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: ${type === 'info' ? 'rgba(59, 130, 246, 0.95)' : 'rgba(34, 197, 94, 0.95)'};
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                font-size: 14px;
-                z-index: 9999;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                animation: toastFadeIn 0.3s ease;
-            `;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.animation = 'toastFadeOut 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
-            }, 4000);
+        // Toasts. Pass opts.key to dedupe/update-in-place (progress messages
+        // reuse one toast instead of stacking); opts.sticky keeps it until
+        // replaced or dismissToast(key) is called; opts.spinner shows a spinner.
+        const _toastRegistry = new Map();
+        function showToast(message, type = 'info', opts = {}) {
+            const colors = {
+                info: 'rgba(59, 130, 246, 0.95)',
+                success: 'rgba(34, 197, 94, 0.95)',
+                warning: 'rgba(245, 158, 11, 0.95)',
+                error: 'rgba(239, 68, 68, 0.95)'
+            };
+            const key = opts.key || null;
+            let toast = key ? _toastRegistry.get(key) : null;
+            if (toast && !document.body.contains(toast)) { _toastRegistry.delete(key); toast = null; }
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 100px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    z-index: 9999;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                    animation: toastFadeIn 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                `;
+                document.body.appendChild(toast);
+                if (key) _toastRegistry.set(key, toast);
+            }
+            toast.style.background = colors[type] || colors.info;
+            toast.innerHTML = (opts.spinner ? '<span class="toast-spinner"></span>' : '') + '<span></span>';
+            toast.lastChild.textContent = message;
+            // Reset auto-dismiss timer
+            if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
+            if (!opts.sticky) {
+                toast._dismissTimer = setTimeout(() => {
+                    toast.style.animation = 'toastFadeOut 0.3s ease';
+                    setTimeout(() => { toast.remove(); if (key) _toastRegistry.delete(key); }, 300);
+                }, opts.duration || 4000);
+            }
+            return toast;
+        }
+
+        function dismissToast(key) {
+            const toast = _toastRegistry.get(key);
+            if (!toast) return;
+            if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
+            toast.style.animation = 'toastFadeOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+            _toastRegistry.delete(key);
+        }
+
+        // Wraps an export function: spinner on the button, re-entry guard,
+        // single updating progress toast (key='export'), error handling.
+        const _exportBusy = new Set();
+        async function runExport(name, btn, fn) {
+            if (_exportBusy.has(name)) return; // ignore double clicks
+            _exportBusy.add(name);
+            if (btn) { btn.classList.add('busy'); btn.disabled = true; }
+            try {
+                await fn((msg) => showToast(msg, 'info', { key: 'export', sticky: true, spinner: true }));
+            } catch (err) {
+                console.error(`${name} export failed:`, err);
+                showToast(`${name} export failed: ${err.message || err}`, 'error', { key: 'export' });
+            } finally {
+                _exportBusy.delete(name);
+                if (btn) { btn.classList.remove('busy'); btn.disabled = false; }
+            }
         }
 
         
@@ -13183,21 +13342,19 @@
             totalDistanceKm: 0,
             byType: {foot: 0, vehicle: 0, boat: 0, air: 0}
         };
-        
+
         for (const feature of features) {
             const props = feature.properties || {};
             const distKm = props.total_distance_km || props.distance_km || 0;
             result.totalDistanceKm += distKm;
-            
-            const type = props.transport_type || props.movement_type || props.type || 'all';
-            if (type === 'all') {
-                // If movement type is 'all', add to foot as default
-                result.byType.foot += distKm;
-            } else if (result.byType[type] !== undefined) {
-                result.byType[type] += distKm;
-            }
+
+            // Cells carry per-type km fields (movement_type is usually 'all')
+            result.byType.foot += props.foot_km || 0;
+            result.byType.vehicle += props.vehicle_km || 0;
+            result.byType.boat += props.boat_km || 0;
+            result.byType.air += (props.fixed_wing_km || 0) + (props.rotor_wing_km || 0);
         }
-        
+
         return result;
     }
 
@@ -17727,6 +17884,7 @@ ${starredItems.narratives.map(n => {
             </div>
             <!-- Markdown report sheet: swaps in for the body when generating a report -->
             <div id="star-md-editor" style="display:none;flex:1;flex-direction:column;min-height:55vh;">
+                <div id="md-report-maps" style="display:none;flex:0 0 auto;gap:8px;overflow-x:auto;padding:8px 16px;background:#0d0d0d;border-bottom:1px solid rgba(255,255,255,0.06);align-items:center;"></div>
                 <textarea id="md-report-text" spellcheck="false" style="flex:1;min-height:0;resize:none;border:none;outline:none;background:#0a0a0a;color:#ccc;padding:16px;font:12px/1.6 'SF Mono',ui-monospace,Menlo,Consolas,monospace;white-space:pre;" aria-label="Editable Markdown report"></textarea>
             </div>
             <div class="star-modal-footer">
@@ -17735,10 +17893,10 @@ ${starredItems.narratives.map(n => {
                 </div>
                 <div class="star-report-actions" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
                     <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                        <button class="star-report-btn" onclick="exportFullReportPdf()" title="Print / save as PDF: full narratives for fires, deforestation, settlements, species tables, climate, patrol activity, publications and legal documents, rendered in Markdown-formatted monospace. (Ctrl+P)" style="font-size:12px;">PDF</button>
-                        <button class="star-report-btn" onclick="exportFullReportKmlV2()" title="Download KML with park boundaries, fire trajectories, settlements, deforestation hotspots, patrol points, roads and rivers. Open in Google Earth." style="font-size:12px;">KML</button>
-                        <button class="star-report-btn secondary" onclick="exportFullReportCsvV2()" title="Download CSV: one row per park with all key metrics (fires, deforestation, settlements, species, patrol distance). Best for spreadsheets and pivot analysis." style="font-size:12px;">CSV</button>
-                        <button class="star-report-btn secondary" onclick="exportFullReportXlsxV2()" title="Download Excel workbook: summary sheet plus per-record sheets for fires, deforestation, settlements, species and patrol pixels. Best for detailed analysis." style="font-size:12px;">XLSX</button>
+                        <button class="star-report-btn" onclick="runExport('PDF', this, exportFullReportPdf)" title="Print / save as PDF: summary tables, park maps (boundary, rivers, roads, villages, fire paths, patrol pixels - following your layer toggles) and full narratives. (Ctrl+P)" style="font-size:12px;">PDF</button>
+                        <button class="star-report-btn" onclick="runExport('KML', this, exportFullReportKmlV2)" title="Download KML: park boundaries, fire trajectories grouped by year, settlements, deforestation, roads, rivers, lakes, places, patrol effort and river turbidity alerts. Open in Google Earth." style="font-size:12px;">KML</button>
+                        <button class="star-report-btn secondary" onclick="runExport('CSV', this, exportFullReportCsvV2)" title="Download CSV: park summary table, patrol stats per movement type (km, visits) and a character-based patrol effort map per park." style="font-size:12px;">CSV</button>
+                        <button class="star-report-btn secondary" onclick="runExport('XLSX', this, exportFullReportXlsxV2)" title="Download Excel workbook: summary sheet, per-record sheets (fires, deforestation, settlements, species, patrol pixels) and per-park patrol effort heatmap sheets with cell fill." style="font-size:12px;">XLSX</button>
                     </div>
                 </div>
                 <div id="star-md-actions" style="display:none;flex-wrap:wrap;gap:8px;align-items:center;">

@@ -4264,6 +4264,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	kml.WriteString("<Style id=\"place\"><IconStyle><color>ffffffff</color><scale>0.8</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>\n")
 	kml.WriteString("<Style id=\"water\"><IconStyle><color>ffff9933</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/water.png</href></Icon></IconStyle><LineStyle><color>ffff9933</color><width>2</width></LineStyle><PolyStyle><color>50ff9933</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"patrol\"><IconStyle><scale>0</scale></IconStyle><PolyStyle><color>5022c55e</color></PolyStyle><LineStyle><color>8022c55e</color><width>1</width></LineStyle></Style>\n") // Semi-transparent green circles for patrol effort
+	kml.WriteString("<Style id=\"turbidity\"><IconStyle><color>ff2d52d9</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/caution.png</href></Icon></IconStyle></Style>\n") // Brown-red caution markers for turbidity onsets
 
 	// Boundary folder
 	if boundary != "" {
@@ -4272,7 +4273,8 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		kml.WriteString("</Folder>\n")
 	}
 
-	// Settlements folder with narratives
+	// Human Activity: settlements + deforestation grouped together (mirrors popup sections)
+	kml.WriteString("<Folder><name>Human Activity</name>\n")
 	kml.WriteString("<Folder><name>Settlements</name>\n")
 	
 	// Join feature_geometries with park_settlements using polygon_ids (same as tooltip logic)
@@ -4427,9 +4429,10 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			writeGeoJSONToKMLWithDesc(&kml, geojson, "deforestation", xmlEscape(name), description, startDate, endDate)
 		}
 	}
-	kml.WriteString("</Folder>\n")
+	kml.WriteString("</Folder>\n") // /Deforestation
+	kml.WriteString("</Folder>\n") // /Human Activity
 
-	// Fire trajectories folder with narratives
+	// Fire trajectories folder with narratives, grouped by year
 	kml.WriteString("<Folder><name>Fire Trajectories</name>\n")
 	
 	fireQuery := `SELECT geojson, properties_json, start_date, end_date FROM feature_geometries WHERE park_id = ? AND feature_type = 'fire_trajectory'`
@@ -4442,7 +4445,9 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		fireQuery += " AND (start_date IS NULL OR start_date <= ?)"
 		fireArgs = append(fireArgs, toDate)
 	}
-	fireQuery += " LIMIT 500"
+	fireQuery += " ORDER BY start_date DESC LIMIT 500"
+	firePlacemarksByYear := map[string][]string{}
+	var fireYears []string
 	fireRows, _ := s.DB.Query(fireQuery, fireArgs...)
 	if fireRows != nil {
 		defer fireRows.Close()
@@ -4500,8 +4505,24 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 				description = strings.Join(descParts, " | ")
 			}
 			
-			writeGeoJSONToKMLWithDesc(&kml, geojson, "fire", xmlEscape(name), description, startDate.String, endDate.String)
+			year := "Undated"
+			if len(startDate.String) >= 4 {
+				year = startDate.String[:4]
+			}
+			var pmb strings.Builder
+			writeGeoJSONToKMLWithDesc(&pmb, geojson, "fire", xmlEscape(name), description, startDate.String, endDate.String)
+			if _, seen := firePlacemarksByYear[year]; !seen {
+				fireYears = append(fireYears, year)
+			}
+			firePlacemarksByYear[year] = append(firePlacemarksByYear[year], pmb.String())
 		}
+	}
+	for _, year := range fireYears {
+		kml.WriteString(fmt.Sprintf("<Folder><name>%s (%d groups)</name>\n", year, len(firePlacemarksByYear[year])))
+		for _, pm := range firePlacemarksByYear[year] {
+			kml.WriteString(pm)
+		}
+		kml.WriteString("</Folder>\n")
 	}
 	kml.WriteString("</Folder>\n")
 
@@ -4524,13 +4545,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			roadPlacemarks = append(roadPlacemarks, pmb.String())
 		}
 	}
-	if len(roadPlacemarks) > 0 {
-		kml.WriteString("<Folder><name>Roads (Patrol Data)</name>\n")
-		for _, pm := range roadPlacemarks {
-			kml.WriteString(pm)
-		}
-		kml.WriteString("</Folder>\n")
-	}
+	// (emitted below under "Infrastructure & Access")
 
 	// HeiGIT Roads folder (from roads_heigit - official road network) - only create if data exists
 	var heigitPlacemarks []string
@@ -4556,13 +4571,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			heigitPlacemarks = append(heigitPlacemarks, pmb.String())
 		}
 	}
-	if len(heigitPlacemarks) > 0 {
-		kml.WriteString("<Folder><name>Roads (HeiGIT)</name>\n")
-		for _, pm := range heigitPlacemarks {
-			kml.WriteString(pm)
-		}
-		kml.WriteString("</Folder>\n")
-	}
+	// (emitted below under "Infrastructure & Access")
 
 	// HydroRIVERS folder (from park_rivers_hydro - includes geometry) - only create if data exists
 	var riverPlacemarks []string
@@ -4601,13 +4610,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			riverPlacemarks = append(riverPlacemarks, pmb.String())
 		}
 	}
-	if len(riverPlacemarks) > 0 {
-		kml.WriteString("<Folder><name>Rivers (HydroRIVERS)</name>\n")
-		for _, pm := range riverPlacemarks {
-			kml.WriteString(pm)
-		}
-		kml.WriteString("</Folder>\n")
-	}
+	// (emitted below under "Infrastructure & Access" > "Water")
 
 	// Lakes folder (from park_lakes_hydro) - only create if data exists
 	var lakePlacemarks []string
@@ -4645,13 +4648,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			lakePlacemarks = append(lakePlacemarks, pmb.String())
 		}
 	}
-	if len(lakePlacemarks) > 0 {
-		kml.WriteString("<Folder><name>Lakes (HydroLAKES)</name>\n")
-		for _, pm := range lakePlacemarks {
-			kml.WriteString(pm)
-		}
-		kml.WriteString("</Folder>\n")
-	}
+	// (emitted below under "Infrastructure & Access" > "Water")
 
 	// Places folder - only create if data exists
 	var placePlacemarks []string
@@ -4669,13 +4666,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			placePlacemarks = append(placePlacemarks, pmb.String())
 		}
 	}
-	if len(placePlacemarks) > 0 {
-		kml.WriteString("<Folder><name>Places</name>\n")
-		for _, pm := range placePlacemarks {
-			kml.WriteString(pm)
-		}
-		kml.WriteString("</Folder>\n")
-	}
+	// (emitted below under "Infrastructure & Access")
 
 	// Patrol Effort folder - grid cells with 30km buffer, semi-transparent circles with timestamps
 	var patrolPlacemarks []string
@@ -4828,15 +4819,87 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			wbPlacemarks = append(wbPlacemarks, pmb.String())
 		}
 	}
-	if len(wbPlacemarks) > 0 {
-		kml.WriteString("<Folder><name>Waterbodies</name>\n")
-		for _, pm := range wbPlacemarks {
-			kml.WriteString(pm)
+	// Infrastructure & Access parent folder (mirrors the popup "Roads, Rivers,
+	// Places & Infrastructure" section grouping): roads, water, places.
+	hasInfra := len(roadPlacemarks) > 0 || len(heigitPlacemarks) > 0 || len(riverPlacemarks) > 0 ||
+		len(lakePlacemarks) > 0 || len(wbPlacemarks) > 0 || len(placePlacemarks) > 0
+	if hasInfra {
+		kml.WriteString("<Folder><name>Infrastructure &amp; Access</name>\n")
+
+		if len(heigitPlacemarks) > 0 || len(roadPlacemarks) > 0 {
+			kml.WriteString("<Folder><name>Roads</name>\n")
+			if len(heigitPlacemarks) > 0 {
+				kml.WriteString(fmt.Sprintf("<Folder><name>Road Network (HeiGIT, %d)</name>\n", len(heigitPlacemarks)))
+				for _, pm := range heigitPlacemarks {
+					kml.WriteString(pm)
+				}
+				kml.WriteString("</Folder>\n")
+			}
+			if len(roadPlacemarks) > 0 {
+				kml.WriteString(fmt.Sprintf("<Folder><name>Patrol-Learned Tracks (%d)</name>\n", len(roadPlacemarks)))
+				for _, pm := range roadPlacemarks {
+					kml.WriteString(pm)
+				}
+				kml.WriteString("</Folder>\n")
+			}
+			kml.WriteString("</Folder>\n")
+		}
+
+		if len(riverPlacemarks) > 0 || len(lakePlacemarks) > 0 || len(wbPlacemarks) > 0 {
+			kml.WriteString("<Folder><name>Water</name>\n")
+			if len(riverPlacemarks) > 0 {
+				kml.WriteString(fmt.Sprintf("<Folder><name>Rivers (HydroRIVERS, %d)</name>\n", len(riverPlacemarks)))
+				for _, pm := range riverPlacemarks {
+					kml.WriteString(pm)
+				}
+				kml.WriteString("</Folder>\n")
+			}
+			if len(lakePlacemarks) > 0 {
+				kml.WriteString(fmt.Sprintf("<Folder><name>Lakes (HydroLAKES, %d)</name>\n", len(lakePlacemarks)))
+				for _, pm := range lakePlacemarks {
+					kml.WriteString(pm)
+				}
+				kml.WriteString("</Folder>\n")
+			}
+			if len(wbPlacemarks) > 0 {
+				kml.WriteString(fmt.Sprintf("<Folder><name>Waterbodies (%d)</name>\n", len(wbPlacemarks)))
+				for _, pm := range wbPlacemarks {
+					kml.WriteString(pm)
+				}
+				kml.WriteString("</Folder>\n")
+			}
+			kml.WriteString("</Folder>\n")
+		}
+
+		if len(placePlacemarks) > 0 {
+			kml.WriteString(fmt.Sprintf("<Folder><name>Places (%d)</name>\n", len(placePlacemarks)))
+			for _, pm := range placePlacemarks {
+				kml.WriteString(pm)
+			}
+			kml.WriteString("</Folder>\n")
+		}
+
+		kml.WriteString("</Folder>\n") // /Infrastructure & Access
+	}
+
+	// Turbidity / mining-signal folder (river turbidity onsets from Sentinel-2 scans)
+	if alerts := loadTurbidityAlerts(parkID); len(alerts) > 0 {
+		kml.WriteString("<Folder><name>River Turbidity (mining signal)</name>\n")
+		for _, a := range alerts {
+			name := "Turbidity onset"
+			if a.Type == "turbid_headwater" {
+				name = "Turbid headwater"
+			}
+			if a.River != "" {
+				name = fmt.Sprintf("%s - %s", name, a.River)
+			}
+			desc := fmt.Sprintf("Sentinel-2 river turbidity alert (possible alluvial mining). River: %s | Date: %s | Downstream turbid: %.1f km | Red reflectance: %d (ratio %.2f)",
+				a.River, a.Date, a.DownstreamTurbidKm, a.Red, a.Ratio)
+			pointGeoJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, a.Lon, a.Lat)
+			writeGeoJSONToKMLWithDesc(&kml, pointGeoJSON, "turbidity", xmlEscape(name), desc, a.Date, "")
 		}
 		kml.WriteString("</Folder>\n")
 	}
-
-	// Note: Removed duplicate "Rivers" folder from osm_places since we already have HydroRIVERS above
 
 	kml.WriteString("</Document>\n</kml>")
 
