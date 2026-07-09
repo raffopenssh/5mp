@@ -1,13 +1,14 @@
-# Fire Data Manifest - Raw CSVs deleted after processing
-Processed: Wed Jan 28 06:23:52 UTC 2026
+# Fire Data Manifest - Raw CSVs deleted after import verification
 
-Years: 2018-2024
-Source: VIIRS JPSS-1
+Cleaned: 2026-07-09
 
-Database tables:
-- fire_detections: 1,764,155 records (inside-park fires only)
-- park_group_infractions: 398 records (group trajectories)
+Source: VIIRS JPSS-1 FIRMS country archives (2018-2024), 347 CSVs, 5.1 GB.
 
-Files deleted:
-273
- CSV files totaling 5GB
+All detections were imported into `fire_detections` (27M rows,
+2018-04-01 .. present) via `scripts/import_fire_country_csvs.py`
+(idempotent INSERT OR IGNORE on (lat,lon,date,time,satellite)).
+
+Verified before deletion: 1,100 sampled detections across
+Angola 2024, DRC 2018, Tanzania 2021, CAR 2023 — 100% present in DB.
+
+Re-download if ever needed: https://firms.modaps.eosdis.nasa.gov/country/
