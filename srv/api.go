@@ -4669,6 +4669,8 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	// (emitted below under "Infrastructure & Access")
 
 	// Patrol Effort folder - grid cells with 30km buffer, semi-transparent circles with timestamps
+	// Skipped when ?effort=0 (tooltip quick-export omits patrol effort; star report keeps it)
+	if r.URL.Query().Get("effort") != "0" {
 	var patrolPlacemarks []string
 	
 	// Calculate 30km buffer bbox around park
@@ -4800,6 +4802,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		}
 		kml.WriteString("</Folder>\n")
 	}
+	} // end effort!=0
 
 	// Waterbodies folder - only create if data exists
 	var wbPlacemarks []string

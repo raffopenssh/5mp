@@ -7168,7 +7168,7 @@
                         <div class="pa-popup-name" style="display: flex; align-items: center; justify-content: space-between;">
                             <span>${escapeHtml(name)}</span>
                             <span style="display: flex; gap: 4px; align-items: center;">
-                                <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}${dateFrom ? '_from_' + dateFrom : ''}${dateTo ? '_to_' + dateTo : ''}.kml" title="Download KML for Google Earth" class="pa-export-btn">KML</a>
+                                <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}&effort=0${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}${dateFrom ? '_from_' + dateFrom : ''}${dateTo ? '_to_' + dateTo : ''}.kml" title="Download KML for Google Earth" class="pa-export-btn">KML</a>
                                 <button onclick="showMBTilesDialog('${paId}', '${escapeHtml(name)}')" title="Download offline satellite tiles" class="pa-export-btn" id="mbtiles-btn-${paId}">MBTiles</button>
                                 ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
                             </span>
