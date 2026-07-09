@@ -46,7 +46,24 @@
     <div id="map" role="application" aria-label="Interactive conservation map"></div>
     <!-- Alpha session chip: shows current credential (pwd for now, user identity
          once user management lands) with an x to log out. -->
-    {{if .AuthLabel}}<div id="session-chip" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:2000;display:flex;align-items:center;gap:8px;background:{{if .IsTest}}rgba(234,179,8,0.92){{else}}rgba(30,30,30,0.92){{end}};color:{{if .IsTest}}#1a1a00{{else}}#ccc{{end}};font:600 11px/1 'SF Mono',Menlo,Consolas,monospace;padding:5px 6px 5px 10px;border-radius:4px;letter-spacing:1px;border:1px solid {{if .IsTest}}rgba(0,0,0,0.15){{else}}rgba(255,255,255,0.12){{end}};">{{if .IsTest}}TEST ENV · {{end}}{{.AuthLabel}}<a href="/logout" title="Log out" aria-label="Log out" style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:3px;color:inherit;opacity:0.65;text-decoration:none;font:700 12px/1 sans-serif;" onmouseover="this.style.opacity=1;this.style.background='rgba(0,0,0,0.15)'" onmouseout="this.style.opacity=0.65;this.style.background='none'">&times;</a></div>{{end}}
+    {{if .AuthLabel}}<div id="session-chip" class="session-chip {{if .IsTest}}is-test{{end}}"><span class="session-chip-label">{{if .IsTest}}TEST ENV · {{end}}{{.AuthLabel}}</span><a href="/logout" title="Log out" aria-label="Log out" class="session-chip-logout">&times;</a></div>
+    <script>
+    // Keep the session chip clear of the stats panel (mobile: panel spans full width at top)
+    (function(){
+        function place(){
+            var chip=document.getElementById('session-chip'); if(!chip) return;
+            if(window.innerWidth>768){ chip.style.top=''; return; }
+            var sp=document.querySelector('.stats-panel');
+            var top=100;
+            if(sp && getComputedStyle(sp).display!=='none'){ top=sp.getBoundingClientRect().bottom+6; }
+            chip.style.top=top+'px';
+        }
+        window.addEventListener('resize',place);
+        window.addEventListener('load',place);
+        document.addEventListener('DOMContentLoaded',place);
+        setTimeout(place,1000);
+    })();
+    </script>{{end}}
     {{if .IsTest}}<script>window.IS_TEST_ENV = true;</script>{{end}}
 
     <div class="stats-panel" role="region" aria-label="Patrol and conservation statistics">
@@ -5206,6 +5223,16 @@
                     source: 'bbox-selection',
                     paint: { 'line-color': '#60a5fa', 'line-width': 2, 'line-dasharray': [2, 2] }
                 });
+                // Blue × chip at the NE corner to clear the selection
+                var chipEl = document.createElement('div');
+                chipEl.className = 'bbox-clear-chip';
+                chipEl.title = 'Clear area selection';
+                chipEl.setAttribute('aria-label', 'Clear area selection');
+                chipEl.textContent = '\u00d7';
+                chipEl.addEventListener('click', function(e) { e.stopPropagation(); clearBboxSelection(); });
+                window._bboxClearMarker = new maplibregl.Marker({ element: chipEl, anchor: 'center' })
+                    .setLngLat([currentBbox[2], currentBbox[3]])
+                    .addTo(map);
             } catch (e) {
                 console.log('Could not draw bbox on map:', e);
             }
@@ -5216,6 +5243,7 @@
                 if (map.getLayer('bbox-selection-fill')) map.removeLayer('bbox-selection-fill');
                 if (map.getLayer('bbox-selection-line')) map.removeLayer('bbox-selection-line');
                 if (map.getSource('bbox-selection')) map.removeSource('bbox-selection');
+                if (window._bboxClearMarker) { window._bboxClearMarker.remove(); window._bboxClearMarker = null; }
             } catch (e) {}
         }
 
