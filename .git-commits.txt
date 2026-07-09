@@ -1,3 +1,15 @@
+604a285 2026-07-09 09:46:28 FloatUI: draggable/collapsible/dockable pinned-layers box and park popup
+44e2e4e 2026-07-09 09:26:15 Locus: 5m gap in closed rings so Locus draws lines not polygons; tooltip export buttons as uniform Lucide icons
+ec31007 2026-07-09 09:20:46 Locus export: build DBs fully in RAM via sqlite Serialize (no temp files); remove HANDOVER.md — round 2 complete
+13e576b 2026-07-09 09:18:34 Add Locus Map 4 backup export (.locus button in park tooltip)
+fe7a40b 2026-07-09 09:07:41 KML export: default-off visibility for bulky folders (settlements, deforestation, effort, roads, rivers, lakes, waterbodies, places, older fire years)
+23f0cab 2026-07-09 09:02:33 Tooltip KML: skip patrol effort via ?effort=0 (star report keeps it)
+5150551 2026-07-09 08:58:24 Add HANDOVER.md for round 2: tooltip KML effort param + LOCUS backup export
+fb8da77 2026-07-09 08:56:52 MBTiles: hybrid RAM/disk builds up to 8GB, robust Zenodo streaming, env-scoped limits & notifications
+ed2a42b 2026-07-09 08:01:20 Overhaul report exports: busy states, single toasts, park maps, effort heatmaps
+000de96 2026-07-09 07:27:32 Document raw fire CSV cleanup (5.1GB, verified in DB before deletion)
+261f265 2026-07-09 07:18:31 Star panel: PDF export button, clickable header toggle, cache-busted CSS
+0ce7150 2026-07-09 07:09:05 Update generated commit list
 bcc8fea 2026-07-09 07:08:46 Star report: MD-rendered inline preview + infrastructure, mining/turbidity sections
 6668802 2026-07-09 06:49:25 Add handover notes for session chip + MD report work
 f23af34 2026-07-09 06:48:53 Update generated commit list
@@ -6,15 +18,3 @@ f23af34 2026-07-09 06:48:53 Update generated commit list
 3eb899c 2026-07-09 06:28:34 Validate park IDs centrally; carry URL params through tryout login
 673214a 2026-07-09 05:55:09 Data refresh: daily fire/deforestation/turbidity updates
 be42642 2026-07-09 05:46:36 Update generated commit list
-8e9d220 2026-07-09 05:46:15 Repo hygiene: centralize runtime config, prune stale docs
-c03ae52 2026-07-08 04:55:47 Add one-time methods/compass hint; update About modal with turbidity/mining/GFW cron info; remove DB download link
-e455720 2026-07-07 12:31:33 Mining accordion: summary table + sparkline, clustered pit list, rich map tooltips
-9da3985 2026-07-07 12:09:24 Pit scanner: batched verify/history passes, Akobo/Boma scan (228 sites), registration cap
-0d3ea2c 2026-07-07 11:52:56 Mining pit scanner: detect bright-bare pit clusters along river corridors
-4a1f1b4 2026-07-07 10:50:25 Bottom-anchored UI tracks real time-slider height (--slider-h)
-dce8663 2026-07-07 04:53:45 Update GFW alerts data for CAF_Bamingui-Bangoran; refresh commit log
-643c5f8 2026-07-07 04:51:59 Truncate footer version hash to 4 chars on mobile
-8aeea0d 2026-07-07 04:48:54 Render time-slider backdrop shadow underneath the toolbar buttons
-44b916e 2026-07-07 04:44:38 Tapping the active preset tag expands/collapses the tag strip
-45b036e 2026-07-07 04:40:42 Fix erratic time slider: re-tapping active preset no longer resets to 2023-2026
-e919b39 2026-07-07 04:34:23 Collapse date presets behind a span chip; slider backdrop grows with content
