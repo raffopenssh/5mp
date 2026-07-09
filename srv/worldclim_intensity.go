@@ -34,14 +34,21 @@ func (s *Server) QueryGridDataWithWorldClim(ctx context.Context, params GridQuer
 	defer rows.Close()
 	
 	intensityMap := make(map[string]float64)
-	
+
+	// Buffer rows before per-cell queries: nested queries while rows are open
+	// hold a pool conn AND request another → pool deadlock under load.
+	var cellIDs []string
 	for rows.Next() {
 		var gridCellID string
 		var lat, lon float64
-		
 		if err := rows.Scan(&gridCellID, &lat, &lon); err != nil {
 			continue
 		}
+		cellIDs = append(cellIDs, gridCellID)
+	}
+	rows.Close()
+
+	for _, gridCellID := range cellIDs {
 		
 		// Get dry/rainy months for this specific grid cell using WorldClim
 		dryMonths, rainyMonths := s.getGridCellSeasons(gridCellID, parkID)

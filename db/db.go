@@ -37,8 +37,12 @@ func Open(path string) (*sql.DB, error) {
 		_ = db.Close()
 		return nil, fmt.Errorf("set busy_timeout: %w", err)
 	}
-	db.SetMaxOpenConns(4)
-	db.SetMaxIdleConns(2)
+	// WAL allows many concurrent readers; writers serialize via busy_timeout.
+	// Keep this comfortably above the worst-case nested-query fan-out: with
+	// only 4 conns, handlers that ran queries while iterating rows deadlocked
+	// the whole pool under concurrent load (star-report multi-park export).
+	db.SetMaxOpenConns(16)
+	db.SetMaxIdleConns(4)
 	return db, nil
 }
 

@@ -954,13 +954,26 @@ func (s *Server) updateFireGroupAlertsFromFeatures() error {
 	defer rows.Close()
 	
 	alertsByPark := make(map[string]int)
-	
+
+	// Buffer rows before nested queries (QueryRow/Exec inside an open rows
+	// loop holds a pool conn AND requests another → pool deadlock).
+	type alertRow struct {
+		parkID, featureID, propsJSON string
+		startDate, endDate           sql.NullString
+	}
+	var alertRows []alertRow
 	for rows.Next() {
-		var parkID, featureID, propsJSON string
-		var startDate, endDate sql.NullString
-		if rows.Scan(&parkID, &featureID, &propsJSON, &startDate, &endDate) != nil {
+		var ar alertRow
+		if rows.Scan(&ar.parkID, &ar.featureID, &ar.propsJSON, &ar.startDate, &ar.endDate) != nil {
 			continue
 		}
+		alertRows = append(alertRows, ar)
+	}
+	rows.Close()
+
+	for _, ar := range alertRows {
+		parkID, featureID, propsJSON := ar.parkID, ar.featureID, ar.propsJSON
+		startDate, endDate := ar.startDate, ar.endDate
 		
 		var props map[string]interface{}
 		json.Unmarshal([]byte(propsJSON), &props)

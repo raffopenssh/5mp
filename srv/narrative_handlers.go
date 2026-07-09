@@ -938,18 +938,32 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	var recentYearsLat, recentYearsLon float64
 	var earlyCount, recentCount int
 	
+	// Buffer all rows before doing per-row enrichment queries: nested queries
+	// while rows are open hold a pool connection AND request another, which
+	// deadlocks the whole server under concurrent load (MaxOpenConns=4).
+	type defRow struct {
+		year           int
+		area           float64
+		patternType    sql.NullString
+		lat, lon       float64
+		geojsonID      sql.NullInt64
+		classification string
+	}
+	var defRows []defRow
 	for rows.Next() {
-		var year int
-		var area float64
-		var patternType sql.NullString
-		var lat, lon float64
+		var dr defRow
 		var description sql.NullString
-		var geojsonID sql.NullInt64
-		var classification string
-		
-		if err := rows.Scan(&year, &area, &patternType, &lat, &lon, &description, &geojsonID, &classification); err != nil {
+		if err := rows.Scan(&dr.year, &dr.area, &dr.patternType, &dr.lat, &dr.lon, &description, &dr.geojsonID, &dr.classification); err != nil {
 			continue
 		}
+		defRows = append(defRows, dr)
+	}
+	rows.Close()
+
+	for _, dr := range defRows {
+		year, area, patternType := dr.year, dr.area, dr.patternType
+		lat, lon := dr.lat, dr.lon
+		geojsonID, classification := dr.geojsonID, dr.classification
 		
 		yearlyAreas = append(yearlyAreas, struct {
 			year int
@@ -2115,15 +2129,25 @@ func (s *Server) analyzeFireHotspots(parkID string, year int, totalFires int) []
 	if err != nil {
 		return hotspots
 	}
-	defer rows.Close()
-	
+	// Buffer rows before per-row enrichment queries: nested queries while
+	// rows are open hold a pool conn AND request another → pool deadlock.
+	type hsRow struct {
+		avgLat, avgLon float64
+		fireCount      int
+	}
+	var hsRows []hsRow
 	for rows.Next() {
 		var latBucket, lonBucket, avgLat, avgLon float64
 		var fireCount int
 		if err := rows.Scan(&latBucket, &lonBucket, &avgLat, &avgLon, &fireCount); err != nil {
 			continue
 		}
-		
+		hsRows = append(hsRows, hsRow{avgLat, avgLon, fireCount})
+	}
+	rows.Close()
+
+	for _, hr := range hsRows {
+		avgLat, avgLon, fireCount := hr.avgLat, hr.avgLon, hr.fireCount
 		hs := FireHotspot{
 			Lat:       avgLat,
 			Lon:       avgLon,
