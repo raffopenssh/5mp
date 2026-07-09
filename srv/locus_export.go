@@ -17,6 +17,7 @@ package srv
 
 import (
 	"archive/zip"
+	"context"
 	"crypto/rand"
 	"database/sql"
 	"encoding/binary"
@@ -25,8 +26,6 @@ import (
 	"fmt"
 	"math"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -146,25 +145,48 @@ func pathLengthM(path [][2]float64) float64 {
 	return m
 }
 
-// locusDB wraps one of the two backup sqlite files.
+// locusDB wraps one of the two backup sqlite databases (built in RAM only —
+// disk usage costs extra on this VM; these DBs are a few MB at most).
 type locusDB struct {
 	db      *sql.DB
-	path    string
 	nowMs   int64
 	visible [][2]int64 // (itemId, groupId) pairs for .mVisibleItems file
 }
 
-func newLocusDB(dir, name, schema string) (*locusDB, error) {
-	p := filepath.Join(dir, name)
-	db, err := sql.Open("sqlite", p)
+func newLocusDB(schema string) (*locusDB, error) {
+	db, err := sql.Open("sqlite", ":memory:")
 	if err != nil {
 		return nil, err
 	}
+	// Single connection required so all writes hit the same :memory: DB and
+	// Serialize sees them.
+	db.SetMaxOpenConns(1)
+	db.SetMaxIdleConns(1)
 	if _, err := db.Exec(schema); err != nil {
 		db.Close()
 		return nil, err
 	}
-	return &locusDB{db: db, path: p, nowMs: time.Now().UnixMilli()}, nil
+	return &locusDB{db: db, nowMs: time.Now().UnixMilli()}, nil
+}
+
+// serialize returns the database file bytes (modernc.org/sqlite Serialize).
+func (l *locusDB) serialize() ([]byte, error) {
+	conn, err := l.db.Conn(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	var out []byte
+	err = conn.Raw(func(driverConn interface{}) error {
+		s, ok := driverConn.(interface{ Serialize() ([]byte, error) })
+		if !ok {
+			return fmt.Errorf("driver conn does not implement Serialize")
+		}
+		var serErr error
+		out, serErr = s.Serialize()
+		return serErr
+	})
+	return out, err
 }
 
 const locusTracksSchema = `
@@ -284,37 +306,34 @@ func (s *Server) HandleAPIParkLocus(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	tmpDir, err := os.MkdirTemp("", "locus_export_")
-	if err != nil {
-		http.Error(w, "temp dir: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer os.RemoveAll(tmpDir)
-
-	tdb, err := newLocusDB(tmpDir, "tracks.db", locusTracksSchema)
+	tdb, err := newLocusDB(locusTracksSchema)
 	if err != nil {
 		http.Error(w, "tracks db: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer tdb.db.Close()
-	wdb, err := newLocusDB(tmpDir, "waypoints.db", locusWaypointsSchema)
+	wdb, err := newLocusDB(locusWaypointsSchema)
 	if err != nil {
 		http.Error(w, "waypoints db: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer wdb.db.Close()
 
-	// Speed up bulk inserts (files are rebuilt per request; durability irrelevant)
-	for _, d := range []*locusDB{tdb, wdb} {
-		d.db.Exec("PRAGMA journal_mode=OFF")
-		d.db.Exec("PRAGMA synchronous=OFF")
-	}
-
 	if err := s.buildLocusContent(tdb, wdb, parkID, parkName, boundary, fromDate, toDate, r); err != nil {
 		http.Error(w, "build: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	tracksBytes, err := tdb.serialize()
+	if err != nil {
+		http.Error(w, "serialize tracks: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	wptsBytes, err := wdb.serialize()
+	if err != nil {
+		http.Error(w, "serialize waypoints: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 	visTracks := tdb.visibleBytes()
 	visWpts := wdb.visibleBytes()
 	tdb.db.Close()
@@ -331,14 +350,11 @@ func (s *Server) HandleAPIParkLocus(w http.ResponseWriter, r *http.Request) {
 		_, err = f.Write(data)
 		return err
 	}
-	for _, fn := range []string{"tracks.db", "waypoints.db"} {
-		data, err := os.ReadFile(filepath.Join(tmpDir, fn))
-		if err != nil {
-			return // headers already sent
-		}
-		if writeFile("data/database/"+fn, data) != nil {
-			return
-		}
+	if writeFile("data/database/tracks.db", tracksBytes) != nil {
+		return
+	}
+	if writeFile("data/database/waypoints.db", wptsBytes) != nil {
+		return
 	}
 	writeFile("data/database/.mVisibleItems_dbTracks", visTracks)
 	writeFile("data/database/.mVisibleItems_dbWaypoints", visWpts)
