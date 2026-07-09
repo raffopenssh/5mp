@@ -286,6 +286,10 @@
         // --- slim grab-bar above the header (distinct from export buttons) ---
         const bar = makeBar(parkName);
         content.insertBefore(bar, content.firstChild);
+        // Move MapLibre's × close button into the bar so all controls sit
+        // neatly inside the popup outline (subtle, same size as bar buttons).
+        const mlClose = container.querySelector('.maplibregl-popup-close-button');
+        if (mlClose) bar.querySelector('.fui-bar-btns').appendChild(mlClose);
 
         function setCollapsed(on) {
             if (on) { savedScroll = content.scrollTop; container.classList.add('fui-collapsed'); }

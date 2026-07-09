@@ -681,9 +681,12 @@
         .pinned-park-group { display: flex; flex-direction: row; align-items: baseline; gap: 6px; }
         .pinned-park-name { font-size: 9px; color: #888; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; flex-shrink: 0; }
         .pinned-park-layers { display: flex; flex-wrap: wrap; gap: 3px; padding-left: 0; }
-        .pinned-layer-chip { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px; border-radius: 4px; font-size: 10px; cursor: pointer; transition: all 0.15s; }
+        .pinned-layer-chip { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px; border-radius: 4px; font-size: 10px; cursor: pointer; transition: all 0.15s; background: rgba(255,255,255,0.08); color: #ccc; border: 1px solid rgba(255,255,255,0.18); }
         .pinned-layer-chip:hover { filter: brightness(1.2); }
-        .pinned-layer-chip.fire { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+        .pinned-layer-chip.fire, .pinned-layer-chip.fire_trajectory { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+        .pinned-layer-chip.turbidity { background: rgba(234,179,8,0.15); color: #eab308; border: 1px solid rgba(234,179,8,0.3); }
+        .pinned-layer-chip.infrastructure { background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); }
+        .pinned-layer-chip.visits { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
         .pinned-layer-chip.settlement { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
         .pinned-layer-chip.deforestation { background: rgba(168,85,247,0.2); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); }
         .pinned-layer-chip.road { background: rgba(96,165,250,0.2); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
@@ -747,8 +750,12 @@
         .maplibregl-popup.fui-collapsed .pa-popup > *:not(.pa-popup-header):not(.fui-bar) { display: none; }
         .maplibregl-popup.fui-collapsed .pa-popup-header { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
         .maplibregl-popup.fui-docked { display: none !important; }
-        .maplibregl-popup .pa-popup > .fui-bar { position: sticky; top: -12px; margin: -12px -12px 0; padding: 4px 12px 2px; background: rgba(18,18,18,0.97); z-index: 6; height: auto; border-radius: 8px 8px 0 0; }
-        .maplibregl-popup .pa-popup > .fui-bar .fui-bar-btns { right: 30px; } /* clear the maplibre × close button */
+        .maplibregl-popup .pa-popup > .fui-bar { position: sticky; top: -12px; margin: -12px -12px 4px; padding: 4px 10px 3px; background: rgba(18,18,18,0.97); z-index: 6; height: 20px; box-sizing: content-box; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: flex-start; gap: 6px; }
+        .maplibregl-popup .pa-popup > .fui-bar .fui-grabber { flex: 1; width: auto; max-width: none; margin: 0 4px; }
+        .maplibregl-popup .pa-popup > .fui-bar .fui-bar-btns { position: static; transform: none; flex-shrink: 0; opacity: 0.7; align-items: center; }
+        /* MapLibre close × relocated into the grab-bar: keep it small and subtle */
+        .fui-bar-btns .maplibregl-popup-close-button { position: static !important; width: auto !important; height: 16px !important; min-width: 0 !important; min-height: 0 !important; padding: 0 4px !important; font-size: 13px !important; line-height: 1 !important; color: #777 !important; background: transparent !important; border: none !important; border-radius: 3px; display: inline-flex !important; align-items: center; justify-content: center; }
+        .fui-bar-btns .maplibregl-popup-close-button:hover { color: #fff !important; background: rgba(255,255,255,0.1) !important; }
 
         @media (max-width: 768px) {
             .float-dock { flex-direction: row; }
@@ -756,6 +763,11 @@
             .fui-bar-btn { padding: 0 8px; height: 20px; }
             .fui-bar-btn i { font-size: 13px; }
             .fui-bar-btns { opacity: 0.8; }
+            /* .pa-popup padding is 10px on mobile — keep bar flush with the outline */
+            .maplibregl-popup .pa-popup > .fui-bar { top: -10px; margin: -10px -10px 4px; }
+            /* keep bar controls small: override the global 44px/32px touch-target minimums */
+            .fui-bar .pinned-indicator-close { min-width: 28px !important; min-height: 20px !important; }
+            .fui-bar-btns .maplibregl-popup-close-button { min-width: 28px !important; min-height: 20px !important; height: 20px !important; font-size: 15px !important; }
         }
         /* ===== End FloatUI ===== */
 
