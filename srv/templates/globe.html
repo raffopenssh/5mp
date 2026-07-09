@@ -3245,6 +3245,70 @@
                 }
             }
 
+            // Infrastructure: rivers, roads, places + patrol-learned features
+            const road = data.road || {};
+            if (cfg.patrol !== false && (road.riverCount || road.roadCount || road.placeCount || (road.learnedPlaces || []).length || (road.airstrips || []).length)) {
+                lines.push('### Infrastructure & access');
+                lines.push('');
+                const ip = [];
+                if (road.riverCount) ip.push(`Rivers: ${fmt(road.riverCount)} segments${(road.majorRivers || []).length ? ' (major: ' + road.majorRivers.slice(0, 3).join(', ') + ')' : ''}`);
+                if (road.roadCount) ip.push(`Roads: ${fmt(road.roadCount)} (${(road.totalRoadKm || 0).toFixed(0)} km)`);
+                if (road.placeCount) ip.push(`Named places: ${fmt(road.placeCount)}`);
+                if (ip.length) { lines.push(ip.join(' | ')); lines.push(''); }
+                const surfaces = Object.entries(road.roadSurfaces || {}).sort((a, b) => b[1] - a[1]);
+                if (surfaces.length) { lines.push('Road surfaces: ' + surfaces.map(([k, v]) => `${v}x ${k}`).join(', ')); lines.push(''); }
+                const lp = (road.learnedPlaces || []).filter(x => x.status !== 'rejected');
+                if (lp.length) {
+                    lines.push(`Patrol-learned sites (${lp.length}, from GPX uploads):`);
+                    const limit = deep ? lp.length : 8;
+                    for (const x of lp.slice().sort((a, b) => (b.visit_count || 0) - (a.visit_count || 0)).slice(0, limit)) {
+                        lines.push(`- ${x.place_type || 'site'}${x.name ? ' "' + x.name + '"' : ''} at ${x.lat.toFixed(4)}, ${x.lon.toFixed(4)} - ${x.visit_count || 0} visits, ~${Math.round(x.avg_duration_minutes || 0)} min avg stay (${Math.round(x.confidence_pct || 0)}% confidence)`);
+                    }
+                    if (lp.length > limit) lines.push(`- ... ${lp.length - limit} more sites omitted`);
+                    lines.push('');
+                }
+                const strips = road.airstrips || [];
+                if (strips.length) {
+                    lines.push(`Airstrips/helipads detected: ${strips.length}`);
+                    for (const a of strips.slice(0, deep ? strips.length : 5)) {
+                        lines.push(`- ${a.aircraft_type === 'rotor_wing' ? 'Helipad' : 'Airstrip'} at ${a.lat.toFixed(4)}, ${a.lon.toFixed(4)} - ${(a.landing_count || 0)} landings/${(a.takeoff_count || 0)} takeoffs (${Math.round(a.confidence_pct || 0)}% confidence)`);
+                    }
+                    lines.push('');
+                }
+                if ((road.learnedRoads || []).length) {
+                    const km = road.learnedRoads.reduce((t, r) => t + (r.length_m || 0), 0) / 1000;
+                    lines.push(`Patrol-confirmed tracks: ${road.learnedRoads.length} segments, ${km.toFixed(1)} km (learned from repeated GPX passes)`);
+                    lines.push('');
+                }
+            }
+
+            // Mining & water quality (turbidity, pits, GFW alerts)
+            const turb = data.turbidity || {};
+            const miningSites = turb.mining_settlements || [];
+            const turbAlerts = turb.alerts || [];
+            const pitSites = turb.pit_sites || [];
+            if (cfg.settlement !== false && (miningSites.length || turbAlerts.length || pitSites.length || (turb.turbid_rivers || []).length)) {
+                lines.push('### Mining & water quality');
+                lines.push('');
+                const mp = [];
+                if (miningSites.length) mp.push(`Suspected mining sites: ${miningSites.length}`);
+                if (turbAlerts.length) mp.push(`Turbidity alerts: ${turbAlerts.length}`);
+                if (pitSites.length) mp.push(`Bare-earth pit clusters: ${pitSites.length}`);
+                if (turb.gfw_total_alerts) mp.push(`GFW canopy alerts: ${fmt(turb.gfw_total_alerts)} in ${fmt(turb.gfw_clusters)} clusters`);
+                if (turb.scanned_at) mp.push(`Last Sentinel-2 scan: ${String(turb.scanned_at).slice(0, 10)}`);
+                lines.push(mp.join(' | '));
+                lines.push('');
+                for (const r of (turb.turbid_rivers || []).slice(0, deep ? 99 : 5)) {
+                    lines.push(`- ${r.name || 'Unnamed river'}: ${r.turbid_km} km turbid of ${r.length_km} km monitored`);
+                }
+                const limit = deep ? miningSites.length : 5;
+                for (const m of miningSites.slice(0, limit)) {
+                    lines.push(`- ${plain(m.narrative || 'Suspected mining site')} (${m.lat.toFixed(4)}, ${m.lon.toFixed(4)}, confidence ${Math.round((m.confidence || 0) * 100)}%)`);
+                }
+                if (miningSites.length > limit) lines.push(`- ... ${miningSites.length - limit} more mining sites omitted`);
+                lines.push('');
+            }
+
             // Publications
             const pubs = research.publications || [];
             if (cfg.publications !== false && pubs.length > 0) {
@@ -3309,6 +3373,13 @@
             doc.push(`- Period: ${rangeStr}`);
             doc.push(`- Protected areas: ${results.length}`);
             doc.push(`- Source: 5MP.globe conservation monitoring (VIIRS fire detections, Hansen GFC forest loss, GHSL settlements, IUCN Red List, patrol GPX uploads)`);
+            // Active report filters (config profile, sections, detail level)
+            const cfgSecs = Object.keys(reportConfig.sections).filter(k => reportConfig.sections[k]);
+            doc.push(`- Report config: ${reportConfig.preset} profile, detail ${reportConfig.detailLevel}, sections: ${cfgSecs.join(', ')}${reportConfig.filters.skipZeros ? ', hiding empty sections' : ''}`);
+            if (typeof currentCountryFilter !== 'undefined' && currentCountryFilter) doc.push(`- Country filter: ${currentCountryFilter}`);
+            if (typeof currentBbox !== 'undefined' && currentBbox) doc.push(`- Area filter (bbox): ${currentBbox.map(v => v.toFixed(4)).join(', ')}`);
+            // Link back to this exact view online (no pwd embedded)
+            try { doc.push(`- View online: ${buildShareUrl(false)}`); } catch (e) {}
             doc.push('');
             for (const { park, data } of results) {
                 doc.push(buildParkMarkdown(park, data));
@@ -4720,7 +4791,7 @@
                     if (window._pendingBboxLoads) {
                         window._pendingBboxLoads.forEach(bbox => prefetchBboxReportData(bbox.bbox, bbox.name));
                     }
-                }, 500);
+                }, 50);
             }
             
             console.log('[URL Restore] ✓ Complete');
@@ -10695,6 +10766,11 @@
                 fetchedAt: new Date().toISOString()
             });
             console.log(`[Report] Cached data for ${parkId}`);
+            // Auto-expand the first starred park once its report is ready,
+            // so users immediately see the rendered report.
+            if (!window._starUserToggled && starredItems.parks[0]?.id === parkId) {
+                starExpandedState.add('park:' + parkId);
+            }
             // Re-render if modal is open
             if (document.getElementById('star-modal')?.classList.contains('active')) {
                 renderStarredItems();
@@ -10838,9 +10914,20 @@
     }
     
     
+    const starExpandedState = new Set();
+
     function renderStarredItems() {
         // Reset flag to show config banner on first park
         window._showReportConfig = true;
+
+        // Default: first starred park (or bbox) opens expanded so users
+        // immediately see the report they'll get.
+        if (!window._starExpandInit) {
+            // Only latch once there's actually something starred (URL restore
+            // may render an empty modal first).
+            if (starredItems.parks.length) { window._starExpandInit = true; starExpandedState.add('park:' + starredItems.parks[0].id); }
+            else if (starredItems.bboxes.length) { window._starExpandInit = true; starExpandedState.add('bbox:' + starredItems.bboxes[0].bbox.join(',')); }
+        }
         
         const body = document.getElementById('star-modal-body');
         const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0);
@@ -10881,7 +10968,7 @@
                     icon: '▣',
                     hint: 'Includes: fire, deforestation, settlements, patrol activity',
                     status: cached ? '<div class="starred-report-ready">✓ Report ready</div>' + summaryPreview : '<div class="starred-report-loading" style="padding:2px 0;"><div class="spinner" style="width:10px;height:10px;"></div><span style="font-size:10px;">Loading data...</span></div>',
-                    reportHtml: cached ? renderParkReportInline(item, cached) : '<div class="starred-report-loading"><div class="spinner"></div>Loading report data...</div>'
+                    reportHtml: cached ? renderParkMarkdownInline(item, cached) : starSkeletonHtml()
                 };
             }, 'Full park subscription — all narratives & stats');
         }
@@ -11003,7 +11090,7 @@
                     </div>
                     <span class="starred-section-count">${items.length}</span>
                 </div>
-                ${mapped.map((item, idx) => `
+                ${mapped.map((item, idx) => { const isOpen = starExpandedState.has(iconClass + ':' + String(item.id)); return `
                     <div class="starred-item" data-type="${iconClass}" data-id="${escapeHtml(String(item.id))}" data-idx="${idx}">
                         <div class="starred-item-header">
                             <div class="starred-item-info">
@@ -11017,15 +11104,15 @@
                             </div>
                             <div class="starred-item-actions">
                                 ${iconClass === 'park' ? `<button class="starred-item-map" title="Show on map" onclick="event.stopPropagation(); flyToPark(starredItems.parks[${idx}]); toggleStarModal();"><i class="icon-map icon-color-info"></i></button>` : ''}
-                                <button class="starred-item-expand" title="View report">▼</button>
+                                <button class="starred-item-expand${isOpen ? ' expanded' : ''}" title="${isOpen ? 'Collapse report' : 'View report'}">${isOpen ? '▲' : '▼'}</button>
                                 <button class="starred-item-remove" title="Remove">×</button>
                             </div>
                         </div>
-                        <div class="starred-item-details" data-park-id="${item.parkId || item.id || ''}">
+                        <div class="starred-item-details${isOpen ? ' open' : ''}" data-park-id="${item.parkId || item.id || ''}">
                             ${item.reportHtml || '<div class="starred-report-loading"><div class="spinner"></div>Loading report data...</div>'}
                         </div>
                     </div>
-                `).join('')}
+                `; }).join('')}
             </div>
         `;
     }
@@ -11065,6 +11152,9 @@
                 
                 details.classList.toggle('open');
                 btn.classList.toggle('expanded');
+                window._starUserToggled = true;
+                const stateKey = item.dataset.type + ':' + item.dataset.id;
+                if (isExpanding) starExpandedState.add(stateKey); else starExpandedState.delete(stateKey);
                 
                 // Update button text with contextual label
                 if (isExpanding) {
@@ -11136,6 +11226,135 @@
         });
     }
     
+    // ===== Markdown-first inline star report =====
+    // The expandable report shows exactly what the MD export produces,
+    // rendered with app-style section colors + subtle reveal animations.
+    const MD_SECTION_STYLE = {
+        'fire activity': 'fire',
+        'deforestation': 'deforest',
+        'settlements': 'settle',
+        'biodiversity': 'bio',
+        'climate': 'climate',
+        'patrol activity': 'patrol',
+        'infrastructure & access': 'infra',
+        'mining & water quality': 'mining',
+        'research publications': 'pubs',
+        'legal framework': 'legal'
+    };
+
+    function mdInline(t) {
+        let s = escapeHtml(t);
+        s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/&lt;(https?:\/\/[^&\s]+)&gt;/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+        return s;
+    }
+
+    // Minimal Markdown -> styled HTML for the report preview (h2/h3, bullets,
+    // tables, hr, paragraphs). Sections get colored left borders + stagger-in.
+    function mdToHtml(md) {
+        const lines = md.split('\n');
+        let html = '';
+        let secOpen = false, secIdx = 0, listOpen = false, tableRows = null;
+        const closeList = () => { if (listOpen) { html += '</ul>'; listOpen = false; } };
+        const flushTable = () => {
+            if (!tableRows || !tableRows.length) { tableRows = null; return; }
+            const [head, ...rows] = tableRows;
+            html += '<table class="md-table"><thead><tr>' + head.map(c => '<th>' + mdInline(c) + '</th>').join('') + '</tr></thead><tbody>';
+            html += rows.map(r => '<tr>' + r.map(c => '<td>' + mdInline(c) + '</td>').join('') + '</tr>').join('');
+            html += '</tbody></table>';
+            tableRows = null;
+        };
+        const openSec = (cls, title) => {
+            closeList(); flushTable();
+            if (secOpen) html += '</div>';
+            html += `<div class="md-sec md-sec-${cls}" style="animation-delay:${Math.min(secIdx * 55, 440)}ms">`;
+            secIdx++;
+            secOpen = true;
+            if (title) html += `<div class="md-sec-title">${mdInline(title)}</div>`;
+        };
+        for (const raw of lines) {
+            const line = raw.trimEnd();
+            if (/^\|/.test(line)) {
+                closeList();
+                const cells = line.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+                if (cells.every(c => /^:?-+:?$/.test(c))) continue; // separator row
+                (tableRows = tableRows || []).push(cells);
+                continue;
+            }
+            flushTable();
+            if (!line) { closeList(); continue; }
+            if (line.startsWith('### ')) {
+                const t = line.slice(4);
+                openSec(MD_SECTION_STYLE[t.toLowerCase()] || 'neutral', t);
+                continue;
+            }
+            if (line.startsWith('## ')) {
+                closeList(); if (secOpen) { html += '</div>'; secOpen = false; }
+                html += `<div class="md-h2">${mdInline(line.slice(3))}</div>`;
+                openSec('overview', ''); // overview bullets before the first ###
+                continue;
+            }
+            if (line === '---') { closeList(); if (secOpen) { html += '</div>'; secOpen = false; } html += '<hr class="md-hr">'; continue; }
+            if (line.startsWith('- ')) {
+                if (!listOpen) { html += '<ul class="md-list">'; listOpen = true; }
+                html += '<li>' + mdInline(line.slice(2)) + '</li>';
+                continue;
+            }
+            closeList();
+            html += '<p class="md-p">' + mdInline(line) + '</p>';
+        }
+        closeList(); flushTable();
+        if (secOpen) html += '</div>';
+        return html;
+    }
+
+    function renderParkMarkdownInline(park, data) {
+        let md;
+        try {
+            md = buildParkMarkdown(park, data);
+        } catch (e) {
+            console.error('MD report build failed:', e);
+            return '<div style="color:#ef4444;font-size:11px;">Report build failed: ' + escapeHtml(e.message) + '</div>';
+        }
+        const pid = escapeHtml(String(park.id || ''));
+        return `<div class="starred-md-report">
+            <div class="starred-md-toolbar">
+                <span class="starred-md-label">Report preview — exactly what you export</span>
+                <button onclick="event.stopPropagation(); copyParkMd('${pid}')" title="Copy this park's report as Markdown">Copy MD</button>
+                <button onclick="event.stopPropagation(); exportFullReportMd()" title="Open the full editable Markdown report (all starred items)">Edit / Print</button>
+            </div>
+            ${mdToHtml(md)}
+        </div>`;
+    }
+
+    async function copyParkMd(parkId) {
+        const park = starredItems.parks.find(p => p.id === parkId) || { id: parkId, name: parkId };
+        let data = reportDataCache.parks.get(parkId);
+        if (!data) {
+            for (const bd of reportDataCache.bboxes.values()) {
+                const hit = (bd.parks || []).find(p => p.id === parkId && p.reportData);
+                if (hit) { data = hit.reportData; break; }
+            }
+        }
+        if (!data) { showToast('Data still loading...', 'info'); return; }
+        try {
+            await navigator.clipboard.writeText(buildParkMarkdown(park, data));
+            showToast('Markdown copied to clipboard', 'success');
+        } catch (e) {
+            showToast('Copy failed', 'error');
+        }
+    }
+
+    function starSkeletonHtml() {
+        return `<div class="starred-skel">
+            <div class="starred-skel-bar" style="width:45%"></div>
+            <div class="starred-skel-bar" style="width:90%"></div>
+            <div class="starred-skel-bar" style="width:75%"></div>
+            <div class="starred-skel-bar" style="width:85%"></div>
+            <div class="starred-skel-bar" style="width:60%"></div>
+        </div>`;
+    }
+
     // Render park report inline (for starred items)
     // Helper to calculate YoY trend
     function calculateYoYTrend(currentValue, previousValue) {
@@ -11631,9 +11850,9 @@
                 </div>`;
             
             if (isLoading || !hasData) {
-                html += '<div class="starred-report-content"><div class="starred-report-loading" style="padding:20px;text-align:center;"><div class="spinner"></div><div style="margin-top:8px;font-size:11px;">Loading park data...</div></div></div>';
+                html += starSkeletonHtml();
             } else {
-                html += renderParkReportInline(park, rd, true, parkId);
+                html += renderParkMarkdownInline(park, rd);
             }
             
             html += '</div>';
@@ -12523,7 +12742,7 @@
         
         try {
             // Fetch all data in parallel (same as popups do)
-            const [fire, ghsl, deforest, settlement, road, species, climate, research, legal, grid, stats] = await Promise.all([
+            const [fire, ghsl, deforest, settlement, road, species, climate, research, legal, grid, stats, turbidity] = await Promise.all([
                 fetchFireDataDirect(parkId, {from, to, pwd}),
                 fetchGHSLDataDirect(parkId, {pwd}),
                 fetchDeforestDataDirect(parkId, {pwd}),
@@ -12534,7 +12753,8 @@
                 fetchResearchDataDirect(parkId, {pwd}),
                 fetchLegalDataDirect(parkId, {pwd}),
                 fetchGridDataDirect(parkId, {from, to, pwd}),
-                fetchStatsDirect(parkId, {pwd})
+                fetchStatsDirect(parkId, {pwd}),
+                fetchTurbidityDataDirect(parkId, {pwd})
             ]);
             
             return {
@@ -12549,7 +12769,8 @@
                 research,
                 legal,
                 grid,
-                stats
+                stats,
+                turbidity
             };
         } catch (error) {
             console.error(`Error fetching data for ${parkId}:`, error);
@@ -12717,36 +12938,59 @@
         }
     }
     
-    // Road/infrastructure data
+    // Road/infrastructure data (same APIs as the popup's Roads/Rivers/Places section)
     async function fetchRoadDataDirect(parkId, {pwd}) {
         try {
-            const [roads, rivers, places] = await Promise.all([
-                fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=road&pwd=${encodeURIComponent(pwd)}`).then(r => r.ok ? r.json() : {features: []}),
-                fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=river&pwd=${encodeURIComponent(pwd)}`).then(r => r.ok ? r.json() : {features: []}),
-                fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=place&pwd=${encodeURIComponent(pwd)}`).then(r => r.ok ? r.json() : {features: []})
+            const [infra, learned] = await Promise.all([
+                fetch(`/api/parks/${encodeURIComponent(parkId)}/infrastructure?pwd=${encodeURIComponent(pwd)}`).then(r => r.ok ? r.json() : {}),
+                fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(parkId)}&pwd=${encodeURIComponent(pwd)}`)
+                    .then(r => (r.ok && (r.headers.get('content-type') || '').includes('json')) ? r.json() : {})
+                    .catch(() => ({}))
             ]);
-            
+            const sum = infra.summary || {};
             return {
-                roadCount: roads.features?.length || 0,
-                riverCount: rivers.features?.length || 0,
-                placeCount: places.features?.length || 0,
-                roads: (roads.features || []).map(f => ({
-                    name: f.properties?.name || '',
-                    surface: f.properties?.surface || '',
-                    lengthKm: f.properties?.length_km || 0
-                })),
-                rivers: (rivers.features || []).map(f => ({
-                    name: f.properties?.name || '',
-                    lengthKm: f.properties?.length_km || 0
-                })),
-                places: (places.features || []).map(f => ({
-                    name: f.properties?.name || '',
-                    type: f.properties?.place || f.properties?.type || ''
-                }))
+                roadCount: sum.total_roads || 0,
+                riverCount: sum.total_rivers || 0,
+                placeCount: sum.total_places || 0,
+                totalRoadKm: sum.total_road_km || 0,
+                roadSurfaces: sum.road_surfaces || {},
+                majorRivers: [...new Set(sum.major_rivers || [])],
+                roads: infra.roads || [],
+                rivers: infra.rivers || [],
+                places: infra.places || [],
+                // Learned from patrol GPX uploads
+                learnedPlaces: learned.places || [],
+                airstrips: learned.airstrips || [],
+                learnedRoads: learned.roads || [],
+                vehicleStats: learned.vehicle_stats || [],
+                coverage: learned.coverage || null
             };
         } catch (error) {
             console.error(`Road data error for ${parkId}:`, error);
             return {error: error.message, roadCount: 0};
+        }
+    }
+    
+    // Turbidity / mining data (same API the popup Mining & Water Quality section uses)
+    async function fetchTurbidityDataDirect(parkId, {pwd}) {
+        try {
+            const resp = await fetch(`/api/parks/${encodeURIComponent(parkId)}/turbidity?pwd=${encodeURIComponent(pwd)}`);
+            if (!resp.ok) return {error: 'API error'};
+            const d = await resp.json();
+            const scan = d.scan || {};
+            const pits = d.pits || {};
+            return {
+                mining_settlements: d.mining_settlements || [],
+                gfw_clusters: d.gfw_clusters || 0,
+                gfw_total_alerts: d.gfw_total_alerts || 0,
+                alerts: scan.alerts || [],
+                turbid_rivers: (scan.rivers || []).filter(r => (r.turbid_km || 0) > 0),
+                scanned_at: scan.scanned_at || '',
+                pit_sites: pits.sites || [],
+                pits_scanned_at: pits.scanned_at || ''
+            };
+        } catch (error) {
+            return {error: error.message};
         }
     }
     
@@ -16492,11 +16736,22 @@ ${starredItems.narratives.map(n => {
 
     // Share current view - creates URL with state parameters
     function shareCurrentView() {
+        const url = buildShareUrl();
+        navigator.clipboard.writeText(url).then(() => {
+            showToast('Link copied to clipboard!');
+        }).catch(() => {
+            prompt('Copy this link:', url);
+        });
+    }
+
+    // Builds the share URL for the current view state. includePwd=false for
+    // report embedding (viewers authenticate themselves).
+    function buildShareUrl(includePwd = true) {
         const params = new URLSearchParams();
         
         // Add password if present
         const pwd = new URLSearchParams(window.location.search).get('pwd');
-        if (pwd) params.set('pwd', pwd);
+        if (includePwd && pwd) params.set('pwd', pwd);
         
         // Add map center and zoom
         if (typeof map !== 'undefined') {
@@ -16680,15 +16935,7 @@ ${starredItems.narratives.map(n => {
             }
         }
         
-        const url = window.location.origin + window.location.pathname + '?' + params.toString();
-        
-        // Copy to clipboard
-        navigator.clipboard.writeText(url).then(() => {
-            showToast('Link copied to clipboard!');
-        }).catch(() => {
-            // Fallback for older browsers
-            prompt('Copy this link:', url);
-        });
+        return window.location.origin + window.location.pathname + '?' + params.toString();
     }
     
     // Restore state from URL parameters on load
