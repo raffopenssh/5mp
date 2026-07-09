@@ -922,12 +922,65 @@
         track.appendChild(ph);
 
         // playhead drag = scrub (works during playback; pauses while dragging)
+        // Pulling the playhead PAST the left range handle and holding it there
+        // extends the time window backwards (gravity: a brief return-to-start
+        // does nothing; a sustained pull steadily drags the start date earlier).
         let wasPlaying = false;
+        let pull = null; // {t0Ext, raf, last, over, heldSince}
+        const PULL_DELAY_MS = 350;  // sustained-pull threshold before extending
+        const startHandleEl = () => document.getElementById('time-slider-start');
+        function pullLoop(now) {
+            if (!pull) return;
+            if (now - pull.heldSince >= PULL_DELAY_MS) {
+                const dt = Math.min(100, now - (pull.last || now)) / 1000;
+                // rate ∝ how far past the handle; grows the extension exponentially
+                const pressure = Math.min(1.5, 0.25 + pull.over / 70);
+                const span = A.t1 - pull.t0Ext;
+                pull.t0Ext -= span * 0.9 * pressure * dt;
+                const min = parseD('2020-01-01');
+                if (pull.t0Ext < min) pull.t0Ext = min;
+                A.t = pull.t0Ext; // playhead pinned at the (moving) start
+                // preview: move start handle + progress to the extended position
+                const sh = startHandleEl();
+                const range = document.getElementById('time-slider-range');
+                const totalSpan = parseD(fmtDate(Date.now())) - min;
+                const pctS = Math.max(0, (pull.t0Ext - min) / totalSpan * 100);
+                if (sh) { sh.style.left = pctS + '%'; sh.classList.add('fine-squeeze'); }
+                const [, ep] = [null, parseFloat(document.getElementById('time-slider-end').style.left) || 100];
+                if (range) { range.style.left = pctS + '%'; range.style.width = (ep - pctS) + '%'; }
+                const ph2 = document.getElementById('anim-playhead');
+                if (ph2) ph2.style.left = pctS + '%';
+                const prg = document.getElementById('anim-progress');
+                if (prg) { prg.style.left = pctS + '%'; prg.style.width = '0%'; }
+                const lbl = document.getElementById('anim-date-lbl');
+                if (lbl) lbl.textContent = fmtDateHuman(pull.t0Ext);
+                const sLbl = document.getElementById('time-slider-date-start');
+                if (sLbl) sLbl.textContent = fmtDateHuman(pull.t0Ext);
+            }
+            pull.last = now;
+            pull.raf = requestAnimationFrame(pullLoop);
+        }
         const scrubMove = (e) => {
             const rect = track.getBoundingClientRect();
             const x = (e.touches ? e.touches[0].clientX : e.clientX);
             const pct = Math.max(0, Math.min(100, (x - rect.left) / rect.width * 100));
             const [s, ep] = sliderRangePcts();
+            const sX = rect.left + s / 100 * rect.width;
+            const over = sX - x; // px past the left handle
+            if (over > 8 && !A.recording) {
+                if (!pull) {
+                    pull = { t0Ext: A.t0, raf: 0, last: null, over, heldSince: performance.now() };
+                    pull.raf = requestAnimationFrame(pullLoop);
+                }
+                pull.over = over;
+                e.preventDefault();
+                return;
+            }
+            if (pull) { // pulled back inside → cancel extension preview
+                cancelAnimationFrame(pull.raf); pull = null;
+                const sh = startHandleEl(); if (sh) sh.classList.remove('fine-squeeze');
+                if (typeof updateSliderDisplay === 'function') updateSliderDisplay();
+            }
             const frac = Math.max(0, Math.min(1, (pct - s) / Math.max(0.001, ep - s)));
             A.t = A.t0 + (A.t1 - A.t0) * frac;
             drawAndSync();
@@ -937,6 +990,20 @@
             document.removeEventListener('pointermove', scrubMove);
             document.removeEventListener('pointerup', scrubEnd);
             document.removeEventListener('pointercancel', scrubEnd);
+            if (pull) {
+                cancelAnimationFrame(pull.raf);
+                const extended = pull.t0Ext < A.t0 - DAY / 2;
+                const newFrom = fmtDate(pull.t0Ext);
+                pull = null;
+                const sh = startHandleEl(); if (sh) sh.classList.remove('fine-squeeze');
+                if (extended && typeof window.setTimeSliderRange === 'function') {
+                    // Applies the widened window; onDateRangeChanged reopens the
+                    // animation over it (keeping layers), starting from the left.
+                    window.setTimeSliderRange(newFrom, A.toISO);
+                    return;
+                }
+                if (typeof updateSliderDisplay === 'function') updateSliderDisplay();
+            }
             if (wasPlaying) play();
         };
         const beginScrub = (e) => {

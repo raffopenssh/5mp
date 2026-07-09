@@ -535,6 +535,8 @@
         .time-slider-handle { position: absolute; top: 50%; width: 16px; height: 16px; background: #22c55e; border: 2px solid #fff; border-radius: 50%; transform: translate(-50%, -50%); cursor: grab; z-index: 2; transition: transform 0.1s, box-shadow 0.1s; touch-action: none; }
         .time-slider-handle:hover { transform: translate(-50%, -50%) scale(1.2); box-shadow: 0 0 10px rgba(34,197,94,0.5); }
         .time-slider-handle:active { cursor: grabbing; }
+        /* fine-squeeze / pull-extend feedback: handle glows amber while gravity-dragging */
+        .time-slider-handle.fine-squeeze { background: #f59e0b; box-shadow: 0 0 12px rgba(245,158,11,0.8); transform: translate(-50%, -50%) scale(1.25); }
         .time-slider-ticks { position: relative; height: 20px; margin-top: 4px; }
         .time-slider-tick { position: absolute; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
         .time-slider-tick-line { width: 1px; height: 6px; background: rgba(255,255,255,0.2); }

@@ -10591,7 +10591,111 @@
                 return rect.left + (v / TOTAL_MONTHS) * rect.width;
             }
 
+            // ---- Fine squeeze: push past the 1-month minimum to reach 1 day ----
+            // Keeping the pointer pressed beyond the limit compresses the range
+            // exponentially over time (speed ∝ how far you push), so it naturally
+            // decelerates as it approaches 1 day — inverse-gravity feel. Works at
+            // screen edges too (unlike pure pixel-overshoot mapping).
+            const MS_DAY = 86400000;
+            let fine = null; // {gap, over, anchorStart, anchorEnd, from, to, raf, last}
+
+            function daysInMonth(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(); }
+            function fracPct(d) {
+                const m = monthsBetween(SLIDER_START_DATE, d) + (d.getDate() - 1) / daysInMonth(d);
+                return Math.max(0, Math.min(100, m / TOTAL_MONTHS * 100));
+            }
+            function placeHandlesPrecise(fromD, toD) {
+                const sp = fracPct(fromD), ep = fracPct(toD);
+                document.getElementById('time-slider-start').style.left = sp + '%';
+                document.getElementById('time-slider-end').style.left = ep + '%';
+                const range = document.getElementById('time-slider-range');
+                range.style.left = sp + '%';
+                range.style.width = Math.max(0.2, ep - sp) + '%';
+            }
+            initSliderDrag._placeHandlesPrecise = placeHandlesPrecise;
+
+            function enterFine() {
+                const today = new Date(); today.setHours(0, 0, 0, 0);
+                let anchorStart, anchorEnd;
+                if (activeHandle === 'start') {
+                    const em = valueToDate(sliderEndValue);
+                    anchorEnd = new Date(em.getFullYear(), em.getMonth() + 1, 0);
+                    if (anchorEnd > today) anchorEnd = today;
+                    anchorStart = null; // start floats toward anchorEnd
+                } else {
+                    anchorStart = valueToDate(sliderStartValue);
+                    anchorEnd = null;   // end floats toward anchorStart
+                }
+                const fixedS = anchorStart || valueToDate(sliderEndValue - 1);
+                let fixedE = anchorEnd;
+                if (!fixedE) {
+                    const lm = valueToDate(sliderStartValue + 1);
+                    fixedE = new Date(lm.getFullYear(), lm.getMonth() + 1, 0);
+                    if (fixedE > today) fixedE = today;
+                }
+                const baseGap = Math.max(1, Math.round((fixedE - fixedS) / MS_DAY) + 1);
+                fine = { gap: baseGap, over: 0, anchorStart, anchorEnd, last: null, raf: 0 };
+                document.getElementById('time-slider-start').classList.add('fine-squeeze');
+                document.getElementById('time-slider-end').classList.add('fine-squeeze');
+                fine.raf = requestAnimationFrame(fineLoop);
+            }
+            function exitFine(apply) {
+                if (!fine) return;
+                cancelAnimationFrame(fine.raf);
+                document.getElementById('time-slider-start').classList.remove('fine-squeeze');
+                document.getElementById('time-slider-end').classList.remove('fine-squeeze');
+                const f = fine; fine = null;
+                if (apply && f.from && f.to) {
+                    applyPreciseDateFilter(f.from, f.to);
+                    // keep the squeezed look — applyPreciseDateFilter snaps handles
+                    // a whole month apart otherwise
+                    placeHandlesPrecise(new Date(f.from + 'T00:00:00'), new Date(f.to + 'T00:00:00'));
+                    return true;
+                }
+                return false;
+            }
+            function fineLoop(now) {
+                if (!fine || !activeHandle) return;
+                const dt = Math.min(100, now - (fine.last || now)) / 1000;
+                fine.last = now;
+                // push harder → compress faster; exponential → decelerates near 1 day
+                const pressure = Math.min(1.6, 0.3 + fine.over / 60);
+                fine.gap = Math.max(1, fine.gap * Math.exp(-2.2 * pressure * dt));
+                const gap = Math.max(1, Math.round(fine.gap));
+                let fromD, toD;
+                if (fine.anchorEnd) { // dragging start
+                    toD = fine.anchorEnd;
+                    fromD = new Date(toD.getTime() - (gap - 1) * MS_DAY);
+                } else {              // dragging end
+                    fromD = fine.anchorStart;
+                    toD = new Date(fromD.getTime() + (gap - 1) * MS_DAY);
+                }
+                fine.from = formatDateISO(fromD);
+                fine.to = formatDateISO(toD);
+                placeHandlesPrecise(fromD, toD);
+                const sEl = document.getElementById('time-slider-date-start');
+                const eEl = document.getElementById('time-slider-date-end');
+                if (sEl) sEl.textContent = formatPreciseDate(fromD);
+                if (eEl) eEl.textContent = formatPreciseDate(toD);
+                fine.raf = requestAnimationFrame(fineLoop);
+            }
+
             function applyDrag(e) {
+                const rect = track.getBoundingClientRect();
+                const rawX = e.touches ? e.touches[0].clientX : e.clientX;
+                // distance pushed past the 1-month-gap limit position
+                const limit = activeHandle === 'start' ? sliderEndValue - 1 : sliderStartValue + 1;
+                const limitX = rect.left + (limit / TOTAL_MONTHS) * rect.width;
+                const over = activeHandle === 'start' ? rawX - limitX : limitX - rawX;
+
+                if (over > 0) {
+                    if (activeHandle === 'start') sliderStartValue = limit; else sliderEndValue = limit;
+                    if (!fine) enterFine();
+                    fine.over = over;
+                    return;
+                }
+                if (fine) exitFine(false); // pulled back out → resume month snapping
+
                 const value = getValueFromEvent(e);
                 if (activeHandle === 'start') {
                     sliderStartValue = Math.max(0, Math.min(value, sliderEndValue - 1));
@@ -10615,6 +10719,15 @@
             }
 
             function onEnd() {
+                if (fine) {
+                    const applied = exitFine(true); // precise 1-day-capable range
+                    activeHandle = null; pendingDown = null;
+                    document.removeEventListener('pointermove', onMove);
+                    document.removeEventListener('pointerup', onEnd);
+                    document.removeEventListener('pointercancel', onEnd);
+                    document.removeEventListener('touchmove', blockScroll);
+                    if (applied) return;
+                }
                 if (activeHandle && dragged) updateDateFilter();
                 activeHandle = null;
                 pendingDown = null;
