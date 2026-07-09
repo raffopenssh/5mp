@@ -1,3 +1,4 @@
+3eb899c 2026-07-09 06:28:34 Validate park IDs centrally; carry URL params through tryout login
 673214a 2026-07-09 05:55:09 Data refresh: daily fire/deforestation/turbidity updates
 be42642 2026-07-09 05:46:36 Update generated commit list
 8e9d220 2026-07-09 05:46:15 Repo hygiene: centralize runtime config, prune stale docs
@@ -17,4 +18,3 @@ e919b39 2026-07-07 04:34:23 Collapse date presets behind a span chip; slider bac
 f3da382 2026-07-07 04:03:27 Fix pinned patrol-visits layer vanishing on time filter change
 5f64fdc 2026-07-07 03:56:41 Data refresh: daily fire/deforestation/settlement export updates
 82dfe00 2026-07-07 03:56:19 River names as line labels + patrol visit counts toggle in park popup
-56daed9 2026-07-06 17:06:08 chore: update Zenodo backup manifest (2026-07-06 gzip backup)
