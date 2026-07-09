@@ -143,9 +143,16 @@
         mini.className = 'fui-mini-count';
         title.appendChild(mini);
 
-        // Slim grab-bar: drag to move, tap to collapse, tiny dock control
+        // Slim grab-bar: drag to move, tap to collapse, tiny dock control.
+        // The old header row is merged into the bar to save vertical space:
+        // title goes left, clear-all × joins the bar controls, header hidden.
         const bar = makeBar('Pinned layers');
         el.insertBefore(bar, header);
+        el.classList.add('fui-compact');
+        bar.insertBefore(title, bar.firstChild);
+        const closeBtn = header.querySelector('.pinned-indicator-close');
+        if (closeBtn) bar.querySelector('.fui-bar-btns').appendChild(closeBtn);
+        header.style.display = 'none';
 
         let savedScroll = 0;
 

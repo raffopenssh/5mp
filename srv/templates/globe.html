@@ -7160,7 +7160,7 @@
             const paId = props.id || wdpaId;
             const isSelected = selectedParks.some(p => p.id === (props.id || wdpaId || name));
             
-            const areaDisplay = areaKm2 ? formatNumber(areaKm2) + ' km²' : '--';
+            const areaDisplay = areaKm2 ? formatNumber(Math.round(areaKm2)) + ' km²' : '--';
             
             const popupContent = `
                 <div class="pa-popup" style="min-width: 260px;">
@@ -7179,7 +7179,7 @@
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                                 <circle cx="12" cy="10" r="3"></circle>
                             </svg>
-                            ${escapeHtml(country)} ${areaKm2 ? `• ${areaDisplay}` : ''}
+                            <span class="pa-popup-country-name" title="${escapeHtml(country)}">${escapeHtml(country)}</span>${areaKm2 ? `<span class="pa-popup-area">• ${areaDisplay}</span>` : ''}
                         </div>
                     </div>
                     
@@ -15415,8 +15415,10 @@ ${starredItems.narratives.map(n => {
         
         parkNames.forEach(park => {
             const pins = byPark[park];
+            // Prettify raw park IDs like "CAF_Chinko" -> "Chinko"
+            const parkLabel = String(park).replace(/^[A-Z]{3}_/, '').replace(/_/g, ' ');
             html += `<div class="pinned-park-group">`;
-            html += `<div class="pinned-park-name">${park}</div>`;
+            html += `<div class="pinned-park-name" title="${park}">${parkLabel}</div>`;
             html += `<div class="pinned-park-layers">`;
             
             pins.forEach(p => {

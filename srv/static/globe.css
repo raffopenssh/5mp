@@ -670,7 +670,7 @@
         @keyframes section-pulse { 0%, 100% { background: rgba(255,255,255,0.03); } 50% { background: rgba(255,255,255,0.08); } }
         
         /* Pinned layers badge - redesigned for clarity */
-        .pinned-indicator { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(34,197,94,0.4); border-radius: 8px; padding: 8px 12px; z-index: 300; font-size: 11px; color: #ccc; display: none; flex-direction: column; gap: 6px; max-width: 90vw; min-width: 200px; backdrop-filter: blur(10px); transition: all 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+        .pinned-indicator { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(34,197,94,0.4); border-radius: 8px; padding: 4px 8px 6px; z-index: 300; font-size: 11px; color: #ccc; display: none; flex-direction: column; gap: 4px; max-width: 90vw; min-width: 170px; backdrop-filter: blur(10px); transition: all 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
         .pinned-indicator.active { display: flex; }
         .pinned-indicator-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .pinned-indicator-title { display: flex; align-items: center; gap: 6px; font-weight: 500; color: #22c55e; font-size: 11px; }
@@ -678,10 +678,10 @@
         .pinned-indicator-close { color: #888; font-size: 16px; padding: 2px 6px; cursor: pointer; border-radius: 4px; transition: all 0.15s; }
         .pinned-indicator-close:hover { color: #ef4444; background: rgba(239,68,68,0.1); }
         .pinned-indicator-items { display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; }
-        .pinned-park-group { display: flex; flex-direction: column; gap: 2px; }
-        .pinned-park-name { font-size: 10px; color: #888; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
-        .pinned-park-layers { display: flex; flex-wrap: wrap; gap: 4px; padding-left: 8px; }
-        .pinned-layer-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; transition: all 0.15s; }
+        .pinned-park-group { display: flex; flex-direction: row; align-items: baseline; gap: 6px; }
+        .pinned-park-name { font-size: 9px; color: #888; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; flex-shrink: 0; }
+        .pinned-park-layers { display: flex; flex-wrap: wrap; gap: 3px; padding-left: 0; }
+        .pinned-layer-chip { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px; border-radius: 4px; font-size: 10px; cursor: pointer; transition: all 0.15s; }
         .pinned-layer-chip:hover { filter: brightness(1.2); }
         .pinned-layer-chip.fire { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
         .pinned-layer-chip.settlement { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
@@ -712,6 +712,12 @@
         .fui-bar-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
         .fui-bar-btn i { font-size: 11px; display: inline-block; transition: transform 0.2s; }
         .fui-mini-count { display: none; background: rgba(34,197,94,0.2); color: #22c55e; border-radius: 8px; padding: 0 6px; font-size: 10px; font-weight: 600; line-height: 16px; }
+        /* Compact mode: title + grabber + controls merged into one bar row */
+        .fui-compact .fui-bar { height: 20px; margin: 0; justify-content: flex-start; gap: 6px; }
+        .fui-compact .fui-bar .pinned-indicator-title { flex-shrink: 0; }
+        .fui-compact .fui-grabber { flex: 1; max-width: none; width: auto; margin: 0 4px; }
+        .fui-compact .fui-bar-btns { position: static; transform: none; flex-shrink: 0; opacity: 0.7; }
+        .fui-compact .fui-bar .pinned-indicator-close { font-size: 13px; padding: 0 4px; line-height: 1; display: inline-flex; align-items: center; }
 
         /* Pinned indicator states */
         .pinned-indicator.fui-moved { transform: none; }
@@ -1021,7 +1027,10 @@
         .pa-popup-header { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-right: 24px; }
         .pa-popup-name { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px; }
         .pa-popup-name .star-btn { margin-left: 8px; }
-        .pa-popup-country { font-size: 11px; color: #888; display: flex; align-items: center; gap: 4px; }
+        .pa-popup-country { font-size: 11px; color: #888; display: flex; align-items: center; gap: 4px; white-space: nowrap; min-width: 0; }
+        .pa-popup-country svg { flex-shrink: 0; }
+        .pa-popup-country-name { overflow: hidden; text-overflow: ellipsis; min-width: 0; flex-shrink: 1; }
+        .pa-popup-area { flex-shrink: 0; }
         .pa-popup-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .pa-popup-stat { background: rgba(255,255,255,0.04); border-radius: 4px; padding: 8px; }
         .pa-popup-stat-label { font-size: 9px; color: #999; text-transform: uppercase; margin-bottom: 2px; }
