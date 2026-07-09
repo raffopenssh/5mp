@@ -1,0 +1,195 @@
+{
+ "park_id": "AGO_Cameia",
+ "scanned_at": "2026-07-07T06:01:45Z",
+ "datetime_range": "2026-05-23T00:00:00Z/2026-07-07T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 156,
+ "n_sample_pts": 13284,
+ "alerts": [],
+ "rivers": [
+  {
+   "name": "Lungu\u00e9-Bungo",
+   "waterway": "river",
+   "length_km": 165.0,
+   "water_samples": 238,
+   "turbid_km": 0.5
+  },
+  {
+   "name": "Chifumage",
+   "waterway": "river",
+   "length_km": 193.4,
+   "water_samples": 110,
+   "turbid_km": 0.2
+  },
+  {
+   "name": "Zambezi",
+   "waterway": "river",
+   "length_km": 296.7,
+   "water_samples": 550,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Longonho",
+   "waterway": "river",
+   "length_km": 88.2,
+   "water_samples": 10,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Luena",
+   "waterway": "river",
+   "length_km": 459.3,
+   "water_samples": 177,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Cassai",
+   "waterway": "river",
+   "length_km": 371.1,
+   "water_samples": 272,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Lumbala",
+   "waterway": "river",
+   "length_km": 203.4,
+   "water_samples": 40,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Lufuige",
+   "waterway": "river",
+   "length_km": 173.7,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Chicaluege",
+   "waterway": "river",
+   "length_km": 146.3,
+   "water_samples": 14,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Lutembo",
+   "waterway": "river",
+   "length_km": 25.4,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Calunda",
+   "waterway": "river",
+   "length_km": 52.0,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Chefumage",
+   "waterway": "river",
+   "length_km": 181.2,
+   "water_samples": 54,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mavunda",
+   "waterway": "stream",
+   "length_km": 36.2,
+   "water_samples": 4,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 90.9,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 37.9,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 22.6,
+   "water_samples": 6,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 17.6,
+   "water_samples": 9,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 11.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 24.5,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 43.3,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 16.7,
+   "water_samples": 3,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 23.5,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 20.1,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": -12.70192,
+   "lon": 20.49119,
+   "red": 1225,
+   "date": "2026-07-04",
+   "river": "Lungu\u00e9-Bungo"
+  },
+  {
+   "lat": -12.69619,
+   "lon": 20.49515,
+   "red": 1296,
+   "date": "2026-07-04",
+   "river": "Lungu\u00e9-Bungo"
+  },
+  {
+   "lat": -12.21885,
+   "lon": 22.53048,
+   "red": 1213,
+   "date": "2026-07-06",
+   "river": "Chifumage"
+  }
+ ]
+}

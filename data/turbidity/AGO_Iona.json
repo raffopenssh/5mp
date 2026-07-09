@@ -1,0 +1,454 @@
+{
+ "park_id": "AGO_Iona",
+ "scanned_at": "2026-07-08T06:00:53Z",
+ "datetime_range": "2026-05-24T00:00:00Z/2026-07-08T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 123,
+ "n_sample_pts": 9717,
+ "alerts": [],
+ "rivers": [
+  {
+   "name": "Cunene",
+   "waterway": "river",
+   "length_km": 354.2,
+   "water_samples": 578,
+   "turbid_km": 8.0
+  },
+  {
+   "name": "Curoca",
+   "waterway": "river",
+   "length_km": 330.7,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Orumwe",
+   "waterway": "river",
+   "length_km": 37.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Otjitanga",
+   "waterway": "river",
+   "length_km": 123.4,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Ombuka",
+   "waterway": "river",
+   "length_km": 95.0,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Ondoto",
+   "waterway": "river",
+   "length_km": 81.1,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Ouliamuquende",
+   "waterway": "river",
+   "length_km": 29.4,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Hiquia (Carvalh\u00e3o)",
+   "waterway": "river",
+   "length_km": 31.4,
+   "water_samples": 5,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Foz do Rio Cunene",
+   "waterway": "river",
+   "length_km": 6.7,
+   "water_samples": 16,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 60.1,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 15.1,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 10.5,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 18.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 3.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 4.7,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 3.3,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": -17.38151,
+   "lon": 13.91655,
+   "red": 1498,
+   "date": "2026-07-07",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.13958,
+   "lon": 13.52256,
+   "red": 1371,
+   "date": "2026-07-07",
+   "river": "Cunene"
+  },
+  {
+   "lat": -16.98,
+   "lon": 13.04404,
+   "red": 1211,
+   "date": "2026-07-07",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.00087,
+   "lon": 12.96579,
+   "red": 1577,
+   "date": "2026-07-07",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.00355,
+   "lon": 12.96498,
+   "red": 1396,
+   "date": "2026-07-07",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.23999,
+   "lon": 12.54951,
+   "red": 1367,
+   "date": "2026-07-07",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.17143,
+   "lon": 11.99439,
+   "red": 1238,
+   "date": "2026-07-03",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.17236,
+   "lon": 11.9893,
+   "red": 1213,
+   "date": "2026-07-03",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.19766,
+   "lon": 11.91437,
+   "red": 1230,
+   "date": "2026-07-03",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.20042,
+   "lon": 11.9096,
+   "red": 1239,
+   "date": "2026-07-03",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.20441,
+   "lon": 11.90316,
+   "red": 1254,
+   "date": "2026-07-03",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.26413,
+   "lon": 11.81757,
+   "red": 1222,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.26414,
+   "lon": 11.81452,
+   "red": 1274,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.26501,
+   "lon": 11.81179,
+   "red": 1232,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.26673,
+   "lon": 11.80977,
+   "red": 1201,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.26846,
+   "lon": 11.80812,
+   "red": 1207,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.2683,
+   "lon": 11.80519,
+   "red": 1212,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.26823,
+   "lon": 11.80222,
+   "red": 1221,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.26792,
+   "lon": 11.79949,
+   "red": 1219,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.27101,
+   "lon": 11.79665,
+   "red": 1246,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.2734,
+   "lon": 11.79517,
+   "red": 1235,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.27219,
+   "lon": 11.78939,
+   "red": 1204,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.26747,
+   "lon": 11.78376,
+   "red": 1202,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.26516,
+   "lon": 11.78116,
+   "red": 1242,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.26035,
+   "lon": 11.77786,
+   "red": 1294,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.25861,
+   "lon": 11.77539,
+   "red": 1250,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.258,
+   "lon": 11.77304,
+   "red": 1302,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.25763,
+   "lon": 11.77057,
+   "red": 1278,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.25602,
+   "lon": 11.76555,
+   "red": 1295,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.2537,
+   "lon": 11.76,
+   "red": 1271,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.25142,
+   "lon": 11.75422,
+   "red": 1302,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -17.25033,
+   "lon": 11.75201,
+   "red": 1306,
+   "date": "2026-06-28",
+   "river": "Cunene"
+  },
+  {
+   "lat": -16.9832,
+   "lon": 13.37528,
+   "red": 1847,
+   "date": "2026-07-07",
+   "river": "Ombuka"
+  },
+  {
+   "lat": -15.76446,
+   "lon": 12.08842,
+   "red": 2184,
+   "date": "2026-07-03",
+   "river": "Hiquia (Carvalh\u00e3o)"
+  },
+  {
+   "lat": -17.27101,
+   "lon": 11.79665,
+   "red": 1246,
+   "date": "2026-06-28",
+   "river": "Foz do Rio Cunene"
+  },
+  {
+   "lat": -17.2734,
+   "lon": 11.79517,
+   "red": 1235,
+   "date": "2026-06-28",
+   "river": "Foz do Rio Cunene"
+  },
+  {
+   "lat": -17.27341,
+   "lon": 11.79181,
+   "red": 1257,
+   "date": "2026-06-28",
+   "river": "Foz do Rio Cunene"
+  },
+  {
+   "lat": -17.26747,
+   "lon": 11.78376,
+   "red": 1202,
+   "date": "2026-06-28",
+   "river": "Foz do Rio Cunene"
+  },
+  {
+   "lat": -17.26452,
+   "lon": 11.78062,
+   "red": 1283,
+   "date": "2026-06-28",
+   "river": "Foz do Rio Cunene"
+  },
+  {
+   "lat": -17.26035,
+   "lon": 11.77786,
+   "red": 1294,
+   "date": "2026-06-28",
+   "river": "Foz do Rio Cunene"
+  },
+  {
+   "lat": -17.25861,
+   "lon": 11.77539,
+   "red": 1250,
+   "date": "2026-06-28",
+   "river": "Foz do Rio Cunene"
+  },
+  {
+   "lat": -17.258,
+   "lon": 11.77304,
+   "red": 1302,
+   "date": "2026-06-28",
+   "river": "Foz do Rio Cunene"
+  },
+  {
+   "lat": -17.25763,
+   "lon": 11.77057,
+   "red": 1278,
+   "date": "2026-06-28",
+   "river": "Foz do Rio Cunene"
+  },
+  {
+   "lat": -17.25584,
+   "lon": 11.76511,
+   "red": 1307,
+   "date": "2026-06-28",
+   "river": "Foz do Rio Cunene"
+  },
+  {
+   "lat": -17.25349,
+   "lon": 11.75925,
+   "red": 1256,
+   "date": "2026-06-28",
+   "river": "Foz do Rio Cunene"
+  },
+  {
+   "lat": -17.25074,
+   "lon": 11.75285,
+   "red": 1318,
+   "date": "2026-06-28",
+   "river": "Foz do Rio Cunene"
+  },
+  {
+   "lat": -17.25012,
+   "lon": 11.74715,
+   "red": 1475,
+   "date": "2026-06-20",
+   "river": "Foz do Rio Cunene"
+  }
+ ]
+}

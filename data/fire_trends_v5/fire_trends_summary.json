@@ -1,9 +1,9 @@
 {
-  "total_groups": 321,
-  "total_fires": 448,
+  "total_groups": 0,
+  "total_fires": 0,
   "total_parks": 1,
   "date_range": {
-    "start": "2026-06-25",
+    "start": "2020-01-01",
     "end": "2026-07-09"
   },
   "algorithm": "v6_track_matching",
@@ -22,8 +22,8 @@
     "max_zigzag_ratio": 0.3
   },
   "trajectory_types": {
-    "clean": 214,
-    "cleaned": 107,
+    "clean": 0,
+    "cleaned": 0,
     "cluster": 0
   }
 }
