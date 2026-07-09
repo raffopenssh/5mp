@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strconv"
+	"strings"
 )
 
 // KmPerDegree is the approximate km per degree of latitude/longitude.
@@ -62,7 +64,7 @@ type KeystonePA struct {
 	Donor       *string `json:"donor"`
 	Performance *string `json:"performance"`
 	WDPAID      string  `json:"wdpa_id"`
-	AreaKm2     *float64 `json:"area_km2"`
+	AreaKm2     *FlexFloat `json:"area_km2"`
 	Coordinates struct {
 		Lat float64 `json:"lat"`
 		Lon float64 `json:"lon"`
@@ -175,7 +177,7 @@ func loadKeystonesWithBoundaries(path string) (*AreaStore, error) {
 				BufferKm:    5.0, // 5km buffer for matching
 			}
 			if ks.AreaKm2 != nil {
-				area.AreaKm2 = *ks.AreaKm2
+				area.AreaKm2 = float64(*ks.AreaKm2)
 			}
 		} else {
 			// Fall back to circle approximation
@@ -193,7 +195,7 @@ func keystoneToArea(ks KeystonePA) ProtectedArea {
 	// Calculate radius from area (A = πr²)
 	areaKm2 := 1000.0 // Default 1000 km² if not specified
 	if ks.AreaKm2 != nil {
-		areaKm2 = *ks.AreaKm2
+		areaKm2 = float64(*ks.AreaKm2)
 	}
 
 	radiusKm := math.Sqrt(areaKm2 / math.Pi)
@@ -522,5 +524,24 @@ func (s *AreaStore) GetByID(id string) *ProtectedArea {
 			return &s.Areas[i]
 		}
 	}
+	return nil
+}
+
+// FlexFloat unmarshals a JSON number that may be quoted as a string
+// (e.g. Protected Planet's reported_area). A single stringly-typed field
+// must never knock the whole boundaries file back to circle fallbacks.
+type FlexFloat float64
+
+func (f *FlexFloat) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), `"`)
+	if s == "" || s == "null" {
+		*f = 0
+		return nil
+	}
+	v, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return err
+	}
+	*f = FlexFloat(v)
 	return nil
 }

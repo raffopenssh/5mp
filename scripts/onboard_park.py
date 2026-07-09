@@ -83,7 +83,7 @@ def fetch_pp_area(wdpa_id):
     cname = countries[0].get('name') if countries else ''
     return {
         'name': pa.get('name'), 'iso3': iso3, 'country': cname,
-        'area_km2': pa.get('reported_area') or 0, 'geometry': geom,
+        'area_km2': float(pa.get('reported_area') or 0), 'geometry': geom,
         'iucn': pa.get('iucn_category', {}).get('name') if isinstance(pa.get('iucn_category'), dict) else '',
     }
 

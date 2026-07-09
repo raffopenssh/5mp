@@ -1,3 +1,4 @@
+0dc9258 2026-07-09 18:29:17 Star report: unified multi-report handling, section-filtered exports, coherent accordion stars
 7b84afa 2026-07-09 18:08:08 Data: daily worker outputs (GFW, turbidity, mining pits, OSM waterways)
 aa1b4d4 2026-07-09 18:08:08 Onboard DZA_Djurdjura via worker test (163 parks, onboarded_at set)
 157e4fb 2026-07-09 17:58:21 Onboarding fixes: all-time fire backfill, FIRMS 5-day cap, search loaded-flag bug
@@ -17,4 +18,3 @@ b4341f4 2026-07-09 10:05:19 Update generated commit list
 8396053 2026-07-09 10:05:17 Compact pinned-layers box + cleaner popup country line
 8797be3 2026-07-09 09:46:51 Update generated commit list
 604a285 2026-07-09 09:46:28 FloatUI: draggable/collapsible/dockable pinned-layers box and park popup
-44e2e4e 2026-07-09 09:26:15 Locus: 5m gap in closed rings so Locus draws lines not polygons; tooltip export buttons as uniform Lucide icons
