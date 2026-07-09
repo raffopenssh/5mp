@@ -9,7 +9,7 @@ package srv
 // about a day. scripts/onboard_park.py (nightly cron, before the 3am fire
 // update) picks up pending requests: fetches the boundary from Protected
 // Planet, appends it to data/keystones_with_boundaries.json, backfills fires
-// (max(6 months, current year)), GFW deforestation, GHSL settlements, hydro
+// (all-time since 2018-04-01, ~25-30 min/park), GFW deforestation, GHSL settlements, hydro
 // rivers/lakes when source data is present, runs the v5 fire pipeline, and
 // restarts the server. The GFW/turbidity daily rotations then automatically
 // prioritise the new park (never-scanned parks sort first).
@@ -83,7 +83,7 @@ func (s *Server) HandleAPIRequestOnboard(w http.ResponseWriter, r *http.Request)
 	title := fmt.Sprintf("New park requested: %s", entry.Name)
 	msg := fmt.Sprintf(
 		"%s (%s, WDPA %d) is queued for onboarding. Boundary, fire history "+
-			"(last 6 months / current year), deforestation, settlement and river "+
+			"(full archive since 2018), deforestation, settlement and river "+
 			"layers take about a day to fetch and process — the park will appear "+
 			"on the globe tomorrow and will be prioritised in the daily scans.",
 		entry.Name, entry.Country, wdpaID)

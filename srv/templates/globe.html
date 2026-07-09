@@ -6912,16 +6912,21 @@
                     fetch(`/api/wdpa/search?q=${encodeURIComponent(query)}`)
                 ]);
                 
-                const keystones = keystonesRes.ok ? await keystonesRes.json() : [];
+                const areaResults = keystonesRes.ok ? await keystonesRes.json() : [];
                 const wdpaAreas = wdpaRes.ok ? await wdpaRes.json() : [];
-                
-                // Merge results: keystones first (loaded), then WDPA unloaded
-                const loadedIds = new Set(keystones.map(k => k.name.toLowerCase()));
-                const unloaded = wdpaAreas.filter(w => !loadedIds.has(w.name.toLowerCase()) && !w.loaded);
-                const merged = [...keystones.map(k => ({...k, loaded: true})), ...unloaded];
-                
+
+                // /api/areas/search mixes loaded keystones (loaded:true) with
+                // unloaded WDPA entries (loaded:false) — split by the real flag.
+                const keystones = areaResults.filter(a => a.type !== 'pa' || a.loaded !== false);
+                const areaUnloaded = areaResults.filter(a => a.type === 'pa' && a.loaded === false);
+                const loadedIds = new Set(keystones.filter(a => a.type === 'pa').map(k => k.name.toLowerCase()));
+                const seenWdpa = new Set(areaUnloaded.map(a => String(a.wdpa_id)));
+                const unloaded = [...areaUnloaded, ...wdpaAreas.filter(w =>
+                    !w.loaded && !loadedIds.has(w.name.toLowerCase()) && !seenWdpa.has(String(w.wdpa_id)))];
+                const merged = [...keystones, ...unloaded];
+
                 displaySearchResults(merged);
-                scheduleOnboardDwell(query, keystones, unloaded);
+                scheduleOnboardDwell(query, keystones.filter(a => a.type === 'pa'), unloaded);
             } catch (err) {
                 console.error('Search error:', err);
                 results.innerHTML = '<div class="search-no-results">Search failed</div>';
@@ -6962,7 +6967,7 @@
                 if (!results || results.style.display === 'none') return;
                 // don't re-offer if already requested
                 const rows = await getOnboardingStatus();
-                const existing = rows.find(r => r.wdpa_id === wdpaMatch.wdpa_id);
+                const existing = rows.find(r => String(r.wdpa_id) === String(wdpaMatch.wdpa_id));
                 showOnboardOffer(wdpaMatch, existing);
             }, 15000);
         }

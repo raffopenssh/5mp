@@ -10,7 +10,8 @@ don't have but WDPA does). For each pending prod request:
  2. Assign park_id = {ISO3}_{SanitizedName}; append to
     data/keystones_with_boundaries.json (backup written first).
  3. Backfill fires from FIRMS archive API for park bbox+100km buffer:
-    window = max(6 months, start of current year) .. today.
+    window = all-time (2018-04-01, global dataset start) .. today.
+    ~600 five-day FIRMS requests, roughly 25-30 min per park.
  4. Backfill GFW deforestation alerts (same window) via analysis/gfw_alerts.py
     --park (rotation state untouched -> new park also becomes top rotation
     priority for future scans automatically, since never-scanned sorts first).
@@ -137,12 +138,16 @@ def append_keystone(park_id, meta, dry_run):
     return True
 
 
+# Global VIIRS coverage in fire_detections starts here; all-time backfill
+# for a park bbox is ~600 five-day FIRMS requests ≈ 25-30 min. Cron runs at
+# 01:00 so even a slow park finishes well before the 03:00 daily fire update.
+FIRE_DATA_START = datetime(2018, 4, 1, tzinfo=timezone.utc).date()
+
+
 def backfill_window():
-    """max(6 months back, Jan 1 of current year) .. today."""
+    """All-time: global fire dataset start .. today."""
     today = datetime.now(timezone.utc).date()
-    six_months = today - timedelta(days=183)
-    jan1 = today.replace(month=1, day=1)
-    return min(six_months, jan1), today
+    return FIRE_DATA_START, today
 
 
 def backfill_fires(conn, park_id, geometry, dry_run):
@@ -165,10 +170,11 @@ def backfill_fires(conn, park_id, geometry, dry_run):
     inserted = 0
     cur = conn.cursor()
 
-    # FIRMS allows max 10-day ranges; SP for archive, NRT for the recent tail.
+    # FIRMS area API allows max 5-day ranges ("Invalid day range. Expects [1..5]");
+    # SP for archive, NRT for the recent tail.
     day = start
     while day <= today:
-        span = min(10, (today - day).days + 1)
+        span = min(5, (today - day).days + 1)
         age = (today - day).days
         source = "VIIRS_NOAA20_NRT" if age <= 60 else "VIIRS_NOAA20_SP"
         url = f"{FIRMS_URL}/{key}/{source}/{area}/{span}/{day.strftime('%Y-%m-%d')}"
@@ -368,8 +374,20 @@ def main():
         log("no pending onboarding requests")
         return
 
+    # Deadline guard: the 03:00 daily fire update must not overlap with a
+    # long all-time backfill. Stop starting new requests after 02:30 UTC;
+    # leftovers stay 'pending' and run next night. (No guard for --request-id.)
+    def past_deadline():
+        if args.request_id:
+            return False
+        now = datetime.now(timezone.utc)
+        return now.hour == 2 and now.minute >= 30 or 3 <= now.hour < 5
+
     any_ok = False
     for req in reqs:
+        if past_deadline():
+            log(f"deadline (02:30 UTC) reached; deferring request {req['id']} ({req['name']}) to next run")
+            continue
         try:
             if req['status'] == 'remove_requested':
                 process_removal(conn, dict(req), args.dry_run)
