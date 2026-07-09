@@ -143,6 +143,10 @@
         /* Session / TEST ENV chip */
         .session-chip { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; align-items: center; gap: 8px; background: rgba(30,30,30,0.92); color: #ccc; font: 600 11px/1 'SF Mono',Menlo,Consolas,monospace; padding: 5px 6px 5px 10px; border-radius: 4px; letter-spacing: 1px; border: 1px solid rgba(255,255,255,0.12); }
         .session-chip.is-test { background: rgba(234,179,8,0.92); color: #1a1a00; border-color: rgba(0,0,0,0.15); }
+        /* Hide the session chip while a full-screen modal is open (star report, login, upload, etc.) */
+        body:has(.modal-overlay.active) .session-chip,
+        body:has(.star-modal.active) .session-chip,
+        body:has(#version-modal[style*="flex"]) .session-chip { display: none; }
         .session-chip-logout { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 3px; color: inherit; opacity: 0.65; text-decoration: none; font: 700 12px/1 sans-serif; }
         .session-chip-logout:hover { opacity: 1; background: rgba(0,0,0,0.15); }
 
