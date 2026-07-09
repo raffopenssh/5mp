@@ -4275,7 +4275,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 
 	// Human Activity: settlements + deforestation grouped together (mirrors popup sections)
 	kml.WriteString("<Folder><name>Human Activity</name>\n")
-	kml.WriteString("<Folder><name>Settlements</name>\n")
+	kml.WriteString("<Folder><name>Settlements</name><visibility>0</visibility>\n")
 	
 	// Join feature_geometries with park_settlements using polygon_ids (same as tooltip logic)
 	settlementQuery := `
@@ -4340,7 +4340,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	kml.WriteString("</Folder>\n")
 
 	// Deforestation folder with narratives
-	kml.WriteString("<Folder><name>Deforestation</name>\n")
+	kml.WriteString("<Folder><name>Deforestation</name><visibility>0</visibility>\n")
 	
 	// Join feature_geometries with deforestation_events using polygon_ids (same as tooltip logic)
 	defoQuery := `
@@ -4517,8 +4517,12 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			firePlacemarksByYear[year] = append(firePlacemarksByYear[year], pmb.String())
 		}
 	}
-	for _, year := range fireYears {
-		kml.WriteString(fmt.Sprintf("<Folder><name>%s (%d groups)</name>\n", year, len(firePlacemarksByYear[year])))
+	for yi, year := range fireYears {
+		vis := ""
+		if yi > 0 {
+			vis = "<visibility>0</visibility>" // only latest fire year visible by default
+		}
+		kml.WriteString(fmt.Sprintf("<Folder><name>%s (%d groups)</name>%s\n", year, len(firePlacemarksByYear[year]), vis))
 		for _, pm := range firePlacemarksByYear[year] {
 			kml.WriteString(pm)
 		}
@@ -4796,7 +4800,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	if len(patrolPlacemarks) > 0 {
-		kml.WriteString("<Folder><name>Patrol Effort (30km buffer)</name>\n")
+		kml.WriteString("<Folder><name>Patrol Effort (30km buffer)</name><visibility>0</visibility>\n")
 		for _, pm := range patrolPlacemarks {
 			kml.WriteString(pm)
 		}
@@ -4832,14 +4836,14 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		if len(heigitPlacemarks) > 0 || len(roadPlacemarks) > 0 {
 			kml.WriteString("<Folder><name>Roads</name>\n")
 			if len(heigitPlacemarks) > 0 {
-				kml.WriteString(fmt.Sprintf("<Folder><name>Road Network (HeiGIT, %d)</name>\n", len(heigitPlacemarks)))
+				kml.WriteString(fmt.Sprintf("<Folder><name>Road Network (HeiGIT, %d)</name><visibility>0</visibility>\n", len(heigitPlacemarks)))
 				for _, pm := range heigitPlacemarks {
 					kml.WriteString(pm)
 				}
 				kml.WriteString("</Folder>\n")
 			}
 			if len(roadPlacemarks) > 0 {
-				kml.WriteString(fmt.Sprintf("<Folder><name>Patrol-Learned Tracks (%d)</name>\n", len(roadPlacemarks)))
+				kml.WriteString(fmt.Sprintf("<Folder><name>Patrol-Learned Tracks (%d)</name><visibility>0</visibility>\n", len(roadPlacemarks)))
 				for _, pm := range roadPlacemarks {
 					kml.WriteString(pm)
 				}
@@ -4851,21 +4855,21 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		if len(riverPlacemarks) > 0 || len(lakePlacemarks) > 0 || len(wbPlacemarks) > 0 {
 			kml.WriteString("<Folder><name>Water</name>\n")
 			if len(riverPlacemarks) > 0 {
-				kml.WriteString(fmt.Sprintf("<Folder><name>Rivers (HydroRIVERS, %d)</name>\n", len(riverPlacemarks)))
+				kml.WriteString(fmt.Sprintf("<Folder><name>Rivers (HydroRIVERS, %d)</name><visibility>0</visibility>\n", len(riverPlacemarks)))
 				for _, pm := range riverPlacemarks {
 					kml.WriteString(pm)
 				}
 				kml.WriteString("</Folder>\n")
 			}
 			if len(lakePlacemarks) > 0 {
-				kml.WriteString(fmt.Sprintf("<Folder><name>Lakes (HydroLAKES, %d)</name>\n", len(lakePlacemarks)))
+				kml.WriteString(fmt.Sprintf("<Folder><name>Lakes (HydroLAKES, %d)</name><visibility>0</visibility>\n", len(lakePlacemarks)))
 				for _, pm := range lakePlacemarks {
 					kml.WriteString(pm)
 				}
 				kml.WriteString("</Folder>\n")
 			}
 			if len(wbPlacemarks) > 0 {
-				kml.WriteString(fmt.Sprintf("<Folder><name>Waterbodies (%d)</name>\n", len(wbPlacemarks)))
+				kml.WriteString(fmt.Sprintf("<Folder><name>Waterbodies (%d)</name><visibility>0</visibility>\n", len(wbPlacemarks)))
 				for _, pm := range wbPlacemarks {
 					kml.WriteString(pm)
 				}
@@ -4875,7 +4879,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(placePlacemarks) > 0 {
-			kml.WriteString(fmt.Sprintf("<Folder><name>Places (%d)</name>\n", len(placePlacemarks)))
+			kml.WriteString(fmt.Sprintf("<Folder><name>Places (%d)</name><visibility>0</visibility>\n", len(placePlacemarks)))
 			for _, pm := range placePlacemarks {
 				kml.WriteString(pm)
 			}
