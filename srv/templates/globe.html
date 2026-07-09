@@ -7165,12 +7165,12 @@
             const popupContent = `
                 <div class="pa-popup" style="min-width: 260px;">
                     <div class="pa-popup-header">
-                        <div class="pa-popup-name" style="display: flex; align-items: center; justify-content: space-between;">
-                            <span>${escapeHtml(name)}</span>
-                            <span style="display: flex; gap: 4px; align-items: center;">
-                                <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}&effort=0${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}${dateFrom ? '_from_' + dateFrom : ''}${dateTo ? '_to_' + dateTo : ''}.kml" title="Download KML for Google Earth" class="pa-export-btn">KML</a>
-                                <a href="/api/parks/${encodeURIComponent(paId)}/export.locus?pwd=${encodeURIComponent(getPwd())}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}_locus.zip" title="Download Locus Map 4 backup (restore via Locus Map → Backup → Restore)" class="pa-export-btn">Locus</a>
-                                <button onclick="showMBTilesDialog('${paId}', '${escapeHtml(name)}')" title="Download offline satellite tiles" class="pa-export-btn" id="mbtiles-btn-${paId}">MBTiles</button>
+                        <div class="pa-popup-name" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                            <span style="min-width: 0; overflow-wrap: break-word;">${escapeHtml(name)}</span>
+                            <span style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;">
+                                <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}&effort=0${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}${dateFrom ? '_from_' + dateFrom : ''}${dateTo ? '_to_' + dateTo : ''}.kml" title="KML — download for Google Earth" aria-label="Download KML" class="pa-export-btn"><i class="icon-globe"></i></a>
+                                <a href="/api/parks/${encodeURIComponent(paId)}/export.locus?pwd=${encodeURIComponent(getPwd())}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}_locus.zip" title="Locus — download Locus Map 4 backup (restore via Locus Map → Backup → Restore)" aria-label="Download Locus Map backup" class="pa-export-btn"><i class="icon-smartphone"></i></a>
+                                <button onclick="showMBTilesDialog('${paId}', '${escapeHtml(name)}')" title="MBTiles — offline satellite tiles" aria-label="Download offline satellite tiles" class="pa-export-btn" id="mbtiles-btn-${paId}"><i class="icon-layers"></i></button>
                                 ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
                             </span>
                         </div>

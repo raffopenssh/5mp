@@ -120,7 +120,7 @@ func extractPaths(geojsonStr string) [][][2]float64 {
 	case "Polygon":
 		if arr, ok := coords.([]interface{}); ok && len(arr) > 0 {
 			if p := toPath(arr[0]); len(p) >= 3 {
-				out = append(out, p)
+				out = append(out, openRing(p))
 			}
 		}
 	case "MultiPolygon":
@@ -128,13 +128,37 @@ func extractPaths(geojsonStr string) [][][2]float64 {
 			for _, poly := range arr {
 				if rings, ok := poly.([]interface{}); ok && len(rings) > 0 {
 					if p := toPath(rings[0]); len(p) >= 3 {
-						out = append(out, p)
+						out = append(out, openRing(p))
 					}
 				}
 			}
 		}
 	}
 	return out
+}
+
+// openRing ensures a closed ring is NOT detected as a polygon by Locus:
+// if first==last vertex, the closing vertex is pulled back ~5 m along the
+// final segment, leaving a small visible gap. Field users are always inside
+// some polygon; filled/closed shapes make map tapping hard in Locus.
+func openRing(path [][2]float64) [][2]float64 {
+	n := len(path)
+	if n < 4 || path[0] != path[n-1] {
+		return path
+	}
+	prev := path[n-2]
+	end := path[n-1]
+	dLon := end[0] - prev[0]
+	dLat := end[1] - prev[1]
+	segM := haversineDistanceKm(prev[1], prev[0], end[1], end[0]) * 1000
+	const gapM = 5.0
+	if segM <= gapM {
+		// final segment shorter than the gap: just drop the closing vertex
+		return path[:n-1]
+	}
+	f := (segM - gapM) / segM
+	path[n-1] = [2]float64{prev[0] + dLon*f, prev[1] + dLat*f}
+	return path
 }
 
 func pathLengthM(path [][2]float64) float64 {

@@ -976,8 +976,9 @@
         .pa-popup-btn:hover { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
         .pa-popup-btn svg { width: 12px; height: 12px; }
         .pa-popup-btn.selected { background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.3); color: #a855f7; }
-        .pa-export-btn { display: inline-block; text-decoration: none; font-size: 10px; padding: 4px 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; cursor: pointer; line-height: 1.2; }
+        .pa-export-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 24px; padding: 0; text-decoration: none; font-size: 13px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; cursor: pointer; line-height: 1; flex-shrink: 0; font-family: inherit; }
         .pa-export-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .pa-export-btn i { font-size: 13px; line-height: 1; }
 
         /* Enhanced PA Popup with Collapsible Sections */
         .pa-popup-section { margin-top: 8px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
@@ -1160,13 +1161,20 @@
             }
 
             /* Popup action buttons */
-            .pa-popup-btn, .pa-export-btn {
+            .pa-popup-btn {
                 min-height: 32px;
                 padding: 6px 8px;
                 font-size: 11px;
                 display: inline-flex;
                 align-items: center;
             }
+            /* Export icon buttons: square 32px touch targets */
+            .pa-export-btn {
+                width: 32px;
+                height: 32px;
+                min-height: 32px;
+            }
+            .pa-export-btn i { font-size: 15px; }
 
             /* Popup section headers — accordion touch target */
             .pa-popup-section-header {
