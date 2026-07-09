@@ -3047,14 +3047,15 @@ type HydroRiver struct {
 
 // findNearestHydroRivers finds the nearest rivers from HydroRIVERS dataset
 func (s *Server) findNearestHydroRivers(parkID string, lat, lon float64, limit int) ([]HydroRiver, error) {
-	// First try to get rivers for this park from park_rivers
+	// park_rivers_hydro is the canonical rivers table (the old park_rivers/
+	// rivers tables no longer exist). No discharge column; stream order is
+	// the best size proxy.
 	rows, err := s.DB.Query(`
-		SELECT r.name, r.length_km, r.discharge_cms, r.stream_order, 
-		       pr.distance_km, r.centroid_lat, r.centroid_lon
-		FROM park_rivers pr
-		JOIN rivers r ON r.hyriv_id = pr.hyriv_id
-		WHERE pr.park_id = ? AND r.name != '' AND r.name IS NOT NULL
-		ORDER BY r.discharge_cms DESC
+		SELECT COALESCE(name,''), COALESCE(length_km,0), 0, COALESCE(stream_order,0),
+		       0, COALESCE(lat,0), COALESCE(lon,0)
+		FROM park_rivers_hydro
+		WHERE park_id = ? AND name != '' AND name IS NOT NULL
+		ORDER BY stream_order DESC, length_km DESC
 		LIMIT ?
 	`, parkID, limit)
 	if err != nil {
@@ -3082,16 +3083,19 @@ func (s *Server) findNearestHydroRivers(parkID string, lat, lon float64, limit i
 
 // findNearestRiverToPoint finds rivers closest to a specific point
 func (s *Server) findNearestRiverToPoint(parkID string, lat, lon float64, limit int) ([]HydroRiver, error) {
-	// Get all park rivers and calculate distance to point
+	// Get named park rivers (park_rivers_hydro; segment lat/lon = midpoint)
+	// and calculate distance to point. Pre-filter by bbox in SQL so parks
+	// with thousands of reach segments stay cheap.
 	rows, err := s.DB.Query(`
-		SELECT r.name, r.length_km, r.discharge_cms, r.stream_order,
-		       r.centroid_lat, r.centroid_lon
-		FROM park_rivers pr
-		JOIN rivers r ON r.hyriv_id = pr.hyriv_id
-		WHERE pr.park_id = ? AND r.name != '' AND r.name IS NOT NULL
-		ORDER BY r.discharge_cms DESC
-		LIMIT 50
-	`, parkID)
+		SELECT COALESCE(name,''), COALESCE(length_km,0), 0, COALESCE(stream_order,0),
+		       COALESCE(lat,0), COALESCE(lon,0)
+		FROM park_rivers_hydro
+		WHERE park_id = ? AND name != '' AND name IS NOT NULL
+		  AND lat BETWEEN ? - 1.0 AND ? + 1.0
+		  AND lon BETWEEN ? - 1.0 AND ? + 1.0
+		ORDER BY stream_order DESC
+		LIMIT 200
+	`, parkID, lat, lat, lon, lon)
 	if err != nil {
 		return nil, err
 	}

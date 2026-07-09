@@ -2222,18 +2222,18 @@ func (l *GPXLearner) enrichWithContext(ctx context.Context, parkID string, segme
 	buffer := 0.5
 
 	// Find nearby rivers
+	// park_rivers_hydro is the canonical rivers table (old park_rivers/rivers
+	// tables are gone); lat/lon = segment midpoint, stream_order proxies size.
 	riverRows, err := l.db.QueryContext(ctx, `
-		SELECT r.name, r.stream_order, pr.distance_km, 
-		       (pr.centroid_lat + ?) as lat, (pr.centroid_lon + ?) as lon
-		FROM park_rivers pr
-		JOIN rivers r ON r.hyriv_id = pr.hyriv_id
-		WHERE pr.park_id = ? 
-		  AND r.name IS NOT NULL AND r.name != ''
-		  AND pr.centroid_lat BETWEEN ? AND ?
-		  AND pr.centroid_lon BETWEEN ? AND ?
-		ORDER BY r.discharge_cms DESC
+		SELECT name, stream_order, 0 as distance_km, lat, lon
+		FROM park_rivers_hydro
+		WHERE park_id = ?
+		  AND name IS NOT NULL AND name != ''
+		  AND lat BETWEEN ? AND ?
+		  AND lon BETWEEN ? AND ?
+		ORDER BY stream_order DESC
 		LIMIT 5
-	`, 0.0, 0.0, parkID, minLat-buffer, maxLat+buffer, minLon-buffer, maxLon+buffer)
+	`, parkID, minLat-buffer, maxLat+buffer, minLon-buffer, maxLon+buffer)
 	if err == nil {
 		defer riverRows.Close()
 		for riverRows.Next() {

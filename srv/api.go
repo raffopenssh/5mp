@@ -2393,9 +2393,9 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 	s.DB.QueryRow(`SELECT COUNT(*) FROM park_waterbodies WHERE park_id = ?`, internalID).Scan(&waterbodyCount)
 	stats.Waterbodies = waterbodyCount
 	
-	// Count rivers from park_rivers
+	// Count rivers from park_rivers_hydro (HydroRIVERS reach segments)
 	var riverCount int
-	s.DB.QueryRow(`SELECT COUNT(*) FROM park_rivers WHERE park_id = ?`, internalID).Scan(&riverCount)
+	s.DB.QueryRow(`SELECT COUNT(*) FROM park_rivers_hydro WHERE park_id = ?`, internalID).Scan(&riverCount)
 	stats.Rivers = riverCount
 
 	// Settlement classifications
