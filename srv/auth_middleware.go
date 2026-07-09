@@ -180,7 +180,7 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
     <title>Access Required - 5MP.globe</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -189,12 +189,14 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
             background: #0a0a0a; 
             color: #e0e0e0; 
-            min-height: 100vh; 
+            min-height: 100vh;
+            min-height: 100dvh;
             display: flex; 
             align-items: center; 
             justify-content: center;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
         
         /* Animated background gradient */
@@ -253,6 +255,7 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
             padding: 48px 40px; 
             width: 100%; 
             max-width: 380px; 
+            margin: auto;
             text-align: center;
             backdrop-filter: blur(10px);
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5),
@@ -490,13 +493,27 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         }
         
         @media (max-width: 480px) {
+            body { padding: 16px; }
             .container {
-                margin: 20px;
                 padding: 36px 28px;
             }
             .logo { width: 48px; height: 48px; }
             .logo svg { width: 42px; height: 42px; }
             h1 { font-size: 22px; }
+        }
+
+        /* Compact layout when the on-screen keyboard shrinks the viewport */
+        @media (max-height: 620px) {
+            body { padding: 12px; }
+            .container { padding: 20px 24px; }
+            .logo, .logo .orbit { display: none; }
+            .subtitle { margin-bottom: 10px; }
+            p { display: none; }
+            .feature-chips { display: none; }
+            .alpha-line { margin-bottom: 10px; }
+            .form-group { margin-bottom: 10px; }
+            input[type="password"], button { padding: 11px 14px; }
+            .footer { margin-top: 14px; padding-top: 12px; }
         }
     </style>
 </head>
@@ -553,6 +570,26 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
             <span>FIVE MEGAPIXELS</span>
         </div>
     </div>
+    <script>
+    (function(){
+        var input = document.querySelector('input[name="pwd"]');
+        var form = document.querySelector('form');
+        if (!input || !form) return;
+        // When the keyboard appears, make sure the form (input + button) stays visible
+        input.addEventListener('focus', function(){
+            setTimeout(function(){
+                form.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            }, 300);
+        });
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', function(){
+                if (document.activeElement === input) {
+                    form.scrollIntoView({ block: 'center' });
+                }
+            });
+        }
+    })();
+    </script>
 </body>
 </html>`
 	w.Write([]byte(html))
