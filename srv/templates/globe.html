@@ -34,7 +34,7 @@
     
     <!-- Lucide Icons -->
     <link href="https://unpkg.com/lucide-static@0.577.0/font/lucide.css" rel="stylesheet">
-    <link href="/static/globe.css" rel="stylesheet">
+    <link href="/static/globe.css?v={{.Version}}" rel="stylesheet">
 </head>
 <body>
     <!-- Skip to content -->
@@ -2883,7 +2883,7 @@
                     if (isMdReportOpen()) {
                         printMdReport();
                     } else {
-                        exportFullReportMd();
+                        exportFullReportPdf();
                     }
                 }
             }
@@ -3453,10 +3453,25 @@
             showToast('Markdown report downloaded', 'success');
         }
 
+        // Build the full report and open the browser print dialog (mono,
+        // MD-formatted) — users save as PDF from there.
+        async function exportFullReportPdf() {
+            showToast('Building report...', 'info');
+            const result = await buildFullReportMarkdown();
+            if (!result) {
+                showToast('No parks to export', 'error');
+                return;
+            }
+            printMarkdownText(result.markdown);
+        }
+
         // Print the current (possibly edited) Markdown: minimal mono rendering
         // in a hidden iframe, headings bolded, everything else as-is.
         function printMdReport() {
-            const text = document.getElementById('md-report-text').value;
+            printMarkdownText(document.getElementById('md-report-text').value);
+        }
+
+        function printMarkdownText(text) {
             const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             const rendered = escaped.split('\n').map(line => {
                 if (/^# /.test(line)) return `<h1>${line.slice(2)}</h1>`;
@@ -11103,9 +11118,9 @@
                                 </div>
                             </div>
                             <div class="starred-item-actions">
-                                ${iconClass === 'park' ? `<button class="starred-item-map" title="Show on map" onclick="event.stopPropagation(); flyToPark(starredItems.parks[${idx}]); toggleStarModal();"><i class="icon-map icon-color-info"></i></button>` : ''}
-                                <button class="starred-item-expand${isOpen ? ' expanded' : ''}" title="${isOpen ? 'Collapse report' : 'View report'}">${isOpen ? '▲' : '▼'}</button>
+                                ${['park','country','bbox','narrative'].includes(iconClass) ? `<button class="starred-item-map" title="Show on map"><i class="icon-map icon-color-info"></i></button>` : ''}
                                 <button class="starred-item-remove" title="Remove">×</button>
+                                <span class="starred-item-chevron${isOpen ? ' expanded' : ''}" aria-hidden="true">▼</span>
                             </div>
                         </div>
                         <div class="starred-item-details${isOpen ? ' open' : ''}" data-park-id="${item.parkId || item.id || ''}">
@@ -11122,94 +11137,31 @@
             const type = item.dataset.type;
             const idx = parseInt(item.dataset.idx);
             
-            // Click header to fly to item
-            item.querySelector('.starred-item-info').addEventListener('click', () => {
-                let itemData;
-                if (type === 'park') itemData = starredItems.parks[idx];
-                else if (type === 'country') itemData = starredItems.countries[idx];
-                else if (type === 'bbox') itemData = starredItems.bboxes[idx];
-                else if (type === 'notification') itemData = starredItems.notifications[idx];
-                else if (type === 'narrative') itemData = starredItems.narratives[idx];
-                
-                if (itemData) {
-                    if (type === 'park') flyToPark(itemData);
-                    else if (type === 'country') flyToCountry(itemData);
-                    else if (type === 'bbox') flyToBbox(itemData.bbox);
-                    else if (type === 'narrative') flyToParkAndShowNarrative(itemData);
-                }
-                toggleStarModal();
-            });
-            
-            // Expand/collapse details
-            const expandBtn = item.querySelector('.starred-item-expand');
-            if (expandBtn) {
-                expandBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    const details = item.querySelector('.starred-item-details');
-                    const btn = item.querySelector('.starred-item-expand');
-                    const isExpanding = !details.classList.contains('open');
-                
+            // Click anywhere on the header to expand/collapse the report
+            const header = item.querySelector('.starred-item-header');
+            header.addEventListener('click', () => {
+                const details = item.querySelector('.starred-item-details');
+                const chevron = item.querySelector('.starred-item-chevron');
+                const isExpanding = !details.classList.contains('open');
                 details.classList.toggle('open');
-                btn.classList.toggle('expanded');
+                if (chevron) chevron.classList.toggle('expanded', !isExpanding ? false : true);
                 window._starUserToggled = true;
                 const stateKey = item.dataset.type + ':' + item.dataset.id;
                 if (isExpanding) starExpandedState.add(stateKey); else starExpandedState.delete(stateKey);
-                
-                // Update button text with contextual label
-                if (isExpanding) {
-                    // When expanding, show what's being shown
-                    if (type === 'park' || type === 'bbox' || type === 'narrative') {
-                        btn.textContent = '▲';
-                        btn.title = 'Collapse report';
-                        
-                        // Try to add summary stats if available
-                        const parkId = item.dataset.parkId || (type === 'park' ? starredItems.parks[idx]?.id : null);
-                        if (parkId) {
-                            const cached = reportDataCache.parks.get(parkId);
-                            if (cached) {
-                                updateExpandButtonWithStats(btn, cached, type);
-                            }
-                        } else if (type === 'bbox') {
-                            const bboxData = reportDataCache.bboxes.get(starredItems.bboxes[idx]?.bbox.join(','));
-                            if (bboxData) {
-                                const totalFires = bboxData.parks.reduce((sum, p) => sum + (p.reportData?.fire?.total_fires || 0), 0);
-                                const totalSettlements = bboxData.parks.reduce((sum, p) => sum + (p.reportData?.settlement?.settlement_count || 0), 0);
-                                btn.title = `Report Summary: ${bboxData.parks.length} parks • ${totalFires.toLocaleString()} fires • ${totalSettlements} settlements`;
-                            }
-                        }
-                    } else {
-                        btn.textContent = '▲';
-                        btn.title = 'Collapse';
-                    }
-                } else {
-                    // When collapsing, show expand arrow
-                    btn.textContent = '▼';
-                    btn.title = 'View report';
-                }
+            });
+
+            // Map button: fly to the item on the globe
+            const mapBtn = item.querySelector('.starred-item-map');
+            if (mapBtn) {
+                mapBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    let itemData;
+                    if (type === 'park') { itemData = starredItems.parks[idx]; if (itemData) flyToPark(itemData); }
+                    else if (type === 'country') { itemData = starredItems.countries[idx]; if (itemData) flyToCountry(itemData); }
+                    else if (type === 'bbox') { itemData = starredItems.bboxes[idx]; if (itemData) flyToBbox(itemData.bbox); }
+                    else if (type === 'narrative') { itemData = starredItems.narratives[idx]; if (itemData) flyToParkAndShowNarrative(itemData); }
+                    if (itemData) toggleStarModal();
                 });
-            }
-            
-            // Helper function to update expand button with stats
-            function updateExpandButtonWithStats(btn, data, type) {
-                const stats = data.stats || {};
-                const fire = data.fire || {};
-                const settlement = stats.settlement || {};
-                
-                const fireCount = fire.total_fires || 0;
-                const settlementCount = settlement.settlement_count || 0;
-                
-                let label = 'Report Summary';
-                const parts = [];
-                
-                if (fireCount > 0) parts.push(`${fireCount.toLocaleString()} fires`);
-                if (settlementCount > 0) parts.push(`${settlementCount} settlements`);
-                
-                if (parts.length > 0) {
-                    btn.title = `${label}: ${parts.join(' • ')}`;
-                } else {
-                    btn.title = 'Collapse report';
-                }
             }
             
             // Remove item
@@ -13552,7 +13504,7 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
         max-height: none !important;
         padding: 0 !important;
     }
-    .star-modal-header, .star-modal-footer, .starred-item-expand, .starred-item-remove, .star-report-actions { display: none !important; }
+    .star-modal-header, .star-modal-footer, .starred-item-chevron, .starred-item-remove, .star-report-actions { display: none !important; }
     .starred-modal-backdrop { display: none !important; }
     
     /* Show all content - don't respect collapse state in print */
@@ -17783,7 +17735,7 @@ ${starredItems.narratives.map(n => {
                 </div>
                 <div class="star-report-actions" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
                     <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                        <button class="star-report-btn" onclick="exportFullReportMd()" title="Open report as editable Markdown: full narratives for fires, deforestation, settlements, species tables, climate, patrol activity, publications and legal documents. Edit, then print, copy or download. (Ctrl+P)" style="font-size:12px;">Report (MD)</button>
+                        <button class="star-report-btn" onclick="exportFullReportPdf()" title="Print / save as PDF: full narratives for fires, deforestation, settlements, species tables, climate, patrol activity, publications and legal documents, rendered in Markdown-formatted monospace. (Ctrl+P)" style="font-size:12px;">PDF</button>
                         <button class="star-report-btn" onclick="exportFullReportKmlV2()" title="Download KML with park boundaries, fire trajectories, settlements, deforestation hotspots, patrol points, roads and rivers. Open in Google Earth." style="font-size:12px;">KML</button>
                         <button class="star-report-btn secondary" onclick="exportFullReportCsvV2()" title="Download CSV: one row per park with all key metrics (fires, deforestation, settlements, species, patrol distance). Best for spreadsheets and pivot analysis." style="font-size:12px;">CSV</button>
                         <button class="star-report-btn secondary" onclick="exportFullReportXlsxV2()" title="Download Excel workbook: summary sheet plus per-record sheets for fires, deforestation, settlements, species and patrol pixels. Best for detailed analysis." style="font-size:12px;">XLSX</button>

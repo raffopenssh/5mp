@@ -344,8 +344,11 @@
         .starred-item-actions { display: flex; align-items: center; gap: 8px; }
         .starred-item-map { background: none; border: none; color: #888; cursor: pointer; padding: 4px; font-size: 14px; transition: color 0.2s; }
         .starred-item-map:hover { color: #60a5fa; }
-        .starred-item-expand { background: none; border: none; color: #888; cursor: pointer; padding: 4px; font-size: 12px; transition: transform 0.2s; }
-        .starred-item-expand.expanded { transform: rotate(180deg); }
+        .starred-item-header { cursor: pointer; border-radius: 8px; transition: background 0.15s; }
+        .starred-item-header:hover { background: rgba(255,255,255,0.05); }
+        .starred-item-chevron { color: #777; font-size: 11px; padding: 4px; display: inline-block; transition: transform 0.2s ease, color 0.15s; }
+        .starred-item-header:hover .starred-item-chevron { color: #ccc; }
+        .starred-item-chevron.expanded { transform: rotate(180deg); }
         .starred-item-remove { background: none; border: none; color: #888; cursor: pointer; padding: 4px; font-size: 14px; }
         .starred-item-remove:hover { color: #ef4444; }
         .starred-item-details { padding: 0 14px 14px 14px; display: none; border-top: 1px solid rgba(255,255,255,0.06); margin-top: 0; padding-top: 12px; }
@@ -1339,7 +1342,7 @@
         .star-btn:focus-visible,
         .star-report-btn:focus-visible,
         .starred-item-map:focus-visible,
-        .starred-item-expand:focus-visible,
+        .starred-item-chevron:focus-visible,
         .starred-item-remove:focus-visible,
         .movement-toggle:focus-visible,
         .keystones-compact-toggle:focus-visible,
@@ -1676,7 +1679,7 @@
 }
 
 @media print {
-.starred-item-remove, .starred-item-expand, .starred-export-btns,
+.starred-item-remove, .starred-item-chevron, .starred-export-btns,
                     .spinner, button {
     display: none !important;
 }
@@ -1749,7 +1752,7 @@
 }
 
 @media print {
-.star-modal-header, .star-modal-footer, .starred-item-expand, .starred-item-remove, .star-report-actions {display: none !important;}
+.star-modal-header, .star-modal-footer, .starred-item-chevron, .starred-item-remove, .star-report-actions {display: none !important;}
 }
 
 @media print {
