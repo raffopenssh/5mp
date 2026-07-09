@@ -309,7 +309,7 @@ func (s *Server) Serve(addr string) error {
 	slog.Info("starting server", "addr", addr)
 	
 	// Wrap with security headers, compression, and password protection
-	protectedHandler := SecurityHeadersMiddleware(GzipMiddleware(s.PasswordMiddleware(mux)))
+	protectedHandler := SecurityHeadersMiddleware(GzipMiddleware(s.PasswordMiddleware(ParkIDMiddleware(mux))))
 
 	s.httpServer = &http.Server{
 		Addr:         addr,

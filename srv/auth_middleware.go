@@ -141,6 +141,11 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Tryout link must also carry the current params through login
+	tryoutQuery := r.URL.Query()
+	tryoutQuery.Set("pwd", "test2026")
+	tryoutHref := r.URL.Path + "?" + tryoutQuery.Encode()
+
 	html := `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -419,7 +424,7 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
             <span style="color:#555;font-size:11px;letter-spacing:0.5px;">or</span>
             <span style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></span>
         </div>
-        <a href="/?pwd=test2026" style="display:block;margin-top:14px;padding:11px 16px;border:1px solid rgba(34,197,94,0.35);border-radius:10px;color:#4ade80;font-size:14px;font-weight:500;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='rgba(34,197,94,0.1)';this.style.borderColor='rgba(34,197,94,0.6)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(34,197,94,0.35)'">Just try it out — no password needed</a>
+        <a href="` + html.EscapeString(tryoutHref) + `" style="display:block;margin-top:14px;padding:11px 16px;border:1px solid rgba(34,197,94,0.35);border-radius:10px;color:#4ade80;font-size:14px;font-weight:500;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='rgba(34,197,94,0.1)';this.style.borderColor='rgba(34,197,94,0.6)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(34,197,94,0.35)'">Just try it out — no password needed</a>
         <div style="margin-top:6px;font-size:11px;color:#555;">Sandbox with sample data. Nothing you do affects the live system.</div>
         <div class="footer">
             <span>FIVE MEGAPIXELS</span>
