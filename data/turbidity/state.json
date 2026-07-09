@@ -2,5 +2,13 @@
  "CAF_Chinko": {
   "scanned_at": "2026-07-06T10:57:14Z",
   "n_alerts": 2
+ },
+ "AGO_Cameia": {
+  "scanned_at": "2026-07-07T06:01:45Z",
+  "n_alerts": 0
+ },
+ "AGO_Iona": {
+  "scanned_at": "2026-07-08T06:00:53Z",
+  "n_alerts": 0
  }
 }

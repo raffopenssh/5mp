@@ -8,5 +8,15 @@
   "scanned_at": "2026-07-07T04:32:27Z",
   "n_alerts": 18056,
   "n_requests": 50
+ },
+ "CAF_Dzanga_Park": {
+  "scanned_at": "2026-07-08T04:43:48Z",
+  "n_alerts": 1631949,
+  "n_requests": 157
+ },
+ "CAF_Manovo_Gounda_St_Floris": {
+  "scanned_at": "2026-07-09T04:32:23Z",
+  "n_alerts": 2462,
+  "n_requests": 57
  }
 }

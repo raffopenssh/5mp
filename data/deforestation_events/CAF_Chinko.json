@@ -5082,7 +5082,7 @@
     "polygon_ids": "deforest_CAF_Chinko_2023_391"
   },
   {
-    "id": 32280,
+    "id": 32323,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 1.0632,
@@ -5100,11 +5100,11 @@
     "fires_same_year": 125,
     "fire_ratio": 117.56960120391273,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:49.102738",
+    "classified_at": "2026-07-07T07:39:24.841177",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.09_23.86,deforest_gfw_CAF_Chinko_2026_5.07_23.89,deforest_gfw_CAF_Chinko_2026_5.06_23.90,deforest_gfw_CAF_Chinko_2026_5.10_23.87,deforest_gfw_CAF_Chinko_2026_5.07_23.90,deforest_gfw_CAF_Chinko_2026_5.07_23.91,deforest_gfw_CAF_Chinko_2026_5.05_23.84,deforest_gfw_CAF_Chinko_2026_5.07_23.84,deforest_gfw_CAF_Chinko_2026_5.04_23.83,deforest_gfw_CAF_Chinko_2026_5.06_23.88,deforest_gfw_CAF_Chinko_2026_5.03_23.82,deforest_gfw_CAF_Chinko_2026_5.05_23.95,deforest_gfw_CAF_Chinko_2026_5.02_23.94,deforest_gfw_CAF_Chinko_2026_5.09_23.85,deforest_gfw_CAF_Chinko_2026_5.05_23.94,deforest_gfw_CAF_Chinko_2026_5.05_23.86,deforest_gfw_CAF_Chinko_2026_5.04_23.95,deforest_gfw_CAF_Chinko_2026_5.02_23.84,deforest_gfw_CAF_Chinko_2026_5.04_23.97,deforest_gfw_CAF_Chinko_2026_5.02_23.85,deforest_gfw_CAF_Chinko_2026_5.08_23.86,deforest_gfw_CAF_Chinko_2026_5.08_23.83,deforest_gfw_CAF_Chinko_2026_5.03_23.86,deforest_gfw_CAF_Chinko_2026_5.03_23.85,deforest_gfw_CAF_Chinko_2026_5.11_23.91,deforest_gfw_CAF_Chinko_2026_5.04_23.96,deforest_gfw_CAF_Chinko_2026_5.05_23.90,deforest_gfw_CAF_Chinko_2026_5.06_23.95,deforest_gfw_CAF_Chinko_2026_5.06_23.86,deforest_gfw_CAF_Chinko_2026_5.06_23.89,deforest_gfw_CAF_Chinko_2026_5.03_23.81,deforest_gfw_CAF_Chinko_2026_5.03_23.87,deforest_gfw_CAF_Chinko_2026_5.04_23.94,deforest_gfw_CAF_Chinko_2026_5.02_23.82,deforest_gfw_CAF_Chinko_2026_5.03_24.00,deforest_gfw_CAF_Chinko_2026_5.10_23.88,deforest_gfw_CAF_Chinko_2026_5.06_23.93,deforest_gfw_CAF_Chinko_2026_5.11_23.92,deforest_gfw_CAF_Chinko_2026_5.02_24.02,deforest_gfw_CAF_Chinko_2026_5.08_23.88,deforest_gfw_CAF_Chinko_2026_5.06_23.96,deforest_gfw_CAF_Chinko_2026_5.02_24.03,deforest_gfw_CAF_Chinko_2026_5.09_23.83,deforest_gfw_CAF_Chinko_2026_5.02_23.91,deforest_gfw_CAF_Chinko_2026_5.02_23.86,deforest_gfw_CAF_Chinko_2026_5.05_23.89,deforest_gfw_CAF_Chinko_2026_5.07_23.88,deforest_gfw_CAF_Chinko_2026_5.08_23.97,deforest_gfw_CAF_Chinko_2026_5.02_23.83,deforest_gfw_CAF_Chinko_2026_5.03_23.96,deforest_gfw_CAF_Chinko_2026_5.03_23.95,deforest_gfw_CAF_Chinko_2026_5.06_23.99,deforest_gfw_CAF_Chinko_2026_5.05_23.91,deforest_gfw_CAF_Chinko_2026_5.04_23.82,deforest_gfw_CAF_Chinko_2026_5.08_23.98,deforest_gfw_CAF_Chinko_2026_5.07_23.86,deforest_gfw_CAF_Chinko_2026_5.03_23.88,deforest_gfw_CAF_Chinko_2026_5.09_23.88,deforest_gfw_CAF_Chinko_2026_5.04_23.86,deforest_gfw_CAF_Chinko_2026_5.02_23.88,deforest_gfw_CAF_Chinko_2026_5.03_23.89,deforest_gfw_CAF_Chinko_2026_5.09_23.87,deforest_gfw_CAF_Chinko_2026_5.08_23.85,deforest_gfw_CAF_Chinko_2026_5.02_23.93,deforest_gfw_CAF_Chinko_2026_5.04_23.90,deforest_gfw_CAF_Chinko_2026_5.07_23.85,deforest_gfw_CAF_Chinko_2026_5.02_23.97,deforest_gfw_CAF_Chinko_2026_5.02_23.98,deforest_gfw_CAF_Chinko_2026_5.08_23.87,deforest_gfw_CAF_Chinko_2026_5.04_23.81,deforest_gfw_CAF_Chinko_2026_5.05_23.99,deforest_gfw_CAF_Chinko_2026_5.09_23.89,deforest_gfw_CAF_Chinko_2026_5.05_23.82,deforest_gfw_CAF_Chinko_2026_5.07_23.96,deforest_gfw_CAF_Chinko_2026_5.07_23.92,deforest_gfw_CAF_Chinko_2026_5.04_23.93,deforest_gfw_CAF_Chinko_2026_5.04_23.91,deforest_gfw_CAF_Chinko_2026_5.06_23.83,deforest_gfw_CAF_Chinko_2026_5.08_23.81,deforest_gfw_CAF_Chinko_2026_5.07_23.81,deforest_gfw_CAF_Chinko_2026_5.05_23.98,deforest_gfw_CAF_Chinko_2026_5.05_23.92,deforest_gfw_CAF_Chinko_2026_5.03_24.01,deforest_gfw_CAF_Chinko_2026_5.05_23.83,deforest_gfw_CAF_Chinko_2026_5.02_23.87,deforest_gfw_CAF_Chinko_2026_5.10_23.85,deforest_gfw_CAF_Chinko_2026_5.06_23.87,deforest_gfw_CAF_Chinko_2026_5.03_24.02,deforest_gfw_CAF_Chinko_2026_5.02_23.89,deforest_gfw_CAF_Chinko_2026_5.10_23.89,deforest_gfw_CAF_Chinko_2026_5.09_23.93,deforest_gfw_CAF_Chinko_2026_5.10_23.91,deforest_gfw_CAF_Chinko_2026_5.05_23.87,deforest_gfw_CAF_Chinko_2026_5.04_24.04,deforest_gfw_CAF_Chinko_2026_5.04_23.88,deforest_gfw_CAF_Chinko_2026_5.10_23.86,deforest_gfw_CAF_Chinko_2026_5.06_23.85,deforest_gfw_CAF_Chinko_2026_5.11_23.87,deforest_gfw_CAF_Chinko_2026_5.03_23.97,deforest_gfw_CAF_Chinko_2026_5.12_23.96,deforest_gfw_CAF_Chinko_2026_5.03_23.84,deforest_gfw_CAF_Chinko_2026_5.07_23.95,deforest_gfw_CAF_Chinko_2026_5.04_24.01,deforest_gfw_CAF_Chinko_2026_5.03_23.94,deforest_gfw_CAF_Chinko_2026_5.05_23.97,deforest_gfw_CAF_Chinko_2026_5.03_23.99,deforest_gfw_CAF_Chinko_2026_5.04_23.98,deforest_gfw_CAF_Chinko_2026_5.03_23.98,deforest_gfw_CAF_Chinko_2026_5.06_23.98,deforest_gfw_CAF_Chinko_2026_5.08_23.96"
   },
   {
-    "id": 32281,
+    "id": 32324,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0691,
@@ -5122,11 +5122,11 @@
     "fires_same_year": 27,
     "fire_ratio": 390.7380607814762,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:49.324475",
+    "classified_at": "2026-07-07T07:39:28.125652",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.08_24.33,deforest_gfw_CAF_Chinko_2026_5.10_24.34,deforest_gfw_CAF_Chinko_2026_5.09_24.32,deforest_gfw_CAF_Chinko_2026_5.08_24.34,deforest_gfw_CAF_Chinko_2026_5.09_24.35,deforest_gfw_CAF_Chinko_2026_5.08_24.32,deforest_gfw_CAF_Chinko_2026_5.10_24.35,deforest_gfw_CAF_Chinko_2026_5.10_24.33,deforest_gfw_CAF_Chinko_2026_5.11_24.34,deforest_gfw_CAF_Chinko_2026_5.12_24.35"
   },
   {
-    "id": 32282,
+    "id": 32325,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.1002,
@@ -5144,11 +5144,11 @@
     "fires_same_year": 64,
     "fire_ratio": 638.7225548902196,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:49.557556",
+    "classified_at": "2026-07-07T07:39:30.993380",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.07_24.59,deforest_gfw_CAF_Chinko_2026_5.06_24.60,deforest_gfw_CAF_Chinko_2026_5.07_24.60,deforest_gfw_CAF_Chinko_2026_5.08_24.58,deforest_gfw_CAF_Chinko_2026_5.11_24.61,deforest_gfw_CAF_Chinko_2026_5.10_24.61,deforest_gfw_CAF_Chinko_2026_5.06_24.61,deforest_gfw_CAF_Chinko_2026_5.08_24.60,deforest_gfw_CAF_Chinko_2026_5.10_24.62,deforest_gfw_CAF_Chinko_2026_5.12_24.62,deforest_gfw_CAF_Chinko_2026_5.09_24.65,deforest_gfw_CAF_Chinko_2026_5.12_24.61"
   },
   {
-    "id": 32283,
+    "id": 32326,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0447,
@@ -5166,11 +5166,11 @@
     "fires_same_year": 41,
     "fire_ratio": 917.2259507829979,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:49.787587",
+    "classified_at": "2026-07-07T07:39:33.407091",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.13_24.49,deforest_gfw_CAF_Chinko_2026_5.13_24.45,deforest_gfw_CAF_Chinko_2026_5.14_24.47,deforest_gfw_CAF_Chinko_2026_5.11_24.42,deforest_gfw_CAF_Chinko_2026_5.15_24.45,deforest_gfw_CAF_Chinko_2026_5.14_24.48,deforest_gfw_CAF_Chinko_2026_5.10_24.43,deforest_gfw_CAF_Chinko_2026_5.12_24.46,deforest_gfw_CAF_Chinko_2026_5.18_24.50,deforest_gfw_CAF_Chinko_2026_5.12_24.50,deforest_gfw_CAF_Chinko_2026_5.19_24.48,deforest_gfw_CAF_Chinko_2026_5.13_24.42"
   },
   {
-    "id": 32284,
+    "id": 32327,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0092,
@@ -5188,11 +5188,11 @@
     "fires_same_year": 48,
     "fire_ratio": 4800.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:49.973027",
+    "classified_at": "2026-07-07T07:39:35.845809",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_6.53_23.25,deforest_gfw_CAF_Chinko_2026_6.52_23.26,deforest_gfw_CAF_Chinko_2026_6.49_23.29"
   },
   {
-    "id": 32285,
+    "id": 32328,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.006699999999999999,
@@ -5210,11 +5210,11 @@
     "fires_same_year": 31,
     "fire_ratio": 3100.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:50.148738",
+    "classified_at": "2026-07-07T07:39:38.433954",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.06_23.70,deforest_gfw_CAF_Chinko_2026_5.06_23.67"
   },
   {
-    "id": 32286,
+    "id": 32329,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.014199999999999999,
@@ -5232,11 +5232,11 @@
     "fires_same_year": 13,
     "fire_ratio": 915.492957746479,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:50.352407",
+    "classified_at": "2026-07-07T07:39:41.251668",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.48_23.32,deforest_gfw_CAF_Chinko_2026_5.45_23.30,deforest_gfw_CAF_Chinko_2026_5.46_23.30,deforest_gfw_CAF_Chinko_2026_5.46_23.32"
   },
   {
-    "id": 32287,
+    "id": 32330,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0103,
@@ -5254,11 +5254,11 @@
     "fires_same_year": 21,
     "fire_ratio": 2038.8349514563106,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:50.555037",
+    "classified_at": "2026-07-07T07:39:44.217836",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.56_24.70,deforest_gfw_CAF_Chinko_2026_5.55_24.69,deforest_gfw_CAF_Chinko_2026_5.59_24.71,deforest_gfw_CAF_Chinko_2026_5.60_24.71"
   },
   {
-    "id": 32288,
+    "id": 32331,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0048,
@@ -5276,11 +5276,11 @@
     "fires_same_year": 52,
     "fire_ratio": 5200.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:50.734383",
+    "classified_at": "2026-07-07T07:39:46.504023",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.02_23.57,deforest_gfw_CAF_Chinko_2026_5.02_23.56"
   },
   {
-    "id": 32289,
+    "id": 32332,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0044,
@@ -5298,11 +5298,11 @@
     "fires_same_year": 9,
     "fire_ratio": 900.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:50.912395",
+    "classified_at": "2026-07-07T07:39:48.926118",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.02_24.22,deforest_gfw_CAF_Chinko_2026_5.03_24.25"
   },
   {
-    "id": 32290,
+    "id": 32333,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0033,
@@ -5320,11 +5320,11 @@
     "fires_same_year": 18,
     "fire_ratio": 1800.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:51.092558",
+    "classified_at": "2026-07-07T07:39:51.274136",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.22_23.96,deforest_gfw_CAF_Chinko_2026_5.23_23.96"
   },
   {
-    "id": 32291,
+    "id": 32334,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0234,
@@ -5342,11 +5342,11 @@
     "fires_same_year": 13,
     "fire_ratio": 555.5555555555555,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:51.401084",
+    "classified_at": "2026-07-07T07:39:53.742736",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.23_24.13,deforest_gfw_CAF_Chinko_2026_5.24_24.16,deforest_gfw_CAF_Chinko_2026_5.19_24.15,deforest_gfw_CAF_Chinko_2026_5.23_24.14,deforest_gfw_CAF_Chinko_2026_5.22_24.13,deforest_gfw_CAF_Chinko_2026_5.20_24.12,deforest_gfw_CAF_Chinko_2026_5.18_24.14,deforest_gfw_CAF_Chinko_2026_5.17_24.09,deforest_gfw_CAF_Chinko_2026_5.14_24.16,deforest_gfw_CAF_Chinko_2026_5.26_24.18,deforest_gfw_CAF_Chinko_2026_5.16_24.12,deforest_gfw_CAF_Chinko_2026_5.22_24.16,deforest_gfw_CAF_Chinko_2026_5.19_24.08,deforest_gfw_CAF_Chinko_2026_5.15_24.10,deforest_gfw_CAF_Chinko_2026_5.29_24.15,deforest_gfw_CAF_Chinko_2026_5.28_24.20,deforest_gfw_CAF_Chinko_2026_5.23_24.18,deforest_gfw_CAF_Chinko_2026_5.22_24.14,deforest_gfw_CAF_Chinko_2026_5.21_24.16,deforest_gfw_CAF_Chinko_2026_5.15_24.11,deforest_gfw_CAF_Chinko_2026_5.13_24.11,deforest_gfw_CAF_Chinko_2026_5.13_24.14,deforest_gfw_CAF_Chinko_2026_5.13_24.17,deforest_gfw_CAF_Chinko_2026_5.19_24.07"
   },
   {
-    "id": 32292,
+    "id": 32335,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0026,
@@ -5364,11 +5364,11 @@
     "fires_same_year": 166,
     "fire_ratio": 16600.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:51.580101",
+    "classified_at": "2026-07-07T07:39:56.095808",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.74_24.61,deforest_gfw_CAF_Chinko_2026_5.74_24.58"
   },
   {
-    "id": 32293,
+    "id": 32336,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0018,
@@ -5386,11 +5386,11 @@
     "fires_same_year": 36,
     "fire_ratio": 3600.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:51.755074",
+    "classified_at": "2026-07-07T07:39:58.444047",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.62_23.32"
   },
   {
-    "id": 32294,
+    "id": 32337,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0015,
@@ -5408,11 +5408,11 @@
     "fires_same_year": 21,
     "fire_ratio": 2100.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:51.934586",
+    "classified_at": "2026-07-07T07:40:01.013145",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.17_24.31"
   },
   {
-    "id": 32295,
+    "id": 32338,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0015,
@@ -5430,11 +5430,11 @@
     "fires_same_year": 0,
     "fire_ratio": 0.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:52.110530",
+    "classified_at": "2026-07-07T07:40:03.470907",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.28_24.08"
   },
   {
-    "id": 32296,
+    "id": 32339,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0015,
@@ -5452,11 +5452,11 @@
     "fires_same_year": 0,
     "fire_ratio": 0.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:52.279244",
+    "classified_at": "2026-07-07T07:40:05.964393",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_6.15_23.90"
   },
   {
-    "id": 32297,
+    "id": 32340,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0015,
@@ -5474,11 +5474,11 @@
     "fires_same_year": 109,
     "fire_ratio": 10900.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:52.452088",
+    "classified_at": "2026-07-07T07:40:08.452750",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_6.41_23.43"
   },
   {
-    "id": 32298,
+    "id": 32341,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0015,
@@ -5496,11 +5496,11 @@
     "fires_same_year": 59,
     "fire_ratio": 5900.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:52.629964",
+    "classified_at": "2026-07-07T07:40:10.954123",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_6.43_23.72"
   },
   {
-    "id": 32299,
+    "id": 32342,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.001,
@@ -5518,11 +5518,11 @@
     "fires_same_year": 17,
     "fire_ratio": 1700.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:52.806582",
+    "classified_at": "2026-07-07T07:40:13.476982",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.82_23.28"
   },
   {
-    "id": 32300,
+    "id": 32343,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.001,
@@ -5540,11 +5540,11 @@
     "fires_same_year": 60,
     "fire_ratio": 6000.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:52.986166",
+    "classified_at": "2026-07-07T07:40:15.766321",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.77_24.73"
   },
   {
-    "id": 32301,
+    "id": 32344,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0013,
@@ -5562,11 +5562,11 @@
     "fires_same_year": 23,
     "fire_ratio": 2300.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:53.159213",
+    "classified_at": "2026-07-07T07:40:18.099771",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.55_23.39,deforest_gfw_CAF_Chinko_2026_5.57_23.43"
   },
   {
-    "id": 32302,
+    "id": 32345,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0013,
@@ -5584,11 +5584,11 @@
     "fires_same_year": 0,
     "fire_ratio": 0.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:53.334367",
+    "classified_at": "2026-07-07T07:40:20.433592",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_6.18_23.85,deforest_gfw_CAF_Chinko_2026_6.16_23.85"
   },
   {
-    "id": 32303,
+    "id": 32346,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0009,
@@ -5606,11 +5606,11 @@
     "fires_same_year": 0,
     "fire_ratio": 0.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:53.509010",
+    "classified_at": "2026-07-07T07:40:22.866972",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_6.05_24.15"
   },
   {
-    "id": 32304,
+    "id": 32347,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0009,
@@ -5628,11 +5628,11 @@
     "fires_same_year": 0,
     "fire_ratio": 0.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:53.685476",
+    "classified_at": "2026-07-07T07:40:25.154735",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_6.04_24.35"
   },
   {
-    "id": 32305,
+    "id": 32348,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0009,
@@ -5650,11 +5650,11 @@
     "fires_same_year": 33,
     "fire_ratio": 3300.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:53.856889",
+    "classified_at": "2026-07-07T07:40:27.536335",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.99_24.74"
   },
   {
-    "id": 32306,
+    "id": 32349,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0009,
@@ -5672,11 +5672,11 @@
     "fires_same_year": 111,
     "fire_ratio": 11100.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:54.029052",
+    "classified_at": "2026-07-07T07:40:30.150720",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.78_24.64"
   },
   {
-    "id": 32307,
+    "id": 32350,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0017000000000000001,
@@ -5694,11 +5694,11 @@
     "fires_same_year": 111,
     "fire_ratio": 11100.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:54.214775",
+    "classified_at": "2026-07-07T07:40:32.701575",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_6.48_23.41,deforest_gfw_CAF_Chinko_2026_6.50_23.42,deforest_gfw_CAF_Chinko_2026_6.47_23.45"
   },
   {
-    "id": 32308,
+    "id": 32351,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0006,
@@ -5716,11 +5716,11 @@
     "fires_same_year": 4,
     "fire_ratio": 400.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:54.384500",
+    "classified_at": "2026-07-07T07:40:35.678552",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.11_24.23"
   },
   {
-    "id": 32309,
+    "id": 32352,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0006,
@@ -5738,11 +5738,11 @@
     "fires_same_year": 30,
     "fire_ratio": 3000.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:54.550895",
+    "classified_at": "2026-07-07T07:40:39.286128",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.17_23.97"
   },
   {
-    "id": 32310,
+    "id": 32353,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0006,
@@ -5760,11 +5760,11 @@
     "fires_same_year": 30,
     "fire_ratio": 3000.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:54.722602",
+    "classified_at": "2026-07-07T07:40:42.064598",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.57_24.41"
   },
   {
-    "id": 32311,
+    "id": 32354,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0006,
@@ -5782,11 +5782,11 @@
     "fires_same_year": 0,
     "fire_ratio": 0.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:54.891733",
+    "classified_at": "2026-07-07T07:40:44.968282",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_6.03_23.84"
   },
   {
-    "id": 32312,
+    "id": 32355,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0006,
@@ -5804,11 +5804,11 @@
     "fires_same_year": 0,
     "fire_ratio": 0.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:55.059056",
+    "classified_at": "2026-07-07T07:40:47.541446",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.88_23.80"
   },
   {
-    "id": 32313,
+    "id": 32356,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0006,
@@ -5826,11 +5826,11 @@
     "fires_same_year": 0,
     "fire_ratio": 0.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:55.226254",
+    "classified_at": "2026-07-07T07:40:50.134943",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.84_23.53"
   },
   {
-    "id": 32314,
+    "id": 32357,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0006,
@@ -5848,11 +5848,11 @@
     "fires_same_year": 21,
     "fire_ratio": 2100.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:55.397688",
+    "classified_at": "2026-07-07T07:40:52.512060",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_6.20_23.38"
   },
   {
-    "id": 32315,
+    "id": 32358,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0006,
@@ -5870,11 +5870,11 @@
     "fires_same_year": 165,
     "fire_ratio": 16500.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:55.570535",
+    "classified_at": "2026-07-07T07:40:55.183427",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_6.56_23.55"
   },
   {
-    "id": 32316,
+    "id": 32359,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0004,
@@ -5892,11 +5892,11 @@
     "fires_same_year": 14,
     "fire_ratio": 1400.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:55.740853",
+    "classified_at": "2026-07-07T07:40:58.021431",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.04_24.15"
   },
   {
-    "id": 32317,
+    "id": 32360,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0004,
@@ -5914,11 +5914,11 @@
     "fires_same_year": 8,
     "fire_ratio": 800.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:55.916349",
+    "classified_at": "2026-07-07T07:41:00.422823",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.48_23.58"
   },
   {
-    "id": 32318,
+    "id": 32361,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0004,
@@ -5936,11 +5936,11 @@
     "fires_same_year": 10,
     "fire_ratio": 1000.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:56.085235",
+    "classified_at": "2026-07-07T07:41:03.673679",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.38_23.87"
   },
   {
-    "id": 32319,
+    "id": 32362,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0004,
@@ -5958,11 +5958,11 @@
     "fires_same_year": 1,
     "fire_ratio": 100.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:56.251938",
+    "classified_at": "2026-07-07T07:41:07.234730",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.26_24.26"
   },
   {
-    "id": 32320,
+    "id": 32363,
     "park_id": "CAF_Chinko",
     "year": 2026,
     "area_km2": 0.0004,
@@ -5980,7 +5980,7 @@
     "fires_same_year": 0,
     "fire_ratio": 0.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-06T07:03:56.425604",
+    "classified_at": "2026-07-07T07:41:10.199893",
     "polygon_ids": "deforest_gfw_CAF_Chinko_2026_5.94_23.62"
   }
 ]
