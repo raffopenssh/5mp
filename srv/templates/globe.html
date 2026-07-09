@@ -3931,10 +3931,25 @@
         // Build the full report (incl. park maps) and open the browser print
         // dialog — users save as PDF from there. Maps render as static SVG:
         // PDF cannot display animated GIFs, so no animation is embedded.
+        // Mobile browsers ignore print() from hidden iframes — open a real tab there.
+        function isMobilePrintEnv() {
+            return matchMedia('(pointer: coarse)').matches || /Mobi|Android/i.test(navigator.userAgent);
+        }
+        // Must be called synchronously in the click handler so popup blockers allow it.
+        function openReportWindow() {
+            const w = window.open('', '_blank');
+            if (w) {
+                try { w.document.write('<!DOCTYPE html><title>5MP Report</title><body style="font:14px sans-serif;color:#333;padding:20px">Building report…</body>'); w.document.close(); } catch (e) {}
+            }
+            return w;
+        }
+
         async function exportFullReportPdf(progress = (m) => showToast(m, 'info', { key: 'export', sticky: true, spinner: true })) {
+            const win = isMobilePrintEnv() ? openReportWindow() : null;
             progress('Building report...');
             const result = await buildFullReportMarkdown();
             if (!result) {
+                if (win) win.close();
                 showToast('No parks to export', 'error', { key: 'export' });
                 return;
             }
@@ -3944,22 +3959,23 @@
             const svgs = {};
             for (const [id, p] of mapPromises) svgs[id] = await p;
             dismissToast('export');
-            printMarkdownText(result.markdown, svgs);
+            printMarkdownText(result.markdown, svgs, win);
         }
 
         // Print the current (possibly edited) Markdown: minimal mono rendering
         // in a hidden iframe, headings bolded, [MAP:...] tokens replaced by SVGs.
         async function printMdReport() {
+            const win = isMobilePrintEnv() ? openReportWindow() : null; // sync open (popup blockers)
             const text = document.getElementById('md-report-text').value;
             // Resolve any maps that were kicked off when the modal opened
             const svgs = {};
             if (window._mdReportMaps) {
                 for (const [id, p] of window._mdReportMaps) svgs[id] = await p;
             }
-            printMarkdownText(text, svgs);
+            printMarkdownText(text, svgs, win);
         }
 
-        function printMarkdownText(text, mapSvgs = {}) {
+        function printMarkdownText(text, mapSvgs = {}, targetWin = null) {
             const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             const rendered = escaped.split('\n').map(line => {
                 const mapMatch = line.match(/^\[MAP:([\w-]+)\]\s*$/);
@@ -3973,10 +3989,7 @@
                 if (/^---\s*$/.test(line)) return '<hr>';
                 return line;
             }).join('\n');
-            const iframe = document.createElement('iframe');
-            iframe.style.cssText = 'position:fixed;width:0;height:0;border:none;';
-            document.body.appendChild(iframe);
-            iframe.contentDocument.write(`<!DOCTYPE html><html><head><title>5MP Conservation Report</title><style>
+            const html = `<!DOCTYPE html><html><head><title>5MP Conservation Report</title><style>
                 body { font: 11px/1.6 ui-monospace, Menlo, Consolas, monospace; color: #111; margin: 15mm; }
                 pre { white-space: pre-wrap; word-wrap: break-word; margin: 0; font: inherit; }
                 h1 { font-size: 16px; margin: 0 0 6px; } h2 { font-size: 13px; margin: 14px 0 4px; page-break-after: avoid; } h3 { font-size: 11px; margin: 10px 0 3px; page-break-after: avoid; }
@@ -3984,7 +3997,29 @@
                 hr { border: none; border-top: 1px solid #999; margin: 12px 0; }
                 .parkmap { margin: 8px 0; page-break-inside: avoid; }
                 .parkmap svg { max-width: 100%; height: auto; }
-            </style></head><body><pre>${rendered}</pre></body></html>`);
+                @media screen { body { background: #fff; max-width: 800px; margin: 12px auto; padding: 0 14px; }
+                    .print-bar { position: sticky; top: 0; background: #fff; padding: 8px 0; border-bottom: 1px solid #ddd; margin-bottom: 10px; }
+                    .print-bar button { font: 13px sans-serif; padding: 8px 18px; background: #16a34a; color: #fff; border: none; border-radius: 6px; } }
+                @media print { .print-bar { display: none; } }
+            </style></head><body><pre>${rendered}</pre></body></html>`;
+
+            if (targetWin && !targetWin.closed) {
+                // Mobile path: render into the pre-opened tab with a visible
+                // "Print / Save as PDF" button (mobile browsers ignore print()
+                // from hidden iframes, and often from script entirely).
+                const withBar = html.replace('<body><pre>',
+                    '<body><div class="print-bar"><button onclick="print()">Print / Save as PDF</button></div><pre>');
+                targetWin.document.open();
+                targetWin.document.write(withBar);
+                targetWin.document.close();
+                try { targetWin.focus(); } catch (_) {}
+                return;
+            }
+
+            const iframe = document.createElement('iframe');
+            iframe.style.cssText = 'position:fixed;width:0;height:0;border:none;';
+            document.body.appendChild(iframe);
+            iframe.contentDocument.write(html);
             iframe.contentDocument.close();
             setTimeout(() => {
                 iframe.contentWindow.focus();
@@ -10520,61 +10555,119 @@
         
         function initSliderDrag() {
             const track = document.getElementById('time-slider-track');
-            const startHandle = document.getElementById('time-slider-start');
-            const endHandle = document.getElementById('time-slider-end');
-            
-            let activeHandle = null;
-            
+
+            // Unified pointer-based drag with handle arbitration.
+            // - Grab radius around each handle (bigger on touch) so handles are
+            //   grabbable even when the visual dots overlap.
+            // - When both handles are within the grab radius and roughly
+            //   equidistant (i.e. overlapping/clustered), the choice is deferred
+            //   to the first move: drag LEFT grabs the start handle, drag RIGHT
+            //   grabs the end handle. Since start <= end this is always the only
+            //   sensible interpretation (works clustered at either edge too).
+            // - While animating, the anim playhead only wins the pointer if it is
+            //   clearly nearer than both handles; otherwise handles take priority
+            //   (we stopPropagation so anim.js scrub doesn't also fire).
+            let activeHandle = null;   // 'start' | 'end'
+            let pendingDown = null;    // {x} — ambiguous grab awaiting direction
+            let dragged = false;       // suppress the synthetic click after a drag
+
+            // Defense-in-depth for touch: without touch-action:none the browser
+            // may hijack the gesture for scrolling mid-drag (pointercancel).
+            track.style.touchAction = 'none';
+            document.getElementById('time-slider-start').style.touchAction = 'none';
+            document.getElementById('time-slider-end').style.touchAction = 'none';
+            const blockScroll = (e) => { if (activeHandle || pendingDown) e.preventDefault(); };
+
             function getValueFromEvent(e) {
                 const rect = track.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
                 return Math.round(percent * TOTAL_MONTHS);
             }
-            
-            function onStart(e, handle) {
-                e.preventDefault();
-                activeHandle = handle;
-                document.addEventListener('mousemove', onMove);
-                document.addEventListener('mouseup', onEnd);
-                document.addEventListener('touchmove', onMove);
-                document.addEventListener('touchend', onEnd);
+
+            function handleClientX(which) {
+                const rect = track.getBoundingClientRect();
+                const v = which === 'start' ? sliderStartValue : sliderEndValue;
+                return rect.left + (v / TOTAL_MONTHS) * rect.width;
             }
-            
-            function onMove(e) {
-                if (!activeHandle) return;
-                e.preventDefault();
-                
+
+            function applyDrag(e) {
                 const value = getValueFromEvent(e);
-                
                 if (activeHandle === 'start') {
-                    sliderStartValue = Math.min(value, sliderEndValue - 1);
+                    sliderStartValue = Math.max(0, Math.min(value, sliderEndValue - 1));
                 } else {
-                    sliderEndValue = Math.max(value, sliderStartValue + 1);
+                    sliderEndValue = Math.min(TOTAL_MONTHS, Math.max(value, sliderStartValue + 1));
                 }
-                
                 updateSliderDisplay();
             }
-            
-            function onEnd() {
-                if (activeHandle) {
-                    updateDateFilter();
+
+            function onMove(e) {
+                if (pendingDown && !activeHandle) {
+                    const dx = e.clientX - pendingDown.x;
+                    if (Math.abs(dx) < 3) return; // wait for a clear direction
+                    activeHandle = dx < 0 ? 'start' : 'end';
+                    pendingDown = null;
                 }
-                activeHandle = null;
-                document.removeEventListener('mousemove', onMove);
-                document.removeEventListener('mouseup', onEnd);
-                document.removeEventListener('touchmove', onMove);
-                document.removeEventListener('touchend', onEnd);
+                if (!activeHandle) return;
+                e.preventDefault();
+                dragged = true;
+                applyDrag(e);
             }
-            
-            startHandle.addEventListener('mousedown', (e) => onStart(e, 'start'));
-            startHandle.addEventListener('touchstart', (e) => onStart(e, 'start'));
-            endHandle.addEventListener('mousedown', (e) => onStart(e, 'end'));
-            endHandle.addEventListener('touchstart', (e) => onStart(e, 'end'));
-            
-            // Click on track to move nearest handle
+
+            function onEnd() {
+                if (activeHandle && dragged) updateDateFilter();
+                activeHandle = null;
+                pendingDown = null;
+                document.removeEventListener('pointermove', onMove);
+                document.removeEventListener('pointerup', onEnd);
+                document.removeEventListener('pointercancel', onEnd);
+                document.removeEventListener('touchmove', blockScroll);
+            }
+
+            track.addEventListener('pointerdown', (e) => {
+                if (e.button != null && e.button !== 0) return;
+                const GRAB = e.pointerType === 'touch' ? 28 : 16; // px
+                const ds = Math.abs(e.clientX - handleClientX('start'));
+                const de = Math.abs(e.clientX - handleClientX('end'));
+                if (ds > GRAB && de > GRAB) return; // not a handle grab → click/scrub logic
+
+                // Playhead renders on top of the handles, so it wins ties:
+                // if the pointer is within its own grab radius and it's at
+                // least as close as the nearest handle, let anim.js scrub.
+                const ph = document.getElementById('anim-playhead');
+                if (ph) {
+                    const r = ph.getBoundingClientRect();
+                    const dp = Math.abs(e.clientX - (r.left + r.width / 2));
+                    if (dp <= GRAB && dp <= Math.min(ds, de) + 2) {
+                        // Hand the gesture to the animator scrub directly — the
+                        // event may have landed on the track/handle, in which
+                        // case the playhead's own listener would never fire.
+                        if (typeof window._animBeginScrub === 'function') window._animBeginScrub(e);
+                        return;
+                    }
+                }
+
+                e.preventDefault();
+                e.stopPropagation(); // keep anim playhead scrub from also engaging
+                try { track.setPointerCapture(e.pointerId); } catch (_) {}
+                dragged = false;
+                if (ds <= GRAB && de <= GRAB && Math.abs(ds - de) <= 10) {
+                    pendingDown = { x: e.clientX }; // ambiguous → resolve on first move
+                    activeHandle = null;
+                } else {
+                    activeHandle = ds <= de ? 'start' : 'end';
+                }
+                document.addEventListener('pointermove', onMove);
+                document.addEventListener('pointerup', onEnd);
+                document.addEventListener('pointercancel', onEnd);
+                document.addEventListener('touchmove', blockScroll, { passive: false });
+            }, true); // capture: runs before anim.js playhead's own pointerdown
+
+            // Click on track to move nearest handle (ignored right after a drag)
             track.addEventListener('click', (e) => {
+                if (dragged) { dragged = false; return; }
                 if (e.target.classList.contains('time-slider-handle')) return;
+                if (e.target.id === 'anim-playhead') return;
                 
                 const value = getValueFromEvent(e);
                 const startDist = Math.abs(value - sliderStartValue);

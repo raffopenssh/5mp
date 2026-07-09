@@ -905,13 +905,20 @@
         });
         updateChips();
 
-        // playhead + progress in slider track
+        // playhead + progress in slider track — position BEFORE appending so
+        // they don't flash at the track's left edge and jump on first draw
         const track = document.getElementById('time-slider-track');
+        const [s0, e0] = sliderRangePcts();
+        const frac0 = Math.max(0, Math.min(1, (A.t - A.t0) / (A.t1 - A.t0)));
+        const pct0 = s0 + (e0 - s0) * frac0;
         const prog = document.createElement('div');
         prog.id = 'anim-progress';
+        prog.style.left = s0 + '%';
+        prog.style.width = (pct0 - s0) + '%';
         track.appendChild(prog);
         const ph = document.createElement('div');
         ph.id = 'anim-playhead';
+        ph.style.left = pct0 + '%';
         track.appendChild(ph);
 
         // playhead drag = scrub (works during playback; pauses while dragging)
@@ -929,15 +936,21 @@
         const scrubEnd = () => {
             document.removeEventListener('pointermove', scrubMove);
             document.removeEventListener('pointerup', scrubEnd);
+            document.removeEventListener('pointercancel', scrubEnd);
             if (wasPlaying) play();
         };
-        ph.addEventListener('pointerdown', (e) => {
+        const beginScrub = (e) => {
             e.preventDefault(); e.stopPropagation();
             wasPlaying = A.playing;
             pause();
             document.addEventListener('pointermove', scrubMove);
             document.addEventListener('pointerup', scrubEnd);
-        });
+            document.addEventListener('pointercancel', scrubEnd);
+        };
+        ph.addEventListener('pointerdown', beginScrub);
+        // Exposed so the time-slider's handle arbitration (globe.html) can hand
+        // an ambiguous grab (playhead overlapping a range handle) to the scrub.
+        window._animBeginScrub = (e) => { beginScrub(e); scrubMove(e); };
 
         // controls
         document.getElementById('anim-play').onclick = () => A.playing ? pause() : play();
@@ -1084,6 +1097,7 @@
             document.removeEventListener('keydown', A.keyHandler);
             clearTimeout(A._refetchTimer);
             if (A.canvas) A.canvas.remove();
+            window._animBeginScrub = null;
             teardownUI();
             hideLoading();
             A = null;
