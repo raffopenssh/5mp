@@ -1,3 +1,13 @@
+157e4fb 2026-07-09 17:58:21 Onboarding fixes: all-time fire backfill, FIRMS 5-day cap, search loaded-flag bug
+652665f 2026-07-09 17:39:20 Document park onboarding flow in AGENTS.md
+8ee80af 2026-07-09 17:38:53 On-the-fly park onboarding: search-dwell offer, nightly worker, undo/removal
+fb35419 2026-07-09 17:23:51 Rivers: point all readers at park_rivers_hydro (canonical table)
+9384edc 2026-07-09 17:06:23 Hide session chip while full-screen modals are open (star report, login, upload, version)
+17c2e52 2026-07-09 16:32:40 Document Locus/KML export architecture in AGENTS.md
+4ef0c2c 2026-07-09 16:32:02 Locus/KML export: default device settings, merged rivers, waterbodies, airstrips
+fe1296f 2026-07-09 15:57:26 Upload: friendly error when proxy/auth returns HTML instead of JSON
+753ac37 2026-07-09 15:45:58 Fix password gate on mobile when keyboard opens
+1978d80 2026-07-09 15:42:10 Update generated commit list
 c702694 2026-07-09 15:41:58 Smooth UX: upload busy/toast polish, star report pager & loading shine, richer login page
 0557fca 2026-07-09 15:24:00 Bbox draw UX + session chip declutter
 0903639 2026-07-09 15:16:50 FloatUI polish: bar controls inside popup outline, tag-style pinned chips
@@ -8,13 +18,3 @@ b4341f4 2026-07-09 10:05:19 Update generated commit list
 44e2e4e 2026-07-09 09:26:15 Locus: 5m gap in closed rings so Locus draws lines not polygons; tooltip export buttons as uniform Lucide icons
 ec31007 2026-07-09 09:20:46 Locus export: build DBs fully in RAM via sqlite Serialize (no temp files); remove HANDOVER.md — round 2 complete
 13e576b 2026-07-09 09:18:34 Add Locus Map 4 backup export (.locus button in park tooltip)
-fe7a40b 2026-07-09 09:07:41 KML export: default-off visibility for bulky folders (settlements, deforestation, effort, roads, rivers, lakes, waterbodies, places, older fire years)
-23f0cab 2026-07-09 09:02:33 Tooltip KML: skip patrol effort via ?effort=0 (star report keeps it)
-5150551 2026-07-09 08:58:24 Add HANDOVER.md for round 2: tooltip KML effort param + LOCUS backup export
-fb8da77 2026-07-09 08:56:52 MBTiles: hybrid RAM/disk builds up to 8GB, robust Zenodo streaming, env-scoped limits & notifications
-ed2a42b 2026-07-09 08:01:20 Overhaul report exports: busy states, single toasts, park maps, effort heatmaps
-000de96 2026-07-09 07:27:32 Document raw fire CSV cleanup (5.1GB, verified in DB before deletion)
-261f265 2026-07-09 07:18:31 Star panel: PDF export button, clickable header toggle, cache-busted CSS
-0ce7150 2026-07-09 07:09:05 Update generated commit list
-bcc8fea 2026-07-09 07:08:46 Star report: MD-rendered inline preview + infrastructure, mining/turbidity sections
-6668802 2026-07-09 06:49:25 Add handover notes for session chip + MD report work
