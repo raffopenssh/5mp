@@ -84,7 +84,15 @@
         .form-input { width: 100%; padding: 12px 14px; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 14px; transition: border-color 0.2s; }
         .form-input:focus { outline: none; border-color: #22c55e; }
         .form-input::placeholder { color: #888; }
-        .form-error { color: #ef4444; font-size: 13px; margin-top: 8px; display: none; }
+        .form-error { color: #ef4444; font-size: 13px; margin-top: 0; max-height: 0; opacity: 0; overflow: hidden; transform: translateY(-4px); transition: max-height 0.3s ease, opacity 0.3s ease, transform 0.3s ease, margin-top 0.3s ease; display: block; }
+        .form-error.visible { max-height: 80px; opacity: 1; transform: none; margin-top: 8px; }
+        .form-error.shake { animation: errShake 0.4s ease; }
+        @keyframes errShake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
+        /* Upload button busy state */
+        .btn.btn-busy { pointer-events: none; position: relative; overflow: hidden; opacity: 0.9; }
+        .btn.btn-busy::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%); background-size: 200% 100%; animation: btnSheen 1.2s linear infinite; }
+        @keyframes btnSheen { from { background-position: 200% 0; } to { background-position: -100% 0; } }
+        .btn-busy-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: -2px; margin-right: 8px; }
         .form-footer { margin-top: 24px; }
         .form-footer .btn { width: 100%; padding: 12px; }
         .form-switch { text-align: center; margin-top: 16px; font-size: 14px; color: #999; }
@@ -379,6 +387,13 @@
         .starred-report-loading .spinner { width: 14px; height: 14px; border: 2px solid rgba(59,130,246,0.3); border-top-color: #60a5fa; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .starred-report-ready { color: #22c55e; font-size: 10px; display: flex; align-items: center; gap: 4px; }
+        /* Shimmering "preparing" pill (single loading style for star reports) */
+        .star-loading-pill { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; padding: 3px 10px 3px 8px; font-size: 10px; color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); border-radius: 999px; background: linear-gradient(110deg, rgba(59,130,246,0.08) 30%, rgba(96,165,250,0.22) 50%, rgba(59,130,246,0.08) 70%); background-size: 200% 100%; animation: skelShimmer 1.4s ease infinite; }
+        .star-loading-dot { width: 6px; height: 6px; border-radius: 50%; background: #60a5fa; animation: starDotPulse 1s ease-in-out infinite; }
+        @keyframes starDotPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.7); } }
+        /* Star toolbar badge flashes blue while report data is being prepared */
+        .star-count-badge.preparing { background: #3b82f6; color: #fff; animation: starBadgePrep 1.1s ease-in-out infinite; }
+        @keyframes starBadgePrep { 0%,100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.6); } 50% { box-shadow: 0 0 0 5px rgba(59,130,246,0); background-color: #60a5fa; } }
         .starred-report-content { background: transparent; border-radius: 8px; padding: 12px; margin-top: 8px; font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace; }
         .starred-report-section { margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 6px; border-left: 3px solid; }
         .starred-report-section.fire { border-color: #ef4444; }
@@ -390,6 +405,25 @@
         .starred-report-section-text { font-size: 11px; color: #888; line-height: 1.5; }
         .starred-report-group { margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; font-size: 10px; color: #999; }
         .starred-report-group-title { font-size: 10px; color: #888; margin-bottom: 4px; }
+        /* Bbox multi-park pager (one park sheet at a time with < > nav) */
+        .bbox-pager-bar { display: flex; align-items: center; gap: 10px; padding: 8px 6px; background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.18); border-radius: 10px; margin-bottom: 6px; position: sticky; top: 0; z-index: 5; backdrop-filter: blur(6px); }
+        .bbox-pager-btn { flex: none; width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #ddd; font-size: 18px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+        .bbox-pager-btn:hover:not(:disabled) { background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.5); color: #4ade80; }
+        .bbox-pager-btn:active:not(:disabled) { transform: scale(0.92); }
+        .bbox-pager-btn:disabled { opacity: 0.3; cursor: default; }
+        .bbox-pager-info { flex: 1; min-width: 0; text-align: center; }
+        .bbox-pager-park { display: block; font-size: 12px; font-weight: 600; color: #22c55e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bbox-pager-count { display: block; font-size: 10px; color: #888; margin-top: 1px; }
+        .bbox-pager-dots { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; padding: 2px 0 6px; }
+        .bbox-pager-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.15); cursor: pointer; transition: all 0.2s; }
+        .bbox-pager-dot:hover { background: rgba(34,197,94,0.5); transform: scale(1.3); }
+        .bbox-pager-dot.active { background: #22c55e; transform: scale(1.2); }
+        .bbox-pager-sheet { animation: sheetIn 0.25s ease; }
+        .bbox-pager-sheet.slide-left { animation: sheetSlideLeft 0.25s ease; }
+        .bbox-pager-sheet.slide-right { animation: sheetSlideRight 0.25s ease; }
+        @keyframes sheetIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes sheetSlideLeft { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+        @keyframes sheetSlideRight { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
         .starred-park-nested { margin: 16px 0; padding: 12px; background: transparent; border: none; border-top: 2px solid rgba(34,197,94,0.2); border-radius: 0; }
         .starred-park-nested-header { font-size: 13px; font-weight: 600; color: #22c55e; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
         .starred-park-nested-header:hover { background: rgba(34,197,94,0.08); margin: -4px; padding: 4px; border-radius: 4px; }
@@ -459,15 +493,19 @@
         @keyframes toastFadeOut { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(20px); } }
 
         /* Upload success toast - clickable */
-        .upload-toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(34, 197, 94, 0.95); color: white; padding: 14px 20px; border-radius: 10px; font-size: 14px; z-index: 9999; box-shadow: 0 4px 20px rgba(0,0,0,0.3); animation: toastFadeIn 0.3s ease; cursor: pointer; display: flex; align-items: center; gap: 12px; max-width: 90vw; }
-        .upload-toast:hover { background: rgba(34, 197, 94, 1); transform: translateX(-50%) scale(1.02); }
-        .upload-toast-icon { font-size: 20px; }
-        .upload-toast-content { flex: 1; }
-        .upload-toast-title { font-weight: 600; margin-bottom: 2px; }
-        .upload-toast-subtitle { font-size: 12px; opacity: 0.9; }
-        .upload-toast-action { background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; white-space: nowrap; }
-        .upload-toast-close { position: absolute; top: 6px; right: 8px; background: none; border: none; color: rgba(255,255,255,0.7); font-size: 16px; cursor: pointer; padding: 2px 6px; line-height: 1; }
-        .upload-toast-close:hover { color: white; }
+        .upload-toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(16,24,18,0.96); border: 1px solid rgba(34,197,94,0.4); backdrop-filter: blur(12px); color: #e5e7eb; padding: 14px 18px; border-radius: 14px; font-size: 14px; z-index: 9999; box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 24px rgba(34,197,94,0.12); animation: uploadToastIn 0.45s cubic-bezier(0.34,1.56,0.64,1); cursor: pointer; display: flex; align-items: center; gap: 14px; max-width: 90vw; transition: border-color 0.2s, box-shadow 0.2s; }
+        .upload-toast:hover { border-color: rgba(34,197,94,0.7); box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 32px rgba(34,197,94,0.25); }
+        @keyframes uploadToastIn { from { opacity: 0; transform: translateX(-50%) translateY(24px) scale(0.95); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
+        .upload-toast.leaving { animation: toastFadeOut 0.25s ease forwards; }
+        .upload-toast-icon { width: 34px; height: 34px; flex: none; border-radius: 50%; background: rgba(34,197,94,0.15); border: 1.5px solid rgba(34,197,94,0.5); color: #22c55e; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; animation: uploadTickPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.15s backwards; }
+        @keyframes uploadTickPop { from { transform: scale(0); } to { transform: scale(1); } }
+        .upload-toast-content { flex: 1; min-width: 0; }
+        .upload-toast-title { font-weight: 600; margin-bottom: 2px; color: #fff; }
+        .upload-toast-subtitle { font-size: 12px; color: #9ca3af; }
+        .upload-toast-action { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.35); color: #4ade80; padding: 7px 13px; border-radius: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; transition: background 0.2s; }
+        .upload-toast:hover .upload-toast-action { background: rgba(34,197,94,0.28); }
+        .upload-toast-close { position: absolute; top: 4px; right: 6px; background: none; border: none; color: rgba(255,255,255,0.4); font-size: 15px; cursor: pointer; padding: 2px 6px; line-height: 1; border-radius: 4px; }
+        .upload-toast-close:hover { color: #fff; background: rgba(255,255,255,0.08); }
 
         /* Upload highlight layer */
         @keyframes uploadHighlightPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.5; } }

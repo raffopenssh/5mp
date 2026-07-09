@@ -2258,11 +2258,28 @@
             const form = document.getElementById(`form-${name}`);
             if (form) form.reset();
             const error = document.getElementById(`${name}-error`);
-            if (error) error.style.display = 'none';
+            if (error) error.classList.remove('visible', 'shake');
         }
         function closeModalOnOverlay(e) { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); }
         function switchModal(from, to) { closeModal(from); showModal(to); }
-        function showError(name, msg) { const el = document.getElementById(`${name}-error`); el.textContent = msg; el.style.display = 'block'; }
+        function showError(name, msg) {
+            const el = document.getElementById(`${name}-error`);
+            if (!el) return;
+            el.textContent = msg;
+            el.style.display = '';
+            if (el.classList.contains('visible')) {
+                // Already visible: nudge with a shake so users notice the retry failed too
+                el.classList.remove('shake');
+                void el.offsetWidth;
+                el.classList.add('shake');
+            }
+            el.classList.add('visible');
+        }
+        function hideError(name) {
+            const el = document.getElementById(`${name}-error`);
+            if (!el) return;
+            el.classList.remove('visible', 'shake');
+        }
         
         // Version modal
         async function showVersionModal() {
@@ -2631,17 +2648,39 @@
             } else {
                 document.getElementById('selected-file').textContent = `Selected: ${input.files.length} files`;
             }
+            if (input.files.length > 0) hideError('upload'); // error resolved — fade it out
         }
 
+        let _uploadInFlight = false;
         async function handleUpload(e) {
             e.preventDefault();
+            if (_uploadInFlight) return;
             const fileInput = document.getElementById('file-input');
             if (!fileInput.files.length) { showError('upload', 'Please select at least one GPX file'); return; }
+            hideError('upload');
             
             const formData = new FormData();
             for (let file of fileInput.files) {
                 formData.append('gpx', file);
             }
+            
+            const submitBtn = document.querySelector('#form-upload .btn[type="submit"]');
+            const btnOrigHtml = submitBtn ? submitBtn.innerHTML : '';
+            _uploadInFlight = true;
+            if (submitBtn) {
+                submitBtn.classList.add('btn-busy');
+                submitBtn.setAttribute('aria-busy', 'true');
+                const n = fileInput.files.length;
+                submitBtn.innerHTML = '<span class="btn-busy-spinner"></span>Processing ' + (n > 1 ? n + ' files' : 'GPX') + '\u2026';
+            }
+            const restoreBtn = () => {
+                _uploadInFlight = false;
+                if (submitBtn) {
+                    submitBtn.classList.remove('btn-busy');
+                    submitBtn.removeAttribute('aria-busy');
+                    submitBtn.innerHTML = btnOrigHtml;
+                }
+            };
             
             try {
                 const res = await fetch('/upload', { method: 'POST', body: formData });
@@ -2688,7 +2727,8 @@
                 
                 // Show clickable toast
                 showUploadToast(uploadInfo);
-            } catch (err) { showError('upload', err.message); }
+                restoreBtn();
+            } catch (err) { restoreBtn(); showError('upload', err.message); }
         }
 
         // Show clickable upload success toast
@@ -2701,14 +2741,15 @@
                 ? formatNumber(uploadInfo.totalDistance, 1) + ' km'
                 : '';
             const pixelCount = uploadInfo.gridCells.length;
-            const subtitle = [distanceText, pixelCount + ' pixel' + (pixelCount !== 1 ? 's' : '')].filter(Boolean).join(' • ');
+            const fileText = uploadInfo.filesProcessed > 1 ? uploadInfo.filesProcessed + ' files' : '';
+            const subtitle = [fileText, distanceText, pixelCount + ' pixel' + (pixelCount !== 1 ? 's' : '')].filter(Boolean).join(' • ');
             
             const toast = document.createElement('div');
             toast.className = 'upload-toast';
             toast.innerHTML = `
                 <div class="upload-toast-icon">✓</div>
                 <div class="upload-toast-content">
-                    <div class="upload-toast-title">Upload successful!</div>
+                    <div class="upload-toast-title">Upload complete</div>
                     <div class="upload-toast-subtitle">${subtitle}</div>
                 </div>
                 <div class="upload-toast-action">View on map →</div>
@@ -2725,8 +2766,8 @@
             // Auto-dismiss after 15 seconds
             setTimeout(() => {
                 if (toast.parentElement) {
-                    toast.style.animation = 'toastFadeOut 0.3s ease';
-                    setTimeout(() => toast.remove(), 300);
+                    toast.classList.add('leaving');
+                    setTimeout(() => toast.remove(), 260);
                 }
             }, 15000);
         }
@@ -10893,7 +10934,14 @@
             badge.classList.add('hidden');
             btn.classList.remove('active');
         }
+        // Blue flash while report data is still being prepared
+        badge.classList.toggle('preparing', reportDataCache.loading.size > 0 && total > 0);
     }
+    // Poll so the badge stops flashing once background prefetches finish
+    setInterval(() => {
+        const badge = document.getElementById('star-count-badge');
+        if (badge && badge.classList.contains('preparing') && reportDataCache.loading.size === 0) updateStarBadge();
+    }, 1000);
     
     function isStarred(type, id) {
         const items = starredItems[type] || [];
@@ -10961,6 +11009,7 @@
         }
         
         reportDataCache.loading.add(parkId);
+        updateStarBadge();
         console.log(`[Report] Pre-fetching data for ${parkId}...`);
         
         try {
@@ -10987,6 +11036,7 @@
             console.error(`[Report] Error fetching ${parkId}:`, err);
         } finally {
             reportDataCache.loading.delete(parkId);
+            updateStarBadge();
         }
     }
     
@@ -10998,6 +11048,7 @@
         }
         
         reportDataCache.loading.add('bbox:' + bboxKey);
+        updateStarBadge();
         console.log(`[Report] Pre-fetching bbox data for ${name || bboxKey}...`);
         
         try {
@@ -11037,6 +11088,7 @@
             console.error(`[Report] Error fetching bbox:`, err);
         } finally {
             reportDataCache.loading.delete('bbox:' + bboxKey);
+            updateStarBadge();
         }
     }
     
@@ -11175,7 +11227,7 @@
                     meta: item.country || '',
                     icon: '▣',
                     hint: 'Includes: fire, deforestation, settlements, patrol activity',
-                    status: cached ? '<div class="starred-report-ready">✓ Report ready</div>' + summaryPreview : '<div class="starred-report-loading" style="padding:2px 0;"><div class="spinner" style="width:10px;height:10px;"></div><span style="font-size:10px;">Loading data...</span></div>',
+                    status: cached ? '<div class="starred-report-ready">✓ Report ready</div>' + summaryPreview : starLoadingPill('Preparing report…'),
                     reportHtml: cached ? renderParkMarkdownInline(item, cached) : starSkeletonHtml()
                 };
             }, 'Full park subscription — all narratives & stats');
@@ -11227,8 +11279,8 @@
                     meta: `${item.bbox[0].toFixed(2)}°, ${item.bbox[1].toFixed(2)}° to ${item.bbox[2].toFixed(2)}°, ${item.bbox[3].toFixed(2)}°`,
                     icon: '□',
                     hint: cached ? `Contains ${parkCount} parks with full data` : 'Includes: all parks in area with full data',
-                    status: cached ? '<div class="starred-report-ready">✓ ' + parkCount + ' parks ready</div>' + summaryPreview : '<div class="starred-report-loading" style="padding:2px 0;"><div class="spinner" style="width:10px;height:10px;"></div><span style="font-size:10px;">Loading...</span></div>',
-                    reportHtml: cached ? renderBboxReportInline(item, cached) : '<div class="starred-report-loading"><div class="spinner"></div>Loading parks in area...</div>'
+                    status: cached ? '<div class="starred-report-ready">✓ ' + parkCount + ' parks ready</div>' + summaryPreview : starLoadingPill('Finding parks in area…'),
+                    reportHtml: cached ? renderBboxReportInline(item, cached) : starSkeletonHtml()
                 };
             }, 'Regional subscription — all parks & their data');
         }
@@ -11277,14 +11329,15 @@
                     name: `${narrParkName} — ${item.type}`,
                     meta: narrParkName,
                     icon: {'fire': '◆', 'deforestation': '▲', 'settlement': '■', 'road': '═'}[item.type] || '●',
-                    status: cached ? '<div class="starred-report-ready">✓ Ready</div>' + summaryPreview : '<div class="starred-report-loading" style="padding:2px 0;"><div class="spinner" style="width:10px;height:10px;"></div><span style="font-size:10px;">Loading...</span></div>',
-                    reportHtml: cached ? renderNarrativeReportInline(item, cached) : '<div class="starred-report-loading"><div class="spinner"></div>Loading...</div>'
+                    status: cached ? '<div class="starred-report-ready">✓ Ready</div>' + summaryPreview : starLoadingPill('Preparing narrative…'),
+                    reportHtml: cached ? renderNarrativeReportInline(item, cached) : starSkeletonHtml()
                 };
             }, 'Single narrative type for specific park');
         }
         
         body.innerHTML = html;
         attachStarredItemListeners();
+        updateStarReportMeta();
     }
     
     function renderStarredSection(title, iconClass, items, mapFn, description = '') {
@@ -11317,7 +11370,7 @@
                             </div>
                         </div>
                         <div class="starred-item-details${isOpen ? ' open' : ''}" data-park-id="${item.parkId || item.id || ''}">
-                            ${item.reportHtml || '<div class="starred-report-loading"><div class="spinner"></div>Loading report data...</div>'}
+                            ${item.reportHtml || starSkeletonHtml()}
                         </div>
                     </div>
                 `; }).join('')}
@@ -11488,6 +11541,13 @@
         } catch (e) {
             showToast('Copy failed', 'error');
         }
+    }
+
+    // Compact shimmering status pill shown in the item header while data loads.
+    // (Replaces the old spinner — use this everywhere so we never show two
+    // different loading styles on the same sheet.)
+    function starLoadingPill(label) {
+        return `<div class="star-loading-pill"><span class="star-loading-dot"></span>${escapeHtml(label || 'Preparing…')}</div>`;
     }
 
     function starSkeletonHtml() {
@@ -11977,34 +12037,80 @@
         return html;
     }
     
-    // Render bbox report inline with nested parks
+    // Render bbox report inline with nested parks.
+    // Parks are shown one "sheet" at a time with < > navigation (carousel),
+    // so a 19-park area doesn't become an endless scroll.
+    const bboxPagerState = {}; // bboxKey -> current index
     function renderBboxReportInline(bbox, data) {
-        let html = '<div class="starred-report-content">';
-        html += `<div style="font-size:11px;color:#a855f7;margin-bottom:12px;">${data.parks.length} parks in this area</div>`;
-        
-        for (const park of data.parks) {
-            const rd = park.reportData || {};
-            const parkId = park.id || park.name?.replace(/\s+/g, '_');
-            const isLoading = reportDataCache.loading.has(park.id);
-            const hasData = rd && (rd.fire || rd.deforestation || rd.settlement || rd.stats || rd.species || rd.climate || rd.publications);
-            
-            html += `<div class="starred-park-nested" id="park-${escapeHtml(parkId)}" onclick="event.target.closest('.starred-park-nested-header') && this.classList.toggle('collapsed')">
-                <div class="starred-park-nested-header">
-                    <span>${escapeHtml(park.name || park.id)}</span>
-                    <span class="starred-park-nested-meta">${escapeHtml(park.country || '')}${park.area_km2 ? ' • ' + Math.round(park.area_km2).toLocaleString() + ' km²' : ''}</span>
-                </div>`;
-            
-            if (isLoading || !hasData) {
-                html += starSkeletonHtml();
-            } else {
-                html += renderParkMarkdownInline(park, rd);
-            }
-            
-            html += '</div>';
+        const bboxKey = bbox.bbox ? bbox.bbox.join(',') : (bbox.id || 'bbox');
+        const parks = data.parks || [];
+        if (parks.length === 0) {
+            return '<div class="starred-report-content"><div style="color:#666;font-size:11px;">No parks found in this area.</div></div>';
         }
+        let idx = bboxPagerState[bboxKey] || 0;
+        if (idx >= parks.length) idx = bboxPagerState[bboxKey] = 0;
+        const park = parks[idx];
+        const keyAttr = escapeHtml(bboxKey).replace(/"/g, '&quot;');
         
+        let html = `<div class="starred-report-content bbox-pager" data-bbox-key="${keyAttr}">`;
+        html += `<div class="bbox-pager-bar">
+            <button class="bbox-pager-btn" onclick="event.stopPropagation(); bboxPagerGo(this, -1)" ${parks.length < 2 ? 'disabled' : ''} title="Previous park" aria-label="Previous park">&lsaquo;</button>
+            <div class="bbox-pager-info">
+                <span class="bbox-pager-park">${escapeHtml(park.name || park.id)}</span>
+                <span class="bbox-pager-count">${idx + 1} / ${parks.length} parks in area</span>
+            </div>
+            <button class="bbox-pager-btn" onclick="event.stopPropagation(); bboxPagerGo(this, 1)" ${parks.length < 2 ? 'disabled' : ''} title="Next park" aria-label="Next park">&rsaquo;</button>
+        </div>`;
+        html += `<div class="bbox-pager-dots">${parks.map((p, i) => `<span class="bbox-pager-dot${i === idx ? ' active' : ''}" title="${escapeHtml(p.name || p.id)}" onclick="event.stopPropagation(); bboxPagerJump(this, ${i})"></span>`).join('')}</div>`;
+        html += renderBboxParkSheet(park);
         html += '</div>';
         return html;
+    }
+    
+    function renderBboxParkSheet(park) {
+        const rd = park.reportData || {};
+        const parkId = park.id || park.name?.replace(/\s+/g, '_');
+        const isLoading = reportDataCache.loading.has(park.id);
+        const hasData = rd && (rd.fire || rd.deforestation || rd.settlement || rd.stats || rd.species || rd.climate || rd.publications);
+        let html = `<div class="starred-park-nested bbox-pager-sheet" id="park-${escapeHtml(parkId)}">
+            <div class="starred-park-nested-header" style="cursor:default;">
+                <span>${escapeHtml(park.name || park.id)}</span>
+                <span class="starred-park-nested-meta">${escapeHtml(park.country || '')}${park.area_km2 ? ' • ' + Math.round(park.area_km2).toLocaleString() + ' km²' : ''}</span>
+            </div>`;
+        html += (isLoading || !hasData) ? starSkeletonHtml() : renderParkMarkdownInline(park, rd);
+        html += '</div>';
+        return html;
+    }
+    
+    function bboxPagerRerender(container, dir) {
+        const bboxKey = container.dataset.bboxKey;
+        const cached = reportDataCache.bboxes.get(bboxKey);
+        if (!cached) return;
+        const item = starredItems.bboxes.find(b => b.bbox.join(',') === bboxKey) || { bbox: bboxKey.split(',').map(Number) };
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = renderBboxReportInline(item, cached);
+        const fresh = wrapper.firstElementChild;
+        const sheet = fresh.querySelector('.bbox-pager-sheet');
+        if (sheet && dir) sheet.classList.add(dir > 0 ? 'slide-left' : 'slide-right');
+        container.replaceWith(fresh);
+    }
+    
+    function bboxPagerGo(btn, delta) {
+        const container = btn.closest('.bbox-pager');
+        const bboxKey = container.dataset.bboxKey;
+        const cached = reportDataCache.bboxes.get(bboxKey);
+        if (!cached || !cached.parks.length) return;
+        const n = cached.parks.length;
+        bboxPagerState[bboxKey] = (((bboxPagerState[bboxKey] || 0) + delta) % n + n) % n;
+        bboxPagerRerender(container, delta);
+    }
+    
+    function bboxPagerJump(dot, idx) {
+        const container = dot.closest('.bbox-pager');
+        const bboxKey = container.dataset.bboxKey;
+        const prev = bboxPagerState[bboxKey] || 0;
+        bboxPagerState[bboxKey] = idx;
+        bboxPagerRerender(container, idx === prev ? 0 : (idx > prev ? 1 : -1));
     }
     
     // Render single narrative type report

@@ -268,18 +268,33 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         }
         
         .logo { 
-            width: 64px;
-            height: 64px;
+            width: 72px;
+            height: 72px;
             margin: 0 auto 16px auto; 
-            animation: globePulse 4s ease-in-out infinite;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+        }
+        
+        .logo::before {
+            content: '';
+            position: absolute;
+            inset: -10px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(34,197,94,0.18) 0%, transparent 70%);
+            animation: haloPulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes haloPulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.15); }
         }
         
         .logo svg {
             width: 56px;
             height: 56px;
+            animation: globePulse 4s ease-in-out infinite;
         }
         
         @keyframes globePulse {
@@ -287,6 +302,78 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
             25% { transform: scale(1.05) rotate(-2deg); }
             50% { transform: scale(1) rotate(0deg); }
             75% { transform: scale(1.05) rotate(2deg); }
+        }
+        
+        /* Orbiting satellite dot around the globe */
+        .logo .orbit {
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            animation: orbitSpin 7s linear infinite;
+            pointer-events: none;
+        }
+        .logo .orbit::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: -2px;
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: #4ade80;
+            box-shadow: 0 0 8px 2px rgba(74,222,128,0.7);
+        }
+        @keyframes orbitSpin { to { transform: rotate(360deg); } }
+        
+        /* Feature chips */
+        .feature-chips {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 0 0 22px;
+        }
+        .feature-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #9ca3af;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+            border-radius: 999px;
+            padding: 5px 11px;
+            opacity: 0;
+            animation: chipIn 0.5s ease forwards;
+        }
+        .feature-chip:nth-child(1) { animation-delay: 0.25s; }
+        .feature-chip:nth-child(2) { animation-delay: 0.4s; }
+        .feature-chip:nth-child(3) { animation-delay: 0.55s; }
+        .feature-chip .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+        .feature-chip .dot.fire { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.7); animation: dotBlink 2.2s ease-in-out infinite; }
+        .feature-chip .dot.forest { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.7); animation: dotBlink 2.2s ease-in-out 0.7s infinite; }
+        .feature-chip .dot.patrol { background: #3b82f6; box-shadow: 0 0 6px rgba(59,130,246,0.7); animation: dotBlink 2.2s ease-in-out 1.4s infinite; }
+        @keyframes dotBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+        @keyframes chipIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        
+        .alpha-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: #666;
+        }
+        .alpha-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #fbbf24;
+            border: 1px solid rgba(251,191,36,0.35);
+            background: rgba(251,191,36,0.08);
+            border-radius: 6px;
+            padding: 3px 8px;
         }
         
         .logo-text {
@@ -316,7 +403,7 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         p { 
             font-size: 14px; 
             color: #888; 
-            margin-bottom: 28px;
+            margin-bottom: 18px;
             line-height: 1.5;
         }
         
@@ -428,6 +515,7 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
     </div>
     <div class="container">
         <div class="logo">
+            <div class="orbit"></div>
             <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <ellipse cx="12" cy="12" rx="4" ry="10"></ellipse>
@@ -441,7 +529,12 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         </div>
         <div class="subtitle">Conservation Tracker</div>
         <p>Real-time fire detection, deforestation monitoring, and patrol tracking for 162 African keystone protected areas. Generate custom reports for managers, governments, and donors.</p>
-        <p style="margin-top:12px;font-size:12px;color:#666;"><strong style="color:#fbbf24;">Alpha Version</strong> — Enter access password to continue</p>
+        <div class="feature-chips">
+            <span class="feature-chip"><span class="dot fire"></span>Live fire alerts</span>
+            <span class="feature-chip"><span class="dot forest"></span>Forest change</span>
+            <span class="feature-chip"><span class="dot patrol"></span>Patrol tracking</span>
+        </div>
+        <div class="alpha-line"><span class="alpha-badge">Alpha</span><span>Enter access password to continue</span></div>
         <form method="GET">
             ` + hiddenFields + `
             <div class="form-group">
