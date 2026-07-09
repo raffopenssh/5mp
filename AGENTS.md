@@ -242,8 +242,8 @@ TEST.getEntryCount('fire')               // Count entries
 
 | Type | Value |
 |------|-------|
-| App Passwords | test2026, REDACTED_PWD, REDACTED_PWD |
-| Admin | see secrets.env |
+| App Passwords | see `secrets.env` (gitignored; template: `secrets.env.example`). Docs/tests use `test2026`. |
+| Admin | see `secrets.env` |
 
 ---
 
@@ -276,11 +276,11 @@ ZENODO_TOKEN=... go run ./cmd/backup-zenodo/
 
 ```
 File ID:  c8de734b-ad0e-4c25-b5bb-6e4ddef3f847
-Token:    REDACTED_TOKEN
+Token:    $BACKUP_PEER_TOKEN (see secrets.env)
 ```
 
 ```bash
-curl -H "Authorization: Bearer REDACTED_TOKEN" \
+curl -H "Authorization: Bearer $BACKUP_PEER_TOKEN" \
   https://exe-dev-monitor-peer01.exe.xyz:8000/api/download/c8de734b-ad0e-4c25-b5bb-6e4ddef3f847 \
   -o db_backup_20260302.sqlite3
 ```
@@ -476,7 +476,7 @@ Most endpoints require password via:
 - Cookie: `access_pwd=test2026`
 - Query param: `?pwd=test2026`
 
-Valid passwords: `test2026`, `REDACTED_PWD`, `REDACTED_PWD`
+Valid passwords: loaded from `ACCESS_PASSWORDS` env var or `secrets.env` (fallback: `test2026`)
 
 ### Unauthenticated Endpoints
 

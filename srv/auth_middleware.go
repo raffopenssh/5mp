@@ -8,15 +8,38 @@ import (
 	"strings"
 )
 
-// validPasswords are loaded from ACCESS_PASSWORDS env var (comma-separated),
-// falling back to defaults if unset.
+// validPasswords are loaded from the ACCESS_PASSWORDS env var (comma-separated),
+// falling back to the local secrets.env config file, then to a test-only default.
+// Real credentials must never be committed to the repo (see secrets.env.example).
 var validPasswords = loadPasswords()
 
 func loadPasswords() []string {
 	if env := os.Getenv("ACCESS_PASSWORDS"); env != "" {
 		return strings.Split(env, ",")
 	}
-	return []string{"test2026", "REDACTED_PWD", "REDACTED_PWD", "REDACTED_PWD", "test2026"}
+	if v := secretsEnv("ACCESS_PASSWORDS"); v != "" {
+		return strings.Split(v, ",")
+	}
+	return []string{"test2026"}
+}
+
+// secretsEnv reads a KEY=VALUE entry from the local secrets.env file
+// (gitignored; see secrets.env.example for the template).
+func secretsEnv(key string) string {
+	data, err := os.ReadFile("secrets.env")
+	if err != nil {
+		return ""
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		if k, v, ok := strings.Cut(line, "="); ok && strings.TrimSpace(k) == key {
+			return strings.TrimSpace(v)
+		}
+	}
+	return ""
 }
 
 // PasswordMiddleware checks for valid password in cookie or query param

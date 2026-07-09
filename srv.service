@@ -11,6 +11,8 @@ Restart=always
 RestartSec=5
 Environment=HOME=/home/exedev
 Environment=USER=exedev
+# Secrets (ACCESS_PASSWORDS, ZENODO_TOKEN, ...) — see secrets.env.example
+EnvironmentFile=-/home/exedev/5mp/secrets.env
 StandardOutput=journal
 StandardError=journal
 

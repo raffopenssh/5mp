@@ -65,9 +65,9 @@ A Go web application for conservation monitoring of 162 African keystone protect
 
 | Type | Value |
 |------|-------|
-| App Passwords | test2026, REDACTED_PWD, REDACTED_PWD |
+| App Passwords | see `secrets.env` (docs use `test2026`) |
 | Admin Email | admin@5mp.globe |
-| Admin Password | REDACTED_PWD |
+| Admin Password | see `secrets.env` |
 
 ---
 

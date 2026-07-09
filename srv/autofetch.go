@@ -427,7 +427,7 @@ func (s *Server) runAutofetchSource(ctx context.Context, id int64) {
 
 	slog.Info("autofetch: running", "id", id, "url", serviceURL, "since", sinceArg)
 
-	uploadURL := fmt.Sprintf("http://localhost:%s/api/upload/async?pwd=test2026", s.listenPort())
+	uploadURL := fmt.Sprintf("http://localhost:%s/api/upload/async?pwd=%s", s.listenPort(), validPasswords[0])
 
 	args := []string{"scripts/fetch_earthranger_gpx.py",
 		"--url", serviceURL,

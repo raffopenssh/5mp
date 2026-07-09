@@ -60,3 +60,6 @@ backup-zenodo
 # Local-only backups & raw downloads
 backups/*.sql
 data/worldclim/*.zip
+
+# Local secrets (see secrets.env.example)
+secrets.env

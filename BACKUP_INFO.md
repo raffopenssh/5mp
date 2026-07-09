@@ -117,7 +117,7 @@ sudo systemctl start 5mp
 |-------|-------|
 | **Location** | exe-dev-monitor-peer01.exe.xyz |
 | **File ID** | `c8de734b-ad0e-4c25-b5bb-6e4ddef3f847` |
-| **Token** | `REDACTED_TOKEN` |
+| **Token** | `$BACKUP_PEER_TOKEN` (see `secrets.env`) |
 | **File** | `5mp_db_backup_20260302.sqlite3` |
 | **Size** | 1.87 GB (2,008,952,832 bytes) |
 | **MD5** | `c4f7fff51e59277566d3d03e9eaf31a1` |
@@ -126,7 +126,7 @@ sudo systemctl start 5mp
 ### Download from peer01
 
 ```bash
-curl -H "Authorization: Bearer REDACTED_TOKEN" \
+curl -H "Authorization: Bearer $BACKUP_PEER_TOKEN" \
   https://exe-dev-monitor-peer01.exe.xyz:8000/api/download/c8de734b-ad0e-4c25-b5bb-6e4ddef3f847 \
   -o 5mp_db_backup_20260302.sqlite3
 ```

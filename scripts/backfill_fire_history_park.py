@@ -10,6 +10,9 @@ Usage:
 Idempotent: INSERT OR IGNORE on the (lat,lon,date,time,satellite) unique key.
 Fires are assigned to nearest park (<=100km) same as daily_fire_update.py.
 """
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from secrets_config import secret
 import argparse, json, sqlite3, sys, time
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -23,7 +26,7 @@ sys.path.insert(0, str(BASE_DIR / 'analysis'))
 
 DB_PATH = BASE_DIR / 'db.sqlite3'
 KEYSTONES = BASE_DIR / 'data' / 'keystones_with_boundaries.json'
-NASA_API_KEY = "REDACTED_FIRMS_KEY"
+NASA_API_KEY = secret('NASA_FIRMS_KEY')
 SP_SOURCE = "VIIRS_NOAA20_SP"
 URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 BUFFER_DEG = 0.1  # ~10km, matches GFW cell buffer

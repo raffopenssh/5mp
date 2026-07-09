@@ -35,7 +35,7 @@ sys.path.insert(0, str(BASE_DIR / 'scripts' / 'fire_nrt'))
 try:
     from config import MAP_KEY as FIRMS_MAP_KEY, PROXIES, RATE_LIMIT_DELAY, MAX_TRANSACTIONS_PER_10MIN
 except ImportError:
-    FIRMS_MAP_KEY = "REDACTED_FIRMS_KEY"
+    FIRMS_MAP_KEY = secret('NASA_FIRMS_KEY')
     PROXIES = [
         "95.213.217.168:52004",
         "89.208.85.78:443",

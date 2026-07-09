@@ -2,6 +2,9 @@
 """One-off: backfill 2025 VIIRS SP fires, Africa-wide, into fire_detections.
 Same assignment logic as daily_fire_update.py (nearest park <=100km).
 Only rows assigned to a park are inserted. INSERT OR IGNORE = idempotent."""
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from secrets_config import secret
 import sqlite3, sys, time, requests
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -9,7 +12,7 @@ BASE_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE_DIR / 'scripts'))
 from park_assigner import ParkAssigner
 
-KEY = "REDACTED_FIRMS_KEY"
+KEY = secret('NASA_FIRMS_KEY')
 URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 AREA = "-20,-35,55,40"
 

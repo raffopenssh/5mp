@@ -14,6 +14,9 @@ Groups can continue to grow as fires keep burning - trajectories extend.
 Cron: 0 3 * * * cd /home/exedev/5mp && python3 scripts/daily_fire_update.py >> logs/daily_fire.log 2>&1
 """
 
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from secrets_config import secret, app_password
 import os
 import sys
 import json
@@ -50,7 +53,7 @@ DATA_DIR = BASE_DIR / "data"
 LOG_DIR = BASE_DIR / "logs"
 LOG_DIR.mkdir(exist_ok=True)
 
-NASA_API_KEY = "REDACTED_FIRMS_KEY"
+NASA_API_KEY = secret('NASA_FIRMS_KEY')
 FIRMS_NRT_URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 
 DEFAULT_DAYS = 5  # Default: last 5 days
@@ -482,7 +485,7 @@ class DailyFireUpdater:
         try:
             response = requests.post(
                 "http://localhost:8000/api/update-fire-alerts",
-                params={'pwd': 'test2026'},
+                params={'pwd': app_password()},
                 timeout=60
             )
             if response.status_code == 200:

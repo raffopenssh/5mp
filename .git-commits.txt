@@ -1,3 +1,9 @@
+b7d205c7 2026-07-08 04:55:47 Add one-time methods/compass hint; update About modal with turbidity/mining/GFW cron info; remove DB download link
+1d7a696b 2026-07-07 12:31:33 Mining accordion: summary table + sparkline, clustered pit list, rich map tooltips
+bffab2ba 2026-07-07 12:09:24 Pit scanner: batched verify/history passes, Akobo/Boma scan (228 sites), registration cap
+8e364d80 2026-07-07 11:52:56 Mining pit scanner: detect bright-bare pit clusters along river corridors
+34406498 2026-07-07 10:50:25 Bottom-anchored UI tracks real time-slider height (--slider-h)
+f407f37a 2026-07-07 04:53:45 Update GFW alerts data for CAF_Bamingui-Bangoran; refresh commit log
 dd800945 2026-07-07 04:51:59 Truncate footer version hash to 4 chars on mobile
 5252c0e5 2026-07-07 04:48:54 Render time-slider backdrop shadow underneath the toolbar buttons
 a0de0691 2026-07-07 04:44:38 Tapping the active preset tag expands/collapses the tag strip
@@ -12,9 +18,3 @@ f67219ff 2026-07-07 04:14:30 Footer button polish + taller time-slider backdrop 
 248816d2 2026-07-06 17:06:04 docs: update BACKUP_INFO with July 6 gzip-compressed Zenodo backup
 412ed90d 2026-07-06 14:55:51 Ignore local db backups, worldclim zip, learner SQL dumps; refresh commit list
 eb8c2a27 2026-07-06 14:22:26 Fix date preset tags vanishing after slider drag; animator follows date changes
-aa3e29c1 2026-07-06 13:56:09 Animated patrol circles: exact replica of the static pixel stack
-d9d5bbe2 2026-07-06 13:50:42 Fix line-gap artefacts in animated patrol effort (round-vs-floor grid snapping)
-d2805cf0 2026-07-06 13:24:35 Fix anim share-link restore: keep polling until restoreStateFromURL sets _pendingAnim
-49412c21 2026-07-06 13:21:02 Animator: cleaner badge layout, fire-style patrol circles, hide base pixels during effort anim
-dc6e040c 2026-07-06 13:08:20 AGENTS.md: document animator v2 (slider integration, chips, points mode, share state)
-d201bb7c 2026-07-06 13:07:11 Animator v2: integrate into time slider with toggleable layer chips, points mode, share-link state

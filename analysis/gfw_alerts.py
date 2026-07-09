@@ -13,13 +13,16 @@ Usage:
 Output: data/gfw_alerts/{park_id}.json — 0.01-deg cell clusters (compact, git-friendly).
 State:  data/gfw_alerts/state.json — last scan time + request count per park.
 """
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'scripts'))
+from secrets_config import secret
 import json, math, sys, time, subprocess, argparse, os, datetime
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "scripts"))
 from cron_notify import notify_status  # noqa: E402
 
-API_KEY = os.environ.get("GFW_API_KEY", "REDACTED_GFW_KEY")
+API_KEY = os.environ.get("GFW_API_KEY") or secret('GFW_API_KEY')
 BASE = "https://data-api.globalforestwatch.org"
 STATE_FILE = "data/gfw_alerts/state.json"
 _version = None

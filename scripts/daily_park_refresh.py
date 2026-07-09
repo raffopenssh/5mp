@@ -32,6 +32,9 @@ Usage:
   python3 scripts/daily_park_refresh.py --park CAF_Chinko --dry-run
 """
 
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from secrets_config import secret, app_password
 import argparse
 import json
 import sqlite3
@@ -49,7 +52,7 @@ GFW_DIR = BASE_DIR / 'data' / 'gfw_alerts'
 TURBIDITY_STATE = BASE_DIR / 'data' / 'turbidity' / 'state.json'
 STATE_FILE = BASE_DIR / 'data' / 'daily_refresh_state.json'
 SERVER_URL = 'http://localhost:8000'
-PWD = 'test2026'
+PWD = app_password()
 
 # GFW cluster quality gate (0.01-deg cells): require >=3 alert pixels and at
 # least one high/highest-confidence pixel to suppress single-pixel noise.

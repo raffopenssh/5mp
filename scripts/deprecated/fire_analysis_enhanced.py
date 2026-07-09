@@ -9,6 +9,9 @@ Improvements over basic fire_group_detection.py:
 4. NASA API key for future data fetching
 """
 
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..'))
+from secrets_config import secret
 import json
 import pandas as pd
 import numpy as np
@@ -25,7 +28,7 @@ except ImportError:
     print("Warning: shapely not installed, infraction detection disabled")
 
 # NASA FIRMS API key
-NASA_API_KEY = "REDACTED_FIRMS_KEY"
+NASA_API_KEY = secret('NASA_FIRMS_KEY')
 
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"

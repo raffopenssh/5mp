@@ -155,7 +155,7 @@ func (s *Server) RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 }
 
 // RequireAdmin is middleware that requires admin role.
-// Alpha: accept any valid password (test2026/REDACTED_PWD/REDACTED_PWD) instead of
+// Alpha: accept any valid app password instead of
 // requiring a full admin session, so all users can approve learnings,
 // delete entries, etc.
 func (s *Server) RequireAdmin(next http.HandlerFunc) http.HandlerFunc {

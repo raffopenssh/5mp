@@ -10,6 +10,9 @@ Downloads and manages NASA VIIRS fire detection data for protected areas.
 - Identifies infractions (fires inside PAs)
 """
 
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from secrets_config import secret
 import os
 import sys
 import json
@@ -25,7 +28,7 @@ from sklearn.cluster import DBSCAN
 from collections import defaultdict
 
 # Configuration
-NASA_API_KEY = "REDACTED_FIRMS_KEY"
+NASA_API_KEY = secret('NASA_FIRMS_KEY')
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data" / "fire"
 DB_PATH = BASE_DIR / "db.sqlite3"
