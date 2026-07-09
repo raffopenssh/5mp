@@ -348,6 +348,30 @@ from full history). Don't add a second weekly chart.
 
 ---
 
+## Locus / KML Park Exports
+
+Park tooltip icon buttons → `GET /api/parks/{id}/export.kml` (`srv/api.go`,
+`HandleAPIParkKML`) and `GET /api/parks/{id}/export.locus`
+(`srv/locus_export.go`). Both support `?from=&to=` date filters; KML also
+`?effort=0` (tooltip skips patrol effort, star report keeps it).
+
+- **Locus zip** = Locus Map 4 backup (restore via Backup → Restore). Contains
+  `data/database/tracks.db|waypoints.db` (folder tree in `groups`: Base =
+  boundary/rivers/roads/waterbodies/places/lakes/airstrips, Mission =
+  fires-per-year/settlements/deforestation/turbidity) **plus default device
+  config** embedded from `srv/locus_defaults/` (sanitized 2026 field-device
+  backup: `_various/settings` with Dropbox OAuth blanked, config.cfg, BOMA
+  preset…). Only boundary + latest fire year + turbidity visible by default;
+  polygons exported as open-ring lines (5 m gap) so Locus map taps stay usable;
+  empty folders dropped.
+- **Rivers**: raw `park_rivers_hydro` rows are tiny disconnected HydroRIVERS
+  reach stubs — always export via `loadMergedRivers()` (`srv/rivers_merged.go`)
+  which chains touching segments into continuous polylines.
+- **park_waterbodies** is populated from `data/waterbodies/*.json` by
+  `scripts/import_json_to_db.py waterbodies` (creates table if missing).
+
+---
+
 ## Data Processing Scripts (v5)
 
 See `docs/SCRIPTS.md` and `docs/FIRE_PIPELINE.md` for full details.
