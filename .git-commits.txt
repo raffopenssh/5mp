@@ -1,3 +1,7 @@
+c702694 2026-07-09 15:41:58 Smooth UX: upload busy/toast polish, star report pager & loading shine, richer login page
+0557fca 2026-07-09 15:24:00 Bbox draw UX + session chip declutter
+0903639 2026-07-09 15:16:50 FloatUI polish: bar controls inside popup outline, tag-style pinned chips
+b4341f4 2026-07-09 10:05:19 Update generated commit list
 8396053 2026-07-09 10:05:17 Compact pinned-layers box + cleaner popup country line
 8797be3 2026-07-09 09:46:51 Update generated commit list
 604a285 2026-07-09 09:46:28 FloatUI: draggable/collapsible/dockable pinned-layers box and park popup
@@ -14,7 +18,3 @@ ed2a42b 2026-07-09 08:01:20 Overhaul report exports: busy states, single toasts,
 0ce7150 2026-07-09 07:09:05 Update generated commit list
 bcc8fea 2026-07-09 07:08:46 Star report: MD-rendered inline preview + infrastructure, mining/turbidity sections
 6668802 2026-07-09 06:49:25 Add handover notes for session chip + MD report work
-f23af34 2026-07-09 06:48:53 Update generated commit list
-9e399e2 2026-07-09 06:48:51 Alpha session chip with logout; star report Markdown overhaul
-2d6ca7e 2026-07-09 06:28:47 Update generated commit list
-3eb899c 2026-07-09 06:28:34 Validate park IDs centrally; carry URL params through tryout login
