@@ -1,3 +1,5 @@
+8396053 2026-07-09 10:05:17 Compact pinned-layers box + cleaner popup country line
+8797be3 2026-07-09 09:46:51 Update generated commit list
 604a285 2026-07-09 09:46:28 FloatUI: draggable/collapsible/dockable pinned-layers box and park popup
 44e2e4e 2026-07-09 09:26:15 Locus: 5m gap in closed rings so Locus draws lines not polygons; tooltip export buttons as uniform Lucide icons
 ec31007 2026-07-09 09:20:46 Locus export: build DBs fully in RAM via sqlite Serialize (no temp files); remove HANDOVER.md — round 2 complete
@@ -16,5 +18,3 @@ f23af34 2026-07-09 06:48:53 Update generated commit list
 9e399e2 2026-07-09 06:48:51 Alpha session chip with logout; star report Markdown overhaul
 2d6ca7e 2026-07-09 06:28:47 Update generated commit list
 3eb899c 2026-07-09 06:28:34 Validate park IDs centrally; carry URL params through tryout login
-673214a 2026-07-09 05:55:09 Data refresh: daily fire/deforestation/turbidity updates
-be42642 2026-07-09 05:46:36 Update generated commit list
