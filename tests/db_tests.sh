@@ -100,7 +100,10 @@ test_query "gpx_upload_logs exists" "SELECT COUNT(*) FROM gpx_upload_logs" "none
 test_query "gpx_learning_results exists" "SELECT 1 FROM gpx_learning_results LIMIT 1" ""
 
 yellow "\n=== Data Counts ==="
-test_query "parks with fire analysis" "SELECT COUNT(DISTINCT park_id) FROM park_fire_analysis" "nonempty"
+# park_fire_analysis is a legacy v2 table (empty since the v5 pipeline);
+# fire_narrative_cache is the current per-park fire analysis source of truth.
+test_query "parks with fire narratives (v5)" "SELECT COUNT(*) FROM fire_narrative_cache" "nonempty"
+test_query "parks with fire trajectories" "SELECT COUNT(DISTINCT park_id) FROM feature_geometries WHERE feature_type='fire_trajectory'" "nonempty"
 test_query "settlement events" "SELECT COUNT(*) FROM park_settlements" "nonempty"
 test_query "deforestation events" "SELECT COUNT(*) FROM deforestation_events" "nonempty"
 test_query "feature geometries" "SELECT COUNT(*) FROM feature_geometries" "nonempty"
@@ -110,9 +113,9 @@ test_query "deforestation features" "SELECT COUNT(*) FROM feature_geometries WHE
 
 yellow "\n=== Data Integrity ==="
 test_query "parks have boundaries" "SELECT COUNT(*) FROM park_climate WHERE park_id IS NOT NULL" "nonempty"
-test_query "CAF_Chinko has fires" "SELECT COUNT(*) FROM park_fire_analysis WHERE park_id='CAF_Chinko'" "nonempty"
-test_query "COD_Virunga has fires" "SELECT COUNT(*) FROM park_fire_analysis WHERE park_id='COD_Virunga'" "nonempty"
-test_query "TZA_Serengeti has fires" "SELECT COUNT(*) FROM park_fire_analysis WHERE park_id='TZA_Serengeti'" "nonempty"
+test_query "CAF_Chinko has fires" "SELECT COUNT(*) FROM feature_geometries WHERE feature_type='fire_trajectory' AND park_id='CAF_Chinko'" "nonempty"
+test_query "COD_Virunga has fires" "SELECT COUNT(*) FROM feature_geometries WHERE feature_type='fire_trajectory' AND park_id='COD_Virunga'" "nonempty"
+test_query "TZA_Serengeti has fires" "SELECT COUNT(*) FROM feature_geometries WHERE feature_type='fire_trajectory' AND park_id='TZA_Serengeti'" "nonempty"
 
 yellow "\n=== Classification Data ==="
 test_query "settlements classified" "SELECT COUNT(*) FROM park_settlements WHERE classification IS NOT NULL" "nonempty"

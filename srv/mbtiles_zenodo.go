@@ -8,8 +8,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
+	"os"
+	"path/filepath"
 	"runtime"
 	"sync"
 	"sync/atomic"
@@ -34,6 +37,20 @@ func zenodoMBTilesMetadata(parkName, source string, minZoom, maxZoom int) zenodo
 	}
 }
 
+// Build/size limits.
+//
+// In-memory builds (preferred — disk usage costs extra on this VM) peak at
+// ~3× raw tile bytes (SQLite overhead + Serialize copy); the 7.2 GB VM
+// supports ~2 GB files that way. Larger builds fall back to a disk temp file
+// and stream-upload, up to maxMBTilesSize. The disk path is reserved for
+// non-test (prod-password) users; test users keep the RAM-only limit.
+const (
+	inMemoryRAMBudget = 7 * 1024 * 1024 * 1024        // peak RAM ceiling for in-memory builds
+	maxMBTilesSize    = 8 * 1024 * 1024 * 1024        // absolute file-size cap (disk-backed, Zenodo allows 50GB)
+	mbtilesDiskMargin = 1.2                           // require 1.2× estimated size free on disk
+	mbtilesMinFree    = 2 * 1024 * 1024 * 1024        // always leave 2 GB free
+)
+
 // ZenodoMBTilesJob represents a tile generation + Zenodo upload job.
 type ZenodoMBTilesJob struct {
 	ID              string     `json:"id"`
@@ -53,6 +70,7 @@ type ZenodoMBTilesJob struct {
 	Error           string     `json:"error,omitempty"`
 	CreatedAt       time.Time  `json:"created_at"`
 	CompletedAt     *time.Time `json:"completed_at,omitempty"`
+	Env             string     `json:"env,omitempty"` // "test" or "prod" — scopes notifications
 
 	// Zenodo result fields
 	ZenodoDepoID int    `json:"zenodo_depo_id,omitempty"`
@@ -185,29 +203,53 @@ func (q *ZenodoMBTilesQueue) executeJob(job *ZenodoMBTilesJob) {
 	job.Phase = "tiles"
 	q.mu.Unlock()
 
-	// Phase 1: Build MBTiles in memory
-	data, err := q.buildMBTilesInMemory(job)
-	if err != nil {
-		q.failJob(job, fmt.Sprintf("build in-memory: %s", err))
-		return
+	// Phase 1: Build MBTiles. Prefer in-memory (disk usage costs extra on this
+	// VM); fall back to a disk temp file only when the estimate doesn't fit in
+	// RAM (disk path is only reachable for non-test users — gated at create).
+	ramNeeded := estimateRAMRequired(job.BBox, job.MinZoom, job.MaxZoom)
+	useMemory := ramNeeded <= inMemoryRAMBudget
+
+	var data []byte // set for in-memory builds
+	var tmpPath string
+	var fileSize int64
+	var err error
+
+	if useMemory {
+		data, err = q.buildMBTilesInMemory(job)
+		if err != nil {
+			q.failJob(job, fmt.Sprintf("build in-memory: %s", err))
+			return
+		}
+		fileSize = int64(len(data))
+		slog.Info("MBTiles built in memory", "id", job.ID, "size_mb", fileSize/(1024*1024), "tiles", job.DownloadedTiles)
+	} else {
+		tmpPath, err = q.buildMBTilesToDisk(job)
+		if tmpPath != "" {
+			defer os.Remove(tmpPath)
+		}
+		if err != nil {
+			q.failJob(job, fmt.Sprintf("build mbtiles: %s", err))
+			return
+		}
+		if info, statErr := os.Stat(tmpPath); statErr == nil {
+			fileSize = info.Size()
+		}
+		slog.Info("MBTiles built on disk", "id", job.ID, "path", tmpPath, "size_mb", fileSize/(1024*1024), "tiles", job.DownloadedTiles)
 	}
 
-	slog.Info("MBTiles built in memory",
-		"id", job.ID,
-		"size_mb", len(data)/(1024*1024),
-		"tiles", job.DownloadedTiles,
-	)
-
-	// Phase 2: Upload to Zenodo
+	// Phase 2: Upload to Zenodo (streams from disk for large builds)
 	q.mu.Lock()
 	job.Status = "uploading"
 	job.Phase = "upload"
-	job.FileSize = int64(len(data))
+	job.FileSize = fileSize
 	q.mu.Unlock()
 
-	err = q.uploadToZenodo(job, data)
-	// Release the large slice immediately
-	data = nil
+	if useMemory {
+		err = q.uploadBytesToZenodo(job, data)
+		data = nil // release large slice
+	} else {
+		err = q.uploadFileToZenodo(job, tmpPath)
+	}
 	if err != nil {
 		q.failJob(job, fmt.Sprintf("zenodo upload: %s", err))
 		return
@@ -238,31 +280,9 @@ func (q *ZenodoMBTilesQueue) executeJob(job *ZenodoMBTilesJob) {
 	}(job.ID)
 }
 
-// buildMBTilesInMemory downloads tiles and builds a complete MBTiles SQLite
-// database in memory, then serializes it to []byte.
-//
-// Memory lifecycle:
-//   1. Tiles downloaded → inserted into in-memory SQLite (peak: ~DB size)
-//   2. Serialize() allocates a []byte copy (brief peak: ~2× DB size)
-//   3. DB closed + GC forced immediately → back to ~1× (the serialized bytes)
-func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte, error) {
-	source, ok := TileSources[job.Source]
-	if !ok {
-		return nil, fmt.Errorf("unknown tile source: %s", job.Source)
-	}
-
-	// Open in-memory SQLite
-	db, err := sql.Open("sqlite", ":memory:")
-	if err != nil {
-		return nil, fmt.Errorf("open memory db: %w", err)
-	}
-	// NOT using defer db.Close() — we close explicitly after Serialize
-
-	// Keep a single connection (required for Serialize)
-	db.SetMaxOpenConns(1)
-	db.SetMaxIdleConns(1)
-
-	// Initialize MBTiles schema
+// fillMBTilesDB initializes the MBTiles schema and downloads all tiles into db.
+// Shared by the in-memory and disk-backed build paths.
+func (q *ZenodoMBTilesQueue) fillMBTilesDB(db *sql.DB, job *ZenodoMBTilesJob, source TileSource) error {
 	mbJob := &MBTilesJob{
 		ParkName: job.ParkName,
 		BBox:     job.BBox,
@@ -270,24 +290,20 @@ func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte
 		MaxZoom:  job.MaxZoom,
 	}
 	if err := initMBTilesSchema(db, mbJob, source); err != nil {
-		db.Close()
-		return nil, fmt.Errorf("init schema: %w", err)
+		return fmt.Errorf("init schema: %w", err)
 	}
 
-	// Calculate tiles
 	tiles := calculateTiles(job.BBox, job.MinZoom, job.MaxZoom)
 	job.TotalTiles = int64(len(tiles))
 
-	slog.Info("Downloading tiles to memory", "total", job.TotalTiles, "source", source.Name)
+	slog.Info("Downloading tiles", "total", job.TotalTiles, "source", source.Name)
 
-	// Prepare insert
 	insertStmt, err := db.Prepare("INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?, ?, ?, ?)")
 	if err != nil {
-		db.Close()
-		return nil, fmt.Errorf("prepare insert: %w", err)
+		return fmt.Errorf("prepare insert: %w", err)
 	}
+	defer insertStmt.Close()
 
-	// Download tiles with concurrency
 	semaphore := make(chan struct{}, q.maxCPU)
 	var wg sync.WaitGroup
 	var downloaded atomic.Int64
@@ -297,9 +313,7 @@ func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte
 	for _, tile := range tiles {
 		select {
 		case <-q.ctx.Done():
-			insertStmt.Close()
-			db.Close()
-			return nil, fmt.Errorf("cancelled")
+			return fmt.Errorf("cancelled")
 		default:
 		}
 
@@ -329,11 +343,38 @@ func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte
 	}
 
 	wg.Wait()
-	insertStmt.Close()
 
 	if errors.Load() > job.TotalTiles/2 {
+		return fmt.Errorf("too many errors: %d/%d failed", errors.Load(), job.TotalTiles)
+	}
+	return nil
+}
+
+// buildMBTilesInMemory builds the MBTiles DB in RAM and serializes it to []byte.
+// Preferred path (disk usage costs extra on this VM); only used when the
+// estimated peak RAM fits within inMemoryRAMBudget.
+//
+// Memory lifecycle:
+//  1. Tiles downloaded → inserted into in-memory SQLite (peak: ~DB size)
+//  2. Serialize() allocates a []byte copy (brief peak: ~2× DB size)
+//  3. DB closed + GC forced immediately → back to ~1× (the serialized bytes)
+func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte, error) {
+	source, ok := TileSources[job.Source]
+	if !ok {
+		return nil, fmt.Errorf("unknown tile source: %s", job.Source)
+	}
+
+	db, err := sql.Open("sqlite", ":memory:")
+	if err != nil {
+		return nil, fmt.Errorf("open memory db: %w", err)
+	}
+	// Single connection required for Serialize
+	db.SetMaxOpenConns(1)
+	db.SetMaxIdleConns(1)
+
+	if err := q.fillMBTilesDB(db, job, source); err != nil {
 		db.Close()
-		return nil, fmt.Errorf("too many errors: %d/%d failed", errors.Load(), job.TotalTiles)
+		return nil, err
 	}
 
 	// Serialize the in-memory database to []byte
@@ -359,7 +400,6 @@ func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte
 		return serErr
 	})
 
-	// Free the in-memory DB immediately — we only need the serialized bytes now
 	conn.Close()
 	db.Close()
 	runtime.GC() // Reclaim SQLite memory before upload
@@ -367,19 +407,74 @@ func (q *ZenodoMBTilesQueue) buildMBTilesInMemory(job *ZenodoMBTilesJob) ([]byte
 	if err != nil {
 		return nil, fmt.Errorf("serialize: %w", err)
 	}
-
 	return serialized, nil
 }
 
-// uploadToZenodo uploads the MBTiles bytes directly to Zenodo without
-// writing to disk.
-func (q *ZenodoMBTilesQueue) uploadToZenodo(job *ZenodoMBTilesJob, data []byte) error {
+// buildMBTilesToDisk builds the MBTiles DB in a temp file on disk. Fallback
+// for builds too large for RAM — allows files up to maxMBTilesSize (8 GB).
+// Returns the temp file path (caller removes it).
+func (q *ZenodoMBTilesQueue) buildMBTilesToDisk(job *ZenodoMBTilesJob) (string, error) {
+	source, ok := TileSources[job.Source]
+	if !ok {
+		return "", fmt.Errorf("unknown tile source: %s", job.Source)
+	}
+
+	tmpDir := "data/mbtiles_output"
+	os.MkdirAll(tmpDir, 0755)
+	tmpPath := filepath.Join(tmpDir, fmt.Sprintf("zenodo_%s_%s_%s.mbtiles.tmp", job.ParkID, job.Source, job.ID))
+
+	db, err := sql.Open("sqlite", tmpPath)
+	if err != nil {
+		return tmpPath, fmt.Errorf("open temp db: %w", err)
+	}
+
+	db.SetMaxOpenConns(1)
+	db.SetMaxIdleConns(1)
+	// Bulk-load pragmas: no durability needed for a throwaway build file
+	db.Exec("PRAGMA journal_mode=OFF")
+	db.Exec("PRAGMA synchronous=OFF")
+
+	if err := q.fillMBTilesDB(db, job, source); err != nil {
+		db.Close()
+		return tmpPath, err
+	}
+
+	job.Progress = 92
+	if err := db.Close(); err != nil {
+		return tmpPath, fmt.Errorf("close db: %w", err)
+	}
+
+	return tmpPath, nil
+}
+
+// uploadBytesToZenodo uploads an in-memory MBTiles build.
+func (q *ZenodoMBTilesQueue) uploadBytesToZenodo(job *ZenodoMBTilesJob, data []byte) error {
+	return q.uploadToZenodo(job, bytes.NewReader(data), int64(len(data)), md5hex(data))
+}
+
+// uploadFileToZenodo streams the MBTiles file from disk to Zenodo
+// (constant memory regardless of file size).
+func (q *ZenodoMBTilesQueue) uploadFileToZenodo(job *ZenodoMBTilesJob, path string) error {
+	checksum, fileSize, err := md5File(path)
+	if err != nil {
+		return fmt.Errorf("checksum: %w", err)
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return fmt.Errorf("open: %w", err)
+	}
+	defer f.Close()
+	return q.uploadToZenodo(job, f, fileSize, checksum)
+}
+
+// uploadToZenodo uploads MBTiles content from a seekable reader to Zenodo.
+// Seekable so failed PUTs can rewind and retry.
+func (q *ZenodoMBTilesQueue) uploadToZenodo(job *ZenodoMBTilesJob, body io.ReadSeeker, size int64, checksum string) error {
 	job.Progress = 93
 
 	key := fmt.Sprintf("mbtiles_%s_%s", job.ParkID, job.Source)
 	filename := fmt.Sprintf("%s_%s.mbtiles", job.ParkID, job.Source)
 	version := time.Now().UTC().Format("2006-01-02T15:04:05")
-	checksum := md5hex(data)
 
 	meta := zenodoMBTilesMetadata(job.ParkName, job.Source, job.MinZoom, job.MaxZoom)
 
@@ -425,17 +520,45 @@ func (q *ZenodoMBTilesQueue) uploadToZenodo(job *ZenodoMBTilesJob, data []byte) 
 		bucketURL = depo.Links.Bucket
 	}
 
-	// Upload file to bucket
+	// Upload file to bucket (streamed; constant memory). Large files over a
+	// residential-grade uplink can take a long time and hit transient Zenodo
+	// errors — be very patient: no client timeout, several retries with
+	// exponential backoff, rewinding the body between attempts.
 	job.Progress = 95
-	slog.Info("Uploading MBTiles to Zenodo", "key", key, "size_mb", len(data)/(1024*1024))
+	slog.Info("Uploading MBTiles to Zenodo", "key", key, "size_mb", size/(1024*1024))
 
 	uploadURL := fmt.Sprintf("%s/%s", bucketURL, filename)
-	respBody, status, err := q.zenodoDoRequest("PUT", uploadURL, bytes.NewReader(data), "application/octet-stream")
-	if err != nil {
-		return fmt.Errorf("upload file: %w", err)
+	const maxAttempts = 5
+	var lastErr error
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		if _, err := body.Seek(0, io.SeekStart); err != nil {
+			return fmt.Errorf("rewind body: %w", err)
+		}
+		respBody, status, err := q.zenodoDoStream("PUT", uploadURL, body, size, "application/octet-stream")
+		if err == nil && status >= 200 && status < 300 {
+			lastErr = nil
+			break
+		}
+		if err != nil {
+			lastErr = fmt.Errorf("upload file (attempt %d/%d): %w", attempt, maxAttempts, err)
+		} else {
+			lastErr = fmt.Errorf("upload file HTTP %d (attempt %d/%d): %s", status, attempt, maxAttempts, respBody)
+			// Don't retry permanent client errors (bad token, quota, etc.)
+			if status >= 400 && status < 500 && status != 408 && status != 429 {
+				return lastErr
+			}
+		}
+		slog.Warn("Zenodo upload attempt failed", "key", key, "attempt", attempt, "error", lastErr)
+		if attempt < maxAttempts {
+			select {
+			case <-q.ctx.Done():
+				return fmt.Errorf("cancelled during upload retry")
+			case <-time.After(time.Duration(30*(1<<(attempt-1))) * time.Second): // 30s, 1m, 2m, 4m
+			}
+		}
 	}
-	if status < 200 || status >= 300 {
-		return fmt.Errorf("upload file HTTP %d: %s", status, respBody)
+	if lastErr != nil {
+		return lastErr
 	}
 
 	// Set metadata
@@ -443,12 +566,12 @@ func (q *ZenodoMBTilesQueue) uploadToZenodo(job *ZenodoMBTilesJob, data []byte) 
 	metaPayload := meta(key, filename, version)
 	metaJSON, _ := json.Marshal(metaPayload)
 	metaURL := fmt.Sprintf("%s/api/deposit/depositions/%d", q.zenodoClient.BaseURL, depoID)
-	respBody, status, err = q.zenodoDoRequest("PUT", metaURL, bytes.NewReader(metaJSON), "application/json")
-	if err != nil {
-		return fmt.Errorf("set metadata: %w", err)
+	metaRespBody, metaStatus, metaErr := q.zenodoDoRequest("PUT", metaURL, bytes.NewReader(metaJSON), "application/json")
+	if metaErr != nil {
+		return fmt.Errorf("set metadata: %w", metaErr)
 	}
-	if status < 200 || status >= 300 {
-		return fmt.Errorf("set metadata HTTP %d: %s", status, respBody)
+	if metaStatus < 200 || metaStatus >= 300 {
+		return fmt.Errorf("set metadata HTTP %d: %s", metaStatus, metaRespBody)
 	}
 
 	// Update manifest
@@ -457,7 +580,7 @@ func (q *ZenodoMBTilesQueue) uploadToZenodo(job *ZenodoMBTilesJob, data []byte) 
 		DepoID:     depoID,
 		BucketURL:  bucketURL,
 		Filename:   filename,
-		Size:       int64(len(data)),
+		Size:       size,
 		Checksum:   checksum,
 		UploadedAt: time.Now().UTC(),
 		Version:    version,
@@ -473,6 +596,53 @@ func (q *ZenodoMBTilesQueue) uploadToZenodo(job *ZenodoMBTilesJob, data []byte) 
 	job.Progress = 100
 
 	return nil
+}
+
+// zenodoStreamClient has no overall timeout — an 8 GB PUT can legitimately
+// take hours. Stalled connections are still detected via TCP keepalives and
+// response-header timeout on the transport.
+var zenodoStreamClient = &http.Client{
+	Transport: &http.Transport{
+		ResponseHeaderTimeout: 10 * time.Minute, // time after body sent until Zenodo responds
+		ExpectContinueTimeout: 30 * time.Second,
+	},
+}
+
+// zenodoDoStream performs a request with a streaming body of known size
+// (used for large file PUTs — constant memory, no client timeout).
+func (q *ZenodoMBTilesQueue) zenodoDoStream(method, url string, body io.Reader, size int64, contentType string) ([]byte, int, error) {
+	req, err := http.NewRequestWithContext(q.ctx, method, url, body)
+	if err != nil {
+		return nil, 0, err
+	}
+	req.ContentLength = size
+	req.Header.Set("Authorization", "Bearer "+q.zenodoClient.Token)
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
+	}
+	resp, err := zenodoStreamClient.Do(req)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer resp.Body.Close()
+	var buf bytes.Buffer
+	buf.ReadFrom(resp.Body)
+	return buf.Bytes(), resp.StatusCode, nil
+}
+
+// md5File returns the md5 hex checksum and size of a file (streamed).
+func md5File(path string) (string, int64, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", 0, err
+	}
+	defer f.Close()
+	h := md5.New()
+	n, err := io.Copy(h, f)
+	if err != nil {
+		return "", 0, err
+	}
+	return hex.EncodeToString(h.Sum(nil)), n, nil
 }
 
 // zenodoDoRequest is a thin wrapper that reuses the client's token/retries
@@ -512,11 +682,12 @@ func (q *ZenodoMBTilesQueue) failJob(job *ZenodoMBTilesJob, errMsg string) {
 	slog.Error("Zenodo MBTiles job failed", "id", job.ID, "error", errMsg)
 
 	if q.db != nil {
-		q.db.Exec(`INSERT INTO notifications (park_id, notification_type, title, message, created_at)
-			VALUES (?, 'mbtiles_failed', ?, ?, datetime('now'))`,
+		q.db.Exec(`INSERT INTO notifications (park_id, notification_type, title, message, env, created_at)
+			VALUES (?, 'mbtiles_failed', ?, ?, ?, datetime('now'))`,
 			job.ParkID,
 			fmt.Sprintf("MBTiles Failed: %s", job.ParkName),
 			fmt.Sprintf("Tile generation for %s failed: %s", job.ParkName, errMsg),
+			jobEnv(job),
 		)
 	}
 }
@@ -531,13 +702,22 @@ func (q *ZenodoMBTilesQueue) createNotification(job *ZenodoMBTilesJob) {
 	manifestKey := fmt.Sprintf("mbtiles_%s_%s", job.ParkID, job.Source)
 	refURL := fmt.Sprintf("/api/mbtiles/%s/download?key=%s", job.ID, manifestKey)
 
-	q.db.Exec(`INSERT INTO notifications (park_id, notification_type, title, message, reference_url, created_at)
-		VALUES (?, 'mbtiles_complete', ?, ?, ?, datetime('now'))`,
+	q.db.Exec(`INSERT INTO notifications (park_id, notification_type, title, message, reference_url, env, created_at)
+		VALUES (?, 'mbtiles_complete', ?, ?, ?, ?, datetime('now'))`,
 		job.ParkID,
 		fmt.Sprintf("MBTiles Ready: %s", job.ParkName),
 		fmt.Sprintf("Offline tiles for %s (%s, z1–%d, %d MB) stored on Zenodo", job.ParkName, job.Source, job.MaxZoom, sizeMB),
 		refURL,
+		jobEnv(job),
 	)
+}
+
+// jobEnv returns the env a job was created under, defaulting to prod.
+func jobEnv(job *ZenodoMBTilesJob) string {
+	if job.Env == "test" {
+		return "test"
+	}
+	return "prod"
 }
 
 func md5hex(data []byte) string {
@@ -570,6 +750,49 @@ func estimateRAMRequired(bbox [4]float64, minZoom, maxZoom int) int64 {
 	// Add baseline server + OS overhead
 	const baselineOverhead = 500 * 1024 * 1024 // 500 MB
 	return peak + baselineOverhead
+}
+
+// checkMBTilesCapacity decides whether a build of the given extent is allowed.
+// extended=true (prod-password users) permits the disk-backed path up to
+// maxMBTilesSize; extended=false (test users) is limited to what fits in RAM.
+func checkMBTilesCapacity(bbox [4]float64, maxZoom int, extended bool) (bool, string) {
+	tiles := calculateTiles(bbox, 1, maxZoom)
+	estimatedSize := estimateTileBytes(len(tiles))
+	ramNeeded := estimateRAMRequired(bbox, 1, maxZoom)
+
+	// Fits in RAM → always fine (preferred path, no disk usage)
+	if ramNeeded <= inMemoryRAMBudget {
+		return true, ""
+	}
+
+	if !extended {
+		maxFileMB := (inMemoryRAMBudget - 500*1024*1024) / 3 / (1024 * 1024)
+		return false, fmt.Sprintf(
+			"Estimated peak RAM ~%.1f GB exceeds available ~%.1f GB. Max file size ~%d MB with test access. Reduce zoom level.",
+			float64(ramNeeded)/(1024*1024*1024),
+			float64(inMemoryRAMBudget)/(1024*1024*1024),
+			maxFileMB,
+		)
+	}
+
+	// Extended: disk-backed build
+	if estimatedSize > maxMBTilesSize {
+		return false, fmt.Sprintf(
+			"Estimated file ~%.1f GB exceeds the %d GB limit. Reduce zoom level.",
+			float64(estimatedSize)/(1024*1024*1024),
+			maxMBTilesSize/(1024*1024*1024),
+		)
+	}
+	avail := getAvailableDiskSpace("data")
+	required := uint64(float64(estimatedSize)*mbtilesDiskMargin) + mbtilesMinFree
+	if required > avail {
+		return false, fmt.Sprintf(
+			"Insufficient disk space: need ~%.1f GB free, only %.1f GB available. Reduce zoom level.",
+			float64(required)/(1024*1024*1024),
+			float64(avail)/(1024*1024*1024),
+		)
+	}
+	return true, ""
 }
 
 // ─── HTTP Handlers ───────────────────────────────────────────────────────────
@@ -619,18 +842,12 @@ func (s *Server) HandleAPIZenodoMBTilesCreate(w http.ResponseWriter, r *http.Req
 	bbox := calculateBufferedBBox(area, bufferKm)
 	tiles := calculateTiles(bbox, 1, maxZoom)
 	estimatedSize := estimateTileBytes(len(tiles))
-	ramNeeded := estimateRAMRequired(bbox, 1, maxZoom)
 
-	// Check RAM limit — total VM is 7.4 GB
-	const maxRAM = 7 * 1024 * 1024 * 1024 // 7 GB hard ceiling
-	if ramNeeded > maxRAM {
-		maxFileMB := (maxRAM - 500*1024*1024) / 3 / (1024 * 1024) // inverse of estimate formula
-		http.Error(w, fmt.Sprintf(
-			"Estimated peak RAM ~%.1f GB exceeds available ~%.1f GB. Max file size ~%d MB. Reduce zoom level.",
-			float64(ramNeeded)/(1024*1024*1024),
-			float64(maxRAM)/(1024*1024*1024),
-			maxFileMB,
-		), http.StatusRequestEntityTooLarge)
+	// Test-password users keep the RAM-only limit; prod users get the
+	// extended disk-backed path (larger files, but disk usage costs extra).
+	extended := RequestEnv(r) == "prod"
+	if ok, reason := checkMBTilesCapacity(bbox, maxZoom, extended); !ok {
+		http.Error(w, reason, http.StatusRequestEntityTooLarge)
 		return
 	}
 
@@ -643,6 +860,7 @@ func (s *Server) HandleAPIZenodoMBTilesCreate(w http.ResponseWriter, r *http.Req
 		MaxZoom:  maxZoom,
 		BufferKm: bufferKm,
 		BBox:     bbox,
+		Env:      RequestEnv(r),
 	}
 
 	zenodoMBQueue.addJob(job)
@@ -691,8 +909,10 @@ func (s *Server) HandleAPIZenodoMBTilesEstimate(w http.ResponseWriter, r *http.R
 	ramNeeded := estimateRAMRequired(bbox, 1, maxZoom)
 	estSeconds := len(tiles) / 100
 
-	const maxRAM = 7 * 1024 * 1024 * 1024 // 7 GB hard ceiling
-	sufficient := ramNeeded <= maxRAM
+	// Test users are limited to in-memory builds; prod users get the
+	// extended disk-backed path up to maxMBTilesSize.
+	extended := RequestEnv(r) == "prod"
+	sufficient, capacityReason := checkMBTilesCapacity(bbox, maxZoom, extended)
 
 	// Check if already uploaded to Zenodo
 	key := fmt.Sprintf("mbtiles_%s_%s", parkID, r.URL.Query().Get("source"))
@@ -716,6 +936,10 @@ func (s *Server) HandleAPIZenodoMBTilesEstimate(w http.ResponseWriter, r *http.R
 		"min_zoom":          1,
 		"max_zoom":          maxZoom,
 		"sufficient_space":  sufficient,
+		"capacity_reason":   capacityReason,
+		"extended_limits":   extended,
+		"build_mode":        map[bool]string{true: "memory", false: "disk"}[ramNeeded <= inMemoryRAMBudget],
+		"max_file_gb":       maxMBTilesSize / (1024 * 1024 * 1024),
 		"storage":           "zenodo",
 		"ram_needed_mb":     ramNeeded / (1024 * 1024),
 		"existing_depo_id":  existingDepoID,

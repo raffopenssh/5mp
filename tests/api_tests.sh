@@ -145,8 +145,10 @@ test_api "notifications_has_items" "/api/notifications" "200" ".notifications | 
 yellow "\n=== Publications ==="
 test_api "publications_virunga" "/api/parks/COD_Virunga/publications" "200" "type == \"array\""
 test_api "publications_count" "/api/parks/COD_Virunga/publications/count" "200" ".count >= 0"
-# Publications use WDPA IDs - test with known WDPA ID 669 (Mole)
-test_api "publications_wdpa" "/api/parks/669/publications" "200" "length >= 0"
+# Publications migrated from WDPA IDs to park IDs (076bf2c); numeric IDs are
+# now rejected by the park-ID middleware (3eb899c).
+test_api "publications_wdpa_rejected" "/api/parks/669/publications" "400" ""
+test_api "publications_mole" "/api/parks/GHA_Mole/publications" "200" "type == \"array\""
 
 yellow "\n=== Infrastructure ==="
 test_api "infrastructure_chinko" "/api/parks/CAF_Chinko/infrastructure" "200" "true"

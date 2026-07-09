@@ -71,6 +71,7 @@ type MBTilesJob struct {
 	CreatedAt    time.Time `json:"created_at"`
 	CompletedAt  *time.Time `json:"completed_at,omitempty"`
 	UserID       string    `json:"user_id,omitempty"`
+	Env          string    `json:"env,omitempty"` // "test" or "prod" — scopes notifications
 }
 
 // MBTilesQueue manages tile generation jobs
@@ -203,10 +204,10 @@ func (q *MBTilesQueue) executeJob(job *MBTilesJob) {
 		job.Error = err.Error()
 		slog.Error("MBTiles job failed", "id", job.ID, "error", err)
 		// Create failure notification
-		q.createNotification(job.ParkID, "mbtiles_failed", 
+		q.createNotification(job.ParkID, "mbtiles_failed",
 			fmt.Sprintf("MBTiles Failed: %s", job.ParkName),
 			fmt.Sprintf("Tile generation for %s failed: %s", job.ParkName, err.Error()),
-			"")
+			"", job.Env)
 	} else {
 		job.Status = "completed"
 		now := time.Now()
@@ -217,7 +218,7 @@ func (q *MBTilesQueue) executeJob(job *MBTilesJob) {
 		q.createNotification(job.ParkID, "mbtiles_complete",
 			fmt.Sprintf("MBTiles Ready: %s", job.ParkName),
 			fmt.Sprintf("Offline tiles for %s (%s, %d MB) ready for download", job.ParkName, job.Source, fileSizeMB),
-			fmt.Sprintf("/api/parks/%s/mbtiles/download/%s", job.ParkID, job.ID))
+			fmt.Sprintf("/api/parks/%s/mbtiles/download/%s", job.ParkID, job.ID), job.Env)
 		
 		// Schedule cleanup of completed job and file (keep for 2 hours max)
 		go func(jobID, filePath string) {
@@ -233,14 +234,17 @@ func (q *MBTilesQueue) executeJob(job *MBTilesJob) {
 }
 
 // createNotification creates a notification for MBTiles events
-func (q *MBTilesQueue) createNotification(parkID, notifType, title, message, link string) {
+func (q *MBTilesQueue) createNotification(parkID, notifType, title, message, link, env string) {
 	if q.db == nil {
 		return
 	}
+	if env != "test" {
+		env = "prod"
+	}
 	_, err := q.db.Exec(`
-		INSERT INTO notifications (park_id, notification_type, title, message, reference_url, created_at)
-		VALUES (?, ?, ?, ?, ?, datetime('now'))
-	`, parkID, notifType, title, message, link)
+		INSERT INTO notifications (park_id, notification_type, title, message, reference_url, env, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+	`, parkID, notifType, title, message, link, env)
 	if err != nil {
 		slog.Warn("Failed to create MBTiles notification", "error", err)
 	}
@@ -491,13 +495,12 @@ func estimateMBTilesSize(bbox [4]float64, minZoom, maxZoom int) int64 {
 	tiles := calculateTiles(bbox, minZoom, maxZoom)
 	// Estimate ~15KB per tile average for satellite imagery
 	estimatedSize := estimateTileBytes(len(tiles))
-	
-	// Enforce 3GB maximum (MBTiles built in memory)
-	const maxMBTilesSize = 3 * 1024 * 1024 * 1024
+
+	// Enforce shared maximum (maxMBTilesSize in mbtiles_zenodo.go)
 	if estimatedSize > maxMBTilesSize {
 		return maxMBTilesSize + 1 // Return slightly over limit to trigger error
 	}
-	
+
 	return estimatedSize
 }
 
@@ -560,17 +563,16 @@ func (s *Server) HandleAPIMBTilesCreate(w http.ResponseWriter, r *http.Request) 
 	
 	// Get maxZoom from query parameter
 	if maxZoomStr := r.URL.Query().Get("maxZoom"); maxZoomStr != "" {
-		if mz, err := strconv.Atoi(maxZoomStr); err == nil && mz >= 10 && mz <= 17 {
+		if mz, err := strconv.Atoi(maxZoomStr); err == nil && mz >= 1 && mz <= 19 {
 			maxZoom = mz
 		}
 	}
 	
 	estimatedSize := estimateMBTilesSize(bbox, minZoom, maxZoom)
-	
-	// Check 3GB size limit (MBTiles built in memory)
-	const maxMBTilesSize = 3 * 1024 * 1024 * 1024
+
+	// Check shared size limit (maxMBTilesSize in mbtiles_zenodo.go)
 	if estimatedSize > maxMBTilesSize {
-		http.Error(w, fmt.Sprintf("MBTiles too large: estimated %.1f GB, maximum 3 GB. Try reducing zoom levels or area size.", float64(estimatedSize)/(1024*1024*1024)), http.StatusRequestEntityTooLarge)
+		http.Error(w, fmt.Sprintf("MBTiles too large: estimated %.1f GB, maximum %d GB. Try reducing zoom levels or area size.", float64(estimatedSize)/(1024*1024*1024), maxMBTilesSize/(1024*1024*1024)), http.StatusRequestEntityTooLarge)
 		return
 	}
 	
@@ -598,6 +600,7 @@ func (s *Server) HandleAPIMBTilesCreate(w http.ResponseWriter, r *http.Request) 
 		BufferKm:      bufferKm,
 		BBox:          bbox,
 		EstimatedSize: estimatedSize,
+		Env:           RequestEnv(r),
 	}
 	
 	// Estimate completion time (~100 tiles/second)

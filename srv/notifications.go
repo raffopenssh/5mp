@@ -41,10 +41,10 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 	var query string
 	var args []interface{}
 
-	// Env scoping: only 'new_upload' notifications are tenant-scoped; all
-	// other notification types are shared across prod and test.
+	// Env scoping: 'new_upload' and MBTiles notifications are tenant-scoped;
+	// all other notification types are shared across prod and test.
 	env := RequestEnv(r)
-	envCond := "(notification_type <> 'new_upload' OR env = ?)"
+	envCond := "(notification_type NOT IN ('new_upload','mbtiles_complete','mbtiles_failed') OR env = ?)"
 
 	// For fire_alert notifications with active=true, filter by recent end_date in feature_geometries
 	if notifType == "fire_alert" && activeOnly {

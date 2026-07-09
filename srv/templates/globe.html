@@ -2405,14 +2405,16 @@
                 const storageLabel = data.storage === 'zenodo' ? ' · Zenodo' : '';
                 estimateEl.innerHTML = `~${sizeStr} &middot; ~${mins} min${storageLabel}`;
                 
-                // Check for sufficient space (RAM for Zenodo, disk for legacy)
+                // Check for sufficient capacity (server decides: RAM build, or disk-backed up to 8 GB for full-access users)
                 if (!data.sufficient_space) {
-                    const ramMB = data.ram_needed_mb || 0;
-                    const ramStr = ramMB >= 1024 ? `${(ramMB / 1024).toFixed(1)} GB RAM` : `${ramMB} MB RAM`;
-                    estimateEl.innerHTML = `<span style="color: #ef4444;">File too large for in-memory build</span><br><span style="font-size: 10px; color: #888;">Needs ~${ramStr}. Reduce zoom level.</span>`;
+                    const reason = data.capacity_reason || 'File too large. Reduce zoom level.';
+                    estimateEl.innerHTML = `<span style="color: #ef4444;">File too large</span><br><span style="font-size: 10px; color: #888;">${reason}</span>`;
                     actionBtn.disabled = true;
-                    actionBtn.title = 'Reduce zoom level to fit in available memory';
+                    actionBtn.title = 'Reduce zoom level';
                 } else {
+                    if (data.build_mode === 'disk') {
+                        estimateEl.innerHTML += ` <span style="font-size: 10px; color: #666;">(large build — may take a while)</span>`;
+                    }
                     actionBtn.disabled = mbtilesState === 'generating';
                     actionBtn.title = '';
                 }
@@ -17948,7 +17950,7 @@ ${starredItems.narratives.map(n => {
             </button>
             
             <!-- Info about expiration -->
-            <div style="font-size: 10px; color: #666; margin-top: 10px; text-align: center;">Tiles built in-memory and stored on Zenodo. No local disk needed.</div>
+            <div style="font-size: 10px; color: #666; margin-top: 10px; text-align: center;">Tiles stored on Zenodo. Files up to 8 GB (full access) or ~2 GB (test access).</div>
             
             <!-- Hidden status for polling -->
             <div id="mbtiles-status" style="display: none;"></div>
