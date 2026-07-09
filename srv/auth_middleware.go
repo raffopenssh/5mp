@@ -117,6 +117,36 @@ func RequestEnv(r *http.Request) string {
 	return "prod"
 }
 
+// RequestPwd returns the access password used to authenticate this request
+// (query param or cookie), or "" if none. Used only to label the alpha
+// session chip in the UI; once real user management lands, the chip should
+// prefer the authenticated user identity over this.
+func RequestPwd(r *http.Request) string {
+	if r == nil {
+		return ""
+	}
+	if pwd := r.URL.Query().Get("pwd"); isValidPassword(pwd) {
+		return pwd
+	}
+	if c, err := r.Cookie("access_pwd"); err == nil && isValidPassword(c.Value) {
+		return c.Value
+	}
+	return ""
+}
+
+// ClearAccessPwdCookie removes the alpha access-password cookie.
+func ClearAccessPwdCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_pwd",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
 func isValidPassword(pwd string) bool {
 	for _, valid := range validPasswords {
 		if subtle.ConstantTimeCompare([]byte(pwd), []byte(valid)) == 1 {

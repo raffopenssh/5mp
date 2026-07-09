@@ -72,7 +72,10 @@ func (s *Server) HandleLogout(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	auth.ClearSessionCookie(w)
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	// Alpha: also clear the shared access-password cookie so the session
+	// chip logout works. Redirect to root, which shows the password form.
+	ClearAccessPwdCookie(w)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 // HandleRegisterPage renders the registration form.

@@ -41,6 +41,9 @@ type pageData struct {
 	User     *auth.User
 	Version  string
 	IsTest   bool
+	// AuthLabel identifies the current session in the alpha UI chip.
+	// Today: the access password used. Later (user management): user email.
+	AuthLabel string
 }
 
 func New(dbPath, hostname string) (*Server, error) {
@@ -73,11 +76,19 @@ func New(dbPath, hostname string) (*Server, error) {
 func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 	user := s.Auth.GetUserFromRequest(r)
 
+	// Session chip label: prefer real user identity (future user management),
+	// fall back to the alpha access password.
+	authLabel := RequestPwd(r)
+	if user != nil && user.Email != "" {
+		authLabel = user.Email
+	}
+
 	data := pageData{
-		Hostname: s.Hostname,
-		User:     user,
-		Version:  Version,
-		IsTest:   RequestEnv(r) == "test",
+		Hostname:  s.Hostname,
+		User:      user,
+		Version:   Version,
+		IsTest:    RequestEnv(r) == "test",
+		AuthLabel: authLabel,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

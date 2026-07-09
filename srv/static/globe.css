@@ -365,7 +365,7 @@
         .starred-report-loading .spinner { width: 14px; height: 14px; border: 2px solid rgba(59,130,246,0.3); border-top-color: #60a5fa; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .starred-report-ready { color: #22c55e; font-size: 10px; display: flex; align-items: center; gap: 4px; }
-        .starred-report-content { background: transparent; border-radius: 8px; padding: 12px; margin-top: 8px; }
+        .starred-report-content { background: transparent; border-radius: 8px; padding: 12px; margin-top: 8px; font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace; }
         .starred-report-section { margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 6px; border-left: 3px solid; }
         .starred-report-section.fire { border-color: #ef4444; }
         .starred-report-section.deforestation { border-color: #a855f7; }
