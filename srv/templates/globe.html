@@ -2684,11 +2684,19 @@
             
             try {
                 const res = await fetch('/upload', { method: 'POST', body: formData });
-                if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(text || 'Upload failed');
+                const text = await res.text();
+                const looksLikeHtml = /^\s*(<!doctype|<html)/i.test(text);
+                if (!res.ok || looksLikeHtml) {
+                    if (looksLikeHtml) {
+                        // Proxy/auth intercepted the request (e.g. exe.dev session or
+                        // access password expired) and returned a login page instead of JSON.
+                        throw new Error('Your session expired \u2014 please reload the page and try again. (The server returned a sign-in page instead of processing the upload.)');
+                    }
+                    let msg = text || 'Upload failed';
+                    try { const j = JSON.parse(text); if (j.error) msg = j.message || j.error; } catch (_) {}
+                    throw new Error(msg);
                 }
-                const result = await res.json();
+                const result = JSON.parse(text);
                 closeModal('upload');
                 
                 reloadGridData();
