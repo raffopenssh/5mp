@@ -965,11 +965,15 @@
             const x = (e.touches ? e.touches[0].clientX : e.clientX);
             const pct = Math.max(0, Math.min(100, (x - rect.left) / rect.width * 100));
             const [s, ep] = sliderRangePcts();
-            const sX = rect.left + s / 100 * rect.width;
+            // Measure the pull against the ORIGINAL handle position: the
+            // extension preview moves the live handle toward the finger, which
+            // would otherwise cancel the pull as soon as it catches up.
+            const sOrig = pull ? pull.sPct : s;
+            const sX = rect.left + sOrig / 100 * rect.width;
             const over = sX - x; // px past the left handle
             if (over > 8 && !A.recording) {
                 if (!pull) {
-                    pull = { t0Ext: A.t0, raf: 0, last: null, over, heldSince: performance.now() };
+                    pull = { t0Ext: A.t0, raf: 0, last: null, over, heldSince: performance.now(), sPct: s };
                     pull.raf = requestAnimationFrame(pullLoop);
                 }
                 pull.over = over;
