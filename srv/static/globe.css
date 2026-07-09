@@ -697,6 +697,62 @@
         .pinned-layer-chip .chip-remove { opacity: 0.5; margin-left: 2px; font-size: 12px; }
         .pinned-layer-chip:hover .chip-remove { opacity: 1; color: #fff; }
         .pinned-summary { font-size: 10px; color: #999; text-align: center; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.05); }
+        /* ===== FloatUI: draggable/collapsible/dockable panels ===== */
+        .fui-no-select { user-select: none; -webkit-user-select: none; }
+        .fui-handle { cursor: grab; }
+        .fui-handle.fui-dragging { cursor: grabbing; }
+        /* Slim grab-bar: grabber pill centered, tiny controls right */
+        .fui-bar { position: relative; display: flex; align-items: center; justify-content: center; height: 16px; margin: -2px 0 2px; cursor: grab; user-select: none; -webkit-user-select: none; }
+        .fui-bar.fui-dragging { cursor: grabbing; }
+        .fui-grabber { width: 36px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.22); transition: background 0.15s; }
+        .fui-bar:hover .fui-grabber { background: rgba(255,255,255,0.4); }
+        .fui-bar-btns { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: inline-flex; gap: 0; opacity: 0.55; transition: opacity 0.15s; }
+        .fui-bar:hover .fui-bar-btns, .fui-bar-btns:focus-within { opacity: 1; }
+        .fui-bar-btn { background: transparent; border: none; color: #777; cursor: pointer; padding: 0 4px; height: 16px; border-radius: 3px; font-size: 10px; line-height: 1; display: inline-flex; align-items: center; transition: all 0.15s; }
+        .fui-bar-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .fui-bar-btn i { font-size: 11px; display: inline-block; transition: transform 0.2s; }
+        .fui-mini-count { display: none; background: rgba(34,197,94,0.2); color: #22c55e; border-radius: 8px; padding: 0 6px; font-size: 10px; font-weight: 600; line-height: 16px; }
+
+        /* Pinned indicator states */
+        .pinned-indicator.fui-moved { transform: none; }
+        .pinned-indicator.fui-collapsed .pinned-indicator-items { display: none; }
+        .pinned-indicator.fui-collapsed { min-width: 0; }
+        .pinned-indicator.fui-collapsed .pinned-indicator-header { padding-bottom: 0; border-bottom: none; }
+        .pinned-indicator.fui-collapsed .fui-mini-count { display: inline-block; }
+        .pinned-indicator.fui-collapsed .fui-bar-btn[data-act=collapse] i,
+        .maplibregl-popup.fui-collapsed .fui-bar-btn[data-act=collapse] i { transform: rotate(180deg); }
+        .pinned-indicator.fui-docked { display: none !important; }
+
+        /* Dock chips in the map toolbar */
+        .float-dock { display: flex; flex-direction: column; gap: 8px; }
+        .float-dock:not(:empty) { margin-top: 0; }
+        .float-dock-btn { position: relative; }
+        .float-dock-btn.pinned-dock svg { color: #22c55e; }
+        .float-dock-btn.popup-dock svg { color: #60a5fa; }
+        .fui-badge { position: absolute; top: -5px; right: -5px; background: #22c55e; color: #0a0a0a; font-size: 9px; font-weight: 700; border-radius: 9px; min-width: 16px; height: 16px; padding: 0 4px; display: none; align-items: center; justify-content: center; line-height: 1; pointer-events: none; }
+        .float-dock-btn.popup-dock .fui-badge { background: #60a5fa; }
+
+        /* Detached / collapsed park popup */
+        .maplibregl-popup.fui-detached { z-index: 350; }
+        .maplibregl-popup.fui-detached .maplibregl-popup-tip { display: none; }
+        .maplibregl-popup.fui-detached .maplibregl-popup-content { box-shadow: 0 12px 44px rgba(0,0,0,0.65) !important; border-color: rgba(255,255,255,0.18) !important; }
+        .maplibregl-popup .pa-popup-header { cursor: grab; position: sticky; top: -2px; margin-top: 0; padding-top: 4px; background: rgba(18,18,18,0.97); z-index: 5; }
+        .maplibregl-popup.fui-collapsed .pa-popup { max-height: none; overflow: hidden; }
+        .maplibregl-popup.fui-collapsed .pa-popup > *:not(.pa-popup-header):not(.fui-bar) { display: none; }
+        .maplibregl-popup.fui-collapsed .pa-popup-header { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .maplibregl-popup.fui-docked { display: none !important; }
+        .maplibregl-popup .pa-popup > .fui-bar { position: sticky; top: -12px; margin: -12px -12px 0; padding: 4px 12px 2px; background: rgba(18,18,18,0.97); z-index: 6; height: auto; border-radius: 8px 8px 0 0; }
+        .maplibregl-popup .pa-popup > .fui-bar .fui-bar-btns { right: 30px; } /* clear the maplibre × close button */
+
+        @media (max-width: 768px) {
+            .float-dock { flex-direction: row; }
+            .fui-bar { height: 20px; }
+            .fui-bar-btn { padding: 0 8px; height: 20px; }
+            .fui-bar-btn i { font-size: 13px; }
+            .fui-bar-btns { opacity: 0.8; }
+        }
+        /* ===== End FloatUI ===== */
+
         .single-pin-icon { user-select: none; }
         .single-pin-icon.pinned { opacity: 1 !important; }
         .single-pin-icon.loading { animation: pulse 0.6s ease-in-out infinite; }

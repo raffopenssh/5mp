@@ -7299,6 +7299,9 @@
                 .setHTML(popupContent)
                 .addTo(map);
             
+            // Make popup draggable/collapsible/dockable
+            if (window.FloatUI) FloatUI.decoratePAPopup(currentPAPopup);
+            
             // Clear popup data when popup is closed
             currentPAPopup.on('close', () => {
                 currentPAPopupData = null;
@@ -18078,4 +18081,5 @@ ${starredItems.narratives.map(n => {
         </div>
     </div>
     <script src="/static/anim.js?v={{.Version}}"></script>
+    <script src="/static/floatui.js?v={{.Version}}"></script>
 </body></html>
