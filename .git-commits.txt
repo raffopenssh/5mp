@@ -1,3 +1,4 @@
+ecafda05 2026-07-09 05:46:15 Repo hygiene: centralize runtime config, prune stale docs
 b7d205c7 2026-07-08 04:55:47 Add one-time methods/compass hint; update About modal with turbidity/mining/GFW cron info; remove DB download link
 1d7a696b 2026-07-07 12:31:33 Mining accordion: summary table + sparkline, clustered pit list, rich map tooltips
 bffab2ba 2026-07-07 12:09:24 Pit scanner: batched verify/history passes, Akobo/Boma scan (228 sites), registration cap
@@ -17,4 +18,3 @@ f67219ff 2026-07-07 04:14:30 Footer button polish + taller time-slider backdrop 
 94e27441 2026-07-06 17:06:08 chore: update Zenodo backup manifest (2026-07-06 gzip backup)
 248816d2 2026-07-06 17:06:04 docs: update BACKUP_INFO with July 6 gzip-compressed Zenodo backup
 412ed90d 2026-07-06 14:55:51 Ignore local db backups, worldclim zip, learner SQL dumps; refresh commit list
-eb8c2a27 2026-07-06 14:22:26 Fix date preset tags vanishing after slider drag; animator follows date changes
