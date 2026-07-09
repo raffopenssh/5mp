@@ -4577,42 +4577,21 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	}
 	// (emitted below under "Infrastructure & Access")
 
-	// HydroRIVERS folder (from park_rivers_hydro - includes geometry) - only create if data exists
+	// HydroRIVERS folder — merged continuous polylines (raw table rows are
+	// hundreds of tiny disconnected reach stubs; see srv/rivers_merged.go)
 	var riverPlacemarks []string
-	riverDataRows, _ := s.DB.Query(`SELECT hyriv_id, name, length_km, stream_order, lat, lon, geojson FROM park_rivers_hydro WHERE park_id = ? ORDER BY stream_order DESC, length_km DESC LIMIT 200`, parkID)
-	if riverDataRows != nil {
-		defer riverDataRows.Close()
-		for riverDataRows.Next() {
-			var hyrivID int64
-			var riverName sql.NullString
-			var lengthKm sql.NullFloat64
-			var streamOrder sql.NullInt64
-			var lat, lon float64
-			var geojson sql.NullString
-			riverDataRows.Scan(&hyrivID, &riverName, &lengthKm, &streamOrder, &lat, &lon, &geojson)
-			
-			// Build name
-			name := "River"
-			if riverName.Valid && riverName.String != "" {
-				name = riverName.String
+	for _, rv := range s.loadMergedRivers(parkID, 3, 400) {
+		name := fmt.Sprintf("%s (%.0f km) [order %d]", rv.Name, rv.LengthKm, rv.StreamOrder)
+		var coords strings.Builder
+		for i, pt := range rv.Path {
+			if i > 0 {
+				coords.WriteByte(' ')
 			}
-			if lengthKm.Valid && lengthKm.Float64 > 0 {
-				name = fmt.Sprintf("%s (%.1f km)", name, lengthKm.Float64)
-			}
-			if streamOrder.Valid {
-				name = fmt.Sprintf("%s [order %d]", name, streamOrder.Int64)
-			}
-			
-			var pmb strings.Builder
-			// Use actual geometry if available, else point
-			if geojson.Valid && geojson.String != "" {
-				writeGeoJSONToKML(&pmb, geojson.String, "water", xmlEscape(name))
-			} else {
-				pointGeoJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat)
-				writeGeoJSONToKML(&pmb, pointGeoJSON, "water", xmlEscape(name))
-			}
-			riverPlacemarks = append(riverPlacemarks, pmb.String())
+			coords.WriteString(fmt.Sprintf("%.5f,%.5f,0", pt[0], pt[1]))
 		}
+		riverPlacemarks = append(riverPlacemarks, fmt.Sprintf(
+			"<Placemark><name>%s</name><styleUrl>#water</styleUrl><LineString><tessellate>1</tessellate><coordinates>%s</coordinates></LineString></Placemark>\n",
+			xmlEscape(name), coords.String()))
 	}
 	// (emitted below under "Infrastructure & Access" > "Water")
 
@@ -4668,6 +4647,29 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			var pmb strings.Builder
 			writeGeoJSONToKML(&pmb, pointGeoJSON, "place", xmlEscape(fmt.Sprintf("%s (%s)", name, placeType)))
 			placePlacemarks = append(placePlacemarks, pmb.String())
+		}
+	}
+	// (emitted below under "Infrastructure & Access")
+
+	// Airstrips (learned from patrol GPX) - only create if data exists
+	var airstripPlacemarks []string
+	airstripRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'airstrip' LIMIT 100`, parkID)
+	if airstripRows != nil {
+		defer airstripRows.Close()
+		i := 0
+		for airstripRows.Next() {
+			var geojson, props string
+			airstripRows.Scan(&geojson, &props)
+			i++
+			var pm map[string]interface{}
+			json.Unmarshal([]byte(props), &pm)
+			kind := "airstrip"
+			if t, _ := pm["aircraft_type"].(string); t == "rotor_wing" {
+				kind = "helipad"
+			}
+			var pmb strings.Builder
+			writeGeoJSONToKML(&pmb, geojson, "place", xmlEscape(fmt.Sprintf("Airstrip %d (%s)", i, kind)))
+			airstripPlacemarks = append(airstripPlacemarks, pmb.String())
 		}
 	}
 	// (emitted below under "Infrastructure & Access")
@@ -4829,7 +4831,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	// Infrastructure & Access parent folder (mirrors the popup "Roads, Rivers,
 	// Places & Infrastructure" section grouping): roads, water, places.
 	hasInfra := len(roadPlacemarks) > 0 || len(heigitPlacemarks) > 0 || len(riverPlacemarks) > 0 ||
-		len(lakePlacemarks) > 0 || len(wbPlacemarks) > 0 || len(placePlacemarks) > 0
+		len(lakePlacemarks) > 0 || len(wbPlacemarks) > 0 || len(placePlacemarks) > 0 || len(airstripPlacemarks) > 0
 	if hasInfra {
 		kml.WriteString("<Folder><name>Infrastructure &amp; Access</name>\n")
 
@@ -4881,6 +4883,14 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		if len(placePlacemarks) > 0 {
 			kml.WriteString(fmt.Sprintf("<Folder><name>Places (%d)</name><visibility>0</visibility>\n", len(placePlacemarks)))
 			for _, pm := range placePlacemarks {
+				kml.WriteString(pm)
+			}
+			kml.WriteString("</Folder>\n")
+		}
+
+		if len(airstripPlacemarks) > 0 {
+			kml.WriteString(fmt.Sprintf("<Folder><name>Airstrips (%d)</name>\n", len(airstripPlacemarks)))
+			for _, pm := range airstripPlacemarks {
 				kml.WriteString(pm)
 			}
 			kml.WriteString("</Folder>\n")

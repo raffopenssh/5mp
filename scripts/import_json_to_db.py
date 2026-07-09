@@ -362,6 +362,18 @@ def import_waterbodies(conn):
     water_dir = DATA_DIR / 'waterbodies'
     if not water_dir.exists():
         log("  No waterbodies directory"); return
+    conn.execute("""CREATE TABLE IF NOT EXISTS park_waterbodies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        park_id TEXT NOT NULL,
+        waterbody_id TEXT NOT NULL,
+        name TEXT,
+        waterbody_type TEXT,
+        lat REAL,
+        lon REAL,
+        geojson TEXT,
+        UNIQUE(park_id, waterbody_id)
+    )""")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_pwb_park ON park_waterbodies(park_id)")
     conn.execute("DELETE FROM park_waterbodies")
     rows = []
     for f in sorted(water_dir.glob('*.json')):

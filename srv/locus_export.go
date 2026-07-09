@@ -20,15 +20,27 @@ import (
 	"context"
 	"crypto/rand"
 	"database/sql"
+	"embed"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"math"
 	"net/http"
 	"strings"
 	"time"
 )
+
+// Default device configuration, taken from the reference 2026 field-device
+// backup (BOMA preset, config.cfg, custom online map, quick-add points…).
+// The _various/settings blob is sanitized: the original device's Dropbox
+// OAuth credentials (KEY_S_DBX_CREDENTIALS) are blanked; personal search
+// history (get_location_recently_used.lb) and the offline-map registry
+// (config.db — references maps we don't ship) are excluded entirely.
+//
+//go:embed all:locus_defaults
+var locusDefaultsFS embed.FS
 
 // Reference blobs byte-copied from the 2026 field-device sample.
 // Track extra_style: 140 bytes; ARGB color u32 at offset 82, line width f32 at 115.
@@ -135,6 +147,27 @@ func extractPaths(geojsonStr string) [][][2]float64 {
 		}
 	}
 	return out
+}
+
+// extractPoint returns lon/lat from a GeoJSON Point (or Feature wrapping one).
+func extractPoint(geojsonStr string) (float64, float64, bool) {
+	var g map[string]interface{}
+	if err := json.Unmarshal([]byte(geojsonStr), &g); err != nil {
+		return 0, 0, false
+	}
+	if geom, ok := g["geometry"].(map[string]interface{}); ok {
+		g = geom
+	}
+	if t, _ := g["type"].(string); t != "Point" {
+		return 0, 0, false
+	}
+	arr, ok := g["coordinates"].([]interface{})
+	if !ok || len(arr) < 2 {
+		return 0, 0, false
+	}
+	lon, ok1 := arr[0].(float64)
+	lat, ok2 := arr[1].(float64)
+	return lon, lat, ok1 && ok2
 }
 
 // openRing ensures a closed ring is NOT detected as a polygon by Locus:
@@ -382,6 +415,18 @@ func (s *Server) HandleAPIParkLocus(w http.ResponseWriter, r *http.Request) {
 	}
 	writeFile("data/database/.mVisibleItems_dbTracks", visTracks)
 	writeFile("data/database/.mVisibleItems_dbWaypoints", visWpts)
+	// Default device settings/presets (sanitized reference backup)
+	fs.WalkDir(locusDefaultsFS, "locus_defaults", func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		data, rerr := locusDefaultsFS.ReadFile(path)
+		if rerr != nil {
+			return nil
+		}
+		writeFile(strings.TrimPrefix(path, "locus_defaults/"), data)
+		return nil
+	})
 	zw.Close()
 }
 
@@ -410,6 +455,7 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 	// Waypoint folders
 	wPlaces, _ := wdb.addGroup("PLACES", 0, "icon_default.png", nil, wBase)
 	wLakes, _ := wdb.addGroup("LAKES", 0, "icon_default.png", nil, wBase)
+	wAirstrips, _ := wdb.addGroup("AIRSTRIPS", 0, "transport-airport.png", nil, wBase)
 	wTurb, _ := wdb.addGroup("TURBIDITY ALERTS", 0, "z-ico16.png", nil, wMission)
 
 	// ---- Base content ----
@@ -422,34 +468,17 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 		tdb.addTrack(gBoundary, name, path, locusTrackStyle(0xFF00C853, 4), true)
 	}
 
-	// Rivers (HydroRIVERS) — width by stream order
-	riverRows, _ := s.DB.Query(`SELECT hyriv_id, name, length_km, stream_order, geojson FROM park_rivers_hydro WHERE park_id = ? ORDER BY stream_order DESC, length_km DESC LIMIT 200`, parkID)
-	if riverRows != nil {
-		defer riverRows.Close()
-		for riverRows.Next() {
-			var hyrivID int64
-			var name sql.NullString
-			var lengthKm float64
-			var order int
-			var geojson sql.NullString
-			riverRows.Scan(&hyrivID, &name, &lengthKm, &order, &geojson)
-			if !geojson.Valid {
-				continue
-			}
-			label := name.String
-			if label == "" {
-				label = fmt.Sprintf("River %d (order %d)", hyrivID, order)
-			}
-			width := float32(1)
-			if order >= 6 {
-				width = 3
-			} else if order >= 4 {
-				width = 2
-			}
-			for _, path := range extractPaths(geojson.String) {
-				tdb.addTrack(gRivers, label, path, locusTrackStyle(0xFF2196F3, width), false)
-			}
+	// Rivers (HydroRIVERS) — merged into continuous polylines (raw table rows
+	// are hundreds of tiny disconnected reach stubs), width by stream order.
+	for _, rv := range s.loadMergedRivers(parkID, 3, 400) {
+		label := fmt.Sprintf("%s (%.0f km)", rv.Name, rv.LengthKm)
+		width := float32(1)
+		if rv.StreamOrder >= 6 {
+			width = 3
+		} else if rv.StreamOrder >= 4 {
+			width = 2
 		}
+		tdb.addTrack(gRivers, label, rv.Path, locusTrackStyle(0xFF2196F3, width), false)
 	}
 
 	// Roads (HeiGIT)
@@ -516,6 +545,29 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 					tdb.addTrack(gWater, label, path, locusTrackStyle(0xFF03A9F4, 1), false)
 				}
 			}
+		}
+	}
+
+	// Airstrips (learned from patrol GPX) — point waypoints
+	airRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'airstrip' LIMIT 100`, parkID)
+	if airRows != nil {
+		defer airRows.Close()
+		i := 0
+		for airRows.Next() {
+			var geojson, props string
+			airRows.Scan(&geojson, &props)
+			lon, lat, ok := extractPoint(geojson)
+			if !ok {
+				continue
+			}
+			i++
+			var pm map[string]interface{}
+			json.Unmarshal([]byte(props), &pm)
+			kind := "airstrip"
+			if t, _ := pm["aircraft_type"].(string); t == "rotor_wing" {
+				kind = "helipad"
+			}
+			wdb.addWaypoint(wAirstrips, fmt.Sprintf("Airstrip %d (%s)", i, kind), lon, lat, "transport-airport.png", false)
 		}
 	}
 
@@ -673,6 +725,11 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 		name := fmt.Sprintf("Turbidity %s %s", a.River, a.Date)
 		wdb.addWaypoint(wTurb, name, a.Lon, a.Lat, "z-ico16.png", true)
 	}
+
+	// Drop empty leaf folders (e.g. parks without airstrips or patrol tracks)
+	// so field users don't scroll past dead entries.
+	tdb.db.Exec(`DELETE FROM groups WHERE mode = 0 AND parent_id > 0 AND _id NOT IN (SELECT DISTINCT parent_id FROM tracks)`)
+	wdb.db.Exec(`DELETE FROM groups WHERE mode = 0 AND parent_id > 0 AND _id NOT IN (SELECT DISTINCT parent_id FROM waypoints)`)
 
 	return nil
 }
