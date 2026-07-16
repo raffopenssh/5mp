@@ -606,9 +606,9 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         <a href="` + html.EscapeString(tryoutHref) + `" style="display:block;margin-top:14px;padding:11px 16px;border:1px solid rgba(34,197,94,0.35);border-radius:10px;color:#4ade80;font-size:14px;font-weight:500;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='rgba(34,197,94,0.1)';this.style.borderColor='rgba(34,197,94,0.6)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(34,197,94,0.35)'">Just try it out — no password needed</a>
         <div style="margin-top:6px;font-size:11px;color:#555;">Sandbox with sample data. Nothing you do affects the live system.</div>
         <div class="footer">
-            <a href="/impressum">Impressum</a>
+            <a href="/impressum">` + legalFooterLabels(r)[0] + `</a>
             <span class="footer-sep">&middot;</span>
-            <a href="/datenschutz">Datenschutz</a>
+            <a href="/datenschutz">` + legalFooterLabels(r)[1] + `</a>
         </div>
     </div>
     <script>

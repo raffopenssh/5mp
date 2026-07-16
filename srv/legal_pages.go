@@ -1,6 +1,9 @@
 package srv
 
-import "net/http"
+import (
+	"net/http"
+	"strings"
+)
 
 // Legal pages (Impressum & Datenschutzerklärung) per Austrian § 25 MedienG,
 // § 5 ECG and GDPR, served in German (authoritative) and English
@@ -37,24 +40,53 @@ strong { color:#e0e0e0; }
 .stand { margin-top:24px; font-size:12px; color:#555; }
 </style>
 <script>
+// E-mail is XOR-encoded and only decoded on user interaction (click),
+// so it never appears in the page source or the initial DOM. This keeps
+// it out of reach of scrapers (including JS-executing ones) while staying
+// one click away for humans.
 (function(){document.addEventListener('DOMContentLoaded',function(){
- var u='raffaelhickisch',d='gmail',s='+5mp';
- var e=u+s+'@'+d+'.com';
- document.querySelectorAll('.obf-email').forEach(function(a){
-  a.href='mai'+'lto:'+e; a.textContent=e;
+ var k=73,a=[59,40,47,47,40,44,37,33,32,42,34,32,58,42,33,98,124,36,57],
+     b=[46,36,40,32,37],c=[42,38,36];
+ function dec(x){var s='';for(var i=0;i<x.length;i++)s+=String.fromCharCode(x[i]^k);return s;}
+ document.querySelectorAll('.obf-email').forEach(function(el){
+  var lang=document.documentElement.lang||'de';
+  el.textContent=(lang==='en')?'[click to reveal]':'[klicken zum Anzeigen]';
+  el.setAttribute('href','#');
+  el.addEventListener('click',function(ev){
+   ev.preventDefault();
+   var e=dec(a)+String.fromCharCode(64)+dec(b)+String.fromCharCode(46)+dec(c);
+   el.textContent=e;
+   el.setAttribute('href','mai'+'lto:'+e);
+  },{once:true});
  });});})();
 </script>`
 
+// legalLang picks the page language: explicit ?lang= wins, otherwise the
+// browser's Accept-Language decides (German browsers get German, everyone
+// else English). The German text remains the legally authoritative version.
 func legalLang(r *http.Request) string {
-	if r.URL.Query().Get("lang") == "en" {
+	switch r.URL.Query().Get("lang") {
+	case "en":
 		return "en"
+	case "de":
+		return "de"
 	}
-	return "de"
+	// Parse Accept-Language: first language tag that is de* or en* wins.
+	for _, part := range strings.Split(r.Header.Get("Accept-Language"), ",") {
+		lang := strings.ToLower(strings.TrimSpace(strings.SplitN(part, ";", 2)[0]))
+		if strings.HasPrefix(lang, "de") {
+			return "de"
+		}
+		if strings.HasPrefix(lang, "en") {
+			return "en"
+		}
+	}
+	return "en"
 }
 
 func legalNav(lang, path, backLabel string) string {
 	deCls, enCls := " class=\"active\"", ""
-	deHref, enHref := path, path+"?lang=en"
+	deHref, enHref := path+"?lang=de", path+"?lang=en"
 	if lang == "en" {
 		deCls, enCls = "", " class=\"active\""
 	}
@@ -66,6 +98,7 @@ func legalNav(lang, path, backLabel string) string {
 
 func writeLegalPage(w http.ResponseWriter, lang, title, body string) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Vary", "Accept-Language")
 	w.Write([]byte(`<!DOCTYPE html>
 <html lang="` + lang + `">
 <head>
@@ -415,4 +448,13 @@ Privacy Notice</a>.</p>
 <div class="footer-links">
 <a href="/">Startseite</a> &middot; <a href="/impressum">Impressum</a>
 </div>`)
+}
+
+// legalFooterLabels returns the [impressum, datenschutz] link labels in the
+// browser's language (used on the login page footer).
+func legalFooterLabels(r *http.Request) [2]string {
+	if legalLang(r) == "en" {
+		return [2]string{"Legal Notice", "Privacy"}
+	}
+	return [2]string{"Impressum", "Datenschutz"}
 }
