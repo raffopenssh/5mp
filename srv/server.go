@@ -152,6 +152,8 @@ func (s *Server) Serve(addr string) error {
 	// Public routes
 	mux.HandleFunc("GET /{$}", s.HandleRoot)
 	mux.HandleFunc("GET /login", s.HandleLoginPage)
+	mux.HandleFunc("GET /impressum", s.HandleImpressum)
+	mux.HandleFunc("GET /datenschutz", s.HandleDatenschutz)
 	mux.HandleFunc("POST /login", RateLimitMiddleware(authRL, s.HandleLogin))
 	mux.HandleFunc("GET /logout", s.HandleLogout)
 	mux.HandleFunc("GET /register", s.HandleRegisterPage)

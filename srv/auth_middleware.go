@@ -51,6 +51,8 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 			strings.HasSuffix(r.URL.Path, ".svg") ||
 			strings.HasPrefix(r.URL.Path, "/static/downloads/") ||
 			r.URL.Path == "/healthz" ||
+			r.URL.Path == "/impressum" ||
+			r.URL.Path == "/datenschutz" ||
 			r.URL.Path == "/robots.txt" ||
 			r.URL.Path == "/sitemap.xml" ||
 			r.URL.Path == "/static/robots.txt" ||
@@ -492,6 +494,16 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
             font-size: 14px;
         }
         
+        .footer a {
+            color: #555;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .footer a:hover { color: #888; }
+        
+        .footer-sep { color: #333; }
+        
         @media (max-width: 480px) {
             body { padding: 16px; }
             .container {
@@ -567,7 +579,9 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         <a href="` + html.EscapeString(tryoutHref) + `" style="display:block;margin-top:14px;padding:11px 16px;border:1px solid rgba(34,197,94,0.35);border-radius:10px;color:#4ade80;font-size:14px;font-weight:500;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='rgba(34,197,94,0.1)';this.style.borderColor='rgba(34,197,94,0.6)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(34,197,94,0.35)'">Just try it out — no password needed</a>
         <div style="margin-top:6px;font-size:11px;color:#555;">Sandbox with sample data. Nothing you do affects the live system.</div>
         <div class="footer">
-            <span>FIVE MEGAPIXELS</span>
+            <a href="/impressum">Impressum</a>
+            <span class="footer-sep">&middot;</span>
+            <a href="/datenschutz">Datenschutz</a>
         </div>
     </div>
     <script>
