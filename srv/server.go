@@ -310,6 +310,14 @@ func (s *Server) Serve(addr string) error {
 
 	// Static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.StaticDir))))
+
+	// SEO files at root (also allowed unauthenticated in PasswordMiddleware)
+	mux.HandleFunc("GET /robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, s.StaticDir+"/robots.txt")
+	})
+	mux.HandleFunc("GET /sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, s.StaticDir+"/sitemap.xml")
+	})
 	
 	// Initialize MBTiles queue (legacy disk-based, as fallback)
 	InitMBTilesQueue("data/mbtiles_output", s.DB)

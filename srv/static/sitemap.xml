@@ -1,9 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://fivemp-testing.exe.xyz:8000/</loc>
-    <lastmod>2026-02-04</lastmod>
+    <loc>https://five-megapixel-conservation.exe.xyz/</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://five-megapixel-conservation.exe.xyz/impressum</loc>
+    <lastmod>2026-07-16</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://five-megapixel-conservation.exe.xyz/impressum"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://five-megapixel-conservation.exe.xyz/impressum?lang=en"/>
+  </url>
+  <url>
+    <loc>https://five-megapixel-conservation.exe.xyz/datenschutz</loc>
+    <lastmod>2026-07-16</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://five-megapixel-conservation.exe.xyz/datenschutz"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://five-megapixel-conservation.exe.xyz/datenschutz?lang=en"/>
   </url>
 </urlset>

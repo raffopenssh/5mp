@@ -50,6 +50,8 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 			strings.HasSuffix(r.URL.Path, ".js") ||
 			strings.HasSuffix(r.URL.Path, ".svg") ||
 			strings.HasPrefix(r.URL.Path, "/static/downloads/") ||
+			r.URL.Path == "/static/og-image.png" ||
+			r.URL.Path == "/static/og-image.svg" ||
 			r.URL.Path == "/healthz" ||
 			r.URL.Path == "/impressum" ||
 			r.URL.Path == "/datenschutz" ||
@@ -160,7 +162,14 @@ func isValidPassword(pwd string) bool {
 
 func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusUnauthorized)
+	// Pages: 200 (not 401) so social-media link scrapers (Facebook, Slack,
+	// WhatsApp, Twitter) parse the Open Graph tags on this page; most refuse
+	// non-2xx responses. API paths keep a proper 401 for clients.
+	if strings.HasPrefix(r.URL.Path, "/api/") {
+		w.WriteHeader(http.StatusUnauthorized)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
 
 	// Build hidden fields for existing query params (preserve through login)
 	var hiddenFields string
@@ -183,7 +192,25 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
-    <title>Access Required - 5MP.globe</title>
+    <title>5MP.globe - African Conservation Monitoring</title>
+    <meta name="description" content="Real-time fire detection, deforestation monitoring, and patrol tracking for 162 African keystone protected areas. Alpha access.">
+    <meta name="robots" content="noindex">
+    <link rel="canonical" href="https://five-megapixel-conservation.exe.xyz/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="5MP.globe - African Conservation Monitoring">
+    <meta property="og:description" content="Real-time fire detection, deforestation monitoring, and patrol tracking for 162 African keystone protected areas.">
+    <meta property="og:image" content="https://five-megapixel-conservation.exe.xyz/static/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="5MP.globe - conservation monitoring globe with live fire alerts, forest change and patrol tracking">
+    <meta property="og:url" content="https://five-megapixel-conservation.exe.xyz/">
+    <meta property="og:site_name" content="5MP.globe">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="5MP.globe - African Conservation Monitoring">
+    <meta name="twitter:description" content="Real-time fire detection, deforestation monitoring, and patrol tracking for 162 African keystone protected areas.">
+    <meta name="twitter:image" content="https://five-megapixel-conservation.exe.xyz/static/og-image.png">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cellipse cx='12' cy='12' rx='4' ry='10'/%3E%3Cpath d='M2 12h20'/%3E%3C/svg%3E">
+    <meta name="theme-color" content="#0a0a0a">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
