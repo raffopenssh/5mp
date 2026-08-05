@@ -497,8 +497,12 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 		}
 	}
 
-	// Patrol-learned tracks (feature_geometries type=road)
-	roadRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'road' LIMIT 500`, parkID)
+	// Patrol-learned tracks (feature_geometries type=road) — client data,
+	// omitted in the test tenant.
+	var roadRows *sql.Rows
+	if !isTestEnv(r) {
+		roadRows, _ = s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'road' LIMIT 500`, parkID)
+	}
 	if roadRows != nil {
 		defer roadRows.Close()
 		i := 0
@@ -548,8 +552,12 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 		}
 	}
 
-	// Airstrips (learned from patrol GPX) — point waypoints
-	airRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'airstrip' LIMIT 100`, parkID)
+	// Airstrips (learned from patrol GPX) — point waypoints. Client data,
+	// omitted in the test tenant.
+	var airRows *sql.Rows
+	if !isTestEnv(r) {
+		airRows, _ = s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'airstrip' LIMIT 100`, parkID)
+	}
 	if airRows != nil {
 		defer airRows.Close()
 		i := 0

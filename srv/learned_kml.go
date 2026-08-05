@@ -13,6 +13,11 @@ import (
 // GET /api/admin/learned-features-kml?scope=pending            — all pending features (Pending Approvals sheet)
 // GET /api/admin/learned-features-kml?park_id=XXX              — all learned features for a park (Learned Features sheet)
 func (s *Server) HandleAPILearnedFeaturesKML(w http.ResponseWriter, r *http.Request) {
+	// Learned features come from client patrol GPX; the test tenant gets nothing.
+	if isTestEnv(r) {
+		http.Error(w, "not available in the test environment", http.StatusForbidden)
+		return
+	}
 	scope := r.URL.Query().Get("scope")
 	parkID := r.URL.Query().Get("park_id")
 

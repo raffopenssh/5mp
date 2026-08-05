@@ -1373,13 +1373,29 @@ func (s *Server) HandleAPIAreasSearch(w http.ResponseWriter, r *http.Request) {
 // HandleAPIActivity returns recent upload activity.
 func (s *Server) HandleAPIActivity(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	q := dbgen.New(s.DB)
 
-	// Get recent uploads with coordinates
-	uploads, err := q.ListGPXUploadsWithCoords(ctx, dbgen.ListGPXUploadsWithCoordsParams{
-		Limit:  10,
-		Offset: 0,
-	})
+	// Get recent uploads with coordinates, scoped to the request's env tenant
+	// (test2026 -> 'test'): the test environment must never list prod patrols.
+	// Raw SQL rather than the generated ListGPXUploadsWithCoords because that
+	// query has no env filter and applies LIMIT before filtering.
+	type uploadWithCoords struct {
+		ID              int64
+		MovementType    string
+		ProtectedAreaID *string
+		UploadDate      time.Time
+		TotalDistanceKm float64
+		CentroidLat     *float64
+		CentroidLon     *float64
+	}
+	rows0, err := s.DB.QueryContext(ctx, `
+		SELECT u.id, u.movement_type, u.protected_area_id, u.upload_date,
+		       u.total_distance_km, AVG(t.lat), AVG(t.lon)
+		FROM gpx_uploads u
+		LEFT JOIN track_points t ON u.id = t.upload_id
+		WHERE u.env = ?
+		GROUP BY u.id
+		ORDER BY u.upload_date DESC
+		LIMIT 10`, RequestEnv(r))
 	if err != nil {
 		slog.Error("failed to get activity", "error", err)
 		w.Header().Set("Content-Type", "application/json")
@@ -1387,6 +1403,16 @@ func (s *Server) HandleAPIActivity(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"error": "database error"})
 		return
 	}
+	var uploads []uploadWithCoords
+	for rows0.Next() {
+		var u uploadWithCoords
+		if err := rows0.Scan(&u.ID, &u.MovementType, &u.ProtectedAreaID, &u.UploadDate,
+			&u.TotalDistanceKm, &u.CentroidLat, &u.CentroidLon); err != nil {
+			continue
+		}
+		uploads = append(uploads, u)
+	}
+	rows0.Close()
 
 	activities := make([]map[string]interface{}, 0, len(uploads))
 	for _, u := range uploads {
@@ -1855,6 +1881,19 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		WHERE park_id = ?
 	`
 	args := []interface{}{internalID}
+
+	// feature_geometries rows of type road/airstrip are auto-approved learned
+	// features derived from client patrol GPX (gpx_learner.autoApproveRoad /
+	// autoApproveAirstrip). Hide them from the test tenant. (type=road never
+	// reaches here — it is served from OSM roads_heigit above.)
+	if isTestEnv(r) {
+		if featureType == "airstrip" {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(GeoJSONFeatureCollection{Type: "FeatureCollection", Features: []GeoJSONFeature{}})
+			return
+		}
+		query += " AND feature_type NOT IN ('road','airstrip')"
+	}
 	
 	if featureType != "" {
 		query += " AND feature_type = ?"
@@ -2553,6 +2592,10 @@ func lonDir(lon float64) string {
 // HandleAPIGPXUploadLogs returns GPX upload processing logs for admin panel
 // GET /api/admin/gpx-logs
 func (s *Server) HandleAPIGPXUploadLogs(w http.ResponseWriter, r *http.Request) {
+	// Upload logs are client patrol GPX metadata — never expose to test env.
+	if blockLearnedInTestEnv(w, r, map[string]interface{}{"logs": []interface{}{}}) {
+		return
+	}
 	// Parse pagination
 	limitStr := r.URL.Query().Get("limit")
 	offsetStr := r.URL.Query().Get("offset")
@@ -2610,6 +2653,11 @@ func (s *Server) HandleAPIGPXUploadLogs(w http.ResponseWriter, r *http.Request) 
 // HandleAPILearningResults returns GPX learning results for admin panel
 // GET /api/admin/learning-results
 func (s *Server) HandleAPILearningResults(w http.ResponseWriter, r *http.Request) {
+	if blockLearnedInTestEnv(w, r, map[string]interface{}{
+		"results": []interface{}{}, "stats": map[string]interface{}{},
+	}) {
+		return
+	}
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
@@ -2681,6 +2729,11 @@ func (s *Server) HandleAPILearningResults(w http.ResponseWriter, r *http.Request
 // HandleAPIPendingApprovals returns all pending features across all parks
 // GET /api/admin/pending-approvals
 func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Request) {
+	if blockLearnedInTestEnv(w, r, map[string]interface{}{
+		"features": []interface{}{}, "stats": map[string]interface{}{}, "coverage": map[string]interface{}{},
+	}) {
+		return
+	}
 	limitStr := r.URL.Query().Get("limit")
 	limit := 100
 	if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 500 {
@@ -2779,6 +2832,12 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 // HandleAPILearnedFeatures returns pending/approved learned features for a park
 // GET /api/admin/learned-features?park_id=xxx&type=roads|places|airstrips
 func (s *Server) HandleAPILearnedFeatures(w http.ResponseWriter, r *http.Request) {
+	if blockLearnedInTestEnv(w, r, map[string]interface{}{
+		"roads": []interface{}{}, "places": []interface{}{}, "airstrips": []interface{}{},
+		"vehicle_stats": []interface{}{},
+	}) {
+		return
+	}
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
@@ -2832,6 +2891,9 @@ func (s *Server) HandleAPILearnedFeatures(w http.ResponseWriter, r *http.Request
 // HandleAPIApproveLearnedFeature approves a learned feature
 // POST /api/admin/approve-feature
 func (s *Server) HandleAPIApproveLearnedFeature(w http.ResponseWriter, r *http.Request) {
+	if refuseWriteInTestEnv(w, r) {
+		return
+	}
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
@@ -2901,6 +2963,9 @@ func (s *Server) HandleAPIApproveLearnedFeature(w http.ResponseWriter, r *http.R
 // HandleAPIRejectLearnedFeature rejects a learned feature
 // POST /api/admin/reject-feature
 func (s *Server) HandleAPIRejectLearnedFeature(w http.ResponseWriter, r *http.Request) {
+	if refuseWriteInTestEnv(w, r) {
+		return
+	}
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
@@ -2970,6 +3035,9 @@ func (s *Server) HandleAPIRejectLearnedFeature(w http.ResponseWriter, r *http.Re
 // HandleAPIBulkApprove approves multiple learned features at once
 // POST /api/admin/bulk-approve
 func (s *Server) HandleAPIBulkApprove(w http.ResponseWriter, r *http.Request) {
+	if refuseWriteInTestEnv(w, r) {
+		return
+	}
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
@@ -3024,6 +3092,9 @@ func (s *Server) HandleAPIBulkApprove(w http.ResponseWriter, r *http.Request) {
 // confidence threshold.
 // POST /api/admin/approve-high-confidence {"threshold": 75}
 func (s *Server) HandleAPIApproveHighConfidence(w http.ResponseWriter, r *http.Request) {
+	if refuseWriteInTestEnv(w, r) {
+		return
+	}
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
@@ -3093,6 +3164,9 @@ func (s *Server) HandleAPIApproveHighConfidence(w http.ResponseWriter, r *http.R
 // HandleAPIBulkReject rejects multiple learned features at once
 // POST /api/admin/bulk-reject
 func (s *Server) HandleAPIBulkReject(w http.ResponseWriter, r *http.Request) {
+	if refuseWriteInTestEnv(w, r) {
+		return
+	}
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
@@ -3146,6 +3220,9 @@ func (s *Server) HandleAPIBulkReject(w http.ResponseWriter, r *http.Request) {
 // HandleAPIBulkDeleteUploads deletes multiple GPX uploads at once.
 // POST /api/admin/bulk-delete-uploads
 func (s *Server) HandleAPIBulkDeleteUploads(w http.ResponseWriter, r *http.Request) {
+	if refuseWriteInTestEnv(w, r) {
+		return
+	}
 	ctx := r.Context()
 
 	var req struct {
@@ -3200,6 +3277,9 @@ func (s *Server) HandleAPIBulkDeleteUploads(w http.ResponseWriter, r *http.Reque
 // HandleAPIDeleteUpload deletes a GPX upload and its logs, then rebuilds effort_data.
 // POST /api/admin/delete-upload
 func (s *Server) HandleAPIDeleteUpload(w http.ResponseWriter, r *http.Request) {
+	if refuseWriteInTestEnv(w, r) {
+		return
+	}
 	ctx := r.Context()
 
 	var req struct {
@@ -3254,6 +3334,9 @@ func (s *Server) HandleAPIDeleteUpload(w http.ResponseWriter, r *http.Request) {
 // HandleAPIUploadDetail returns detailed information about a GPX upload
 // GET /api/admin/upload-detail?id=123
 func (s *Server) HandleAPIUploadDetail(w http.ResponseWriter, r *http.Request) {
+	if blockLearnedInTestEnv(w, r, map[string]interface{}{}) {
+		return
+	}
 	ctx := r.Context()
 	idStr := r.URL.Query().Get("id")
 	if idStr == "" {
@@ -3385,6 +3468,12 @@ func (s *Server) HandleAPIHideNotification(w http.ResponseWriter, r *http.Reques
 // HandleAPIPatrolMCP returns the 90% MCP for patrol coverage
 // GET /api/parks/{id}/patrol-mcp
 func (s *Server) HandleAPIPatrolMCP(w http.ResponseWriter, r *http.Request) {
+	// The MCP hull is derived from client patrol tracks.
+	if blockLearnedInTestEnv(w, r, map[string]interface{}{
+		"park_id": r.PathValue("id"), "mcp_geojson": nil, "mcp_area_km2": 0, "point_count": 0,
+	}) {
+		return
+	}
 	parkID := r.PathValue("id")
 	if parkID == "" {
 		http.Error(w, "Missing park ID", http.StatusBadRequest)
@@ -3421,6 +3510,9 @@ func (s *Server) HandleAPIPatrolMCP(w http.ResponseWriter, r *http.Request) {
 // HandleAPIFeatureHistory returns the history of changes for a learned feature
 // GET /api/admin/feature-history?type={road|airstrip|place}&id={id}
 func (s *Server) HandleAPIFeatureHistory(w http.ResponseWriter, r *http.Request) {
+	if blockLearnedInTestEnv(w, r, map[string]interface{}{"history": []interface{}{}}) {
+		return
+	}
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
@@ -3462,6 +3554,9 @@ func (s *Server) HandleAPIFeatureHistory(w http.ResponseWriter, r *http.Request)
 // HandleAPIRollbackFeature rolls back a feature to a previous version
 // POST /api/admin/rollback-feature
 func (s *Server) HandleAPIRollbackFeature(w http.ResponseWriter, r *http.Request) {
+	if refuseWriteInTestEnv(w, r) {
+		return
+	}
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
@@ -3546,6 +3641,14 @@ func (s *Server) HandleAPIRollbackFeature(w http.ResponseWriter, r *http.Request
 // HandleAPILearnedFeatureStats returns statistics for learned features by park
 // GET /api/parks/{id}/learned-stats
 func (s *Server) HandleAPILearnedFeatureStats(w http.ResponseWriter, r *http.Request) {
+	if blockLearnedInTestEnv(w, r, map[string]interface{}{
+		"park_id":   r.PathValue("id"),
+		"roads":     map[string]interface{}{"approved": 0, "pending": 0, "total_km": 0},
+		"airstrips": map[string]interface{}{"approved": 0, "pending": 0},
+		"places":    map[string]interface{}{"approved": 0, "pending": 0},
+	}) {
+		return
+	}
 	parkID := r.PathValue("id")
 	if parkID == "" {
 		http.Error(w, "Missing park ID", http.StatusBadRequest)
@@ -4554,9 +4657,13 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	}
 	kml.WriteString("</Folder>\n")
 
-	// Roads folder (from feature_geometries) - only create if data exists
+	// Roads folder (from feature_geometries) - only create if data exists.
+	// These are patrol-learned roads (client data) — omitted in the test tenant.
 	var roadPlacemarks []string
-	roadRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'road' LIMIT 500`, parkID)
+	var roadRows *sql.Rows
+	if !isTestEnv(r) {
+		roadRows, _ = s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'road' LIMIT 500`, parkID)
+	}
 	if roadRows != nil {
 		defer roadRows.Close()
 		for roadRows.Next() {
@@ -4675,9 +4782,13 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	}
 	// (emitted below under "Infrastructure & Access")
 
-	// Airstrips (learned from patrol GPX) - only create if data exists
+	// Airstrips (learned from patrol GPX) - only create if data exists.
+	// Client-derived — omitted in the test tenant.
 	var airstripPlacemarks []string
-	airstripRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'airstrip' LIMIT 100`, parkID)
+	var airstripRows *sql.Rows
+	if !isTestEnv(r) {
+		airstripRows, _ = s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries WHERE park_id = ? AND feature_type = 'airstrip' LIMIT 100`, parkID)
+	}
 	if airstripRows != nil {
 		defer airstripRows.Close()
 		i := 0

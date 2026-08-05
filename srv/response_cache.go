@@ -60,11 +60,15 @@ func cacheablePath(r *http.Request) bool {
 	return false
 }
 
-// cacheKey ignores pwd (auth already passed) so different users share entries.
+// cacheKey ignores the specific pwd (auth already passed) so different users
+// share entries, but MUST keep the env tenant: several cached endpoints are
+// env-dependent (/stats patrol pixels, /features learned road+airstrip
+// filtering), so a tenant-blind key serves prod client data to the test
+// environment and vice versa.
 func cacheKey(r *http.Request) string {
 	q := r.URL.Query()
 	q.Del("pwd")
-	return r.URL.Path + "?" + q.Encode()
+	return RequestEnv(r) + "|" + r.URL.Path + "?" + q.Encode()
 }
 
 type cacheRecorder struct {
