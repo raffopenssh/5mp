@@ -1,26 +1,29 @@
 #!/bin/bash
-# Rebuild only parks with NRT fire data
+# Rebuild fire trajectories for every park that has fire detections.
+#
+# Park enumeration comes from fire_detections (canonical). It used to come from
+# `ls data/raw-fire-viirs-*/`, which is a rolling ~6-month window of duplicated
+# data slated for removal -- see docs/FIRE_TODO_HANDOVER.md #15.
 
 export PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH
 
-RAW_DIR="data/raw-fire-viirs-20200101-20260222"
 LOG="logs/nrt_park_rebuild_$(date +%Y%m%d_%H%M).log"
 
 echo "=== NRT Park Rebuild $(date) ===" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
 
-PARKS=$(ls $RAW_DIR/*.json 2>/dev/null | xargs -n1 basename | sed 's/.json//')
+PARKS=$(sqlite3 db.sqlite3 \
+  "SELECT DISTINCT protected_area_id FROM fire_detections
+   WHERE protected_area_id IS NOT NULL ORDER BY 1")
 PARK_COUNT=$(echo "$PARKS" | wc -l)
 
-echo "Rebuilding $PARK_COUNT parks with NRT data..." | tee -a "$LOG"
+echo "Rebuilding $PARK_COUNT parks with fire data..." | tee -a "$LOG"
 echo "" | tee -a "$LOG"
 
-COUNTER=0
-for PARK in $PARKS; do
-    COUNTER=$((COUNTER + 1))
-    echo "[$COUNTER/$PARK_COUNT] Processing $PARK..." | tee -a "$LOG"
-    python3 scripts/rebuild_fire_trajectories_v5.py --park "$PARK" >> "$LOG" 2>&1
-done
+# One process for all parks: --parks reuses the keystone load, the DB
+# connection and the sklearn/scipy import (per-park subprocesses cost ~6min).
+python3 scripts/rebuild_fire_trajectories_v5.py \
+    --parks "$(echo "$PARKS" | paste -sd,)" >> "$LOG" 2>&1
 
 echo "" | tee -a "$LOG"
 echo "=== Rebuild Complete $(date) ===" | tee -a "$LOG"

@@ -1,3 +1,9 @@
+8fb2626 2026-08-05 08:11:05 Document remaining fire pipeline work with verified findings
+974a978 2026-08-05 08:03:08 Data: fire pipeline run with 3-sensor ingest (v7 groups)
+4844e80 2026-08-05 08:01:23 Add VIIRS SNPP/NOAA-21 history backfill (unblocks per-overpass A/B)
+72744c7 2026-08-05 07:51:44 Fire ingest: all 3 VIIRS sensors, 10-day window, throttled notifications
+e8b7322 2026-08-05 07:47:01 Fire trajectories v7: SQLite source, Hungarian matching, mass-aware cost
+612da11 2026-08-05 07:26:22 Add fire trajectory A/B eval harness and canonical SQLite fire source
 6602054 2026-07-16 09:18:36 Legal pages follow browser language (Accept-Language)
 d3a46de 2026-07-16 08:08:36 Add sitemap, SEO/OpenGraph meta tags and OG image
 af5c29c 2026-07-16 08:02:24 Add bilingual (DE/EN) Impressum and Datenschutz pages
@@ -12,9 +18,3 @@ bca8dfc 2026-07-09 18:38:41 Fix circle-fallback regression: Protected Planet ret
 0dc9258 2026-07-09 18:29:17 Star report: unified multi-report handling, section-filtered exports, coherent accordion stars
 7b84afa 2026-07-09 18:08:08 Data: daily worker outputs (GFW, turbidity, mining pits, OSM waterways)
 aa1b4d4 2026-07-09 18:08:08 Onboard DZA_Djurdjura via worker test (163 parks, onboarded_at set)
-157e4fb 2026-07-09 17:58:21 Onboarding fixes: all-time fire backfill, FIRMS 5-day cap, search loaded-flag bug
-652665f 2026-07-09 17:39:20 Document park onboarding flow in AGENTS.md
-8ee80af 2026-07-09 17:38:53 On-the-fly park onboarding: search-dwell offer, nightly worker, undo/removal
-fb35419 2026-07-09 17:23:51 Rivers: point all readers at park_rivers_hydro (canonical table)
-9384edc 2026-07-09 17:06:23 Hide session chip while full-screen modals are open (star report, login, upload, version)
-17c2e52 2026-07-09 16:32:40 Document Locus/KML export architecture in AGENTS.md

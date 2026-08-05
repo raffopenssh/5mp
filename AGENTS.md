@@ -317,6 +317,35 @@ Use `--parks a,b,c` (one process) rather than repeated `--park` calls.
 
 ---
 
+## Fire pipeline health & consistency
+
+Three artefacts must agree or the popup silently breaks ("Feature not found"
+when clicking a fire in a narrative):
+
+    data/fire_groups_v5/*.json   ->  builder output (source of truth)
+    feature_geometries           ->  what the map/pin API resolves
+    fire_narrative_cache         ->  what narrative links point at
+
+```bash
+python3 scripts/check_fire_consistency.py --verbose   # read-only, exit 1 on drift
+python3 scripts/fix_fire_consistency.py --dry-run     # then without --dry-run
+```
+
+The nightly pipeline runs the check as step 7 and records the result in
+`data/pipeline_status.json`, served by `GET /api/pipeline-status` (adds `stale`
+after 48h = two missed runs). Log rotation: `5mp.logrotate` →
+`/etc/logrotate.d/5mp`.
+
+**Persistent hotspot mask**: `fire_persistent_cells` (323 cells, 32 parks) lists
+0.0034deg cells detected in >=30 distinct months — lava lakes (COD_Virunga),
+flares, kilns. Built by `scripts/build_persistent_hotspots.py` (monthly, step 2d
+on the 1st). Masked detections cannot **seed** a cluster but are still absorbed
+by a real front within `DAY_EPS_KM`. Ablate with `--no-hotspot-mask`.
+
+**Group feature_ids are deduped**: `dedupe_feature_ids()` salts only actual
+collisions (722/181,711) so persisted friendly names in `fire_group_names` stay
+valid. Never change the primary hash without a name migration.
+
 ## ⚠️ Fire Narrative Cache — Single Writer Rule
 
 **Only `scripts/precompute_narratives_v5.py` may write `fire_narrative_cache`.**

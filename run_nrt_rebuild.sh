@@ -8,10 +8,13 @@ echo "NRT Fire Rebuild - v5 Pipeline"
 echo "========================================="
 echo ""
 
-RAW_DIR="data/raw-fire-viirs-20200101-20260222"
-PARKS_WITH_DATA=$(ls $RAW_DIR/*.json 2>/dev/null | wc -l)
+# Park count from fire_detections (canonical). Previously counted files in
+# data/raw-fire-viirs-*/, a rolling window scheduled for deletion (#15).
+PARKS_WITH_DATA=$(sqlite3 db.sqlite3 \
+  "SELECT COUNT(DISTINCT protected_area_id) FROM fire_detections
+   WHERE protected_area_id IS NOT NULL")
 
-echo "Found $PARKS_WITH_DATA parks with raw fire data"
+echo "Found $PARKS_WITH_DATA parks with fire detections"
 echo "Starting rebuild..."
 echo ""
 

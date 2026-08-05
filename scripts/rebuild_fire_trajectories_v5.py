@@ -119,6 +119,10 @@ SPIKE_TURN_DEG = 120       # single-point spike removal
 
 MIN_DATE = '2020-01-01'
 
+# --- Persistent hotspot mask ---
+# Cell size must match scripts/build_persistent_hotspots.py (one VIIRS pixel).
+HOTSPOT_CELL_DEG = 0.0034
+
 
 def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
@@ -263,7 +267,27 @@ def overpass_slices(fires):
     return slices
 
 
-def daily_clusters(fires):
+def _absorb(masked, seeds):
+    """Masked detections close enough (DAY_EPS_KM) to a seed to count as part
+    of the same fire. Used on the tiny-slice path where there is no DBSCAN."""
+    if not masked:
+        return []
+    out = []
+    for f in masked:
+        if any(haversine(f['longitude'], f['latitude'],
+                         g['longitude'], g['latitude']) <= DAY_EPS_KM
+               for g in seeds):
+            out.append(f)
+    return out
+
+
+def _is_masked(f, mask):
+    """True if this detection sits in a persistent-hotspot cell."""
+    return (int(f['longitude'] / HOTSPOT_CELL_DEG),
+            int(f['latitude'] / HOTSPOT_CELL_DEG)) in mask
+
+
+def daily_clusters(fires, persistent_mask=None):
     """Cluster fires spatially within each overpass.
     Returns list of dicts: {t, date, fires, centroid (FRP-weighted), n}.
 
@@ -271,7 +295,16 @@ def daily_clusters(fires):
     considers them together in a single assignment step. (Using each cluster's
     own mean time would put every cluster in its own time slice and defeat the
     joint matching entirely.)
+
+    `persistent_mask` is a set of (cell_x, cell_y) from fire_persistent_cells
+    (gas flares, lava lakes, kilns - see build_persistent_hotspots.py). Those
+    detections may NOT seed a cluster: they are excluded from DBSCAN and from
+    the singleton-noise fallback, otherwise each one spawns an immortal
+    trajectory group that never ends. They are still merged into a real cluster
+    whose centroid is within DAY_EPS_KM, so a genuine front sweeping over a
+    flare site keeps its full fire count.
     """
+    mask = persistent_mask or set()
     out = []
     for sl in overpass_slices(fires):
         # Slice-level timestamp + representative date, shared by all clusters.
@@ -289,25 +322,47 @@ def daily_clusters(fires):
             # though matching uses the integer day number.
             fracs = sorted(f['acq_dt'] - math.floor(f['acq_dt']) for f in sl)
             slice_hhmm = _hhmm(fracs[len(fracs) // 2])
-        if len(sl) < DAY_MIN_SAMPLES:
-            out.append(_make_day_cluster(sl, slice_t, slice_date, slice_hhmm))
+        # Persistent hotspots never seed; they only join.
+        if mask:
+            seeds = [f for f in sl if not _is_masked(f, mask)]
+            masked = [f for f in sl if _is_masked(f, mask)]
+        else:
+            seeds, masked = sl, []
+        if not seeds:
             continue
-        coords = np.array([[f['longitude'], f['latitude']] for f in sl])
+        if len(seeds) < DAY_MIN_SAMPLES:
+            out.append(_make_day_cluster(
+                seeds + _absorb(masked, seeds), slice_t, slice_date, slice_hhmm))
+            continue
+        coords = np.array([[f['longitude'], f['latitude']] for f in seeds])
         lat0 = math.radians(float(np.mean(coords[:, 1])))
         # local km projection (fixes v5's 1deg==111km assumption for lon)
         coords_km = np.column_stack([coords[:, 0] * 111.32 * math.cos(lat0),
                                      coords[:, 1] * 110.57])
         labels = DBSCAN(eps=DAY_EPS_KM, min_samples=DAY_MIN_SAMPLES).fit_predict(coords_km)
+        clusters = []
         for label in sorted(set(labels)):
             if label < 0:
                 continue
-            cf = [sl[i] for i, l in enumerate(labels) if l == label]
-            out.append(_make_day_cluster(cf, slice_t, slice_date, slice_hhmm))
+            clusters.append([seeds[i] for i, l in enumerate(labels) if l == label])
         # noise points become singleton clusters (can still join tracks, but
         # the mass penalty stops them stealing established fronts)
-        for f, l in zip(sl, labels):
+        for f, l in zip(seeds, labels):
             if l < 0:
-                out.append(_make_day_cluster([f], slice_t, slice_date, slice_hhmm))
+                clusters.append([f])
+        # Masked detections are attached to the nearest cluster within
+        # DAY_EPS_KM, or dropped for this slice.
+        for f in masked:
+            best, best_d = None, DAY_EPS_KM
+            for cf in clusters:
+                d = min(haversine(f['longitude'], f['latitude'],
+                                  g['longitude'], g['latitude']) for g in cf)
+                if d < best_d:
+                    best, best_d = cf, d
+            if best is not None:
+                best.append(f)
+        for cf in clusters:
+            out.append(_make_day_cluster(cf, slice_t, slice_date, slice_hhmm))
     out.sort(key=lambda c: c['t'])
     return out
 
@@ -780,8 +835,59 @@ def track_to_group(track, park_id, park_geometry, park_shape=None, inside_test=N
     }
 
 
-def process_park_fires(fires, park_id, park_geometry):
-    dcs = daily_clusters(fires)
+def dedupe_feature_ids(groups, park_id):
+    """Ensure feature_id is unique within a park.
+
+    The id hashes park + start_date + first trajectory point, which is NOT
+    unique: a burn that reignites at the same spot on the same calendar date
+    (and, in incremental mode, a rebuilt group landing next to an older one
+    that ended before the cutoff) yields an identical hash. Verified: 722
+    duplicate feature_ids across 181,711 groups in data/fire_groups_v5/ (worst
+    offender GHA_Mole). Duplicates mean duplicate map features, duplicate
+    notifications and ambiguous ?notif_fire= share links.
+
+    Why not simply add end_date to the hash for everyone: that renames every
+    group in the archive and orphans every persisted friendly name in
+    fire_group_names. So the primary hash is unchanged and only true
+    collisions get a discriminated hash (end_date + fire_count), touching
+    ~0.4% of groups. Deterministic: the group with the earliest
+    (start_date, end_date, -fire_count) keeps the original id, so reruns
+    reproduce the same assignment.
+    """
+    seen = {}
+    renamed = 0
+    for g in sorted(groups, key=lambda g: (g.get('start_date', ''),
+                                           g.get('end_date', ''),
+                                           -g.get('fire_count', 0))):
+        fid = g['feature_id']
+        if fid not in seen:
+            seen[fid] = g
+            continue
+        start_date = g.get('start_date', '')
+        year = g.get('year') or (int(start_date[:4]) if start_date[:4].isdigit() else 0)
+        h = None
+        for salt in range(1, 100):
+            extra = f"{g.get('end_date', '')}_{g.get('fire_count', 0)}_{salt}"
+            h = hashlib.md5(f"{fid}_{extra}".encode()).hexdigest()[:8]
+            new_fid = f"{park_id}_{year}_grp_{h}"
+            if new_fid not in seen:
+                break
+        else:
+            raise RuntimeError(f"could not disambiguate {fid} in {park_id}")
+        g['feature_id'] = new_fid
+        g['group_id'] = f"{park_id}_{start_date}_{h}"
+        seen[new_fid] = g
+        renamed += 1
+
+    # Fail loudly rather than shipping duplicates downstream.
+    ids = [g['feature_id'] for g in groups]
+    if len(set(ids)) != len(ids):
+        raise RuntimeError(f"{park_id}: feature_id still not unique after dedupe")
+    return renamed
+
+
+def process_park_fires(fires, park_id, park_geometry, persistent_mask=None):
+    dcs = daily_clusters(fires, persistent_mask)
     tracks = build_tracks(dcs)
     tracks = chain_tracks(tracks)
     park_shape = None
@@ -831,6 +937,9 @@ def main():
                         help='Disable mass-similarity term in match cost')
     parser.add_argument('--no-hungarian', action='store_true',
                         help='Use greedy nearest-first assignment (v6 behaviour)')
+    parser.add_argument('--no-hotspot-mask', action='store_true',
+                        help='Let persistent hotspots (flares/lava/kilns) seed '
+                             'clusters again - reproduces pre-v7.1 output')
     parser.add_argument('--set', action='append', metavar='NAME=VALUE', default=[],
                         help='Override a tuning constant, e.g. --set MASS_PENALTY_KM=3')
     args = parser.parse_args()
@@ -844,6 +953,7 @@ def main():
         MASS_PENALTY_KM = 0.0
     if args.no_hungarian:
         HAVE_SCIPY = False
+    use_mask = not args.no_hotspot_mask
     for kv in args.set:
         name, _, val = kv.partition('=')
         name = name.strip().upper()
@@ -882,6 +992,27 @@ def main():
         import sqlite3
         from fire_source import DB_PATH
         shared_conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+
+    # Persistent-hotspot mask: cells detected in >=30 distinct months are
+    # flares / lava lakes / kilns, not wildfires. They must not seed tracks or
+    # each one becomes an immortal group. Built by
+    # scripts/build_persistent_hotspots.py; absent table = mask inactive.
+    hotspot_masks = {}
+    if use_mask:
+        import sqlite3 as _sq
+        from fire_source import DB_PATH as _DBP
+        try:
+            _mc = _sq.connect(f"file:{_DBP}?mode=ro", uri=True)
+            for _pid, _cx, _cy in _mc.execute(
+                    "SELECT park_id, cell_x, cell_y FROM fire_persistent_cells"):
+                hotspot_masks.setdefault(_pid, set()).add((_cx, _cy))
+            _mc.close()
+            log(f"Persistent hotspot mask: {sum(len(v) for v in hotspot_masks.values())} "
+                f"cells in {len(hotspot_masks)} parks")
+        except Exception as e:
+            log(f"Persistent hotspot mask unavailable ({e}); seeding unmasked")
+    else:
+        log("Persistent hotspot mask DISABLED (--no-hotspot-mask)")
 
     if args.parks:
         park_ids = [p.strip() for p in args.parks.split(',') if p.strip()]
@@ -926,7 +1057,8 @@ def main():
         if not fires and not existing_groups:
             continue
 
-        new_groups = process_park_fires(fires, park_id, parks[park_id]['geometry'])
+        new_groups = process_park_fires(fires, park_id, parks[park_id]['geometry'],
+                                        hotspot_masks.get(park_id))
 
         if args.incremental:
             old_groups = [g for g in existing_groups
@@ -938,6 +1070,10 @@ def main():
             groups = new_groups
 
         groups.sort(key=lambda g: g['start_date'], reverse=True)
+
+        renamed = dedupe_feature_ids(groups, park_id)
+        if renamed:
+            log(f"  {park_id}: disambiguated {renamed} duplicate feature_id(s)")
 
         park_stats = {'clean': 0, 'cleaned': 0, 'cluster': 0}
         for g in groups:
@@ -998,6 +1134,7 @@ def main():
             'chain_max_gap_days': CHAIN_MAX_GAP_DAYS,
             'chain_turn_limit_deg': CHAIN_TURN_LIMIT_DEG,
             'min_fires': MIN_FIRES,
+            'hotspot_mask': bool(hotspot_masks),
             'min_days_trajectory': MIN_DAYS_FOR_TRAJECTORY,
             'zigzag_threshold': ZIGZAG_THRESHOLD,
             'max_zigzag_ratio': MAX_ZIGZAG_RATIO,

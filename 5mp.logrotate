@@ -1,0 +1,10 @@
+/home/exedev/5mp/logs/*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+    su exedev exedev
+}

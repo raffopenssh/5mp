@@ -667,8 +667,12 @@ python3 scripts/rebuild_fire_trajectories_v5.py --parks A,B,C
 python3 scripts/rebuild_fire_trajectories_v5.py --park X --source json
 ```
 
-The raw JSON files are still written nightly because other scripts read them
-(`rebuild_fire_front.py`, `rebuild_fire_hull.py`, `onboard_park.py`).
+The raw JSON files are still written nightly (`daily_fire_update.py` step 2b,
+`onboard_park.py:export_raw_fire_json()`), but nothing in the trajectory path
+reads them any more. The dead v4-era readers `rebuild_fire_front.py` /
+`rebuild_fire_hull.py` moved to `scripts/deprecated/` on 2026-08-05; the two
+writers and the 176MB directory itself are the remaining work in
+`docs/FIRE_TODO_HANDOVER.md` #15.
 
 ### Multi-satellite ingest
 

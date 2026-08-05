@@ -54,6 +54,11 @@ DATA_DIR = BASE_DIR / "data"
 LOG_DIR = BASE_DIR / "logs"
 LOG_DIR.mkdir(exist_ok=True)
 
+# Heartbeat file. A cron that never runs is indistinguishable from a successful
+# run if the only evidence is an append-only log, so every run (success or
+# failure) rewrites this. Surfaced by GET /api/pipeline-status.
+STATUS_FILE = DATA_DIR / "pipeline_status.json"
+
 NASA_API_KEY = secret('NASA_FIRMS_KEY')
 FIRMS_NRT_URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 
@@ -108,6 +113,17 @@ class DailyFireUpdater:
         self.conn.row_factory = sqlite3.Row
         self.parks = self._load_parks()
         self.affected_parks = set()
+        self.started_at = datetime.now()
+        # Heartbeat counters (written to STATUS_FILE at end of run)
+        self.stats = {
+            'fires_fetched': 0,
+            'detections_inserted': 0,
+            'parks_rebuilt': 0,
+            'groups_loaded': 0,
+            'alerts_created': 0,
+            'notifications_created': 0,
+            'errors': [],
+        }
         # Canonical single-park assignment: nearest park boundary within
         # 100km (park_assigner.ASSIGN_MAX_DIST_KM). Replaces the old bbox
         # first-match _find_park which caused overlap duplicates.
@@ -175,6 +191,9 @@ class DailyFireUpdater:
 
         log(f"  Total: {len(all_fires):,} detections from "
             f"{len(sources) - len(failed)}/{len(sources)} sensors")
+        self.stats['fires_fetched'] = len(all_fires)
+        if failed:
+            self._fail('download', f"sources failed: {','.join(failed)}")
 
         if failed:
             msg = (f"Fire download incomplete: {', '.join(failed)} failed; "
@@ -211,6 +230,39 @@ class DailyFireUpdater:
                     last_err = e
         log(f"    {source}: all paths failed: {str(last_err)[:80]}")
         return None
+
+    def _fail(self, what, detail):
+        """Record a step failure for the heartbeat (the log already has detail)."""
+        self.stats['errors'].append(f"{what}: {str(detail)[:200]}")
+
+    def write_status(self, fatal=None):
+        """Rewrite the pipeline heartbeat file. Never raises."""
+        try:
+            finished = datetime.now()
+            if fatal:
+                status = 'failed'
+            elif self.stats['errors']:
+                status = 'degraded'
+            else:
+                status = 'ok'
+            payload = {
+                'pipeline': 'daily_fire_update',
+                'status': status,
+                'started_at': self.started_at.isoformat(),
+                'finished_at': finished.isoformat(),
+                'duration_sec': round((finished - self.started_at).total_seconds(), 1),
+                'days_fetched': self.days,
+                'affected_parks': len(self.affected_parks),
+                'fatal_error': str(fatal)[:300] if fatal else None,
+            }
+            payload.update(self.stats)
+            STATUS_FILE.parent.mkdir(parents=True, exist_ok=True)
+            tmp = STATUS_FILE.with_suffix('.json.tmp')
+            json.dump(payload, open(tmp, 'w'), indent=2)
+            tmp.replace(STATUS_FILE)
+            log(f"  Heartbeat: {STATUS_FILE.name} status={status}")
+        except Exception as e:
+            log(f"  Failed to write heartbeat: {e}")
 
     def _notify_system(self, ntype, title, message):
         try:
@@ -284,6 +336,7 @@ class DailyFireUpdater:
         
         self.conn.commit()
         log(f"  Inserted {inserted} new fire records")
+        self.stats['detections_inserted'] = inserted
         if skipped_invalid > 0:
             log(f"  Skipped {skipped_invalid} records with invalid coordinates")
         if errors:
@@ -437,6 +490,50 @@ class DailyFireUpdater:
         except Exception as e:
             log(f"  Grid agg refresh error: {e}")
 
+    def refresh_persistent_hotspots(self):
+        """Monthly refresh of the persistent-hotspot mask (flares/lava/kilns).
+
+        Cheap but not nightly-cheap (~70s full scan), and the criterion is
+        "detected in >=30 distinct months", which cannot change materially in a
+        day. Runs on the 1st of the month only.
+        """
+        if datetime.now().day != 1:
+            return
+        log("Step 2d: Refreshing persistent hotspot mask (monthly)...")
+        try:
+            r = subprocess.run(
+                [sys.executable, 'scripts/build_persistent_hotspots.py'],
+                cwd=str(BASE_DIR), capture_output=True, text=True, timeout=900)
+            if r.returncode != 0:
+                log(f"  Hotspot mask refresh failed: {r.stderr.strip()[:300]}")
+                self._fail('hotspot_mask', r.stderr.strip()[:200])
+            else:
+                for line in r.stdout.splitlines():
+                    if 'Wrote' in line or 'persistent cells' in line:
+                        log(f"  {line.strip()}")
+        except Exception as e:
+            log(f"  Hotspot mask refresh error: {e}")
+            self._fail('hotspot_mask', e)
+
+    def check_consistency(self):
+        """Verify fire_groups_v5 JSON, feature_geometries and the narrative
+        cache still agree. Drift here is invisible in the UI until a user
+        clicks a fire and gets "Feature not found", so surface it."""
+        log("Step 7: Consistency check (JSON vs features vs narratives)...")
+        try:
+            r = subprocess.run(
+                [sys.executable, 'scripts/check_fire_consistency.py'],
+                cwd=str(BASE_DIR), capture_output=True, text=True, timeout=600)
+            for line in r.stdout.splitlines():
+                log(f"  {line}")
+            self.stats['consistent'] = (r.returncode == 0)
+            if r.returncode != 0:
+                self._fail('consistency', 'drift detected; see '
+                                          'scripts/fix_fire_consistency.py')
+        except Exception as e:
+            log(f"  Consistency check error: {e}")
+            self._fail('consistency', e)
+
     def rebuild_groups_incremental(self):
         """Run rebuild_fire_trajectories_v5.py --incremental for affected parks"""
         if not self.affected_parks:
@@ -461,7 +558,10 @@ class DailyFireUpdater:
             for line in result.stdout.split('\n'):
                 if 'fires ->' in line:
                     log(f"    {line.strip()}")
+            if result.returncode == 0:
+                self.stats['parks_rebuilt'] = len(parks)
             if result.returncode != 0:
+                self._fail('rebuild', f"rc={result.returncode}")
                 log(f"  ERROR: rebuild failed rc={result.returncode}: "
                     f"{result.stderr[-500:]}")
                 self._notify_system('fire_rebuild_failed', 'Fire Rebuild Failed',
@@ -469,10 +569,12 @@ class DailyFireUpdater:
                                    f"{result.returncode}: {result.stderr[-300:]}")
         except subprocess.TimeoutExpired:
             log("  ERROR: rebuild timed out after 3600s")
+            self._fail('rebuild', 'timeout after 3600s')
             self._notify_system('fire_rebuild_failed', 'Fire Rebuild Timeout',
                                f"Rebuild of {len(parks)} parks exceeded 3600s")
         except Exception as e:
             log(f"  ERROR: {e}")
+            self._fail('rebuild', e)
     
     def load_groups_incremental(self):
         """Run load_fire_groups_to_db.py for affected parks"""
@@ -493,6 +595,7 @@ class DailyFireUpdater:
                     timeout=300
                 )
                 if result.returncode == 0:
+                    self.stats['groups_loaded'] += 1
                     # Extract count from output
                     for line in result.stdout.split('\n'):
                         if 'groups' in line.lower() and park_id in line:
@@ -500,6 +603,7 @@ class DailyFireUpdater:
                             break
                 else:
                     log(f"    Error loading {park_id}: {result.stderr[:200]}")
+                    self._fail('load', f"{park_id} rc={result.returncode}")
                     
             except subprocess.TimeoutExpired:
                 log(f"    Timeout loading {park_id}")
@@ -572,6 +676,12 @@ class DailyFireUpdater:
         
         self.conn.commit()
         log(f"  Cleaned {deleted + deleted2} old alerts")
+        try:
+            self.stats['alerts_created'] = self.conn.execute(
+                "SELECT COUNT(*) FROM fire_group_alerts "
+                "WHERE last_updated_at > datetime('now', '-1 hour')").fetchone()[0]
+        except Exception:
+            pass
     
     def assign_friendly_names_to_new_groups(self):
         """Assign stable friendly names to new fire groups (like hurricane naming).
@@ -907,10 +1017,27 @@ class DailyFireUpdater:
                 log(f"  {park_id}: Created {count} notifications")
         
         log(f"  Total: {notifications_created} notifications across {len(parks_processed)} parks")
+        self.stats['notifications_created'] = notifications_created
     
 
     
     def run(self):
+        try:
+            self._run()
+        except Exception as e:
+            log(f"FATAL: {e}")
+            self.write_status(fatal=e)
+            self._notify_system('fire_pipeline_failed', 'Fire Pipeline Failed',
+                                f"daily_fire_update aborted: {e}")
+            try:
+                self.conn.close()
+            except Exception:
+                pass
+            raise
+        self.write_status()
+        self.conn.close()
+
+    def _run(self):
         log("=" * 70)
         log("DAILY FIRE UPDATE PIPELINE (v5 - Incremental)")
         log("=" * 70)
@@ -934,6 +1061,9 @@ class DailyFireUpdater:
         # Step 2c: Refresh pre-aggregated animation grids (fire_grid_day/week/month)
         self.refresh_grid_agg()
         
+        # Step 2d: Persistent hotspot mask (monthly; no-op other days)
+        self.refresh_persistent_hotspots()
+        
         # Step 3: Rebuild groups (incremental)
         self.rebuild_groups_incremental()
         
@@ -952,14 +1082,15 @@ class DailyFireUpdater:
         # Step 6b2: Create notifications with stable names
         self.create_fire_notifications()
         
+        # Step 7: Consistency check (cheap, read-only, catches silent drift)
+        self.check_consistency()
+        
         log("")
         log("=" * 70)
         log("PIPELINE COMPLETE")
         log(f"Affected parks: {sorted(self.affected_parks)}")
         log("=" * 70)
         
-        self.conn.close()
-
 
 def main():
     import argparse
