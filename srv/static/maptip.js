@@ -1,0 +1,304 @@
+/*
+ * MapTip — one unified hover/tap tooltip for every interactive map layer.
+ *
+ * Why this exists: each pinned-layer code path used to create its own
+ * maplibregl.Popup on 'mouseenter' and remove it on 'mouseleave' with a
+ * timeout. With overlapping features (e.g. a park full of fire trajectories)
+ * that produced a stack of half-dead popups that never went away, all anchored
+ * at stale positions, and nothing at all on touch devices.
+ *
+ * MapTip instead keeps a SINGLE DOM tooltip, driven by one map-level
+ * 'mousemove' that hit-tests all registered layers. Topmost feature wins.
+ * On touch devices a tap opens the same tip in "sticky" mode (with a close
+ * button and an optional action button).
+ *
+ * Usage:
+ *   MapTip.init(map);
+ *   MapTip.register(layerId, {
+ *       html: (props, feature) => '<b>hi</b>',   // required
+ *       onActivate: (feature, e) => {...},       // optional (click / "Details")
+ *       actionLabel: 'Open in report',           // optional button label
+ *   });
+ *   MapTip.unregister(layerId);
+ */
+(function () {
+    'use strict';
+
+    var CSS = `
+.maptip {
+    position: absolute; z-index: 400; pointer-events: none;
+    max-width: 300px; min-width: 150px;
+    background: rgba(16,16,16,0.96);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 9px;
+    box-shadow: 0 10px 34px rgba(0,0,0,0.6);
+    padding: 9px 11px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 12px; line-height: 1.5; color: #e5e7eb;
+    opacity: 0; transform: translateY(3px);
+    transition: opacity .12s ease, transform .12s ease;
+    overflow-wrap: break-word;
+}
+.maptip.visible { opacity: 1; transform: translateY(0); }
+.maptip.sticky { pointer-events: auto; border-color: rgba(255,255,255,0.24); }
+.maptip-label {
+    font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: #9ca3af; margin-bottom: 6px; padding-right: 16px;
+}
+.maptip-title { font-weight: 600; font-size: 13px; color: #f3f4f6; margin-bottom: 4px; }
+.maptip-body { color: #d1d5db; }
+.maptip-meta { color: #9ca3af; font-size: 11px; margin-top: 4px; }
+.maptip-dim { color: #6b7280; font-size: 10px; margin-top: 4px; }
+.maptip-hot { color: #f87171; }
+.maptip-warn { color: #fbbf24; }
+.maptip-cool { color: #60a5fa; }
+.maptip-more {
+    margin-top: 6px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.08);
+    color: #6b7280; font-size: 10px;
+}
+.maptip-close {
+    position: absolute; top: 3px; right: 4px; width: 22px; height: 22px;
+    display: none; align-items: center; justify-content: center;
+    background: transparent; border: 0; color: #9ca3af; font-size: 16px;
+    line-height: 1; cursor: pointer; border-radius: 4px;
+}
+.maptip.sticky .maptip-close { display: flex; }
+.maptip-close:hover { color: #fff; background: rgba(255,255,255,0.1); }
+.maptip-action {
+    display: none; margin-top: 8px; width: 100%;
+    background: rgba(34,197,94,0.14); border: 1px solid rgba(34,197,94,0.45);
+    color: #86efac; font-size: 11px; font-weight: 600; padding: 6px 8px;
+    border-radius: 6px; cursor: pointer;
+}
+.maptip.sticky .maptip-action.available { display: block; }
+.maptip-action:active { background: rgba(34,197,94,0.28); }
+/* Legacy inline-styled tip bodies (turbidity etc.) were written for a white
+   popup; remap their light-theme greys so they stay readable on dark. */
+.maptip [style*="#374151"] { color: #d1d5db !important; }
+.maptip [style*="#1f2937"] { color: #f3f4f6 !important; }
+.maptip [style*="#6b7280"] { color: #9ca3af !important; }
+.maptip [style*="#9ca3af"] { color: #8b8f96 !important; }
+.maptip [style*="#2563eb"] { color: #60a5fa !important; }
+.maptip [style*="#dc2626"] { color: #f87171 !important; }
+.maptip [style*="#d97706"] { color: #fbbf24 !important; }
+@media (max-width: 640px), (hover: none) {
+    .maptip { max-width: min(84vw, 340px); font-size: 13px; padding: 11px 13px; }
+    .maptip-close { width: 30px; height: 30px; font-size: 19px; }
+}
+`;
+
+    var map = null;
+    var el = null, closeBtn = null, actionBtn = null, bodyEl = null;
+    var registry = new Map();      // layerId -> opts
+    var sticky = false;            // tap-opened tip that stays until dismissed
+    var anchor = null;             // {lng, lat} used while sticky / after pan
+    var current = null;            // {layerId, feature, opts}
+    var hideTimer = null;
+    var lastPoint = null;
+
+    // Media queries lie in some environments (headless Chrome reports
+    // `hover: none`), so don't gate hover on a static capability check.
+    // Instead: mice generate mousemove -> transient tip; a click with no recent
+    // mousemove is a tap -> sticky tip with a close button and action button.
+    var lastMoveAt = 0;
+    var TAP_WINDOW_MS = 400;
+    function pointerIsCoarse(e) {
+        var oe = e && e.originalEvent;
+        if (oe && oe.pointerType) return oe.pointerType !== 'mouse';
+        if (oe && oe.type && oe.type.indexOf('touch') === 0) return true;
+        return (Date.now() - lastMoveAt) > TAP_WINDOW_MS;
+    }
+
+    function injectCSS() {
+        if (document.getElementById('maptip-css')) return;
+        var s = document.createElement('style');
+        s.id = 'maptip-css';
+        s.textContent = CSS;
+        document.head.appendChild(s);
+    }
+
+    function build() {
+        injectCSS();
+        el = document.createElement('div');
+        el.className = 'maptip';
+        el.innerHTML =
+            '<button class="maptip-close" aria-label="Close">&times;</button>' +
+            '<div class="maptip-body"></div>' +
+            '<button class="maptip-action"></button>';
+        closeBtn = el.querySelector('.maptip-close');
+        bodyEl = el.querySelector('.maptip-body');
+        actionBtn = el.querySelector('.maptip-action');
+        closeBtn.addEventListener('click', function (ev) { ev.stopPropagation(); hide(true); });
+        actionBtn.addEventListener('click', function (ev) {
+            ev.stopPropagation();
+            var c = current;
+            hide(true);
+            if (c && c.opts && typeof c.opts.onActivate === 'function') {
+                try { c.opts.onActivate(c.feature, { lngLat: anchor }); } catch (e) { console.error(e); }
+            }
+        });
+        // Keep wheel/drag over a sticky tip from being eaten silently
+        el.addEventListener('touchstart', function (ev) { ev.stopPropagation(); }, { passive: true });
+        (map.getContainer() || document.body).appendChild(el);
+    }
+
+    /** Layers that are registered AND currently on the map. */
+    function liveLayers() {
+        var out = [];
+        registry.forEach(function (opts, id) {
+            if (map.getLayer(id)) out.push(id);
+        });
+        return out;
+    }
+
+    function position(point) {
+        if (!el) return;
+        var pad = 12, gap = 14;
+        var cw = map.getContainer().clientWidth;
+        var ch = map.getContainer().clientHeight;
+        var w = el.offsetWidth, h = el.offsetHeight;
+        var x = point.x + gap, y = point.y + gap;
+        if (x + w + pad > cw) x = point.x - w - gap;
+        if (x < pad) x = Math.min(pad, Math.max(0, cw - w - pad));
+        if (y + h + pad > ch) y = point.y - h - gap;
+        if (y < pad) y = pad;
+        el.style.left = Math.round(x) + 'px';
+        el.style.top = Math.round(y) + 'px';
+    }
+
+    function show(html, point, lngLat, extra, opts, feature, layerId) {
+        if (!el) build();
+        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+        current = { layerId: layerId, feature: feature, opts: opts };
+        anchor = lngLat ? { lng: lngLat.lng, lat: lngLat.lat } : anchor;
+        lastPoint = point;
+        var more = extra > 0
+            ? '<div class="maptip-more">+' + extra + ' more feature' + (extra > 1 ? 's' : '') + ' here — zoom in to separate</div>'
+            : '';
+        bodyEl.innerHTML = html + more;
+        var label = opts && opts.actionLabel ? opts.actionLabel : 'Open in report';
+        if (opts && typeof opts.onActivate === 'function') {
+            actionBtn.textContent = label;
+            actionBtn.classList.add('available');
+        } else {
+            actionBtn.classList.remove('available');
+        }
+        el.classList.add('visible');
+        position(point);
+    }
+
+    function hide(immediate) {
+        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+        sticky = false;
+        current = null;
+        if (!el) return;
+        el.classList.remove('sticky');
+        if (immediate) {
+            el.classList.remove('visible');
+        } else {
+            hideTimer = setTimeout(function () {
+                el.classList.remove('visible');
+                hideTimer = null;
+            }, 70);
+        }
+    }
+
+    function tipFor(e) {
+        var layers = liveLayers();
+        if (!layers.length) return null;
+        var feats;
+        try {
+            feats = map.queryRenderedFeatures(e.point, { layers: layers });
+        } catch (err) { return null; }
+        if (!feats || !feats.length) return null;
+        // Prefer the topmost feature whose registration can render something.
+        for (var i = 0; i < feats.length; i++) {
+            var f = feats[i];
+            var opts = registry.get(f.layer && f.layer.id);
+            if (!opts || typeof opts.html !== 'function') continue;
+            var html;
+            try { html = opts.html(f.properties || {}, f); } catch (err) { html = null; }
+            if (!html) continue;
+            return { html: html, opts: opts, feature: f, layerId: f.layer.id, extra: feats.length - 1 };
+        }
+        return null;
+    }
+
+    function onMouseMove(e) {
+        lastMoveAt = Date.now();
+        if (sticky) return;
+        var t = tipFor(e);
+        if (!t) {
+            if (el && el.classList.contains('visible')) hide(false);
+            map.getCanvas().style.cursor = '';
+            return;
+        }
+        map.getCanvas().style.cursor = 'pointer';
+        show(t.html, e.point, e.lngLat, t.extra, t.opts, t.feature, t.layerId);
+    }
+
+    function onClick(e) {
+        var t = tipFor(e);
+        if (!t) {
+            if (sticky) hide(true);
+            return;
+        }
+        if (e.originalEvent) e.originalEvent.stopPropagation();
+        // Tell the park-polygon click handler to stand down: a tap on a pinned
+        // feature must not also open the park report popup underneath.
+        window._mapTipClicked = true;
+        setTimeout(function () { window._mapTipClicked = false; }, 60);
+        if (pointerIsCoarse(e)) {
+            // Tap = show the tip; the tip itself carries the "open report" action.
+            show(t.html, e.point, e.lngLat, t.extra, t.opts, t.feature, t.layerId);
+            sticky = true;
+            el.classList.add('sticky');
+            position(e.point);
+        } else if (typeof t.opts.onActivate === 'function') {
+            hide(true);
+            try { t.opts.onActivate(t.feature, e); } catch (err) { console.error(err); }
+        }
+    }
+
+    function onMapMove() {
+        if (!el || !el.classList.contains('visible')) return;
+        if (sticky && anchor) {
+            position(map.project([anchor.lng, anchor.lat]));
+        } else {
+            hide(true);   // cursor-anchored tips are meaningless once the map moves
+        }
+    }
+
+    var MapTip = {
+        init: function (m) {
+            if (map) return;
+            map = m;
+            build();
+            map.on('mousemove', onMouseMove);
+            map.on('click', onClick);
+            map.on('move', onMapMove);
+            map.on('mouseout', function () { if (!sticky) hide(false); });
+            document.addEventListener('keydown', function (ev) {
+                if (ev.key === 'Escape') hide(true);
+            });
+        },
+        register: function (layerId, opts) {
+            if (!layerId || !opts || typeof opts.html !== 'function') return;
+            registry.set(layerId, opts);
+        },
+        unregister: function (layerId) {
+            registry.delete(layerId);
+            if (current && current.layerId === layerId) hide(true);
+        },
+        unregisterPrefix: function (prefix) {
+            Array.from(registry.keys()).forEach(function (id) {
+                if (id.indexOf(prefix) === 0) MapTip.unregister(id);
+            });
+        },
+        hide: function () { hide(true); },
+        isTouch: function () { return (Date.now() - lastMoveAt) > TAP_WINDOW_MS; },
+        count: function () { return registry.size; }
+    };
+
+    window.MapTip = MapTip;
+})();

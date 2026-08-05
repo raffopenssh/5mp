@@ -10099,9 +10099,9 @@
         window.viewLayers = { pixels: true, fires: false, deforest: false, settlements: false };
         const VIEW_LAYER_DEFAULTS = { pixels: true, fires: false, deforest: false, settlements: false };
         const VIEW_LAYER_META = {
-            fires:       { featureType: 'fire_trajectory', color: '#ef4444', statId: 'stat-fires' },
-            deforest:    { featureType: 'deforestation',   color: '#a855f7', statId: 'stat-deforest' },
-            settlements: { featureType: 'settlement',      color: '#fbbf24', statId: 'stat-settlements' }
+            fires:       { featureType: 'fire_trajectory', color: '#ef4444', statId: 'stat-fires', tipType: 'fire' },
+            deforest:    { featureType: 'deforestation',   color: '#a855f7', statId: 'stat-deforest', tipType: 'deforestation' },
+            settlements: { featureType: 'settlement',      color: '#fbbf24', statId: 'stat-settlements', tipType: 'settlement' }
         };
         const GRID_PIXEL_LAYERS = ['grid-halo', 'grid-glow', 'grid-fill', 'grid-cells'];
 
@@ -10151,6 +10151,7 @@
         function removeViewFeatureLayer(name) {
             ['-fill', '-line', '-point'].forEach(sfx => {
                 const id = 'viewlayer-' + name + sfx;
+                if (window.MapTip) window.MapTip.unregister(id);
                 if (map.getLayer(id)) map.removeLayer(id);
             });
             const srcId = 'viewlayer-' + name;
@@ -10207,7 +10208,7 @@
                     if (window.MapTip) {
                         ['-fill', '-line', '-point'].forEach(sfx => window.MapTip.register(srcId + sfx, {
                             html: (props) => featureTipHTML(props, meta.tipType || name,
-                                                           (props && props.park_name) || ''),
+                                                           (props && (props.park_name || props.park_id)) || ''),
                             actionLabel: 'Open in report',
                             onActivate: (feature) => {
                                 const p = feature.properties || {};
@@ -14863,28 +14864,73 @@ ${starredItems.narratives.map(n => {
     // entry for a given feature. Shared by MapTip's "Open in report" action for
     // both single pins and category pins.
     async function openFeatureInReport(parkId, type, featureId) {
-        const park = (window.keystoneAreas || []).find(p => p.id === parkId);
+        // `keystoneAreas` is not always populated; the map's own 'areas' source is
+        // the reliable lookup (same trick the ?popup= share-link restore uses).
+        let park = (window.keystoneAreas || []).find(p => p.id === parkId);
+        if (!park) {
+            const feats = map.querySourceFeatures('areas', { filter: ['==', ['get', 'id'], parkId] });
+            if (feats.length) park = feats[0].properties;
+        }
+        if (!park && window._cachedAreasGeoJSON) {
+            const f = (window._cachedAreasGeoJSON.features || []).find(f => f.properties.id === parkId);
+            if (f) park = f.properties;
+        }
+        if (!park && typeof ensureAreasCache === 'function') {
+            try {
+                const gj = await ensureAreasCache();
+                const f = ((gj && gj.features) || []).find(f => f.properties.id === parkId);
+                if (f) park = f.properties;
+            } catch (e) { /* fall through to the warning below */ }
+        }
         if (!park) { console.warn('Park not found:', parkId); return; }
 
-        const center = park.center ? (typeof park.center === 'string' ? JSON.parse(park.center) : park.center) : null;
+        let center = park.center;
+        if (typeof center === 'string') { try { center = JSON.parse(center); } catch (e) { center = null; } }
         if (!center) { console.warn('Park center not found:', parkId); return; }
 
         if (currentPAPopup) currentPAPopup.remove();
         showPAPopup(park, { lng: center[0], lat: center[1] });
         await new Promise(r => setTimeout(r, 1200));
 
-        const sectionMap = { fire: 'fire', fire_trajectory: 'fire', settlement: 'ghsl', deforestation: 'deforest' };
+        const sectionMap = { fire: 'fire', fire_trajectory: 'fire', settlement: 'ghsl', deforestation: 'deforest',
+                             turbidity: 'mining', road: 'road', place: 'road' };
         const sectionId = sectionMap[type] || type;
-        const section = document.getElementById(`${sectionId}-section-${parkId}`);
+        // Poll: popup content renders asynchronously after the fetch completes
+        let section = null;
+        for (let i = 0; i < 30 && !section; i++) {
+            section = document.getElementById(`${sectionId}-section-${parkId}`);
+            if (!section) await new Promise(r => setTimeout(r, 200));
+        }
+        // NB: use .click(), not togglePopupSection() — the latter reads the global
+        // `event` and throws when called programmatically.
         if (section && !section.classList.contains('open')) {
-            togglePopupSection(section);
-            await new Promise(r => setTimeout(r, 800));
+            section.click();
+            await new Promise(r => setTimeout(r, 900));
         }
         if (!featureId) return;
 
         const t = type === 'fire_trajectory' ? 'fire' : type;
-        const entry = document.querySelector(`[data-park="${parkId}"][data-type="${t}"][data-feature="${featureId}"]`);
-        if (!entry) { console.warn('Entry not found in report:', featureId); return; }
+        const sel = `[data-park="${parkId}"][data-type="${t}"][data-feature="${featureId}"]`;
+        const moreBtnIds = { fire: `fire-load-more-${parkId}`, deforestation: `deforest-more-btn-${parkId}`,
+                             settlement: `settlement-more-btn-${parkId}` };
+        let entry = null;
+        // Narrative lists are paginated (10 at a time out of hundreds), so keep
+        // clicking "load more" until the entry appears or the button is gone.
+        for (let round = 0; round < 25; round++) {
+            for (let i = 0; i < 8 && !entry; i++) {
+                entry = document.querySelector(sel);
+                if (!entry) await new Promise(r => setTimeout(r, 150));
+            }
+            if (entry) break;
+            const more = moreBtnIds[t] ? document.getElementById(moreBtnIds[t]) : null;
+            if (!more || more.offsetParent === null) break;
+            more.click();
+            await new Promise(r => setTimeout(r, 400));
+        }
+        if (!entry) {
+            showToast('This feature has no matching entry in the report list', 'info');
+            return;
+        }
         entry.style.background = 'rgba(59, 130, 246, 0.3)';
         entry.style.border = '1px solid #3b82f6';
         entry.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -16131,6 +16177,13 @@ ${starredItems.narratives.map(n => {
         updatePinnedIndicator();
     }
     
+    // Park ids come through as "AGO_Cameia"; the tip header should read "Cameia".
+    function prettyParkName(name) {
+        if (!name) return '';
+        if (/^[A-Z]{3}_/.test(name)) name = name.slice(4);
+        return name.replace(/_/g, ' ');
+    }
+
     // Returns the tooltip body HTML for a map feature. Consumed by MapTip
     // (hover on desktop, tap on touch) — see srv/static/maptip.js. Do NOT
     // create per-layer maplibregl.Popup instances for hover; that produced
@@ -16153,7 +16206,7 @@ ${starredItems.narratives.map(n => {
             typeLabels.turbidity = subLabels[props.feature_type] || typeLabels.turbidity;
         }
         
-        let html = `<div class="maptip-label">${typeLabels[type] || String(type).replace(/_/g, ' ')}${parkName ? ' · ' + parkName : ''}</div><div>
+        let html = `<div class="maptip-label">${typeLabels[type] || String(type).replace(/_/g, ' ')}${parkName ? ' · ' + prettyParkName(parkName) : ''}</div><div>
         `;
 
         if (type === 'fire') {
