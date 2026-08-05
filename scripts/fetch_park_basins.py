@@ -42,7 +42,16 @@ DB = os.path.join(BASE, "db.sqlite3")
 KEYSTONES = os.path.join(BASE, "data", "keystones_with_boundaries.json")
 OUT_DIR = os.path.join(BASE, "data", "park_basins")
 
-MGHYDRO = "https://mghydro.com/app/watershed_api?lat={lat}&lng={lon}&precision=high"
+# /app/getwshed is the endpoint the Global Watersheds web app itself calls. It
+# returns, in ONE request: the watershed polygon, the *upstream river network*
+# with Strahler stream order per reach, and the snapped outlet. That is strictly
+# better than /app/watershed_api (polygon only) + /app/upstream_rivers_api
+# (rivers only): half the requests on a $25/mo shared host, and the stream
+# orders are what restricts turbidity analysis to >=3rd-order reaches, where
+# Sentinel-2 can actually see the water surface.
+# Response is gzip-encoded JSON; note it silently reverts to low precision above
+# 50,000 km2 (we record that in meta.precision).
+MGHYDRO = "https://mghydro.com/app/getwshed?lat={lat}&lng={lon}&precision=high"
 RIVERRUNNER = ("https://merit.internetofwater.app/processes/river-runner/"
                "execution?lat={lat}&lng={lon}")
 DEM_TMPL = ("https://copernicus-dem-90m.s3.eu-central-1.amazonaws.com/"
@@ -51,7 +60,8 @@ DEM_TMPL = ("https://copernicus-dem-90m.s3.eu-central-1.amazonaws.com/"
 EXIT_KM = 4.0           # river vertex counts as a park exit within this of edge
 CLUSTER_KM = 25.0       # merge exit candidates closer than this
 MAX_OUTLETS = 3         # API calls per park per kind (courtesy budget)
-UA = {"User-Agent": "5mp-conservation-monitor/1.0 (+https://exe.dev) basin fetch"}
+UA = {"User-Agent": "5mp-conservation-monitor/1.0 (+https://exe.dev) basin fetch",
+      "Accept-Encoding": "gzip"}
 
 os.environ.setdefault("AWS_NO_SIGN_REQUEST", "YES")
 os.environ.setdefault("GDAL_DISABLE_READDIR_ON_OPEN", "EMPTY_DIR")
@@ -176,17 +186,38 @@ def pick_outlets(park, max_outlets=MAX_OUTLETS):
 
 
 # ------------------------------------------------------------ cached fetching
+def _gunzip(body):
+    """Bodies are stored decompressed, but be tolerant of rows written before
+    that was true (and of any server that ignores our Accept-Encoding)."""
+    if body[:2] == b"\x1f\x8b":
+        import gzip
+        try:
+            return gzip.decompress(body)
+        except Exception:
+            pass
+    return body
+
+
 def cached_get(con, url, refresh=False, sleep=5.0, timeout=180):
     if not refresh:
         r = con.execute("SELECT status, body FROM http_cache WHERE url=?",
                         (url,)).fetchone()
         if r and r[0] == 200:
-            return 200, r[1], True
+            return 200, _gunzip(r[1]), True
     time.sleep(sleep)
     try:
         with urllib.request.urlopen(urllib.request.Request(url, headers=UA),
                                     timeout=timeout) as resp:
             status, body = resp.status, resp.read()
+            # /app/getwshed always responds gzip (it is what the web app asks
+            # for); urllib does not transparently decompress. Store plain JSON
+            # in the cache so the cache is inspectable with sqlite3.
+            if resp.headers.get("Content-Encoding") == "gzip":
+                import gzip
+                try:
+                    body = gzip.decompress(body)
+                except Exception:
+                    pass
     except urllib.error.HTTPError as ex:
         status, body = ex.code, ex.read()[:4096]
     except Exception as ex:
@@ -194,7 +225,7 @@ def cached_get(con, url, refresh=False, sleep=5.0, timeout=180):
     con.execute("INSERT OR REPLACE INTO http_cache(url, status, body, fetched_at) "
                 "VALUES (?,?,?,datetime('now'))", (url, status, sqlite3.Binary(body)))
     con.commit()
-    return status, body, False
+    return status, _gunzip(body), False
 
 
 def multipoly(feats):
@@ -215,18 +246,31 @@ def multipoly(feats):
 
 def shoelace_km2(geom):
     def ring_area(ring):
+        # Spherical shoelace: A = R^2/2 * sum (lon1-lon0)(sin lat0 + sin lat1).
+        # (An earlier version used sin(mean lat), which is ~(sin a + sin b)/2 and
+        # so under-reported every area by exactly 2x - checked against the API's
+        # own 50,200 km2 for the Chinko outlet.)
         s = 0.0
         for i in range(len(ring) - 1):
             x0, y0 = ring[i][:2]
             x1, y1 = ring[i + 1][:2]
-            s += (x1 - x0) * math.radians(1) * math.sin(math.radians((y0 + y1) / 2))
-        return abs(s) * 6371 ** 2 / 2
+            s += (math.radians(x1 - x0)
+                  * (math.sin(math.radians(y0)) + math.sin(math.radians(y1))))
+        return abs(s) * 6371.0 ** 2 / 2
     tot = 0.0
     polys = ([geom["coordinates"]] if geom["type"] == "Polygon"
              else geom["coordinates"])
     for p in polys:
         tot += ring_area(p[0]) - sum(ring_area(h) for h in p[1:])
     return tot
+
+
+def _num(v):
+    """mghydro returns human-formatted numbers like '50,200'."""
+    try:
+        return float(str(v).replace(",", "").strip())
+    except Exception:
+        return None
 
 
 def fetch_upstream(con, park, outlet, **kw):
@@ -238,18 +282,38 @@ def fetch_upstream(con, park, outlet, **kw):
         d = json.loads(body)
     except Exception as ex:
         return None, f"bad json: {ex}"
-    feats = d.get("features") or []
-    g = multipoly(feats)
-    if not g:
-        return None, "no polygon"
-    props = feats[0].get("properties", {})
-    try:
-        area = float(props.get("area_km2"))
-    except Exception:
+    g = d.get("watershed")
+    if not g or not g.get("coordinates"):
+        return None, d.get("message") or "no polygon"
+    g = {"type": g["type"], "coordinates": g["coordinates"]}
+
+    msg = d.get("message") or ""
+    area = _num(msg.split("watershed of ")[1].split(" km")[0]) \
+        if "watershed of " in msg else None
+    if area is None:
         area = round(shoelace_km2(g), 1)
+
+    # upstream river reaches with Strahler order (only /app/getwshed has these)
+    rivers = []
+    for f in (d.get("rivers") or {}).get("features", []):
+        gg = f.get("geometry") or {}
+        if gg.get("type") != "LineString":
+            continue
+        pr = f.get("properties") or {}
+        rivers.append({"comid": pr.get("comid"), "sorder": pr.get("sorder"),
+                       "coords": [c[:2] for c in gg["coordinates"]]})
+
+    snapped = None
+    for f in (d.get("outlet") or {}).get("features", []):
+        if (f.get("properties") or {}).get("point_type") == "snapped":
+            snapped = f["geometry"]["coordinates"][:2]
     return {"kind": "upstream", "geojson": g, "area_km2": area,
-            "source": "mghydro", "cache_hit": hit,
-            "meta": {"outlet": outlet, "api_props": props, "url": url}}, None
+            "source": "mghydro", "cache_hit": hit, "rivers": rivers,
+            "meta": {"outlet": outlet, "snapped_outlet": snapped,
+                     "wid": d.get("wid"), "message": msg.strip(),
+                     # the API downgrades precision above 50,000 km2
+                     "precision": "low" if "too large" in msg else "high",
+                     "n_reaches": len(rivers), "url": url}}, None
 
 
 def fetch_downstream(con, park, outlet, **kw):
@@ -290,23 +354,33 @@ def fetch_downstream(con, park, outlet, **kw):
 def merge_upstream(parts):
     """Union of several outlet watersheds (shapely if available, else stacked)."""
     geoms = [p["geojson"] for p in parts]
-    area = None
     try:
         from shapely.geometry import shape, mapping
         from shapely.ops import unary_union
         u = unary_union([shape(g).buffer(0) for g in geoms])
-        g = mapping(u)
-        g = json.loads(json.dumps(g))       # tuples -> lists
+        g = json.loads(json.dumps(mapping(u)))     # tuples -> lists
         area = round(shoelace_km2(g), 1)
     except Exception:
         g = multipoly([{"geometry": x} for x in geoms])
         area = round(sum(p.get("area_km2") or 0 for p in parts), 1)
+    rivers, seen = [], set()
+    for p in parts:
+        for r in p.get("rivers", []):
+            if r["comid"] in seen:
+                continue
+            seen.add(r["comid"])
+            rivers.append(r)
     return {"kind": "upstream", "source": "mghydro", "geojson": g,
-            "area_km2": area,
+            "area_km2": area, "rivers": rivers,
             "cache_hit": all(p["cache_hit"] for p in parts),
             "meta": {"outlet": parts[0]["meta"]["outlet"],
                      "outlets": [p["meta"]["outlet"] for p in parts],
+                     "snapped_outlets": [p["meta"].get("snapped_outlet")
+                                         for p in parts],
                      "per_outlet_area_km2": [p.get("area_km2") for p in parts],
+                     "precision": ("low" if any(p["meta"].get("precision") == "low"
+                                                for p in parts) else "high"),
+                     "n_reaches": len(rivers),
                      "urls": [p["meta"]["url"] for p in parts]}}
 
 
@@ -344,13 +418,30 @@ def store(con, park_id, res):
         (park_id, res["kind"], res["meta"]["outlet"]["lat"],
          res["meta"]["outlet"]["lon"], res.get("area_km2"), res.get("length_km"),
          json.dumps(res["geojson"]), res["source"], json.dumps(res["meta"])))
+    rivers = res.get("rivers") or []
+    if rivers:
+        con.execute("DELETE FROM park_basin_rivers WHERE park_id=?", (park_id,))
+        con.executemany(
+            "INSERT OR REPLACE INTO park_basin_rivers"
+            "(park_id, comid, stream_order, length_km, geojson) VALUES (?,?,?,?,?)",
+            [(park_id, r["comid"], r["sorder"],
+              round(sum(km(r["coords"][i], r["coords"][i + 1])
+                        for i in range(len(r["coords"]) - 1)), 3),
+              json.dumps({"type": "LineString", "coordinates": r["coords"]}))
+             for r in rivers if r.get("comid") is not None])
     con.commit()
     os.makedirs(OUT_DIR, exist_ok=True)
     path = os.path.join(OUT_DIR, f"{park_id}_{res['kind']}.json")
-    json.dump({"park_id": park_id, "kind": res["kind"], "source": res["source"],
-               "area_km2": res.get("area_km2"), "length_km": res.get("length_km"),
-               "meta": res["meta"], "geometry": res["geojson"]},
-              open(path, "w"))
+    out = {"park_id": park_id, "kind": res["kind"], "source": res["source"],
+           "area_km2": res.get("area_km2"), "length_km": res.get("length_km"),
+           "meta": res["meta"], "geometry": res["geojson"]}
+    if rivers:
+        out["rivers"] = {"type": "FeatureCollection", "features": [
+            {"type": "Feature",
+             "properties": {"comid": r["comid"], "stream_order": r["sorder"]},
+             "geometry": {"type": "LineString", "coordinates": r["coords"]}}
+            for r in rivers]}
+    json.dump(out, open(path, "w"))
 
 
 def main():

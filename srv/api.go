@@ -1800,6 +1800,18 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
+	// Upstream river network with Strahler order (mghydro /app/getwshed)
+	if featureType == "basin_rivers" {
+		minOrder := 0
+		if v := r.URL.Query().Get("min_order"); v != "" {
+			if n, err := strconv.Atoi(v); err == nil {
+				minOrder = n
+			}
+		}
+		s.handleBasinRiverFeatures(w, internalID, minOrder)
+		return
+	}
+
 	// Handle contributing basin / downstream trace from park_basins table
 	if featureType == "basin" || featureType == "basin_upstream" || featureType == "basin_downstream" {
 		kind := r.URL.Query().Get("kind")

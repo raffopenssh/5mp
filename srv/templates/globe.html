@@ -8901,6 +8901,12 @@
                             <span style="color: #0ea5e9;">⌬</span> Upstream basin <span style="color:#888;font-size:9px;">${a} km²</span>
                         </button>`;
                     }
+                    if (upstream && (basin.upstream_reaches || 0) > 0) {
+                        const n3 = basin.upstream_reaches_order3plus || 0;
+                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin_rivers" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'basin_rivers', this)" style="flex: 1;" title="Upstream river network with Strahler stream order. Only order 3+ reaches (${n3} of ${basin.upstream_reaches}) are wide enough for Sentinel-2 to see the water surface, so only those support turbidity analysis.">
+                            <span style="color: #38bdf8;">∿</span> Upstream rivers <span style="color:#888;font-size:9px;">${basin.upstream_reaches}</span>
+                        </button>`;
+                    }
                     if (downstream) {
                         const l = Math.round(downstream.length_km || 0).toLocaleString();
                         html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin_downstream" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'basin_downstream', this)" style="flex: 1;" title="River path traced from this park's outlet to the sea or terminal sink (global-river-runner / MERIT-Basins).">
@@ -15373,7 +15379,8 @@ ${starredItems.narratives.map(n => {
                 'water': 'waterbody',
                 'infrastructure': 'infrastructure',
                 'basin': 'basin_upstream',
-                'basin_downstream': 'basin_downstream'
+                'basin_downstream': 'basin_downstream',
+                'basin_rivers': 'basin_rivers'
             }[type] || type;
             
             // Get date range from time slider for time-filtered features
@@ -15480,9 +15487,9 @@ ${starredItems.narratives.map(n => {
             map.addSource(sourceId, { type: 'geojson', data: geojson });
             
             // Style based on type
-            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', river: '#3b82f6', water: '#3b82f6', place: '#a855f7', infrastructure: '#22c55e', turbidity: '#eab308', visits: '#10b981', basin: '#0ea5e9', basin_downstream: '#22d3ee' };
+            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', river: '#3b82f6', water: '#3b82f6', place: '#a855f7', infrastructure: '#22c55e', turbidity: '#eab308', visits: '#10b981', basin: '#0ea5e9', basin_downstream: '#22d3ee', basin_rivers: '#38bdf8' };
             const color = colors[normalizedType] || '#22c55e';
-            const lineWidths = { fire: 3, settlement: 3, deforestation: 3, road: 2, river: 2.5, water: 2, place: 2, infrastructure: 2, basin: 2, basin_downstream: 3 };
+            const lineWidths = { fire: 3, settlement: 3, deforestation: 3, road: 2, river: 2.5, water: 2, place: 2, infrastructure: 2, basin: 2, basin_downstream: 3, basin_rivers: 1.5 };
             const lineWidth = lineWidths[normalizedType] || 2;
             
             // Store reference early so we can add arrowLayerId

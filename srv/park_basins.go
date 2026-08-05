@@ -2,6 +2,7 @@ package srv
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -79,6 +80,15 @@ func (s *Server) HandleAPIParkBasin(w http.ResponseWriter, r *http.Request) {
 			"MERIT-Hydro/MERIT-Basins, CC-BY-NC). Downstream traces: global-river-runner " +
 			"(Internet of Water / USGS, MERIT-Basins).",
 	}
+	var nReach, nReach3 int
+	_ = s.DB.QueryRow(`SELECT COUNT(*), COALESCE(SUM(CASE WHEN stream_order>=3
+		THEN 1 ELSE 0 END),0) FROM park_basin_rivers WHERE park_id=?`,
+		parkID).Scan(&nReach, &nReach3)
+	if nReach > 0 {
+		resp["upstream_reaches"] = nReach
+		// only these are usable for optical turbidity work
+		resp["upstream_reaches_order3plus"] = nReach3
+	}
 	for _, b := range basins {
 		if b.Kind == "upstream" && b.AreaKm2 != nil {
 			resp["upstream_area_km2"] = *b.AreaKm2
@@ -88,6 +98,47 @@ func (s *Server) HandleAPIParkBasin(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	writeJSON(w, http.StatusOK, resp)
+}
+
+// handleBasinRiverFeatures serves the upstream river network with Strahler
+// order. `min_order` matters: Sentinel-2 cannot see the water surface of 1st-2nd
+// order streams under canopy, so turbidity/plume work is only valid on >=3rd
+// order reaches (docs/MINING_FINDINGS_2026-08.md 4).
+// GET /api/parks/{id}/features?type=basin_rivers[&min_order=3]
+func (s *Server) handleBasinRiverFeatures(w http.ResponseWriter, parkID string, minOrder int) {
+	rows, err := s.DB.Query(`
+		SELECT comid, COALESCE(stream_order,0), COALESCE(length_km,0), geojson
+		FROM park_basin_rivers
+		WHERE park_id = ? AND COALESCE(stream_order,0) >= ?
+		ORDER BY stream_order DESC`, parkID, minOrder)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	feats := []map[string]any{}
+	for rows.Next() {
+		var comid, order int
+		var lengthKm float64
+		var geo string
+		if err := rows.Scan(&comid, &order, &lengthKm, &geo); err != nil {
+			continue
+		}
+		feats = append(feats, map[string]any{
+			"type":     "Feature",
+			"geometry": json.RawMessage(geo),
+			"properties": map[string]any{
+				"feature_type":  "basin_river",
+				"feature_id":    fmt.Sprintf("%s_reach_%d", parkID, comid),
+				"comid":         comid,
+				"stream_order":  order,
+				"length_km":     lengthKm,
+				"s2_observable": order >= 3,
+			},
+		})
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"type": "FeatureCollection", "features": feats})
 }
 
 // handleBasinFeatures serves the basin as GeoJSON for the map pin layer.

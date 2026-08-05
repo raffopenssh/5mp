@@ -26,3 +26,18 @@ CREATE TABLE IF NOT EXISTS http_cache (
     body         BLOB,
     fetched_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Upstream river network with Strahler order, from mghydro /app/getwshed.
+-- Stream order is the gate for turbidity work: Sentinel-2 cannot see the water
+-- surface on 1st-2nd order streams under canopy (0 of 261 sampled network points
+-- classified as water, docs/MINING_FINDINGS_2026-08.md §4), so plume detection
+-- is only meaningful on >=3rd order reaches.
+CREATE TABLE IF NOT EXISTS park_basin_rivers (
+    park_id      TEXT NOT NULL,
+    comid        INTEGER NOT NULL,
+    stream_order INTEGER,
+    length_km    REAL,
+    geojson      TEXT NOT NULL,
+    PRIMARY KEY (park_id, comid)
+);
+CREATE INDEX IF NOT EXISTS idx_pbr_order ON park_basin_rivers(park_id, stream_order);
