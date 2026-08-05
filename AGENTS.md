@@ -369,22 +369,38 @@ pre-cap counts. `is_inside` = touches park (`dist_to_park_km≈0` or `pct_inside
 groups up to 20km outside are included for context but not "inside". Peak-season
 parks (Angola/DRC/Zambia, Jun–Aug) legitimately have 150–280 active groups — not a bug.
 
-## ⚠️ Mining detection is NOT production-ready
+## ⚠️ Mining detection: the spectral approach measures at chance. Do not ship it.
 
-`data/mining_pits/*.json` (7,725 "sites") is **0.1% consistent with visited-mine
-truth** — top-scored entries are sandbanks and rice paddies. Do not surface it in
-the UI as mining sites. `data/turbidity/*.json` only works on ≥3rd-order rivers.
+Nothing mining-related goes in the UI. `data/mining_pits/*.json` (7,725 "sites")
+is 0.1% consistent with visited-mine truth — top hits are a sandbank and rice
+paddies. `srv/turbidity.go` still reads that file; leave it, don't extend it.
 
-Read **`docs/MINING_FINDINGS_2026-08.md`** before touching either — it has the
-measured feature AUCs (red/blue iron ratio > red > BSI > −NDVI; multi-date median
-best; local-z doesn't help), the truth sets (`data/ipis/*.csv` = 8,077 IPIS
-visited ASM sites; `data/mining_truth/` = 8 manual Chinko pits), and the plan.
-Data source catalogue: `docs/MINING_DATA_SOURCES.md` (30 curl-verified sources).
+The 2026-08 rebuild (basin rescope → DEM flow corridor → percentile ranker →
+real evaluator) is **complete and produced a negative result**: mine pixels vs
+*confuser* pixels (villages, burn scars, river water, bare savanna) score
+AUC 0.45–0.56 on all four features — rb is inverted. The earlier 0.75–0.81 AUCs
+only measured "bare ≠ vegetation". The new ranker gets recall 0/8 on the manual
+truth pits and its top 12 are all bare savanna by eye.
 
-Structural gap: both scanners are **park-bbox-scoped** but mining pressure is a
-**watershed** phenomenon (the manual pits are 123 km outside CAF_Chinko, inside
-its basin). Corridors come from OSM waterways, which don't exist in headwaters —
-use DEM flow accumulation instead.
+Start at **`docs/MINING_REBUILD_HANDOVER.md`** (state + next actions), then
+`docs/MINING_FINDINGS_2026-08.md` §8 for the numbers. Data source catalogue:
+`docs/MINING_DATA_SOURCES.md`.
+
+Reproduce the killer measurement (~15 min, run in tmux):
+```bash
+python3 scripts/eval_mining_detector.py --pixel-auc --n 25
+```
+
+What *does* validate and is worth shipping: the **basin layer** —
+`park_basins` + `park_basin_rivers` (migration 039, 163 parks, upstream polygon +
+downstream trace + Strahler orders), `GET /api/parks/{id}/basin`. QA it with
+`python3 scripts/check_basin_coverage.py`. Coverage <0.2 for 26 divide/endorheic
+parks is real, not a bug — hence `flow_corridor.scan_geom()` scans
+(basin clipped to 200 km) ∪ park.
+
+Next step is *not* more index engineering: evaluate the open-weights
+`earthrise-media/mining-detector`, and adjudicate the truth sets (the 8 manual
+pits are invisible even at 50 cm basemap resolution).
 
 ---
 
