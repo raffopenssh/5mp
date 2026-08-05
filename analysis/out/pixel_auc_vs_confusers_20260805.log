@@ -1,0 +1,59 @@
+  pos 1/25 Tedoa
+  pos 2/25 Gbagaïn
+  pos 3/25 Kpoï
+  pos 4/25 Tedoa 5
+  pos 5/25 Site Doubi 2
+  pos 6/25 Myskine
+  pos 7/25 Ndarssa
+  pos 8/25 Gombo
+  pos 9/25 Site De Ban-Kalyé
+  pos 10/25 Louame
+  pos 11/25 Yong-Borè
+  pos 12/25 Gom
+  pos 13/25 Site Doubi 2
+  pos 14/25 Sanda
+  pos 15/25 Loya
+  pos 16/25 Yoho
+  pos 17/25 Pama-Drol
+  pos 18/25 Willy
+  pos 19/25 Gamme-Carrière
+  pos 20/25 Bourazo
+  pos 21/25 Sipi
+  pos 22/25 Bania Centre
+  pos 23/25 Medy
+  pos 24/25 Mambéré Abba
+  pos 25/25 Kanga
+  neg 1/25 water
+  neg 2/25 village
+  neg 3/25 burn_scar
+  neg 4/25 village
+  neg 5/25 burn_scar
+  neg 6/25 bare_savanna
+  neg 7/25 bare_savanna
+  neg 8/25 burn_scar
+  neg 9/25 burn_scar
+  neg 10/25 burn_scar
+  neg 11/25 burn_scar
+  neg 12/25 water
+  neg 13/25 village
+  neg 14/25 burn_scar
+  neg 15/25 village
+  neg 16/25 water
+  neg 17/25 village
+  neg 18/25 village
+  neg 19/25 water
+  neg 20/25 water
+/home/exedev/5mp/analysis/mining_features.py:208: RuntimeWarning: All-NaN slice encountered
+  comp[b] = np.nanmedian(np.stack(arrs), axis=0)
+  neg 21/25 water
+  neg 22/25 burn_scar
+  neg 23/25 village
+  neg 24/25 burn_scar
+  neg 25/25 burn_scar
+
+=== pixel AUC, mine vs CONFUSER  (n_pos=25, n_neg=25)
+  (analysis/eval_ipis_auc.py measures mine vs RANDOM background and gets ~0.8; random background is the easy comparison)
+  rb         AUC=0.450  (pos median 1.588 vs neg 1.671)
+  bsi        AUC=0.534  (pos median 0.122 vs neg 0.126)
+  neg_ndvi   AUC=0.555  (pos median -0.406 vs neg -0.396)
+  red        AUC=0.517  (pos median 760.000 vs neg 826.250)

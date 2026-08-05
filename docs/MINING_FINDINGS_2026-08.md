@@ -168,3 +168,82 @@ at 0.1% agreement with visited-mine truth it will destroy trust in the layer.
 | `analysis/eval_auc.py`, `eval_ipis_auc.py`, `eval_detector_rules.py` | evaluators |
 | `analysis/geology_prior.py` | legacy-map → prior grid |
 | `analysis/basemap_chip.py`, `chip_render.py` | visual QA chips (Esri / S2) |
+
+---
+
+## 8. ADDENDUM (2026-08-05, after steps 1–4): the spectral premise fails
+
+Plan steps 1–4 are implemented and measured. The measurement kills the approach.
+
+### 8.1 Spectral features do not separate mines from confusers
+
+`scripts/eval_mining_detector.py --pixel-auc --n 25` — 25 IPIS visited gold
+sites vs 25 confusers (village / burn scar / river-water / adjudicated bare
+savanna), identical composite and feature code as the scanner
+(`analysis/mining_features.py`), 90th-percentile in a ~440 m box:
+
+| feature | AUC vs **confusers** | AUC vs random background (§2) |
+|---------|---------------------|-------------------------------|
+| rb (red/blue) | **0.450** | 0.806 |
+| −NDVI | **0.555** | 0.754 |
+| bsi | **0.534** | 0.771 |
+| red | **0.517** | 0.517 → 0.727 |
+
+Raw log: `analysis/out/pixel_auc_vs_confusers_20260805.log`.
+
+All four are **at or below chance**. `rb` is *inverted* — confusers are more
+ferruginous than mines (median 1.671 vs 1.588). The §2 AUCs of 0.75–0.81 measured
+only "bare ≠ vegetation"; against things that are also bare, the features carry
+no information. No re-weighting, percentile calibration, or threshold can rescue
+this, because there is nothing to calibrate.
+
+### 8.2 The ranker built on them behaves exactly as that predicts
+
+Chinko headwater bbox (24.30–24.50 E, 8.05–8.22 N, 30 corridor tiles, 10 clear
+dry-season dates, 177 candidates → top 100):
+
+- recall **0/8** manual truth pits; nearest candidate 1.16 km away
+- all **top 12** rejected by eye in Esri z16 imagery as dry-season bare savanna /
+  grazing scald — no pit morphology, no spoil heaps, no ponds
+  (`analysis/out/eval_new_top12.png`)
+
+This is strictly better engineering than the old scanner (basin scope, DEM
+corridor, multi-date median, no fake `new_since` bonus, honest ranking) and it is
+still useless, which is the informative part: the losses were never in the
+plumbing.
+
+### 8.3 The truth pits are not visible in 10 m data — or in 30 cm
+
+`analysis/out/truth_vs_top.png` (Esri z17, ~50 cm): the 8 manual pits are not
+distinguishable from surrounding savanna even at basemap resolution. They were
+identified from a KML, not from imagery interpretation. So we have been asking
+Sentinel-2 to see 1–3 px hand-dug shafts that a human cannot see at 6× the
+resolution. Two possibilities, both fatal to the current framing:
+
+1. the pits are genuinely sub-resolution → **no optical detector can work**, and
+2. the manual points may be a *known mining area* rather than 8 exact pit
+   locations → the 0.4 km match radius is then wrong, but so is the 93.7–99.5
+   flow-accumulation validation in §6, which used the same points.
+
+### 8.4 Revised plan
+
+Steps 5 (geology prior) and 7 (turbidity) are **cancelled as currently framed**:
+multiplying an at-chance score by a regional 3.7 km prior produces a map of the
+prior, not of mining.
+
+What is worth doing, in order:
+
+1. **Step 6 first, not last** — evaluate `earthrise-media/mining-detector`
+   (Amazon Mining Watch, open weights) on our stacks. It is a learned model
+   trained on this exact phenomenon; our hand-picked indices are demonstrably at
+   chance. If a trained CNN also lands at chance on IPIS-vs-confuser, optical
+   ASM detection at 10 m is closed and should be documented as closed.
+2. **Fix the truth set before trusting any evaluator** — get IPIS points
+   adjudicated in imagery (which of the 8,077 are visible as pits?), and settle
+   what the 8 Chinko points actually are. Everything measured here inherits their
+   ambiguity, §6 included.
+3. **Re-frame the deliverable.** What the basin work *did* produce and what does
+   validate is the **watershed layer itself** (163 parks, upstream + downstream,
+   with Strahler orders) — "this park's water comes from 59,000 km² including
+   these 8 000 km of upstream reaches" is defensible and useful on its own.
+   Ship that; do not ship pits.
