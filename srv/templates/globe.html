@@ -16643,7 +16643,113 @@ ${starredItems.narratives.map(n => {
         } else {
             panel.classList.add('active');
             loadUploadLogs();
+            loadPipelineStatus();
         }
+    }
+
+    // ===== Nightly fire pipeline heartbeat badge =====
+    // Written by scripts/daily_fire_update.py -> data/pipeline_status.json,
+    // served by GET /api/pipeline-status (srv/pipeline_status.go).
+    let pipelineStatusData = null;
+
+    async function loadPipelineStatus() {
+        const badge = document.getElementById('pipeline-status-badge');
+        if (!badge) return;
+        try {
+            const res = await fetch(`/api/pipeline-status?pwd=${getPwd()}`);
+            pipelineStatusData = await res.json();
+        } catch (e) {
+            pipelineStatusData = { status: 'unknown', stale: true, message: 'status unreachable: ' + e };
+        }
+        renderPipelineBadge();
+    }
+
+    function renderPipelineBadge() {
+        const badge = document.getElementById('pipeline-status-badge');
+        const d = pipelineStatusData;
+        if (!badge || !d) return;
+        const status = d.status || 'unknown';
+        const stale = !!d.stale;
+        const cls = ['pipeline-badge', status];
+        if (stale) cls.push('stale');
+        badge.className = cls.join(' ');
+
+        let label;
+        if (status === 'unknown') label = 'Pipeline: no heartbeat';
+        else if (stale) label = 'Pipeline stale';
+        else if (status === 'ok') label = 'Pipeline OK';
+        else if (status === 'degraded') label = 'Pipeline degraded';
+        else label = 'Pipeline failed';
+
+        let age = '';
+        if (typeof d.age_hours === 'number' && d.age_hours >= 0) {
+            age = d.age_hours < 1 ? `${Math.round(d.age_hours * 60)}m ago`
+                : d.age_hours < 48 ? `${d.age_hours.toFixed(1)}h ago`
+                : `${Math.floor(d.age_hours / 24)}d ago`;
+        }
+        badge.innerHTML = `<span class="pipeline-dot"></span>${escapeHtml(label)}` +
+            (age ? ` <span class="pipeline-age">${age}</span>` : '');
+        badge.title = 'Nightly fire pipeline (03:00 UTC) — click for details';
+        badge.style.display = 'flex';
+        badge.onclick = togglePipelineDetails;
+    }
+
+    function togglePipelineDetails() {
+        const existing = document.getElementById('pipeline-details');
+        if (existing) { existing.remove(); return; }
+        const d = pipelineStatusData || {};
+        const rows = [
+            ['Status', (d.status || 'unknown') + (d.stale ? ' (stale)' : '')],
+            ['Finished', d.finished_at ? safeDateTimeStr(d.finished_at) : '—'],
+            ['Duration', d.duration_sec != null ? `${d.duration_sec}s` : '—'],
+            ['Days fetched', d.days_fetched],
+            ['Fires fetched', fmtNum(d.fires_fetched)],
+            ['Detections inserted', fmtNum(d.detections_inserted)],
+            ['Parks rebuilt', fmtNum(d.parks_rebuilt)],
+            ['Groups loaded', fmtNum(d.groups_loaded)],
+            ['Alerts created', fmtNum(d.alerts_created)],
+            ['Notifications', fmtNum(d.notifications_created)],
+            ['Affected parks', fmtNum(d.affected_parks)],
+            ['Consistency check', d.consistent === undefined ? '—' : (d.consistent ? 'pass' : 'DRIFT')],
+        ].filter(r => r[1] !== undefined && r[1] !== null);
+
+        const errs = [];
+        if (d.fatal_error) errs.push('FATAL: ' + d.fatal_error);
+        (d.errors || []).forEach(e => errs.push(e));
+        if (d.message) errs.push(d.message);
+
+        const el = document.createElement('div');
+        el.id = 'pipeline-details';
+        el.className = 'pipeline-details';
+        el.innerHTML = `<h4>Nightly fire pipeline</h4><table>` +
+            rows.map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td>${escapeHtml(String(v))}</td></tr>`).join('') +
+            `</table>` +
+            (errs.length ? `<div class="pipeline-errors">` +
+                errs.map(e => `• ${escapeHtml(e)}`).join('<br>') + `</div>` : '') +
+            `<div style="margin-top:10px;color:#666;font-size:11px;">Runs 03:00 UTC · stale after 48h (two missed runs)</div>`;
+        document.querySelector('#admin-panel .admin-panel-container').appendChild(el);
+        setTimeout(() => {
+            document.addEventListener('click', function once(ev) {
+                const box = document.getElementById('pipeline-details');
+                if (box && !box.contains(ev.target) && ev.target.closest('#pipeline-status-badge') === null) {
+                    box.remove();
+                    document.removeEventListener('click', once);
+                }
+            });
+        }, 0);
+    }
+
+    function fmtNum(n) {
+        if (n === undefined || n === null) return undefined;
+        return typeof n === 'number' ? n.toLocaleString() : String(n);
+    }
+
+    function safeDateTimeStr(ts) {
+        try {
+            const dt = new Date(ts);
+            if (isNaN(dt)) return String(ts).slice(0, 16).replace('T', ' ');
+            return dt.toLocaleString();
+        } catch (e) { return String(ts); }
     }
     
     function switchAdminTab(tabName) {
@@ -18273,7 +18379,10 @@ ${starredItems.narratives.map(n => {
                     </svg>
                     GPX/Map Admin
                 </div>
-                <button class="admin-panel-close" onclick="toggleAdminPanel()" aria-label="Close admin panel">&times;</button>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div id="pipeline-status-badge" class="pipeline-badge" style="display:none;" title="Nightly fire pipeline heartbeat"></div>
+                    <button class="admin-panel-close" onclick="toggleAdminPanel()" aria-label="Close admin panel">&times;</button>
+                </div>
             </div>
             <div class="admin-panel-tabs" role="tablist" aria-label="Admin sections">
                 <button class="admin-tab active" data-tab="uploads" onclick="switchAdminTab('uploads')" role="tab" aria-selected="true" aria-controls="tab-uploads">

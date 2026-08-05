@@ -569,6 +569,22 @@
         .admin-panel-title svg { width: 24px; height: 24px; color: #22c55e; }
         .admin-panel-close { background: none; border: none; color: #888; font-size: 28px; cursor: pointer; padding: 4px 8px; line-height: 1; }
         .admin-panel-close:hover { color: #fff; }
+        /* Nightly fire pipeline heartbeat badge (GET /api/pipeline-status) */
+        .pipeline-badge { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; padding: 6px 11px; border-radius: 999px; cursor: pointer; user-select: none; border: 1px solid transparent; white-space: nowrap; }
+        .pipeline-badge .pipeline-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; flex: none; }
+        .pipeline-badge .pipeline-age { font-weight: 400; opacity: 0.75; }
+        .pipeline-badge.ok { color: #22c55e; background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3); }
+        .pipeline-badge.degraded { color: #f59e0b; background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.3); }
+        .pipeline-badge.failed { color: #ef4444; background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.35); }
+        .pipeline-badge.unknown { color: #888; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+        .pipeline-badge.stale { animation: pipelinePulse 2.2s ease-in-out infinite; }
+        @keyframes pipelinePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+        .pipeline-details { position: absolute; top: 62px; right: 20px; z-index: 2100; width: 360px; max-height: 60vh; overflow: auto; background: #11121c; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 14px 16px; font-size: 12px; color: #cbd5e1; box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
+        .pipeline-details h4 { color: #fff; font-size: 13px; margin: 0 0 10px; }
+        .pipeline-details table { width: 100%; border-collapse: collapse; }
+        .pipeline-details td { padding: 3px 0; vertical-align: top; }
+        .pipeline-details td:last-child { text-align: right; color: #fff; font-variant-numeric: tabular-nums; }
+        .pipeline-details .pipeline-errors { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); color: #f59e0b; line-height: 1.5; word-break: break-word; }
         .admin-panel-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
         .admin-tab { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 16px; color: #888; cursor: pointer; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
         .admin-tab:hover { background: rgba(255,255,255,0.08); color: #fff; }
