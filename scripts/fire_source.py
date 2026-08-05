@@ -3,13 +3,14 @@
 Canonical fire-detection source for the trajectory pipeline.
 
 Historically the v5/v6 trajectory builder read `data/raw-fire-viirs-*/{park}.json`.
-Those files are a ROLLING WINDOW (most parks only hold ~6 months; see
-`--source json` warnings), while `fire_detections` in SQLite holds the full
+Those files were a ROLLING WINDOW (most parks only held ~6 months), while
+`fire_detections` in SQLite holds the full
 2018-2026 history. The consequence was severe: a full (non-incremental) rebuild
 silently discarded years of trajectories, because pre-window history only
 survived as frozen group JSON carried forward by each incremental run.
 
-This module makes SQLite the default source. It is also faster - the
+This module makes SQLite the only source (the JSON window was deleted in
+2026-08; see docs/FIRE_TODO_HANDOVER.md #15). It is also faster - the
 `idx_fire_pa_date` index answers a full-history park query in ~50ms - and it
 removes the nightly rewrite of 176MB of JSON.
 
@@ -21,14 +22,12 @@ plus:
                temporal samples instead of collapsing a whole calendar day.
 """
 
-import json
 import sqlite3
 from pathlib import Path
 from datetime import datetime
 
 BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / "db.sqlite3"
-RAW_DIR = BASE_DIR / "data" / "raw-fire-viirs-20200101-20260222"
 
 # Confidence classes worth keeping. VIIRS 'l' (low) is disproportionately
 # sun glint / small hot surfaces; we keep it but callers may down-weight it
@@ -102,28 +101,7 @@ def load_park_fires_db(park_id, min_date, max_date=None, conn=None):
             conn.close()
 
 
-def load_park_fires_json(park_id, min_date, max_date=None):
-    """Legacy rolling-window JSON source. Kept for A/B comparison only."""
-    fire_file = RAW_DIR / f"{park_id}.json"
-    if not fire_file.exists():
-        return []
-    with open(fire_file) as f:
-        data = json.load(f)
-    fires = data.get("fires", data) if isinstance(data, dict) else data
-    out = []
-    for f in fires:
-        d = f.get("acq_date", "")
-        if d < min_date or (max_date and d > max_date):
-            continue
-        if not f.get("longitude") or not f.get("latitude"):
-            continue
-        out.append(_finalize(f))
-    return out
-
-
-def load_park_fires(park_id, min_date, max_date=None, source="db", conn=None):
-    if source == "json":
-        return load_park_fires_json(park_id, min_date, max_date)
+def load_park_fires(park_id, min_date, max_date=None, conn=None):
     return load_park_fires_db(park_id, min_date, max_date, conn=conn)
 
 
@@ -143,15 +121,12 @@ def park_fire_count(park_id, min_date, conn=None):
             conn.close()
 
 
-def earliest_fire_date(park_id, source="db", conn=None):
+def earliest_fire_date(park_id, conn=None):
     """Earliest available detection date for a park, or None.
 
     Incremental mode uses this to avoid walking the rebuild cutoff back past
     the point where data exists (which would drop unrebuildable old groups).
     """
-    if source == "json":
-        fires = load_park_fires_json(park_id, "0000-00-00")
-        return min((f["acq_date"] for f in fires), default=None)
     own = conn is None
     if own:
         conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)

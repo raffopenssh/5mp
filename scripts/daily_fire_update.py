@@ -366,7 +366,7 @@ class DailyFireUpdater:
         """Annotate each fire dict with _park_id/_dist_km via ParkAssigner.
 
         One fire -> at most one park (nearest boundary within 100km).
-        Run once so insert_fires and update_raw_json_files agree.
+        Run once so insert_fires and the grid aggregates agree.
         """
         if not fires:
             return
@@ -388,90 +388,6 @@ class DailyFireUpdater:
                 assigned += 1
         log(f"  {assigned}/{len(fires)} fires within 100km of a park")
 
-    
-    def update_raw_json_files(self, fires):
-        """Update raw JSON fire files with NRT data so trajectory builder can use them."""
-        if not fires:
-            log("Step 2b: No fires to add to raw JSON files")
-            return
-        
-        RAW_DIR = DATA_DIR / "raw-fire-viirs-20200101-20260222"
-        if not RAW_DIR.exists():
-            log(f"  Creating raw fire directory: {RAW_DIR}")
-            RAW_DIR.mkdir(parents=True, exist_ok=True)
-        
-        # Group fires by park
-        fires_by_park = defaultdict(list)
-        for fire in fires:
-            try:
-                lat = float(fire.get('latitude', 0))
-                lon = float(fire.get('longitude', 0))
-                if lon == 0.0 or lat == 0.0:
-                    continue
-                park_id = fire.get('_park_id')  # canonical assignment from _assign_fires
-                if park_id:
-                    fires_by_park[park_id].append({
-                        'latitude': lat,
-                        'longitude': lon,
-                        'acq_date': fire.get('acq_date', ''),
-                        'acq_time': fire.get('acq_time', ''),
-                        'frp': float(fire.get('frp', 0)),
-                        'confidence': fire.get('confidence', 'n'),
-                        'satellite': fire.get('satellite') or 'unknown'
-                    })
-            except:
-                continue
-        
-        if not fires_by_park:
-            log("Step 2b: No fires matched any parks")
-            return
-        
-        log(f"Step 2b: Updating raw JSON files for {len(fires_by_park)} parks...")
-        
-        total_added = 0
-        parks_updated = set()
-        
-        for park_id, park_fires in fires_by_park.items():
-            raw_file = RAW_DIR / f"{park_id}.json"
-            
-            try:
-                # Load existing or create new
-                if raw_file.exists():
-                    with open(raw_file) as f:
-                        data = json.load(f)
-                    existing_fires = data.get('fires', [])
-                else:
-                    data = {'park_id': park_id, 'fires': []}
-                    existing_fires = []
-                # Key must include satellite, matching the fire_detections
-                # UNIQUE constraint: with 3 sensors ingested, two satellites can
-                # legitimately report the same pixel in the same minute and both
-                # rows are real.
-                def _key(f):
-                    return (f['latitude'], f['longitude'], f['acq_date'],
-                            f.get('acq_time', ''), f.get('satellite', ''))
-
-                existing_keys = {_key(f) for f in existing_fires}
-                
-                added = 0
-                for fire in park_fires:
-                    key = _key(fire)
-                    if key not in existing_keys:
-                        existing_fires.append(fire)
-                        added += 1
-                
-                if added > 0:
-                    data['fires'] = existing_fires
-                    with open(raw_file, 'w') as f:
-                        json.dump(data, f)
-                    total_added += added
-                    parks_updated.add(park_id)
-            except Exception as e:
-                log(f"  Error updating {park_id}: {e}")
-        
-        # Add parks with new fires to affected_parks for trajectory rebuild
-        self.affected_parks.update(parks_updated)
-        log(f"  Added {total_added} fires to {len(parks_updated)} raw JSON files")
     
     def refresh_grid_agg(self):
         """Incrementally refresh fire_grid_day/week/month (time animator backend)."""
@@ -1054,9 +970,6 @@ class DailyFireUpdater:
         
         # Step 2: Insert into database
         self.insert_fires(fires)
-        
-        # Step 2b: Update raw JSON files for trajectory builder
-        self.update_raw_json_files(fires)
         
         # Step 2c: Refresh pre-aggregated animation grids (fire_grid_day/week/month)
         self.refresh_grid_agg()

@@ -1,9 +1,9 @@
 #!/bin/bash
 # Rebuild fire trajectories for every park that has fire detections.
 #
-# Park enumeration comes from fire_detections (canonical). It used to come from
-# `ls data/raw-fire-viirs-*/`, which is a rolling ~6-month window of duplicated
-# data slated for removal -- see docs/FIRE_TODO_HANDOVER.md #15.
+# Park enumeration comes from fire_detections, the only fire source. (It used to
+# come from `ls data/raw-fire-viirs-*/`, a rolling ~6-month window of duplicated
+# data, deleted 2026-08 -- handover #15.)
 
 export PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH
 

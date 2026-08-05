@@ -214,25 +214,10 @@ def backfill_fires(conn, park_id, geometry, dry_run):
     return inserted
 
 
-def export_raw_fire_json(conn, park_id, dry_run):
-    """Write data/raw-fire-viirs-*/{park_id}.json from fire_detections.
-    rebuild_fire_trajectories_v5.py reads these files, not the DB — without
-    this the v5 pipeline sees 0 fires for a freshly backfilled park."""
-    raw_dir = BASE_DIR / 'data' / 'raw-fire-viirs-20200101-20260222'
-    if dry_run:
-        log(f"  [dry-run] would export raw fire JSON to {raw_dir}/{park_id}.json")
-        return
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    rows = conn.execute(
-        """SELECT latitude, longitude, acq_date, acq_time, frp, confidence, satellite
-           FROM fire_detections WHERE protected_area_id=? ORDER BY acq_date""",
-        (park_id,)).fetchall()
-    fires = [{'latitude': r[0], 'longitude': r[1], 'acq_date': r[2],
-              'acq_time': r[3], 'frp': r[4] or 0, 'confidence': r[5] or 'n',
-              'satellite': r[6] or 'N20'} for r in rows]
-    with open(raw_dir / f"{park_id}.json", 'w') as f:
-        json.dump({'park_id': park_id, 'fires': fires}, f)
-    log(f"  raw fire JSON exported: {len(fires)} fires")
+# export_raw_fire_json() was here. It wrote data/raw-fire-viirs-*/{park}.json
+# because the v5 builder used to read those files. The builder now reads
+# fire_detections via scripts/fire_source.py, so backfilled fires are visible
+# to it immediately and the duplicate JSON is gone.
 
 
 def run(cmd, dry_run, cwd=BASE_DIR, ok_fail=False):
@@ -271,7 +256,6 @@ def process_request(conn, req, dry_run):
     # Fire backfill (all-time) + v5 pipeline
     n = backfill_fires(conn, park_id, meta['geometry'], dry_run)
     notes.append(f"fires backfilled: {n}")
-    export_raw_fire_json(conn, park_id, dry_run)
 
     py = sys.executable or 'python3'
     run([py, 'scripts/rebuild_fire_trajectories_v5.py', '--park', park_id], dry_run, ok_fail=True)

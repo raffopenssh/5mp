@@ -8,8 +8,8 @@ echo "NRT Fire Rebuild - v5 Pipeline"
 echo "========================================="
 echo ""
 
-# Park count from fire_detections (canonical). Previously counted files in
-# data/raw-fire-viirs-*/, a rolling window scheduled for deletion (#15).
+# Park count from fire_detections, the only fire source. (It used to count
+# files in data/raw-fire-viirs-*/, a rolling window, deleted 2026-08.)
 PARKS_WITH_DATA=$(sqlite3 db.sqlite3 \
   "SELECT COUNT(DISTINCT protected_area_id) FROM fire_detections
    WHERE protected_area_id IS NOT NULL")

@@ -18,9 +18,9 @@ splits and zigzag trajectories. Root causes fixed here:
    boundary are fully re-formed instead of chopped.
 
 v7 changes:
-5. SOURCE IS NOW SQLite (`fire_source.py`). data/raw-fire-viirs-*/ is a rolling
-   window holding ~6 months for 162/163 parks, so full rebuilds used to discard
-   years of history. Use --source json only for A/B against old output.
+5. SOURCE IS SQLite (`fire_source.py`). The old data/raw-fire-viirs-*/ files
+   were a rolling ~6-month window, so full rebuilds used to discard years of
+   history. Those files (and --source) are gone as of 2026-08.
 6. Optional per-overpass slicing (--overpass), plus real overpass times in the
    trajectory's 4th element instead of the old '1200' stub, and speed computed
    from true elapsed time. Overpass slicing is OFF by default: with only
@@ -63,7 +63,6 @@ except ImportError:  # fall back to greedy assignment
 
 BASE_DIR = Path(__file__).parent.parent
 KEYSTONES_FILE = BASE_DIR / "data" / "keystones_with_boundaries.json"
-FIRE_DIR = BASE_DIR / "data" / "raw-fire-viirs-20200101-20260222"
 OUTPUT_DIR = BASE_DIR / "data" / "fire_groups_v5"
 TRENDS_DIR = BASE_DIR / "data" / "fire_trends_v5"
 
@@ -227,13 +226,9 @@ def load_parks():
     return parks
 
 
-def load_park_fires(park_id, min_date, source='db', conn=None):
-    """Load fires from the canonical source (SQLite by default).
-
-    See fire_source.py: the legacy JSON files are a rolling window and must not
-    be used for full rebuilds.
-    """
-    return _load_fires(park_id, min_date, source=source, conn=conn)
+def load_park_fires(park_id, min_date, conn=None):
+    """Load fires from the canonical source (fire_detections in SQLite)."""
+    return _load_fires(park_id, min_date, conn=conn)
 
 
 # ---------------------------------------------------------------------------
@@ -922,10 +917,6 @@ def main():
                         help='Incremental mode: only process recent fires')
     parser.add_argument('--days', type=int, default=14, help='Days window for incremental mode')
     parser.add_argument('--output-dir', help='Override output directory (for A/B testing)')
-    parser.add_argument('--source', choices=['db', 'json'], default='db',
-                        help='Fire source. db = fire_detections (canonical, full '
-                             'history). json = legacy rolling-window files, for '
-                             'A/B only - they silently omit years of data.')
     # Ablation switches, for scripts/eval_fire_trajectories.py A/B runs.
     parser.add_argument('--overpass', action='store_true',
                         help='Slice by satellite overpass instead of calendar day. '
@@ -965,9 +956,7 @@ def main():
     out_dir = Path(args.output_dir) if args.output_dir else OUTPUT_DIR
 
     log("Fire Trajectory Builder v7 (per-overpass clustering + track matching)")
-    log(f"Source: {args.source}"
-        + ("  (WARNING: rolling window, not full history)"
-           if args.source == 'json' else ""))
+    log("Source: fire_detections (SQLite)")
     if not HAVE_SCIPY:
         log("  scipy unavailable -> greedy assignment fallback")
 
@@ -987,11 +976,9 @@ def main():
     TRENDS_DIR.mkdir(exist_ok=True, parents=True)
 
     # One shared read-only connection for all parks in this run.
-    shared_conn = None
-    if args.source == 'db':
-        import sqlite3
-        from fire_source import DB_PATH
-        shared_conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+    import sqlite3
+    from fire_source import DB_PATH
+    shared_conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
 
     # Persistent-hotspot mask: cells detected in >=30 distinct months are
     # flares / lava lakes / kilns, not wildfires. They must not seed tracks or
@@ -1048,12 +1035,11 @@ def main():
                 effective_min_date = min(g['start_date'] for g in spanning)
             # Never walk back before the raw data actually starts, or we'd
             # drop old groups that cannot be rebuilt from available fires.
-            raw_min = earliest_fire_date(park_id, source=args.source, conn=shared_conn)
+            raw_min = earliest_fire_date(park_id, conn=shared_conn)
             if raw_min and effective_min_date < raw_min:
                 effective_min_date = raw_min
 
-        fires = load_park_fires(park_id, effective_min_date, source=args.source,
-                                conn=shared_conn)
+        fires = load_park_fires(park_id, effective_min_date, conn=shared_conn)
         if not fires and not existing_groups:
             continue
 
@@ -1120,7 +1106,7 @@ def main():
         'total_parks': len([p for p in park_ids if p in parks]),
         'date_range': {'start': min_date, 'end': datetime.now().strftime('%Y-%m-%d')},
         'algorithm': 'v7_overpass_track_matching',
-        'source': args.source,
+        'source': 'db',
         'params': {
             'day_eps_km': DAY_EPS_KM,
             'day_min_samples': DAY_MIN_SAMPLES,

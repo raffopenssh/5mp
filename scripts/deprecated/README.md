@@ -47,9 +47,12 @@ data and everything that depends on it is being retired:
 | `rebuild_fire_hull.py` | Same, for `data/fire_groups_hull/`. |
 | `backfill_raw_fire_json_100km.py` | One-off backfill of the raw JSON window. |
 | `extract_raw_fire_json_from_backup.py` | One-off restore of the raw JSON window from a DB backup. |
+| `rebuild_fire_trajectories_v4.py` | v4 builder; read the raw JSON dir, superseded by v5/v7. |
 
-Still pending (see `docs/FIRE_TODO_HANDOVER.md` #15): dropping the two remaining
-*writers* (`onboard_park.py:export_raw_fire_json()` and
-`daily_fire_update.py:update_raw_json_files()`) and `git rm -r`-ing the 176MB
-data directory. `--source json` in `rebuild_fire_trajectories_v5.py` /
-`eval_fire_trajectories.py` is intentionally kept for A/B.
+**Completed 2026-08-05** (handover #15 closed): both writers are gone
+(`onboard_park.py:export_raw_fire_json()`,
+`daily_fire_update.py:update_raw_json_files()` / step 2b), the 179MB
+`data/raw-fire-viirs-20200101-20260222/` directory is deleted, and
+`--source json` was dropped from `rebuild_fire_trajectories_v5.py` +
+`fire_source.py` (SQLite is now the only fire source). Old A/B baselines built
+from the JSON window are still comparable via `data/eval/*` snapshots.

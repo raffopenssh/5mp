@@ -55,7 +55,6 @@ from fire_source import park_fire_count
 
 BASE_DIR = Path(__file__).parent.parent
 PROD_DIR = BASE_DIR / "data" / "fire_groups_v5"
-RAW_DIR = BASE_DIR / "data" / "raw-fire-viirs-20200101-20260222"
 
 # Golden set: deliberately diverse fire regimes.
 #   CAF_Chinko      - long transhumance trajectories, the original design case
@@ -102,8 +101,8 @@ _raw_cache = {}
 def raw_fire_count(park_id):
     """Total available detections for the park, from SQLite (canonical).
 
-    Must NOT use data/raw-fire-viirs-*/ - those files are a rolling window and
-    made coverage_pct read >1000%.
+(It used to read data/raw-fire-viirs-*/, a rolling window, which made
+    coverage_pct read >1000%. Those files are gone.)
     """
     if park_id not in _raw_cache:
         _raw_cache[park_id] = park_fire_count(park_id, MIN_DATE)
