@@ -43,9 +43,15 @@ pre-committed in `docs/MINING_FINDINGS_2026-08.md` §9.4:
   labelled African training set it is the end of the cheap options.)
 
 A run of `--sanity 60` (`analysis/out/amw_sanity_20260805.{log,json}`) and
-`--africa 25` were both launched 2026-08-05 ~15:15 UTC in tmux sessions
-`amwsanity` / `amwafrica`; if the logs are incomplete, just re-run — the patch
-cache makes a resume cheap.
+`--africa 25 --jitter` (`analysis/out/amw_africa_20260805.{log,json}`) were both
+launched 2026-08-05 ~15:15 UTC in tmux sessions `amwsanity` / `amwafrica`, and
+were **still running** at hand-over (sanity ~38/120 points, africa ~3/50;
+`--jitter` costs 5 patches per point). If a log has no `=== AFRICA` summary
+block at the end, it did not finish — just re-run the command, the
+`data/amw_cache/` composites make a resume cheap. Do not read the partial
+per-point `score=` lines as a result: the first africa positives came back low
+(0.006–0.028), but three points is not a measurement and the confuser scores
+that give them meaning had not been computed yet.
 
 ## What was added 2026-08-05 evening
 
