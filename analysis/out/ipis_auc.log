@@ -1,0 +1,57 @@
+[1/40] COD Kafiawema 2026-03-07 rb=0.98 red=0.97 neg_ndvi=0.97 ndwi=0.97
+[2/40] COD Etogo 2 2026-03-07 swir1=0.79 z_swir1=0.76 bsi=0.75 rb=0.73
+[3/40] COD Mont Ngaliema 2026-01-21 swir1=0.82 rb=0.79 z_swir1=0.66 z_rb=0.58
+[4/40] COD Biandonda 2026-02-08 mndwi=0.88 ndwi=0.87 neg_ndvi=0.86 z_neg_ndvi=0.83
+[5/40] COD Ekongye 2026-03-12 rb=0.78 neg_ndvi=0.75 bsi=0.75 ndwi=0.75
+[6/40] COD Muzingamalomba 2026-03-12 rb=0.91 bsi=0.9 swir1=0.86 red=0.85
+[7/40] COD Bambu 2026-02-13 mndwi=0.47 swir1=0.46 z_rb=0.43 z_swir1=0.39
+[8/40] CAF Digoro 2026-03-20 z_rb=0.65 rb=0.63 mndwi=0.61 z_bsi+z_rb=0.57
+[9/40] COD Majengo 2026-02-25 swir1=0.93 z_swir1=0.89 rb=0.72 red=0.66
+[10/40] CAF Moenam 2026-03-22 red=0.99 swir1=0.99 neg_ndvi=0.98 rb=0.98
+[11/40] CAF Lopo 2026-03-12 rb=0.65 bsi=0.62 ndwi=0.59 neg_ndvi=0.58
+[12/40] CAF Popo 2026-03-18 mndwi=0.69 ndwi=0.43 z_neg_ndvi=0.39 neg_ndvi=0.37
+[13/40] COD Angulu 2026-03-20 bsi=1.0 swir1=1.0 z_swir1=1.0 red=0.99
+[14/40] COD Vatican2 2026-03-07 red=0.98 rb=0.98 neg_ndvi=0.95 bsi=0.95
+[15/40] COD Masikini 2026-03-07 z_swir1=0.99 z_red=0.95 red=0.94 swir1=0.94
+[16/40] COD Camp Potopoto 2026-03-07 red=0.78 mndwi=0.74 rb=0.72 ndwi=0.71
+[17/40] COD Mayumba 2026-02-15 rb=0.9 z_swir1=0.9 red=0.88 swir1=0.88
+[18/40] COD Wasezya wibingilila 2026-01-29 swir1=0.97 red=0.96 bsi=0.95 neg_ndvi=0.94
+[19/40] CAF Ndarsa 2026-03-07 z_rb=0.67 z_swir1=0.62 z_red=0.61 z_bsi+z_rb=0.56
+[20/40] COD Angola 2026-03-07 red=0.86 z_swir1=0.86 swir1=0.83 rb=0.82
+[21/40] COD Kapanga 2026-01-21 red=1.0 neg_ndvi=1.0 ndwi=1.0 swir1=0.99
+[22/40] CAF Kata-Forô 2026-03-03 mndwi=0.84 z_rb=0.21 rb=0.16 z_red=0.16
+[23/40] COD Nyamurhale/Lubona 2026-02-10 bsi=0.97 neg_ndvi=0.92 rb=0.91 ndwi=0.89
+[24/40] CAF Sipi 2026-02-28 swir1=0.99 rb=0.96 red=0.95 bsi=0.94
+[25/40] COD Karasi 2026-02-10 rb=0.82 z_rb=0.8 z_neg_ndvi=0.75 neg_ndvi=0.74
+[26/40] COD Kamikuba 2026-03-15 red=1.0 neg_ndvi=1.0 bsi=1.0 rb=1.0
+[27/40] COD Kagulwe 2026-01-21 bsi=0.99 swir1=0.99 z_swir1=0.97 red=0.96
+[28/40] COD Mutasa 2026-01-29 mndwi=0.83 ndwi=0.71 z_bsi+z_rb=0.63 z_rb=0.61
+[29/40] COD Gbado 2026-03-07 z_swir1=0.81 z_rb=0.69 z_bsi+z_rb=0.67 z_red=0.66
+[30/40] COD Camp Yolo 2026-03-07 z_swir1=0.87 red=0.84 swir1=0.82 rb=0.74
+[31/40] COD Sun City 2026-03-07 rb=0.66 z_bsi+z_rb=0.66 z_red=0.65 z_bsi=0.65
+[32/40] COD Tcholo 2026-03-07 bsi=0.96 neg_ndvi=0.95 rb=0.95 red=0.94
+[33/40] COD Musipi 2025-02-25 swir1=0.93 red=0.91 bsi=0.9 rb=0.9
+[34/40] COD Togo 2026-03-07 z_swir1=1.0 red=0.99 rb=0.99 swir1=0.99
+[35/40] COD Karongozi 2026-02-15 z_bsi=0.7 z_bsi+z_neg_ndvi=0.69 z_neg_ndvi=0.68 z_red+z_neg_ndvi=0.66
+[36/40] COD Kasongo 2026-01-29 red=0.99 rb=0.99 bsi=0.98 swir1=0.98
+[37/40] COD Kandate 2026-03-07 red=0.97 neg_ndvi=0.96 bsi=0.96 swir1=0.96
+[38/40] COD Kabitako 2026-03-15 rb=0.85 bsi=0.82 neg_ndvi=0.72 ndwi=0.63
+[39/40] COD Dieu Est Grand 2026-02-25 mndwi=0.65 z_swir1=0.62 red=0.61 rb=0.61
+[40/40] COD Nakahebe 2025-03-17 z_neg_ndvi=0.84 z_red+z_neg_ndvi=0.83 z_bsi+z_neg_ndvi=0.83 z_bsi=0.81
+
+== mean AUC over 40 IPIS gold sites
+rb                     mean=0.757 median=0.823 frac>0.6=0.80 n=40
+red                    mean=0.728 median=0.813 frac>0.6=0.68 n=40
+neg_ndvi               mean=0.718 median=0.766 frac>0.6=0.68 n=40
+bsi                    mean=0.713 median=0.769 frac>0.6=0.62 n=40
+ndwi                   mean=0.705 median=0.762 frac>0.6=0.65 n=40
+swir1                  mean=0.692 median=0.821 frac>0.6=0.65 n=40
+z_swir1                mean=0.677 median=0.674 frac>0.6=0.70 n=40
+z_bsi+z_rb             mean=0.674 median=0.682 frac>0.6=0.65 n=40
+z_red                  mean=0.674 median=0.689 frac>0.6=0.70 n=40
+z_bsi                  mean=0.667 median=0.697 frac>0.6=0.57 n=40
+z_rb                   mean=0.666 median=0.669 frac>0.6=0.68 n=40
+z_red+z_neg_ndvi       mean=0.666 median=0.678 frac>0.6=0.65 n=40
+z_bsi+z_neg_ndvi       mean=0.664 median=0.682 frac>0.6=0.62 n=40
+z_neg_ndvi             mean=0.654 median=0.677 frac>0.6=0.60 n=40
+mndwi                  mean=0.618 median=0.642 frac>0.6=0.55 n=40

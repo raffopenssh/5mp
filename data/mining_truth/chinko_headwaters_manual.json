@@ -1,0 +1,47 @@
+{
+ "source": "manual identification by user (KML, 2026-08-05)",
+ "note": "8 artisanal pits, Chinko headwaters (Ouest of Mont Abourassein), 123 km N of CAF_Chinko boundary but inside the Chinko/Mbomou basin",
+ "park_context": "CAF_Chinko (upstream, outside boundary)",
+ "sites": [
+  {
+   "lon": 24.4061689,
+   "lat": 8.1345586,
+   "id": "manual_1"
+  },
+  {
+   "lon": 24.40538,
+   "lat": 8.1352841,
+   "id": "manual_2"
+  },
+  {
+   "lon": 24.4069524,
+   "lat": 8.1336329,
+   "id": "manual_3"
+  },
+  {
+   "lon": 24.4062335,
+   "lat": 8.1365689,
+   "id": "manual_4"
+  },
+  {
+   "lon": 24.4055192,
+   "lat": 8.1340903,
+   "id": "manual_5"
+  },
+  {
+   "lon": 24.4045076,
+   "lat": 8.1356532,
+   "id": "manual_6"
+  },
+  {
+   "lon": 24.4027169,
+   "lat": 8.138933,
+   "id": "manual_7"
+  },
+  {
+   "lon": 24.4015028,
+   "lat": 8.139483,
+   "id": "manual_8"
+  }
+ ]
+}

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Schema name="obs" id="obs">
+	<SimpleField name="id" type="float"></SimpleField>
+</Schema>
+<Folder><name>obs</name>
+  <Placemark id="obs.1">
+	<ExtendedData><SchemaData schemaUrl="#obs">
+		<SimpleData name="id">1</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>24.406168931811,8.13455861179787</coordinates></Point>
+  </Placemark>
+  <Placemark id="obs.2">
+	<ExtendedData><SchemaData schemaUrl="#obs">
+		<SimpleData name="id">2</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>24.4053800212228,8.13528408778103</coordinates></Point>
+  </Placemark>
+  <Placemark id="obs.3">
+	<ExtendedData><SchemaData schemaUrl="#obs">
+		<SimpleData name="id">3</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>24.4069523944088,8.13363286402229</coordinates></Point>
+  </Placemark>
+  <Placemark id="obs.4">
+	<ExtendedData><SchemaData schemaUrl="#obs">
+		<SimpleData name="id">4</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>24.4062334627161,8.13656888828994</coordinates></Point>
+  </Placemark>
+  <Placemark id="obs.5">
+	<ExtendedData><SchemaData schemaUrl="#obs">
+		<SimpleData name="id">5</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>24.4055192105214,8.1340903042821</coordinates></Point>
+  </Placemark>
+  <Placemark id="obs.6">
+	<ExtendedData><SchemaData schemaUrl="#obs">
+		<SimpleData name="id">6</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>24.4045076414196,8.13565320251528</coordinates></Point>
+  </Placemark>
+  <Placemark id="obs.7">
+	<ExtendedData><SchemaData schemaUrl="#obs">
+		<SimpleData name="id">7</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>24.4027168656442,8.13893296707871</coordinates></Point>
+  </Placemark>
+  <Placemark id="obs.8">
+	<ExtendedData><SchemaData schemaUrl="#obs">
+		<SimpleData name="id">8</SimpleData>
+	</SchemaData></ExtendedData>
+      <Point><coordinates>24.4015028368395,8.13948304650826</coordinates></Point>
+  </Placemark>
+</Folder>
+</Document></kml>

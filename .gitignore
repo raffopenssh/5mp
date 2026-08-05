@@ -67,3 +67,9 @@ secrets.env
 # Fire trajectory A/B eval snapshots (regenerate via eval_fire_trajectories.py)
 data/eval/
 data/viirs_backfill_state.json
+
+# Mining analysis: bulk downloads & intermediate rasters (re-fetchable)
+data/osm_geofabrik/
+data/gsw/
+analysis/out/*.png
+analysis/out/*.npy
