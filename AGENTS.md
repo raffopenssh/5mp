@@ -369,6 +369,25 @@ pre-cap counts. `is_inside` = touches park (`dist_to_park_km≈0` or `pct_inside
 groups up to 20km outside are included for context but not "inside". Peak-season
 parks (Angola/DRC/Zambia, Jun–Aug) legitimately have 150–280 active groups — not a bug.
 
+## ⚠️ Mining detection is NOT production-ready
+
+`data/mining_pits/*.json` (7,725 "sites") is **0.1% consistent with visited-mine
+truth** — top-scored entries are sandbanks and rice paddies. Do not surface it in
+the UI as mining sites. `data/turbidity/*.json` only works on ≥3rd-order rivers.
+
+Read **`docs/MINING_FINDINGS_2026-08.md`** before touching either — it has the
+measured feature AUCs (red/blue iron ratio > red > BSI > −NDVI; multi-date median
+best; local-z doesn't help), the truth sets (`data/ipis/*.csv` = 8,077 IPIS
+visited ASM sites; `data/mining_truth/` = 8 manual Chinko pits), and the plan.
+Data source catalogue: `docs/MINING_DATA_SOURCES.md` (30 curl-verified sources).
+
+Structural gap: both scanners are **park-bbox-scoped** but mining pressure is a
+**watershed** phenomenon (the manual pits are 123 km outside CAF_Chinko, inside
+its basin). Corridors come from OSM waterways, which don't exist in headwaters —
+use DEM flow accumulation instead.
+
+---
+
 ## Time Animator ("▶ Animate" button next to slider presets)
 
 Animates all toggled/pinned map layers over the time-slider window.
