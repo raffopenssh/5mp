@@ -43,10 +43,60 @@ def km(a, b):
     return math.hypot((a[1]-b[1])*111, (a[0]-b[0])*111*math.cos(math.radians(a[1])))
 
 
-def load_corridor(park_id, bbox=None):
-    """Return (tiles, waterway_pts). tiles = set of (xi, yi) 0.05-deg cells
-    touched by a waterway; waterway_pts = flat list of (lon, lat) for
-    distance-to-water checks (densified to ~100m)."""
+def load_corridor(park_id, bbox=None, min_pct=None, use_osm=False,
+                  scope="basin"):
+    """Return (tiles, waterway_pts) for the scan corridor.
+
+    Corridor comes from **DEM flow accumulation**, not OSM waterways.
+
+    OSM waterways were the original definition and they are structurally wrong
+    for this problem: the 8 field-confirmed pits in the Chinko headwaters are
+    48.9 km from the nearest cached OSM waterway vertex, because nobody has
+    mapped 1st-order streams in CAR. D8 flow accumulation on Copernicus GLO-30
+    puts those same pits at accumulation percentile 93.7-99.5 of their local
+    10x8 km window (analysis/flow_corridor.py --validate), so terrain finds the
+    drainage lines that OSM does not have.
+
+    `scope`:
+      basin  - the park's contributing watershed (park_basins, migration 039).
+               This is the correct extent: mining pressure is a watershed
+               phenomenon and the truth pits are 123 km OUTSIDE the park.
+      park   - park polygon only (fallback when no basin has been fetched).
+
+    `use_osm=True` restores the legacy behaviour for A/B comparison only.
+    """
+    from shapely.geometry import shape, box
+    if use_osm:
+        return _load_corridor_osm(park_id, bbox)
+
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import flow_corridor as fc
+
+    geom = fc.basin_geom(park_id) if scope == "basin" else None
+    if geom is None:
+        parks = json.load(open("data/keystones_with_boundaries.json"))
+        p = next((x for x in parks if x["id"] == park_id), None)
+        if not p or not p.get("geometry"):
+            return set(), []
+        geom = shape(p["geometry"])
+        print(f"{park_id}: no cached basin, falling back to park polygon "
+              f"(run scripts/fetch_park_basins.py --park {park_id})",
+              file=sys.stderr)
+    if bbox:
+        geom = geom.intersection(box(*bbox))
+        if geom.is_empty:
+            return set(), []
+
+    pct = fc.DEFAULT_PCT if min_pct is None else min_pct
+    cells = fc.corridor_cells(geom, res=TILE, min_pct=pct)
+    tiles = set(cells.keys())
+    wpts = fc.corridor_points(geom.bounds, min_pct=pct, stride=3)
+    return tiles, wpts
+
+
+def _load_corridor_osm(park_id, bbox=None):
+    """LEGACY corridor: 0.05-deg tiles touched by an OSM waterway. Kept only so
+    `--corridor osm` can reproduce the old output for A/B."""
     path = f"{WATERWAY_CACHE}/{park_id}.geojson"
     d = json.load(open(path))
     tiles, wpts = set(), []
@@ -65,7 +115,6 @@ def load_corridor(park_id, bbox=None):
                 continue
             tiles.add((int(c[0] / TILE), int(c[1] / TILE)))
             if prev is not None:
-                # densify long segments so distance checks don't miss
                 n = max(1, int(km(prev, c) / 0.1))
                 for t in range(n):
                     wpts.append((prev[0] + (c[0]-prev[0])*t/n,
