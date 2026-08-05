@@ -1,3 +1,6 @@
+ab7991b 2026-08-05 15:58:11 Unified hover/tap map tooltip for all pinned & view layers
+21af23c 2026-08-05 15:29:54 Handover: note the in-flight AMW eval runs and how to resume them
+3499b97 2026-08-05 15:28:59 Rebuild: refresh embedded commit history
 1fb2183 2026-08-05 15:27:51 Mining: wire the AMW learned model, adjudication tooling, ship the basin layer
 4398c9f 2026-08-05 15:13:03 fix(test-env): stop leaking client-derived data into the test tenant
 f667f06 2026-08-05 14:47:07 fix(anim): scope patrol-effort frames to request env (test env leaked prod effort pixels)
@@ -15,6 +18,3 @@ c734632 2026-08-05 11:04:12 Mining rescope 2/5: corridor from DEM flow accumulat
 702570a 2026-08-05 10:26:47 AGENTS.md: flag mining detection as not production-ready, point at findings doc
 2104086 2026-08-05 10:26:27 Complete mining data source catalogue: 30 sources with verified URLs
 be553c1 2026-08-05 10:19:39 Mining detection: measure against truth data, document findings & sources
-84d1a37 2026-08-05 08:42:07 Handover: keep only open fire-pipeline work
-7b71c6f 2026-08-05 08:41:07 Fire pipeline: hotspot mask, unique group ids, consistency tooling, heartbeat
-8fb2626 2026-08-05 08:11:05 Document remaining fire pipeline work with verified findings
