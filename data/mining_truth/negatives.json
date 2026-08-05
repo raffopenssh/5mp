@@ -1,0 +1,1531 @@
+{
+ "purpose": "negative (confuser) set for scripts/eval_mining_detector.py",
+ "built_by": "scripts/build_mining_negatives.py",
+ "confidence_semantics": {
+  "high": "documented, adjudicated in the findings doc",
+  "adjudicated": "a human checked this exact point in Esri imagery",
+  "generated": "class identity is certain (it IS a village/burn/river) but absence of mining is only probable"
+ },
+ "counts": {
+  "bare_savanna": 12,
+  "burn_scar": 52,
+  "irrigated_field": 1,
+  "sandbank": 1,
+  "village": 60,
+  "water": 60
+ },
+ "sites": [
+  {
+   "lon": 24.26676,
+   "lat": 8.16938,
+   "class": "bare_savanna",
+   "park_id": "CAF_Chinko",
+   "confidence": "adjudicated",
+   "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+   "from_scan": "adj_chinko.json",
+   "from_rank": 11
+  },
+  {
+   "lon": 24.27913,
+   "lat": 8.15699,
+   "class": "bare_savanna",
+   "park_id": "CAF_Chinko",
+   "confidence": "adjudicated",
+   "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+   "from_scan": "adj_chinko.json",
+   "from_rank": 10
+  },
+  {
+   "lon": 24.36724,
+   "lat": 8.24573,
+   "class": "bare_savanna",
+   "park_id": "CAF_Chinko",
+   "confidence": "adjudicated",
+   "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+   "from_scan": "adj_chinko.json",
+   "from_rank": 4
+  },
+  {
+   "lon": 24.37232,
+   "lat": 8.2268,
+   "class": "bare_savanna",
+   "park_id": "CAF_Chinko",
+   "confidence": "adjudicated",
+   "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+   "from_scan": "adj_chinko.json",
+   "from_rank": 8
+  },
+  {
+   "lon": 24.38929,
+   "lat": 8.17431,
+   "class": "bare_savanna",
+   "park_id": "CAF_Chinko",
+   "confidence": "adjudicated",
+   "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+   "from_scan": "adj_chinko.json",
+   "from_rank": 1
+  },
+  {
+   "lon": 24.39605,
+   "lat": 8.00928,
+   "class": "bare_savanna",
+   "park_id": "CAF_Chinko",
+   "confidence": "adjudicated",
+   "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+   "from_scan": "adj_chinko.json",
+   "from_rank": 2
+  },
+  {
+   "lon": 24.40825,
+   "lat": 8.15229,
+   "class": "bare_savanna",
+   "park_id": "CAF_Chinko",
+   "confidence": "adjudicated",
+   "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+   "from_scan": "adj_chinko.json",
+   "from_rank": 0
+  },
+  {
+   "lon": 24.41726,
+   "lat": 8.18661,
+   "class": "bare_savanna",
+   "park_id": "CAF_Chinko",
+   "confidence": "adjudicated",
+   "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+   "from_scan": "adj_chinko.json",
+   "from_rank": 6
+  },
+  {
+   "lon": 24.44726,
+   "lat": 8.04962,
+   "class": "bare_savanna",
+   "park_id": "CAF_Chinko",
+   "confidence": "adjudicated",
+   "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+   "from_scan": "adj_chinko.json",
+   "from_rank": 5
+  },
+  {
+   "lon": 24.44819,
+   "lat": 8.21645,
+   "class": "bare_savanna",
+   "park_id": "CAF_Chinko",
+   "confidence": "adjudicated",
+   "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+   "from_scan": "adj_chinko.json",
+   "from_rank": 3
+  },
+  {
+   "lon": 24.45009,
+   "lat": 8.21646,
+   "class": "bare_savanna",
+   "park_id": "CAF_Chinko",
+   "confidence": "adjudicated",
+   "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+   "from_scan": "adj_chinko.json",
+   "from_rank": 9
+  },
+  {
+   "lon": 24.4508,
+   "lat": 8.05802,
+   "class": "bare_savanna",
+   "park_id": "CAF_Chinko",
+   "confidence": "adjudicated",
+   "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+   "from_scan": "adj_chinko.json",
+   "from_rank": 7
+  },
+  {
+   "lon": 23.6,
+   "lat": 7.13,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "27 VIIRS detections, last 2026-02-27"
+  },
+  {
+   "lon": 23.65,
+   "lat": 6.62,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "32 VIIRS detections, last 2026-02-26"
+  },
+  {
+   "lon": 23.71,
+   "lat": 6.61,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "27 VIIRS detections, last 2026-03-08"
+  },
+  {
+   "lon": 23.71,
+   "lat": 6.58,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "26 VIIRS detections, last 2026-03-07"
+  },
+  {
+   "lon": 23.74,
+   "lat": 7.29,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "30 VIIRS detections, last 2026-03-07"
+  },
+  {
+   "lon": 23.74,
+   "lat": 7.18,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "27 VIIRS detections, last 2026-03-03"
+  },
+  {
+   "lon": 23.83,
+   "lat": 6.72,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "27 VIIRS detections, last 2026-02-27"
+  },
+  {
+   "lon": 23.84,
+   "lat": 7.36,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "26 VIIRS detections, last 2026-02-27"
+  },
+  {
+   "lon": 23.85,
+   "lat": 6.72,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "29 VIIRS detections, last 2026-02-27"
+  },
+  {
+   "lon": 23.85,
+   "lat": 6.74,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "26 VIIRS detections, last 2026-02-28"
+  },
+  {
+   "lon": 23.87,
+   "lat": 7.49,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "32 VIIRS detections, last 2026-03-01"
+  },
+  {
+   "lon": 23.87,
+   "lat": 6.73,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "31 VIIRS detections, last 2026-02-28"
+  },
+  {
+   "lon": 23.89,
+   "lat": 6.72,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "28 VIIRS detections, last 2026-02-27"
+  },
+  {
+   "lon": 23.89,
+   "lat": 6.68,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "26 VIIRS detections, last 2026-02-25"
+  },
+  {
+   "lon": 23.9,
+   "lat": 7.37,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "30 VIIRS detections, last 2026-03-02"
+  },
+  {
+   "lon": 23.9,
+   "lat": 6.7,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "28 VIIRS detections, last 2026-02-27"
+  },
+  {
+   "lon": 23.91,
+   "lat": 7.43,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "37 VIIRS detections, last 2026-03-04"
+  },
+  {
+   "lon": 23.91,
+   "lat": 7.24,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "29 VIIRS detections, last 2026-03-02"
+  },
+  {
+   "lon": 23.91,
+   "lat": 7.29,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "27 VIIRS detections, last 2026-03-02"
+  },
+  {
+   "lon": 23.92,
+   "lat": 7.34,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "31 VIIRS detections, last 2026-03-02"
+  },
+  {
+   "lon": 23.92,
+   "lat": 6.71,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "30 VIIRS detections, last 2026-02-28"
+  },
+  {
+   "lon": 23.92,
+   "lat": 6.75,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "26 VIIRS detections, last 2026-03-04"
+  },
+  {
+   "lon": 23.92,
+   "lat": 7.26,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "26 VIIRS detections, last 2026-03-04"
+  },
+  {
+   "lon": 23.94,
+   "lat": 7.37,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "32 VIIRS detections, last 2026-03-06"
+  },
+  {
+   "lon": 23.94,
+   "lat": 7.51,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "31 VIIRS detections, last 2026-03-08"
+  },
+  {
+   "lon": 23.94,
+   "lat": 6.72,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "30 VIIRS detections, last 2026-03-04"
+  },
+  {
+   "lon": 23.94,
+   "lat": 7.4,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "30 VIIRS detections, last 2026-03-08"
+  },
+  {
+   "lon": 23.94,
+   "lat": 7.42,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "28 VIIRS detections, last 2026-03-07"
+  },
+  {
+   "lon": 23.94,
+   "lat": 7.07,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "26 VIIRS detections, last 2026-03-08"
+  },
+  {
+   "lon": 23.95,
+   "lat": 7.44,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "37 VIIRS detections, last 2026-03-08"
+  },
+  {
+   "lon": 23.95,
+   "lat": 6.68,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "31 VIIRS detections, last 2026-03-01"
+  },
+  {
+   "lon": 23.95,
+   "lat": 7.29,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "31 VIIRS detections, last 2026-03-04"
+  },
+  {
+   "lon": 23.95,
+   "lat": 7.09,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "29 VIIRS detections, last 2026-03-08"
+  },
+  {
+   "lon": 23.95,
+   "lat": 6.66,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "26 VIIRS detections, last 2026-03-01"
+  },
+  {
+   "lon": 23.97,
+   "lat": 6.69,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "32 VIIRS detections, last 2026-03-03"
+  },
+  {
+   "lon": 23.97,
+   "lat": 7.05,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "29 VIIRS detections, last 2026-03-11"
+  },
+  {
+   "lon": 23.97,
+   "lat": 7.43,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "27 VIIRS detections, last 2026-03-09"
+  },
+  {
+   "lon": 23.98,
+   "lat": 6.62,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "28 VIIRS detections, last 2026-03-03"
+  },
+  {
+   "lon": 23.98,
+   "lat": 7.07,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "28 VIIRS detections, last 2026-03-14"
+  },
+  {
+   "lon": 23.99,
+   "lat": 7.17,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "27 VIIRS detections, last 2026-03-02"
+  },
+  {
+   "lon": 24.02,
+   "lat": 7.23,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "29 VIIRS detections, last 2026-02-26"
+  },
+  {
+   "lon": 24.04,
+   "lat": 7.25,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "33 VIIRS detections, last 2026-02-27"
+  },
+  {
+   "lon": 24.05,
+   "lat": 7.15,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "34 VIIRS detections, last 2026-02-26"
+  },
+  {
+   "lon": 24.12,
+   "lat": 7.26,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "32 VIIRS detections, last 2026-03-03"
+  },
+  {
+   "lon": 24.14,
+   "lat": 7.27,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "29 VIIRS detections, last 2026-03-04"
+  },
+  {
+   "lon": 24.14,
+   "lat": 7.67,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "27 VIIRS detections, last 2026-02-05"
+  },
+  {
+   "lon": 24.31,
+   "lat": 7.47,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "27 VIIRS detections, last 2026-03-03"
+  },
+  {
+   "lon": 24.51,
+   "lat": 5.78,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "28 VIIRS detections, last 2026-03-19"
+  },
+  {
+   "lon": 24.79,
+   "lat": 7.06,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "28 VIIRS detections, last 2026-01-20"
+  },
+  {
+   "lon": 24.83,
+   "lat": 5.91,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "44 VIIRS detections, last 2026-03-02"
+  },
+  {
+   "lon": 24.93,
+   "lat": 5.88,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "27 VIIRS detections, last 2026-03-08"
+  },
+  {
+   "lon": 25.16,
+   "lat": 6.87,
+   "class": "burn_scar",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "27 VIIRS detections, last 2026-01-29"
+  },
+  {
+   "lon": 15.03891,
+   "lat": 11.42193,
+   "class": "irrigated_field",
+   "park_id": "CMR_Waza",
+   "confidence": "high",
+   "note": "irrigated rice paddies; old scanner top hit (docs/MINING_FINDINGS_2026-08.md)"
+  },
+  {
+   "lon": 24.23213,
+   "lat": 6.42818,
+   "class": "sandbank",
+   "park_id": "CAF_Chinko",
+   "confidence": "high",
+   "note": "sandbank in a forested meander; old scanner scored it 0.95 (docs/MINING_FINDINGS_2026-08.md)"
+  },
+  {
+   "lon": 22.8232963,
+   "lat": 4.743526,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM city: Bangassou"
+  },
+  {
+   "lon": 22.8266706,
+   "lat": 5.3493677,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Tangonda"
+  },
+  {
+   "lon": 22.8389661,
+   "lat": 5.1853545,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM hamlet: Kpingoyangui"
+  },
+  {
+   "lon": 22.846844,
+   "lat": 4.7677296,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Tokoyo"
+  },
+  {
+   "lon": 22.8491298,
+   "lat": 5.2941199,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM hamlet: Bak\u00e9l\u00e9ssapo"
+  },
+  {
+   "lon": 22.8629086,
+   "lat": 6.1291159,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM town: Nzako"
+  },
+  {
+   "lon": 22.8630878,
+   "lat": 4.7868419,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Zaloua"
+  },
+  {
+   "lon": 22.8744308,
+   "lat": 4.75586,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Mbangui-Ngoro"
+  },
+  {
+   "lon": 22.8760899,
+   "lat": 4.8934347,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Nawand\u00e9"
+  },
+  {
+   "lon": 22.8811684,
+   "lat": 4.8274066,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Kpatamoto"
+  },
+  {
+   "lon": 22.8834054,
+   "lat": 4.8093965,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Mbilinga"
+  },
+  {
+   "lon": 22.8925599,
+   "lat": 4.8838666,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Aguissor-Seck"
+  },
+  {
+   "lon": 22.9110753,
+   "lat": 4.8237888,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Catali"
+  },
+  {
+   "lon": 22.9168353,
+   "lat": 4.8475369,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Banguila"
+  },
+  {
+   "lon": 22.922551,
+   "lat": 4.90564,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Mak\u00e9mb\u00e9"
+  },
+  {
+   "lon": 22.9306649,
+   "lat": 4.8354126,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Han-Hou"
+  },
+  {
+   "lon": 22.944905,
+   "lat": 4.9033717,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Bandoufou"
+  },
+  {
+   "lon": 22.9483717,
+   "lat": 4.8418539,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Bandougou"
+  },
+  {
+   "lon": 22.9727764,
+   "lat": 4.8432451,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM hamlet: Mbororo"
+  },
+  {
+   "lon": 22.9775984,
+   "lat": 5.0062449,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM hamlet: Bondi-Kema"
+  },
+  {
+   "lon": 22.9796177,
+   "lat": 5.0264146,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Tamba"
+  },
+  {
+   "lon": 22.9821555,
+   "lat": 4.9785734,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Do u Ambo"
+  },
+  {
+   "lon": 22.9934914,
+   "lat": 4.8396577,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Yongofongo"
+  },
+  {
+   "lon": 23.0080263,
+   "lat": 5.0877475,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Vougba"
+  },
+  {
+   "lon": 23.011803,
+   "lat": 4.7774259,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Ndege Douma"
+  },
+  {
+   "lon": 23.0163531,
+   "lat": 4.8314314,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Bond\u00e9l\u00e9"
+  },
+  {
+   "lon": 23.0285986,
+   "lat": 4.7904935,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Ngaragba"
+  },
+  {
+   "lon": 23.0475284,
+   "lat": 4.8329397,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Mbororo"
+  },
+  {
+   "lon": 23.052573,
+   "lat": 4.7484918,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Douma"
+  },
+  {
+   "lon": 23.073298,
+   "lat": 4.8303365,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Lanom\u00e9"
+  },
+  {
+   "lon": 23.129822,
+   "lat": 4.8357507,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Gbanga"
+  },
+  {
+   "lon": 23.1480756,
+   "lat": 4.7781115,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Magazani"
+  },
+  {
+   "lon": 23.1575182,
+   "lat": 4.757932,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Ngombi"
+  },
+  {
+   "lon": 23.1614803,
+   "lat": 4.8039994,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Bungia"
+  },
+  {
+   "lon": 23.1770585,
+   "lat": 4.8381548,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Ligandonga"
+  },
+  {
+   "lon": 23.1837567,
+   "lat": 4.7425646,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Mbalagbolo"
+  },
+  {
+   "lon": 23.2169343,
+   "lat": 4.8386952,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Barama / Batama"
+  },
+  {
+   "lon": 23.2246093,
+   "lat": 4.6933487,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Kpegbele"
+  },
+  {
+   "lon": 23.2360286,
+   "lat": 4.8376431,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Ngombi"
+  },
+  {
+   "lon": 23.2480347,
+   "lat": 4.6837708,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Zime Fleuve"
+  },
+  {
+   "lon": 23.2500743,
+   "lat": 6.5103137,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM hamlet: Yalinga"
+  },
+  {
+   "lon": 23.2778558,
+   "lat": 4.8298494,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Samba"
+  },
+  {
+   "lon": 23.3462498,
+   "lat": 4.8546715,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Balikengu\u00e9"
+  },
+  {
+   "lon": 23.5063426,
+   "lat": 4.8900735,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM hamlet: Mbombo"
+  },
+  {
+   "lon": 23.5366893,
+   "lat": 4.9134819,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM hamlet: Kamba"
+  },
+  {
+   "lon": 23.551978,
+   "lat": 4.9256268,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Madabazouma"
+  },
+  {
+   "lon": 23.5722218,
+   "lat": 4.9373725,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM hamlet: Agoumai"
+  },
+  {
+   "lon": 23.5725714,
+   "lat": 4.7405002,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Bakouya"
+  },
+  {
+   "lon": 23.6671706,
+   "lat": 4.9533639,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM hamlet: Sambora"
+  },
+  {
+   "lon": 23.8782705,
+   "lat": 4.9944102,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Loungba"
+  },
+  {
+   "lon": 23.9163635,
+   "lat": 4.9944765,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Agoumar"
+  },
+  {
+   "lon": 23.9320764,
+   "lat": 4.9712472,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM town: Rafa\u00ef"
+  },
+  {
+   "lon": 23.9635187,
+   "lat": 4.9523529,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM hamlet: Borobou"
+  },
+  {
+   "lon": 23.9907316,
+   "lat": 4.9588706,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM hamlet: Mogba"
+  },
+  {
+   "lon": 24.8413513,
+   "lat": 5.1196215,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Bara"
+  },
+  {
+   "lon": 24.9896562,
+   "lat": 5.0920275,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Taban\u00e9 2"
+  },
+  {
+   "lon": 25.0402605,
+   "lat": 5.0660272,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Aliwali"
+  },
+  {
+   "lon": 25.1292659,
+   "lat": 5.0247528,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM town: Z\u00e9mio"
+  },
+  {
+   "lon": 25.1510905,
+   "lat": 5.0558099,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Bandasi"
+  },
+  {
+   "lon": 25.1746675,
+   "lat": 5.1479822,
+   "class": "village",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "OSM village: Monbo\u00ef"
+  },
+  {
+   "lon": 23.28333,
+   "lat": 6.04167,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.29,
+   "lat": 6.155,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.29667,
+   "lat": 6.095,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.3425,
+   "lat": 5.905,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.37167,
+   "lat": 5.7,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.38833,
+   "lat": 5.72667,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.67917,
+   "lat": 7.33417,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.695,
+   "lat": 7.3,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.69667,
+   "lat": 7.28083,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.70167,
+   "lat": 7.09,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.70333,
+   "lat": 7.17,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.70667,
+   "lat": 7.23667,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.725,
+   "lat": 7.0525,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.78333,
+   "lat": 7.055,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.83917,
+   "lat": 7.04167,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.86417,
+   "lat": 7.02667,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.91333,
+   "lat": 7.015,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 23.95333,
+   "lat": 6.9975,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.0025,
+   "lat": 6.95417,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.03333,
+   "lat": 6.9125,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.07333,
+   "lat": 6.8825,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.09417,
+   "lat": 6.85417,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.125,
+   "lat": 6.805,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.1525,
+   "lat": 6.77583,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.16667,
+   "lat": 6.74333,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.17167,
+   "lat": 5.82083,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.20083,
+   "lat": 5.81583,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.215,
+   "lat": 6.69417,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.25667,
+   "lat": 6.7475,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.27833,
+   "lat": 6.76,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.2875,
+   "lat": 6.7875,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.31167,
+   "lat": 6.76083,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.32417,
+   "lat": 6.93,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.325,
+   "lat": 6.85833,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.40917,
+   "lat": 6.96917,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.42917,
+   "lat": 6.98,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.45417,
+   "lat": 6.96417,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.48333,
+   "lat": 6.97583,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.50833,
+   "lat": 6.99167,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.51167,
+   "lat": 7.31,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.51583,
+   "lat": 7.33583,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.5175,
+   "lat": 7.25083,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.5325,
+   "lat": 7.01833,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.54167,
+   "lat": 7.08833,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.54167,
+   "lat": 7.21667,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.545,
+   "lat": 7.37583,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.5525,
+   "lat": 7.13,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.55833,
+   "lat": 7.4,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.56417,
+   "lat": 7.06833,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.57083,
+   "lat": 7.42833,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.5725,
+   "lat": 7.1725,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.58333,
+   "lat": 7.45667,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.64333,
+   "lat": 6.54583,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.64917,
+   "lat": 6.65833,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.65583,
+   "lat": 6.60917,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.67417,
+   "lat": 6.5,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.685,
+   "lat": 6.47833,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.69333,
+   "lat": 6.445,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.765,
+   "lat": 6.47417,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  },
+  {
+   "lon": 24.84333,
+   "lat": 6.49417,
+   "class": "water",
+   "park_id": "CAF_Chinko",
+   "confidence": "generated",
+   "note": "basin river reach, Strahler >= 4 (sandbank/turbid)"
+  }
+ ]
+}

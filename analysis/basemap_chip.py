@@ -55,4 +55,9 @@ def main():
     os.makedirs(os.path.dirname(a.out) or ".",exist_ok=True)
     im.save(a.out)
     print(a.out,im.size,"extent",ext)
-main()
+
+
+# guarded so other modules (chip_grid.py) can import fetch() without the CLI
+# firing and demanding --bbox
+if __name__ == "__main__":
+    main()

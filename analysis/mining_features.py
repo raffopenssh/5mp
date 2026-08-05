@@ -74,7 +74,7 @@ def dry_season_windows(lat, n_years=3, end=None):
     return out
 
 
-def search_scenes(bbox, dt_range, max_cloud=25, limit=40):
+def search_scenes(bbox, dt_range, max_cloud=25, limit=40, epsg=None):
     body = json.dumps({
         "collections": ["sentinel-2-l2a"], "bbox": list(bbox),
         "datetime": dt_range, "query": {"eo:cloud_cover": {"lt": max_cloud}},
@@ -83,16 +83,43 @@ def search_scenes(bbox, dt_range, max_cloud=25, limit=40):
     }).encode()
     req = urllib.request.Request(STAC, data=body,
                                 headers={"Content-Type": "application/json"})
-    return json.load(urllib.request.urlopen(req, timeout=120))["features"]
+    feats = json.load(urllib.request.urlopen(req, timeout=120))["features"]
+    if epsg is not None:
+        # Drop other-UTM-zone scenes from the *metadata*, before paying for any
+        # COG range requests. A bbox near a zone boundary otherwise returns
+        # mostly unusable scenes and we would discover that after reading 7
+        # bands each (measured: 29 wasted scene reads on one Chinko tile).
+        feats = [f for f in feats
+                 if f["properties"].get("proj:epsg") in (None, epsg)]
+    return feats
 
 
-def read_bands(sc, bbox, bands=BANDS):
+def scene_epsg(bbox, dt_range, max_cloud=25):
+    """Modal proj:epsg over candidate scenes: the UTM zone to composite in."""
+    try:
+        feats = search_scenes(bbox, dt_range, max_cloud=max_cloud)
+    except Exception:
+        return None
+    counts = {}
+    for f in feats:
+        e = f["properties"].get("proj:epsg")
+        if e:
+            counts[e] = counts.get(e, 0) + 1
+    return max(counts, key=counts.get) if counts else None
+
+
+def read_bands(sc, bbox, bands=BANDS, out_shape=None):
     """Read `bands` for bbox=(w,s,e,n) from one scene, co-registered to the
-    10 m grid of the first band. Returns dict or None."""
+    10 m grid of the first band. Returns dict or None.
+
+    `out_shape` forces the output grid, which matters when compositing: the same
+    lat/lon bbox lands on a different pixel count in a different UTM zone (and
+    even 1 px off in the same zone from rounding), and np.stack then refuses.
+    """
     import rasterio
     from rasterio.windows import from_bounds
     from rasterio.warp import transform_bounds
-    out, ref = {}, None
+    out, ref = {}, out_shape
     for b in bands:
         a = sc["assets"].get(b)
         if not a:
@@ -100,15 +127,22 @@ def read_bands(sc, bbox, bands=BANDS):
         with rasterio.open(a["href"]) as d:
             bb = transform_bounds("EPSG:4326", d.crs, *bbox)
             win = from_bounds(*bb, d.transform)
+            rs = rasterio.enums.Resampling.nearest if b == "scl" \
+                else rasterio.enums.Resampling.bilinear
             if ref is None:
                 arr = d.read(1, window=win, boundless=True, fill_value=0)
                 ref = arr.shape
-                out["_crs"], out["_tr"] = d.crs, d.window_transform(win)
             else:
                 arr = d.read(1, window=win, boundless=True, fill_value=0,
-                             out_shape=ref,
-                             resampling=rasterio.enums.Resampling.nearest
-                             if b == "scl" else rasterio.enums.Resampling.bilinear)
+                             out_shape=ref, resampling=rs)
+            if "_crs" not in out:
+                out["_crs"] = d.crs
+                # transform must describe the grid we actually returned; when
+                # out_shape forced a resample, the native window transform is
+                # the wrong scale and every pixel->lon/lat is offset.
+                h, w = arr.shape
+                out["_tr"] = d.window_transform(win) * rasterio.Affine.scale(
+                    (win.width or w) / w, (win.height or h) / h)
             out[b] = arr.astype(np.float32)
     return out
 
@@ -124,9 +158,11 @@ def median_composite(bbox, dt_ranges, max_scenes=6, min_clear=0.80,
     """
     stacks, dates = {b: [] for b in BANDS if b != "scl"}, []
     geom = None
+    shape_ref = None
+    epsg = scene_epsg(bbox, dt_ranges[0], max_cloud) if dt_ranges else None
     for dt in dt_ranges:
         try:
-            scenes = search_scenes(bbox, dt, max_cloud=max_cloud)
+            scenes = search_scenes(bbox, dt, max_cloud=max_cloud, epsg=epsg)
         except Exception as ex:
             if verbose:
                 print(f"    STAC fail {dt}: {str(ex)[:60]}", file=sys.stderr)
@@ -135,13 +171,22 @@ def median_composite(bbox, dt_ranges, max_scenes=6, min_clear=0.80,
             if len(dates) >= max_scenes:
                 break
             try:
-                c = read_bands(sc, bbox)
+                c = read_bands(sc, bbox, out_shape=shape_ref)
             except Exception as ex:
                 if verbose:
                     print(f"    read fail {sc['id']}: {str(ex)[:60]}",
                           file=sys.stderr)
                 continue
             if c is None:
+                continue
+            # A bbox can straddle UTM zones / MGRS tiles; scenes in a different
+            # CRS would need reprojection, and a per-pixel median across two
+            # different grids is meaningless. Keep the first CRS, skip the rest
+            # (the neighbouring 0.05-deg tile will be scanned in its own zone).
+            if geom is not None and c["_crs"] != geom[0]:
+                if verbose:
+                    print(f"    skip {sc['id']}: CRS {c['_crs']} != {geom[0]}",
+                          file=sys.stderr)
                 continue
             valid = np.isin(c["scl"], CLEAR_SCL)
             if valid.mean() < min_clear or (c["red"] > 0).mean() < 0.5:
@@ -152,6 +197,7 @@ def median_composite(bbox, dt_ranges, max_scenes=6, min_clear=0.80,
                 stacks[b].append(a)
             dates.append(sc["properties"]["datetime"][:10])
             geom = (c["_crs"], c["_tr"])
+            shape_ref = c["red"].shape
         if len(dates) >= max_scenes:
             break
     if not dates:
@@ -190,10 +236,15 @@ class Calibration:
     """
     QS = np.concatenate([np.arange(0, 99, 1.0), np.arange(99, 100.0, 0.05)])
 
-    def __init__(self, breaks=None, n=0, dates=None):
+    def __init__(self, breaks=None, n=0, dates=None, score_breaks=None):
         self.breaks = breaks or {}
         self.n = n
         self.dates = dates or []
+        # CDF of the combined score over the same sample, so a caller can ask
+        # "which score value is the top 0.5% of this landscape?" without
+        # re-deriving it per tile (which would make each tile its own reference
+        # frame and destroy comparability between tiles).
+        self.score_breaks = score_breaks
 
     @classmethod
     def from_samples(cls, samples, dates=None):
@@ -206,7 +257,26 @@ class Calibration:
                 continue
             breaks[k] = np.percentile(a, cls.QS).astype(np.float32)
             n = max(n, a.size)
-        return cls(breaks, n, dates)
+        c = cls(breaks, n, dates)
+        if len(breaks) == len(FEATURES):
+            sc = c.score(samples)          # row-aligned by contract, see calibrate()
+            sc = np.asarray(sc, np.float32)
+            sc = sc[np.isfinite(sc)]
+            if sc.size >= 500:
+                c.score_breaks = np.percentile(sc, cls.QS).astype(np.float32)
+        return c
+
+    def score_threshold(self, q):
+        """Score value at percentile `q` of the calibration landscape."""
+        if self.score_breaks is None:
+            return float(q)   # degenerate: score is itself ~a percentile
+        return float(np.interp(q, self.QS, self.score_breaks))
+
+    def score_pct(self, s):
+        """Inverse of score_threshold: score value -> landscape percentile."""
+        if self.score_breaks is None:
+            return np.asarray(s, np.float32)
+        return np.interp(s, self.score_breaks, self.QS).astype(np.float32)
 
     def pct(self, name, arr):
         """Map values to percentile 0-100 by interpolating the sampled CDF."""
@@ -227,13 +297,16 @@ class Calibration:
         return {"n": int(self.n), "dates": self.dates,
                 "quantiles": [float(q) for q in self.QS],
                 "breaks": {k: [float(x) for x in v]
-                           for k, v in self.breaks.items()}}
+                           for k, v in self.breaks.items()},
+                "score_breaks": (None if self.score_breaks is None else
+                                 [float(x) for x in self.score_breaks])}
 
     @classmethod
     def from_json(cls, d):
-        c = cls({k: np.asarray(v, np.float32) for k, v in d["breaks"].items()},
-                d.get("n", 0), d.get("dates"))
-        return c
+        sb = d.get("score_breaks")
+        return cls({k: np.asarray(v, np.float32) for k, v in d["breaks"].items()},
+                   d.get("n", 0), d.get("dates"),
+                   None if sb is None else np.asarray(sb, np.float32))
 
 
 def calibrate(bbox_list, dt_ranges, stride=6, max_tiles=25, verbose=False):
@@ -251,16 +324,23 @@ def calibrate(bbox_list, dt_ranges, stride=6, max_tiles=25, verbose=False):
         if comp is None:
             continue
         F = features(comp)
-        valid = np.isfinite(F["red"])
+        # ONE mask for all features so the per-feature samples stay row-aligned:
+        # score_breaks is computed from these arrays as if they were pixels, and
+        # masking each feature independently would silently pair feature k's
+        # pixel 7 with feature j's pixel 9.
+        sub = {k: F[k][::stride, ::stride] for k in FEATURES}
+        m = np.ones_like(next(iter(sub.values())), bool)
+        for v in sub.values():
+            m &= np.isfinite(v)
+        if not m.any():
+            continue
         for k in FEATURES:
-            v = F[k][::stride, ::stride]
-            m = np.isfinite(v)
-            samples[k].append(v[m])
+            samples[k].append(sub[k][m])
         used += 1
         dates += [d for d in comp["_dates"] if d not in dates]
         if verbose:
             print(f"  calib tile {used}/{max_tiles} "
-                  f"({int(valid.sum())} px, {comp['_n']} dates)",
+                  f"({int(m.sum())} px, {comp['_n']} dates)",
                   file=sys.stderr)
     if not used:
         return None

@@ -76,3 +76,7 @@ analysis/out/*.npy
 
 # Derived flow-accumulation percentile tiles (regenerate: analysis/flow_corridor.py)
 data/flowacc/
+
+# Basin geometries: DB (park_basins) is source of truth; JSON is a debug dump,
+# and mghydro responses are cached in http_cache (scripts/fetch_park_basins.py)
+data/park_basins/

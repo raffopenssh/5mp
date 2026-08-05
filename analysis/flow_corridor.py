@@ -307,6 +307,62 @@ def basin_geom(park_id):
     return shape(json.loads(row[0]))
 
 
+def park_geom(park_id):
+    from shapely.geometry import shape
+    for p in json.load(open(os.path.join(BASE, "data",
+                                         "keystones_with_boundaries.json"))):
+        if p["id"] == park_id and p.get("geometry"):
+            g = shape(p["geometry"])
+            # several boundaries are self-intersecting (Kruger, Niokolo-Koba);
+            # buffer(0) is the cheap standard repair and preserves extent
+            return g if g.is_valid else g.buffer(0)
+    return None
+
+
+BASIN_MAX_KM = 200.0    # clip the basin to this far from the park edge
+
+
+def scan_geom(park_id, scope="basin", max_km=BASIN_MAX_KM):
+    """Extent to scan: union of the contributing basin and the park itself.
+
+    Why the union and not just the basin: the basin is what makes *upstream*
+    pressure expressible (the Chinko truth pits are 123 km outside the park),
+    but for parks that sit on a drainage divide or in an endorheic pan the
+    contributing area above their outlet is legitimately tiny - measured with
+    scripts/check_basin_coverage.py, the basin covers <20% of the park for 30
+    of 163 parks and <50% for 76 (RWA_Volcans 7%, TZA_Kilimanjaro 2%: water
+    leaves a volcano, none arrives). Scanning basin-only would silently stop
+    looking inside those parks, which is the opposite of the point.
+
+    `max_km` clips the basin to that distance from the park edge. 13 of 163
+    basins exceed 200,000 km2 because the outlet snapped onto a continental
+    trunk (ZWE_Mana_Pools = 848,000 km2 of Zambezi, i.e. most of six
+    countries). Scanning that at 10 m is both impossible and meaningless: a pit
+    1,500 km up the Zambezi is not "pressure on Mana Pools". 200 km is ~1.6x
+    the 123 km offset of the confirmed Chinko headwater pits, the only such
+    distance this repo has ground truth for. Pass max_km=0 to disable.
+
+      basin  -> basin U park  (default)
+      park   -> park polygon only
+      strict -> basin only, for A/B against the basin-only rescope
+    """
+    pk = park_geom(park_id)
+    if scope == "park":
+        return pk
+    bs = basin_geom(park_id)
+    if scope == "strict":
+        return bs
+    if bs is None:
+        return pk
+    if pk is None:
+        return bs
+    if max_km:
+        clipped = bs.intersection(pk.buffer(max_km / 111.0))
+        if not clipped.is_empty:
+            bs = clipped
+    return bs.union(pk)
+
+
 def corridor_cells(geom, res=0.05, min_pct=DEFAULT_PCT, res30=True,
                    verbose=False):
     """Scan tiles of size `res` deg that contain drainage above min_pct.

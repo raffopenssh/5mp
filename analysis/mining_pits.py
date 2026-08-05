@@ -1,39 +1,61 @@
-"""Mining pit scanner — detects bright-bare pit/camp clusters along river corridors.
+"""Mining-pit RANKER — scores drainage-corridor pixels across a park's basin.
 
-Complements analysis/river_turbidity.py (plume detection): finds the mines
-themselves as clusters of bright bare earth (Sentinel-2 red > 1400, NDVI <
-0.35) within a corridor around OSM waterways. This is what a human eye does
-on Google Earth. Validated on the confirmed Chinko pit (7.44644N 24.02958E,
-49 px): detected at identical coords in 2022-2026 scenes.
+Not a detector with a yes/no threshold. Measured AUC of the best available
+spectral evidence is ~0.8 (docs/MINING_FINDINGS_2026-08.md §2), which supports
+a ranked worklist for a human to check and nothing stronger. Output must not be
+surfaced in the UI as "mining sites" until scripts/eval_mining_detector.py
+reports defensible precision — the previous version's 7,725 "sites" were 0.1%
+consistent with visited-mine truth, and its top hits were sandbanks and rice
+paddies.
 
-Method:
-  1. Corridor = 0.05-deg tiles touched by any OSM waterway (cache from
-     river_turbidity's data/osm_raw/waterways/{park}.geojson).
-  2. Detection pass: newest clear scene per tile -> bright-bare clusters
-     (>= 8 px = 0.08 ha), keeping those within `--water-dist-m` of a waterway.
-  3. Persistence pass: re-check each candidate in an earlier scene (>= 10
-     days older). Drops clouds, floodplains-of-the-day, freshly burned scars.
-  4. Score: size, waterway proximity, pond presence (NDWI > 0 pixels within
-     cluster bbox — mining ponds), isolation from known OSM places.
+What changed from the version that produced data/mining_pits/*.json:
 
-Output: data/mining_pits/{park}.json  {sites: [...], tiles_scanned, ...}
+  extent    park bbox            -> contributing basin U park, clipped 200 km
+                                    (flow_corridor.scan_geom; the 8 confirmed
+                                    Chinko pits are 123 km OUTSIDE the park)
+  corridor  OSM waterways        -> D8 flow accumulation on GLO-30
+                                    (nearest OSM waterway to those pits: 49 km)
+  evidence  1 newest scene       -> 3-year dry-season median composite
+                                    (AUC 0.758 -> 0.806)
+  decision  red>1400 & ndvi<0.35 -> score >= Nth percentile of THIS basin's own
+                                    seasonal distribution (absolute thresholds
+                                    had recall 0/8 on the manual truth pits)
+  score     hand-set bonuses inc. -> landscape percentile of the weighted
+            +0.20 "new since"       feature score; history is metadata only
+  output    kept[:400] + cap      -> top-N of the whole basin, spatially even
+
+Spectral core (composites, features, calibration) lives in mining_features.py so
+the scanner and the evaluator cannot drift apart.
+
+Output: data/mining_candidates/{park}.json  (NOT data/mining_pits/, which is the
+old discredited output that srv/turbidity.go still reads; do not overwrite it.)
 
 Usage:
   python3 analysis/mining_pits.py --park CAF_Chinko
-  python3 analysis/mining_pits.py --park SSD_Boma --bbox 34.2,6.2,35.3,8.2  # Akobo corridor only
+  python3 analysis/mining_pits.py --park CAF_Chinko --max-tiles 60 --verbose
+  python3 analysis/mining_pits.py --park CAF_Chinko --scope park --corridor osm
 """
 import argparse, datetime, json, math, os, sys, urllib.request
 
 import numpy as np
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import mining_features as mf
+
+VERSION = "pits-v2-basin-ranker"
 STAC = "https://earth-search.aws.element84.com/v1/search"
-OUT_DIR = "data/mining_pits"
+OUT_DIR = "data/mining_candidates"
+LEGACY_OUT_DIR = "data/mining_pits"     # discredited; read-only reference
 WATERWAY_CACHE = "data/osm_raw/waterways"
-TILE = 0.05           # deg, detection tile size
-MIN_PX = 8            # >= 0.08 ha at 10m
-MAX_PX = 3000         # skip towns / huge bare areas
-RED_MIN = 1400
-NDVI_MAX = 0.35
+TILE = 0.05           # deg, scoring tile size
+MIN_PX = 4            # 0.04 ha at 10 m; truth pits are 1-3 px shafts in a
+                      # cluster, so this is as low as connected-components
+                      # can go before single-pixel noise dominates
+MAX_PX = 3000         # skip towns / big natural bare pans
+MAX_PER_TILE = 12     # a 0.05-deg tile with more "top 0.5%" blobs than this is
+                      # a bare landscape, not a set of pits
+TOP_PCT = 99.5        # score cut, as a percentile of the basin's own season
+TOP_N = 200           # candidates reported per basin
 
 os.environ.setdefault("GDAL_DISABLE_READDIR_ON_OPEN", "EMPTY_DIR")
 os.environ.setdefault("CPL_VSIL_CURL_CACHE_SIZE", "200000000")
@@ -57,29 +79,26 @@ def load_corridor(park_id, bbox=None, min_pct=None, use_osm=False,
     10x8 km window (analysis/flow_corridor.py --validate), so terrain finds the
     drainage lines that OSM does not have.
 
-    `scope`:
-      basin  - the park's contributing watershed (park_basins, migration 039).
-               This is the correct extent: mining pressure is a watershed
-               phenomenon and the truth pits are 123 km OUTSIDE the park.
-      park   - park polygon only (fallback when no basin has been fetched).
+    Extent is `flow_corridor.scan_geom(park_id, scope)` = the park's
+    contributing watershed (park_basins, migration 039) clipped to 200 km from
+    the park, UNION the park polygon. Basin-only would skip most of a
+    divide-top or endorheic park (see that docstring); park-only cannot express
+    upstream pressure at all, which was the original bug.
 
     `use_osm=True` restores the legacy behaviour for A/B comparison only.
     """
-    from shapely.geometry import shape, box
+    from shapely.geometry import box
     if use_osm:
         return _load_corridor_osm(park_id, bbox)
 
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import flow_corridor as fc
 
-    geom = fc.basin_geom(park_id) if scope == "basin" else None
+    geom = fc.scan_geom(park_id, scope)
     if geom is None:
-        parks = json.load(open("data/keystones_with_boundaries.json"))
-        p = next((x for x in parks if x["id"] == park_id), None)
-        if not p or not p.get("geometry"):
-            return set(), []
-        geom = shape(p["geometry"])
-        print(f"{park_id}: no cached basin, falling back to park polygon "
+        return set(), []
+    if fc.basin_geom(park_id) is None:
+        print(f"{park_id}: no cached basin, park polygon only "
               f"(run scripts/fetch_park_basins.py --park {park_id})",
               file=sys.stderr)
     if bbox:
@@ -135,222 +154,221 @@ def stac_scenes(bbox, dt_range, max_cloud=60, limit=200):
     return json.load(urllib.request.urlopen(req))["features"]
 
 
-def read_tile(sc, tb):
-    """Read red/nir/scl for tile bounds tb=(w,s,e,n). Returns dict or None
-    (cloudy/empty). Uses one rasterio env; caller keeps scene datasets open."""
-    import rasterio
-    from rasterio.windows import from_bounds
-    from rasterio.warp import transform_bounds
-    R, N, S = sc["_ds"]
-    b = transform_bounds("EPSG:4326", R.crs, *tb)
-    win = from_bounds(*b, R.transform)
-    red = R.read(1, window=win, boundless=True, fill_value=0).astype(np.float32)
-    if red.size == 0 or (red > 0).mean() < 0.5:
-        return None
-    nir = N.read(1, window=from_bounds(*b, N.transform),
-                 boundless=True, fill_value=0).astype(np.float32)
-    scl = S.read(1, window=from_bounds(*b, S.transform),
-                 boundless=True, fill_value=0)
-    clear = np.isin(scl, (4, 5, 6, 7, 11)).mean()
-    if clear < 0.85:
-        return None
-    h = min(red.shape[0], nir.shape[0]); w = min(red.shape[1], nir.shape[1])
-    from rasterio.windows import Window
-    tr = R.window_transform(win)
-    return {"red": red[:h, :w], "nir": nir[:h, :w], "transform": tr, "crs": R.crs}
+def clusters_in_tile(comp, cal, cut_pct=TOP_PCT):
+    """Top-scoring connected blobs in one composite -> candidate dicts.
 
-
-def clusters_in_tile(t):
-    """Bright-bare clusters -> [(px, lat, lon, pond_px)]."""
+    This is the ranker. There is no absolute brightness threshold: a blob is
+    "the top `100 - cut_pct`% of scores in this landscape/season", where the
+    reference distribution is the basin-wide calibration sample. RED_MIN=1400 /
+    NDVI_MAX=0.35 used to live here and had recall 0/8 on the manual truth pits
+    (docs/MINING_FINDINGS_2026-08.md §2): those are 1-3 px hand-dug shafts with
+    red 911-1242, not multi-hectare wash plains.
+    """
     from scipy import ndimage
     from rasterio.warp import transform as rio_transform
-    red, nir = t["red"], t["nir"]
-    ndvi = (nir - red) / np.maximum(nir + red, 1)
-    mask = (red > RED_MIN) & (ndvi < NDVI_MAX)
+    F = mf.features(comp)
+    score = cal.score(F)
+    if score is None:
+        return []
+    thr = cal.score_threshold(cut_pct)
+    mask = np.isfinite(score) & (score >= thr)
+    # water is bright in rb but is not a pit; MNDWI > 0.2 is open water
+    mask &= ~(F["_mndwi"] > 0.2)
     if not mask.any():
         return []
-    # NDWI-ish proxy for ponds: very low NIR + not bright (turbid water has
-    # nir < red); mining ponds sit next to pits
-    pond = (nir < 1200) & (red > 600) & (red < 2500) & (ndvi < 0)
+    # ponds: a working alluvial pit has standing water beside it
+    pond = (F["_mndwi"] > 0.0) & (F["_ndvi"] < 0.2)
     lab, n = ndimage.label(mask)
+    if n == 0:
+        return []
+    sizes = ndimage.sum(mask, lab, range(1, n + 1))
     out = []
-    for i in range(1, n + 1):
+    for i in np.argsort(-sizes) + 1:
         m = lab == i
         s = int(m.sum())
-        if s < MIN_PX or s > MAX_PX:
-            continue
+        if s < MIN_PX:
+            break            # sizes are descending: nothing smaller qualifies
+        if s > MAX_PX:
+            continue         # town / big natural bare pan
         cy, cx = ndimage.center_of_mass(m)
-        x, y = t["transform"] * (cx, cy)
-        lon, lat = rio_transform(t["crs"], "EPSG:4326", [x], [y])
+        x, y = comp["_tr"] * (cx, cy)
+        lon, lat = rio_transform(comp["_crs"], "EPSG:4326", [x], [y])
         ys, xs = np.where(m)
-        pad = 15  # 150m
-        y0, y1 = max(0, ys.min()-pad), min(mask.shape[0], ys.max()+pad)
-        x0, x1 = max(0, xs.min()-pad), min(mask.shape[1], xs.max()+pad)
-        pond_px = int(pond[y0:y1, x0:x1].sum())
-        out.append({"px": s, "lat": round(lat[0], 5), "lon": round(lon[0], 5),
-                    "pond_px": pond_px})
+        pad = 15  # 150 m
+        y0, y1 = max(0, ys.min() - pad), min(mask.shape[0], ys.max() + pad)
+        x0, x1 = max(0, xs.min() - pad), min(mask.shape[1], xs.max() + pad)
+        sv = score[m]
+        out.append({
+            "px": s, "lat": round(lat[0], 5), "lon": round(lon[0], 5),
+            "pond_px": int(pond[y0:y1, x0:x1].sum()),
+            "score_raw": round(float(np.nanmean(sv)), 2),
+            "score_max_raw": round(float(np.nanmax(sv)), 2),
+            "feat_pct": {k: round(float(np.nanmedian(cal.pct(k, F[k][m]))), 1)
+                         for k in mf.FEATURES},
+        })
+        if len(out) >= MAX_PER_TILE:
+            break
     return out
 
 
-def open_scene(sc):
-    import rasterio
-    R = rasterio.open(sc["assets"]["red"]["href"])
-    N = rasterio.open(sc["assets"]["nir"]["href"])
-    S = rasterio.open(sc["assets"]["scl"]["href"])
-    sc["_ds"] = (R, N, S)
+def tile_bounds(t):
+    return (t[0] * TILE, t[1] * TILE, (t[0] + 1) * TILE, (t[1] + 1) * TILE)
 
 
-def close_scene(sc):
-    for d in sc.pop("_ds", ()) or ():
-        try: d.close()
-        except Exception: pass
+def history_px(comp_hist, cal, lon, lat, cut_pct=TOP_PCT, half_deg=0.003):
+    """How many top-scoring px sat at (lon, lat) in an older composite."""
+    if comp_hist is None:
+        return None
+    from rasterio.warp import transform as rio_transform
+    F = mf.features(comp_hist)
+    score = cal.score(F)
+    thr = cal.score_threshold(cut_pct)
+    x, y = rio_transform("EPSG:4326", comp_hist["_crs"], [lon], [lat])
+    col, row = ~comp_hist["_tr"] * (x[0], y[0])
+    r, c = int(row), int(col)
+    d = int(half_deg * 111000 / 10)          # ~33 px
+    sub = score[max(0, r - d):r + d + 1, max(0, c - d):c + d + 1]
+    if sub.size == 0:
+        return None
+    return int((np.isfinite(sub) & (sub >= thr)).sum())
 
 
-def scan(park_id, bbox_filter, days, verify_days):
-    from shapely.geometry import shape, Point
+def scan(park_id, bbox_filter=None, top_n=TOP_N, cut_pct=TOP_PCT,
+         scope="basin", use_osm=False, min_pct=None, years=3,
+         calib_tiles=25, max_tiles=None, history=True, verbose=False):
+    """Rank drainage-corridor tiles in the park's basin by mining-pit score.
+
+    Shape of the answer changed with the rescope: this returns the top `top_n`
+    candidates of the whole basin, ordered, with the numbers that produced the
+    order. It does NOT return "the mines" - measured AUC is ~0.8, which supports
+    a ranked worklist and nothing stronger (docs/MINING_FINDINGS_2026-08.md §6).
+    Precision must be established by scripts/eval_mining_detector.py before any
+    of this is shown in the UI.
+    """
+    from shapely.geometry import Point
     from shapely.strtree import STRtree
 
-    tiles, wpts = load_corridor(park_id, bbox_filter)
-    print(f"{park_id}: {len(tiles)} corridor tiles, {len(wpts)} waterway pts",
+    tiles, wpts = load_corridor(park_id, bbox_filter, min_pct=min_pct,
+                                use_osm=use_osm, scope=scope)
+    print(f"{park_id}: {len(tiles)} corridor tiles, {len(wpts)} drainage pts",
           file=sys.stderr)
     if not tiles:
         return None
-    lons = [xi*TILE for xi, yi in tiles]; lats = [yi*TILE for xi, yi in tiles]
-    bbox = (min(lons)-TILE, min(lats)-TILE, max(lons)+2*TILE, max(lats)+2*TILE)
-    wtree = STRtree([Point(p) for p in wpts])
+    tiles = sorted(tiles)
+    if max_tiles and len(tiles) > max_tiles:
+        # deterministic thinning, not truncation: a spatially even subsample so
+        # a partial scan still covers the whole basin (the old code kept
+        # kept[:400], which biased everything to one corner)
+        step = len(tiles) / float(max_tiles)
+        tiles = [tiles[int(i * step)] for i in range(max_tiles)]
+        print(f"  thinned to {len(tiles)} tiles (--max-tiles)", file=sys.stderr)
+    wtree = STRtree([Point(p) for p in wpts]) if wpts else None
 
-    end = datetime.date.today()
-    dt = f"{end - datetime.timedelta(days=days)}T00:00:00Z/{end}T23:59:59Z"
-    scenes = stac_scenes(bbox, dt)
-    print(f"{len(scenes)} scenes in {dt}", file=sys.stderr)
-    for sc in scenes:
-        sc["_geom"] = shape(sc["geometry"])
+    lat0 = sum(t[1] for t in tiles) / len(tiles) * TILE
+    dts = mf.dry_season_windows(lat0, n_years=years)
+    hist_dts = mf.dry_season_windows(lat0, n_years=1,
+                                     end=datetime.date.today()
+                                     - datetime.timedelta(days=365 * 3))
+    print(f"  dry-season windows: {dts}", file=sys.stderr)
 
-    # ---- detection pass: newest clear data per tile
-    todo = dict.fromkeys(sorted(tiles))     # tile -> None until read OK
-    cands = []
-    for sc in scenes:
-        mine = [t for t, v in todo.items() if v is None and
-                sc["_geom"].contains(Point((t[0]+0.5)*TILE, (t[1]+0.5)*TILE))]
-        if not mine:
+    # ---- calibration: what does this landscape look like, this season?
+    cal = mf.calibrate([tile_bounds(t) for t in tiles], dts,
+                       max_tiles=min(calib_tiles, len(tiles)), verbose=verbose)
+    if cal is None or not cal.breaks:
+        print(f"{park_id}: calibration failed (no clear scenes)", file=sys.stderr)
+        return None
+    thr = cal.score_threshold(cut_pct)
+    print(f"  calibrated on {cal.n} px, {len(cal.dates)} dates; "
+          f"score cut at pct {cut_pct} = {thr:.1f}", file=sys.stderr)
+
+    # ---- scoring pass
+    cands, scanned = [], 0
+    for k, t in enumerate(tiles, 1):
+        tb = tile_bounds(t)
+        try:
+            comp = mf.median_composite(tb, dts, verbose=verbose)
+        except Exception as ex:
+            print(f"  ERR tile {t}: {str(ex)[:70]}", file=sys.stderr)
             continue
-        open_scene(sc)
-        got = 0
-        date = sc["properties"]["datetime"][:10]
-        for t in mine:
-            tb = (t[0]*TILE, t[1]*TILE, (t[0]+1)*TILE, (t[1]+1)*TILE)
-            try:
-                r = read_tile(sc, tb)
-            except Exception as ex:
-                print(f"  ERR tile {t}: {str(ex)[:60]}", file=sys.stderr)
-                continue
-            if r is None:
-                continue
-            todo[t] = date
-            got += 1
-            for c in clusters_in_tile(r):
+        if comp is None:
+            continue
+        scanned += 1
+        got = clusters_in_tile(comp, cal, cut_pct)
+        for c in got:
+            c["tile"] = list(t)
+            c["dates"] = comp["_dates"]
+            if wtree is not None:
                 idx = int(wtree.nearest(Point(c["lon"], c["lat"])))
                 c["water_km"] = round(km((c["lon"], c["lat"]), wpts[idx]), 2)
-                c["scene"] = sc["id"]; c["date"] = date
-                cands.append(c)
-        close_scene(sc)
-        print(f"  {sc['id']} tiles={got} cands_total={len(cands)}", file=sys.stderr)
-        if all(v is not None for v in todo.values()):
-            break
-    scanned = sum(1 for v in todo.values() if v is not None)
+            cands.append(c)
+        if verbose or k % 25 == 0:
+            print(f"  [{k}/{len(tiles)}] {t} +{len(got)} "
+                  f"(total {len(cands)})", file=sys.stderr)
 
-    # near-water filter + dedupe (200m)
-    cands = [c for c in cands if c["water_km"] <= 1.0]
-    cands.sort(key=lambda c: -c["px"])
+    # dedupe at 200 m, best score wins
+    cands.sort(key=lambda c: -c["score_raw"])
     kept = []
     for c in cands:
-        if any(km((c["lon"], c["lat"]), (k["lon"], k["lat"])) < 0.2 for k in kept):
+        if any(km((c["lon"], c["lat"]), (k2["lon"], k2["lat"])) < 0.2
+               for k2 in kept):
             continue
         kept.append(c)
-    print(f"detection: {scanned}/{len(tiles)} tiles read, {len(kept)} near-water candidates",
-          file=sys.stderr)
+    print(f"scoring: {scanned}/{len(tiles)} tiles composited, "
+          f"{len(kept)} distinct candidates", file=sys.stderr)
 
-    kept = kept[:400]   # cap verification work; largest clusters first
-
-    def recheck_pass(cands, dt_range, result_key, date_key, skip_same=True):
-        """For each candidate, find max bright-bare px in an older scene.
-        Groups work per scene: one scene open serves all its candidates."""
-        scs = stac_scenes(bbox, dt_range)
-        for sc in scs:
-            sc["_geom"] = shape(sc["geometry"])
-        pending = {id(c): c for c in cands}
-        for sc in scs:
-            if not pending:
-                break
-            date = sc["properties"]["datetime"][:10]
-            mine = [c for c in pending.values()
-                    if sc["_geom"].contains(Point(c["lon"], c["lat"]))
-                    and not (skip_same and (sc["id"] == c["scene"] or date >= c["date"]))]
-            if not mine:
-                continue
-            open_scene(sc)
-            for c in mine:
-                d = 0.003
-                tb = (c["lon"]-d, c["lat"]-d, c["lon"]+d, c["lat"]+d)
-                try:
-                    r = read_tile(sc, tb)
-                except Exception:
-                    r = None
-                if r is None:
-                    continue
-                cl = clusters_in_tile(r)
-                c[result_key] = max((x["px"] for x in cl), default=0)
-                c[date_key] = date
-                del pending[id(c)]
-            close_scene(sc)
-
-    # ---- persistence pass: verify each candidate in an older scene
-    verify_end = end - datetime.timedelta(days=10)
-    dtv = f"{verify_end - datetime.timedelta(days=verify_days)}T00:00:00Z/{verify_end}T23:59:59Z"
-    recheck_pass(kept, dtv, "verify_px", "verify_date")
-    sites = []
+    # ---- rank, then keep the top N. Primary key is the score's percentile in
+    # this landscape; the two modifiers are deliberately sub-percentile-point
+    # tiebreakers, so they can reorder near-ties but can never promote a weak
+    # candidate. (An earlier version added +0.02 to a 0-1 score and clamped at
+    # 1.0, which made the whole top of the list read "1.0" - the same failure as
+    # the old +0.20 "new since" bonus that put 90% of sites above 0.7.)
     for c in kept:
-        vp = c.get("verify_px")
-        if vp is None:
-            c["persistent"] = None    # couldn't verify (clouds) — keep, low conf
-        elif vp >= MIN_PX // 2:
-            c["persistent"] = True
-        else:
-            c["persistent"] = False
-        if c["persistent"] is not False:
-            sites.append(c)
-    print(f"persistence: {len(sites)}/{len(kept)} kept", file=sys.stderr)
-
-    # ---- history pass: was this bare a year+ ago? (village/outcrop vs new mine)
-    yr_end = end - datetime.timedelta(days=330)
-    dth = f"{yr_end - datetime.timedelta(days=270)}T00:00:00Z/{yr_end}T23:59:59Z"
-    for c in sites:
-        c["historical_px"] = None
-    recheck_pass(sites, dth, "historical_px", "historical_date", skip_same=False)
-
-    # ---- score
-    for c in sites:
-        score = 0.30
-        if c["px"] >= 25: score += 0.10
-        if c["px"] >= 80: score += 0.10
-        if c["water_km"] <= 0.3: score += 0.10
-        if c.get("pond_px", 0) >= 10: score += 0.10
-        if c["persistent"]: score += 0.10
-        h = c.get("historical_px")
-        if h is not None:
-            if h < max(MIN_PX, c["px"] * 0.3):
-                score += 0.20               # new since last year — strong mining signal
-                c["new_since"] = c.get("historical_date")
-            elif h >= c["px"] * 0.8:
-                score -= 0.15               # long-standing bare (village/outcrop)
-        c["score"] = round(min(max(score, 0.05), 0.95), 2)
+        c["score_pct"] = round(float(cal.score_pct(c["score_raw"])), 3)
+        r = c["score_pct"]
+        if c.get("water_km") is not None and c["water_km"] <= 0.3:
+            r += 0.02
+        if c.get("pond_px", 0) >= 10:
+            r += 0.02
+        c["rank_score"] = round(r, 4)
         c["area_ha"] = round(c["px"] * 0.01, 2)
-    sites.sort(key=lambda c: -c["score"])
-    return {"park_id": park_id,
+    # score_pct saturates at 100 (Calibration.QS tops out there and its finest
+    # step is 0.05), so break ties with the raw score, which is unbounded.
+    kept.sort(key=lambda c: (-c["rank_score"], -c["score_max_raw"],
+                             -c["score_raw"], -c["px"]))
+    sites = kept[:top_n]
+
+    # ---- history: reported as metadata, never as score. "Bare 3 years ago
+    # too" distinguishes an outcrop/village from a new working, but we have not
+    # measured how well, so it does not move the ranking.
+    if history and sites:
+        by_tile = {}
+        for c in sites:
+            by_tile.setdefault(tuple(c["tile"]), []).append(c)
+        for t, cs in by_tile.items():
+            try:
+                hc = mf.median_composite(tile_bounds(t), hist_dts,
+                                         max_scenes=4, verbose=verbose)
+            except Exception:
+                hc = None
+            for c in cs:
+                c["historical_px"] = history_px(hc, cal, c["lon"], c["lat"],
+                                                cut_pct)
+                c["historical_dates"] = (hc or {}).get("_dates")
+                h = c["historical_px"]
+                c["new_since"] = (None if h is None
+                                  else h < max(MIN_PX, c["px"] * 0.3))
+
+    return {"park_id": park_id, "version": VERSION,
             "scanned_at": datetime.datetime.now(datetime.timezone.utc)
                 .strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "datetime_range": dt, "bbox_filter": bbox_filter,
+            "scope": scope, "corridor": "osm" if use_osm else "flowacc",
+            "dry_season_windows": dts, "historical_windows": hist_dts,
+            "cut_pct": cut_pct, "score_cut": round(thr, 2),
+            "bbox_filter": bbox_filter,
             "tiles_total": len(tiles), "tiles_scanned": scanned,
+            "candidates_before_topn": len(kept),
+            "calibration": {"n_px": int(cal.n), "dates": cal.dates,
+                            "weights": mf.WEIGHTS},
             "sites": sites}
 
 
@@ -358,52 +376,89 @@ STATE_FILE = f"{OUT_DIR}/state.json"
 
 
 def main():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(
+        description="Rank mining-pit candidates in a park's contributing basin")
     ap.add_argument("--park")
+    ap.add_argument("--parks", help="comma separated")
     ap.add_argument("--rotate", action="store_true",
-                    help="scan most-stale park with a cached waterway extract")
-    ap.add_argument("--bbox", help="lon0,lat0,lon1,lat1 corridor filter")
-    ap.add_argument("--days", type=int, default=45)
-    ap.add_argument("--verify-days", type=int, default=120,
-                    help="lookback for the persistence pass")
+                    help="scan the most-stale park that has a cached basin")
+    ap.add_argument("--bbox", help="lon0,lat0,lon1,lat1 filter within the basin")
+    ap.add_argument("--scope", choices=("basin", "park", "strict"),
+                    default="basin",
+                    help="basin U park (default) | park only | basin only")
+    ap.add_argument("--corridor", choices=("flowacc", "osm"), default="flowacc",
+                    help="osm = legacy corridor, for A/B only")
+    ap.add_argument("--min-pct", type=float, default=None,
+                    help="flow-accumulation percentile cut (default 94)")
+    ap.add_argument("--cut-pct", type=float, default=TOP_PCT,
+                    help="score percentile cut within the basin's season")
+    ap.add_argument("--top-n", type=int, default=TOP_N)
+    ap.add_argument("--years", type=int, default=3,
+                    help="dry seasons in the median composite")
+    ap.add_argument("--calib-tiles", type=int, default=25)
+    ap.add_argument("--max-tiles", type=int, default=None,
+                    help="thin the corridor evenly to this many tiles")
+    ap.add_argument("--no-history", dest="history", action="store_false")
+    ap.add_argument("--out-dir", default=OUT_DIR)
+    ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
-    park = args.park
-    if not park and args.rotate:
+
+    want = []
+    if args.park:
+        want.append(args.park)
+    if args.parks:
+        want += [x for x in args.parks.split(",") if x]
+    if not want and args.rotate:
         state = {}
-        try: state = json.load(open(STATE_FILE))
-        except Exception: pass
-        cand = [f[:-8] for f in sorted(os.listdir(WATERWAY_CACHE))
-                if f.endswith(".geojson")]
-        cand.sort(key=lambda pid: state.get(pid, {}).get("scanned_at", ""))
-        if not cand:
-            print("no waterway extracts yet", file=sys.stderr); return
-        park = cand[0]
-    if not park:
-        ap.error("need --park or --rotate")
-    bbox = [float(x) for x in args.bbox.split(",")] if args.bbox else None
-    res = scan(park, bbox, args.days, args.verify_days)
-    if not res:
-        print("no corridor tiles", file=sys.stderr); return
-    os.makedirs(OUT_DIR, exist_ok=True)
-    if args.rotate or not args.bbox:
-        state = {}
-        try: state = json.load(open(STATE_FILE))
-        except Exception: pass
-        state[park] = {"scanned_at": res["scanned_at"],
-                       "n_sites": len(res["sites"])}
-        json.dump(state, open(STATE_FILE, "w"), indent=1)
-    path = f"{OUT_DIR}/{park}.json"
-    # merge: keep sites from previous scans of other bbox areas
-    if os.path.exists(path) and bbox:
         try:
-            old = json.load(open(path))
-            keep = [s for s in old.get("sites", [])
-                    if not (bbox[0] <= s["lon"] <= bbox[2] and bbox[1] <= s["lat"] <= bbox[3])]
-            res["sites"] = sorted(res["sites"] + keep, key=lambda c: -c["score"])
+            state = json.load(open(f"{args.out_dir}/state.json"))
         except Exception:
             pass
-    json.dump(res, open(path, "w"), indent=1)
-    print(f"{len(res['sites'])} pit sites -> {path}", file=sys.stderr)
+        import sqlite3
+        con = sqlite3.connect("db.sqlite3")
+        cand = [r[0] for r in con.execute(
+            "SELECT park_id FROM park_basins WHERE kind='upstream' "
+            "ORDER BY park_id")]
+        con.close()
+        if not cand:
+            print("no basins yet: scripts/fetch_park_basins.py --all",
+                  file=sys.stderr)
+            return
+        cand.sort(key=lambda pid: state.get(pid, {}).get("scanned_at", ""))
+        want = [cand[0]]
+    if not want:
+        ap.error("need --park/--parks or --rotate")
+
+    bbox = [float(x) for x in args.bbox.split(",")] if args.bbox else None
+    os.makedirs(args.out_dir, exist_ok=True)
+    for park in want:
+        res = scan(park, bbox, top_n=args.top_n, cut_pct=args.cut_pct,
+                   scope=args.scope, use_osm=args.corridor == "osm",
+                   min_pct=args.min_pct, years=args.years,
+                   calib_tiles=args.calib_tiles, max_tiles=args.max_tiles,
+                   history=args.history, verbose=args.verbose)
+        if not res:
+            print(f"{park}: nothing scanned", file=sys.stderr)
+            continue
+        path = f"{args.out_dir}/{park}.json"
+        # No merging with previous output: this is a ranking of one scan under
+        # one calibration, and merging rankings from different calibrations
+        # (different seasons, different reference distributions) produces an
+        # order that means nothing. Use --bbox for exploration, not accretion.
+        json.dump(res, open(path, "w"), indent=1)
+        state = {}
+        try:
+            state = json.load(open(f"{args.out_dir}/state.json"))
+        except Exception:
+            pass
+        state[park] = {"scanned_at": res["scanned_at"],
+                       "version": res["version"],
+                       "n_sites": len(res["sites"]),
+                       "tiles_scanned": res["tiles_scanned"],
+                       "tiles_total": res["tiles_total"]}
+        json.dump(state, open(f"{args.out_dir}/state.json", "w"), indent=1)
+        print(f"{len(res['sites'])} ranked candidates -> {path}",
+              file=sys.stderr)
 
 
 if __name__ == "__main__":
