@@ -73,3 +73,6 @@ data/osm_geofabrik/
 data/gsw/
 analysis/out/*.png
 analysis/out/*.npy
+
+# Derived flow-accumulation percentile tiles (regenerate: analysis/flow_corridor.py)
+data/flowacc/
