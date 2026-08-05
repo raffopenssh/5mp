@@ -247,3 +247,94 @@ What is worth doing, in order:
    with Strahler orders) — "this park's water comes from 59,000 km² including
    these 8 000 km of upstream reaches" is defensible and useful on its own.
    Ship that; do not ship pits.
+## 9. ADDENDUM (2026-08-05, evening): the AMW learned model, wired and validated
+
+Handover action #1 ("evaluate `earthrise-media/mining-detector` before declaring
+optical ASM detection closed") is now **executable**. The plumbing exists and is
+verified; the Africa measurement is the next thing to read off it.
+
+### 9.1 What was built
+
+| path | what |
+|------|------|
+| `data/models/amw/48px_v4.10b-…-ensemble.h5` (16 MB, in git) | the July-2026 production ensemble from upstream commit `bbbcb2d`, + its `config-t0.43.txt` and MIT LICENSE |
+| `analysis/amw_model.py` | runs that model on **our** Sentinel-2 stacks (no Earth Engine, no Descartes) |
+| `scripts/eval_amw_model.py` | `--sanity` / `--africa` / `--manual` scoring modes |
+| `data/mining_truth/amw_labels_holdout.json` | 3,892 upstream held-out labels (val + test2 + Venezuela geo-holdout), extracted from their `collected_locations2026-05-04` |
+
+The input pipeline is a deliberate reproduction of upstream's, documented
+inline in `analysis/amw_model.py`. The parts that are easy to get silently wrong:
+
+- **13 bands in GEE `S2L1C` order**: `B1 B2 B3 B4 B5 B6 B7 B8A B8 B9 B10 B11 B12`
+  — note **B8A before B8**, and B10 (cirrus) present. Wrong order → plausible
+  garbage, no error.
+- **Harmonisation**: upstream reads `COPERNICUS/S2_HARMONIZED` and divides by
+  10,000. Baseline ≥ 04.00 scenes need the −1000 DN shift; we apply it per scene
+  from `s2:processing_baseline`. (Earth Search says the same as
+  `scale 1e-4, offset -0.1`.)
+- **Imagery host**: Earth Search's L1C assets are `s3://sentinel-s2-l1c`
+  = requester-pays = unusable unsigned. The identical granule is free on Google's
+  `gcp-public-data-sentinel-2`; we resolve L1C → GCS JP2s via `s2:product_uri`
+  plus one cached bucket listing. L2A (for SCL) stays on AWS unsigned.
+- **Cloud mask**: Cloud Score+ (`cs_cdf ≥ 0.6`) is GEE-only, so we mask with the
+  SCL of the *same granule's* L2A twin before the median. Both are per-pixel
+  cloud/shadow rejections ahead of a multi-date median.
+
+### 9.2 Sanity check: our pipeline reproduces upstream's behaviour
+
+Before any Africa number is meaningful, the model must behave on its own
+held-out labels when fed by *our* code. First 6 points (3 mine / 3 non-mine,
+each scored in its own label window):
+
+| | scores |
+|--|--|
+| labelled mines | 0.916, 0.681, 0.356 |
+| labelled non-mines | 0.0012, 0.0001, 0.000007 |
+
+AUC 1.000, specificity 1.000, sensitivity 0.667 at the published `t=0.43`.
+Three points per class is not a measurement, but it is decisive as a *wiring*
+check: a wrong band order or a missing harmonisation offset does not produce
+0.9 on mines and 1e-5 on forest. Larger run: `analysis/out/amw_sanity_*.json`
+(60+60, `--sanity 60`).
+
+### 9.3 Cost, and how to run it
+
+~40 HTTP range reads per patch (13 bands × up to 4 dates + SCL), bands fetched
+concurrently: **5–60 s per point**, network-bound. Composites are cached in
+`data/amw_cache/*.npz` (gitignored, regenerable), so re-runs at different
+thresholds are nearly free.
+
+```bash
+# 1. does OUR pipeline reproduce upstream? (must pass first)
+python3 scripts/eval_amw_model.py --sanity 60 --workers 6 --verbose \
+    --json analysis/out/amw_sanity.json
+
+# 2. THE measurement: IPIS visited mines vs the same confusers that
+#    beat our indices (§8.1: AUC 0.450-0.555)
+python3 scripts/eval_amw_model.py --africa 25 --jitter --workers 6 --verbose \
+    --json analysis/out/amw_africa.json
+
+# 3. probe the 8 Chinko pits (read with §8.3's doubt about their identity)
+python3 scripts/eval_amw_model.py --manual --jitter
+```
+
+Run these in `tmux`, not in a tool call.
+
+### 9.4 How to read the pending result
+
+- **AUC ≫ 0.56 on IPIS-vs-confuser** → the learned model carries signal our
+  indices do not, and the pipeline becomes: AMW ensemble scored over
+  `flow_corridor.scan_geom()` patches, ranked, adjudicated with
+  `analysis/chip_grid.py`. That is a real detector, not an index.
+- **AUC ≈ 0.5, or confusers scoring like mines** → optical 10 m ASM detection in
+  African savanna is **closed**, and §8.4's step 1 is answered: document it,
+  ship only the basin layer, and stop. Note in that case what a null means: the
+  model was trained on Amazonian wash-plains in rainforest, and CAR/DRC ASM is
+  smaller pits in a landscape that is *already* seasonally bare — the same
+  "everything is bare" problem that flattened our indices. A domain-transfer
+  failure is not proof that the phenomenon is undetectable, but with no labelled
+  African training set it is the end of the cheap options.
+
+Either way, handover action #2 (adjudicate the truth sets) still gates the
+confidence of the answer: an at-chance result against a suspect positive set is
+weaker evidence than the number looks.

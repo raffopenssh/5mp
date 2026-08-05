@@ -1,0 +1,7220 @@
+{
+ "note": "Positives minus imagery-adjudicated no_pit. verdict=null means not yet looked at; 'maybe' and 'unclear_imagery' are retained on purpose (see scripts/adjudicate_truth.py docstring).",
+ "n": 723,
+ "sites": [
+  {
+   "key": "ipis_caf_00000",
+   "lon": 17.8380616667,
+   "lat": 3.8303266667,
+   "set": "ipis",
+   "name": "Pouadoungbe",
+   "visit_date": "2019-03-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00001",
+   "lon": 17.467914,
+   "lat": 4.794698,
+   "set": "ipis",
+   "name": "Adouzekede",
+   "visit_date": "2019-04-22",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00002",
+   "lon": 17.8371166667,
+   "lat": 3.83392,
+   "set": "ipis",
+   "name": "Nkongue",
+   "visit_date": "2019-04-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00003",
+   "lon": 17.4648,
+   "lat": 4.796248,
+   "set": "ipis",
+   "name": "Adouzekede",
+   "visit_date": "2019-04-23",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00004",
+   "lon": 17.5029833333,
+   "lat": 4.760425,
+   "set": "ipis",
+   "name": "Ngom-Mbata",
+   "visit_date": "2019-04-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00005",
+   "lon": 17.516961,
+   "lat": 4.727429,
+   "set": "ipis",
+   "name": "Drol",
+   "visit_date": "2019-04-23",
+   "minerals": "Diamant, Or, Carbone",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00006",
+   "lon": 17.4648,
+   "lat": 4.796248,
+   "set": "ipis",
+   "name": "Drol",
+   "visit_date": "2019-04-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00007",
+   "lon": 15.691968,
+   "lat": 6.82967,
+   "set": "ipis",
+   "name": "Ndemou",
+   "visit_date": "2019-04-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00008",
+   "lon": 17.796555,
+   "lat": 3.8598816667,
+   "set": "ipis",
+   "name": "Mengui 2",
+   "visit_date": "2019-04-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00009",
+   "lon": 17.8067966667,
+   "lat": 3.8381383333,
+   "set": "ipis",
+   "name": "Mengui 1",
+   "visit_date": "2019-04-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00010",
+   "lon": 16.993305,
+   "lat": 5.5278216667,
+   "set": "ipis",
+   "name": "Gamme Sengu\u00e8mon",
+   "visit_date": "2019-04-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00011",
+   "lon": 16.9793166667,
+   "lat": 5.5189516667,
+   "set": "ipis",
+   "name": "Yongoro-Nguiza",
+   "visit_date": "2019-04-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00012",
+   "lon": 16.9530383333,
+   "lat": 5.509415,
+   "set": "ipis",
+   "name": "Gamme-Carri\u00e8re",
+   "visit_date": "2019-04-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00013",
+   "lon": 16.978135,
+   "lat": 5.50281,
+   "set": "ipis",
+   "name": "Gamme-Yofo",
+   "visit_date": "2019-04-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00015",
+   "lon": 16.440613,
+   "lat": 6.47471,
+   "set": "ipis",
+   "name": "Garo",
+   "visit_date": "2019-04-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00016",
+   "lon": 16.459734,
+   "lat": 6.476651,
+   "set": "ipis",
+   "name": "Gouroum",
+   "visit_date": "2019-04-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00019",
+   "lon": 15.724788,
+   "lat": 6.788653,
+   "set": "ipis",
+   "name": "Moundji 1",
+   "visit_date": "2019-04-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00020",
+   "lon": 15.69165,
+   "lat": 6.80107,
+   "set": "ipis",
+   "name": "Sadou",
+   "visit_date": "2019-04-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00021",
+   "lon": 15.680651,
+   "lat": 6.808367,
+   "set": "ipis",
+   "name": "Kangab\u00e9",
+   "visit_date": "2019-04-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00022",
+   "lon": 17.7908966667,
+   "lat": 3.7920883333,
+   "set": "ipis",
+   "name": "Ouana-Sego",
+   "visit_date": "2019-04-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00023",
+   "lon": 17.0101866667,
+   "lat": 5.5268833333,
+   "set": "ipis",
+   "name": "Cflt Gamme-Datoli",
+   "visit_date": "2019-04-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00024",
+   "lon": 17.01591,
+   "lat": 5.53323,
+   "set": "ipis",
+   "name": "Gamme 5 Kilo",
+   "visit_date": "2019-04-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00025",
+   "lon": 17.0307483333,
+   "lat": 5.5570616667,
+   "set": "ipis",
+   "name": "Ban",
+   "visit_date": "2019-04-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00026",
+   "lon": 17.0727933333,
+   "lat": 5.6182766667,
+   "set": "ipis",
+   "name": "Site De Ban-Kaly\u00e9",
+   "visit_date": "2019-04-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00027",
+   "lon": 16.43022,
+   "lat": 6.4537,
+   "set": "ipis",
+   "name": "Gan",
+   "visit_date": "2019-04-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00028",
+   "lon": 16.409127,
+   "lat": 6.40295,
+   "set": "ipis",
+   "name": "Gbonkolo",
+   "visit_date": "2019-04-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00029",
+   "lon": 16.419996,
+   "lat": 6.438595,
+   "set": "ipis",
+   "name": "Sagna",
+   "visit_date": "2019-04-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00030",
+   "lon": 16.439273,
+   "lat": 6.437566,
+   "set": "ipis",
+   "name": "Rota",
+   "visit_date": "2019-04-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00031",
+   "lon": 17.516961,
+   "lat": 4.727429,
+   "set": "ipis",
+   "name": "Pama-Drol",
+   "visit_date": "2019-04-25",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00032",
+   "lon": 15.667726,
+   "lat": 6.81885,
+   "set": "ipis",
+   "name": "Nahaton",
+   "visit_date": "2019-04-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00033",
+   "lon": 15.669693,
+   "lat": 6.809184,
+   "set": "ipis",
+   "name": "Moundji Centre",
+   "visit_date": "2019-04-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00034",
+   "lon": 17.8348083333,
+   "lat": 3.8465183333,
+   "set": "ipis",
+   "name": "Mombondo",
+   "visit_date": "2019-04-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00035",
+   "lon": 17.840075,
+   "lat": 3.7883216667,
+   "set": "ipis",
+   "name": "Mondakalaka.",
+   "visit_date": "2019-04-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00036",
+   "lon": 16.9493066667,
+   "lat": 5.5005433333,
+   "set": "ipis",
+   "name": "Gamme-Garouaboulaye",
+   "visit_date": "2019-04-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00037",
+   "lon": 16.94305,
+   "lat": 5.5120733333,
+   "set": "ipis",
+   "name": "Sengu\u00e9y\u00e9ngu\u00e9",
+   "visit_date": "2019-04-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00038",
+   "lon": 16.958975,
+   "lat": 5.532365,
+   "set": "ipis",
+   "name": "Gombo",
+   "visit_date": "2019-04-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00039",
+   "lon": 16.92351,
+   "lat": 5.52665,
+   "set": "ipis",
+   "name": "Zangbana",
+   "visit_date": "2019-04-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00040",
+   "lon": 16.463634,
+   "lat": 6.539739,
+   "set": "ipis",
+   "name": "Lao",
+   "visit_date": "2019-04-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00041",
+   "lon": 16.458743,
+   "lat": 6.509567,
+   "set": "ipis",
+   "name": "Dondengue",
+   "visit_date": "2019-04-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00042",
+   "lon": 16.9743766667,
+   "lat": 5.6466116667,
+   "set": "ipis",
+   "name": "P\u00e9ya",
+   "visit_date": "2019-04-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00043",
+   "lon": 16.9546616667,
+   "lat": 5.6358883333,
+   "set": "ipis",
+   "name": "Oko-P\u00e9ya",
+   "visit_date": "2019-04-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00044",
+   "lon": 16.9715566667,
+   "lat": 5.6185366667,
+   "set": "ipis",
+   "name": "Nandombo",
+   "visit_date": "2019-04-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00045",
+   "lon": 17.5799266667,
+   "lat": 5.3748083333,
+   "set": "ipis",
+   "name": "Lyn",
+   "visit_date": "2019-04-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00046",
+   "lon": 17.580285,
+   "lat": 5.382555,
+   "set": "ipis",
+   "name": "Wesse-Doli",
+   "visit_date": "2019-04-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00047",
+   "lon": 16.67373,
+   "lat": 6.622774,
+   "set": "ipis",
+   "name": "Rouw\u00e9",
+   "visit_date": "2019-04-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00048",
+   "lon": 16.9860533333,
+   "lat": 5.5924916667,
+   "set": "ipis",
+   "name": "Gbargbar",
+   "visit_date": "2019-04-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00049",
+   "lon": 16.9763066667,
+   "lat": 5.67692,
+   "set": "ipis",
+   "name": "Birao",
+   "visit_date": "2019-04-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00050",
+   "lon": 16.9692766667,
+   "lat": 5.663095,
+   "set": "ipis",
+   "name": "Gbazerbaza",
+   "visit_date": "2019-04-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00051",
+   "lon": 16.984945,
+   "lat": 5.6826883333,
+   "set": "ipis",
+   "name": "Ndeing Aval",
+   "visit_date": "2019-04-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00052",
+   "lon": 17.5197783333,
+   "lat": 5.6673316667,
+   "set": "ipis",
+   "name": "Papou",
+   "visit_date": "2019-04-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00053",
+   "lon": 15.688572,
+   "lat": 6.912671,
+   "set": "ipis",
+   "name": "Lima",
+   "visit_date": "2019-04-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00054",
+   "lon": 15.773615,
+   "lat": 6.837789,
+   "set": "ipis",
+   "name": "Barrage Bernard",
+   "visit_date": "2019-04-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00055",
+   "lon": 15.80731,
+   "lat": 6.947788,
+   "set": "ipis",
+   "name": "Gbaguene",
+   "visit_date": "2019-04-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00056",
+   "lon": 16.216823,
+   "lat": 6.156717,
+   "set": "ipis",
+   "name": "Mb\u00e8hya",
+   "visit_date": "2019-04-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00057",
+   "lon": 16.220401,
+   "lat": 6.167299,
+   "set": "ipis",
+   "name": "Nab\u00e9dou\u00ef",
+   "visit_date": "2019-04-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00058",
+   "lon": 16.222315,
+   "lat": 6.17627,
+   "set": "ipis",
+   "name": "Mb\u00e8ya_2",
+   "visit_date": "2019-04-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00059",
+   "lon": 17.016485,
+   "lat": 5.6746583333,
+   "set": "ipis",
+   "name": "P\u00e9ya Camp-Bangui",
+   "visit_date": "2019-04-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00060",
+   "lon": 17.0505716667,
+   "lat": 5.6819683333,
+   "set": "ipis",
+   "name": "Ban Camp-Bangui",
+   "visit_date": "2019-04-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00061",
+   "lon": 16.988903,
+   "lat": 5.659606,
+   "set": "ipis",
+   "name": "Zou\u00e9",
+   "visit_date": "2019-04-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00062",
+   "lon": 17.0011383333,
+   "lat": 5.7034633333,
+   "set": "ipis",
+   "name": "Gbolon",
+   "visit_date": "2019-04-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00063",
+   "lon": 17.4126616667,
+   "lat": 5.7114333333,
+   "set": "ipis",
+   "name": "Pk12",
+   "visit_date": "2019-04-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00064",
+   "lon": 17.3707133333,
+   "lat": 5.71794,
+   "set": "ipis",
+   "name": "Zu-Ndjoh",
+   "visit_date": "2019-04-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00065",
+   "lon": 16.9666666667,
+   "lat": 5.725035,
+   "set": "ipis",
+   "name": "Zou\u00e9",
+   "visit_date": "2019-04-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00066",
+   "lon": 17.0020683333,
+   "lat": 5.7375083333,
+   "set": "ipis",
+   "name": "Camp-Atrone",
+   "visit_date": "2019-04-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00067",
+   "lon": 16.94697,
+   "lat": 5.8286116667,
+   "set": "ipis",
+   "name": "Mb\u00e8r\u00e8",
+   "visit_date": "2019-04-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00068",
+   "lon": 16.9703483333,
+   "lat": 5.76075,
+   "set": "ipis",
+   "name": "Mb\u00e8r\u00e8-Moussa",
+   "visit_date": "2019-04-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00069",
+   "lon": 15.703364,
+   "lat": 6.768129,
+   "set": "ipis",
+   "name": "Yewere",
+   "visit_date": "2019-04-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00070",
+   "lon": 15.632206,
+   "lat": 6.771521,
+   "set": "ipis",
+   "name": "Ngorohoul",
+   "visit_date": "2019-04-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00071",
+   "lon": 17.8639533333,
+   "lat": 3.67517,
+   "set": "ipis",
+   "name": "Moboma",
+   "visit_date": "2019-04-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00073",
+   "lon": 16.301723,
+   "lat": 6.2524083,
+   "set": "ipis",
+   "name": "Yakouma",
+   "visit_date": "2019-04-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00074",
+   "lon": 16.305245,
+   "lat": 6.240995,
+   "set": "ipis",
+   "name": "Yabossio_1",
+   "visit_date": "2019-04-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00075",
+   "lon": 16.302168,
+   "lat": 6.237519,
+   "set": "ipis",
+   "name": "Yabossio_2",
+   "visit_date": "2019-04-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00076",
+   "lon": 16.33924,
+   "lat": 6.16084,
+   "set": "ipis",
+   "name": "Ihnakpar\u00e9",
+   "visit_date": "2019-04-29",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00077",
+   "lon": 17.6097066667,
+   "lat": 5.6295016667,
+   "set": "ipis",
+   "name": "Gbassa Tangue",
+   "visit_date": "2019-04-29",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00078",
+   "lon": 17.0123116667,
+   "lat": 5.7551216667,
+   "set": "ipis",
+   "name": "Cflt Ban-Zou\u00e9",
+   "visit_date": "2019-04-30",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00079",
+   "lon": 16.9904883333,
+   "lat": 5.75697,
+   "set": "ipis",
+   "name": "Gbab\u00e9",
+   "visit_date": "2019-04-30",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00080",
+   "lon": 17.58686,
+   "lat": 5.556605,
+   "set": "ipis",
+   "name": "Kpo\u00ef",
+   "visit_date": "2019-04-30",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00081",
+   "lon": 15.771245,
+   "lat": 6.765809,
+   "set": "ipis",
+   "name": "B\u00e9k\u00e9",
+   "visit_date": "2019-04-30",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00082",
+   "lon": 17.8033266667,
+   "lat": 3.7367383333,
+   "set": "ipis",
+   "name": "Lobe",
+   "visit_date": "2019-04-30",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00083",
+   "lon": 17.8023783333,
+   "lat": 3.7646866667,
+   "set": "ipis",
+   "name": "Zingawele-Lobaye",
+   "visit_date": "2019-04-30",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00084",
+   "lon": 16.429309,
+   "lat": 6.458565,
+   "set": "ipis",
+   "name": "Beguida",
+   "visit_date": "2019-04-30",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00085",
+   "lon": 16.417589,
+   "lat": 6.438087,
+   "set": "ipis",
+   "name": "Yabere",
+   "visit_date": "2019-04-30",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00086",
+   "lon": 16.398459,
+   "lat": 6.432789,
+   "set": "ipis",
+   "name": "Mbifoura",
+   "visit_date": "2019-04-30",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00087",
+   "lon": 17.7605916667,
+   "lat": 3.708325,
+   "set": "ipis",
+   "name": "Ngouma",
+   "visit_date": "2019-05-01",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00088",
+   "lon": 16.215774,
+   "lat": 6.155927,
+   "set": "ipis",
+   "name": "Yaribor\u00e9",
+   "visit_date": "2019-05-01",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00089",
+   "lon": 17.8938516667,
+   "lat": 3.7368766667,
+   "set": "ipis",
+   "name": "Likekele",
+   "visit_date": "2019-05-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00090",
+   "lon": 16.9982016667,
+   "lat": 5.4883183333,
+   "set": "ipis",
+   "name": "Datoli",
+   "visit_date": "2019-05-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00091",
+   "lon": 17.00927,
+   "lat": 5.4721616667,
+   "set": "ipis",
+   "name": "Yab\u00e9olo-Yab\u00e9ngala",
+   "visit_date": "2019-05-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00092",
+   "lon": 17.0008666667,
+   "lat": 5.4627666667,
+   "set": "ipis",
+   "name": "Yambot\u00e9",
+   "visit_date": "2019-05-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00093",
+   "lon": 16.396474,
+   "lat": 6.422304,
+   "set": "ipis",
+   "name": "Mbisso",
+   "visit_date": "2019-05-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00094",
+   "lon": 16.365362,
+   "lat": 6.371489,
+   "set": "ipis",
+   "name": "Taf\u00e9h",
+   "visit_date": "2019-05-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00096",
+   "lon": 15.943124,
+   "lat": 6.800269,
+   "set": "ipis",
+   "name": "Miskine",
+   "visit_date": "2019-05-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00097",
+   "lon": 16.265835,
+   "lat": 5.6251833333,
+   "set": "ipis",
+   "name": "Boh",
+   "visit_date": "2019-05-04",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00098",
+   "lon": 15.930393,
+   "lat": 6.81442,
+   "set": "ipis",
+   "name": "Ndarssa",
+   "visit_date": "2019-05-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00099",
+   "lon": 15.902265,
+   "lat": 6.739757,
+   "set": "ipis",
+   "name": "Gbirindji",
+   "visit_date": "2019-05-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00100",
+   "lon": 15.876407,
+   "lat": 6.717947,
+   "set": "ipis",
+   "name": "Gaga",
+   "visit_date": "2019-05-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00101",
+   "lon": 17.0137316667,
+   "lat": 5.4904783333,
+   "set": "ipis",
+   "name": "Gbaga\u00efn",
+   "visit_date": "2019-05-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00102",
+   "lon": 17.06386,
+   "lat": 5.5007016667,
+   "set": "ipis",
+   "name": "Ban-Ziki",
+   "visit_date": "2019-05-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00103",
+   "lon": 17.0312683333,
+   "lat": 5.4723783333,
+   "set": "ipis",
+   "name": "Cflt Mbi-Donon",
+   "visit_date": "2019-05-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00104",
+   "lon": 16.428797,
+   "lat": 6.486288,
+   "set": "ipis",
+   "name": "Nzakagawa",
+   "visit_date": "2019-05-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00105",
+   "lon": 16.420199,
+   "lat": 6.504102,
+   "set": "ipis",
+   "name": "Koro",
+   "visit_date": "2019-05-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00106",
+   "lon": 16.409577,
+   "lat": 6.417535,
+   "set": "ipis",
+   "name": "Ouham",
+   "visit_date": "2019-05-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00107",
+   "lon": 16.40197,
+   "lat": 6.391856,
+   "set": "ipis",
+   "name": "Mbabolkar\u00e9",
+   "visit_date": "2019-05-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00108",
+   "lon": 16.363155,
+   "lat": 5.7546566667,
+   "set": "ipis",
+   "name": "Gbata",
+   "visit_date": "2019-05-05",
+   "minerals": "Diamant, Or, Argent",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00109",
+   "lon": 16.4965616667,
+   "lat": 5.47655,
+   "set": "ipis",
+   "name": "Tedoa 5",
+   "visit_date": "2019-05-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00110",
+   "lon": 16.500535,
+   "lat": 5.4723216667,
+   "set": "ipis",
+   "name": "Tedoa 5",
+   "visit_date": "2019-05-06",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00111",
+   "lon": 16.5013683333,
+   "lat": 5.4584633333,
+   "set": "ipis",
+   "name": "Tedoa",
+   "visit_date": "2019-05-06",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00112",
+   "lon": 16.5015216667,
+   "lat": 5.4626133333,
+   "set": "ipis",
+   "name": "Tedoa",
+   "visit_date": "2019-05-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00113",
+   "lon": 16.5000033333,
+   "lat": 5.4748366667,
+   "set": "ipis",
+   "name": "Tedoa 5",
+   "visit_date": "2019-05-06",
+   "minerals": "Diamant, Or, Argent",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00114",
+   "lon": 15.673451,
+   "lat": 6.940302,
+   "set": "ipis",
+   "name": "Yenguere",
+   "visit_date": "2019-05-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00115",
+   "lon": 15.600587,
+   "lat": 6.777269,
+   "set": "ipis",
+   "name": "Gaga",
+   "visit_date": "2019-05-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00116",
+   "lon": 17.0357616667,
+   "lat": 5.4638083333,
+   "set": "ipis",
+   "name": "Gomion",
+   "visit_date": "2019-05-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00117",
+   "lon": 17.03973,
+   "lat": 5.4580066667,
+   "set": "ipis",
+   "name": "Ngba\u00ef",
+   "visit_date": "2019-05-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00118",
+   "lon": 16.703806,
+   "lat": 6.661414,
+   "set": "ipis",
+   "name": "Gbehingui",
+   "visit_date": "2019-05-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00119",
+   "lon": 16.679576,
+   "lat": 6.63281,
+   "set": "ipis",
+   "name": "Kob\u00e9",
+   "visit_date": "2019-05-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00120",
+   "lon": 17.36506,
+   "lat": 5.6878,
+   "set": "ipis",
+   "name": "Ngou\u00e9 15km De Gbapi",
+   "visit_date": "2019-05-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00121",
+   "lon": 17.2389066667,
+   "lat": 5.6509366667,
+   "set": "ipis",
+   "name": "Gbapi",
+   "visit_date": "2019-05-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00122",
+   "lon": 17.1747166667,
+   "lat": 5.6231716667,
+   "set": "ipis",
+   "name": "N\u00f4n",
+   "visit_date": "2019-05-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00123",
+   "lon": 16.680344,
+   "lat": 6.661871,
+   "set": "ipis",
+   "name": "Bourazo",
+   "visit_date": "2019-05-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00124",
+   "lon": 16.574685,
+   "lat": 6.600261,
+   "set": "ipis",
+   "name": "Gbehkara",
+   "visit_date": "2019-05-07",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00125",
+   "lon": 17.1263816667,
+   "lat": 5.6254,
+   "set": "ipis",
+   "name": "Gbambo\u00e9",
+   "visit_date": "2019-05-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00126",
+   "lon": 17.1056,
+   "lat": 5.6288633333,
+   "set": "ipis",
+   "name": "L\u00e8l\u00e8",
+   "visit_date": "2019-05-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00128",
+   "lon": 16.59185,
+   "lat": 6.621631,
+   "set": "ipis",
+   "name": "Myskine",
+   "visit_date": "2019-05-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00129",
+   "lon": 17.0984466667,
+   "lat": 5.0930566667,
+   "set": "ipis",
+   "name": "D\u00e9r\u00e9bononou",
+   "visit_date": "2019-05-09",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00130",
+   "lon": 17.1338933333,
+   "lat": 5.0881016667,
+   "set": "ipis",
+   "name": "Gb\u00e8\u00efdouma",
+   "visit_date": "2019-05-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00131",
+   "lon": 16.0820683333,
+   "lat": 3.584555,
+   "set": "ipis",
+   "name": "Lopo",
+   "visit_date": "2019-05-09",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00136",
+   "lon": 17.43784,
+   "lat": 4.3640333333,
+   "set": "ipis",
+   "name": "Louame",
+   "visit_date": "2019-05-11",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00137",
+   "lon": 17.238555,
+   "lat": 4.7043566667,
+   "set": "ipis",
+   "name": "Tokoyeingue",
+   "visit_date": "2019-05-11",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00148",
+   "lon": 17.0768216667,
+   "lat": 4.8032133333,
+   "set": "ipis",
+   "name": "Kanga",
+   "visit_date": "2019-05-13",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00149",
+   "lon": 17.1363983333,
+   "lat": 4.765865,
+   "set": "ipis",
+   "name": "Site Koh3",
+   "visit_date": "2019-05-13",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00154",
+   "lon": 17.0949016667,
+   "lat": 4.8029483333,
+   "set": "ipis",
+   "name": "Zori",
+   "visit_date": "2019-05-14",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00160",
+   "lon": 17.1132216667,
+   "lat": 4.7955166667,
+   "set": "ipis",
+   "name": "Maoro",
+   "visit_date": "2019-05-15",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00167",
+   "lon": 15.5991716667,
+   "lat": 3.9329016667,
+   "set": "ipis",
+   "name": "Arabi",
+   "visit_date": "2019-05-17",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00168",
+   "lon": 17.1093766667,
+   "lat": 4.6842716667,
+   "set": "ipis",
+   "name": "Site Doubi 2",
+   "visit_date": "2019-05-17",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00174",
+   "lon": 15.908796,
+   "lat": 4.7547809,
+   "set": "ipis",
+   "name": "Sangouma",
+   "visit_date": "2019-05-20",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00175",
+   "lon": 17.376525,
+   "lat": 4.35754,
+   "set": "ipis",
+   "name": "Bolaye 2",
+   "visit_date": "2019-05-20",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00179",
+   "lon": 17.3543716667,
+   "lat": 4.2986066667,
+   "set": "ipis",
+   "name": "Lobe",
+   "visit_date": "2019-05-22",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00190",
+   "lon": 16.29904,
+   "lat": 6.23382,
+   "set": "ipis",
+   "name": "Nago",
+   "visit_date": "2019-06-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00191",
+   "lon": 15.0231833333,
+   "lat": 5.1223383333,
+   "set": "ipis",
+   "name": "Zongo",
+   "visit_date": "2019-06-17",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00192",
+   "lon": 17.3559266667,
+   "lat": 6.08125,
+   "set": "ipis",
+   "name": "Thiene",
+   "visit_date": "2019-06-19",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00193",
+   "lon": 14.7629583333,
+   "lat": 5.7875483333,
+   "set": "ipis",
+   "name": "Popo",
+   "visit_date": "2019-06-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00194",
+   "lon": 14.74555,
+   "lat": 5.7818883333,
+   "set": "ipis",
+   "name": "Popo 2",
+   "visit_date": "2019-06-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00195",
+   "lon": 14.834025,
+   "lat": 5.791915,
+   "set": "ipis",
+   "name": "Kanga",
+   "visit_date": "2019-06-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00196",
+   "lon": 17.2564233333,
+   "lat": 6.1225483333,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2019-06-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00197",
+   "lon": 17.2512566667,
+   "lat": 6.1270066667,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2019-06-20",
+   "minerals": "Or, Argent",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00198",
+   "lon": 14.9318983333,
+   "lat": 5.2796666667,
+   "set": "ipis",
+   "name": "Kpande",
+   "visit_date": "2019-06-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00199",
+   "lon": 14.91949,
+   "lat": 5.2715616667,
+   "set": "ipis",
+   "name": "Hichim",
+   "visit_date": "2019-06-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00200",
+   "lon": 17.2563,
+   "lat": 6.1224516667,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2019-06-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00201",
+   "lon": 14.770365,
+   "lat": 5.7589,
+   "set": "ipis",
+   "name": "Takoyo",
+   "visit_date": "2019-06-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00202",
+   "lon": 14.7712383333,
+   "lat": 5.7588483333,
+   "set": "ipis",
+   "name": "Takoyo 2",
+   "visit_date": "2019-06-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00203",
+   "lon": 14.7755583333,
+   "lat": 5.699895,
+   "set": "ipis",
+   "name": "Gbaro",
+   "visit_date": "2019-06-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00204",
+   "lon": 17.2393833333,
+   "lat": 6.12278,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2019-06-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00205",
+   "lon": 17.240515,
+   "lat": 6.1414316667,
+   "set": "ipis",
+   "name": "Li-Hononh",
+   "visit_date": "2019-06-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00206",
+   "lon": 14.9346733333,
+   "lat": 5.1361616667,
+   "set": "ipis",
+   "name": "Ngue",
+   "visit_date": "2019-06-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00207",
+   "lon": 14.94929,
+   "lat": 5.1278383333,
+   "set": "ipis",
+   "name": "Zeze",
+   "visit_date": "2019-06-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00208",
+   "lon": 14.9532416667,
+   "lat": 5.054815,
+   "set": "ipis",
+   "name": "Sah",
+   "visit_date": "2019-06-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00209",
+   "lon": 17.239745,
+   "lat": 6.1405933333,
+   "set": "ipis",
+   "name": "Ly Hononh",
+   "visit_date": "2019-06-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00210",
+   "lon": 17.2394183333,
+   "lat": 6.1221583333,
+   "set": "ipis",
+   "name": "Dock Sala",
+   "visit_date": "2019-06-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00212",
+   "lon": 14.8018666667,
+   "lat": 5.6848116667,
+   "set": "ipis",
+   "name": "Mbombia",
+   "visit_date": "2019-06-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00213",
+   "lon": 14.8136433333,
+   "lat": 5.6848866667,
+   "set": "ipis",
+   "name": "Ngbab\u00e9r\u00e9 1",
+   "visit_date": "2019-06-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00214",
+   "lon": 14.8046266667,
+   "lat": 5.6917533333,
+   "set": "ipis",
+   "name": "Ngbabere 2",
+   "visit_date": "2019-06-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00215",
+   "lon": 17.2428083333,
+   "lat": 6.12505,
+   "set": "ipis",
+   "name": "Dock Sala",
+   "visit_date": "2019-06-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00216",
+   "lon": 14.9581883333,
+   "lat": 5.0636166667,
+   "set": "ipis",
+   "name": "Djorom Boumbeh",
+   "visit_date": "2019-06-22",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00217",
+   "lon": 14.8631433333,
+   "lat": 5.23032,
+   "set": "ipis",
+   "name": "Gom",
+   "visit_date": "2019-06-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00218",
+   "lon": 17.2161266667,
+   "lat": 6.095355,
+   "set": "ipis",
+   "name": "Dengue Yoho",
+   "visit_date": "2019-06-22",
+   "minerals": "Or, Argent",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00221",
+   "lon": 17.1980783333,
+   "lat": 6.1137133333,
+   "set": "ipis",
+   "name": "Yoho",
+   "visit_date": "2019-06-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00222",
+   "lon": 17.1678,
+   "lat": 6.1235016667,
+   "set": "ipis",
+   "name": "Yoho Nana",
+   "visit_date": "2019-06-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00223",
+   "lon": 15.5607466667,
+   "lat": 5.1278483333,
+   "set": "ipis",
+   "name": "Sipi",
+   "visit_date": "2019-06-23",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00224",
+   "lon": 14.6346383333,
+   "lat": 5.754745,
+   "set": "ipis",
+   "name": "Yong-Bor\u00e8",
+   "visit_date": "2019-06-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00225",
+   "lon": 14.90987,
+   "lat": 5.228655,
+   "set": "ipis",
+   "name": "Gom",
+   "visit_date": "2019-06-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00226",
+   "lon": 15.00185,
+   "lat": 5.2113416667,
+   "set": "ipis",
+   "name": "Gbepoka",
+   "visit_date": "2019-06-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00230",
+   "lon": 15.424519,
+   "lat": 5.136107,
+   "set": "ipis",
+   "name": "Gbin-Mboussa",
+   "visit_date": "2019-06-24",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00231",
+   "lon": 14.988365,
+   "lat": 5.2337716667,
+   "set": "ipis",
+   "name": "Zindi",
+   "visit_date": "2019-06-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00232",
+   "lon": 15.01718,
+   "lat": 5.2393466667,
+   "set": "ipis",
+   "name": "Zuinguene",
+   "visit_date": "2019-06-25",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00233",
+   "lon": 17.0555866667,
+   "lat": 6.5092666667,
+   "set": "ipis",
+   "name": "Digoro",
+   "visit_date": "2019-06-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00234",
+   "lon": 17.236845,
+   "lat": 6.123793,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2019-06-25",
+   "minerals": "Diamant, Or, Argent",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00235",
+   "lon": 17.067505,
+   "lat": 6.5059416667,
+   "set": "ipis",
+   "name": "Kpemte",
+   "visit_date": "2019-06-25",
+   "minerals": "Or, Argent",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00237",
+   "lon": 15.4034283333,
+   "lat": 5.144235,
+   "set": "ipis",
+   "name": "Mambere",
+   "visit_date": "2019-06-25",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00238",
+   "lon": 15.4277933333,
+   "lat": 5.1336433333,
+   "set": "ipis",
+   "name": "Gbin-Mboussa 2",
+   "visit_date": "2019-06-25",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00239",
+   "lon": 15.1010566667,
+   "lat": 5.35399,
+   "set": "ipis",
+   "name": "Z\u00e9ngu\u00e8",
+   "visit_date": "2019-06-25",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00240",
+   "lon": 15.0953866667,
+   "lat": 5.4199233333,
+   "set": "ipis",
+   "name": "Kouna-Gbabaza",
+   "visit_date": "2019-06-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00241",
+   "lon": 15.0206133333,
+   "lat": 5.080115,
+   "set": "ipis",
+   "name": "Zongo",
+   "visit_date": "2019-06-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00242",
+   "lon": 15.020375,
+   "lat": 5.076575,
+   "set": "ipis",
+   "name": "Zongo 2",
+   "visit_date": "2019-06-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00243",
+   "lon": 15.083285,
+   "lat": 5.0973716667,
+   "set": "ipis",
+   "name": "Gbaragbosse",
+   "visit_date": "2019-06-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00244",
+   "lon": 15.0291616667,
+   "lat": 5.1820266667,
+   "set": "ipis",
+   "name": "Medy",
+   "visit_date": "2019-06-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00245",
+   "lon": 16.93591,
+   "lat": 6.447725,
+   "set": "ipis",
+   "name": "Nougawa",
+   "visit_date": "2019-06-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00246",
+   "lon": 17.063885,
+   "lat": 6.4877283333,
+   "set": "ipis",
+   "name": "Maetara",
+   "visit_date": "2019-06-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00247",
+   "lon": 17.0672683333,
+   "lat": 6.52146,
+   "set": "ipis",
+   "name": "Koh Kara",
+   "visit_date": "2019-06-26",
+   "minerals": "Or, Argent",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00248",
+   "lon": 15.3921833333,
+   "lat": 5.1556333333,
+   "set": "ipis",
+   "name": "Mambere",
+   "visit_date": "2019-06-26",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00249",
+   "lon": 15.4020216667,
+   "lat": 5.14842,
+   "set": "ipis",
+   "name": "Mamb\u00e9r\u00e9 Abo",
+   "visit_date": "2019-06-26",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00250",
+   "lon": 15.0187366667,
+   "lat": 5.4163083333,
+   "set": "ipis",
+   "name": "Yoko",
+   "visit_date": "2019-06-26",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00251",
+   "lon": 15.0669983333,
+   "lat": 5.4506283333,
+   "set": "ipis",
+   "name": "Kouna-Mbartoua",
+   "visit_date": "2019-06-26",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00252",
+   "lon": 14.8100883333,
+   "lat": 6.3118183333,
+   "set": "ipis",
+   "name": "Mb\u00e9lou",
+   "visit_date": "2019-06-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00253",
+   "lon": 14.8158,
+   "lat": 6.1386866667,
+   "set": "ipis",
+   "name": "Bim",
+   "visit_date": "2019-06-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00254",
+   "lon": 15.0543633333,
+   "lat": 5.14349,
+   "set": "ipis",
+   "name": "Nanguele",
+   "visit_date": "2019-06-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00255",
+   "lon": 15.03244,
+   "lat": 5.1782216667,
+   "set": "ipis",
+   "name": "Medy 1a",
+   "visit_date": "2019-06-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00256",
+   "lon": 15.3888233333,
+   "lat": 5.158435,
+   "set": "ipis",
+   "name": "Sanda",
+   "visit_date": "2019-06-27",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00258",
+   "lon": 15.3097483333,
+   "lat": 5.1709783333,
+   "set": "ipis",
+   "name": "Gom",
+   "visit_date": "2019-06-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00259",
+   "lon": 14.90007,
+   "lat": 5.483985,
+   "set": "ipis",
+   "name": "Ngayo",
+   "visit_date": "2019-06-27",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00260",
+   "lon": 15.04629,
+   "lat": 5.1660583333,
+   "set": "ipis",
+   "name": "Medy",
+   "visit_date": "2019-06-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00261",
+   "lon": 15.30708,
+   "lat": 5.1688133333,
+   "set": "ipis",
+   "name": "Gba\u00efna",
+   "visit_date": "2019-06-28",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00262",
+   "lon": 15.0556216667,
+   "lat": 5.1563283333,
+   "set": "ipis",
+   "name": "Medy",
+   "visit_date": "2019-06-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00263",
+   "lon": 15.0672933333,
+   "lat": 5.1485433333,
+   "set": "ipis",
+   "name": "Medy",
+   "visit_date": "2019-06-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00264",
+   "lon": 15.094045,
+   "lat": 5.13901,
+   "set": "ipis",
+   "name": "Medy Assist\u00e9",
+   "visit_date": "2019-06-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00265",
+   "lon": 15.25718,
+   "lat": 5.1747433333,
+   "set": "ipis",
+   "name": "Nakeko",
+   "visit_date": "2019-06-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00266",
+   "lon": 14.8913466667,
+   "lat": 5.5582366667,
+   "set": "ipis",
+   "name": "Sangtana",
+   "visit_date": "2019-06-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00267",
+   "lon": 14.8786383333,
+   "lat": 5.5590816667,
+   "set": "ipis",
+   "name": "Sangtana Mbola",
+   "visit_date": "2019-06-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00268",
+   "lon": 14.7512,
+   "lat": 5.6748933333,
+   "set": "ipis",
+   "name": "Kata-For\u00f4",
+   "visit_date": "2019-06-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00269",
+   "lon": 14.74751,
+   "lat": 5.6735366667,
+   "set": "ipis",
+   "name": "Zou Kata-For\u00f4",
+   "visit_date": "2019-06-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00270",
+   "lon": 14.750815,
+   "lat": 5.6888283333,
+   "set": "ipis",
+   "name": "Gbal\u00f4",
+   "visit_date": "2019-06-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00271",
+   "lon": 17.7677333333,
+   "lat": 6.67671,
+   "set": "ipis",
+   "name": "Rizian",
+   "visit_date": "2019-06-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00272",
+   "lon": 17.76384,
+   "lat": 6.6614116667,
+   "set": "ipis",
+   "name": "Mokere",
+   "visit_date": "2019-06-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00273",
+   "lon": 15.1089983333,
+   "lat": 5.1277016667,
+   "set": "ipis",
+   "name": "Kob\u00e8",
+   "visit_date": "2019-06-29",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00274",
+   "lon": 15.1428483333,
+   "lat": 5.1223616667,
+   "set": "ipis",
+   "name": "Tikoungou",
+   "visit_date": "2019-06-29",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00275",
+   "lon": 15.1673283333,
+   "lat": 5.1246633333,
+   "set": "ipis",
+   "name": "Medy_F",
+   "visit_date": "2019-06-29",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00276",
+   "lon": 15.1827233333,
+   "lat": 5.12509,
+   "set": "ipis",
+   "name": "Medy Base (Gbanguene)",
+   "visit_date": "2019-06-29",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00277",
+   "lon": 14.901606,
+   "lat": 5.499711,
+   "set": "ipis",
+   "name": "Kpakou\u00ef",
+   "visit_date": "2019-06-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00278",
+   "lon": 17.7176983333,
+   "lat": 6.6928066667,
+   "set": "ipis",
+   "name": "Pays2",
+   "visit_date": "2019-06-30",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00279",
+   "lon": 17.717375,
+   "lat": 6.692801666666666,
+   "set": "ipis",
+   "name": "Pays",
+   "visit_date": "2019-06-30",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00280",
+   "lon": 17.719299999999997,
+   "lat": 6.691758333333333,
+   "set": "ipis",
+   "name": "Dedeye",
+   "visit_date": "2019-06-30",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00281",
+   "lon": 14.7586116667,
+   "lat": 5.4751116667,
+   "set": "ipis",
+   "name": "Gbambassa",
+   "visit_date": "2019-07-01",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00282",
+   "lon": 14.7364433333,
+   "lat": 5.482335,
+   "set": "ipis",
+   "name": "Sabia",
+   "visit_date": "2019-07-01",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00283",
+   "lon": 14.7621116667,
+   "lat": 5.65061,
+   "set": "ipis",
+   "name": "Ngindo",
+   "visit_date": "2019-07-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00284",
+   "lon": 14.76428,
+   "lat": 5.644405,
+   "set": "ipis",
+   "name": "Rondji",
+   "visit_date": "2019-07-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00285",
+   "lon": 14.787645,
+   "lat": 5.6557666667,
+   "set": "ipis",
+   "name": "Kpangari",
+   "visit_date": "2019-07-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00286",
+   "lon": 14.7845933333,
+   "lat": 5.69109,
+   "set": "ipis",
+   "name": "Ndinguerengu\u00e8",
+   "visit_date": "2019-07-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00287",
+   "lon": 15.19119,
+   "lat": 5.3903033333,
+   "set": "ipis",
+   "name": "Gbayenb\u00e9",
+   "visit_date": "2019-07-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00288",
+   "lon": 15.26124,
+   "lat": 5.312445,
+   "set": "ipis",
+   "name": "Mamb\u00e9r\u00e9 Abba",
+   "visit_date": "2019-07-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00289",
+   "lon": 15.246795,
+   "lat": 5.3346083333,
+   "set": "ipis",
+   "name": "Windoka",
+   "visit_date": "2019-07-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00290",
+   "lon": 15.208175,
+   "lat": 5.37681,
+   "set": "ipis",
+   "name": "Dambaya",
+   "visit_date": "2019-07-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00291",
+   "lon": 15.191565,
+   "lat": 5.11216,
+   "set": "ipis",
+   "name": "Gore",
+   "visit_date": "2019-07-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00292",
+   "lon": 15.1783816667,
+   "lat": 5.1007233333,
+   "set": "ipis",
+   "name": "Gore",
+   "visit_date": "2019-07-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00293",
+   "lon": 14.7699416667,
+   "lat": 5.6300183333,
+   "set": "ipis",
+   "name": "Nakp\u00e9ngu\u00e8",
+   "visit_date": "2019-07-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00294",
+   "lon": 14.8055,
+   "lat": 5.5535,
+   "set": "ipis",
+   "name": "Rombi",
+   "visit_date": "2019-07-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00295",
+   "lon": 14.8404216667,
+   "lat": 5.99203,
+   "set": "ipis",
+   "name": "Loungu",
+   "visit_date": "2019-07-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00296",
+   "lon": 14.8387183333,
+   "lat": 5.98268,
+   "set": "ipis",
+   "name": "Bekombo",
+   "visit_date": "2019-07-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00297",
+   "lon": 14.8412016667,
+   "lat": 5.9733183333,
+   "set": "ipis",
+   "name": "Loungou",
+   "visit_date": "2019-07-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00298",
+   "lon": 17.7740716667,
+   "lat": 6.5548283333,
+   "set": "ipis",
+   "name": "Mara",
+   "visit_date": "2019-07-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00299",
+   "lon": 15.2361,
+   "lat": 5.3744916667,
+   "set": "ipis",
+   "name": "Gbengoto",
+   "visit_date": "2019-07-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00300",
+   "lon": 15.308644,
+   "lat": 5.383293,
+   "set": "ipis",
+   "name": "Wal\u00e9",
+   "visit_date": "2019-07-03",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00301",
+   "lon": 15.2007183333,
+   "lat": 5.18644,
+   "set": "ipis",
+   "name": "Rondy",
+   "visit_date": "2019-07-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00302",
+   "lon": 15.2141916667,
+   "lat": 5.2292216667,
+   "set": "ipis",
+   "name": "Tamberk\u00e9",
+   "visit_date": "2019-07-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00303",
+   "lon": 14.6509933333,
+   "lat": 5.8027983333,
+   "set": "ipis",
+   "name": "Gokopondo",
+   "visit_date": "2019-07-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00304",
+   "lon": 17.7196833333,
+   "lat": 6.4528216667,
+   "set": "ipis",
+   "name": "Ndarsa",
+   "visit_date": "2019-07-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00305",
+   "lon": 15.18898,
+   "lat": 5.497145,
+   "set": "ipis",
+   "name": "Gbadakon",
+   "visit_date": "2019-07-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00306",
+   "lon": 15.1397216667,
+   "lat": 5.5133616667,
+   "set": "ipis",
+   "name": "Gbakayen",
+   "visit_date": "2019-07-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00307",
+   "lon": 15.162595,
+   "lat": 5.475175,
+   "set": "ipis",
+   "name": "Moenam",
+   "visit_date": "2019-07-05",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00308",
+   "lon": 15.1463016667,
+   "lat": 5.505715,
+   "set": "ipis",
+   "name": "Gbembou",
+   "visit_date": "2019-07-05",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00309",
+   "lon": 15.1611416667,
+   "lat": 5.2295316667,
+   "set": "ipis",
+   "name": "Gom",
+   "visit_date": "2019-07-05",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00310",
+   "lon": 14.953825,
+   "lat": 5.8244716667,
+   "set": "ipis",
+   "name": "Gomoye",
+   "visit_date": "2019-07-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00311",
+   "lon": 17.2662183333,
+   "lat": 6.1734433333,
+   "set": "ipis",
+   "name": "Kogbema",
+   "visit_date": "2019-07-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00312",
+   "lon": 17.2520316667,
+   "lat": 6.1455116667,
+   "set": "ipis",
+   "name": "Koro",
+   "visit_date": "2019-07-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00313",
+   "lon": 15.1582816667,
+   "lat": 5.4317166667,
+   "set": "ipis",
+   "name": "Kombel\u00e9",
+   "visit_date": "2019-07-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00314",
+   "lon": 15.1061866667,
+   "lat": 5.28527,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2019-07-06",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00315",
+   "lon": 15.1004883333,
+   "lat": 5.296935,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2019-07-06",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00316",
+   "lon": 14.7477033333,
+   "lat": 6.0102733333,
+   "set": "ipis",
+   "name": "Koungueda",
+   "visit_date": "2019-07-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00317",
+   "lon": 15.171565,
+   "lat": 5.3968683333,
+   "set": "ipis",
+   "name": "Danabondo",
+   "visit_date": "2019-07-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00318",
+   "lon": 15.0943683333,
+   "lat": 5.3135016667,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2019-07-08",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00319",
+   "lon": 15.0853,
+   "lat": 5.3216066667,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2019-07-08",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00320",
+   "lon": 14.8359,
+   "lat": 5.74097,
+   "set": "ipis",
+   "name": "Gbapoka",
+   "visit_date": "2019-07-15",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00321",
+   "lon": 14.72701,
+   "lat": 5.44698,
+   "set": "ipis",
+   "name": "Ndongori",
+   "visit_date": "2019-07-15",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00322",
+   "lon": 16.574685,
+   "lat": 6.600261,
+   "set": "ipis",
+   "name": "Gbehkara",
+   "visit_date": "2020-05-01",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00323",
+   "lon": 15.30708,
+   "lat": 5.1688133333,
+   "set": "ipis",
+   "name": "Gba\u00efna",
+   "visit_date": "2020-05-01",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00324",
+   "lon": 15.680651,
+   "lat": 6.808367,
+   "set": "ipis",
+   "name": "Kangab\u00e9",
+   "visit_date": "2020-05-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00325",
+   "lon": 17.8380616667,
+   "lat": 3.8303266667,
+   "set": "ipis",
+   "name": "Pouadoungbe",
+   "visit_date": "2020-05-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00326",
+   "lon": 15.703364,
+   "lat": 6.768129,
+   "set": "ipis",
+   "name": "Yewere",
+   "visit_date": "2020-05-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00327",
+   "lon": 17.8639533333,
+   "lat": 3.67517,
+   "set": "ipis",
+   "name": "Moboma",
+   "visit_date": "2020-05-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00328",
+   "lon": 17.7605916667,
+   "lat": 3.708325,
+   "set": "ipis",
+   "name": "Ngouma",
+   "visit_date": "2020-05-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00329",
+   "lon": 17.8938516667,
+   "lat": 3.7368766667,
+   "set": "ipis",
+   "name": "Likekele",
+   "visit_date": "2020-05-08",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00330",
+   "lon": 15.600587,
+   "lat": 6.777269,
+   "set": "ipis",
+   "name": "Gaga",
+   "visit_date": "2020-05-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00331",
+   "lon": 15.691968,
+   "lat": 6.82967,
+   "set": "ipis",
+   "name": "Ndemou",
+   "visit_date": "2020-05-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00332",
+   "lon": 16.993305,
+   "lat": 5.5278216667,
+   "set": "ipis",
+   "name": "Gamme Sengu\u00e8mon",
+   "visit_date": "2020-05-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00333",
+   "lon": 16.9530383333,
+   "lat": 5.509415,
+   "set": "ipis",
+   "name": "Gamme-Carri\u00e8re",
+   "visit_date": "2020-05-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00334",
+   "lon": 16.9743766667,
+   "lat": 5.6466116667,
+   "set": "ipis",
+   "name": "P\u00e9ya",
+   "visit_date": "2020-05-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00335",
+   "lon": 15.688572,
+   "lat": 6.912671,
+   "set": "ipis",
+   "name": "Lima",
+   "visit_date": "2020-05-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00336",
+   "lon": 17.06386,
+   "lat": 5.5007016667,
+   "set": "ipis",
+   "name": "Ban-Ziki",
+   "visit_date": "2020-05-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00337",
+   "lon": 17.840075,
+   "lat": 3.7883216667,
+   "set": "ipis",
+   "name": "Mondakalaka.",
+   "visit_date": "2020-05-10",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00338",
+   "lon": 16.458743,
+   "lat": 6.509567,
+   "set": "ipis",
+   "name": "Dondengue",
+   "visit_date": "2020-05-10",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00339",
+   "lon": 16.40197,
+   "lat": 6.391856,
+   "set": "ipis",
+   "name": "Mbabolkar\u00e9",
+   "visit_date": "2020-05-10",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00340",
+   "lon": 14.7755583333,
+   "lat": 5.699895,
+   "set": "ipis",
+   "name": "Gbaro",
+   "visit_date": "2020-05-10",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00341",
+   "lon": 15.69165,
+   "lat": 6.80107,
+   "set": "ipis",
+   "name": "Sadou",
+   "visit_date": "2020-05-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00343",
+   "lon": 16.363155,
+   "lat": 5.7546566667,
+   "set": "ipis",
+   "name": "Gbata",
+   "visit_date": "2020-05-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00344",
+   "lon": 16.5013683333,
+   "lat": 5.4584633333,
+   "set": "ipis",
+   "name": "Tedoa",
+   "visit_date": "2020-05-11",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00345",
+   "lon": 14.8631433333,
+   "lat": 5.23032,
+   "set": "ipis",
+   "name": "Gom",
+   "visit_date": "2020-05-11",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00346",
+   "lon": 15.1061866667,
+   "lat": 5.28527,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2020-05-11",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00347",
+   "lon": 15.773615,
+   "lat": 6.837789,
+   "set": "ipis",
+   "name": "Barrage Bernard",
+   "visit_date": "2020-05-13",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00348",
+   "lon": 15.632206,
+   "lat": 6.771521,
+   "set": "ipis",
+   "name": "Ngorohoul",
+   "visit_date": "2020-05-13",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00349",
+   "lon": 16.409127,
+   "lat": 6.40295,
+   "set": "ipis",
+   "name": "Gbonkolo",
+   "visit_date": "2020-05-13",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00350",
+   "lon": 15.948955,
+   "lat": 4.183255,
+   "set": "ipis",
+   "name": "Nazembe",
+   "visit_date": "2020-05-13",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00351",
+   "lon": 14.7629583333,
+   "lat": 5.7875483333,
+   "set": "ipis",
+   "name": "Popo",
+   "visit_date": "2020-05-13",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00352",
+   "lon": 14.834025,
+   "lat": 5.791915,
+   "set": "ipis",
+   "name": "Kanga",
+   "visit_date": "2020-05-13",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00353",
+   "lon": 14.770365,
+   "lat": 5.7589,
+   "set": "ipis",
+   "name": "Takoyo",
+   "visit_date": "2020-05-13",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00354",
+   "lon": 15.3921833333,
+   "lat": 5.1556333333,
+   "set": "ipis",
+   "name": "Mambere",
+   "visit_date": "2020-05-13",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00355",
+   "lon": 14.8018666667,
+   "lat": 5.6848116667,
+   "set": "ipis",
+   "name": "Mbombia",
+   "visit_date": "2020-05-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00356",
+   "lon": 14.8136433333,
+   "lat": 5.6848866667,
+   "set": "ipis",
+   "name": "Ngbab\u00e9r\u00e9 1",
+   "visit_date": "2020-05-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00358",
+   "lon": 15.1582816667,
+   "lat": 5.4317166667,
+   "set": "ipis",
+   "name": "Kombel\u00e9",
+   "visit_date": "2020-05-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00359",
+   "lon": 15.669693,
+   "lat": 6.809184,
+   "set": "ipis",
+   "name": "Moundji Centre",
+   "visit_date": "2020-05-15",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00360",
+   "lon": 15.771245,
+   "lat": 6.765809,
+   "set": "ipis",
+   "name": "B\u00e9k\u00e9",
+   "visit_date": "2020-05-15",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00361",
+   "lon": 15.424519,
+   "lat": 5.136107,
+   "set": "ipis",
+   "name": "Gbin-Mboussa",
+   "visit_date": "2020-05-15",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00362",
+   "lon": 16.978135,
+   "lat": 5.50281,
+   "set": "ipis",
+   "name": "Gamme-Yofo",
+   "visit_date": "2020-05-16",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00363",
+   "lon": 17.01591,
+   "lat": 5.53323,
+   "set": "ipis",
+   "name": "Gamme 5 Kilo",
+   "visit_date": "2020-05-16",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00364",
+   "lon": 16.9982016667,
+   "lat": 5.4883183333,
+   "set": "ipis",
+   "name": "Datoli",
+   "visit_date": "2020-05-16",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00365",
+   "lon": 16.396474,
+   "lat": 6.422304,
+   "set": "ipis",
+   "name": "Mbisso",
+   "visit_date": "2020-05-16",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00366",
+   "lon": 15.171565,
+   "lat": 5.3968683333,
+   "set": "ipis",
+   "name": "Danabondo",
+   "visit_date": "2020-05-16",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00367",
+   "lon": 14.7512,
+   "lat": 5.6748933333,
+   "set": "ipis",
+   "name": "Kata-For\u00f4",
+   "visit_date": "2020-05-18",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00368",
+   "lon": 17.236845,
+   "lat": 6.123793,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2020-05-18",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00369",
+   "lon": 14.7621116667,
+   "lat": 5.65061,
+   "set": "ipis",
+   "name": "Ngindo",
+   "visit_date": "2020-05-18",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00370",
+   "lon": 14.953825,
+   "lat": 5.8244716667,
+   "set": "ipis",
+   "name": "Gomoye",
+   "visit_date": "2020-05-18",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00371",
+   "lon": 15.3888233333,
+   "lat": 5.158435,
+   "set": "ipis",
+   "name": "Sanda",
+   "visit_date": "2020-05-18",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00375",
+   "lon": 17.2563,
+   "lat": 6.1224516667,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2020-05-19",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00376",
+   "lon": 14.8404216667,
+   "lat": 5.99203,
+   "set": "ipis",
+   "name": "Loungu",
+   "visit_date": "2020-05-19",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00378",
+   "lon": 17.717375,
+   "lat": 6.692801666666666,
+   "set": "ipis",
+   "name": "Pays",
+   "visit_date": "2020-05-19",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00379",
+   "lon": 17.719299999999997,
+   "lat": 6.691758333333333,
+   "set": "ipis",
+   "name": "Dedeye",
+   "visit_date": "2020-05-19",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00380",
+   "lon": 15.5991716667,
+   "lat": 3.9329016667,
+   "set": "ipis",
+   "name": "Arabi",
+   "visit_date": "2020-05-21",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00384",
+   "lon": 14.8100883333,
+   "lat": 6.3118183333,
+   "set": "ipis",
+   "name": "Mb\u00e9lou",
+   "visit_date": "2020-05-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00385",
+   "lon": 17.00927,
+   "lat": 5.4721616667,
+   "set": "ipis",
+   "name": "Yab\u00e9olo-Yab\u00e9ngala",
+   "visit_date": "2020-05-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00386",
+   "lon": 17.0137316667,
+   "lat": 5.4904783333,
+   "set": "ipis",
+   "name": "Gbaga\u00efn",
+   "visit_date": "2020-05-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00388",
+   "lon": 14.8631433333,
+   "lat": 5.23032,
+   "set": "ipis",
+   "name": "Gom",
+   "visit_date": "2020-05-22",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00389",
+   "lon": 15.1061866667,
+   "lat": 5.28527,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2020-05-22",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00390",
+   "lon": 14.7586116667,
+   "lat": 5.4751116667,
+   "set": "ipis",
+   "name": "Gbambassa",
+   "visit_date": "2020-05-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00391",
+   "lon": 16.9666666667,
+   "lat": 5.725035,
+   "set": "ipis",
+   "name": "Zou\u00e9",
+   "visit_date": "2020-05-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00397",
+   "lon": 17.2520316667,
+   "lat": 6.1455116667,
+   "set": "ipis",
+   "name": "Koro",
+   "visit_date": "2020-05-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00401",
+   "lon": 15.724788,
+   "lat": 6.788653,
+   "set": "ipis",
+   "name": "Moundji 1",
+   "visit_date": "2020-05-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00402",
+   "lon": 17.1132216667,
+   "lat": 4.7955166667,
+   "set": "ipis",
+   "name": "Maoro",
+   "visit_date": "2020-05-29",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00403",
+   "lon": 17.0768216667,
+   "lat": 4.8032133333,
+   "set": "ipis",
+   "name": "Kanga",
+   "visit_date": "2020-05-29",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00404",
+   "lon": 17.0949016667,
+   "lat": 4.8029483333,
+   "set": "ipis",
+   "name": "Zori",
+   "visit_date": "2020-05-29",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00405",
+   "lon": 17.2161266667,
+   "lat": 6.095355,
+   "set": "ipis",
+   "name": "Dengue Yoho",
+   "visit_date": "2020-05-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00406",
+   "lon": 17.1678,
+   "lat": 6.1235016667,
+   "set": "ipis",
+   "name": "Yoho Nana",
+   "visit_date": "2020-05-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00407",
+   "lon": 17.5197783333,
+   "lat": 5.6673316667,
+   "set": "ipis",
+   "name": "Papou",
+   "visit_date": "2020-05-30",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00411",
+   "lon": 15.9189483333,
+   "lat": 4.2687166667,
+   "set": "ipis",
+   "name": "Batouri Danzi",
+   "visit_date": "2020-05-30",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00413",
+   "lon": 17.2662183333,
+   "lat": 6.1734433333,
+   "set": "ipis",
+   "name": "Kogbema",
+   "visit_date": "2020-05-30",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00415",
+   "lon": 15.4034283333,
+   "lat": 5.144235,
+   "set": "ipis",
+   "name": "Mambere",
+   "visit_date": "2020-05-30",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00416",
+   "lon": 16.9493066667,
+   "lat": 5.5005433333,
+   "set": "ipis",
+   "name": "Gamme-Garouaboulaye",
+   "visit_date": "2020-05-31",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00417",
+   "lon": 16.9715566667,
+   "lat": 5.6185366667,
+   "set": "ipis",
+   "name": "Nandombo",
+   "visit_date": "2020-05-31",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00418",
+   "lon": 16.9904883333,
+   "lat": 5.75697,
+   "set": "ipis",
+   "name": "Gbab\u00e9",
+   "visit_date": "2020-05-31",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00422",
+   "lon": 16.250825,
+   "lat": 3.9401116667,
+   "set": "ipis",
+   "name": "Wodo",
+   "visit_date": "2020-05-31",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00427",
+   "lon": 16.1492566667,
+   "lat": 3.5513616667,
+   "set": "ipis",
+   "name": "B\u00e9r\u00e8ngho",
+   "visit_date": "2020-05-31",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00428",
+   "lon": 17.1363983333,
+   "lat": 4.765865,
+   "set": "ipis",
+   "name": "Site Koh3",
+   "visit_date": "2020-05-31",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00429",
+   "lon": 17.7176983333,
+   "lat": 6.6928066667,
+   "set": "ipis",
+   "name": "Pays2",
+   "visit_date": "2020-05-31",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00430",
+   "lon": 15.3921833333,
+   "lat": 5.1556333333,
+   "set": "ipis",
+   "name": "Mambere",
+   "visit_date": "2020-05-31",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00431",
+   "lon": 15.30708,
+   "lat": 5.1688133333,
+   "set": "ipis",
+   "name": "Gba\u00efna",
+   "visit_date": "2020-05-31",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00432",
+   "lon": 15.18898,
+   "lat": 5.497145,
+   "set": "ipis",
+   "name": "Gbadakon",
+   "visit_date": "2020-05-31",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00433",
+   "lon": 15.25718,
+   "lat": 5.1747433333,
+   "set": "ipis",
+   "name": "Nakeko",
+   "visit_date": "2020-05-31",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00434",
+   "lon": 15.1463016667,
+   "lat": 5.505715,
+   "set": "ipis",
+   "name": "Gbembou",
+   "visit_date": "2020-05-31",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00435",
+   "lon": 16.363155,
+   "lat": 5.7546566667,
+   "set": "ipis",
+   "name": "Gbata",
+   "visit_date": "2020-07-16",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00436",
+   "lon": 17.719299999999997,
+   "lat": 6.691758333333333,
+   "set": "ipis",
+   "name": "Dedeye",
+   "visit_date": "2020-07-16",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00438",
+   "lon": 17.0307483333,
+   "lat": 5.5570616667,
+   "set": "ipis",
+   "name": "Ban",
+   "visit_date": "2020-07-18",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00439",
+   "lon": 16.4965616667,
+   "lat": 5.47655,
+   "set": "ipis",
+   "name": "Tedoa 5",
+   "visit_date": "2020-07-18",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00440",
+   "lon": 16.5000033333,
+   "lat": 5.4748366667,
+   "set": "ipis",
+   "name": "Tedoa 5",
+   "visit_date": "2020-07-18",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00441",
+   "lon": 17.5197783333,
+   "lat": 5.6673316667,
+   "set": "ipis",
+   "name": "Papou",
+   "visit_date": "2020-07-19",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00442",
+   "lon": 15.688572,
+   "lat": 6.912671,
+   "set": "ipis",
+   "name": "Lima",
+   "visit_date": "2020-07-19",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00443",
+   "lon": 17.2564233333,
+   "lat": 6.1225483333,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2020-07-19",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00444",
+   "lon": 15.773615,
+   "lat": 6.837789,
+   "set": "ipis",
+   "name": "Barrage Bernard",
+   "visit_date": "2020-07-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00445",
+   "lon": 15.771245,
+   "lat": 6.765809,
+   "set": "ipis",
+   "name": "B\u00e9k\u00e9",
+   "visit_date": "2020-07-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00446",
+   "lon": 16.265835,
+   "lat": 5.6251833333,
+   "set": "ipis",
+   "name": "Boh",
+   "visit_date": "2020-07-20",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00447",
+   "lon": 15.724788,
+   "lat": 6.788653,
+   "set": "ipis",
+   "name": "Moundji 1",
+   "visit_date": "2020-07-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00448",
+   "lon": 15.669693,
+   "lat": 6.809184,
+   "set": "ipis",
+   "name": "Moundji Centre",
+   "visit_date": "2020-07-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00449",
+   "lon": 15.703364,
+   "lat": 6.768129,
+   "set": "ipis",
+   "name": "Yewere",
+   "visit_date": "2020-07-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00453",
+   "lon": 17.2520316667,
+   "lat": 6.1455116667,
+   "set": "ipis",
+   "name": "Koro",
+   "visit_date": "2020-07-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00455",
+   "lon": 15.943124,
+   "lat": 6.800269,
+   "set": "ipis",
+   "name": "Miskine",
+   "visit_date": "2020-07-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00456",
+   "lon": 17.2393833333,
+   "lat": 6.12278,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2020-07-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00457",
+   "lon": 15.3888233333,
+   "lat": 5.158435,
+   "set": "ipis",
+   "name": "Sanda",
+   "visit_date": "2020-07-23",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00458",
+   "lon": 15.3097483333,
+   "lat": 5.1709783333,
+   "set": "ipis",
+   "name": "Gom",
+   "visit_date": "2020-07-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00459",
+   "lon": 15.4020216667,
+   "lat": 5.14842,
+   "set": "ipis",
+   "name": "Mamb\u00e9r\u00e9 Abo",
+   "visit_date": "2020-07-23",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00460",
+   "lon": 17.840075,
+   "lat": 3.7883216667,
+   "set": "ipis",
+   "name": "Mondakalaka.",
+   "visit_date": "2020-07-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00461",
+   "lon": 17.5799266667,
+   "lat": 5.3748083333,
+   "set": "ipis",
+   "name": "Lyn",
+   "visit_date": "2020-07-24",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00462",
+   "lon": 17.1678,
+   "lat": 6.1235016667,
+   "set": "ipis",
+   "name": "Yoho Nana",
+   "visit_date": "2020-07-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00463",
+   "lon": 16.1353783333,
+   "lat": 4.0160033333,
+   "set": "ipis",
+   "name": "Bania Centre",
+   "visit_date": "2020-07-25",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00465",
+   "lon": 16.1138766667,
+   "lat": 4.0049883333,
+   "set": "ipis",
+   "name": "Bania Centre",
+   "visit_date": "2020-07-26",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00468",
+   "lon": 14.94929,
+   "lat": 5.1278383333,
+   "set": "ipis",
+   "name": "Zeze",
+   "visit_date": "2020-07-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00469",
+   "lon": 15.1827233333,
+   "lat": 5.12509,
+   "set": "ipis",
+   "name": "Medy Base (Gbanguene)",
+   "visit_date": "2020-07-26",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00470",
+   "lon": 17.8067966667,
+   "lat": 3.8381383333,
+   "set": "ipis",
+   "name": "Mengui 1",
+   "visit_date": "2020-07-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00471",
+   "lon": 17.8639533333,
+   "lat": 3.67517,
+   "set": "ipis",
+   "name": "Moboma",
+   "visit_date": "2020-07-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00473",
+   "lon": 14.9318983333,
+   "lat": 5.2796666667,
+   "set": "ipis",
+   "name": "Kpande",
+   "visit_date": "2020-07-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00474",
+   "lon": 14.91949,
+   "lat": 5.2715616667,
+   "set": "ipis",
+   "name": "Hichim",
+   "visit_date": "2020-07-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00475",
+   "lon": 14.9581883333,
+   "lat": 5.0636166667,
+   "set": "ipis",
+   "name": "Djorom Boumbeh",
+   "visit_date": "2020-07-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00476",
+   "lon": 16.9666666667,
+   "lat": 5.725035,
+   "set": "ipis",
+   "name": "Zou\u00e9",
+   "visit_date": "2020-07-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00477",
+   "lon": 15.600587,
+   "lat": 6.777269,
+   "set": "ipis",
+   "name": "Gaga",
+   "visit_date": "2020-07-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00478",
+   "lon": 16.9982016667,
+   "lat": 5.4883183333,
+   "set": "ipis",
+   "name": "Datoli",
+   "visit_date": "2020-07-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00479",
+   "lon": 14.8018666667,
+   "lat": 5.6848116667,
+   "set": "ipis",
+   "name": "Mbombia",
+   "visit_date": "2020-07-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00480",
+   "lon": 14.8631433333,
+   "lat": 5.23032,
+   "set": "ipis",
+   "name": "Gom",
+   "visit_date": "2020-07-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00481",
+   "lon": 17.0672683333,
+   "lat": 6.52146,
+   "set": "ipis",
+   "name": "Koh Kara",
+   "visit_date": "2020-07-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00482",
+   "lon": 14.7586116667,
+   "lat": 5.4751116667,
+   "set": "ipis",
+   "name": "Gbambassa",
+   "visit_date": "2020-07-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00483",
+   "lon": 17.8938516667,
+   "lat": 3.7368766667,
+   "set": "ipis",
+   "name": "Likekele",
+   "visit_date": "2020-07-29",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00484",
+   "lon": 16.439273,
+   "lat": 6.437566,
+   "set": "ipis",
+   "name": "Rota",
+   "visit_date": "2020-07-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00485",
+   "lon": 17.0555866667,
+   "lat": 6.5092666667,
+   "set": "ipis",
+   "name": "Digoro",
+   "visit_date": "2020-07-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00486",
+   "lon": 17.067505,
+   "lat": 6.5059416667,
+   "set": "ipis",
+   "name": "Kpemte",
+   "visit_date": "2020-07-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00487",
+   "lon": 15.4034283333,
+   "lat": 5.144235,
+   "set": "ipis",
+   "name": "Mambere",
+   "visit_date": "2020-07-29",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00488",
+   "lon": 15.25718,
+   "lat": 5.1747433333,
+   "set": "ipis",
+   "name": "Nakeko",
+   "visit_date": "2020-07-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00489",
+   "lon": 15.26124,
+   "lat": 5.312445,
+   "set": "ipis",
+   "name": "Mamb\u00e9r\u00e9 Abba",
+   "visit_date": "2020-07-29",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00490",
+   "lon": 16.5013683333,
+   "lat": 5.4584633333,
+   "set": "ipis",
+   "name": "Tedoa",
+   "visit_date": "2020-07-30",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00491",
+   "lon": 16.5015216667,
+   "lat": 5.4626133333,
+   "set": "ipis",
+   "name": "Tedoa",
+   "visit_date": "2020-07-30",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00492",
+   "lon": 16.993305,
+   "lat": 5.5278216667,
+   "set": "ipis",
+   "name": "Gamme Sengu\u00e8mon",
+   "visit_date": "2020-08-01",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00493",
+   "lon": 17.0505716667,
+   "lat": 5.6819683333,
+   "set": "ipis",
+   "name": "Ban Camp-Bangui",
+   "visit_date": "2020-08-01",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00494",
+   "lon": 15.930393,
+   "lat": 6.81442,
+   "set": "ipis",
+   "name": "Ndarssa",
+   "visit_date": "2020-08-01",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00495",
+   "lon": 15.18898,
+   "lat": 5.497145,
+   "set": "ipis",
+   "name": "Gbadakon",
+   "visit_date": "2020-08-01",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00497",
+   "lon": 15.191565,
+   "lat": 5.11216,
+   "set": "ipis",
+   "name": "Gore",
+   "visit_date": "2020-08-01",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00498",
+   "lon": 16.9530383333,
+   "lat": 5.509415,
+   "set": "ipis",
+   "name": "Gamme-Carri\u00e8re",
+   "visit_date": "2020-08-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00499",
+   "lon": 16.978135,
+   "lat": 5.50281,
+   "set": "ipis",
+   "name": "Gamme-Yofo",
+   "visit_date": "2020-08-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00500",
+   "lon": 17.01591,
+   "lat": 5.53323,
+   "set": "ipis",
+   "name": "Gamme 5 Kilo",
+   "visit_date": "2020-08-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00501",
+   "lon": 16.9743766667,
+   "lat": 5.6466116667,
+   "set": "ipis",
+   "name": "P\u00e9ya",
+   "visit_date": "2020-08-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00502",
+   "lon": 16.9715566667,
+   "lat": 5.6185366667,
+   "set": "ipis",
+   "name": "Nandombo",
+   "visit_date": "2020-08-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00504",
+   "lon": 16.5329383333,
+   "lat": 4.2983533333,
+   "set": "ipis",
+   "name": "Mba\u00e9r\u00e9",
+   "visit_date": "2020-08-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00506",
+   "lon": 16.396474,
+   "lat": 6.422304,
+   "set": "ipis",
+   "name": "Mbisso",
+   "visit_date": "2020-08-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00507",
+   "lon": 15.1061866667,
+   "lat": 5.28527,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2020-08-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00508",
+   "lon": 15.1004883333,
+   "lat": 5.296935,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2020-08-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00509",
+   "lon": 15.0853,
+   "lat": 5.3216066667,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2020-08-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00510",
+   "lon": 17.3707133333,
+   "lat": 5.71794,
+   "set": "ipis",
+   "name": "Zu-Ndjoh",
+   "visit_date": "2020-08-03",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00511",
+   "lon": 16.398459,
+   "lat": 6.432789,
+   "set": "ipis",
+   "name": "Mbifoura",
+   "visit_date": "2020-08-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00512",
+   "lon": 17.00927,
+   "lat": 5.4721616667,
+   "set": "ipis",
+   "name": "Yab\u00e9olo-Yab\u00e9ngala",
+   "visit_date": "2020-08-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00513",
+   "lon": 17.0137316667,
+   "lat": 5.4904783333,
+   "set": "ipis",
+   "name": "Gbaga\u00efn",
+   "visit_date": "2020-08-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00517",
+   "lon": 17.76384,
+   "lat": 6.6614116667,
+   "set": "ipis",
+   "name": "Mokere",
+   "visit_date": "2020-08-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00518",
+   "lon": 15.162595,
+   "lat": 5.475175,
+   "set": "ipis",
+   "name": "Moenam",
+   "visit_date": "2020-08-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00519",
+   "lon": 17.717375,
+   "lat": 6.692801666666666,
+   "set": "ipis",
+   "name": "Pays",
+   "visit_date": "2020-08-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00520",
+   "lon": 17.796555,
+   "lat": 3.8598816667,
+   "set": "ipis",
+   "name": "Mengui 2",
+   "visit_date": "2020-08-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00521",
+   "lon": 17.580285,
+   "lat": 5.382555,
+   "set": "ipis",
+   "name": "Wesse-Doli",
+   "visit_date": "2020-08-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00522",
+   "lon": 17.7196833333,
+   "lat": 6.4528216667,
+   "set": "ipis",
+   "name": "Ndarsa",
+   "visit_date": "2020-08-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00523",
+   "lon": 15.424519,
+   "lat": 5.136107,
+   "set": "ipis",
+   "name": "Gbin-Mboussa",
+   "visit_date": "2020-08-04",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00524",
+   "lon": 15.4277933333,
+   "lat": 5.1336433333,
+   "set": "ipis",
+   "name": "Gbin-Mboussa 2",
+   "visit_date": "2020-08-04",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00525",
+   "lon": 15.0291616667,
+   "lat": 5.1820266667,
+   "set": "ipis",
+   "name": "Medy",
+   "visit_date": "2020-08-05",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00526",
+   "lon": 15.0672933333,
+   "lat": 5.1485433333,
+   "set": "ipis",
+   "name": "Medy",
+   "visit_date": "2020-08-05",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00527",
+   "lon": 15.094045,
+   "lat": 5.13901,
+   "set": "ipis",
+   "name": "Medy Assist\u00e9",
+   "visit_date": "2020-08-05",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00528",
+   "lon": 15.5607466667,
+   "lat": 5.1278483333,
+   "set": "ipis",
+   "name": "Sipi",
+   "visit_date": "2020-08-05",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00529",
+   "lon": 17.4126616667,
+   "lat": 5.7114333333,
+   "set": "ipis",
+   "name": "Pk12",
+   "visit_date": "2020-08-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00531",
+   "lon": 16.1383733333,
+   "lat": 3.223,
+   "set": "ipis",
+   "name": "Ngola1",
+   "visit_date": "2020-08-06",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00532",
+   "lon": 16.196895,
+   "lat": 3.7464983333,
+   "set": "ipis",
+   "name": "Yangu\u00e9nda",
+   "visit_date": "2020-08-06",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00533",
+   "lon": 14.988365,
+   "lat": 5.2337716667,
+   "set": "ipis",
+   "name": "Zindi",
+   "visit_date": "2020-08-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00534",
+   "lon": 15.19119,
+   "lat": 5.3903033333,
+   "set": "ipis",
+   "name": "Gbayenb\u00e9",
+   "visit_date": "2020-08-06",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00535",
+   "lon": 17.58686,
+   "lat": 5.556605,
+   "set": "ipis",
+   "name": "Kpo\u00ef",
+   "visit_date": "2020-08-07",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00536",
+   "lon": 15.19119,
+   "lat": 5.3903033333,
+   "set": "ipis",
+   "name": "Gbayenb\u00e9",
+   "visit_date": "2020-08-07",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00537",
+   "lon": 15.2361,
+   "lat": 5.3744916667,
+   "set": "ipis",
+   "name": "Gbengoto",
+   "visit_date": "2020-08-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00541",
+   "lon": 17.240515,
+   "lat": 6.1414316667,
+   "set": "ipis",
+   "name": "Li-Hononh",
+   "visit_date": "2020-08-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00542",
+   "lon": 17.2161266667,
+   "lat": 6.095355,
+   "set": "ipis",
+   "name": "Dengue Yoho",
+   "visit_date": "2020-08-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00543",
+   "lon": 15.308644,
+   "lat": 5.383293,
+   "set": "ipis",
+   "name": "Wal\u00e9",
+   "visit_date": "2020-08-08",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00544",
+   "lon": 15.1463016667,
+   "lat": 5.505715,
+   "set": "ipis",
+   "name": "Gbembou",
+   "visit_date": "2020-08-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00545",
+   "lon": 17.4648,
+   "lat": 4.796248,
+   "set": "ipis",
+   "name": "Adouzekede",
+   "visit_date": "2020-08-09",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00546",
+   "lon": 16.9793166667,
+   "lat": 5.5189516667,
+   "set": "ipis",
+   "name": "Yongoro-Nguiza",
+   "visit_date": "2020-08-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00547",
+   "lon": 17.0011383333,
+   "lat": 5.7034633333,
+   "set": "ipis",
+   "name": "Gbolon",
+   "visit_date": "2020-08-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00548",
+   "lon": 16.9904883333,
+   "lat": 5.75697,
+   "set": "ipis",
+   "name": "Gbab\u00e9",
+   "visit_date": "2020-08-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00549",
+   "lon": 17.6097066667,
+   "lat": 5.6295016667,
+   "set": "ipis",
+   "name": "Gbassa Tangue",
+   "visit_date": "2020-08-09",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00551",
+   "lon": 16.22412,
+   "lat": 3.5363716667,
+   "set": "ipis",
+   "name": "Mayemb\u00e9",
+   "visit_date": "2020-08-09",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00555",
+   "lon": 14.8136433333,
+   "lat": 5.6848866667,
+   "set": "ipis",
+   "name": "Ngbab\u00e9r\u00e9 1",
+   "visit_date": "2020-08-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00556",
+   "lon": 14.8100883333,
+   "lat": 6.3118183333,
+   "set": "ipis",
+   "name": "Mb\u00e9lou",
+   "visit_date": "2020-08-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00557",
+   "lon": 16.93591,
+   "lat": 6.447725,
+   "set": "ipis",
+   "name": "Nougawa",
+   "visit_date": "2020-08-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00558",
+   "lon": 17.1980783333,
+   "lat": 6.1137133333,
+   "set": "ipis",
+   "name": "Yoho",
+   "visit_date": "2020-08-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00559",
+   "lon": 15.1582816667,
+   "lat": 5.4317166667,
+   "set": "ipis",
+   "name": "Kombel\u00e9",
+   "visit_date": "2020-08-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00560",
+   "lon": 17.467914,
+   "lat": 4.794698,
+   "set": "ipis",
+   "name": "Adouzekede",
+   "visit_date": "2020-08-10",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00561",
+   "lon": 17.5029833333,
+   "lat": 4.760425,
+   "set": "ipis",
+   "name": "Ngom-Mbata",
+   "visit_date": "2020-08-10",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00562",
+   "lon": 17.4648,
+   "lat": 4.796248,
+   "set": "ipis",
+   "name": "Drol",
+   "visit_date": "2020-08-10",
+   "minerals": "Diamant, Or, Carbone",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00563",
+   "lon": 17.516961,
+   "lat": 4.727429,
+   "set": "ipis",
+   "name": "Pama-Drol",
+   "visit_date": "2020-08-10",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00564",
+   "lon": 15.691968,
+   "lat": 6.82967,
+   "set": "ipis",
+   "name": "Ndemou",
+   "visit_date": "2020-08-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00565",
+   "lon": 16.43022,
+   "lat": 6.4537,
+   "set": "ipis",
+   "name": "Gan",
+   "visit_date": "2020-08-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00566",
+   "lon": 16.463634,
+   "lat": 6.539739,
+   "set": "ipis",
+   "name": "Lao",
+   "visit_date": "2020-08-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00567",
+   "lon": 16.439273,
+   "lat": 6.437566,
+   "set": "ipis",
+   "name": "Rota",
+   "visit_date": "2020-08-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00568",
+   "lon": 15.5991716667,
+   "lat": 3.9329016667,
+   "set": "ipis",
+   "name": "Arabi",
+   "visit_date": "2020-08-11",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00571",
+   "lon": 16.365362,
+   "lat": 6.371489,
+   "set": "ipis",
+   "name": "Taf\u00e9h",
+   "visit_date": "2020-08-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00572",
+   "lon": 16.29904,
+   "lat": 6.23382,
+   "set": "ipis",
+   "name": "Nago",
+   "visit_date": "2020-08-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00573",
+   "lon": 15.0206133333,
+   "lat": 5.080115,
+   "set": "ipis",
+   "name": "Zongo",
+   "visit_date": "2020-08-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00574",
+   "lon": 15.0231833333,
+   "lat": 5.1223383333,
+   "set": "ipis",
+   "name": "Zongo",
+   "visit_date": "2020-08-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00575",
+   "lon": 15.171565,
+   "lat": 5.3968683333,
+   "set": "ipis",
+   "name": "Danabondo",
+   "visit_date": "2020-08-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00576",
+   "lon": 17.516961,
+   "lat": 4.727429,
+   "set": "ipis",
+   "name": "Drol",
+   "visit_date": "2020-08-12",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00577",
+   "lon": 16.429309,
+   "lat": 6.458565,
+   "set": "ipis",
+   "name": "Beguida",
+   "visit_date": "2020-08-12",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00581",
+   "lon": 16.459734,
+   "lat": 6.476651,
+   "set": "ipis",
+   "name": "Gouroum",
+   "visit_date": "2020-08-13",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00582",
+   "lon": 16.419996,
+   "lat": 6.438595,
+   "set": "ipis",
+   "name": "Sagna",
+   "visit_date": "2020-08-13",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00586",
+   "lon": 16.409577,
+   "lat": 6.417535,
+   "set": "ipis",
+   "name": "Ouham",
+   "visit_date": "2020-08-13",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00587",
+   "lon": 17.2662183333,
+   "lat": 6.1734433333,
+   "set": "ipis",
+   "name": "Kogbema",
+   "visit_date": "2020-08-13",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00588",
+   "lon": 15.69165,
+   "lat": 6.80107,
+   "set": "ipis",
+   "name": "Sadou",
+   "visit_date": "2020-08-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00589",
+   "lon": 15.632206,
+   "lat": 6.771521,
+   "set": "ipis",
+   "name": "Ngorohoul",
+   "visit_date": "2020-08-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00590",
+   "lon": 15.876407,
+   "lat": 6.717947,
+   "set": "ipis",
+   "name": "Gaga",
+   "visit_date": "2020-08-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00592",
+   "lon": 17.7677333333,
+   "lat": 6.67671,
+   "set": "ipis",
+   "name": "Rizian",
+   "visit_date": "2020-08-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00593",
+   "lon": 15.30708,
+   "lat": 5.1688133333,
+   "set": "ipis",
+   "name": "Gba\u00efna",
+   "visit_date": "2020-08-14",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00594",
+   "lon": 15.2007183333,
+   "lat": 5.18644,
+   "set": "ipis",
+   "name": "Rondy",
+   "visit_date": "2020-08-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00595",
+   "lon": 15.2141916667,
+   "lat": 5.2292216667,
+   "set": "ipis",
+   "name": "Tamberk\u00e9",
+   "visit_date": "2020-08-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00600",
+   "lon": 16.428797,
+   "lat": 6.486288,
+   "set": "ipis",
+   "name": "Nzakagawa",
+   "visit_date": "2020-08-15",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00601",
+   "lon": 17.3559266667,
+   "lat": 6.08125,
+   "set": "ipis",
+   "name": "Thiene",
+   "visit_date": "2020-08-15",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00602",
+   "lon": 17.7740716667,
+   "lat": 6.5548283333,
+   "set": "ipis",
+   "name": "Mara",
+   "visit_date": "2020-08-15",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00603",
+   "lon": 15.0943683333,
+   "lat": 5.3135016667,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2020-08-15",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00604",
+   "lon": 17.5869266667,
+   "lat": 4.819855,
+   "set": "ipis",
+   "name": "Yalicom",
+   "visit_date": "2020-08-16",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00605",
+   "lon": 17.516804,
+   "lat": 4.727332,
+   "set": "ipis",
+   "name": "Pama-Drol",
+   "visit_date": "2020-08-16",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00606",
+   "lon": 17.7605916667,
+   "lat": 3.708325,
+   "set": "ipis",
+   "name": "Ngouma",
+   "visit_date": "2020-08-16",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00609",
+   "lon": 14.7755583333,
+   "lat": 5.699895,
+   "set": "ipis",
+   "name": "Gbaro",
+   "visit_date": "2020-08-16",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00610",
+   "lon": 14.8046266667,
+   "lat": 5.6917533333,
+   "set": "ipis",
+   "name": "Ngbabere 2",
+   "visit_date": "2020-08-16",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00611",
+   "lon": 17.2563,
+   "lat": 6.1224516667,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2020-08-16",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00612",
+   "lon": 15.680651,
+   "lat": 6.808367,
+   "set": "ipis",
+   "name": "Kangab\u00e9",
+   "visit_date": "2020-10-13",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00613",
+   "lon": 16.9982016667,
+   "lat": 5.4883183333,
+   "set": "ipis",
+   "name": "Datoli",
+   "visit_date": "2020-10-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00615",
+   "lon": 17.0768216667,
+   "lat": 4.8032133333,
+   "set": "ipis",
+   "name": "Kanga",
+   "visit_date": "2020-10-14",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00616",
+   "lon": 17.7677333333,
+   "lat": 6.67671,
+   "set": "ipis",
+   "name": "Rizian",
+   "visit_date": "2020-10-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00617",
+   "lon": 16.440613,
+   "lat": 6.47471,
+   "set": "ipis",
+   "name": "Garo",
+   "visit_date": "2020-10-18",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00618",
+   "lon": 16.459734,
+   "lat": 6.476651,
+   "set": "ipis",
+   "name": "Gouroum",
+   "visit_date": "2020-10-18",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00619",
+   "lon": 14.8018666667,
+   "lat": 5.6848116667,
+   "set": "ipis",
+   "name": "Mbombia",
+   "visit_date": "2020-10-18",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00620",
+   "lon": 15.669693,
+   "lat": 6.809184,
+   "set": "ipis",
+   "name": "Moundji Centre",
+   "visit_date": "2020-10-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00621",
+   "lon": 15.771245,
+   "lat": 6.765809,
+   "set": "ipis",
+   "name": "B\u00e9k\u00e9",
+   "visit_date": "2020-10-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00622",
+   "lon": 15.930393,
+   "lat": 6.81442,
+   "set": "ipis",
+   "name": "Ndarssa",
+   "visit_date": "2020-10-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00623",
+   "lon": 15.876407,
+   "lat": 6.717947,
+   "set": "ipis",
+   "name": "Gaga",
+   "visit_date": "2020-10-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00624",
+   "lon": 15.943124,
+   "lat": 6.800269,
+   "set": "ipis",
+   "name": "Miskine",
+   "visit_date": "2020-10-20",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00634",
+   "lon": 17.5244683333,
+   "lat": 4.2274616667,
+   "set": "ipis",
+   "name": "Banegbere",
+   "visit_date": "2020-10-21",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00635",
+   "lon": 16.396474,
+   "lat": 6.422304,
+   "set": "ipis",
+   "name": "Mbisso",
+   "visit_date": "2020-10-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00636",
+   "lon": 17.240515,
+   "lat": 6.1414316667,
+   "set": "ipis",
+   "name": "Li-Hononh",
+   "visit_date": "2020-10-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00637",
+   "lon": 14.9581883333,
+   "lat": 5.0636166667,
+   "set": "ipis",
+   "name": "Djorom Boumbeh",
+   "visit_date": "2020-10-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00638",
+   "lon": 14.988365,
+   "lat": 5.2337716667,
+   "set": "ipis",
+   "name": "Zindi",
+   "visit_date": "2020-10-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00639",
+   "lon": 15.0206133333,
+   "lat": 5.080115,
+   "set": "ipis",
+   "name": "Zongo",
+   "visit_date": "2020-10-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00640",
+   "lon": 17.0555866667,
+   "lat": 6.5092666667,
+   "set": "ipis",
+   "name": "Digoro",
+   "visit_date": "2020-10-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00641",
+   "lon": 16.93591,
+   "lat": 6.447725,
+   "set": "ipis",
+   "name": "Nougawa",
+   "visit_date": "2020-10-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00642",
+   "lon": 17.063885,
+   "lat": 6.4877283333,
+   "set": "ipis",
+   "name": "Maetara",
+   "visit_date": "2020-10-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00643",
+   "lon": 15.0231833333,
+   "lat": 5.1223383333,
+   "set": "ipis",
+   "name": "Zongo",
+   "visit_date": "2020-10-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00644",
+   "lon": 15.1061866667,
+   "lat": 5.28527,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2020-10-21",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00645",
+   "lon": 17.717375,
+   "lat": 6.692801666666666,
+   "set": "ipis",
+   "name": "Pays",
+   "visit_date": "2020-10-21",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00646",
+   "lon": 17.7605916667,
+   "lat": 3.708325,
+   "set": "ipis",
+   "name": "Ngouma",
+   "visit_date": "2020-10-22",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00647",
+   "lon": 16.1353783333,
+   "lat": 4.0160033333,
+   "set": "ipis",
+   "name": "Bania Centre",
+   "visit_date": "2020-10-22",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00651",
+   "lon": 14.74555,
+   "lat": 5.7818883333,
+   "set": "ipis",
+   "name": "Popo 2",
+   "visit_date": "2020-10-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00652",
+   "lon": 14.6346383333,
+   "lat": 5.754745,
+   "set": "ipis",
+   "name": "Yong-Bor\u00e8",
+   "visit_date": "2020-10-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00653",
+   "lon": 14.76428,
+   "lat": 5.644405,
+   "set": "ipis",
+   "name": "Rondji",
+   "visit_date": "2020-10-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00654",
+   "lon": 14.953825,
+   "lat": 5.8244716667,
+   "set": "ipis",
+   "name": "Gomoye",
+   "visit_date": "2020-10-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00655",
+   "lon": 15.3097483333,
+   "lat": 5.1709783333,
+   "set": "ipis",
+   "name": "Gom",
+   "visit_date": "2020-10-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00656",
+   "lon": 15.1463016667,
+   "lat": 5.505715,
+   "set": "ipis",
+   "name": "Gbembou",
+   "visit_date": "2020-10-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00657",
+   "lon": 15.1004883333,
+   "lat": 5.296935,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2020-10-22",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00658",
+   "lon": 14.7586116667,
+   "lat": 5.4751116667,
+   "set": "ipis",
+   "name": "Gbambassa",
+   "visit_date": "2020-10-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00659",
+   "lon": 14.7699416667,
+   "lat": 5.6300183333,
+   "set": "ipis",
+   "name": "Nakp\u00e9ngu\u00e8",
+   "visit_date": "2020-10-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00660",
+   "lon": 14.72701,
+   "lat": 5.44698,
+   "set": "ipis",
+   "name": "Ndongori",
+   "visit_date": "2020-10-22",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00661",
+   "lon": 16.1138766667,
+   "lat": 4.0049883333,
+   "set": "ipis",
+   "name": "Bania Centre",
+   "visit_date": "2020-10-23",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00664",
+   "lon": 14.8046266667,
+   "lat": 5.6917533333,
+   "set": "ipis",
+   "name": "Ngbabere 2",
+   "visit_date": "2020-10-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00665",
+   "lon": 15.020375,
+   "lat": 5.076575,
+   "set": "ipis",
+   "name": "Zongo 2",
+   "visit_date": "2020-10-23",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00666",
+   "lon": 15.4034283333,
+   "lat": 5.144235,
+   "set": "ipis",
+   "name": "Mambere",
+   "visit_date": "2020-10-23",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00667",
+   "lon": 15.3921833333,
+   "lat": 5.1556333333,
+   "set": "ipis",
+   "name": "Mambere",
+   "visit_date": "2020-10-23",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00668",
+   "lon": 15.094045,
+   "lat": 5.13901,
+   "set": "ipis",
+   "name": "Medy Assist\u00e9",
+   "visit_date": "2020-10-23",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00669",
+   "lon": 15.26124,
+   "lat": 5.312445,
+   "set": "ipis",
+   "name": "Mamb\u00e9r\u00e9 Abba",
+   "visit_date": "2020-10-23",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00670",
+   "lon": 15.0943683333,
+   "lat": 5.3135016667,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2020-10-23",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00671",
+   "lon": 15.0853,
+   "lat": 5.3216066667,
+   "set": "ipis",
+   "name": "Loya",
+   "visit_date": "2020-10-23",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00672",
+   "lon": 16.43022,
+   "lat": 6.4537,
+   "set": "ipis",
+   "name": "Gan",
+   "visit_date": "2020-10-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00673",
+   "lon": 16.67373,
+   "lat": 6.622774,
+   "set": "ipis",
+   "name": "Rouw\u00e9",
+   "visit_date": "2020-10-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00679",
+   "lon": 17.3543716667,
+   "lat": 4.2986066667,
+   "set": "ipis",
+   "name": "Lobe",
+   "visit_date": "2020-10-24",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00680",
+   "lon": 14.8100883333,
+   "lat": 6.3118183333,
+   "set": "ipis",
+   "name": "Mb\u00e9lou",
+   "visit_date": "2020-10-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00681",
+   "lon": 14.750815,
+   "lat": 5.6888283333,
+   "set": "ipis",
+   "name": "Gbal\u00f4",
+   "visit_date": "2020-10-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00682",
+   "lon": 14.8404216667,
+   "lat": 5.99203,
+   "set": "ipis",
+   "name": "Loungu",
+   "visit_date": "2020-10-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00683",
+   "lon": 14.8412016667,
+   "lat": 5.9733183333,
+   "set": "ipis",
+   "name": "Loungou",
+   "visit_date": "2020-10-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00684",
+   "lon": 15.03244,
+   "lat": 5.1782216667,
+   "set": "ipis",
+   "name": "Medy 1a",
+   "visit_date": "2020-10-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00685",
+   "lon": 15.0672933333,
+   "lat": 5.1485433333,
+   "set": "ipis",
+   "name": "Medy",
+   "visit_date": "2020-10-24",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00686",
+   "lon": 15.1827233333,
+   "lat": 5.12509,
+   "set": "ipis",
+   "name": "Medy Base (Gbanguene)",
+   "visit_date": "2020-10-24",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00688",
+   "lon": 16.429309,
+   "lat": 6.458565,
+   "set": "ipis",
+   "name": "Beguida",
+   "visit_date": "2020-10-25",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00689",
+   "lon": 16.398459,
+   "lat": 6.432789,
+   "set": "ipis",
+   "name": "Mbifoura",
+   "visit_date": "2020-10-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00690",
+   "lon": 17.719299999999997,
+   "lat": 6.691758333333333,
+   "set": "ipis",
+   "name": "Dedeye",
+   "visit_date": "2020-10-25",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00691",
+   "lon": 17.8639533333,
+   "lat": 3.67517,
+   "set": "ipis",
+   "name": "Moboma",
+   "visit_date": "2020-10-26",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00692",
+   "lon": 15.691968,
+   "lat": 6.82967,
+   "set": "ipis",
+   "name": "Ndemou",
+   "visit_date": "2020-10-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00693",
+   "lon": 15.724788,
+   "lat": 6.788653,
+   "set": "ipis",
+   "name": "Moundji 1",
+   "visit_date": "2020-10-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00694",
+   "lon": 17.8023783333,
+   "lat": 3.7646866667,
+   "set": "ipis",
+   "name": "Zingawele-Lobaye",
+   "visit_date": "2020-10-27",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00696",
+   "lon": 17.376525,
+   "lat": 4.35754,
+   "set": "ipis",
+   "name": "Bolaye 2",
+   "visit_date": "2020-10-27",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00699",
+   "lon": 14.834025,
+   "lat": 5.791915,
+   "set": "ipis",
+   "name": "Kanga",
+   "visit_date": "2020-10-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00700",
+   "lon": 14.770365,
+   "lat": 5.7589,
+   "set": "ipis",
+   "name": "Takoyo",
+   "visit_date": "2020-10-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00701",
+   "lon": 14.8158,
+   "lat": 6.1386866667,
+   "set": "ipis",
+   "name": "Bim",
+   "visit_date": "2020-10-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00702",
+   "lon": 14.7512,
+   "lat": 5.6748933333,
+   "set": "ipis",
+   "name": "Kata-For\u00f4",
+   "visit_date": "2020-10-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00703",
+   "lon": 14.74751,
+   "lat": 5.6735366667,
+   "set": "ipis",
+   "name": "Zou Kata-For\u00f4",
+   "visit_date": "2020-10-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00704",
+   "lon": 14.7621116667,
+   "lat": 5.65061,
+   "set": "ipis",
+   "name": "Ngindo",
+   "visit_date": "2020-10-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00705",
+   "lon": 14.787645,
+   "lat": 5.6557666667,
+   "set": "ipis",
+   "name": "Kpangari",
+   "visit_date": "2020-10-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00706",
+   "lon": 14.7845933333,
+   "lat": 5.69109,
+   "set": "ipis",
+   "name": "Ndinguerengu\u00e8",
+   "visit_date": "2020-10-27",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00707",
+   "lon": 15.688572,
+   "lat": 6.912671,
+   "set": "ipis",
+   "name": "Lima",
+   "visit_date": "2020-10-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00708",
+   "lon": 15.773615,
+   "lat": 6.837789,
+   "set": "ipis",
+   "name": "Barrage Bernard",
+   "visit_date": "2020-10-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00709",
+   "lon": 15.703364,
+   "lat": 6.768129,
+   "set": "ipis",
+   "name": "Yewere",
+   "visit_date": "2020-10-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00710",
+   "lon": 16.29904,
+   "lat": 6.23382,
+   "set": "ipis",
+   "name": "Nago",
+   "visit_date": "2020-10-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00711",
+   "lon": 14.9318983333,
+   "lat": 5.2796666667,
+   "set": "ipis",
+   "name": "Kpande",
+   "visit_date": "2020-10-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00712",
+   "lon": 14.91949,
+   "lat": 5.2715616667,
+   "set": "ipis",
+   "name": "Hichim",
+   "visit_date": "2020-10-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00713",
+   "lon": 14.94929,
+   "lat": 5.1278383333,
+   "set": "ipis",
+   "name": "Zeze",
+   "visit_date": "2020-10-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00714",
+   "lon": 17.067505,
+   "lat": 6.5059416667,
+   "set": "ipis",
+   "name": "Kpemte",
+   "visit_date": "2020-10-28",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00715",
+   "lon": 15.30708,
+   "lat": 5.1688133333,
+   "set": "ipis",
+   "name": "Gba\u00efna",
+   "visit_date": "2020-10-28",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00717",
+   "lon": 16.420199,
+   "lat": 6.504102,
+   "set": "ipis",
+   "name": "Koro",
+   "visit_date": "2020-10-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00718",
+   "lon": 14.7712383333,
+   "lat": 5.7588483333,
+   "set": "ipis",
+   "name": "Takoyo 2",
+   "visit_date": "2020-10-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00719",
+   "lon": 14.7755583333,
+   "lat": 5.699895,
+   "set": "ipis",
+   "name": "Gbaro",
+   "visit_date": "2020-10-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00720",
+   "lon": 14.8136433333,
+   "lat": 5.6848866667,
+   "set": "ipis",
+   "name": "Ngbab\u00e9r\u00e9 1",
+   "visit_date": "2020-10-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00721",
+   "lon": 17.1678,
+   "lat": 6.1235016667,
+   "set": "ipis",
+   "name": "Yoho Nana",
+   "visit_date": "2020-10-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00722",
+   "lon": 17.7176983333,
+   "lat": 6.6928066667,
+   "set": "ipis",
+   "name": "Pays2",
+   "visit_date": "2020-10-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00723",
+   "lon": 14.8387183333,
+   "lat": 5.98268,
+   "set": "ipis",
+   "name": "Bekombo",
+   "visit_date": "2020-10-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00724",
+   "lon": 14.6509933333,
+   "lat": 5.8027983333,
+   "set": "ipis",
+   "name": "Gokopondo",
+   "visit_date": "2020-10-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00728",
+   "lon": 15.25718,
+   "lat": 5.1747433333,
+   "set": "ipis",
+   "name": "Nakeko",
+   "visit_date": "2020-10-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00729",
+   "lon": 14.7364433333,
+   "lat": 5.482335,
+   "set": "ipis",
+   "name": "Sabia",
+   "visit_date": "2020-10-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00730",
+   "lon": 14.8055,
+   "lat": 5.5535,
+   "set": "ipis",
+   "name": "Rombi",
+   "visit_date": "2020-10-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00731",
+   "lon": 14.8359,
+   "lat": 5.74097,
+   "set": "ipis",
+   "name": "Gbapoka",
+   "visit_date": "2020-10-29",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00736",
+   "lon": 15.3888233333,
+   "lat": 5.158435,
+   "set": "ipis",
+   "name": "Sanda",
+   "visit_date": "2020-10-30",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00744",
+   "lon": 16.679576,
+   "lat": 6.63281,
+   "set": "ipis",
+   "name": "Kob\u00e9",
+   "visit_date": "2020-10-31",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00745",
+   "lon": 17.2394183333,
+   "lat": 6.1221583333,
+   "set": "ipis",
+   "name": "Dock Sala",
+   "visit_date": "2020-10-31",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00746",
+   "lon": 16.365362,
+   "lat": 6.371489,
+   "set": "ipis",
+   "name": "Taf\u00e9h",
+   "visit_date": "2020-11-01",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00747",
+   "lon": 16.428797,
+   "lat": 6.486288,
+   "set": "ipis",
+   "name": "Nzakagawa",
+   "visit_date": "2020-11-01",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00748",
+   "lon": 15.5607466667,
+   "lat": 5.1278483333,
+   "set": "ipis",
+   "name": "Sipi",
+   "visit_date": "2020-11-01",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00749",
+   "lon": 15.69165,
+   "lat": 6.80107,
+   "set": "ipis",
+   "name": "Sadou",
+   "visit_date": "2020-11-02",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00750",
+   "lon": 15.424519,
+   "lat": 5.136107,
+   "set": "ipis",
+   "name": "Gbin-Mboussa",
+   "visit_date": "2020-11-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00751",
+   "lon": 15.4277933333,
+   "lat": 5.1336433333,
+   "set": "ipis",
+   "name": "Gbin-Mboussa 2",
+   "visit_date": "2020-11-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00752",
+   "lon": 15.4020216667,
+   "lat": 5.14842,
+   "set": "ipis",
+   "name": "Mamb\u00e9r\u00e9 Abo",
+   "visit_date": "2020-11-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00753",
+   "lon": 17.2161266667,
+   "lat": 6.095355,
+   "set": "ipis",
+   "name": "Dengue Yoho",
+   "visit_date": "2020-11-03",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00754",
+   "lon": 17.2563,
+   "lat": 6.1224516667,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2020-11-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00755",
+   "lon": 17.1980783333,
+   "lat": 6.1137133333,
+   "set": "ipis",
+   "name": "Yoho",
+   "visit_date": "2020-11-04",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00756",
+   "lon": 15.5991716667,
+   "lat": 3.9329016667,
+   "set": "ipis",
+   "name": "Arabi",
+   "visit_date": "2020-11-05",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00759",
+   "lon": 17.1132216667,
+   "lat": 4.7955166667,
+   "set": "ipis",
+   "name": "Maoro",
+   "visit_date": "2020-11-05",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00760",
+   "lon": 17.2728383333,
+   "lat": 4.7276416667,
+   "set": "ipis",
+   "name": "Kp\u00e2",
+   "visit_date": "2020-11-05",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00761",
+   "lon": 14.8631433333,
+   "lat": 5.23032,
+   "set": "ipis",
+   "name": "Gom",
+   "visit_date": "2020-11-05",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00762",
+   "lon": 14.90987,
+   "lat": 5.228655,
+   "set": "ipis",
+   "name": "Gom",
+   "visit_date": "2020-11-05",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00763",
+   "lon": 15.19119,
+   "lat": 5.3903033333,
+   "set": "ipis",
+   "name": "Gbayenb\u00e9",
+   "visit_date": "2020-11-05",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00764",
+   "lon": 15.2361,
+   "lat": 5.3744916667,
+   "set": "ipis",
+   "name": "Gbengoto",
+   "visit_date": "2020-11-05",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00765",
+   "lon": 15.18898,
+   "lat": 5.497145,
+   "set": "ipis",
+   "name": "Gbadakon",
+   "visit_date": "2020-11-05",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00766",
+   "lon": 16.993305,
+   "lat": 5.5278216667,
+   "set": "ipis",
+   "name": "Gamme Sengu\u00e8mon",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00767",
+   "lon": 16.9793166667,
+   "lat": 5.5189516667,
+   "set": "ipis",
+   "name": "Yongoro-Nguiza",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00768",
+   "lon": 16.9530383333,
+   "lat": 5.509415,
+   "set": "ipis",
+   "name": "Gamme-Carri\u00e8re",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00769",
+   "lon": 16.978135,
+   "lat": 5.50281,
+   "set": "ipis",
+   "name": "Gamme-Yofo",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00770",
+   "lon": 17.01591,
+   "lat": 5.53323,
+   "set": "ipis",
+   "name": "Gamme 5 Kilo",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00771",
+   "lon": 17.0307483333,
+   "lat": 5.5570616667,
+   "set": "ipis",
+   "name": "Ban",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00772",
+   "lon": 16.9743766667,
+   "lat": 5.6466116667,
+   "set": "ipis",
+   "name": "P\u00e9ya",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00773",
+   "lon": 16.9546616667,
+   "lat": 5.6358883333,
+   "set": "ipis",
+   "name": "Oko-P\u00e9ya",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00774",
+   "lon": 16.9715566667,
+   "lat": 5.6185366667,
+   "set": "ipis",
+   "name": "Nandombo",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00775",
+   "lon": 17.0505716667,
+   "lat": 5.6819683333,
+   "set": "ipis",
+   "name": "Ban Camp-Bangui",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00776",
+   "lon": 17.0011383333,
+   "lat": 5.7034633333,
+   "set": "ipis",
+   "name": "Gbolon",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00777",
+   "lon": 16.9666666667,
+   "lat": 5.725035,
+   "set": "ipis",
+   "name": "Zou\u00e9",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00778",
+   "lon": 16.9904883333,
+   "lat": 5.75697,
+   "set": "ipis",
+   "name": "Gbab\u00e9",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00779",
+   "lon": 16.9982016667,
+   "lat": 5.4883183333,
+   "set": "ipis",
+   "name": "Datoli",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00780",
+   "lon": 17.00927,
+   "lat": 5.4721616667,
+   "set": "ipis",
+   "name": "Yab\u00e9olo-Yab\u00e9ngala",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00781",
+   "lon": 17.0137316667,
+   "lat": 5.4904783333,
+   "set": "ipis",
+   "name": "Gbaga\u00efn",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00782",
+   "lon": 17.0949016667,
+   "lat": 4.8029483333,
+   "set": "ipis",
+   "name": "Zori",
+   "visit_date": "2020-11-06",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00783",
+   "lon": 17.238555,
+   "lat": 4.7043566667,
+   "set": "ipis",
+   "name": "Tokoyeingue",
+   "visit_date": "2020-11-06",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00784",
+   "lon": 17.1363983333,
+   "lat": 4.765865,
+   "set": "ipis",
+   "name": "Site Koh3",
+   "visit_date": "2020-11-06",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00786",
+   "lon": 17.1093766667,
+   "lat": 4.6842716667,
+   "set": "ipis",
+   "name": "Site Doubi 2",
+   "visit_date": "2020-11-06",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00787",
+   "lon": 16.420199,
+   "lat": 6.504102,
+   "set": "ipis",
+   "name": "Koro",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00788",
+   "lon": 16.409577,
+   "lat": 6.417535,
+   "set": "ipis",
+   "name": "Ouham",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00789",
+   "lon": 16.40197,
+   "lat": 6.391856,
+   "set": "ipis",
+   "name": "Mbabolkar\u00e9",
+   "visit_date": "2020-11-06",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00790",
+   "lon": 15.680651,
+   "lat": 6.808367,
+   "set": "ipis",
+   "name": "Kangab\u00e9",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00791",
+   "lon": 17.8380616667,
+   "lat": 3.8303266667,
+   "set": "ipis",
+   "name": "Pouadoungbe",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00792",
+   "lon": 17.8371166667,
+   "lat": 3.83392,
+   "set": "ipis",
+   "name": "Nkongue",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00793",
+   "lon": 17.796555,
+   "lat": 3.8598816667,
+   "set": "ipis",
+   "name": "Mengui 2",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00794",
+   "lon": 17.8067966667,
+   "lat": 3.8381383333,
+   "set": "ipis",
+   "name": "Mengui 1",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00795",
+   "lon": 17.7908966667,
+   "lat": 3.7920883333,
+   "set": "ipis",
+   "name": "Ouana-Sego",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00796",
+   "lon": 17.8348083333,
+   "lat": 3.8465183333,
+   "set": "ipis",
+   "name": "Mombondo",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00797",
+   "lon": 17.840075,
+   "lat": 3.7883216667,
+   "set": "ipis",
+   "name": "Mondakalaka.",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00798",
+   "lon": 17.0123116667,
+   "lat": 5.7551216667,
+   "set": "ipis",
+   "name": "Cflt Ban-Zou\u00e9",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00799",
+   "lon": 17.0008666667,
+   "lat": 5.4627666667,
+   "set": "ipis",
+   "name": "Yambot\u00e9",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00800",
+   "lon": 17.06386,
+   "lat": 5.5007016667,
+   "set": "ipis",
+   "name": "Ban-Ziki",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00803",
+   "lon": 17.3559266667,
+   "lat": 6.08125,
+   "set": "ipis",
+   "name": "Thiene",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00804",
+   "lon": 17.2564233333,
+   "lat": 6.1225483333,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00805",
+   "lon": 15.191565,
+   "lat": 5.11216,
+   "set": "ipis",
+   "name": "Gore",
+   "visit_date": "2020-11-07",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00806",
+   "lon": 15.2141916667,
+   "lat": 5.2292216667,
+   "set": "ipis",
+   "name": "Tamberk\u00e9",
+   "visit_date": "2020-11-07",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00807",
+   "lon": 16.94305,
+   "lat": 5.5120733333,
+   "set": "ipis",
+   "name": "Sengu\u00e9y\u00e9ngu\u00e9",
+   "visit_date": "2020-11-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00808",
+   "lon": 15.0291616667,
+   "lat": 5.1820266667,
+   "set": "ipis",
+   "name": "Medy",
+   "visit_date": "2020-11-08",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00809",
+   "lon": 15.04629,
+   "lat": 5.1660583333,
+   "set": "ipis",
+   "name": "Medy",
+   "visit_date": "2020-11-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00810",
+   "lon": 15.162595,
+   "lat": 5.475175,
+   "set": "ipis",
+   "name": "Moenam",
+   "visit_date": "2020-11-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00811",
+   "lon": 15.0556216667,
+   "lat": 5.1563283333,
+   "set": "ipis",
+   "name": "Medy",
+   "visit_date": "2020-11-08",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00812",
+   "lon": 15.1673283333,
+   "lat": 5.1246633333,
+   "set": "ipis",
+   "name": "Medy_F",
+   "visit_date": "2020-11-08",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00813",
+   "lon": 15.1783816667,
+   "lat": 5.1007233333,
+   "set": "ipis",
+   "name": "Gore",
+   "visit_date": "2020-11-08",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00814",
+   "lon": 17.0727933333,
+   "lat": 5.6182766667,
+   "set": "ipis",
+   "name": "Site De Ban-Kaly\u00e9",
+   "visit_date": "2020-11-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00815",
+   "lon": 15.80731,
+   "lat": 6.947788,
+   "set": "ipis",
+   "name": "Gbaguene",
+   "visit_date": "2020-11-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00816",
+   "lon": 15.632206,
+   "lat": 6.771521,
+   "set": "ipis",
+   "name": "Ngorohoul",
+   "visit_date": "2020-11-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00817",
+   "lon": 15.902265,
+   "lat": 6.739757,
+   "set": "ipis",
+   "name": "Gbirindji",
+   "visit_date": "2020-11-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00818",
+   "lon": 15.673451,
+   "lat": 6.940302,
+   "set": "ipis",
+   "name": "Yenguere",
+   "visit_date": "2020-11-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00819",
+   "lon": 16.216823,
+   "lat": 6.156717,
+   "set": "ipis",
+   "name": "Mb\u00e8hya",
+   "visit_date": "2020-11-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00820",
+   "lon": 16.222315,
+   "lat": 6.17627,
+   "set": "ipis",
+   "name": "Mb\u00e8ya_2",
+   "visit_date": "2020-11-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00821",
+   "lon": 16.305245,
+   "lat": 6.240995,
+   "set": "ipis",
+   "name": "Yabossio_1",
+   "visit_date": "2020-11-09",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00822",
+   "lon": 16.33924,
+   "lat": 6.16084,
+   "set": "ipis",
+   "name": "Ihnakpar\u00e9",
+   "visit_date": "2020-11-09",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00823",
+   "lon": 15.600587,
+   "lat": 6.777269,
+   "set": "ipis",
+   "name": "Gaga",
+   "visit_date": "2020-11-10",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00824",
+   "lon": 17.2512566667,
+   "lat": 6.1270066667,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2020-11-10",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00825",
+   "lon": 17.7176983333,
+   "lat": 6.6928066667,
+   "set": "ipis",
+   "name": "Pays2",
+   "visit_date": "2020-11-10",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00826",
+   "lon": 15.308644,
+   "lat": 5.383293,
+   "set": "ipis",
+   "name": "Wal\u00e9",
+   "visit_date": "2020-11-10",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00827",
+   "lon": 15.1582816667,
+   "lat": 5.4317166667,
+   "set": "ipis",
+   "name": "Kombel\u00e9",
+   "visit_date": "2020-11-10",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00828",
+   "lon": 16.439273,
+   "lat": 6.437566,
+   "set": "ipis",
+   "name": "Rota",
+   "visit_date": "2020-11-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00829",
+   "lon": 16.703806,
+   "lat": 6.661414,
+   "set": "ipis",
+   "name": "Gbehingui",
+   "visit_date": "2020-11-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00830",
+   "lon": 16.574685,
+   "lat": 6.600261,
+   "set": "ipis",
+   "name": "Gbehkara",
+   "visit_date": "2020-11-11",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00831",
+   "lon": 17.1980783333,
+   "lat": 6.1137133333,
+   "set": "ipis",
+   "name": "Yoho",
+   "visit_date": "2020-11-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00833",
+   "lon": 15.171565,
+   "lat": 5.3968683333,
+   "set": "ipis",
+   "name": "Danabondo",
+   "visit_date": "2020-11-11",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00834",
+   "lon": 15.1611416667,
+   "lat": 5.2295316667,
+   "set": "ipis",
+   "name": "Gom",
+   "visit_date": "2020-11-11",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00835",
+   "lon": 16.409127,
+   "lat": 6.40295,
+   "set": "ipis",
+   "name": "Gbonkolo",
+   "visit_date": "2020-11-12",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00836",
+   "lon": 16.458743,
+   "lat": 6.509567,
+   "set": "ipis",
+   "name": "Dondengue",
+   "visit_date": "2020-11-12",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00840",
+   "lon": 15.246795,
+   "lat": 5.3346083333,
+   "set": "ipis",
+   "name": "Windoka",
+   "visit_date": "2020-11-12",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00841",
+   "lon": 15.2007183333,
+   "lat": 5.18644,
+   "set": "ipis",
+   "name": "Rondy",
+   "visit_date": "2020-11-12",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00842",
+   "lon": 17.467914,
+   "lat": 4.794698,
+   "set": "ipis",
+   "name": "Adouzekede",
+   "visit_date": "2020-11-13",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00843",
+   "lon": 17.4648,
+   "lat": 4.796248,
+   "set": "ipis",
+   "name": "Adouzekede",
+   "visit_date": "2020-11-13",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00844",
+   "lon": 17.516961,
+   "lat": 4.727429,
+   "set": "ipis",
+   "name": "Drol",
+   "visit_date": "2020-11-13",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00845",
+   "lon": 17.4648,
+   "lat": 4.796248,
+   "set": "ipis",
+   "name": "Drol",
+   "visit_date": "2020-11-13",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00846",
+   "lon": 17.516961,
+   "lat": 4.727429,
+   "set": "ipis",
+   "name": "Pama-Drol",
+   "visit_date": "2020-11-13",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00847",
+   "lon": 16.265835,
+   "lat": 5.6251833333,
+   "set": "ipis",
+   "name": "Boh",
+   "visit_date": "2020-11-13",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00848",
+   "lon": 16.4965616667,
+   "lat": 5.47655,
+   "set": "ipis",
+   "name": "Tedoa 5",
+   "visit_date": "2020-11-13",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00849",
+   "lon": 16.500535,
+   "lat": 5.4723216667,
+   "set": "ipis",
+   "name": "Tedoa 5",
+   "visit_date": "2020-11-13",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00850",
+   "lon": 16.5015216667,
+   "lat": 5.4626133333,
+   "set": "ipis",
+   "name": "Tedoa",
+   "visit_date": "2020-11-13",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00852",
+   "lon": 16.958975,
+   "lat": 5.532365,
+   "set": "ipis",
+   "name": "Gombo",
+   "visit_date": "2020-11-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00853",
+   "lon": 16.9860533333,
+   "lat": 5.5924916667,
+   "set": "ipis",
+   "name": "Gbargbar",
+   "visit_date": "2020-11-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00854",
+   "lon": 16.9763066667,
+   "lat": 5.67692,
+   "set": "ipis",
+   "name": "Birao",
+   "visit_date": "2020-11-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00855",
+   "lon": 17.0020683333,
+   "lat": 5.7375083333,
+   "set": "ipis",
+   "name": "Camp-Atrone",
+   "visit_date": "2020-11-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00856",
+   "lon": 17.0312683333,
+   "lat": 5.4723783333,
+   "set": "ipis",
+   "name": "Cflt Mbi-Donon",
+   "visit_date": "2020-11-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00857",
+   "lon": 17.2389066667,
+   "lat": 5.6509366667,
+   "set": "ipis",
+   "name": "Gbapi",
+   "visit_date": "2020-11-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00858",
+   "lon": 17.1747166667,
+   "lat": 5.6231716667,
+   "set": "ipis",
+   "name": "N\u00f4n",
+   "visit_date": "2020-11-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00859",
+   "lon": 17.1263816667,
+   "lat": 5.6254,
+   "set": "ipis",
+   "name": "Gbambo\u00e9",
+   "visit_date": "2020-11-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00860",
+   "lon": 15.0953866667,
+   "lat": 5.4199233333,
+   "set": "ipis",
+   "name": "Kouna-Gbabaza",
+   "visit_date": "2020-11-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00861",
+   "lon": 15.0187366667,
+   "lat": 5.4163083333,
+   "set": "ipis",
+   "name": "Yoko",
+   "visit_date": "2020-11-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00862",
+   "lon": 15.0669983333,
+   "lat": 5.4506283333,
+   "set": "ipis",
+   "name": "Kouna-Mbartoua",
+   "visit_date": "2020-11-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00863",
+   "lon": 14.90007,
+   "lat": 5.483985,
+   "set": "ipis",
+   "name": "Ngayo",
+   "visit_date": "2020-11-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00864",
+   "lon": 14.901606,
+   "lat": 5.499711,
+   "set": "ipis",
+   "name": "Kpakou\u00ef",
+   "visit_date": "2020-11-14",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00865",
+   "lon": 16.363155,
+   "lat": 5.7546566667,
+   "set": "ipis",
+   "name": "Gbata",
+   "visit_date": "2020-11-15",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00866",
+   "lon": 16.5013683333,
+   "lat": 5.4584633333,
+   "set": "ipis",
+   "name": "Tedoa",
+   "visit_date": "2020-11-15",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00867",
+   "lon": 16.5000033333,
+   "lat": 5.4748366667,
+   "set": "ipis",
+   "name": "Tedoa 5",
+   "visit_date": "2020-11-15",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00868",
+   "lon": 16.220401,
+   "lat": 6.167299,
+   "set": "ipis",
+   "name": "Nab\u00e9dou\u00ef",
+   "visit_date": "2020-11-15",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00869",
+   "lon": 17.6097066667,
+   "lat": 5.6295016667,
+   "set": "ipis",
+   "name": "Gbassa Tangue",
+   "visit_date": "2020-11-15",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00871",
+   "lon": 17.2393833333,
+   "lat": 6.12278,
+   "set": "ipis",
+   "name": "Willy",
+   "visit_date": "2020-11-15",
+   "minerals": "Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00872",
+   "lon": 17.5244683333,
+   "lat": 4.2274616667,
+   "set": "ipis",
+   "name": "Banegbere",
+   "visit_date": "2021-03-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00874",
+   "lon": 17.4564305,
+   "lat": 4.3308159,
+   "set": "ipis",
+   "name": "Gbasseme",
+   "visit_date": "2021-03-03",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00875",
+   "lon": 17.4588497,
+   "lat": 4.442382,
+   "set": "ipis",
+   "name": "Ngorbor",
+   "visit_date": "2021-03-03",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00876",
+   "lon": 17.4951968,
+   "lat": 4.3638331,
+   "set": "ipis",
+   "name": "Zibare",
+   "visit_date": "2021-03-03",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00877",
+   "lon": 17.5661316,
+   "lat": 4.5290602,
+   "set": "ipis",
+   "name": "Dolet",
+   "visit_date": "2021-03-04",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00878",
+   "lon": 17.5688042,
+   "lat": 4.5321266,
+   "set": "ipis",
+   "name": "Kondo a assa",
+   "visit_date": "2021-03-04",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00879",
+   "lon": 17.5638588,
+   "lat": 4.5312642,
+   "set": "ipis",
+   "name": "Pama",
+   "visit_date": "2021-03-04",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00880",
+   "lon": 17.4006316667,
+   "lat": 4.2488216667,
+   "set": "ipis",
+   "name": "Likonzi",
+   "visit_date": "2021-03-05",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00881",
+   "lon": 17.4006645,
+   "lat": 4.2541518,
+   "set": "ipis",
+   "name": "Kamon",
+   "visit_date": "2021-03-05",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00883",
+   "lon": 17.43784,
+   "lat": 4.3640333333,
+   "set": "ipis",
+   "name": "Louame",
+   "visit_date": "2021-03-06",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00884",
+   "lon": 17.4022286,
+   "lat": 4.4071501,
+   "set": "ipis",
+   "name": "Gondem",
+   "visit_date": "2021-03-06",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00892",
+   "lon": 15.7686449,
+   "lat": 4.2842447,
+   "set": "ipis",
+   "name": "Lomi 4",
+   "visit_date": "2021-03-25",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00895",
+   "lon": 15.539373,
+   "lat": 4.2253057,
+   "set": "ipis",
+   "name": "Sanko",
+   "visit_date": "2021-03-26",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00899",
+   "lon": 16.0598361,
+   "lat": 3.5876326,
+   "set": "ipis",
+   "name": "Coop\u00e9rative Mini\u00e8re de Centrafrique CMC",
+   "visit_date": "2021-03-30",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00900",
+   "lon": 16.0740085,
+   "lat": 3.4969952,
+   "set": "ipis",
+   "name": "DSTM",
+   "visit_date": "2021-03-30",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00901",
+   "lon": 16.2504189,
+   "lat": 3.8229195,
+   "set": "ipis",
+   "name": "Boukere",
+   "visit_date": "2021-03-31",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00905",
+   "lon": 16.2035046,
+   "lat": 3.7176605,
+   "set": "ipis",
+   "name": "Yanssi",
+   "visit_date": "2021-03-31",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00906",
+   "lon": 15.8817675,
+   "lat": 3.675675,
+   "set": "ipis",
+   "name": "Bouli",
+   "visit_date": "2021-04-01",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00907",
+   "lon": 15.8829472,
+   "lat": 3.6711792,
+   "set": "ipis",
+   "name": "Bouli 2",
+   "visit_date": "2021-04-01",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00908",
+   "lon": 15.8664628,
+   "lat": 3.6606664,
+   "set": "ipis",
+   "name": "Kade\u00ef",
+   "visit_date": "2021-04-01",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00909",
+   "lon": 16.1252669,
+   "lat": 3.5619426,
+   "set": "ipis",
+   "name": "Lopo",
+   "visit_date": "2021-04-02",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "ipis_caf_00913",
+   "lon": 16.0506849,
+   "lat": 3.513042,
+   "set": "ipis",
+   "name": "Sangha 1",
+   "visit_date": "2021-04-03",
+   "minerals": "Diamant, Or",
+   "verdict": null
+  },
+  {
+   "key": "manual_manual_1",
+   "lon": 24.4061689,
+   "lat": 8.1345586,
+   "set": "manual",
+   "name": "manual_1",
+   "verdict": "unclear_imagery"
+  },
+  {
+   "key": "manual_manual_2",
+   "lon": 24.40538,
+   "lat": 8.1352841,
+   "set": "manual",
+   "name": "manual_2",
+   "verdict": "unclear_imagery"
+  },
+  {
+   "key": "manual_manual_3",
+   "lon": 24.4069524,
+   "lat": 8.1336329,
+   "set": "manual",
+   "name": "manual_3",
+   "verdict": "unclear_imagery"
+  },
+  {
+   "key": "manual_manual_4",
+   "lon": 24.4062335,
+   "lat": 8.1365689,
+   "set": "manual",
+   "name": "manual_4",
+   "verdict": "unclear_imagery"
+  },
+  {
+   "key": "manual_manual_5",
+   "lon": 24.4055192,
+   "lat": 8.1340903,
+   "set": "manual",
+   "name": "manual_5",
+   "verdict": "unclear_imagery"
+  },
+  {
+   "key": "manual_manual_6",
+   "lon": 24.4045076,
+   "lat": 8.1356532,
+   "set": "manual",
+   "name": "manual_6",
+   "verdict": "unclear_imagery"
+  },
+  {
+   "key": "manual_manual_7",
+   "lon": 24.4027169,
+   "lat": 8.138933,
+   "set": "manual",
+   "name": "manual_7",
+   "verdict": "unclear_imagery"
+  },
+  {
+   "key": "manual_manual_8",
+   "lon": 24.4015028,
+   "lat": 8.139483,
+   "set": "manual",
+   "name": "manual_8",
+   "verdict": "unclear_imagery"
+  }
+ ]
+}

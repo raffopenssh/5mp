@@ -3,6 +3,7 @@ package srv
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 )
 
@@ -81,13 +82,52 @@ func (s *Server) HandleAPIParkBasin(w http.ResponseWriter, r *http.Request) {
 			"(Internet of Water / USGS, MERIT-Basins).",
 	}
 	var nReach, nReach3 int
-	_ = s.DB.QueryRow(`SELECT COUNT(*), COALESCE(SUM(CASE WHEN stream_order>=3
-		THEN 1 ELSE 0 END),0) FROM park_basin_rivers WHERE park_id=?`,
-		parkID).Scan(&nReach, &nReach3)
+	var reachKm, reachKm3 float64
+	_ = s.DB.QueryRow(`SELECT COUNT(*),
+		COALESCE(SUM(CASE WHEN stream_order>=3 THEN 1 ELSE 0 END),0),
+		COALESCE(SUM(length_km),0),
+		COALESCE(SUM(CASE WHEN stream_order>=3 THEN length_km ELSE 0 END),0)
+		FROM park_basin_rivers WHERE park_id=?`,
+		parkID).Scan(&nReach, &nReach3, &reachKm, &reachKm3)
 	if nReach > 0 {
 		resp["upstream_reaches"] = nReach
 		// only these are usable for optical turbidity work
 		resp["upstream_reaches_order3plus"] = nReach3
+		// river km is the figure worth stating out loud ("8,000 km of upstream
+		// reaches drain through this park"); reach counts are an artefact of
+		// how MERIT-Basins happens to split lines.
+		resp["upstream_river_km"] = math.Round(reachKm)
+		resp["upstream_river_km_order3plus"] = math.Round(reachKm3)
+	}
+	// Named rivers along the downstream trace: the human-readable answer to
+	// "where does this park's water actually go". river_names comes from the
+	// river-runner response and is empty for every park at present (the API
+	// stopped returning reach names), so fall back to the outlet's own river
+	// name from the mghydro snap, which is populated.
+	for _, b := range basins {
+		if b.Kind != "downstream" || b.Meta == nil {
+			continue
+		}
+		var m map[string]any
+		if json.Unmarshal(b.Meta, &m) != nil {
+			continue
+		}
+		names := []string{}
+		if n, ok := m["river_names"].([]any); ok {
+			for _, x := range n {
+				if s, ok := x.(string); ok && s != "" {
+					names = append(names, s)
+				}
+			}
+		}
+		if len(names) == 0 {
+			if o, ok := m["outlet"].(map[string]any); ok {
+				if s, ok := o["river"].(string); ok && s != "" {
+					names = append(names, s)
+				}
+			}
+		}
+		resp["downstream_rivers"] = names
 	}
 	for _, b := range basins {
 		if b.Kind == "upstream" && b.AreaKm2 != nil {

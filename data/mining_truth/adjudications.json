@@ -1,0 +1,37 @@
+{
+ "note": "Visual adjudication of mining truth points (scripts/adjudicate_truth.py). verdict: pit | maybe | no_pit | unclear_imagery. 'unclear_imagery' is NOT 'no_pit' - only no_pit removes a positive.",
+ "verdicts": {
+  "manual_manual_1": {
+   "note": "2026-08-05 Shelley: Esri z16 contact sheet (analysis/out/adjudicate/manual_z16_0000.png) shows wooded savanna with pale seasonal drainage lines; no pit morphology, spoil heaps or ponds at any of the 8. Esri has NO z18 coverage here ('Map data not yet available'), so z16-17 is the best available and 1-3px hand-dug shafts are below it. Verdict is unclear_imagery, NOT no_pit: cannot see != not there (see docs/MINING_FINDINGS_2026-08.md 8.3).",
+   "verdict": "unclear_imagery"
+  },
+  "manual_manual_2": {
+   "note": "2026-08-05 Shelley: Esri z16 contact sheet (analysis/out/adjudicate/manual_z16_0000.png) shows wooded savanna with pale seasonal drainage lines; no pit morphology, spoil heaps or ponds at any of the 8. Esri has NO z18 coverage here ('Map data not yet available'), so z16-17 is the best available and 1-3px hand-dug shafts are below it. Verdict is unclear_imagery, NOT no_pit: cannot see != not there (see docs/MINING_FINDINGS_2026-08.md 8.3).",
+   "verdict": "unclear_imagery"
+  },
+  "manual_manual_3": {
+   "note": "2026-08-05 Shelley: Esri z16 contact sheet (analysis/out/adjudicate/manual_z16_0000.png) shows wooded savanna with pale seasonal drainage lines; no pit morphology, spoil heaps or ponds at any of the 8. Esri has NO z18 coverage here ('Map data not yet available'), so z16-17 is the best available and 1-3px hand-dug shafts are below it. Verdict is unclear_imagery, NOT no_pit: cannot see != not there (see docs/MINING_FINDINGS_2026-08.md 8.3).",
+   "verdict": "unclear_imagery"
+  },
+  "manual_manual_4": {
+   "note": "2026-08-05 Shelley: Esri z16 contact sheet (analysis/out/adjudicate/manual_z16_0000.png) shows wooded savanna with pale seasonal drainage lines; no pit morphology, spoil heaps or ponds at any of the 8. Esri has NO z18 coverage here ('Map data not yet available'), so z16-17 is the best available and 1-3px hand-dug shafts are below it. Verdict is unclear_imagery, NOT no_pit: cannot see != not there (see docs/MINING_FINDINGS_2026-08.md 8.3).",
+   "verdict": "unclear_imagery"
+  },
+  "manual_manual_5": {
+   "note": "2026-08-05 Shelley: Esri z16 contact sheet (analysis/out/adjudicate/manual_z16_0000.png) shows wooded savanna with pale seasonal drainage lines; no pit morphology, spoil heaps or ponds at any of the 8. Esri has NO z18 coverage here ('Map data not yet available'), so z16-17 is the best available and 1-3px hand-dug shafts are below it. Verdict is unclear_imagery, NOT no_pit: cannot see != not there (see docs/MINING_FINDINGS_2026-08.md 8.3).",
+   "verdict": "unclear_imagery"
+  },
+  "manual_manual_6": {
+   "note": "2026-08-05 Shelley: Esri z16 contact sheet (analysis/out/adjudicate/manual_z16_0000.png) shows wooded savanna with pale seasonal drainage lines; no pit morphology, spoil heaps or ponds at any of the 8. Esri has NO z18 coverage here ('Map data not yet available'), so z16-17 is the best available and 1-3px hand-dug shafts are below it. Verdict is unclear_imagery, NOT no_pit: cannot see != not there (see docs/MINING_FINDINGS_2026-08.md 8.3).",
+   "verdict": "unclear_imagery"
+  },
+  "manual_manual_7": {
+   "note": "2026-08-05 Shelley: Esri z16 contact sheet (analysis/out/adjudicate/manual_z16_0000.png) shows wooded savanna with pale seasonal drainage lines; no pit morphology, spoil heaps or ponds at any of the 8. Esri has NO z18 coverage here ('Map data not yet available'), so z16-17 is the best available and 1-3px hand-dug shafts are below it. Verdict is unclear_imagery, NOT no_pit: cannot see != not there (see docs/MINING_FINDINGS_2026-08.md 8.3).",
+   "verdict": "unclear_imagery"
+  },
+  "manual_manual_8": {
+   "note": "2026-08-05 Shelley: Esri z16 contact sheet (analysis/out/adjudicate/manual_z16_0000.png) shows wooded savanna with pale seasonal drainage lines; no pit morphology, spoil heaps or ponds at any of the 8. Esri has NO z18 coverage here ('Map data not yet available'), so z16-17 is the best available and 1-3px hand-dug shafts are below it. Verdict is unclear_imagery, NOT no_pit: cannot see != not there (see docs/MINING_FINDINGS_2026-08.md 8.3).",
+   "verdict": "unclear_imagery"
+  }
+ }
+}

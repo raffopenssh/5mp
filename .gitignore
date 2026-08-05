@@ -80,3 +80,7 @@ data/flowacc/
 # Basin geometries: DB (park_basins) is source of truth; JSON is a debug dump,
 # and mghydro responses are cached in http_cache (scripts/fetch_park_basins.py)
 data/park_basins/
+
+# AMW (Amazon Mining Watch) evaluation: Sentinel-2 patch composite cache.
+# Regenerable from STAC/GCS; keyed by lon/lat/date-window/patch geometry.
+data/amw_cache/

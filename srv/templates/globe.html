@@ -54,6 +54,7 @@
     <meta name="theme-color" content="#0a0a0a">
     <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet">
     <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
+    <script src="/static/maptip.js?v={{.Version}}"></script>
     
     <!-- Lucide Icons -->
     <link href="https://unpkg.com/lucide-static@0.577.0/font/lucide.css" rel="stylesheet">
@@ -2225,6 +2226,10 @@
             map.on('mouseenter', 'areas-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', 'areas-fill', function() { map.getCanvas().style.cursor = ''; });
 
+            // Single unified hover/tap tooltip for every pinned/interactive layer.
+            // (Replaces the per-layer maplibregl.Popup pile-up.)
+            if (window.MapTip) window.MapTip.init(map);
+
             // Set up PA click handler immediately when areas-fill layer is ready
             // This is in the map.on('load') block so layer definitely exists
             if (typeof setupPAClickHandler === 'function') {
@@ -2259,7 +2264,7 @@
             
             // Clean up stray hover popups when map moves or is clicked
             const cleanupStrayPopups = () => {
-                // Remove all tracked hover popups
+                // Legacy: some paths still create maplibregl popups directly
                 activeHoverPopups.forEach(popup => {
                     try {
                         popup.remove();
@@ -8894,6 +8899,24 @@
                 const upstream = (basin.basins || []).find(b => b.kind === 'upstream');
                 const downstream = (basin.basins || []).find(b => b.kind === 'downstream');
                 if (upstream || downstream) {
+                    // One plain-language line first. The basin layer is a
+                    // deliverable in its own right (docs/MINING_FINDINGS_2026-08.md
+                    // §8.4 step 3): "this park's water comes from N km² and
+                    // leaves down these rivers" is defensible and useful, and it
+                    // is independent of the mining work that motivated it.
+                    const bits = [];
+                    if (upstream && upstream.area_km2) {
+                        let u = `Water arrives from <b>${Math.round(upstream.area_km2).toLocaleString()} km²</b> upstream`;
+                        if (basin.upstream_river_km) u += ` (${Math.round(basin.upstream_river_km).toLocaleString()} km of rivers)`;
+                        bits.push(u);
+                    }
+                    if (downstream && downstream.length_km) {
+                        const names = (basin.downstream_rivers || []).slice(0, 3).filter(Boolean);
+                        bits.push(`leaves down ${names.length ? names.join(' → ') : 'the river network'} for <b>${Math.round(downstream.length_km).toLocaleString()} km</b>`);
+                    }
+                    if (bits.length) {
+                        html += `<div style="font-size:10px;color:#9ca3af;line-height:1.5;padding:2px 0 5px 0;" title="Upstream contributing watershed (mghydro / MERIT-Hydro) and downstream trace to the sea or terminal sink (global-river-runner). Any pressure inside the upstream polygon — mining, deforestation, effluent — drains through this park.">${bits.join(', ')}.</div>`;
+                    }
                     html += '<div class="road-pin-buttons" style="display: flex; gap: 8px; padding: 0 0 4px 0;">';
                     if (upstream) {
                         const a = Math.round(upstream.area_km2 || 0).toLocaleString();
@@ -8903,8 +8926,9 @@
                     }
                     if (upstream && (basin.upstream_reaches || 0) > 0) {
                         const n3 = basin.upstream_reaches_order3plus || 0;
-                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin_rivers" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'basin_rivers', this)" style="flex: 1;" title="Upstream river network with Strahler stream order. Only order 3+ reaches (${n3} of ${basin.upstream_reaches}) are wide enough for Sentinel-2 to see the water surface, so only those support turbidity analysis.">
-                            <span style="color: #38bdf8;">∿</span> Upstream rivers <span style="color:#888;font-size:9px;">${basin.upstream_reaches}</span>
+                        const km3 = Math.round(basin.upstream_river_km_order3plus || 0).toLocaleString();
+                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin_rivers" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'basin_rivers', this)" style="flex: 1;" title="Upstream river network with Strahler stream order. Only order 3+ reaches (${n3} of ${basin.upstream_reaches}, ${km3} km) are wide enough for Sentinel-2 to see the water surface, so only those support turbidity analysis.">
+                            <span style="color: #38bdf8;">∿</span> Upstream rivers <span style="color:#888;font-size:9px;">${Math.round(basin.upstream_river_km || 0).toLocaleString()} km</span>
                         </button>`;
                     }
                     if (downstream) {
@@ -9929,6 +9953,11 @@
                     return false;
                 }
 
+                // Skip if a pinned map feature's tip just handled this click
+                if (window._mapTipClicked) {
+                    return false;
+                }
+
                 // Skip if in bbox draw mode
                 if (document.getElementById('bbox-draw-overlay')?.classList.contains('active')) {
                     return false;
@@ -10174,6 +10203,18 @@
                             'circle-stroke-width': 1, 'circle-stroke-color': '#fff', 'circle-stroke-opacity': 0.5
                         }
                     });
+                    // Same unified tip as pinned layers
+                    if (window.MapTip) {
+                        ['-fill', '-line', '-point'].forEach(sfx => window.MapTip.register(srcId + sfx, {
+                            html: (props) => featureTipHTML(props, meta.tipType || name,
+                                                           (props && props.park_name) || ''),
+                            actionLabel: 'Open in report',
+                            onActivate: (feature) => {
+                                const p = feature.properties || {};
+                                if (p.park_id) openFeatureInReport(p.park_id, meta.tipType || name, p.feature_id || null);
+                            }
+                        }));
+                    }
                 }
                 if (geojson.truncated) {
                     showToast('Showing largest 1500 ' + name + ' in view — zoom in for full detail', 'info');
@@ -14729,6 +14770,21 @@ ${starredItems.narratives.map(n => {
             sourceId, layerId, arrowLayerId, frontSourceId, frontLayerId, frontGlowId,
             parkId, parkName, groupName, coords: lastPoint
         };
+
+        // Hover/tap tip for realtime trajectories too (these had none before)
+        if (window.MapTip) {
+            [layerId, arrowLayerId, frontLayerId].forEach(id => window.MapTip.register(id, {
+                html: (props) => {
+                    let h = `<div class="maptip-label">Active Fire · ${parkName}</div>`;
+                    h += `<div class="maptip-title">${groupName}</div>`;
+                    h += `<div class="maptip-meta">${coords.length} tracked position${coords.length > 1 ? 's' : ''}</div>`;
+                    h += `<div class="maptip-dim">Live trajectory from the current fire window</div>`;
+                    return h;
+                },
+                actionLabel: 'Open park report',
+                onActivate: () => openFeatureInReport(parkId, 'fire', null)
+            }));
+        }
         updatePinnedIndicator();
         
         showToast(`Showing trajectory: ${groupName} (${coords.length} points)`, 'success');
@@ -14803,6 +14859,38 @@ ${starredItems.narratives.map(n => {
         updatePinnedIndicator();
     }
     
+    // Open the park report popup, expand the relevant section and scroll to the
+    // entry for a given feature. Shared by MapTip's "Open in report" action for
+    // both single pins and category pins.
+    async function openFeatureInReport(parkId, type, featureId) {
+        const park = (window.keystoneAreas || []).find(p => p.id === parkId);
+        if (!park) { console.warn('Park not found:', parkId); return; }
+
+        const center = park.center ? (typeof park.center === 'string' ? JSON.parse(park.center) : park.center) : null;
+        if (!center) { console.warn('Park center not found:', parkId); return; }
+
+        if (currentPAPopup) currentPAPopup.remove();
+        showPAPopup(park, { lng: center[0], lat: center[1] });
+        await new Promise(r => setTimeout(r, 1200));
+
+        const sectionMap = { fire: 'fire', fire_trajectory: 'fire', settlement: 'ghsl', deforestation: 'deforest' };
+        const sectionId = sectionMap[type] || type;
+        const section = document.getElementById(`${sectionId}-section-${parkId}`);
+        if (section && !section.classList.contains('open')) {
+            togglePopupSection(section);
+            await new Promise(r => setTimeout(r, 800));
+        }
+        if (!featureId) return;
+
+        const t = type === 'fire_trajectory' ? 'fire' : type;
+        const entry = document.querySelector(`[data-park="${parkId}"][data-type="${t}"][data-feature="${featureId}"]`);
+        if (!entry) { console.warn('Entry not found in report:', featureId); return; }
+        entry.style.background = 'rgba(59, 130, 246, 0.3)';
+        entry.style.border = '1px solid #3b82f6';
+        entry.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => { entry.style.background = ''; entry.style.border = ''; }, 3000);
+    }
+
     async function addSinglePinnedFeature(parkId, parkName, type, featureId, narrative = '') {
         const key = getSinglePinKey(parkId, type, featureId);
         const layerId = `pinned-single-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
@@ -14821,19 +14909,13 @@ ${starredItems.narratives.map(n => {
                 map.addLayer({ id: layerId, type: 'circle', source: sourceId, paint: turbidityCirclePaint() });
                 singlePinnedFeatures[key] = { parkId, parkName, type, featureId, sourceId, layerId,
                     feature, narrative: turbidityFeatureHTML(feature.properties || {}) };
-                // Hover popup with full details (pit area, ponds, newness, plume km)
-                map.on('mouseenter', layerId, (e) => {
-                    map.getCanvas().style.cursor = 'pointer';
-                    if (e.features && e.features.length > 0) {
-                        const hp = createFeatureHoverPopup(e.features[0].properties, e.lngLat, 'turbidity', parkName);
-                        if (hp) { activeHoverPopups.push(hp); singlePinnedFeatures[key]._hoverPopup = hp; }
-                    }
-                });
-                map.on('mouseleave', layerId, () => {
-                    map.getCanvas().style.cursor = '';
-                    const hp = singlePinnedFeatures[key] && singlePinnedFeatures[key]._hoverPopup;
-                    if (hp) { hp.remove(); const ix = activeHoverPopups.indexOf(hp); if (ix > -1) activeHoverPopups.splice(ix, 1); singlePinnedFeatures[key]._hoverPopup = null; }
-                });
+                // Rich tip (pit area, ponds, newness, plume km) via MapTip
+                if (window.MapTip) {
+                    singlePinnedFeatures[key].tipLayers = [layerId];
+                    window.MapTip.register(layerId, {
+                        html: (props) => featureTipHTML(props, 'turbidity', parkName)
+                    });
+                }
                 return true;
             }
 
@@ -15036,121 +15118,28 @@ ${starredItems.narratives.map(n => {
                 feature, narrative
             };
             
-            // Add click and hover handlers for popup with narrative
-            let hoverPopup = null;
-            let leaveTimeout = null;
-            
-            // Handler functions - reused for both line and fill layers
-            // Uses debounce to handle fill↔line transitions without flicker
-            const handleMouseEnter = (e) => {
-                map.getCanvas().style.cursor = 'pointer';
-                // Cancel pending removal (user moved between fill and line layers)
-                if (leaveTimeout) {
-                    clearTimeout(leaveTimeout);
-                    leaveTimeout = null;
-                }
-                // Don't create duplicate popups
-                if (hoverPopup) return;
-                
-                const pin = singlePinnedFeatures[key];
-                if (pin && pin.narrative) {
-                    hoverPopup = new maplibregl.Popup({
-                        closeButton: false,
-                        closeOnClick: false,
-                        maxWidth: '300px'
-                    })
-                        .setLngLat(e.lngLat)
-                        .setHTML(`<div style="font-size:11px;max-width:280px;line-height:1.4;padding:4px;">${pin.narrative}</div>`)
-                        .addTo(map);
-                }
-            };
-            
-            const handleMouseLeave = () => {
-                map.getCanvas().style.cursor = '';
-                // Debounce removal - allows transition between fill and line without flicker
-                if (leaveTimeout) clearTimeout(leaveTimeout);
-                leaveTimeout = setTimeout(() => {
-                    if (hoverPopup) {
-                        hoverPopup.remove();
-                        hoverPopup = null;
-                    }
-                    leaveTimeout = null;
-                }, 50); // 50ms debounce
-            };
-            
-            const handleClick = async (e) => {
-                e.preventDefault();
-                e.originalEvent?.stopPropagation();
-                if (hoverPopup) hoverPopup.remove();
-                
-                // Find the park and open its popup
-                const park = (window.keystoneAreas || []).find(p => p.id === parkId);
-                if (!park) {
-                    console.error('Park not found:', parkId);
-                    return;
-                }
-                
-                // Close existing popup and open new one for this park
-                if (currentPAPopup) currentPAPopup.remove();
-                
-                // Get park center
-                const center = park.center ? (typeof park.center === 'string' ? JSON.parse(park.center) : park.center) : null;
-                if (!center) {
-                    console.error('Park center not found:', parkId);
-                    return;
-                }
-                
-                // Show park popup
-                showPAPopup(park, { lng: center[0], lat: center[1] });
-                
-                // Wait for popup to render and data to load
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // Map type to section ID
-                const sectionMap = {
-                    'fire': 'fire',
-                    'settlement': 'ghsl',
-                    'deforestation': 'deforest'
-                };
-                const sectionId = sectionMap[type] || type;
-                
-                // Expand the section
-                const section = document.getElementById(`${sectionId}-section-${parkId}`);
-                if (section && !section.classList.contains('open')) {
-                    togglePopupSection(section);
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-                
-                // Find and scroll to the entry
-                const entry = document.querySelector(`[data-park="${parkId}"][data-type="${type}"][data-feature="${featureId}"]`);
-                if (entry) {
-                    // Highlight the entry
-                    entry.style.background = 'rgba(59, 130, 246, 0.3)';
-                    entry.style.border = '1px solid #3b82f6';
-                    
-                    // Scroll to it
-                    entry.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // Remove highlight after 3s
-                    setTimeout(() => {
-                        entry.style.background = '';
-                        entry.style.border = '';
-                    }, 3000);
-                } else {
-                    console.warn('Entry not found:', featureId);
-                }
-            };
-            
-            // Attach handlers to main layer (line/point/circle)
-            map.on('mouseenter', layerId, handleMouseEnter);
-            map.on('mouseleave', layerId, handleMouseLeave);
-            map.on('click', layerId, handleClick);
-            
-            // For polygons, also attach handlers to fill layer so hover works on the filled area
-            if (geomType.includes('Polygon') && map.getLayer(layerId + '-fill')) {
-                map.on('mouseenter', layerId + '-fill', handleMouseEnter);
-                map.on('mouseleave', layerId + '-fill', handleMouseLeave);
-                map.on('click', layerId + '-fill', handleClick);
+            // Unified hover/tap tip. The narrative (from the popup entry) is the
+            // preferred body; fall back to the generic per-type renderer so a pin
+            // without narrative text still says something useful.
+            const tipLayers = [layerId, layerId + '-fill', layerId + '-arrows',
+                               singlePinnedFeatures[key].frontLayerId].filter(Boolean)
+                              .filter(id => map.getLayer(id));
+            singlePinnedFeatures[key].tipLayers = tipLayers;
+            if (window.MapTip) {
+                tipLayers.forEach(id => window.MapTip.register(id, {
+                    html: (props) => {
+                        const pin = singlePinnedFeatures[key];
+                        const label = featureTipHTML(props, type, parkName);
+                        if (pin && pin.narrative) {
+                            // Keep the type/park header, swap in the narrative body.
+                            const header = label.slice(0, label.indexOf('</div>') + 6);
+                            return `${header}<div class="maptip-body">${pin.narrative}</div>`;
+                        }
+                        return label;
+                    },
+                    actionLabel: 'Open in report',
+                    onActivate: () => openFeatureInReport(parkId, type, featureId)
+                }));
             }
             
             // Pulse animation for glow - makes pinned feature easy to find
@@ -15190,6 +15179,9 @@ ${starredItems.narratives.map(n => {
     function removeSinglePinnedFeature(key) {
         const pin = singlePinnedFeatures[key];
         if (!pin) return;
+        
+        // Drop tooltip registrations first so a stale tip can't outlive the layer
+        if (window.MapTip) (pin.tipLayers || [pin.layerId]).forEach(id => window.MapTip.unregister(id));
         
         // Remove arrow layer if it exists (fire trajectories)
         if (map.getLayer(pin.layerId + '-arrows')) map.removeLayer(pin.layerId + '-arrows');
@@ -15258,6 +15250,7 @@ ${starredItems.narratives.map(n => {
         Object.keys(realtimeFireLayers).forEach(key => {
             const layer = realtimeFireLayers[key];
             [layer.layerId, layer.arrowLayerId, layer.pointLayerId, layer.frontLayerId, layer.frontGlowId].forEach(id => {
+                if (id && window.MapTip) window.MapTip.unregister(id);
                 if (id && map.getLayer(id)) map.removeLayer(id);
             });
             [layer.sourceId, layer.frontSourceId].forEach(id => {
@@ -15273,6 +15266,7 @@ ${starredItems.narratives.map(n => {
         
         // Remove all layers (old: pointLayerId, new: frontLayerId + frontGlowId)
         [layer.layerId, layer.arrowLayerId, layer.pointLayerId, layer.frontLayerId, layer.frontGlowId].forEach(id => {
+            if (id && window.MapTip) window.MapTip.unregister(id);
             if (id && map.getLayer(id)) map.removeLayer(id);
         });
         
@@ -15817,52 +15811,20 @@ ${starredItems.narratives.map(n => {
                 pinnedLayers[key].outlineLayerId = `${layerId}-outline`;
             }
             
-            // Add hover effect with detailed popup
-            let categoryHoverPopup = null;
-            let categoryHoverTimeout = null;
-            
-            // Helper function to add hover handlers to a layer
-            const addHoverToLayer = (targetLayerId) => {
-                map.on('mouseenter', targetLayerId, (e) => {
-                    map.getCanvas().style.cursor = 'pointer';
-                    // Clear any existing timeout
-                    if (categoryHoverTimeout) {
-                        clearTimeout(categoryHoverTimeout);
-                        categoryHoverTimeout = null;
+            // Unified hover/tap tip (see srv/static/maptip.js). One tooltip for
+            // the whole map — registering a layer is enough, no per-layer popups.
+            const tipLayers = [layerId, `${layerId}-outline`, pinnedLayers[key].lineLayerId,
+                               pinnedLayers[key].arrowLayerId].filter(Boolean);
+            pinnedLayers[key].tipLayers = tipLayers;
+            if (window.MapTip) {
+                tipLayers.forEach(id => window.MapTip.register(id, {
+                    html: (props) => featureTipHTML(props, type, parkName),
+                    actionLabel: 'Open in report',
+                    onActivate: (feature) => {
+                        const p = feature.properties || {};
+                        openFeatureInReport(parkId, type, p.feature_id || p.id || null);
                     }
-                    if (e.features && e.features.length > 0) {
-                        const props = e.features[0].properties;
-                        categoryHoverPopup = createFeatureHoverPopup(props, e.lngLat, type, parkName);
-                        // Track this popup globally
-                        if (categoryHoverPopup) {
-                            activeHoverPopups.push(categoryHoverPopup);
-                        }
-                    }
-                });
-                map.on('mouseleave', targetLayerId, () => {
-                    map.getCanvas().style.cursor = '';
-                    // Set timeout to remove popup after 300ms
-                    if (categoryHoverPopup) {
-                        categoryHoverTimeout = setTimeout(() => {
-                            if (categoryHoverPopup) {
-                                categoryHoverPopup.remove();
-                                // Remove from global list
-                                const idx = activeHoverPopups.indexOf(categoryHoverPopup);
-                                if (idx > -1) activeHoverPopups.splice(idx, 1);
-                                categoryHoverPopup = null;
-                            }
-                            categoryHoverTimeout = null;
-                        }, 300);
-                    }
-                });
-            };
-            
-            // Add hover handlers to main layer
-            addHoverToLayer(layerId);
-            
-            // Also add hover handlers to line layer if it exists (for fire trajectories)
-            if (pinnedLayers[key].lineLayerId) {
-                addHoverToLayer(pinnedLayers[key].lineLayerId);
+                }));
             }
             
             showToast(`Pinned ${geojson.features.length} ${type} features from ${parkName}`, 'success');
@@ -15914,6 +15876,9 @@ ${starredItems.narratives.map(n => {
     function removePinnedLayer(key) {
         const layer = pinnedLayers[key];
         if (!layer) return;
+        
+        // Drop tooltip registrations first (stale tips must not outlive layers)
+        if (window.MapTip) (layer.tipLayers || [layer.layerId]).forEach(id => window.MapTip.unregister(id));
         
         // Extract parkId and type from key for icon update (format: CAF_Chinko_settlement)
         // Need to find the last underscore to separate type
@@ -16166,14 +16131,21 @@ ${starredItems.narratives.map(n => {
         updatePinnedIndicator();
     }
     
-    function createFeatureHoverPopup(props, lngLat, type, parkName) {
+    // Returns the tooltip body HTML for a map feature. Consumed by MapTip
+    // (hover on desktop, tap on touch) — see srv/static/maptip.js. Do NOT
+    // create per-layer maplibregl.Popup instances for hover; that produced
+    // stacks of orphaned popups when features overlap.
+    function featureTipHTML(props, type, parkName) {
+        props = props || {};
         // Normalize type names
         if (type === 'fire_trajectory') type = 'fire';
         
         const typeLabels = { 
             fire: 'Fire Group', settlement: 'Settlement', deforestation: 'Deforestation', 
             road: 'Road', river: 'River', place: 'Place', water: 'Waterbody', visits: 'Patrol Visits',
-            turbidity: 'Mining / Water Quality'
+            turbidity: 'Mining / Water Quality', basin: 'Upstream Basin',
+            basin_downstream: 'Downstream Trace', basin_rivers: 'Basin River',
+            infrastructure: 'Infrastructure'
         };
         if (type === 'turbidity') {
             const subLabels = { pit_site: 'Mining · Pit Detection', turbidity_alert: 'Mining · Turbidity Alert',
@@ -16181,11 +16153,7 @@ ${starredItems.narratives.map(n => {
             typeLabels.turbidity = subLabels[props.feature_type] || typeLabels.turbidity;
         }
         
-        let html = `
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-width: 180px; max-width: 280px; color: #1f2937;">
-                <div style="font-weight: 600; font-size: 12px; color: #6b7280; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
-                    ${typeLabels[type] || type}
-                </div>
+        let html = `<div class="maptip-label">${typeLabels[type] || String(type).replace(/_/g, ' ')}${parkName ? ' · ' + parkName : ''}</div><div>
         `;
 
         if (type === 'fire') {
@@ -16287,14 +16255,32 @@ ${starredItems.narratives.map(n => {
             html += `</div>`;
         } else if (type === 'turbidity') {
             html += turbidityFeatureHTML(props);
+        } else {
+            // Generic fallback so every registered layer says *something*
+            // (basins, infrastructure, learned places, ad-hoc types…).
+            html += `<div class="maptip-body">`;
+            const title = props.name || props.narrative || props.label || '';
+            if (title) html += `<div class="maptip-title">${title}</div>`;
+            const bits = [];
+            if (props.river_name) bits.push(props.river_name);
+            if (props.strahler_order) bits.push(`Strahler ${props.strahler_order}`);
+            if (props.length_km) bits.push(`${(+props.length_km).toFixed(1)} km`);
+            if (props.area_km2) bits.push(`${(+props.area_km2).toFixed(1)} km²`);
+            if (props.place_type) bits.push(String(props.place_type).replace(/_/g, ' '));
+            if (props.year) bits.push(`Year ${props.year}`);
+            if (bits.length) html += `<div class="maptip-meta">${bits.join(' • ')}</div>`;
+            if (!title && !bits.length) html += `<div class="maptip-meta">No further details</div>`;
+            html += `</div>`;
         }
 
         html += `</div>`;
+        return html;
+    }
 
-        return new maplibregl.Popup({ closeButton: false, closeOnClick: false, maxWidth: '280px', offset: 10 })
-            .setLngLat(lngLat)
-            .setHTML(html)
-            .addTo(map);
+    // Back-compat shim: old call sites created a hover popup directly. Now they
+    // just feed MapTip. Kept so nothing breaks if a path is missed.
+    function createFeatureHoverPopup(props, lngLat, type, parkName) {
+        return null;
     }
     
     function showPinnedFeaturePopup(props, lngLat, type, parkName) {

@@ -375,32 +375,47 @@ Nothing mining-related goes in the UI. `data/mining_pits/*.json` (7,725 "sites")
 is 0.1% consistent with visited-mine truth — top hits are a sandbank and rice
 paddies. `srv/turbidity.go` still reads that file; leave it, don't extend it.
 
-The 2026-08 rebuild (basin rescope → DEM flow corridor → percentile ranker →
-real evaluator) is **complete and produced a negative result**: mine pixels vs
-*confuser* pixels (villages, burn scars, river water, bare savanna) score
-AUC 0.45–0.56 on all four features — rb is inverted. The earlier 0.75–0.81 AUCs
-only measured "bare ≠ vegetation". The new ranker gets recall 0/8 on the manual
-truth pits and its top 12 are all bare savanna by eye.
-
 Start at **`docs/MINING_REBUILD_HANDOVER.md`** (state + next actions), then
-`docs/MINING_FINDINGS_2026-08.md` §8 for the numbers. Data source catalogue:
-`docs/MINING_DATA_SOURCES.md`.
+`docs/MINING_FINDINGS_2026-08.md` §8 (why hand-picked indices are dead) and §9
+(the AMW learned model). Data source catalogue: `docs/MINING_DATA_SOURCES.md`.
 
-Reproduce the killer measurement (~15 min, run in tmux):
+The 2026-08 rebuild produced a **negative result** for every hand-picked index:
+mine pixels vs *confuser* pixels (villages, burn scars, river water, bare
+savanna) score AUC 0.45–0.56 — rb is inverted. The earlier 0.75–0.81 AUCs only
+measured "bare ≠ vegetation".
+
 ```bash
-python3 scripts/eval_mining_detector.py --pixel-auc --n 25
+python3 scripts/eval_mining_detector.py --pixel-auc --n 25    # ~15 min, tmux
 ```
 
-What *does* validate and is worth shipping: the **basin layer** —
-`park_basins` + `park_basin_rivers` (migration 039, 163 parks, upstream polygon +
-downstream trace + Strahler orders), `GET /api/parks/{id}/basin`. QA it with
-`python3 scripts/check_basin_coverage.py`. Coverage <0.2 for 26 divide/endorheic
-parks is real, not a bug — hence `flow_corridor.scan_geom()` scans
-(basin clipped to 200 km) ∪ park.
+The one live thread is the **Amazon Mining Watch CNN ensemble**, now runnable on
+our own Sentinel-2 stacks without Earth Engine (`analysis/amw_model.py`, model in
+`data/models/amw/`). Our reproduction of its input pipeline is validated against
+its own held-out labels (mines 0.92/0.68/0.36, non-mines ~1e-4). The open
+question is one command:
 
-Next step is *not* more index engineering: evaluate the open-weights
-`earthrise-media/mining-detector`, and adjudicate the truth sets (the 8 manual
-pits are invisible even at 50 cm basemap resolution).
+```bash
+python3 scripts/eval_amw_model.py --sanity 60 --workers 6 --json out.json  # first
+python3 scripts/eval_amw_model.py --africa 25 --jitter --workers 4         # then
+```
+
+AUC ≫ 0.56 → build a real scanner. AUC ≈ 0.5 → optical 10 m ASM detection is
+closed; document and stop. Needs `tensorflow-cpu==2.21.0` + `tf-keras`.
+
+Truth sets are themselves under suspicion — `scripts/adjudicate_truth.py` renders
+Esri contact sheets and records keyed verdicts (`pit`/`maybe`/`no_pit`/
+`unclear_imagery`; the last is *not* the same as `no_pit`). The 8 Chinko manual
+pits came back `unclear_imagery`: no z18 coverage exists there, and z16 shows only
+wooded savanna.
+
+What *does* validate and is shipped: the **basin layer** — `park_basins` +
+`park_basin_rivers` (migration 039, 163 parks, upstream polygon + downstream
+trace + Strahler orders), `GET /api/parks/{id}/basin` (upstream km², upstream
+river km total/order-3+, downstream length + outlet river name), pin buttons and
+a plain-language watershed line in the popup's Roads/Rivers/Places section. QA
+with `python3 scripts/check_basin_coverage.py`. Coverage <0.2 for 26
+divide/endorheic parks is real, not a bug — hence `flow_corridor.scan_geom()`
+scans (basin clipped to 200 km) ∪ park.
 
 ---
 
